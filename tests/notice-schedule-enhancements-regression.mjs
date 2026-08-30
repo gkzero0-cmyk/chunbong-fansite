@@ -9,6 +9,7 @@ const schedule = read('schedule.html');
 const content = read('content.js');
 const page = read('page.js');
 const styles = read('styles.css');
+const scheduleRuntime = read('schedule-runtime.js');
 
 assert.match(index, /hero-actions[\s\S]*youtube\.com\/@%EC%B6%98%EB%B4%89TV/i, 'home hero should have a YouTube shortcut button');
 assert.match(index, /YouTube 바로가기/, 'home hero should label the YouTube shortcut clearly');
@@ -22,16 +23,16 @@ assert.ok(styles.includes('.notice-image-modal'), 'notice image lightbox should 
 
 assert.ok(schedule.includes('id="schedule-grid"'), 'schedule page should retain an in-site schedule grid');
 assert.ok(schedule.includes('id="schedule-official"'), 'schedule page should show the official SOOP schedule post in-site');
-assert.ok(page.includes("loadNoticeDetail('203015477')"), 'schedule page should fetch the official SOOP schedule post');
-assert.ok(page.includes('detail.images'), 'official schedule should render extracted schedule images');
-assert.ok(!page.includes('schedule-official-embed-frame'), 'official schedule should not render fragile external iframes');
-assert.ok(page.includes('schedule-official-fallback'), 'official schedule should show a useful fallback when only a dead embed remains');
+assert.ok(page.includes("loadNoticeDetail('203015477')"), 'schedule page should retain the official SOOP schedule source');
+assert.ok(schedule.includes('schedule-runtime.js'), 'schedule page should load the stable official schedule renderer');
+assert.ok(scheduleRuntime.includes('data-official-snapshot'), 'official schedule should render an in-site schedule snapshot');
+assert.ok(scheduleRuntime.includes('schedule-card'), 'official schedule should reuse the actual fan-site schedule cards');
+assert.ok(!scheduleRuntime.includes('<iframe'), 'official schedule runtime must not render fragile external iframes');
 assert.ok(content.includes('notionSchedule'), 'Notion calendar entries should be embedded for in-site schedule rendering');
 for (const token of ['성하늘님 랜버워치','세구님 세바버','왁굳님 아르마3','조까치 수련회2']) {
   assert.ok(content.includes(token), `schedule snapshot should include ${token}`);
 }
 assert.ok(page.includes('Asia/Seoul'), 'scheduled datetimes should be rendered in Korea time');
 assert.ok(styles.includes('.schedule-tag'), 'schedule tags should have visible styling');
-assert.ok(styles.includes('.schedule-official-image'), 'official schedule images should have responsive styling');
 
 console.log('notice + schedule enhancements regression test passed');
