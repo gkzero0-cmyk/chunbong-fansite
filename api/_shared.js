@@ -18,6 +18,13 @@ const naverHeaders = {
 };
 
 const first = (obj, keys) => keys.map(key => obj?.[key]).find(value => value !== undefined && value !== null && value !== '');
+function deepFirst(obj, paths) {
+  for (const path of paths) {
+    const value = path.split('.').reduce((cur, key) => cur?.[key], obj);
+    if (value !== undefined && value !== null && value !== '') return value;
+  }
+  return undefined;
+}
 const clean = (value = '') => String(value).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 function structuredText(value, seen = new Set()) {
   if (value === null || value === undefined || value === false) return '';
@@ -57,7 +64,15 @@ async function getJson(url, requestHeaders = soopHeaders) {
   return response.json();
 }
 function listFrom(payload) {
-  const candidates = [payload?.contents,payload?.data,payload?.data?.contents,payload?.data?.items,payload?.data?.list,payload?.data?.articles,payload?.result?.contents,payload?.result?.items,payload?.result?.list,payload?.result?.articles,payload?.result?.articleList,payload?.message?.result?.articleList,payload?.message?.result?.articles,payload?.items,payload?.list,payload?.articles,payload?.vods];
+  const candidates = [
+    payload?.contents, payload?.data,
+    payload?.data?.contents, payload?.data?.items, payload?.data?.list, payload?.data?.articles,
+    payload?.data?.vods, payload?.data?.catchList, payload?.data?.catch_list, payload?.data?.catches,
+    payload?.result?.contents, payload?.result?.items, payload?.result?.list, payload?.result?.articles,
+    payload?.result?.articleList, payload?.result?.catchList, payload?.result?.catch_list,
+    payload?.message?.result?.articleList, payload?.message?.result?.articles,
+    payload?.items, payload?.list, payload?.articles, payload?.vods, payload?.catchList, payload?.catch_list, payload?.catches
+  ];
   return candidates.find(Array.isArray) || [];
 }
 function normalizeDate(value) {
@@ -65,18 +80,36 @@ function normalizeDate(value) {
   if (typeof value === 'number') { const date = new Date(value); if (!Number.isNaN(date.getTime())) return date.toISOString().slice(0, 10); }
   return String(value).slice(0, 10);
 }
+function imageUrl(value) {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) return value.map(imageUrl).find(Boolean) || '';
+  if (typeof value === 'object') return first(value, ['url','src','imageUrl','image_url','thumb','thumbnail']) || imageUrl(value.image) || '';
+  return '';
+}
 function normalizeVideo(item, kind = 'vod') {
-  const id = kind === 'catch' ? first(item, ['title_no','titleNo','catch_no','catchNo','vod_no','vodNo']) : first(item, ['title_no','titleNo','vod_no','vodNo']);
-  const title = clean(first(item, ['title_name','titleName','title','subject','catch_title','catchTitle']) || (kind === 'catch' ? '춘봉 Catch' : kind === 'clip' ? '춘봉 클립' : '춘봉 영상'));
-  const explicitLink = first(item, ['url','linkUrl','link_url','shareUrl','share_url','catchUrl','catch_url']);
+  const id = kind === 'catch'
+    ? deepFirst(item, ['title_no','titleNo','catch_no','catchNo','catch_no','story_no','storyNo','story_idx','storyIdx','vod_no','vodNo','id'])
+    : deepFirst(item, ['title_no','titleNo','vod_no','vodNo','id']);
+  const title = clean(deepFirst(item, ['title_name','titleName','title','subject','catch_title','catchTitle','story_title','storyTitle','name']) || (kind === 'catch' ? '춘봉 Catch' : kind === 'clip' ? '춘봉 클립' : '춘봉 영상'));
+  const explicitLink = deepFirst(item, ['url','linkUrl','link_url','shareUrl','share_url','catchUrl','catch_url','link.url']);
   const baseLink = kind === 'catch' ? (id ? `https://vod.sooplive.com/player/${id}/catch` : `https://www.sooplive.com/station/${SOOP_ID}/catch`) : (id ? `https://vod.sooplive.com/player/${id}/` : `https://www.sooplive.com/station/${SOOP_ID}/vod/clip`);
-  return { id: id ? String(id) : '', kind, title, date: normalizeDate(first(item, ['reg_date','regDate','write_date','writeDate'])), thumb: first(item, ['thumb','thumbnail','thumb_url','thumbnail_url','image_url','thumbnailUrl','thumbUrl','catchThumbnail','catch_thumbnail']) || '', link: explicitLink || baseLink, embed: id ? `https://vod.sooplive.com/player/${id}/embed?showChat=false&autoPlay=false&mutePlay=false` : '' };
+  const thumbValue = deepFirst(item, ['thumb','thumb_url','thumbnail_url','image_url','thumbnailUrl','thumbUrl','catchThumbnail','catch_thumbnail','thumbnail','image','contentImage']);
+  const views = deepFirst(item, ['view_count','viewCount','read_cnt','readCnt','views','hit']);
+  return {
+    id: id ? String(id) : '', kind, title,
+    date: normalizeDate(deepFirst(item, ['reg_date','regDate','write_date','writeDate','createdAt','created_at'])),
+    thumb: imageUrl(thumbValue),
+    meta: views === undefined ? '' : `조회수 ${Number(views).toLocaleString('ko-KR')}`,
+    link: explicitLink || baseLink,
+    embed: id ? `https://vod.sooplive.com/player/${id}/embed?showChat=false&autoPlay=false&mutePlay=false` : ''
+  };
 }
 function normalizePost(item) {
   const id = first(item, ['title_no','post_no','postNo','article_no','articleNo','bbs_no','bbsNo']);
   const rawContent = first(item, ['contents','content','memo','contentHtml','body']) || '';
   const content = cleanContent(rawContent).slice(0, 12000);
-  const boardValue = first(item, ['board_number','boardNumber','board_no','boardNo','menu_no','menuNo']);
+  const boardValue = deepFirst(item, ['board_number','boardNumber','board_no','boardNo','menu_no','menuNo','board.board_number','board.boardNumber','board.board_no','board.id','boardInfo.board_number','boardInfo.boardNumber']);
   return { id: id ? String(id) : '', boardNumber: boardValue === undefined || boardValue === null || boardValue === '' ? '' : String(boardValue), category: 'NOTICE', title: clean(first(item, ['title','subject','title_name','titleName']) || '춘봉 공지'), date: normalizeDate(first(item, ['reg_date','regDate','write_date','writeDate'])), desc: content.slice(0,180), content, link: id ? `https://www.sooplive.com/station/${SOOP_ID}/post/${id}` : `https://www.sooplive.com/station/${SOOP_ID}/board/${BOARD_NUMBER}` };
 }
 async function fetchFirstNonEmpty(urls, normalizer, requestHeaders = soopHeaders) {
@@ -85,4 +118,4 @@ async function fetchFirstNonEmpty(urls, normalizer, requestHeaders = soopHeaders
   if (lastError) throw lastError;
   return [];
 }
-module.exports = { SOOP_ID, BOARD_NUMBER, NOTICE_BOARD_NUMBERS, CAFE_ID, FANART_MENU_ID, FANART_BOARD, soopHeaders, naverHeaders, first, clean, structuredText, getJson, listFrom, normalizeDate, normalizeVideo, normalizePost, fetchFirstNonEmpty };
+module.exports = { SOOP_ID, BOARD_NUMBER, NOTICE_BOARD_NUMBERS, CAFE_ID, FANART_MENU_ID, FANART_BOARD, soopHeaders, naverHeaders, first, deepFirst, clean, structuredText, getJson, listFrom, normalizeDate, normalizeVideo, normalizePost, fetchFirstNonEmpty };
