@@ -20,3 +20,5 @@
 @media(max-width:760px){.notice-state-label{display:none}.schedule-official{padding:18px}.schedule-official-meta small{width:100%;margin-left:0}.hero-actions .btn-youtube{width:auto}}
 
 .schedule-official-embed{margin:22px 0;padding:12px;border:1px solid #2f2f2f;border-radius:16px;background:#090909}.schedule-official-embed-frame{display:block;width:100%;height:min(72vh,760px);min-height:520px;border:0;border-radius:12px;background:#fff}.schedule-official-embed .inline-link{margin-top:10px}@media(max-width:760px){.schedule-official-embed{padding:8px}.schedule-official-embed-frame{min-height:460px;height:68vh}}
+
+.schedule-official-image-wrap{margin:22px 0}.schedule-official-image{display:block;width:100%;height:auto;max-height:1100px;object-fit:contain;border-radius:14px;background:#090909}.schedule-official-fallback{margin:22px 0;padding:18px;border:1px solid #3a302a;border-radius:14px;background:#120f0d}.schedule-official-fallback strong{color:#ff9a5c}.schedule-official-fallback p{margin:8px 0 0;color:#b8aaa0;line-height:1.75}
