@@ -144,6 +144,41 @@ function extractEmbedUrls(value, seen = new Set(), contextKey = '') {
   return [...new Set(urls)];
 }
 
+function extractImageUrls(value, seen = new Set(), contextKey = '') {
+  if (value === null || value === undefined || value === false) return [];
+  if (typeof value === 'string') {
+    const source = decodeEntities(value);
+    const urls = [];
+    const tagPattern = /<img\b[^>]*\b(?:src|data-src|data-lazy-src)\s*=\s*(?:["']([^"']+)["']|([^\s>]+))/gi;
+    for (const match of source.matchAll(tagPattern)) {
+      const url = safeUrl(match[1] || match[2] || '');
+      if (url?.startsWith('https://')) urls.push(url);
+    }
+    if (/image|img|photo|picture|thumb|attach/i.test(contextKey)) {
+      const direct = safeUrl(source.trim());
+      if (direct?.startsWith('https://') && /\.(?:jpe?g|png|webp|gif|avif)(?:[?#].*)?$/i.test(direct)) urls.push(direct);
+    }
+    return [...new Set(urls)];
+  }
+  if (typeof value !== 'object' || seen.has(value)) return [];
+  seen.add(value);
+  if (Array.isArray(value)) return [...new Set(value.flatMap(item => extractImageUrls(item, seen, contextKey)))];
+
+  const urls = [];
+  const nodeType = String(first(value, ['type','kind','nodeType','node_type','contentType','content_type']) || '');
+  const imageLike = /image|img|photo|picture/.test(nodeType) || /image|img|photo|picture|thumb|attach/i.test(contextKey);
+  if (imageLike) {
+    for (const key of ['src','url','href','imageUrl','image_url','imgUrl','img_url','imageSrc','image_src','thumbnail','thumb']) {
+      const candidate = value[key];
+      if (typeof candidate !== 'string') continue;
+      const url = safeUrl(candidate);
+      if (url?.startsWith('https://') && !/\/avatar|profile/i.test(url)) urls.push(url);
+    }
+  }
+  for (const [key, child] of Object.entries(value)) urls.push(...extractImageUrls(child, seen, key));
+  return [...new Set(urls)];
+}
+
 function attrValue(source, name) {
   const match = String(source).match(new RegExp(`\\b${name}\\s*=\\s*(?:["']([^"']*)["']|([^\\s>]+))`, 'i'));
   return match ? (match[1] || match[2] || '') : '';
@@ -223,7 +258,9 @@ function normalizeDetail(payload, requestedId) {
   const renderedHtml = typeof rawHtml === 'object' && rawHtml !== null ? structuredHtml(rawHtml) : rawHtml;
   const html = sanitizeHtml(renderedHtml);
   const content = textFromHtml(html || (typeof rawHtml === 'string' ? rawHtml : '')).slice(0, 20000);
-  const embeds = String(id || requestedId || '') === '203015477' ? extractEmbedUrls(rawHtml).slice(0, 3) : [];
+  const schedulePost = String(id || requestedId || '') === '203015477';
+  const embeds = schedulePost ? extractEmbedUrls(rawHtml).slice(0, 3) : [];
+  const images = schedulePost ? extractImageUrls(item).slice(0, 8) : [];
   return {
     id: String(id || requestedId || ''),
     category: 'NOTICE',
@@ -232,6 +269,7 @@ function normalizeDetail(payload, requestedId) {
     content,
     html,
     embeds,
+    images,
     link: `https://www.sooplive.com/station/${SOOP_ID}/post/${id || requestedId}`
   };
 }
@@ -313,3 +351,4 @@ module.exports = async function fetchNoticeDetail(id) {
 
 module.exports.sanitizeHtml = sanitizeHtml;
 module.exports.structuredHtml = structuredHtml;
+module.exports.extractImageUrls = extractImageUrls;
