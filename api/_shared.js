@@ -104,7 +104,11 @@ function normalizeVideo(item, kind = 'vod') {
     thumb: imageUrl(thumbValue),
     meta: views === undefined ? '' : `조회수 ${Number(views).toLocaleString('ko-KR')}`,
     link: explicitLink || baseLink,
-    embed: kind === 'catch' ? '' : (id ? `https://vod.sooplive.com/player/${id}/embed?showChat=false&autoPlay=false&mutePlay=false` : '')
+    embed: id
+      ? (kind === 'catch'
+        ? `https://vod.sooplive.co.kr/player/${id}/embed?type=catch&showChat=false&autoPlay=false&mutePlay=false`
+        : `https://vod.sooplive.com/player/${id}/embed?showChat=false&autoPlay=false&mutePlay=false`)
+      : ''
   };
 }
 
