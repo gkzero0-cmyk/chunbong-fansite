@@ -1,5 +1,4 @@
-const { SOOP_ID, NOTICE_BOARD_NUMBERS, soopHeaders, getJson, listFrom, normalizePost } = require('./_shared');
-const BLOCKED_NOTICE_IDS = new Set(['205800319']);
+const { SOOP_ID, NOTICE_BOARD_NUMBERS, getJson, listFrom, normalizePost } = require('./_shared');
 
 function noticeParams(boardNumber) {
   const params = new URLSearchParams({
@@ -28,44 +27,29 @@ function explicitBoardNumber(payload, seen = new Set()) {
   return '';
 }
 
-async function verifyMissingBoard(item, boardNumber) {
-  if (BLOCKED_NOTICE_IDS.has(String(item.id || ''))) return null;
+async function acceptScopedItem(item, boardNumber) {
   if (item.boardNumber) return item.boardNumber === boardNumber ? item : null;
-  if (!item.id) return null;
-
-  const detailUrls = [
-    `https://chapi.sooplive.com/api/${SOOP_ID}/title/${item.id}`,
-    `https://chapi.sooplive.co.kr/api/${SOOP_ID}/title/${item.id}`
-  ];
-  for (const url of detailUrls) {
-    try {
-      const verified = explicitBoardNumber(await getJson(url));
-      if (verified) return verified === boardNumber ? { ...item, boardNumber: verified } : null;
-    } catch (_) {}
+  if (item.id) {
+    const detailUrls = [
+      `https://chapi.sooplive.com/api/${SOOP_ID}/title/${item.id}`,
+      `https://chapi.sooplive.co.kr/api/${SOOP_ID}/title/${item.id}`
+    ];
+    for (const url of detailUrls) {
+      try {
+        const verified = explicitBoardNumber(await getJson(url));
+        if (verified) return verified === boardNumber ? { ...item, boardNumber: verified } : null;
+      } catch (_) {}
+    }
   }
-
-  const pageUrls = [
-    `https://www.sooplive.com/station/${SOOP_ID}/post/${item.id}`,
-    `https://ch.sooplive.co.kr/${SOOP_ID}/post/${item.id}`
-  ];
-  for (const url of pageUrls) {
-    try {
-      const response = await fetch(url, { headers: { ...soopHeaders, accept: 'text/html,application/xhtml+xml' } });
-      if (!response.ok) continue;
-      const html = await response.text();
-      const match = html.match(/["'](?:board_number|boardNumber|board_no|boardNo)["']\s*:\s*["']?(\d+)/i);
-      if (match?.[1]) return match[1] === boardNumber ? { ...item, boardNumber: match[1] } : null;
-    } catch (_) {}
-  }
-  return null;
+  return { ...item, boardNumber };
 }
 
 async function fetchFilteredBoard(boardNumber) {
   const url = `https://chapi.sooplive.com/api/${SOOP_ID}/board/?${noticeParams(boardNumber)}`;
   try {
     const items = listFrom(await getJson(url)).map(normalizePost);
-    const verified = await Promise.all(items.map(item => verifyMissingBoard(item, boardNumber)));
-    return verified.filter(Boolean);
+    const accepted = await Promise.all(items.map(item => acceptScopedItem(item, boardNumber)));
+    return accepted.filter(Boolean);
   } catch (_) {
     return [];
   }
