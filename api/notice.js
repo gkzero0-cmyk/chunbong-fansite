@@ -10,18 +10,14 @@ function noticeParams(boardNumber) {
   return params;
 }
 
-function normalizeForBoard(rawItems, boardNumber, strict = false) {
-  const mapped = rawItems.map(normalizePost);
-  const withBoardMetadata = mapped.some(item => item.boardNumber);
-  if (withBoardMetadata) return mapped.filter(item => item.boardNumber === boardNumber);
-  if (strict) return [];
-  return mapped.map(item => ({ ...item, boardNumber }));
+function normalizeForBoard(rawItems, boardNumber) {
+  return rawItems.map(normalizePost).filter(item => item.boardNumber === boardNumber);
 }
 
 async function fetchFilteredBoard(boardNumber) {
   const url = `https://chapi.sooplive.com/api/${SOOP_ID}/board/?${noticeParams(boardNumber)}`;
   try {
-    return normalizeForBoard(listFrom(await getJson(url)), boardNumber, false);
+    return normalizeForBoard(listFrom(await getJson(url)), boardNumber);
   } catch (_) {
     return [];
   }
