@@ -146,13 +146,33 @@ function textFromHtml(html = '') {
     .trim();
 }
 
-function postObject(payload) {
-  const candidates = [payload?.data, payload?.result, payload?.item, payload?.post, payload?.title, payload];
-  return candidates.find(item => item && typeof item === 'object' && !Array.isArray(item)) || {};
+function postObject(payload, requestedId) {
+  const targetId = String(requestedId || '');
+  const seen = new Set();
+  let fallback = null;
+  const walk = value => {
+    if (!value || typeof value !== 'object' || seen.has(value)) return null;
+    seen.add(value);
+    if (!Array.isArray(value)) {
+      const valueId = first(value, ['title_no','titleNo','post_no','postNo','article_no','articleNo','bbs_no','bbsNo']);
+      const body = first(value, ['contents','content','memo','contentHtml','body','html']);
+      if (body !== undefined && body !== null && body !== '') {
+        if (!fallback) fallback = value;
+        if (!targetId || !valueId || String(valueId) === targetId) return value;
+      }
+    }
+    const children = Array.isArray(value) ? value : Object.values(value);
+    for (const child of children) {
+      const found = walk(child);
+      if (found) return found;
+    }
+    return null;
+  };
+  return walk(payload) || fallback || {};
 }
 
 function normalizeDetail(payload, requestedId) {
-  const item = postObject(payload);
+  const item = postObject(payload, requestedId);
   const id = first(item, ['title_no','titleNo','post_no','postNo','article_no','articleNo','bbs_no','bbsNo']) || requestedId;
   const rawHtml = first(item, ['contents','content','memo','contentHtml','body','html']) || '';
   const renderedHtml = typeof rawHtml === 'object' && rawHtml !== null ? structuredHtml(rawHtml) : rawHtml;
