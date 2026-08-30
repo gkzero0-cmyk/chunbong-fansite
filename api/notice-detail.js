@@ -99,6 +99,51 @@ function safeUrl(value = '', base = 'https://www.sooplive.com/') {
   } catch (_) { return ''; }
 }
 
+function safeEmbedUrl(value = '') {
+  const url = safeUrl(value);
+  if (!url) return '';
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' ? parsed.href : '';
+  } catch (_) { return ''; }
+}
+
+function extractEmbedUrls(value, seen = new Set(), contextKey = '') {
+  if (value === null || value === undefined || value === false) return [];
+  if (typeof value === 'string') {
+    const source = decodeEntities(value);
+    const urls = [];
+    const tagPattern = /<(?:iframe|embed|object)\b[^>]*\b(?:src|data-src|data-url)\s*=\s*(?:["']([^"']+)["']|([^\s>]+))/gi;
+    for (const match of source.matchAll(tagPattern)) {
+      const url = safeEmbedUrl(match[1] || match[2] || '');
+      if (url) urls.push(url);
+    }
+    if (/embed|iframe|widget|external/i.test(contextKey)) {
+      const direct = safeEmbedUrl(source.trim());
+      if (direct) urls.push(direct);
+    }
+    return [...new Set(urls)];
+  }
+  if (typeof value !== 'object' || seen.has(value)) return [];
+  seen.add(value);
+  if (Array.isArray(value)) {
+    return [...new Set(value.flatMap(item => extractEmbedUrls(item, seen, contextKey)))];
+  }
+
+  const urls = [];
+  const nodeType = String(first(value, ['type','kind','nodeType','node_type','contentType','content_type']) || '');
+  if (/iframe|embed|widget|external/i.test(nodeType)) {
+    for (const key of ['src','url','href','embedUrl','embed_url','iframeUrl','iframe_url','dataSrc','data_src']) {
+      const url = safeEmbedUrl(value[key]);
+      if (url) urls.push(url);
+    }
+  }
+  for (const [key, child] of Object.entries(value)) {
+    urls.push(...extractEmbedUrls(child, seen, key));
+  }
+  return [...new Set(urls)];
+}
+
 function attrValue(source, name) {
   const match = String(source).match(new RegExp(`\\b${name}\\s*=\\s*(?:["']([^"']*)["']|([^\\s>]+))`, 'i'));
   return match ? (match[1] || match[2] || '') : '';
@@ -178,6 +223,7 @@ function normalizeDetail(payload, requestedId) {
   const renderedHtml = typeof rawHtml === 'object' && rawHtml !== null ? structuredHtml(rawHtml) : rawHtml;
   const html = sanitizeHtml(renderedHtml);
   const content = textFromHtml(html || (typeof rawHtml === 'string' ? rawHtml : '')).slice(0, 20000);
+  const embeds = String(id || requestedId || '') === '203015477' ? extractEmbedUrls(rawHtml).slice(0, 3) : [];
   return {
     id: String(id || requestedId || ''),
     category: 'NOTICE',
@@ -185,6 +231,7 @@ function normalizeDetail(payload, requestedId) {
     date: normalizeDate(first(item, ['reg_date','regDate','write_date','writeDate'])),
     content,
     html,
+    embeds,
     link: `https://www.sooplive.com/station/${SOOP_ID}/post/${id || requestedId}`
   };
 }
