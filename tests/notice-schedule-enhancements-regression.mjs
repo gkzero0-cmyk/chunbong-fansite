@@ -23,11 +23,15 @@ assert.ok(styles.includes('.notice-image-modal'), 'notice image lightbox should 
 assert.ok(schedule.includes('id="schedule-grid"'), 'schedule page should retain an in-site schedule grid');
 assert.ok(schedule.includes('id="schedule-official"'), 'schedule page should show the official SOOP schedule post in-site');
 assert.ok(page.includes("loadNoticeDetail('203015477')"), 'schedule page should fetch the official SOOP schedule post');
+assert.ok(page.includes('detail.embeds'), 'official schedule should render extracted embed URLs');
+assert.match(page, /<iframe[^>]+schedule-official-embed-frame/, 'official schedule should render an in-site iframe for trusted embeds');
+assert.match(page, /sandbox=\"allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox\"/, 'official schedule iframe should be sandboxed');
 assert.ok(content.includes('notionSchedule'), 'Notion calendar entries should be embedded for in-site schedule rendering');
 for (const token of ['성하늘님 랜버워치','세구님 세바버','왁굳님 아르마3','조까치 수련회2']) {
   assert.ok(content.includes(token), `schedule snapshot should include ${token}`);
 }
 assert.ok(page.includes('Asia/Seoul'), 'scheduled datetimes should be rendered in Korea time');
 assert.ok(styles.includes('.schedule-tag'), 'schedule tags should have visible styling');
+assert.ok(styles.includes('.schedule-official-embed-frame'), 'official schedule embed should have responsive iframe styling');
 
 console.log('notice + schedule enhancements regression test passed');
