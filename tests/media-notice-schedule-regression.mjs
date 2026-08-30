@@ -118,7 +118,7 @@ async function run(query, fetchImpl) {
 }
 
 
-// The official schedule post can contain a real schedule in an iframe while the visible body only says to wait.
+// Placeholder-only official schedule embeds are not trusted because the upstream URL can expire/404.
 {
   const { body } = await run({ type: 'notice-detail', id: '203015477' }, async (url) => {
     const value = String(url);
@@ -136,7 +136,7 @@ async function run(query, fetchImpl) {
     }
     return html('', false, 404);
   });
-  assert.deepEqual(body.item?.embeds, ['https://schedule.example.com/chunbong/week'], 'official schedule embed URL should survive sanitization separately');
+  assert.deepEqual(body.item?.embeds, [], 'placeholder-only official schedule embeds should be suppressed after the upstream 404 regression');
 }
 
 console.log('media + dual notice + schedule regression test passed');

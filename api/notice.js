@@ -11,7 +11,10 @@ function noticeParams(boardNumber) {
 }
 
 function normalizeForBoard(rawItems, boardNumber) {
-  return rawItems.map(normalizePost).filter(item => item.boardNumber === boardNumber);
+  return rawItems.map(normalizePost).map(item => {
+    if (item.boardNumber && item.boardNumber !== boardNumber) return null;
+    return item.boardNumber ? item : { ...item, boardNumber };
+  }).filter(Boolean);
 }
 
 async function fetchFilteredBoard(boardNumber) {
@@ -31,7 +34,7 @@ function dedupeAndSort(items) {
     if (!byId.has(key)) byId.set(key, item);
   }
   return [...byId.values()].sort((a, b) => {
-    const dateCompare = String(b.date || '').localeCompare(String(a.date || ''));
+    const dateCompare = String(b.sortDate || b.date || '').localeCompare(String(a.sortDate || a.date || ''));
     if (dateCompare) return dateCompare;
     return Number(b.id || 0) - Number(a.id || 0);
   });

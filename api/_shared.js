@@ -96,21 +96,25 @@ function normalizeVideo(item, kind = 'vod') {
   const baseLink = kind === 'catch' ? (id ? `https://vod.sooplive.com/player/${id}/catch` : `https://www.sooplive.com/station/${SOOP_ID}/catch`) : (id ? `https://vod.sooplive.com/player/${id}/` : `https://www.sooplive.com/station/${SOOP_ID}/vod/clip`);
   const thumbValue = deepFirst(item, ['thumb','thumb_url','thumbnail_url','image_url','thumbnailUrl','thumbUrl','catchThumbnail','catch_thumbnail','thumbnail','image','contentImage']);
   const views = deepFirst(item, ['view_count','viewCount','read_cnt','readCnt','views','hit']);
+  const rawDate = deepFirst(item, ['reg_date','regDate','write_date','writeDate','createdAt','created_at']);
   return {
     id: id ? String(id) : '', kind, title,
-    date: normalizeDate(deepFirst(item, ['reg_date','regDate','write_date','writeDate','createdAt','created_at'])),
+    date: normalizeDate(rawDate),
+    sortDate: rawDate ? String(rawDate) : '',
     thumb: imageUrl(thumbValue),
     meta: views === undefined ? '' : `조회수 ${Number(views).toLocaleString('ko-KR')}`,
     link: explicitLink || baseLink,
     embed: id ? `https://vod.sooplive.com/player/${id}/embed?showChat=false&autoPlay=false&mutePlay=false` : ''
   };
 }
+
 function normalizePost(item) {
   const id = first(item, ['title_no','post_no','postNo','article_no','articleNo','bbs_no','bbsNo']);
   const rawContent = first(item, ['contents','content','memo','contentHtml','body']) || '';
   const content = cleanContent(rawContent).slice(0, 12000);
   const boardValue = deepFirst(item, ['board_number','boardNumber','board_no','boardNo','menu_no','menuNo','board.board_number','board.boardNumber','board.board_no','board.id','boardInfo.board_number','boardInfo.boardNumber']);
-  return { id: id ? String(id) : '', boardNumber: boardValue === undefined || boardValue === null || boardValue === '' ? '' : String(boardValue), category: 'NOTICE', title: clean(first(item, ['title','subject','title_name','titleName']) || '춘봉 공지'), date: normalizeDate(first(item, ['reg_date','regDate','write_date','writeDate'])), desc: content.slice(0,180), content, link: id ? `https://www.sooplive.com/station/${SOOP_ID}/post/${id}` : `https://www.sooplive.com/station/${SOOP_ID}/board/${BOARD_NUMBER}` };
+  const rawDate = first(item, ['reg_date','regDate','write_date','writeDate']);
+  return { id: id ? String(id) : '', boardNumber: boardValue === undefined || boardValue === null || boardValue === '' ? '' : String(boardValue), category: 'NOTICE', title: clean(first(item, ['title','subject','title_name','titleName']) || '춘봉 공지'), date: normalizeDate(rawDate), sortDate: rawDate ? String(rawDate) : '', desc: content.slice(0,180), content, link: id ? `https://www.sooplive.com/station/${SOOP_ID}/post/${id}` : `https://www.sooplive.com/station/${SOOP_ID}/board/${BOARD_NUMBER}` };
 }
 async function fetchFirstNonEmpty(urls, normalizer, requestHeaders = soopHeaders) {
   let lastError;
