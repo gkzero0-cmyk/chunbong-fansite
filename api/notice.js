@@ -2,7 +2,7 @@ const { SOOP_ID, NOTICE_BOARD_NUMBERS, getJson, listFrom, normalizePost } = requ
 
 function noticeParams(boardNumber) {
   const params = new URLSearchParams({
-    per_page: '20', start_date: '', end_date: '',
+    per_page: '12', start_date: '', end_date: '',
     field: 'title,contents,user_nick,user_id,hashtags', keyword: '',
     type: 'all', order_by: 'reg_date', page: '1'
   });
@@ -38,6 +38,7 @@ async function acceptScopedItem(item, boardNumber) {
       try {
         const verified = explicitBoardNumber(await getJson(url));
         if (verified) return verified === boardNumber ? { ...item, boardNumber: verified } : null;
+        break;
       } catch (_) {}
     }
   }
