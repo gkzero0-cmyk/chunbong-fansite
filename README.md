@@ -16,3 +16,5 @@ GitHub 저장소를 Vercel 프로젝트에 연결하면 `main` 브랜치 push마
 ```bash
 for f in tests/*.mjs; do node "$f"; done
 ```
+
+Vercel Git deployment enabled
