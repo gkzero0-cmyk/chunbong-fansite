@@ -26,26 +26,31 @@ function finalizeCatch(items) {
   const byId = new Map();
   for (const item of items) {
     if (!item?.id || item.kind !== 'catch') continue;
-    const safeItem = { ...item, embed: '' };
-    const current = byId.get(safeItem.id);
-    if (!current || sortNewest(safeItem, current) < 0) byId.set(safeItem.id, safeItem);
+    const current = byId.get(item.id);
+    if (!current || sortNewest(item, current) < 0) byId.set(item.id, item);
   }
   return [...byId.values()].sort(sortNewest).slice(0, 12);
 }
 
 async function fetchClipGroup(kind) {
-  let lastError;
-  for (const url of URLS[kind]) {
+  if (kind === 'catch') {
+    const results = await Promise.all(URLS.catch.map(async url => {
+      try {
+        return listFrom(await getJson(url)).map(item => normalizeVideo(item, 'catch')).filter(Boolean);
+      } catch (_) {
+        return [];
+      }
+    }));
+    return finalizeCatch(results.flat());
+  }
+
+  for (const url of URLS.clip) {
     try {
       const raw = listFrom(await getJson(url));
       if (!raw.length) continue;
-      const items = raw.map(item => normalizeVideo(item, kind)).filter(Boolean);
-      return kind === 'catch' ? finalizeCatch(items) : items.slice(0, 12);
-    } catch (error) {
-      lastError = error;
-    }
+      return raw.map(item => normalizeVideo(item, 'clip')).filter(Boolean).slice(0, 12);
+    } catch (_) {}
   }
-  if (lastError) return [];
   return [];
 }
 

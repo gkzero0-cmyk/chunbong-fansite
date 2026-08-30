@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const root = new URL('../', import.meta.url);
+const read = name => fs.readFileSync(new URL(name, root), 'utf8');
+const runtime = read('live-fixes.js');
+const schedule = read('schedule.html');
+const clips = read('clips.html');
+assert.ok(schedule.includes('live-fixes.js'), 'schedule should load live fixes after base renderer');
+assert.ok(clips.includes('live-fixes.js'), 'clips should load live fixes after base renderer');
+assert.ok(runtime.includes("/api/content?type=schedule"), 'schedule override should fetch live schedule data');
+assert.ok(runtime.includes('data-official-snapshot="true"'), 'official schedule should be rendered from current schedule rows');
+assert.ok(runtime.includes("/api/content?type=catch-detail"), 'Catch override should resolve a playable media URL');
+assert.ok(runtime.includes('hls.js'), 'Catch HLS streams should use hls.js when native playback is unavailable');
+assert.ok(clips.includes('id="clip-video"'), 'Catch page should provide a native video element');
+console.log('live schedule and Catch overrides regression test passed');

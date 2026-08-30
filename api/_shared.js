@@ -104,7 +104,7 @@ function normalizeVideo(item, kind = 'vod') {
     thumb: imageUrl(thumbValue),
     meta: views === undefined ? '' : `조회수 ${Number(views).toLocaleString('ko-KR')}`,
     link: explicitLink || baseLink,
-    embed: id ? `https://vod.sooplive.com/player/${id}/embed?showChat=false&autoPlay=false&mutePlay=false` : ''
+    embed: kind === 'catch' ? '' : (id ? `https://vod.sooplive.com/player/${id}/embed?showChat=false&autoPlay=false&mutePlay=false` : '')
   };
 }
 
