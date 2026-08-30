@@ -32,17 +32,21 @@ function finalizeCatch(items) {
   return [...byId.values()].sort(sortNewest).slice(0, 12);
 }
 
-async function fetchClipGroup(kind) {
-  if (kind === 'catch') {
-    const results = await Promise.all(URLS.catch.map(async url => {
-      try {
-        return listFrom(await getJson(url)).map(item => normalizeVideo(item, 'catch')).filter(Boolean);
-      } catch (_) {
-        return [];
-      }
-    }));
-    return finalizeCatch(results.flat());
+async function fetchCatchGroup() {
+  for (const url of URLS.catch) {
+    try {
+      const raw = listFrom(await getJson(url));
+      if (!raw.length) continue;
+      const items = raw.map(item => normalizeVideo(item, 'catch')).filter(Boolean);
+      const finalized = finalizeCatch(items);
+      if (finalized.length) return finalized;
+    } catch (_) {}
   }
+  return [];
+}
+
+async function fetchClipGroup(kind) {
+  if (kind === 'catch') return fetchCatchGroup();
 
   for (const url of URLS.clip) {
     try {
@@ -60,3 +64,4 @@ module.exports = async function fetchClips() {
 };
 
 module.exports.finalizeCatch = finalizeCatch;
+module.exports.fetchCatchGroup = fetchCatchGroup;
