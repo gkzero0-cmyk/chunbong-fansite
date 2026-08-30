@@ -117,4 +117,26 @@ async function run(query, fetchImpl) {
   assert.match(body.item?.html || '', /schedule\.jpg/);
 }
 
+
+// The official schedule post can contain a real schedule in an iframe while the visible body only says to wait.
+{
+  const { body } = await run({ type: 'notice-detail', id: '203015477' }, async (url) => {
+    const value = String(url);
+    if (value.includes('/title/203015477')) {
+      return json({
+        data: {
+          post: {
+            title_no: 203015477,
+            title_name: '📅 방송 일정표',
+            reg_date: '2026-07-31 12:00:00',
+            contents: `<p>잠시 기다리시면 보입니다 :)</p><iframe src="https://schedule.example.com/chunbong/week" width="100%" height="720"></iframe>`
+          }
+        }
+      });
+    }
+    return html('', false, 404);
+  });
+  assert.deepEqual(body.item?.embeds, ['https://schedule.example.com/chunbong/week'], 'official schedule embed URL should survive sanitization separately');
+}
+
 console.log('media + dual notice + schedule regression test passed');
