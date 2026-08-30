@@ -188,19 +188,22 @@
       official.innerHTML = '<div class="loading-card">SOOP 공식 일정 안내를 불러오는 중...</div>';
       const payload = await loadNoticeDetail('203015477');
       const detail = payload.item;
-      if (detail && (detail.html || detail.content || detail.embeds?.length)) {
-        const embeds = Array.isArray(detail.embeds) ? detail.embeds : [];
-        const embedHtml = embeds.map((src, index) => `
-          <div class="schedule-official-embed">
-            <iframe class="schedule-official-embed-frame" src="${esc(src)}" title="춘봉 공식 일정 ${index + 1}" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"></iframe>
-            <a class="inline-link" href="${esc(src)}" target="_blank" rel="noreferrer noopener">일정 콘텐츠 새 창에서 보기 ↗</a>
-          </div>`).join('');
-        const placeholderOnly = embeds.length > 0 && /잠시\s*기다리시면\s*보입니다/i.test(String(detail.content || '')) && String(detail.content || '').trim().length < 100;
+      if (detail && (detail.html || detail.content || detail.images?.length)) {
+        const images = Array.isArray(detail.images) ? detail.images : [];
+        const imageHtml = images.map((src, index) => `
+          <figure class="schedule-official-image-wrap">
+            <img class="schedule-official-image" src="${esc(src)}" alt="춘봉 공식 일정 이미지 ${index + 1}" loading="lazy" referrerpolicy="no-referrer">
+          </figure>`).join('');
+        const placeholderOnly = /잠시\s*기다리시면\s*보입니다/i.test(String(detail.content || '')) && String(detail.content || '').trim().length < 100;
         const bodyHtml = placeholderOnly ? '' : (detail.html || `<p>${esc(detail.content).replaceAll('\n','<br>')}</p>`);
+        const unavailable = !images.length && placeholderOnly
+          ? '<div class="schedule-official-fallback"><strong>외부 일정표 연결이 만료되었습니다.</strong><p>깨진 화면 대신 위의 팬사이트 일정표를 표시하고 있습니다. 최신 변경사항은 SOOP 원문을 함께 확인해 주세요.</p></div>'
+          : '';
         official.innerHTML = `
           <div class="schedule-official-meta"><span class="badge">OFFICIAL</span><strong>${esc(detail.title || '춘봉 방송 일정')}</strong>${detail.date ? `<small>${esc(detail.date)}</small>` : ''}</div>
-          ${embedHtml}
+          ${imageHtml}
           ${bodyHtml ? `<div class="schedule-official-body notice-content">${bodyHtml}</div>` : ''}
+          ${unavailable}
           <a class="inline-link" href="https://www.sooplive.com/station/chunbongtv/post/203015477" target="_blank" rel="noreferrer">SOOP 일정 원문 보기 ↗</a>`;
       } else {
         official.innerHTML = `<div class="notice-detail-error"><strong>SOOP 공식 일정 글을 불러오지 못했습니다.</strong><p>${esc(payload.reason || '일시적으로 원본 서비스 응답이 없습니다.')}</p><a class="inline-link" href="https://www.sooplive.com/station/chunbongtv/post/203015477" target="_blank" rel="noreferrer">SOOP 일정 원문 보기 ↗</a></div>`;
