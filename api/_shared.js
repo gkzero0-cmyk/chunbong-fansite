@@ -1,5 +1,6 @@
 const SOOP_ID = 'chunbongtv';
-const BOARD_NUMBER = '126448625';
+const NOTICE_BOARD_NUMBERS = ['126448625', '126448677'];
+const BOARD_NUMBER = NOTICE_BOARD_NUMBERS[0];
 const CAFE_ID = '31591439';
 const FANART_MENU_ID = '18';
 const FANART_BOARD = `https://cafe.naver.com/f-e/cafes/${CAFE_ID}/menus/${FANART_MENU_ID}?viewType=I`;
@@ -84,4 +85,4 @@ async function fetchFirstNonEmpty(urls, normalizer, requestHeaders = soopHeaders
   if (lastError) throw lastError;
   return [];
 }
-module.exports = { SOOP_ID, BOARD_NUMBER, CAFE_ID, FANART_MENU_ID, FANART_BOARD, soopHeaders, naverHeaders, first, clean, structuredText, getJson, listFrom, normalizeDate, normalizeVideo, normalizePost, fetchFirstNonEmpty };
+module.exports = { SOOP_ID, BOARD_NUMBER, NOTICE_BOARD_NUMBERS, CAFE_ID, FANART_MENU_ID, FANART_BOARD, soopHeaders, naverHeaders, first, clean, structuredText, getJson, listFrom, normalizeDate, normalizeVideo, normalizePost, fetchFirstNonEmpty };
