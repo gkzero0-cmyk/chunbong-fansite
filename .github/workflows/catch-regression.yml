@@ -1,0 +1,23 @@
+name: Catch regression
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  verify-catch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check Catch API syntax
+        run: |
+          node --check api/clips.js
+          node --check api/_shared.js
+      - name: Run Catch source regression
+        run: node tests/catch-page-source-regression.mjs
+      - name: Run Catch embed regression
+        run: node tests/catch-playback-schedule-removal-regression.mjs
