@@ -88,7 +88,7 @@ async function run(query, fetchImpl) {
   assert.ok(calls.some(url => url.includes('chapi.sooplive.co.kr')));
 }
 
-// CATCH should resolve a direct playable file through SOOP's video API.
+// CATCH detail API can still resolve a direct file as a fallback/debug endpoint.
 {
   const { body } = await run({ type: 'catch-detail', id: '205000001' }, async (url, options = {}) => {
     assert.match(String(url), /api\.m\.sooplive\.com\/station\/video\/a\/view/);
@@ -105,8 +105,10 @@ async function run(query, fetchImpl) {
 
 const clipsHtml = fs.readFileSync(new URL('../clips.html', import.meta.url), 'utf8');
 const liveFixes = fs.readFileSync(new URL('../live-fixes.js', import.meta.url), 'utf8');
-assert.ok(clipsHtml.includes('id="clip-video"'), 'CATCH viewer should include a native video element');
-assert.ok(liveFixes.includes('type=catch-detail'), 'frontend override should request the CATCH playable file');
+const shared = fs.readFileSync(new URL('../api/_shared.js', import.meta.url), 'utf8');
+assert.ok(clipsHtml.includes('id="clip-player"'), 'CATCH viewer should include the SOOP iframe player');
+assert.ok(shared.includes('type=catch'), 'CATCH items should use the official SOOP Catch embed player');
+assert.ok(!liveFixes.includes('type=catch-detail'), 'frontend should not override CATCH with direct CDN playback');
 assert.ok(liveFixes.includes('type=schedule'), 'schedule override should request live Notion schedule data');
 
-console.log('live Notion + paged notices + playable Catch regression test passed');
+console.log('live Notion + paged notices + official Catch player regression test passed');
