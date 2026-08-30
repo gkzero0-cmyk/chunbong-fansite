@@ -71,6 +71,29 @@ function normalizeVideo(renderer) {
   };
 }
 
+function metadataTextParts(renderer) {
+  const rows = renderer?.metadata?.lockupMetadataViewModel?.metadata?.contentMetadataViewModel?.metadataRows || [];
+  return rows.flatMap(row => row?.metadataParts || []).map(part => textValue(part?.text)).filter(Boolean);
+}
+
+function normalizeLockup(renderer) {
+  const id = String(renderer?.contentId || '');
+  if (!/^[A-Za-z0-9_-]{11}$/.test(id)) return null;
+  const metaParts = metadataTextParts(renderer);
+  const thumbModel = renderer?.contentImage?.thumbnailViewModel?.image || renderer?.contentImage?.collectionThumbnailViewModel?.primaryThumbnail?.thumbnailViewModel?.image;
+  return {
+    id,
+    kind: 'videos',
+    title: textValue(renderer?.metadata?.lockupMetadataViewModel?.title) || '춘봉TV 동영상',
+    date: metaParts.find(value => /전$|ago$|\d{4}[.\/-]/i.test(value)) || '',
+    meta: metaParts.find(value => /조회|view/i.test(value)) || metaParts[0] || '',
+    thumb: bestThumb(thumbModel) || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+    link: `https://www.youtube.com/watch?v=${id}`,
+    embed: `https://www.youtube.com/embed/${id}?rel=0`,
+    platform: 'youtube'
+  };
+}
+
 function normalizeShort(renderer) {
   const id = renderer?.onTap?.innertubeCommand?.reelWatchEndpoint?.videoId
     || renderer?.onTap?.innertubeCommand?.watchEndpoint?.videoId
@@ -95,10 +118,10 @@ function collect(root, type) {
   const walk = (node) => {
     if (!node || typeof node !== 'object') return;
     const candidates = type === 'videos'
-      ? [node.videoRenderer, node.gridVideoRenderer]
+      ? [node.videoRenderer, node.gridVideoRenderer, node.lockupViewModel]
       : [node.shortsLockupViewModel, node.reelItemRenderer];
     for (const candidate of candidates) {
-      const item = type === 'videos' ? normalizeVideo(candidate) : normalizeShort(candidate);
+      const item = type === 'videos' ? (candidate === node.lockupViewModel ? normalizeLockup(candidate) : normalizeVideo(candidate)) : normalizeShort(candidate);
       if (item && !seen.has(item.id)) { seen.add(item.id); out.push(item); }
     }
     if (out.length >= 24) return;
