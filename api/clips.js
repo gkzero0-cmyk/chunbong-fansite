@@ -26,8 +26,9 @@ function finalizeCatch(items) {
   const byId = new Map();
   for (const item of items) {
     if (!item?.id || item.kind !== 'catch') continue;
-    const current = byId.get(item.id);
-    if (!current || sortNewest(item, current) < 0) byId.set(item.id, item);
+    const safeItem = { ...item, embed: '' };
+    const current = byId.get(safeItem.id);
+    if (!current || sortNewest(safeItem, current) < 0) byId.set(safeItem.id, safeItem);
   }
   return [...byId.values()].sort(sortNewest).slice(0, 12);
 }
