@@ -188,10 +188,19 @@
       official.innerHTML = '<div class="loading-card">SOOP 공식 일정 안내를 불러오는 중...</div>';
       const payload = await loadNoticeDetail('203015477');
       const detail = payload.item;
-      if (detail && (detail.html || detail.content)) {
+      if (detail && (detail.html || detail.content || detail.embeds?.length)) {
+        const embeds = Array.isArray(detail.embeds) ? detail.embeds : [];
+        const embedHtml = embeds.map((src, index) => `
+          <div class="schedule-official-embed">
+            <iframe class="schedule-official-embed-frame" src="${esc(src)}" title="춘봉 공식 일정 ${index + 1}" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"></iframe>
+            <a class="inline-link" href="${esc(src)}" target="_blank" rel="noreferrer noopener">일정 콘텐츠 새 창에서 보기 ↗</a>
+          </div>`).join('');
+        const placeholderOnly = embeds.length > 0 && /잠시\s*기다리시면\s*보입니다/i.test(String(detail.content || '')) && String(detail.content || '').trim().length < 100;
+        const bodyHtml = placeholderOnly ? '' : (detail.html || `<p>${esc(detail.content).replaceAll('\n','<br>')}</p>`);
         official.innerHTML = `
           <div class="schedule-official-meta"><span class="badge">OFFICIAL</span><strong>${esc(detail.title || '춘봉 방송 일정')}</strong>${detail.date ? `<small>${esc(detail.date)}</small>` : ''}</div>
-          <div class="schedule-official-body notice-content">${detail.html || `<p>${esc(detail.content).replaceAll('\n','<br>')}</p>`}</div>
+          ${embedHtml}
+          ${bodyHtml ? `<div class="schedule-official-body notice-content">${bodyHtml}</div>` : ''}
           <a class="inline-link" href="https://www.sooplive.com/station/chunbongtv/post/203015477" target="_blank" rel="noreferrer">SOOP 일정 원문 보기 ↗</a>`;
       } else {
         official.innerHTML = `<div class="notice-detail-error"><strong>SOOP 공식 일정 글을 불러오지 못했습니다.</strong><p>${esc(payload.reason || '일시적으로 원본 서비스 응답이 없습니다.')}</p><a class="inline-link" href="https://www.sooplive.com/station/chunbongtv/post/203015477" target="_blank" rel="noreferrer">SOOP 일정 원문 보기 ↗</a></div>`;
