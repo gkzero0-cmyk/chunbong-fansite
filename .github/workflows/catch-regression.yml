@@ -32,3 +32,5 @@ jobs:
           node --check tarot.js
       - name: Run Tarot asset regression
         run: node tests/tarot-assets-regression.mjs
+      - name: Run multipage smoke regression
+        run: node tests/multipage-smoke.mjs
