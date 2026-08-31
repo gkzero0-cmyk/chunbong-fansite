@@ -2,7 +2,7 @@ name: Site regression
 
 on:
   push:
-    branches: [main, feat/tarot-hd-ai]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
