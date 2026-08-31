@@ -24,3 +24,6 @@ jobs:
         run: node tests/catch-playback-schedule-removal-regression.mjs
       - name: Run notice single-board regression
         run: node tests/notice-single-board-regression.mjs
+      - name: Inspect live SOOP notice API
+        if: always()
+        run: node tests/live-soop-diagnostic.mjs
