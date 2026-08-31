@@ -2,7 +2,7 @@ name: Site regression
 
 on:
   push:
-    branches: [main]
+    branches: [main, feat/tarot-78-card]
   workflow_dispatch:
 
 jobs:
@@ -24,3 +24,5 @@ jobs:
         run: node tests/catch-playback-schedule-removal-regression.mjs
       - name: Run notice single-board regression
         run: node tests/notice-single-board-regression.mjs
+      - name: Run Tarot asset regression
+        run: node tests/tarot-assets-regression.mjs
