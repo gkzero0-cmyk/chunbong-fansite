@@ -140,16 +140,14 @@ if (typeof document !== 'undefined') {
   }
 
   function applyCardArtwork() {
-    const sheets = window.CHUNBONG_TAROT_SHEETS || [];
     byId('tarot-reading-grid').querySelectorAll('[data-sheet]').forEach(art => {
       const sheet = Number(art.dataset.sheet);
       const slot = Number(art.dataset.slot);
-      const source = sheets[sheet];
-      if (!source) {
+      if (!Number.isInteger(sheet) || sheet < 0 || sheet > 5 || !Number.isInteger(slot)) {
         art.classList.add('is-missing');
         return;
       }
-      art.style.backgroundImage = `url("${source}")`;
+      art.style.backgroundImage = `url("assets/tarot/hd/cards-${sheet}.avif")`;
       art.style.backgroundPosition = `${(slot / 12) * 100}% 0`;
     });
   }
@@ -187,10 +185,8 @@ if (typeof document !== 'undefined') {
   function renderAiReading(reading) {
     const content = byId('tarot-ai-content');
     content.replaceChildren();
-
     appendTextElement(content, 'h3', 'tarot-ai-title', reading.title);
     appendTextElement(content, 'p', 'tarot-ai-overall', reading.overall);
-
     const cardSection = document.createElement('div');
     cardSection.className = 'tarot-ai-cards';
     for (const card of Array.isArray(reading.cards) ? reading.cards : []) {
@@ -201,17 +197,13 @@ if (typeof document !== 'undefined') {
       cardSection.appendChild(article);
     }
     content.appendChild(cardSection);
-
     const advice = document.createElement('div');
     advice.className = 'tarot-ai-advice';
     appendTextElement(advice, 'h4', '', '지금 해볼 수 있는 것');
     const list = document.createElement('ul');
-    for (const item of Array.isArray(reading.advice) ? reading.advice : []) {
-      appendTextElement(list, 'li', '', item);
-    }
+    for (const item of Array.isArray(reading.advice) ? reading.advice : []) appendTextElement(list, 'li', '', item);
     advice.appendChild(list);
     content.appendChild(advice);
-
     appendTextElement(content, 'p', 'tarot-ai-summary', reading.summary);
     content.hidden = false;
   }
@@ -223,7 +215,6 @@ if (typeof document !== 'undefined') {
     button.disabled = true;
     button.textContent = '상담 생성 중...';
     status.textContent = '카드를 읽고 있어요...';
-
     try {
       const response = await fetch('/api/tarot-reading', {
         method: 'POST',
@@ -234,10 +225,8 @@ if (typeof document !== 'undefined') {
       if (!response.ok || !payload.reading) {
         const error = new Error('ai_reading_failed');
         error.status = response.status;
-        error.code = payload.error;
         throw error;
       }
-
       renderAiReading(payload.reading);
       state.aiSucceeded = true;
       status.textContent = 'AI 상담 리딩이 준비됐습니다.';
