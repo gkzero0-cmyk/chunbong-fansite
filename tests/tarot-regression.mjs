@@ -47,4 +47,10 @@ assert.ok(html.includes('과거 · 현재 · 미래'));
 assert.ok(html.includes('상황 · 조언 · 결과'));
 assert.ok(html.includes('타로 결과는 재미와 자기성찰을 위한 참고용입니다.'));
 
-console.log('tarot data, logic and page regression test passed');
+const css = read('styles.css');
+for (const token of [
+  '.tarot-stage', '.tarot-card-back', '.tarot-card-art', '.tarot-reading-grid',
+  '@keyframes tarotShuffle', '@keyframes tarotReveal', '@media (prefers-reduced-motion: reduce)'
+]) assert.ok(css.includes(token), `styles.css should include ${token}`);
+
+console.log('tarot data, logic, page and styling regression test passed');
