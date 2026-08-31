@@ -30,6 +30,8 @@ jobs:
         run: |
           node --check tarot-data.js
           node --check tarot.js
+      - name: Run Tarot AI API regression
+        run: node tests/tarot-ai-api-regression.mjs
       - name: Run Tarot asset regression
         run: node tests/tarot-assets-regression.mjs
       - name: Run Tarot HD asset regression
