@@ -20,8 +20,8 @@ for (const card of data.cards) {
   assert.ok(card.nameKo, `${card.id} must have a Korean name`);
   assert.ok(card.meaningUpright && card.meaningReversed, `${card.id} must have both meanings`);
   assert.ok(card.topicHints.daily && card.topicHints.concern && card.topicHints.love && card.topicHints.money && card.topicHints.game, `${card.id} must support every topic`);
-  assert.ok(Number.isInteger(card.imageSheet) && card.imageSheet >= 0 && card.imageSheet < 6, `${card.id} must map to one of six image sheets`);
-  assert.ok(Number.isInteger(card.imageSlot) && card.imageSlot >= 0 && card.imageSlot < 13, `${card.id} must map to a valid sprite slot`);
+  assert.ok(Number.isInteger(card.imageSheet) && card.imageSheet >= 0 && card.imageSheet < 6, `${card.id} must map to one of six source slots`);
+  assert.ok(Number.isInteger(card.imageSlot) && card.imageSlot >= 0 && card.imageSlot < 13, `${card.id} must map to a valid source slot`);
 }
 
 const deterministic = (() => {
@@ -66,13 +66,15 @@ const script = read('tarot.js');
 assert.ok(script.includes("fetch('/api/tarot-reading'"), 'tarot frontend must call the server-side AI endpoint');
 assert.ok(script.includes('textContent'), 'AI output must be rendered as text, not trusted HTML');
 assert.ok(!script.includes('OPENAI_API_KEY'), 'client code must never contain the OpenAI API key name');
-assert.ok(script.includes('assets/tarot/hd/cards-${sheet}.avif'), 'tarot results must load the original-derived HD sheet for the selected card');
-assert.ok(script.includes('backgroundPosition'), 'tarot renderer must address the selected card inside its HD sheet');
+assert.ok(script.includes('assets/tarot/hd/pair-${String(pair).padStart(2, \'0\')}.avif'), 'tarot results must load the source-derived HD pair for the selected card');
+assert.ok(script.includes("backgroundSize = '200% 100%'"), 'tarot renderer must crop one card from a two-card HD pair');
+assert.ok(script.includes('globalIndex = sheet * 13 + slot'), 'tarot renderer must map all 78 legacy slots into HD pairs');
 
 const css = read('tarot.css');
 for (const token of [
   '.tarot-stage', '.tarot-card-back', '.tarot-card-art', '.tarot-reading-grid', '.tarot-ai-panel', '.tarot-ai-content',
   '@keyframes tarotShuffle', '@keyframes tarotReveal', '@media (prefers-reduced-motion: reduce)'
 ]) assert.ok(css.includes(token), `tarot.css should include ${token}`);
+assert.ok(css.includes('max-width:320px'), 'tarot artwork must not be enlarged beyond its source-derived width');
 
-console.log('tarot data, original HD sheet logic, AI UI, page and styling regression test passed');
+console.log('tarot data, original HD pair logic, AI UI, page and styling regression test passed');
