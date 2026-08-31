@@ -27,49 +27,50 @@ const body = await run({ type: 'notice' }, async url => {
   const value = String(url);
   calls.push(value);
 
+  // Reproduce the unreliable board-scoped response: post 205800319 is leaked
+  // and falsely stamped as if it belonged to 126448625.
   if (value.includes('/board/') && value.includes('board_number=126448625')) {
     return json({ contents: [
-      // Reproduce SOOP leaking post 205800319 into the scoped list while
-      // presenting it as if it belonged to the requested board.
       { title_no: 205800319, board_number: 126448625, title: '8월 29일 수니콘', reg_date: '2026-08-31 18:00:00' },
       { title_no: 62502, board_number: 126448625, title: '625 최신 공지', reg_date: '2026-08-31 17:00:00' },
       { title_no: 62501, board_number: 126448625, title: '625 이전 공지', reg_date: '2026-08-31 16:00:00' }
     ] });
   }
 
-  if (value.includes('/title/205800319')) {
-    return json({ data: { post: { title_no: 205800319, board_number: 126448795 } } });
-  }
-  if (value.includes('/title/62502')) {
-    return json({ data: { post: { title_no: 62502, board_number: 126448625 } } });
-  }
-  if (value.includes('/title/62501')) {
-    return json({ data: { post: { title_no: 62501, board_number: 126448625 } } });
+  // The unscoped station board list carries the real board membership and is
+  // therefore the canonical source used for strict filtering.
+  if (value.includes('/board/') && !value.includes('board_number=126448625')) {
+    return json({ contents: [
+      { title_no: 205800319, board_number: 126448795, title: '8월 29일 수니콘', reg_date: '2026-08-31 18:00:00' },
+      { title_no: 62502, board_number: 126448625, title: '625 최신 공지', reg_date: '2026-08-31 17:00:00' },
+      { title_no: 62501, board_number: 126448625, title: '625 이전 공지', reg_date: '2026-08-31 16:00:00' },
+      { title_no: 79502, board_number: 126448795, title: '795 다른 공지', reg_date: '2026-08-31 15:00:00' }
+    ] });
   }
 
-  if (value.includes('board_number=126448677') || value.includes('board_number=126448795')) {
-    return json({ contents: [] });
-  }
+  // Per-post detail fan-out is intentionally unavailable here. The notice list
+  // must not depend on dozens of detail requests just to determine membership.
+  if (value.includes('/title/')) return json({}, false, 503);
 
   return json({ contents: [] });
 });
 
 assert.ok(
   !calls.some(url => url.includes('board_number=126448677') || url.includes('board_number=126448795')),
-  'notice API must only request board 126448625'
+  'notice API must never request another board directly'
 );
 assert.ok(
-  calls.some(url => url.includes('/title/205800319')),
-  'each scoped notice must be verified against its detail metadata'
+  !calls.some(url => url.includes('/title/')),
+  'notice loading must not fan out to per-post detail requests'
 );
 assert.deepEqual(
   body.items.map(item => item.title),
   ['625 최신 공지', '625 이전 공지'],
-  'post 205800319 from board 126448795 must never appear in the notice menu'
+  'only posts whose canonical metadata says board 126448625 may appear'
 );
 assert.ok(
   body.items.every(item => item.boardNumber === '126448625'),
-  'every notice must be detail-verified as board 126448625'
+  'every notice must have canonical board number 126448625'
 );
 
-console.log('strict single-board notice regression test passed');
+console.log('canonical single-board notice regression test passed');
