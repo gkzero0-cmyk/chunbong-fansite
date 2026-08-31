@@ -12,11 +12,20 @@ function noticeParams(page = 1) {
   });
 }
 
+function normalizeBoardPost(item) {
+  const normalized = normalizePost(item);
+  const bbsNo = item?.bbs_no ?? item?.bbsNo;
+  if (bbsNo !== undefined && bbsNo !== null && bbsNo !== '') {
+    normalized.boardNumber = String(bbsNo);
+  }
+  return normalized;
+}
+
 async function fetchHostPage(host, page) {
   const url = `${host}/api/${SOOP_ID}/board/?${noticeParams(page)}`;
   try {
     return listFrom(await getJson(url))
-      .map(normalizePost)
+      .map(normalizeBoardPost)
       .filter(item => item.boardNumber === BOARD_NUMBER);
   } catch (_) {
     return [];
@@ -57,3 +66,4 @@ module.exports = async function fetchNotice() {
 
 module.exports.dedupeAndSort = dedupeAndSort;
 module.exports.fetchCanonicalPage = fetchCanonicalPage;
+module.exports.normalizeBoardPost = normalizeBoardPost;
