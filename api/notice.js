@@ -1,4 +1,4 @@
-const { SOOP_ID, NOTICE_BOARD_NUMBERS, getJson, listFrom, normalizePost } = require('./_shared');
+const { SOOP_ID, BOARD_NUMBER, getJson, listFrom, normalizePost } = require('./_shared');
 
 const BOARD_HOSTS = ['https://chapi.sooplive.com', 'https://chapi.sooplive.co.kr'];
 
@@ -73,12 +73,13 @@ async function fetchBoard(boardNumber) {
   return [...first, ...second];
 }
 
-async function fetchGeneralFallback(missingBoards) {
-  if (!missingBoards.length) return [];
+async function fetchGeneralFallback(boardNumber) {
   const results = await Promise.all(BOARD_HOSTS.map(async host => {
     const url = `${host}/api/${SOOP_ID}/board/?${noticeParams('', 1)}`;
     try {
-      return listFrom(await getJson(url)).map(normalizePost).filter(item => item.boardNumber && missingBoards.includes(item.boardNumber));
+      return listFrom(await getJson(url))
+        .map(normalizePost)
+        .filter(item => item.boardNumber === boardNumber);
     } catch (_) {
       return [];
     }
@@ -89,7 +90,7 @@ async function fetchGeneralFallback(missingBoards) {
 function dedupeAndSort(items) {
   const byId = new Map();
   for (const item of items) {
-    if (!NOTICE_BOARD_NUMBERS.includes(item.boardNumber)) continue;
+    if (item.boardNumber !== BOARD_NUMBER) continue;
     const key = item.id || `${item.boardNumber}:${item.title}:${item.sortDate || item.date}`;
     const current = byId.get(key);
     if (!current || String(item.sortDate || item.date || '') > String(current.sortDate || current.date || '')) byId.set(key, item);
@@ -102,10 +103,9 @@ function dedupeAndSort(items) {
 }
 
 module.exports = async function fetchNotice() {
-  const boardResults = await Promise.all(NOTICE_BOARD_NUMBERS.map(fetchBoard));
-  const missingBoards = NOTICE_BOARD_NUMBERS.filter((_, index) => !boardResults[index].length);
-  const fallback = await fetchGeneralFallback(missingBoards);
-  return dedupeAndSort([...boardResults.flat(), ...fallback]).slice(0, 12);
+  const boardItems = await fetchBoard(BOARD_NUMBER);
+  const fallback = boardItems.length ? [] : await fetchGeneralFallback(BOARD_NUMBER);
+  return dedupeAndSort([...boardItems, ...fallback]).slice(0, 12);
 };
 
 module.exports.scopeBoard = scopeBoard;
