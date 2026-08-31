@@ -37,20 +37,40 @@ const sample = { card: data.cards[0], orientation: 'upright' };
 assert.ok(tarot.buildCardInterpretation(sample, 'daily', '현재').includes(data.cards[0].nameKo));
 assert.ok(tarot.buildSummary([sample], 'daily', 'single').includes('가능성'));
 
+const aiPayload = tarot.buildAiRequestPayload({
+  question: '질문',
+  topic: 'concern',
+  spreadId: 'single',
+  selected: [{ card: data.cards[0], orientation: 'upright', position: '메시지' }]
+});
+assert.deepEqual(aiPayload, {
+  question: '질문',
+  topic: 'concern',
+  spreadId: 'single',
+  cards: [{ id: data.cards[0].id, orientation: 'upright', position: '메시지' }]
+});
+
 const html = read('tarot.html');
 for (const token of [
   'data-page="tarot"', 'id="tarot-setup"', 'id="tarot-spread-options"', 'id="tarot-question"',
   'id="tarot-deck"', 'id="tarot-results"', 'id="tarot-reading-grid"', 'id="tarot-summary"',
+  'id="tarot-ai-panel"', 'id="tarot-ai-button"', 'id="tarot-ai-status"', 'id="tarot-ai-content"',
   'tarot.css', 'tarot-data.js', 'tarot.js'
 ]) assert.ok(html.includes(token), `tarot.html should include ${token}`);
+assert.ok(html.includes('maxlength="500"'), 'question length should match server validation');
 assert.ok(html.includes('과거 · 현재 · 미래'));
 assert.ok(html.includes('상황 · 조언 · 결과'));
 assert.ok(html.includes('타로 결과는 재미와 자기성찰을 위한 참고용입니다.'));
 
+const script = read('tarot.js');
+assert.ok(script.includes("fetch('/api/tarot-reading'"), 'tarot frontend must call the server-side AI endpoint');
+assert.ok(script.includes('textContent'), 'AI output must be rendered as text, not trusted HTML');
+assert.ok(!script.includes('OPENAI_API_KEY'), 'client code must never contain the OpenAI API key name');
+
 const css = read('tarot.css');
 for (const token of [
-  '.tarot-stage', '.tarot-card-back', '.tarot-card-art', '.tarot-reading-grid',
+  '.tarot-stage', '.tarot-card-back', '.tarot-card-art', '.tarot-reading-grid', '.tarot-ai-panel', '.tarot-ai-content',
   '@keyframes tarotShuffle', '@keyframes tarotReveal', '@media (prefers-reduced-motion: reduce)'
 ]) assert.ok(css.includes(token), `tarot.css should include ${token}`);
 
-console.log('tarot data, logic, page and styling regression test passed');
+console.log('tarot data, logic, AI UI, page and styling regression test passed');
