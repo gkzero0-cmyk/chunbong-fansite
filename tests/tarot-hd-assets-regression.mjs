@@ -26,4 +26,4 @@ for (const [index, asset] of assets.entries()) {
 }
 assert.ok(totalBytes > 250 * 1024, 'HD sheets should contain substantially more detail than the old sprites');
 assert.ok(totalBytes < 5 * 1024 * 1024, 'HD sheets should remain practical for result-time loading');
-console.log('six 2x super-res tarot AVIF sheet regression test passed');
+console.log('six 3x super-res tarot AVIF sheet regression test passed');
