@@ -143,12 +143,13 @@ if (typeof document !== 'undefined') {
     byId('tarot-reading-grid').querySelectorAll('[data-sheet]').forEach(art => {
       const sheet = Number(art.dataset.sheet);
       const slot = Number(art.dataset.slot);
-      if (!Number.isInteger(sheet) || sheet < 0 || sheet > 5 || !Number.isInteger(slot)) {
+      if (!Number.isInteger(sheet) || sheet < 0 || sheet > 5 || !Number.isInteger(slot) || slot < 0 || slot > 12) {
         art.classList.add('is-missing');
         return;
       }
-      art.style.backgroundImage = `url("assets/tarot/hd/cards-${sheet}.avif")`;
-      art.style.backgroundPosition = `${(slot / 12) * 100}% 0`;
+      art.style.backgroundImage = 'url("assets/tarot/hd/cards-atlas.avif")';
+      art.style.backgroundSize = '1300% 600%';
+      art.style.backgroundPosition = `${(slot / 12) * 100}% ${(sheet / 5) * 100}%`;
     });
   }
 
