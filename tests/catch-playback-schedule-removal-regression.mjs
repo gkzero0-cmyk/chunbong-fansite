@@ -19,6 +19,13 @@ assert.doesNotMatch(
   'official schedule section should be removed'
 );
 
+const pageJs = fs.readFileSync(new URL('../page.js', import.meta.url), 'utf8');
+assert.doesNotMatch(
+  pageJs,
+  /schedule-official|공식 일정 안내|SOOP 공식 일정|203015477/,
+  'removed official schedule must not remain as dormant page runtime code'
+);
+
 const liveFixes = fs.readFileSync(new URL('../live-fixes.js', import.meta.url), 'utf8');
 assert.doesNotMatch(
   liveFixes,
