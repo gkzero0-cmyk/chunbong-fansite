@@ -1,91 +1,30 @@
 const { SOOP_ID, BOARD_NUMBER, getJson, listFrom, normalizePost } = require('./_shared');
 
 const BOARD_HOSTS = ['https://chapi.sooplive.com', 'https://chapi.sooplive.co.kr'];
+const MAX_PAGES = 5;
+const NOTICE_LIMIT = 12;
 
-function noticeParams(boardNumber, page = 1) {
-  const params = new URLSearchParams({
+function noticeParams(page = 1) {
+  return new URLSearchParams({
     per_page: '50', start_date: '', end_date: '',
     field: 'title,contents,user_nick,user_id,hashtags', keyword: '',
     type: 'all', order_by: 'reg_date', page: String(page)
   });
-  params.set('board_number', boardNumber ? String(boardNumber) : '');
-  return params;
 }
 
-function explicitBoardNumber(payload, seen = new Set()) {
-  if (!payload || typeof payload !== 'object' || seen.has(payload)) return '';
-  seen.add(payload);
-  if (!Array.isArray(payload)) {
-    for (const key of ['board_number','boardNumber','board_no','boardNo','menu_no','menuNo']) {
-      const value = payload[key];
-      if (value !== undefined && value !== null && value !== '') return String(value);
-    }
-  }
-  for (const child of (Array.isArray(payload) ? payload : Object.values(payload))) {
-    const found = explicitBoardNumber(child, seen);
-    if (found) return found;
-  }
-  return '';
-}
-
-async function verifyScopedItem(item, boardNumber) {
-  if (!item.id) return item.boardNumber === boardNumber ? item : null;
-
-  // SOOP's board-scoped list can leak posts from another board and can even
-  // stamp them with the requested board number. Always inspect detail metadata
-  // when a post id is available; an explicit different board must be rejected.
-  for (const host of BOARD_HOSTS) {
-    try {
-      const detail = await getJson(`${host}/api/${SOOP_ID}/title/${item.id}`);
-      const verified = explicitBoardNumber(detail);
-      if (verified) return verified === boardNumber ? { ...item, boardNumber: verified } : null;
-    } catch (_) {}
-  }
-
-  // If both detail endpoints omit board metadata, retain only items whose list
-  // metadata itself matches the requested board. This preserves valid notices
-  // during partial upstream failures while still rejecting known contradictions.
-  return item.boardNumber === boardNumber ? item : null;
-}
-
-async function scopeBoard(items, boardNumber) {
-  const normalized = items.map(normalizePost);
-  const verified = await Promise.all(normalized.map(item => verifyScopedItem(item, boardNumber)));
-  return verified.filter(Boolean);
-}
-
-async function fetchHostPage(host, boardNumber, page) {
-  const url = `${host}/api/${SOOP_ID}/board/?${noticeParams(boardNumber, page)}`;
+async function fetchHostPage(host, page) {
+  const url = `${host}/api/${SOOP_ID}/board/?${noticeParams(page)}`;
   try {
-    return await scopeBoard(listFrom(await getJson(url)), boardNumber);
+    return listFrom(await getJson(url))
+      .map(normalizePost)
+      .filter(item => item.boardNumber === BOARD_NUMBER);
   } catch (_) {
     return [];
   }
 }
 
-async function fetchBoardPage(boardNumber, page) {
-  const results = await Promise.all(BOARD_HOSTS.map(host => fetchHostPage(host, boardNumber, page)));
-  return results.flat();
-}
-
-async function fetchBoard(boardNumber) {
-  const first = await fetchBoardPage(boardNumber, 1);
-  // Page 2 is queried only when the first page does not already give enough material.
-  const second = first.length >= 20 ? [] : await fetchBoardPage(boardNumber, 2);
-  return [...first, ...second];
-}
-
-async function fetchGeneralFallback(boardNumber) {
-  const results = await Promise.all(BOARD_HOSTS.map(async host => {
-    const url = `${host}/api/${SOOP_ID}/board/?${noticeParams('', 1)}`;
-    try {
-      return listFrom(await getJson(url))
-        .map(normalizePost)
-        .filter(item => item.boardNumber === boardNumber);
-    } catch (_) {
-      return [];
-    }
-  }));
+async function fetchCanonicalPage(page) {
+  const results = await Promise.all(BOARD_HOSTS.map(host => fetchHostPage(host, page)));
   return results.flat();
 }
 
@@ -95,7 +34,9 @@ function dedupeAndSort(items) {
     if (item.boardNumber !== BOARD_NUMBER) continue;
     const key = item.id || `${item.boardNumber}:${item.title}:${item.sortDate || item.date}`;
     const current = byId.get(key);
-    if (!current || String(item.sortDate || item.date || '') > String(current.sortDate || current.date || '')) byId.set(key, item);
+    if (!current || String(item.sortDate || item.date || '') > String(current.sortDate || current.date || '')) {
+      byId.set(key, item);
+    }
   }
   return [...byId.values()].sort((a, b) => {
     const dateCompare = String(b.sortDate || b.date || '').localeCompare(String(a.sortDate || a.date || ''));
@@ -105,10 +46,14 @@ function dedupeAndSort(items) {
 }
 
 module.exports = async function fetchNotice() {
-  const boardItems = await fetchBoard(BOARD_NUMBER);
-  const fallback = boardItems.length ? [] : await fetchGeneralFallback(BOARD_NUMBER);
-  return dedupeAndSort([...boardItems, ...fallback]).slice(0, 12);
+  const collected = [];
+  for (let page = 1; page <= MAX_PAGES; page += 1) {
+    collected.push(...await fetchCanonicalPage(page));
+    const sorted = dedupeAndSort(collected);
+    if (sorted.length >= NOTICE_LIMIT) return sorted.slice(0, NOTICE_LIMIT);
+  }
+  return dedupeAndSort(collected).slice(0, NOTICE_LIMIT);
 };
 
-module.exports.scopeBoard = scopeBoard;
 module.exports.dedupeAndSort = dedupeAndSort;
+module.exports.fetchCanonicalPage = fetchCanonicalPage;
