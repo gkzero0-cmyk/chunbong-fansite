@@ -27,50 +27,34 @@ const body = await run({ type: 'notice' }, async url => {
   const value = String(url);
   calls.push(value);
 
-  // Reproduce the unreliable board-scoped response: post 205800319 is leaked
-  // and falsely stamped as if it belonged to 126448625.
-  if (value.includes('/board/') && value.includes('board_number=126448625')) {
-    return json({ contents: [
-      { title_no: 205800319, board_number: 126448625, title: '8월 29일 수니콘', reg_date: '2026-08-31 18:00:00' },
-      { title_no: 62502, board_number: 126448625, title: '625 최신 공지', reg_date: '2026-08-31 17:00:00' },
-      { title_no: 62501, board_number: 126448625, title: '625 이전 공지', reg_date: '2026-08-31 16:00:00' }
+  if (value.includes('/board/')) {
+    // This mirrors the live SOOP station board response: the canonical board
+    // identifier is `bbs_no`, not `board_number`.
+    return json({ data: [
+      { title_no: 205830745, bbs_no: 126448625, title_name: '8. 31 드릴말씀.', reg_date: '2026-08-31 17:27:31' },
+      { title_no: 205822721, bbs_no: 126448625, title_name: '625 정상 공지', reg_date: '2026-08-31 12:00:00' },
+      { title_no: 205800319, bbs_no: 126448795, title_name: '8월 29일 수니콘', reg_date: '2026-08-31 03:31:58' },
+      { title_no: 205750269, bbs_no: 126448677, title_name: '다른 게시판 글', reg_date: '2026-08-30 18:00:00' }
     ] });
   }
 
-  // The unscoped station board list carries the real board membership and is
-  // therefore the canonical source used for strict filtering.
-  if (value.includes('/board/') && !value.includes('board_number=126448625')) {
-    return json({ contents: [
-      { title_no: 205800319, board_number: 126448795, title: '8월 29일 수니콘', reg_date: '2026-08-31 18:00:00' },
-      { title_no: 62502, board_number: 126448625, title: '625 최신 공지', reg_date: '2026-08-31 17:00:00' },
-      { title_no: 62501, board_number: 126448625, title: '625 이전 공지', reg_date: '2026-08-31 16:00:00' },
-      { title_no: 79502, board_number: 126448795, title: '795 다른 공지', reg_date: '2026-08-31 15:00:00' }
-    ] });
-  }
-
-  // Per-post detail fan-out is intentionally unavailable here. The notice list
-  // must not depend on dozens of detail requests just to determine membership.
   if (value.includes('/title/')) return json({}, false, 503);
-
-  return json({ contents: [] });
+  return json({ data: [] });
 });
 
-assert.ok(
-  !calls.some(url => url.includes('board_number=126448677') || url.includes('board_number=126448795')),
-  'notice API must never request another board directly'
-);
-assert.ok(
-  !calls.some(url => url.includes('/title/')),
-  'notice loading must not fan out to per-post detail requests'
-);
+assert.ok(!calls.some(url => url.includes('/title/')), 'notice loading must not fan out to per-post detail requests');
 assert.deepEqual(
-  body.items.map(item => item.title),
-  ['625 최신 공지', '625 이전 공지'],
-  'only posts whose canonical metadata says board 126448625 may appear'
+  body.items.map(item => item.id),
+  ['205830745', '205822721'],
+  'only live SOOP rows whose bbs_no is 126448625 may appear'
 );
 assert.ok(
   body.items.every(item => item.boardNumber === '126448625'),
-  'every notice must have canonical board number 126448625'
+  'bbs_no must normalize to boardNumber 126448625'
+);
+assert.ok(
+  !body.items.some(item => item.id === '205800319'),
+  'post 205800319 from bbs_no 126448795 must be excluded'
 );
 
-console.log('canonical single-board notice regression test passed');
+console.log('live bbs_no single-board notice regression test passed');
