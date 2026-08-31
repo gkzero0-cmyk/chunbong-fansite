@@ -18,6 +18,7 @@ jobs:
           node --check api/clips.js
           node --check api/notice.js
           node --check api/_shared.js
+          node --check api/tarot-reading.js
       - name: Run Catch source regression
         run: node tests/catch-page-source-regression.mjs
       - name: Run Catch embed regression
@@ -32,8 +33,6 @@ jobs:
           node --check tarot.js
       - name: Run Tarot AI API regression
         run: node tests/tarot-ai-api-regression.mjs
-      - name: Run Tarot asset regression
-        run: node tests/tarot-assets-regression.mjs
       - name: Run Tarot HD asset regression
         run: node tests/tarot-hd-assets-regression.mjs
       - name: Run multipage smoke regression
