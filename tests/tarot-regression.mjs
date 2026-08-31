@@ -20,8 +20,8 @@ for (const card of data.cards) {
   assert.ok(card.nameKo, `${card.id} must have a Korean name`);
   assert.ok(card.meaningUpright && card.meaningReversed, `${card.id} must have both meanings`);
   assert.ok(card.topicHints.daily && card.topicHints.concern && card.topicHints.love && card.topicHints.money && card.topicHints.game, `${card.id} must support every topic`);
-  assert.ok(Number.isInteger(card.imageSheet) && card.imageSheet >= 0 && card.imageSheet < 6, `${card.id} must map to one of six atlas rows`);
-  assert.ok(Number.isInteger(card.imageSlot) && card.imageSlot >= 0 && card.imageSlot < 13, `${card.id} must map to a valid atlas column`);
+  assert.ok(Number.isInteger(card.imageSheet) && card.imageSheet >= 0 && card.imageSheet < 6, `${card.id} must map to one of six image sheets`);
+  assert.ok(Number.isInteger(card.imageSlot) && card.imageSlot >= 0 && card.imageSlot < 13, `${card.id} must map to a valid sprite slot`);
 }
 
 const deterministic = (() => {
@@ -66,8 +66,8 @@ const script = read('tarot.js');
 assert.ok(script.includes("fetch('/api/tarot-reading'"), 'tarot frontend must call the server-side AI endpoint');
 assert.ok(script.includes('textContent'), 'AI output must be rendered as text, not trusted HTML');
 assert.ok(!script.includes('OPENAI_API_KEY'), 'client code must never contain the OpenAI API key name');
-assert.ok(script.includes('assets/tarot/hd/cards-atlas.avif'), 'tarot results must use the original-derived HD atlas');
-assert.ok(script.includes("backgroundSize = '1300% 600%'"), 'tarot renderer must address all 13 columns and 6 atlas rows');
+assert.ok(script.includes('assets/tarot/hd/cards-${sheet}.avif'), 'tarot results must load the original-derived HD sheet for the selected card');
+assert.ok(script.includes('backgroundPosition'), 'tarot renderer must address the selected card inside its HD sheet');
 
 const css = read('tarot.css');
 for (const token of [
@@ -75,4 +75,4 @@ for (const token of [
   '@keyframes tarotShuffle', '@keyframes tarotReveal', '@media (prefers-reduced-motion: reduce)'
 ]) assert.ok(css.includes(token), `tarot.css should include ${token}`);
 
-console.log('tarot data, HD atlas logic, AI UI, page and styling regression test passed');
+console.log('tarot data, original HD sheet logic, AI UI, page and styling regression test passed');
