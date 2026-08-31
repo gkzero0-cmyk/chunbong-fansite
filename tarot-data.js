@@ -70,9 +70,9 @@ const CHUNBONG_TAROT_DATA = (() => {
     game: `방송·게임에서는 ${focus}을 기준으로 페이스와 판단을 조절해 보세요.`
   });
 
-  const withImageSlot = (card, index) => ({ ...card, imageSheet: Math.floor(index / 13), imageSlot: index % 13 });
+  const withImagePath = card => ({ ...card, imagePath: `assets/tarot/hd/${card.id}.webp` });
 
-  const majorCards = majorSeeds.map(([nameKo, up, rev], number) => withImageSlot({
+  const majorCards = majorSeeds.map(([nameKo, up, rev], number) => withImagePath({
     id: `major-${String(number).padStart(2, '0')}`,
     arcana: 'major', number, rank: '', suit: '', nameKo,
     keywordsUpright: up,
@@ -80,13 +80,12 @@ const CHUNBONG_TAROT_DATA = (() => {
     meaningUpright: `${nameKo} 정방향은 ${up}을 중심으로 상황을 바라보라는 메시지입니다.`,
     meaningReversed: `${nameKo} 역방향은 ${rev}을 점검하며 속도를 조절하라는 메시지입니다.`,
     topicHints: topicHints('큰 흐름과 선택')
-  }, number));
+  }));
 
   const minorCards = [];
   for (const suit of suitSeeds) {
     for (const rank of rankSeeds) {
-      const index = 22 + minorCards.length;
-      minorCards.push(withImageSlot({
+      minorCards.push(withImagePath({
         id: `${suit.id}-${rank.id}`,
         arcana: 'minor', number: null, rank: rank.ko, suit: suit.ko,
         nameKo: `${suit.ko} ${rank.ko}`,
@@ -95,7 +94,7 @@ const CHUNBONG_TAROT_DATA = (() => {
         meaningUpright: `${rank.up} ${suit.up}.`,
         meaningReversed: `${rank.rev} ${suit.rev}.`,
         topicHints: topicHints(suit.focus)
-      }, index));
+      }));
     }
   }
 
