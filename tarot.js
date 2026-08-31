@@ -48,12 +48,40 @@ function buildSummary(selections, topicId, spreadId) {
   return `${topic} · ${spread} 리딩입니다. ${scaleText} ${balanceText} 마지막 카드인 ${finalCard.nameKo}의 메시지를 결론이 아니라 다음 선택을 점검하는 기준으로 활용해 보세요. 결과는 하나의 가능성으로 참고하는 것이 좋습니다.`;
 }
 
-const TAROT_API = { random01, shuffleDeck, orientationFromRandom, buildCardInterpretation, buildSummary };
+function buildAiRequestPayload(readingState) {
+  return {
+    question: readingState.question || '',
+    topic: readingState.topic,
+    spreadId: readingState.spreadId,
+    cards: (readingState.selected || []).map(({ card, orientation, position }) => ({
+      id: card.id,
+      orientation,
+      position
+    }))
+  };
+}
+
+const TAROT_API = {
+  random01,
+  shuffleDeck,
+  orientationFromRandom,
+  buildCardInterpretation,
+  buildSummary,
+  buildAiRequestPayload
+};
 if (typeof window !== 'undefined') window.CHUNBONG_TAROT = TAROT_API;
 if (typeof module !== 'undefined' && module.exports) module.exports = TAROT_API;
 
 if (typeof document !== 'undefined') {
-  const state = { topic: 'daily', count: 1, spreadId: 'single', question: '', deck: [], selected: [] };
+  const state = {
+    topic: 'daily',
+    count: 1,
+    spreadId: 'single',
+    question: '',
+    deck: [],
+    selected: [],
+    aiSucceeded: false
+  };
   const byId = id => document.getElementById(id);
   const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
@@ -81,13 +109,29 @@ if (typeof document !== 'undefined') {
     byId('tarot-selection-status').textContent = `${state.count}장 중 0장을 선택했습니다.`;
   }
 
+  function resetAiPanel() {
+    state.aiSucceeded = false;
+    const button = byId('tarot-ai-button');
+    const status = byId('tarot-ai-status');
+    const content = byId('tarot-ai-content');
+    if (!button || !status || !content) return;
+    button.hidden = false;
+    button.disabled = false;
+    button.textContent = 'AI 타로 상담 받기';
+    status.textContent = '뽑은 카드와 질문을 바탕으로 조금 더 자세한 상담형 리딩을 받을 수 있습니다.';
+    content.hidden = true;
+    content.replaceChildren();
+  }
+
   function startReading() {
     Object.assign(state, readSetup());
     state.deck = shuffleDeck(DATA.cards);
     state.selected = [];
+    state.aiSucceeded = false;
     byId('tarot-results').hidden = true;
     byId('tarot-reading-grid').innerHTML = '';
     byId('tarot-summary').innerHTML = '';
+    resetAiPanel();
     byId('tarot-deck').classList.remove('is-shuffling');
     void byId('tarot-deck').offsetWidth;
     byId('tarot-deck').classList.add('is-shuffling');
@@ -127,8 +171,84 @@ if (typeof document !== 'undefined') {
       : '';
     byId('tarot-summary').innerHTML = `<h2>전체 리딩</h2>${question}<p>${escapeHtml(buildSummary(state.selected, state.topic, state.spreadId))}</p>`;
     applyCardArtwork();
+    resetAiPanel();
     byId('tarot-results').hidden = false;
     scrollToElement(byId('tarot-results'));
+  }
+
+  function appendTextElement(parent, tag, className, text) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    element.textContent = String(text || '');
+    parent.appendChild(element);
+    return element;
+  }
+
+  function renderAiReading(reading) {
+    const content = byId('tarot-ai-content');
+    content.replaceChildren();
+
+    appendTextElement(content, 'h3', 'tarot-ai-title', reading.title);
+    appendTextElement(content, 'p', 'tarot-ai-overall', reading.overall);
+
+    const cardSection = document.createElement('div');
+    cardSection.className = 'tarot-ai-cards';
+    for (const card of Array.isArray(reading.cards) ? reading.cards : []) {
+      const article = document.createElement('article');
+      article.className = 'tarot-ai-card-reading';
+      appendTextElement(article, 'span', 'tarot-ai-card-position', card.position);
+      appendTextElement(article, 'p', '', card.reading);
+      cardSection.appendChild(article);
+    }
+    content.appendChild(cardSection);
+
+    const advice = document.createElement('div');
+    advice.className = 'tarot-ai-advice';
+    appendTextElement(advice, 'h4', '', '지금 해볼 수 있는 것');
+    const list = document.createElement('ul');
+    for (const item of Array.isArray(reading.advice) ? reading.advice : []) {
+      appendTextElement(list, 'li', '', item);
+    }
+    advice.appendChild(list);
+    content.appendChild(advice);
+
+    appendTextElement(content, 'p', 'tarot-ai-summary', reading.summary);
+    content.hidden = false;
+  }
+
+  async function requestAiReading() {
+    if (state.aiSucceeded || state.selected.length !== state.count) return;
+    const button = byId('tarot-ai-button');
+    const status = byId('tarot-ai-status');
+    button.disabled = true;
+    button.textContent = '상담 생성 중...';
+    status.textContent = '카드를 읽고 있어요...';
+
+    try {
+      const response = await fetch('/api/tarot-reading', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(buildAiRequestPayload(state))
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.reading) {
+        const error = new Error('ai_reading_failed');
+        error.status = response.status;
+        error.code = payload.error;
+        throw error;
+      }
+
+      renderAiReading(payload.reading);
+      state.aiSucceeded = true;
+      status.textContent = 'AI 상담 리딩이 준비됐습니다.';
+      button.hidden = true;
+    } catch (error) {
+      status.textContent = error.status === 503
+        ? 'AI 상담 기능의 서버 설정을 준비 중입니다. 기본 해석은 그대로 이용할 수 있습니다.'
+        : 'AI 상담을 불러오지 못했습니다. 기본 해석은 그대로 이용할 수 있습니다.';
+      button.textContent = '다시 시도';
+      button.disabled = false;
+    }
   }
 
   function selectCard(button) {
@@ -147,8 +267,10 @@ if (typeof document !== 'undefined') {
   function resetReading() {
     state.deck = [];
     state.selected = [];
+    state.aiSucceeded = false;
     byId('tarot-deck').innerHTML = '';
     byId('tarot-results').hidden = true;
+    resetAiPanel();
     byId('tarot-selection-status').textContent = '주제와 카드 수를 선택한 뒤 카드를 섞어 주세요.';
     scrollToElement(byId('tarot-setup'));
   }
@@ -166,6 +288,7 @@ if (typeof document !== 'undefined') {
       const button = event.target.closest('[data-card-index]');
       if (button) selectCard(button);
     });
+    byId('tarot-ai-button').addEventListener('click', requestAiReading);
     byId('tarot-redraw').addEventListener('click', startReading);
     byId('tarot-reset').addEventListener('click', resetReading);
   }
