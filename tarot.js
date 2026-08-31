@@ -147,9 +147,12 @@ if (typeof document !== 'undefined') {
         art.classList.add('is-missing');
         return;
       }
-      art.style.backgroundImage = `url("assets/tarot/hd/cards-${sheet}.avif")`;
-      art.style.backgroundSize = '1300% 100%';
-      art.style.backgroundPosition = `${(slot / 12) * 100}% 0`;
+      const globalIndex = sheet * 13 + slot;
+      const pair = Math.floor(globalIndex / 2);
+      const pairSlot = globalIndex % 2;
+      art.style.backgroundImage = `url("assets/tarot/hd/pair-${String(pair).padStart(2, '0')}.avif")`;
+      art.style.backgroundSize = '200% 100%';
+      art.style.backgroundPosition = pairSlot === 0 ? '0% 0' : '100% 0';
     });
   }
 
