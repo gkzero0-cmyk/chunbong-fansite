@@ -1,42 +1,39 @@
 import fs from 'node:fs';
+import vm from 'node:vm';
 import assert from 'node:assert/strict';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const data = require('../tarot-data.js');
 const root = new URL('../', import.meta.url);
+const assets = Array.from({ length: 6 }, (_, index) => new URL(`assets/tarot/cards-${index}.js`, root));
 
-function readWebpSize(bytes) {
-  assert.equal(bytes.subarray(0, 4).toString('ascii'), 'RIFF');
-  assert.equal(bytes.subarray(8, 12).toString('ascii'), 'WEBP');
-  const type = bytes.subarray(12, 16).toString('ascii');
-  if (type === 'VP8X') {
-    const width = 1 + bytes[24] + (bytes[25] << 8) + (bytes[26] << 16);
-    const height = 1 + bytes[27] + (bytes[28] << 8) + (bytes[29] << 16);
-    return { width, height };
-  }
-  if (type === 'VP8 ') {
-    const payload = 20;
-    assert.equal(bytes.subarray(payload + 3, payload + 6).toString('hex'), '9d012a');
-    return {
-      width: bytes.readUInt16LE(payload + 6) & 0x3fff,
-      height: bytes.readUInt16LE(payload + 8) & 0x3fff
-    };
-  }
-  throw new Error(`unsupported WebP chunk ${type}`);
+function readAvifSize(bytes) {
+  assert.equal(bytes.subarray(4, 12).toString('ascii'), 'ftypavif', 'asset must be AVIF');
+  const offset = bytes.indexOf(Buffer.from('ispe'));
+  assert.ok(offset > 0, 'AVIF must contain ispe dimensions');
+  return {
+    width: bytes.readUInt32BE(offset + 8),
+    height: bytes.readUInt32BE(offset + 12)
+  };
 }
 
-assert.equal(data.cards.length, 78);
-for (const card of data.cards) {
-  assert.ok(card.imagePath, `${card.id} should expose imagePath`);
-  const path = new URL(card.imagePath, root);
-  assert.ok(fs.existsSync(path), `${card.imagePath} should exist`);
-  const bytes = fs.readFileSync(path);
-  assert.ok(bytes.length > 40 * 1024, `${card.id} should contain high-detail artwork`);
-  const size = readWebpSize(bytes);
-  assert.ok(size.width >= 1000 && size.width <= 1024, `${card.id} width should stay near source resolution`);
-  assert.ok(size.height >= 1400, `${card.id} height should preserve card detail`);
+const context = { window: {} };
+vm.createContext(context);
+for (const asset of assets) {
+  assert.ok(fs.existsSync(asset), `${asset.pathname} should exist`);
+  vm.runInContext(fs.readFileSync(asset, 'utf8'), context);
 }
 
-assert.equal(new Set(data.cards.map(card => card.imagePath)).size, 78, 'all HD card paths must be unique');
-console.log('78 HD tarot WebP assets regression test passed');
+const sheets = context.window.CHUNBONG_TAROT_SHEETS;
+assert.equal(sheets.length, 6, 'six HD tarot sheets must load');
+let totalBytes = 0;
+for (const [index, source] of sheets.entries()) {
+  assert.match(source, /^data:image\/avif;base64,/, `sheet ${index} must be an AVIF data URI`);
+  const bytes = Buffer.from(source.split(',')[1], 'base64');
+  totalBytes += bytes.length;
+  assert.ok(bytes.length > 140 * 1024, `sheet ${index} should contain HD card detail`);
+  const size = readAvifSize(bytes);
+  assert.equal(size.width, 512 * 13, `sheet ${index} should contain thirteen 512px-wide cards`);
+  assert.equal(size.height, 768, `sheet ${index} should preserve 2:3 card height`);
+}
+assert.ok(totalBytes > 850 * 1024, 'HD sheets should contain substantially more detail than the old sprites');
+assert.ok(totalBytes < 2 * 1024 * 1024, 'HD sheets should remain practical for a static fan site');
+console.log('HD AVIF tarot sheet regression test passed');
