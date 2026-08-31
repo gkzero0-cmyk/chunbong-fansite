@@ -19,11 +19,11 @@ for (const [index, asset] of assets.entries()) {
   assert.ok(fs.existsSync(asset), `${asset.pathname} should exist`);
   const bytes = fs.readFileSync(asset);
   totalBytes += bytes.length;
-  assert.ok(bytes.length > 35 * 1024, `sheet ${index} should contain high-detail artwork`);
+  assert.ok(bytes.length > 120 * 1024, `sheet ${index} should preserve original-card detail`);
   const size = readAvifSize(bytes);
-  assert.equal(size.width, 384 * 13, `sheet ${index} should contain thirteen 384px-wide cards`);
-  assert.equal(size.height, 576, `sheet ${index} should preserve 2:3 card height`);
+  assert.equal(size.width, 768 * 13, `sheet ${index} should contain thirteen 768px-wide original-derived cards`);
+  assert.equal(size.height, 1152, `sheet ${index} should contain 1152px-high original-derived cards`);
 }
-assert.ok(totalBytes > 250 * 1024, 'HD sheets should contain substantially more detail than the old sprites');
-assert.ok(totalBytes < 5 * 1024 * 1024, 'HD sheets should remain practical for result-time loading');
-console.log('six 3x super-res tarot AVIF sheet regression test passed');
+assert.ok(totalBytes > 900 * 1024, 'original-derived HD sheets should contain substantially more source detail');
+assert.ok(totalBytes < 18 * 1024 * 1024, 'HD sheets should remain practical for result-time loading');
+console.log('six original-derived 768x1152 tarot AVIF sheet regression test passed');
