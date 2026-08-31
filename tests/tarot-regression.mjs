@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const root = new URL('../', import.meta.url);
-const read = name => fs.readFileSync(new URL(name, root), 'utf8');
+const read = (name) => fs.readFileSync(new URL(name, root), 'utf8');
 
 const data = require('../tarot-data.js');
 const tarot = require('../tarot.js');
@@ -20,9 +20,9 @@ for (const card of data.cards) {
   assert.ok(card.nameKo, `${card.id} must have a Korean name`);
   assert.ok(card.meaningUpright && card.meaningReversed, `${card.id} must have both meanings`);
   assert.ok(card.topicHints.daily && card.topicHints.concern && card.topicHints.love && card.topicHints.money && card.topicHints.game, `${card.id} must support every topic`);
-  assert.ok(Number.isInteger(card.imageSheet) && card.imageSheet >= 0 && card.imageSheet < 6, `${card.id} must map to one of six image sheets`);
-  assert.ok(Number.isInteger(card.imageSlot) && card.imageSlot >= 0 && card.imageSlot < 13, `${card.id} must map to a valid sprite slot`);
+  assert.equal(card.imagePath, `assets/tarot/hd/${card.id}.webp`, `${card.id} must use its individual HD artwork`);
 }
+assert.equal(new Set(data.cards.map(card => card.imagePath)).size, 78, 'all 78 cards must have unique HD artwork paths');
 
 const deterministic = (() => {
   const values = [0.99, 0.01, 0.75, 0.25, 0.6, 0.4];
