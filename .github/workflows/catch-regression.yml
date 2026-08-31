@@ -2,7 +2,7 @@ name: Site regression
 
 on:
   push:
-    branches: [main]
+    branches: [main, fix/finish-catch-schedule]
   workflow_dispatch:
 
 jobs:
