@@ -147,9 +147,9 @@ if (typeof document !== 'undefined') {
         art.classList.add('is-missing');
         return;
       }
-      art.style.backgroundImage = 'url("assets/tarot/hd/cards-atlas.avif")';
-      art.style.backgroundSize = '1300% 600%';
-      art.style.backgroundPosition = `${(slot / 12) * 100}% ${(sheet / 5) * 100}%`;
+      art.style.backgroundImage = `url("assets/tarot/hd/cards-${sheet}.avif")`;
+      art.style.backgroundSize = '1300% 100%';
+      art.style.backgroundPosition = `${(slot / 12) * 100}% 0`;
     });
   }
 
