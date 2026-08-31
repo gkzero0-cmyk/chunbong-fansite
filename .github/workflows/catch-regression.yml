@@ -26,3 +26,9 @@ jobs:
         run: node tests/notice-single-board-regression.mjs
       - name: Run Tarot asset regression
         run: node tests/tarot-assets-regression.mjs
+      - name: Check Tarot syntax
+        run: |
+          node --check tarot-data.js
+          node --check tarot.js
+      - name: Run Tarot feature regression
+        run: node tests/tarot-regression.mjs
