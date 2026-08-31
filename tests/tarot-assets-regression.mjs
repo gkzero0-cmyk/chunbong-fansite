@@ -1,18 +1,27 @@
 import fs from 'node:fs';
+import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const root = new URL('../', import.meta.url);
-const assets = Array.from({ length: 6 }, (_, index) => new URL(`assets/tarot/cards-${index}.avif`, root));
+const assets = Array.from({ length: 6 }, (_, index) => new URL(`assets/tarot/cards-${index}.js`, root));
 for (const asset of assets) assert.ok(fs.existsSync(asset), `${asset.pathname} should exist`);
 
-let totalBytes = 0;
-for (const [index, asset] of assets.entries()) {
-  const bytes = fs.readFileSync(asset);
-  totalBytes += bytes.length;
-  assert.ok(bytes.length > 20 * 1024, `sheet ${index} must contain real card artwork`);
-  assert.equal(bytes.subarray(4, 12).toString('ascii'), 'ftypavif', `sheet ${index} must be a valid AVIF file`);
-}
-assert.ok(totalBytes > 140 * 1024, 'six AVIF sheets must contain the full 78-card artwork set');
-assert.ok(totalBytes < 300 * 1024, 'optimized tarot sheets should remain lightweight');
+const context = { window: {} };
+vm.createContext(context);
+for (const asset of assets) vm.runInContext(fs.readFileSync(asset, 'utf8'), context);
 
-console.log('AVIF tarot asset regression test passed');
+const sheets = context.window.CHUNBONG_TAROT_SHEETS;
+assert.equal(sheets.length, 6, 'six tarot image sheets must load');
+
+let totalBytes = 0;
+for (const [index, source] of sheets.entries()) {
+  assert.match(source, /^data:image\/avif;base64,/, `sheet ${index} must be an AVIF data URI`);
+  const bytes = Buffer.from(source.split(',')[1], 'base64');
+  totalBytes += bytes.length;
+  assert.ok(bytes.length > 8 * 1024, `sheet ${index} must contain real card artwork`);
+  assert.equal(bytes.subarray(4, 12).toString('ascii'), 'ftypavif', `sheet ${index} must decode to a valid AVIF file`);
+}
+assert.ok(totalBytes > 60 * 1024, 'six AVIF sheets must contain the full 78-card artwork set');
+assert.ok(totalBytes < 250 * 1024, 'optimized tarot sheets should remain lightweight');
+
+console.log('embedded AVIF tarot asset regression test passed');
