@@ -1,0 +1,100 @@
+name: Generate Tarot HD Assets
+
+on:
+  push:
+    branches: [feat/tarot-hd-ai]
+    paths:
+      - '.github/workflows/generate-tarot-hd.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  generate-hd-assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/tarot-hd-ai
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install super-resolution runtime
+        run: |
+          python -m pip install --disable-pip-version-check opencv-contrib-python-headless==4.11.0.86 numpy
+          ffmpeg -version | head -1
+          curl -L --fail --retry 3 --retry-delay 2 \
+            -o /tmp/EDSR_x3.pb \
+            https://raw.githubusercontent.com/Saafke/EDSR_Tensorflow/master/models/EDSR_x3.pb
+      - name: Generate 384x576 tarot artwork
+        run: |
+          python - <<'PY'
+          import base64
+          import re
+          import subprocess
+          from pathlib import Path
+
+          import cv2
+          import numpy as np
+
+          root = Path('.')
+          output_dir = root / 'assets' / 'tarot' / 'hd'
+          output_dir.mkdir(parents=True, exist_ok=True)
+
+          sr = cv2.dnn_superres.DnnSuperResImpl_create()
+          sr.readModel('/tmp/EDSR_x3.pb')
+          sr.setModel('edsr', 3)
+
+          for sheet_index in range(6):
+              source_js = (root / 'assets' / 'tarot' / f'cards-{sheet_index}.js').read_text()
+              match = re.search(r'data:image/avif;base64,([^\"\']+)', source_js)
+              if not match:
+                  raise RuntimeError(f'embedded AVIF missing from cards-{sheet_index}.js')
+
+              source_avif = Path(f'/tmp/tarot-source-{sheet_index}.avif')
+              source_png = Path(f'/tmp/tarot-source-{sheet_index}.png')
+              hd_png = Path(f'/tmp/tarot-hd-{sheet_index}.png')
+              source_avif.write_bytes(base64.b64decode(match.group(1)))
+
+              subprocess.run([
+                  'ffmpeg', '-y', '-loglevel', 'error', '-i', str(source_avif),
+                  '-frames:v', '1', str(source_png)
+              ], check=True)
+
+              image = cv2.imread(str(source_png), cv2.IMREAD_COLOR)
+              if image is None:
+                  raise RuntimeError(f'cannot decode source sheet {sheet_index}')
+              height, width = image.shape[:2]
+              if (width, height) != (128 * 13, 192):
+                  raise RuntimeError(f'unexpected source size for sheet {sheet_index}: {width}x{height}')
+
+              cards = []
+              for slot in range(13):
+                  card = image[:, slot * 128:(slot + 1) * 128]
+                  upscaled = sr.upsample(card)
+                  if upscaled.shape[:2] != (576, 384):
+                      raise RuntimeError(f'bad super-res size in sheet {sheet_index}, slot {slot}')
+                  cards.append(upscaled)
+
+              hd_sheet = np.hstack(cards)
+              cv2.imwrite(str(hd_png), hd_sheet, [cv2.IMWRITE_PNG_COMPRESSION, 3])
+              target = output_dir / f'cards-{sheet_index}.avif'
+              subprocess.run([
+                  'ffmpeg', '-y', '-loglevel', 'error', '-i', str(hd_png),
+                  '-frames:v', '1', '-c:v', 'libaom-av1', '-crf', '28',
+                  '-still-picture', '1', '-pix_fmt', 'yuv420p', str(target)
+              ], check=True)
+              print(target, target.stat().st_size)
+          PY
+      - name: Verify generated HD assets
+        run: node tests/tarot-hd-assets-regression.mjs
+      - name: Commit generated assets
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/tarot/hd/cards-*.avif
+          git diff --cached --quiet && exit 0
+          git commit -m 'feat: add 384px super-res tarot artwork'
+          git push origin HEAD:feat/tarot-hd-ai
