@@ -29,13 +29,11 @@ function explicitBoardNumber(payload, seen = new Set()) {
 }
 
 async function verifyScopedItem(item, boardNumber) {
-  if (item.boardNumber) return item.boardNumber === boardNumber ? item : null;
-  if (!item.id) return { ...item, boardNumber };
+  if (!item.id) return item.boardNumber === boardNumber ? item : null;
 
-  // The list endpoint itself is board-scoped. Use the detail endpoint only as
-  // a contradiction check: an explicit different board means the list result
-  // leaked and must be dropped. If detail is unavailable or omits board
-  // metadata, keep the item in the scope that was explicitly requested.
+  // SOOP's board-scoped list can leak posts from another board and can even
+  // stamp them with the requested board number. Always inspect detail metadata
+  // when a post id is available; an explicit different board must be rejected.
   for (const host of BOARD_HOSTS) {
     try {
       const detail = await getJson(`${host}/api/${SOOP_ID}/title/${item.id}`);
@@ -43,7 +41,11 @@ async function verifyScopedItem(item, boardNumber) {
       if (verified) return verified === boardNumber ? { ...item, boardNumber: verified } : null;
     } catch (_) {}
   }
-  return { ...item, boardNumber };
+
+  // If both detail endpoints omit board metadata, retain only items whose list
+  // metadata itself matches the requested board. This preserves valid notices
+  // during partial upstream failures while still rejecting known contradictions.
+  return item.boardNumber === boardNumber ? item : null;
 }
 
 async function scopeBoard(items, boardNumber) {
