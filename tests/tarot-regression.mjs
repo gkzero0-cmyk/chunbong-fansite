@@ -41,16 +41,16 @@ const html = read('tarot.html');
 for (const token of [
   'data-page="tarot"', 'id="tarot-setup"', 'id="tarot-spread-options"', 'id="tarot-question"',
   'id="tarot-deck"', 'id="tarot-results"', 'id="tarot-reading-grid"', 'id="tarot-summary"',
-  'tarot-data.js', 'tarot.js'
+  'tarot.css', 'tarot-data.js', 'tarot.js'
 ]) assert.ok(html.includes(token), `tarot.html should include ${token}`);
 assert.ok(html.includes('과거 · 현재 · 미래'));
 assert.ok(html.includes('상황 · 조언 · 결과'));
 assert.ok(html.includes('타로 결과는 재미와 자기성찰을 위한 참고용입니다.'));
 
-const css = read('styles.css');
+const css = read('tarot.css');
 for (const token of [
   '.tarot-stage', '.tarot-card-back', '.tarot-card-art', '.tarot-reading-grid',
   '@keyframes tarotShuffle', '@keyframes tarotReveal', '@media (prefers-reduced-motion: reduce)'
-]) assert.ok(css.includes(token), `styles.css should include ${token}`);
+]) assert.ok(css.includes(token), `tarot.css should include ${token}`);
 
 console.log('tarot data, logic, page and styling regression test passed');
