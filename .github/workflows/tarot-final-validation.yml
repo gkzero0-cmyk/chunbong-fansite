@@ -1,0 +1,32 @@
+name: Validate final tarot candidate
+
+on:
+  push:
+    branches: [validate/tarot-original-hd-ai-final]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check JavaScript syntax
+        run: |
+          node --check script.js
+          node --check page.js
+          node --check tarot-data.js
+          node --check tarot.js
+          for file in api/*.js; do node --check "$file"; done
+      - name: Run every regression test
+        run: |
+          set -e
+          count=0
+          for test in tests/*.mjs; do
+            echo "::group::$test"
+            node "$test"
+            echo "::endgroup::"
+            count=$((count + 1))
+          done
+          echo "TOTAL_TEST_FILES=$count"
