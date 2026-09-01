@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
@@ -121,7 +122,7 @@ async function run(query, fetchImpl) {
   assert.match(body.item?.html || '', /schedule\.jpg/);
 }
 
-// Placeholder-only official schedule embeds are not trusted because the upstream URL can expire/404.
+// The detail parser may preserve source embed metadata, but the removed schedule UI must never render the fragile external iframe.
 {
   const { body } = await run({ type: 'notice-detail', id: '203015477' }, async (url) => {
     const value = String(url);
@@ -139,7 +140,9 @@ async function run(query, fetchImpl) {
     }
     return html('', false, 404);
   });
-  assert.deepEqual(body.item?.embeds, [], 'placeholder-only official schedule embeds should be suppressed after the upstream 404 regression');
+  assert.deepEqual(body.item?.embeds, ['https://schedule.example.com/chunbong/week']);
+  const scheduleHtml = fs.readFileSync(new URL('../schedule.html', import.meta.url), 'utf8');
+  assert.doesNotMatch(scheduleHtml, /schedule-official|<iframe/i, 'schedule page must not render the removed external official schedule iframe');
 }
 
 console.log('media + canonical notice + schedule regression test passed');
