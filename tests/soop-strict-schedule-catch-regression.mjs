@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
@@ -20,47 +21,51 @@ async function run(query, fetchImpl) {
   return body;
 }
 
-// A board-scoped response is proof of membership when SOOP omits board_number,
-// but an explicitly conflicting board number must still be rejected.
+// Canonical station-board rows are accepted only when bbs_no is 126448625. Unknown or conflicting membership is rejected.
 {
   const calls = [];
   const body = await run({ type: 'notice' }, async (url) => {
     const value = String(url); calls.push(value);
-    if (value.includes('board_number=126448625')) return json({ contents: [
-      { title_no: 1, title: '625 무메타 정상', reg_date: '2026-08-31 05:00:00' },
-      { title_no: 2, board_number: 999999999, title: '625 다른 게시판', reg_date: '2026-08-31 06:00:00' }
+    const page = /[?&]page=(\d+)/.exec(value)?.[1] || '1';
+    if (!value.includes('/board/') || page !== '1') return json({ data: [] });
+    if (value.includes('chapi.sooplive.com')) return json({ data: [
+      { title_no: 1, bbs_no: 126448625, title: '625 정상', reg_date: '2026-08-31 05:00:00' },
+      { title_no: 2, bbs_no: 999999999, title: '다른 게시판', reg_date: '2026-08-31 06:00:00' },
+      { title_no: 3, title: '무메타 제외', reg_date: '2026-08-31 04:00:00' }
     ] });
-    if (value.includes('board_number=126448677')) return json({ contents: [
-      { title_no: 3, board: { board_number: 126448677 }, title: '677 메타 정상', reg_date: '2026-08-31 04:00:00' },
-      { title_no: 4, title: '677 무메타 정상', reg_date: '2026-08-31 03:00:00' }
+    if (value.includes('chapi.sooplive.co.kr')) return json({ data: [
+      { title_no: 1, bbs_no: 126448625, title: '625 정상', reg_date: '2026-08-31 05:00:00' },
+      { title_no: 4, bbs_no: 126448677, title: '677 제외', reg_date: '2026-08-31 03:00:00' }
     ] });
-    return json({ contents: [] });
+    return json({ data: [] });
   });
-  assert.ok(!calls.some(url => !url.includes('board_number=') && url.includes('/board/')), 'global fallback should not be needed when both scoped boards returned usable rows');
-  assert.deepEqual(body.items.map(item => item.title), ['625 무메타 정상', '677 메타 정상', '677 무메타 정상']);
-  assert.deepEqual(body.items.map(item => item.boardNumber), ['126448625', '126448677', '126448677']);
-  assert.ok(!body.items.some(item => item.title.includes('다른 게시판')), 'explicit conflicting board metadata must be rejected');
+  assert.deepEqual(body.items.map(item => item.title), ['625 정상']);
+  assert.deepEqual(body.items.map(item => item.boardNumber), ['126448625']);
+  assert.ok(calls.some(url => url.includes('chapi.sooplive.com')));
+  assert.ok(calls.some(url => url.includes('chapi.sooplive.co.kr')));
 }
 
-// The global fallback may only accept rows whose board metadata is explicitly one of the two allowlisted boards.
+// Host fallback rows are de-duplicated and only canonical board membership survives.
 {
   const body = await run({ type: 'notice' }, async (url) => {
     const value = String(url);
-    if (value.includes('board_number=126448625')) return json({ contents: [] });
-    if (value.includes('board_number=126448677')) return json({ contents: [
-      { title_no: 7, board_number: 126448677, title: '677 정상', reg_date: '2026-08-31 01:00:00' }
+    const page = /[?&]page=(\d+)/.exec(value)?.[1] || '1';
+    if (!value.includes('/board/') || page !== '1') return json({ data: [] });
+    if (value.includes('chapi.sooplive.com')) return json({ data: [
+      { title_no: 6, bbs_no: 126448625, title: '625 fallback 정상', reg_date: '2026-08-31 08:00:00' }
     ] });
-    return json({ contents: [
-      { title_no: 5, title: '전체목록 무메타 제외', reg_date: '2026-08-31 09:00:00' },
-      { title_no: 6, board_number: 126448625, title: '625 fallback 정상', reg_date: '2026-08-31 08:00:00' },
-      { title_no: 8, board_number: 999999999, title: '전체목록 타게시판 제외', reg_date: '2026-08-31 10:00:00' }
+    if (value.includes('chapi.sooplive.co.kr')) return json({ data: [
+      { title_no: 6, bbs_no: 126448625, title: '625 fallback 정상', reg_date: '2026-08-31 08:00:00' },
+      { title_no: 7, bbs_no: 126448677, title: '677 제외', reg_date: '2026-08-31 09:00:00' },
+      { title_no: 8, title: '전체목록 무메타 제외', reg_date: '2026-08-31 10:00:00' }
     ] });
+    return json({ data: [] });
   });
-  assert.deepEqual(body.items.map(item => item.title), ['625 fallback 정상', '677 정상']);
+  assert.deepEqual(body.items.map(item => item.title), ['625 fallback 정상']);
+  assert.equal(new Set(body.items.map(item => item.id)).size, 1);
 }
 
-// The official schedule source currently returns only a placeholder plus a dead embed;
-// never surface unrelated profile/cover media as the schedule image in that case.
+// Schedule detail may preserve source attachment/embed metadata, while the removed schedule UI must never render the fragile external iframe.
 {
   const body = await run({ type: 'notice-detail', id: '203015477' }, async (url) => {
     if (String(url).includes('/title/203015477')) return json({
@@ -78,9 +83,12 @@ async function run(query, fetchImpl) {
     });
     return html('', false, 404);
   });
-  assert.deepEqual(body.item?.images, [], 'placeholder-only schedule posts must not surface guessed images');
-  assert.deepEqual(body.item?.embeds, [], 'placeholder-only schedule posts must not surface dead embeds');
+  assert.deepEqual(body.item?.images, ['https://stimg.sooplive.com/schedule/chunbong-week.png']);
+  assert.ok(!body.item.images.some(url => /profile|cover/.test(url)));
+  assert.deepEqual(body.item?.embeds, ['https://dead.example.com/404']);
   assert.match(body.item?.content || '', /잠시\s*기다리시면\s*보입니다/);
+  const scheduleHtml = fs.readFileSync(new URL('../schedule.html', import.meta.url), 'utf8');
+  assert.doesNotMatch(scheduleHtml, /schedule-official|<iframe/i, 'removed official schedule iframe must not be rendered by the site');
 }
 
 // CATCH must be de-duplicated by catch id, sorted newest-first, and limited to 12.
@@ -111,4 +119,4 @@ async function run(query, fetchImpl) {
   assert.ok(body.groups.catch.every(item => item.kind === 'catch' && /\/catch$/.test(item.link)), 'CATCH list should contain catch links only');
 }
 
-console.log('scoped notices + schedule media + catch ordering regression test passed');
+console.log('canonical notices + schedule metadata/UI separation + catch ordering regression test passed');
