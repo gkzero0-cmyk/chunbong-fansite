@@ -1,8 +1,10 @@
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import assert from 'node:assert/strict';
 
 const root = new URL('../', import.meta.url);
-const assets = Array.from({ length: 6 }, (_, index) => new URL(`assets/tarot/hd/cards-${index}.avif`, root));
+const assets = Array.from({ length: 39 }, (_, index) => new URL(`assets/tarot/hd/pair-${String(index).padStart(2, '0')}.avif`, root));
+const expectedCombinedSha256 = '89bc782697720672305b74b808c67af61ce637b2b5253637ae3c4ac20d9c8d0c';
 
 function readAvifSize(bytes) {
   assert.equal(bytes.subarray(4, 12).toString('ascii'), 'ftypavif', 'asset must be AVIF');
@@ -14,16 +16,19 @@ function readAvifSize(bytes) {
   };
 }
 
+const digest = crypto.createHash('sha256');
 let totalBytes = 0;
 for (const [index, asset] of assets.entries()) {
   assert.ok(fs.existsSync(asset), `${asset.pathname} should exist`);
   const bytes = fs.readFileSync(asset);
   totalBytes += bytes.length;
-  assert.ok(bytes.length > 35 * 1024, `sheet ${index} should contain high-detail artwork`);
+  digest.update(bytes);
+  assert.ok(bytes.length > 7 * 1024, `pair ${index} should preserve detail from the uploaded originals`);
   const size = readAvifSize(bytes);
-  assert.equal(size.width, 384 * 13, `sheet ${index} should contain thirteen 384px-wide cards`);
-  assert.equal(size.height, 576, `sheet ${index} should preserve 2:3 card height`);
+  assert.equal(size.width, 640, `pair ${index} should contain two 320px-wide source-derived cards`);
+  assert.equal(size.height, 480, `pair ${index} should contain 480px-high source-derived cards`);
 }
-assert.ok(totalBytes > 250 * 1024, 'HD sheets should contain substantially more detail than the old sprites');
-assert.ok(totalBytes < 5 * 1024 * 1024, 'HD sheets should remain practical for result-time loading');
-console.log('six 3x super-res tarot AVIF sheet regression test passed');
+assert.equal(digest.digest('hex'), expectedCombinedSha256, 'HD pairs must be the exact assets rebuilt from the user uploaded originals');
+assert.ok(totalBytes > 350 * 1024, 'source-derived HD pairs should retain substantially more detail than the legacy 128x192 cards');
+assert.ok(totalBytes < 1024 * 1024, 'HD pairs should remain practical for result-time loading');
+console.log('39 source-derived 320x480 tarot AVIF pair regression test passed');
