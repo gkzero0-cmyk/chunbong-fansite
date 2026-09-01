@@ -10,27 +10,31 @@ async function run(query, fetchImpl){
   await handler({query},res); return body;
 }
 
-// SOOP may ignore board_number on the list endpoint. Missing metadata must be verified per post.
+// SOOP station board responses may contain mixed or metadata-free rows. Only canonical bbs_no 126448625 is accepted; unknown membership is excluded without per-post guessing.
 {
   const calls=[];
   const body=await run({type:'notice'},async url=>{
     const value=String(url); calls.push(value);
-    if(value.includes('board_number=126448625')) return json({contents:[
-      {title_no:205800319,title:'잘못 섞인 글',reg_date:'2026-08-31 06:00:00'},
-      {title_no:62511,title:'625 실제 공지',reg_date:'2026-08-31 05:00:00'}
+    const page=/[?&]page=(\d+)/.exec(value)?.[1]||'1';
+    if(!value.includes('/board/')||page!=='1') return json({data:[]});
+    if(value.includes('chapi.sooplive.com')) return json({data:[
+      {title_no:205800319,title:'게시판 미확인 글',reg_date:'2026-08-31 06:00:00'},
+      {title_no:62511,bbs_no:126448625,title:'625 실제 공지',reg_date:'2026-08-31 05:00:00'},
+      {title_no:67711,bbs_no:126448677,title:'677 제외',reg_date:'2026-08-31 04:00:00'}
     ]});
-    if(value.includes('board_number=126448677')) return json({contents:[
-      {title_no:67711,board_number:126448677,title:'677 실제 공지',reg_date:'2026-08-31 04:00:00'}
+    if(value.includes('chapi.sooplive.co.kr')) return json({data:[
+      {title_no:62511,bbs_no:126448625,title:'625 실제 공지',reg_date:'2026-08-31 05:00:00'}
     ]});
-    if(value.includes('/title/205800319')) return json({data:{post:{title_no:205800319,board_number:999999999}}});
-    if(value.includes('/title/62511')) return json({data:{post:{title_no:62511,board_number:126448625}}});
-    return json({contents:[]});
+    return json({data:[]});
   });
-  assert.deepEqual(body.items.map(x=>x.title),['625 실제 공지','677 실제 공지']);
+  assert.deepEqual(body.items.map(x=>x.title),['625 실제 공지']);
   assert.ok(!body.items.some(x=>x.id==='205800319'));
+  assert.ok(!body.items.some(x=>x.id==='67711'));
+  assert.ok(calls.some(x=>x.includes('chapi.sooplive.com')));
+  assert.ok(calls.some(x=>x.includes('chapi.sooplive.co.kr')));
 }
 
-// Official schedule must use only body/attachment media from post 203015477, never profile/cover media.
+// Official schedule detail must use only body/attachment media from post 203015477, never profile/cover media.
 {
   const body=await run({type:'notice-detail',id:'203015477'},async url=>{
     if(String(url).includes('/title/203015477')) return json({data:{post:{
@@ -45,4 +49,4 @@ async function run(query, fetchImpl){
   assert.ok(!body.item.images.some(x=>/profile|cover/.test(x)));
   assert.match(body.item.content,/잠시\s*기다리시면\s*보입니다/);
 }
-console.log('live notice board + official schedule regression test passed');
+console.log('canonical notice board + official schedule detail regression test passed');

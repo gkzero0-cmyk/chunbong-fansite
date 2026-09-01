@@ -62,30 +62,34 @@ async function run(query, fetchImpl) {
   assert.match(body.groups.videos[0].embed, /youtube\.com\/embed\//);
 }
 
-// Latest notices must come only from the two approved SOOP boards and be merged newest-first.
+// Latest notices come from the canonical station board feed, use bbs_no membership, dedupe host fallbacks, and reject every non-126448625 row.
 {
   const calls = [];
   const { body } = await run({ type: 'notice' }, async (url) => {
     const value = String(url); calls.push(value);
-    if (value.includes('board_number=126448625')) {
-      return json({ contents: [
-        { title_no: 62502, board_number: 126448625, title: '625 최신', reg_date: '2026-08-31 03:00:00', contents: 'A' },
-        { title_no: 62501, board_number: 126448625, title: '625 이전', reg_date: '2026-08-29 03:00:00', contents: 'B' }
+    const page = /[?&]page=(\d+)/.exec(value)?.[1] || '1';
+    if (!value.includes('/board/') || page !== '1') return json({ data: [] });
+    if (value.includes('chapi.sooplive.com')) {
+      return json({ data: [
+        { title_no: 62502, bbs_no: 126448625, title: '625 최신', reg_date: '2026-08-31 03:00:00', contents: 'A' },
+        { title_no: 67702, bbs_no: 126448677, title: '677 제외', reg_date: '2026-08-31 04:00:00', contents: 'C' },
+        { title_no: 99999, bbs_no: 999999999, title: '다른 게시판', reg_date: '2026-09-01 00:00:00', contents: 'X' }
       ] });
     }
-    if (value.includes('board_number=126448677')) {
-      return json({ contents: [
-        { title_no: 67702, board_number: 126448677, title: '677 최신', reg_date: '2026-08-31 04:00:00', contents: 'C' },
-        { title_no: 99999, board_number: 999999999, title: '다른 게시판', reg_date: '2026-09-01 00:00:00', contents: 'X' },
-        { title_no: 67701, board_number: 126448677, title: '677 이전', reg_date: '2026-08-28 03:00:00', contents: 'D' }
+    if (value.includes('chapi.sooplive.co.kr')) {
+      return json({ data: [
+        { title_no: 62502, bbs_no: 126448625, title: '625 최신', reg_date: '2026-08-31 03:00:00', contents: 'A' },
+        { title_no: 62501, bbs_no: 126448625, title: '625 이전', reg_date: '2026-08-29 03:00:00', contents: 'B' },
+        { title_no: 62500, title: '게시판 미확인', reg_date: '2026-08-28 03:00:00', contents: 'D' }
       ] });
     }
-    return json({ contents: [] });
+    return json({ data: [] });
   });
-  assert.ok(calls.some(url => url.includes('board_number=126448625')), 'first notice board should be requested');
-  assert.ok(calls.some(url => url.includes('board_number=126448677')), 'second notice board should be requested');
-  assert.deepEqual(body.items.map(item => item.title), ['677 최신','625 최신','625 이전','677 이전']);
-  assert.ok(body.items.every(item => ['126448625','126448677'].includes(item.boardNumber)), 'no other board should leak into latest notices');
+  assert.ok(calls.some(url => url.includes('chapi.sooplive.com')), 'primary notice host should be requested');
+  assert.ok(calls.some(url => url.includes('chapi.sooplive.co.kr')), 'fallback notice host should be requested');
+  assert.deepEqual(body.items.map(item => item.title), ['625 최신','625 이전']);
+  assert.ok(body.items.every(item => item.boardNumber === '126448625'), 'only canonical bbs_no 126448625 may appear in latest notices');
+  assert.equal(new Set(body.items.map(item => item.id)).size, body.items.length, 'duplicate rows from host fallbacks must be removed');
 }
 
 // The official schedule post may be nested inside the SOOP title API payload.
@@ -117,7 +121,6 @@ async function run(query, fetchImpl) {
   assert.match(body.item?.html || '', /schedule\.jpg/);
 }
 
-
 // Placeholder-only official schedule embeds are not trusted because the upstream URL can expire/404.
 {
   const { body } = await run({ type: 'notice-detail', id: '203015477' }, async (url) => {
@@ -139,4 +142,4 @@ async function run(query, fetchImpl) {
   assert.deepEqual(body.item?.embeds, [], 'placeholder-only official schedule embeds should be suppressed after the upstream 404 regression');
 }
 
-console.log('media + dual notice + schedule regression test passed');
+console.log('media + canonical notice + schedule regression test passed');

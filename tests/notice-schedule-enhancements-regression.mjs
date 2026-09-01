@@ -9,7 +9,7 @@ const schedule = read('schedule.html');
 const content = read('content.js');
 const page = read('page.js');
 const styles = read('styles.css');
-const scheduleRuntime = read('schedule-runtime.js');
+const liveFixes = read('live-fixes.js');
 
 assert.match(index, /hero-actions[\s\S]*youtube\.com\/@%EC%B6%98%EB%B4%89TV/i, 'home hero should have a YouTube shortcut button');
 assert.match(index, /YouTube 바로가기/, 'home hero should label the YouTube shortcut clearly');
@@ -22,17 +22,13 @@ assert.ok(page.includes('setupNoticeImageZoom'), 'notice detail images should op
 assert.ok(styles.includes('.notice-image-modal'), 'notice image lightbox should be styled');
 
 assert.ok(schedule.includes('id="schedule-grid"'), 'schedule page should retain an in-site schedule grid');
-assert.ok(schedule.includes('id="schedule-official"'), 'schedule page should show the official SOOP schedule post in-site');
-assert.ok(page.includes("loadNoticeDetail('203015477')"), 'schedule page should retain the official SOOP schedule source');
-assert.ok(schedule.includes('schedule-runtime.js'), 'schedule page should load the stable official schedule renderer');
-assert.ok(scheduleRuntime.includes('data-official-snapshot'), 'official schedule should render an in-site schedule snapshot');
-assert.ok(scheduleRuntime.includes('schedule-card'), 'official schedule should reuse the actual fan-site schedule cards');
-assert.ok(!scheduleRuntime.includes('<iframe'), 'official schedule runtime must not render fragile external iframes');
-assert.ok(content.includes('notionSchedule'), 'Notion calendar entries should be embedded for in-site schedule rendering');
-for (const token of ['성하늘님 랜버워치','세구님 세바버','왁굳님 아르마3','조까치 수련회2']) {
-  assert.ok(content.includes(token), `schedule snapshot should include ${token}`);
-}
+assert.ok(!schedule.includes('id="schedule-official"'), 'removed official schedule section must not return');
+assert.ok(!page.includes("loadNoticeDetail('203015477')"), 'page runtime must not recreate the removed official schedule section');
+assert.ok(!schedule.includes('schedule-runtime.js'), 'schedule page must not load the obsolete official schedule snapshot runtime');
+assert.ok(liveFixes.includes('/api/content?type=schedule'), 'schedule page should refresh live Notion calendar data through the in-site runtime');
+assert.ok(!liveFixes.includes('data-official-snapshot'), 'live schedule override must not recreate the removed official snapshot');
+assert.ok(content.includes('notionSchedule'), 'Notion calendar fallback entries should remain available for in-site schedule rendering');
 assert.ok(page.includes('Asia/Seoul'), 'scheduled datetimes should be rendered in Korea time');
 assert.ok(styles.includes('.schedule-tag'), 'schedule tags should have visible styling');
 
-console.log('notice + schedule enhancements regression test passed');
+console.log('notice + live in-site schedule enhancements regression test passed');
