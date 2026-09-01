@@ -63,27 +63,36 @@ async function run(query, fetchImpl) {
   assert.deepEqual(body.items[0].tags, ['콘텐츠', '타로']);
 }
 
-// Each approved board should use board-scoped pagination and host fallback, then merge latest 12.
+// Notices should use canonical bbs_no metadata, both host fallbacks, dedupe, and keep the latest 12 from board 126448625 only.
 {
   const calls = [];
-  const mk = (prefix, count, dayStart) => Array.from({ length: count }, (_, i) => ({
-    title_no: Number(`${prefix}${String(i + 1).padStart(2, '0')}`),
-    board_number: prefix === '625' ? 126448625 : 126448677,
-    title: `${prefix} 글 ${i + 1}`,
-    reg_date: `2026-08-${String(dayStart - i).padStart(2, '0')} 12:00:00`
+  const approved = Array.from({ length: 12 }, (_, i) => ({
+    title_no: 205900000 - i,
+    bbs_no: 126448625,
+    title_name: `625 공지 ${i + 1}`,
+    reg_date: `2026-08-${String(31 - i).padStart(2, '0')} 12:00:00`
   }));
   const { body } = await run({ type: 'notice' }, async url => {
     const value = String(url); calls.push(value);
-    const board = value.includes('126448625') ? '625' : value.includes('126448677') ? '677' : '';
     const page = /[?&]page=(\d+)/.exec(value)?.[1] || '1';
-    if (!board) return json({ data: [] });
-    // Simulate .com being incomplete while .co.kr has the actual board page.
-    if (value.includes('chapi.sooplive.com')) return json({ data: page === '1' ? mk(board, 1, 31) : [] });
-    if (value.includes('chapi.sooplive.co.kr')) return json({ data: page === '1' ? mk(board, 8, board === '625' ? 31 : 30) : [] });
+    if (!value.includes('/board/')) return json({ data: [] });
+    if (page !== '1') return json({ data: [] });
+    if (value.includes('chapi.sooplive.com')) {
+      return json({ data: [approved[0], { title_no: 205700001, bbs_no: 126448677, title_name: '677 제외', reg_date: '2026-08-31 11:00:00' }] });
+    }
+    if (value.includes('chapi.sooplive.co.kr')) {
+      return json({ data: [
+        ...approved,
+        { title_no: 205700002, bbs_no: 126448795, title_name: '795 제외', reg_date: '2026-08-31 10:00:00' },
+        { title_no: 205700003, title_name: '게시판 미확인 제외', reg_date: '2026-08-31 09:00:00' }
+      ] });
+    }
     return json({ data: [] });
   });
   assert.equal(body.items.length, 12);
-  assert.ok(body.items.every(item => ['126448625', '126448677'].includes(item.boardNumber)));
+  assert.ok(body.items.every(item => item.boardNumber === '126448625'));
+  assert.equal(new Set(body.items.map(item => item.id)).size, 12, 'duplicate host rows should be removed');
+  assert.ok(!body.items.some(item => ['205700001', '205700002', '205700003'].includes(item.id)));
   assert.ok(calls.some(url => url.includes('chapi.sooplive.com')));
   assert.ok(calls.some(url => url.includes('chapi.sooplive.co.kr')));
 }
@@ -111,4 +120,4 @@ assert.ok(shared.includes('type=catch'), 'CATCH items should use the official SO
 assert.ok(!liveFixes.includes('type=catch-detail'), 'frontend should not override CATCH with direct CDN playback');
 assert.ok(liveFixes.includes('type=schedule'), 'schedule override should request live Notion schedule data');
 
-console.log('live Notion + paged notices + official Catch player regression test passed');
+console.log('live Notion + canonical notices + official Catch player regression test passed');
