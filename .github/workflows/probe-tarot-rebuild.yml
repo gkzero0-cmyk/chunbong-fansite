@@ -1,0 +1,53 @@
+name: Probe tarot pair rebuild
+
+on:
+  push:
+    branches: [staging/tarot-pairs]
+    paths: [.github/workflows/probe-tarot-rebuild.yml]
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/tarot-original-hd-assets-stage
+          path: source-assets
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install AVIF tooling
+        run: python -m pip install --disable-pip-version-check pillow pillow-avif-plugin
+      - name: Rebuild pairs from GitHub HD sheets
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          import pillow_avif  # noqa
+          import hashlib
+
+          src = Path('source-assets/assets/tarot/hd')
+          out = Path('/tmp/tarot-pairs')
+          out.mkdir(parents=True, exist_ok=True)
+          cards = []
+          for sheet in range(6):
+              image = Image.open(src / f'cards-{sheet}.avif').convert('RGB')
+              assert image.size == (320 * 13, 480), image.size
+              for slot in range(13):
+                  cards.append(image.crop((slot * 320, 0, (slot + 1) * 320, 480)))
+          assert len(cards) == 78
+          combined = hashlib.sha256()
+          for pair in range(39):
+              image = Image.new('RGB', (640, 480))
+              image.paste(cards[pair * 2], (0, 0))
+              image.paste(cards[pair * 2 + 1], (320, 0))
+              path = out / f'pair-{pair:02d}.avif'
+              image.save(path, 'AVIF', quality=16, speed=7)
+              data = path.read_bytes()
+              combined.update(data)
+              print(f'{path.name} bytes={len(data)} sha256={hashlib.sha256(data).hexdigest()}')
+          digest = combined.hexdigest()
+          print('COMBINED_SHA256=' + digest)
+          print('EXPECTED_SHA256=89bc782697720672305b74b808c67af61ce637b2b5253637ae3c4ac20d9c8d0c')
+          PY
