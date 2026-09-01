@@ -31,11 +31,15 @@ jobs:
           out = Path('/tmp/tarot-pairs')
           out.mkdir(parents=True, exist_ok=True)
           cards = []
+          source_card_size = (384, 576)
+          target_card_size = (320, 480)
           for sheet in range(6):
               image = Image.open(src / f'cards-{sheet}.avif').convert('RGB')
-              assert image.size == (320 * 13, 480), image.size
+              assert image.size == (source_card_size[0] * 13, source_card_size[1]), image.size
               for slot in range(13):
-                  cards.append(image.crop((slot * 320, 0, (slot + 1) * 320, 480)))
+                  left = slot * source_card_size[0]
+                  card = image.crop((left, 0, left + source_card_size[0], source_card_size[1]))
+                  cards.append(card.resize(target_card_size, Image.Resampling.LANCZOS))
           assert len(cards) == 78
           combined = hashlib.sha256()
           for pair in range(39):
@@ -48,6 +52,8 @@ jobs:
               combined.update(data)
               print(f'{path.name} bytes={len(data)} sha256={hashlib.sha256(data).hexdigest()}')
           digest = combined.hexdigest()
+          expected = '89bc782697720672305b74b808c67af61ce637b2b5253637ae3c4ac20d9c8d0c'
           print('COMBINED_SHA256=' + digest)
-          print('EXPECTED_SHA256=89bc782697720672305b74b808c67af61ce637b2b5253637ae3c4ac20d9c8d0c')
+          print('EXPECTED_SHA256=' + expected)
+          assert digest == expected, f'combined mismatch: {digest}'
           PY
