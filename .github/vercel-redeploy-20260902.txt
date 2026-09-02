@@ -1,0 +1,2 @@
+Production redeploy trigger after Vercel Hobby build-rate-limit window.
+No application or runtime behavior changes.
