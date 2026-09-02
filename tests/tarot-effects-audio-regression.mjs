@@ -1,0 +1,21 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const tarot = require('../tarot.js');
+const css = fs.readFileSync(new URL('../tarot.css', import.meta.url), 'utf8');
+const js = fs.readFileSync(new URL('../tarot.js', import.meta.url), 'utf8');
+
+const memory = new Map();
+const storage = { getItem:k => memory.has(k) ? memory.get(k) : null, setItem:(k,v) => memory.set(k,v) };
+const sound = tarot.createTarotSoundController(storage, null);
+assert.equal(sound.enabled(), true);
+sound.setEnabled(false);
+assert.equal(storage.getItem('chunbongTarotSound'), 'off');
+assert.equal(sound.enabled(), false);
+for (const token of ['@keyframes tarotSelect','@keyframes tarotReveal','@keyframes tarotCompleteGlow','@keyframes tarotSpark']) assert.ok(css.includes(token));
+assert.ok(css.includes('@media (prefers-reduced-motion: reduce)'));
+for (const cue of ['shuffle','select','reveal','complete']) assert.ok(js.includes(`play('${cue}')`));
+assert.ok(js.includes('createBuffer'));
+assert.ok(!js.match(/\.(mp3|wav|ogg)/i));
+console.log('tarot effects and audio regression test passed');
