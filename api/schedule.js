@@ -24,6 +24,7 @@ function recordValue(entry) {
   }
   return current || null;
 }
+
 function findCollection(recordMap = {}) {
   const blocks = recordMap.block || {};
   for (const entry of Object.values(blocks)) {
@@ -34,6 +35,34 @@ function findCollection(recordMap = {}) {
     if (collectionId && viewId) return { collectionId, viewId };
   }
   return null;
+}
+
+function buildCollectionQuery(collectionId, viewId, view = {}) {
+  const query = view.query2 || view.query || {};
+  return {
+    collection: { id: collectionId },
+    collectionView: { id: viewId },
+    loader: {
+      type: 'reducer',
+      reducers: {
+        collection_group_results: {
+          type: 'results',
+          limit: 100,
+          loadContentCover: true,
+        },
+        'table:uncategorized:title:count': {
+          type: 'aggregation',
+          aggregation: {
+            property: 'title',
+            aggregator: 'count',
+          },
+        },
+      },
+      ...query,
+      searchQuery: '',
+      userTimeZone: 'Asia/Seoul',
+    },
+  };
 }
 
 function walk(value, visit, seen = new Set()) {
@@ -128,22 +157,14 @@ module.exports = async function fetchSchedule() {
   if (!ref) throw new Error('Notion calendar collection not found');
   const collection = recordValue(page.recordMap?.collection?.[ref.collectionId]) || {};
   const view = recordValue(page.recordMap?.collection_view?.[ref.viewId]) || {};
-  const collectionData = await postNotion('queryCollection', {
-    collectionId: ref.collectionId,
-    collectionViewId: ref.viewId,
-    query: view.query2 || view.query || { aggregations: [] },
-    loader: {
-      type: ['table','board'].includes(view.type) ? view.type : 'table',
-      limit: 100,
-      searchQuery: '',
-      userTimeZone: 'Asia/Seoul',
-      userLocale: 'ko',
-      loadContentCover: true,
-    }
-  });
+  const collectionData = await postNotion(
+    'queryCollection',
+    buildCollectionQuery(ref.collectionId, ref.viewId, view)
+  );
   return parseRows(collectionData.recordMap || {}, ref.collectionId, collection.schema || {}).slice(0, 100);
 };
 
 module.exports.parseRows = parseRows;
 module.exports.findCollection = findCollection;
 module.exports.findDate = findDate;
+module.exports.buildCollectionQuery = buildCollectionQuery;
