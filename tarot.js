@@ -117,8 +117,8 @@ if (typeof document !== 'undefined') {
     if (!button || !status || !content) return;
     button.hidden = false;
     button.disabled = false;
-    button.textContent = 'AI 타로 상담 받기';
-    status.textContent = '뽑은 카드와 질문을 바탕으로 조금 더 자세한 상담형 리딩을 받을 수 있습니다.';
+    button.textContent = '무료 자동 타로 상담 받기';
+    status.textContent = '뽑은 카드와 질문을 서버 내부 카드 데이터로 조합해 자세한 상담형 리딩을 만들 수 있습니다.';
     content.hidden = true;
     content.replaceChildren();
   }
@@ -218,7 +218,7 @@ if (typeof document !== 'undefined') {
     const status = byId('tarot-ai-status');
     button.disabled = true;
     button.textContent = '상담 생성 중...';
-    status.textContent = '카드를 읽고 있어요...';
+    status.textContent = '카드 데이터를 조합하고 있어요...';
     try {
       const response = await fetch('/api/tarot-reading', {
         method: 'POST',
@@ -227,18 +227,16 @@ if (typeof document !== 'undefined') {
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload.reading) {
-        const error = new Error('ai_reading_failed');
+        const error = new Error('tarot_reading_failed');
         error.status = response.status;
         throw error;
       }
       renderAiReading(payload.reading);
       state.aiSucceeded = true;
-      status.textContent = 'AI 상담 리딩이 준비됐습니다.';
+      status.textContent = '자동 상담 리딩이 준비됐습니다.';
       button.hidden = true;
-    } catch (error) {
-      status.textContent = error.status === 503
-        ? 'AI 상담 기능의 서버 설정을 준비 중입니다. 기본 해석은 그대로 이용할 수 있습니다.'
-        : 'AI 상담을 불러오지 못했습니다. 기본 해석은 그대로 이용할 수 있습니다.';
+    } catch (_) {
+      status.textContent = '자동 상담을 생성하지 못했습니다. 기본 해석은 그대로 이용할 수 있습니다.';
       button.textContent = '다시 시도';
       button.disabled = false;
     }
