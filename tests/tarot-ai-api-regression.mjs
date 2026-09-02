@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const api = require('../api/tarot-reading.js');
+const data = require('../tarot-data.js');
 
 function makeReq(method, body) {
   return { method, body, headers: { 'content-type': 'application/json' } };
@@ -32,6 +33,16 @@ const validSingle = {
   spreadId: 'single',
   cards: [{ id: 'major-19', orientation: 'upright', position: '핵심 메시지' }]
 };
+const validTwelve = {
+  question: '앞으로의 방송과 콘텐츠 방향을 점검해줘',
+  topic: 'direction',
+  spreadId: 'twelveCompass',
+  cards: data.cards.slice(0, 12).map((card, index) => ({
+    id: card.id,
+    orientation: index % 2 ? 'reversed' : 'upright',
+    position: data.spreads.twelveCompass.positions[index]
+  }))
+};
 
 {
   const res = makeRes();
@@ -43,7 +54,7 @@ const validSingle = {
 
   assert.equal(res.statusCode, 200);
   assert.equal(res.payload.provider, 'local-tarot-engine');
-  assert.equal(res.payload.model, 'rule-based-v1');
+  assert.equal(res.payload.model, 'rule-based-v2');
   assert.equal(res.payload.reading.cards.length, 3);
   assert.deepEqual(
     res.payload.reading.cards.map(card => [card.id, card.position]),
@@ -70,8 +81,20 @@ const validSingle = {
   assert.equal(fetchCalls, 0);
   assert.equal(oidcCalls, 0);
   assert.equal(res.payload.provider, 'local-tarot-engine');
+  assert.equal(res.payload.model, 'rule-based-v2');
   assert.ok(res.payload.reading.cards[0].reading.includes('태양'));
   assert.ok(res.payload.reading.summary.length > 10);
+}
+
+{
+  const res = makeRes();
+  await api.createHandler({ env: {} })(makeReq('POST', validTwelve), res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.payload.provider, 'local-tarot-engine');
+  assert.equal(res.payload.model, 'rule-based-v2');
+  assert.equal(res.payload.reading.cards.length, 12);
+  assert.ok(res.payload.reading.overall.includes('12장'));
+  assert.ok(res.payload.reading.summary.includes('12장'));
 }
 
 {
@@ -112,4 +135,4 @@ for (const mutate of [
   assert.equal(res.statusCode, 400);
 }
 
-console.log('free local tarot reading engine regression test passed');
+console.log('free local tarot rule-based-v2 engine regression test passed');
