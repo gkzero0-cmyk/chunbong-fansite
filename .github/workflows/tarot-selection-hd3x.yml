@@ -1,0 +1,27 @@
+name: Tarot selection HD3x verification
+
+on:
+  push:
+    branches: [fix/tarot-card-selection-hd3x]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Syntax checks
+        run: |
+          node --check tarot.js
+          node --check tarot-data.js
+          python -m py_compile scripts/upscale-tarot-hd.py
+      - name: Run targeted tarot tests
+        run: |
+          node tests/tarot-selection-modes-regression.mjs
+          node tests/tarot-hd-assets-regression.mjs
