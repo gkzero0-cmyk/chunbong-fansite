@@ -56,6 +56,82 @@ function buildNumberSelections(values, spreadId, randomFn = random01) {
   }));
 }
 
+function createTarotSoundController(storage = globalThis.localStorage, AudioContextCtor = globalThis.AudioContext || globalThis.webkitAudioContext) {
+  const key = 'chunbongTarotSound';
+  let stored = null;
+  try { stored = storage?.getItem?.(key); } catch (_) {}
+  let isEnabled = stored !== 'off';
+  let context = null;
+
+  const ensureContext = () => {
+    if (!isEnabled || !AudioContextCtor) return null;
+    context ||= new AudioContextCtor();
+    if (context.state === 'suspended') context.resume?.();
+    return context;
+  };
+
+  const tone = (frequency, duration, gain = 0.03, offset = 0) => {
+    const ctx = ensureContext();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const amp = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = frequency;
+    const start = ctx.currentTime + offset;
+    amp.gain.setValueAtTime(Math.max(gain, 0.0001), start);
+    amp.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    osc.connect(amp).connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + duration);
+  };
+
+  const swish = () => {
+    const ctx = ensureContext();
+    if (!ctx) return;
+    const duration = 0.16;
+    const buffer = ctx.createBuffer(1, Math.max(1, Math.floor(ctx.sampleRate * duration)), ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let index = 0; index < data.length; index += 1) data[index] = Math.random() * 2 - 1;
+    const source = ctx.createBufferSource();
+    const filter = ctx.createBiquadFilter();
+    const amp = ctx.createGain();
+    source.buffer = buffer;
+    filter.type = 'bandpass';
+    filter.frequency.value = 950;
+    filter.Q.value = 0.8;
+    amp.gain.setValueAtTime(0.025, ctx.currentTime);
+    amp.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+    source.connect(filter).connect(amp).connect(ctx.destination);
+    source.start(ctx.currentTime);
+    source.stop(ctx.currentTime + duration);
+  };
+
+  return {
+    enabled: () => isEnabled,
+    unlock: () => { try { ensureContext(); } catch (_) {} },
+    setEnabled(value) {
+      isEnabled = Boolean(value);
+      try { storage?.setItem?.(key, isEnabled ? 'on' : 'off'); } catch (_) {}
+    },
+    play(name) {
+      if (!isEnabled) return;
+      try {
+        if (name === 'shuffle') swish();
+        if (name === 'select') tone(520, 0.08, 0.025);
+        if (name === 'reveal') {
+          tone(220, 0.18, 0.022);
+          tone(740, 0.12, 0.024, 0.08);
+        }
+        if (name === 'complete') {
+          tone(440, 0.12, 0.026);
+          tone(554, 0.12, 0.028, 0.11);
+          tone(659, 0.16, 0.03, 0.22);
+        }
+      } catch (_) {}
+    }
+  };
+}
+
 function buildCardInterpretation(selection, topicId, position) {
   const { card, orientation } = selection;
   const direction = orientation === 'upright' ? '정방향' : '역방향';
@@ -100,6 +176,7 @@ const TAROT_API = {
   spreadIdForCount,
   validateDeckNumbers,
   buildNumberSelections,
+  createTarotSoundController,
   buildCardInterpretation,
   buildSummary,
   buildAiRequestPayload
@@ -108,6 +185,7 @@ if (typeof window !== 'undefined') window.CHUNBONG_TAROT = TAROT_API;
 if (typeof module !== 'undefined' && module.exports) module.exports = TAROT_API;
 
 if (typeof document !== 'undefined') {
+  const soundController = createTarotSoundController();
   const state = {
     topic: 'general',
     count: 1,
@@ -118,7 +196,7 @@ if (typeof document !== 'undefined') {
     selected: [],
     phase: 'setup',
     readingSucceeded: false,
-    soundEnabled: true
+    soundEnabled: soundController.enabled()
   };
   const byId = id => document.getElementById(id);
   const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({
@@ -205,6 +283,7 @@ if (typeof document !== 'undefined') {
   }
 
   function startReading() {
+    soundController.unlock();
     Object.assign(state, readSetup());
     clearResults();
     byId('tarot-number-error').textContent = '';
@@ -235,6 +314,7 @@ if (typeof document !== 'undefined') {
     void byId('tarot-deck').offsetWidth;
     byId('tarot-deck').classList.add('is-shuffling');
     renderDeck();
+    soundController.play('shuffle');
     scrollToElement(byId('tarot-stage'));
   }
 
@@ -283,8 +363,18 @@ if (typeof document !== 'undefined') {
     state.phase = 'revealing';
     byId('tarot-selection-status').textContent = '카드를 순서대로 펼치고 있어요.';
     renderResults();
-    state.phase = 'results';
-    byId('tarot-selection-status').textContent = '리딩이 준비됐습니다.';
+    const cards = [...byId('tarot-reading-grid').querySelectorAll('.tarot-card-result')];
+    const step = state.count === 12 ? 70 : 130;
+    cards.forEach((card, index) => card.style.setProperty('--reveal-delay', `${index * step}ms`));
+    soundController.play('reveal');
+    const finish = () => {
+      state.phase = 'results';
+      byId('tarot-results').classList.add('is-complete');
+      byId('tarot-selection-status').textContent = '리딩이 준비됐습니다.';
+      soundController.play('complete');
+    };
+    if (prefersReducedMotion()) finish();
+    else setTimeout(finish, Math.min(1400, cards.length * step + 420));
   }
 
   function appendTextElement(parent, tag, className, text) {
@@ -353,6 +443,7 @@ if (typeof document !== 'undefined') {
 
   function selectCard(button) {
     if (state.phase !== 'selecting' || state.selected.length >= state.count || button.disabled) return;
+    soundController.unlock();
     const index = Number(button.dataset.cardIndex);
     const card = state.deck[index];
     if (!card) return;
@@ -365,6 +456,7 @@ if (typeof document !== 'undefined') {
     });
     button.disabled = true;
     button.classList.add('selected');
+    soundController.play('select');
     renderSelectedSlots();
     byId('tarot-selection-status').textContent = `78장 중 ${state.selected.length}/${state.count}장을 선택했습니다.`;
     if (state.selected.length === state.count) beginReveal();
@@ -373,6 +465,7 @@ if (typeof document !== 'undefined') {
   function updateSoundToggle() {
     const button = byId('tarot-sound-toggle');
     if (!button) return;
+    state.soundEnabled = soundController.enabled();
     button.setAttribute('aria-pressed', String(state.soundEnabled));
     button.textContent = state.soundEnabled ? '효과음 ON' : '효과음 OFF';
   }
@@ -385,6 +478,7 @@ if (typeof document !== 'undefined') {
     byId('tarot-deck').innerHTML = '';
     byId('tarot-selected-slots').innerHTML = '';
     byId('tarot-results').hidden = true;
+    byId('tarot-results').classList.remove('is-complete');
     byId('tarot-number-error').textContent = '';
     resetAiPanel();
     byId('tarot-selection-status').textContent = '주제와 카드 수, 선택 방식을 정해 주세요.';
@@ -409,7 +503,8 @@ if (typeof document !== 'undefined') {
       if (button) selectCard(button);
     });
     byId('tarot-sound-toggle').addEventListener('click', () => {
-      state.soundEnabled = !state.soundEnabled;
+      soundController.unlock();
+      soundController.setEnabled(!soundController.enabled());
       updateSoundToggle();
     });
     byId('tarot-ai-button').addEventListener('click', requestAiReading);
