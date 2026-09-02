@@ -2,61 +2,64 @@ name: Tarot production smoke
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'tarot.html'
+      - 'tarot.css'
+      - 'tarot.js'
+      - 'tarot-data.js'
+      - 'api/tarot-reading.js'
+      - 'assets/tarot/hd/**'
+      - '.github/workflows/tarot-production-smoke.yml'
 
 jobs:
   production-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
-      - name: Discover production URL and verify 12-card reading
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Wait for production tarot deployment
         run: |
           set -euo pipefail
+          BASE='https://chunbong-fansite.vercel.app'
 
-          find_base() {
-            local deployments status_url candidate code
-            deployments=$(curl -fsS -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
-              "https://api.github.com/repos/$REPO/deployments?sha=$SHA&per_page=20" || echo '[]')
-            while read -r status_url; do
-              [ -n "$status_url" ] || continue
-              candidate=$(curl -fsS -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
-                "$status_url" 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{const a=JSON.parse(s);const x=a.find(v=>v.state==='success'&&v.environment_url);if(x)process.stdout.write(x.environment_url)}catch{}})" || true)
-              if [ -n "$candidate" ]; then
-                code=$(curl -L -sS -o /tmp/home -w '%{http_code}' "$candidate/" || true)
-                if [ "$code" = "200" ] && grep -qi 'CHUNBONG' /tmp/home; then
-                  printf '%s' "${candidate%/}"
-                  return 0
-                fi
+          for attempt in $(seq 1 60); do
+            PAGE_HTTP=$(curl -L -sS -o /tmp/tarot-page -w '%{http_code}' "$BASE/tarot.html" || true)
+            JS_HTTP=$(curl -L -sS -o /tmp/tarot-js -w '%{http_code}' "$BASE/tarot.js" || true)
+            ASSET_HTTP=$(curl -L -sS -o /tmp/tarot-asset -w '%{http_code}' "$BASE/assets/tarot/hd/pair-00.avif" || true)
+
+            if [ "$PAGE_HTTP" = '200' ] && [ "$JS_HTTP" = '200' ] && [ "$ASSET_HTTP" = '200' ] && grep -q 'numberInputConstraintState' /tmp/tarot-js; then
+              if node <<'NODE'
+          const fs = require('fs');
+          const bytes = fs.readFileSync('/tmp/tarot-asset');
+          const offset = bytes.indexOf(Buffer.from('ispe'));
+          if (bytes.subarray(4, 12).toString('ascii') !== 'ftypavif' || offset < 0) process.exit(1);
+          const width = bytes.readUInt32BE(offset + 8);
+          const height = bytes.readUInt32BE(offset + 12);
+          process.exit(width === 1920 && height === 1440 ? 0 : 1);
+          NODE
+              then
+                echo "PROD_READY=1"
+                echo "PROD_URL=$BASE"
+                exit 0
               fi
-            done < <(printf '%s' "$deployments" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{for(const d of JSON.parse(s)) if(d.statuses_url) console.log(d.statuses_url)}catch{}})")
+            fi
 
-            for candidate in \
-              'https://chunbong-fansite.vercel.app' \
-              'https://chunbong-fansite-gkzero0-9465.vercel.app'; do
-              code=$(curl -L -sS -o /tmp/home -w '%{http_code}' "$candidate/" || true)
-              if [ "$code" = "200" ] && grep -qi 'CHUNBONG' /tmp/home; then
-                printf '%s' "$candidate"
-                return 0
-              fi
-            done
-            return 1
-          }
-
-          BASE=''
-          for attempt in 1 2 3 4 5 6 7 8 9 10; do
-            BASE=$(find_base || true)
-            [ -n "$BASE" ] && break
+            echo "PROD_WAIT_ATTEMPT=$attempt PAGE=$PAGE_HTTP JS=$JS_HTTP ASSET=$ASSET_HTTP"
             sleep 5
           done
-          if [ -z "$BASE" ]; then
-            echo 'PROD_URL_NOT_FOUND=1'
-            exit 1
-          fi
 
-          echo "PROD_URL=$BASE"
+          echo 'PROD_READY=0'
+          exit 1
+
+      - name: Verify production HTTP, 3x assets and 12-card API
+        run: |
+          set -euo pipefail
+          BASE='https://chunbong-fansite.vercel.app'
           HOME_HTTP=$(curl -L -sS -o /tmp/home -w '%{http_code}' "$BASE/")
           TAROT_PAGE_HTTP=$(curl -L -sS -o /tmp/tarot-page -w '%{http_code}' "$BASE/tarot.html")
           ASSET_00_HTTP=$(curl -L -sS -o /tmp/tarot-asset-00 -w '%{http_code}' "$BASE/assets/tarot/hd/pair-00.avif")
@@ -95,11 +98,11 @@ jobs:
           echo "ASSET_38_HTTP=$ASSET_38_HTTP"
           echo "TAROT_HTTP=$TAROT_HTTP"
 
-          [ "$HOME_HTTP" = "200" ]
-          [ "$TAROT_PAGE_HTTP" = "200" ]
-          [ "$ASSET_00_HTTP" = "200" ]
-          [ "$ASSET_38_HTTP" = "200" ]
-          [ "$TAROT_HTTP" = "200" ]
+          [ "$HOME_HTTP" = '200' ]
+          [ "$TAROT_PAGE_HTTP" = '200' ]
+          [ "$ASSET_00_HTTP" = '200' ]
+          [ "$ASSET_38_HTTP" = '200' ]
+          [ "$TAROT_HTTP" = '200' ]
           grep -q '12장' /tmp/tarot-page
 
           node <<'NODE'
@@ -118,11 +121,11 @@ jobs:
 
           for (const path of ['/tmp/tarot-asset-00', '/tmp/tarot-asset-38']) {
             const size = avifSize(path);
-            if (size.width !== 1280 || size.height !== 960) throw new Error(`${path}: ${size.width}x${size.height}`);
+            if (size.width !== 1920 || size.height !== 1440) throw new Error(`${path}: ${size.width}x${size.height}`);
             console.log(`TAROT_ASSET_SIZE=${size.width}x${size.height}`);
           }
 
-          const payload = JSON.parse(fs.readFileSync('/tmp/tarot-response','utf8'));
+          const payload = JSON.parse(fs.readFileSync('/tmp/tarot-response', 'utf8'));
           if (payload.provider !== 'local-tarot-engine') throw new Error(`provider=${payload.provider}`);
           if (payload.model !== 'rule-based-v2') throw new Error(`model=${payload.model}`);
           if (!payload.reading || !Array.isArray(payload.reading.cards) || payload.reading.cards.length !== 12) throw new Error('invalid reading cards');
@@ -132,4 +135,48 @@ jobs:
           console.log(`TAROT_MODEL=${payload.model}`);
           console.log(`TAROT_TITLE=${payload.reading.title}`);
           console.log(`TAROT_CARDS=${payload.reading.cards.length}`);
+          NODE
+
+      - name: Install Chromium browser test dependency
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install chromium
+
+      - name: Verify direct card selection in production Chromium
+        run: |
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const { chromium } = require('playwright');
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
+            await page.goto('https://chunbong-fansite.vercel.app/tarot.html', { waitUntil: 'networkidle' });
+            await page.locator('input[name="count"][value="3"]').check();
+            await page.locator('input[name="selection-mode"][value="cards"]').check();
+
+            const constraints = await page.locator('#tarot-number-inputs input').evaluateAll(inputs =>
+              inputs.map(input => ({ disabled: input.disabled, required: input.required }))
+            );
+            assert.equal(constraints.length, 3);
+            assert.ok(constraints.every(input => input.disabled && !input.required), JSON.stringify(constraints));
+
+            await page.locator('#tarot-shuffle').click();
+            await page.waitForFunction(() => document.querySelectorAll('#tarot-deck [data-card-index]').length === 78);
+            assert.equal(await page.locator('#tarot-deck [data-card-index]').count(), 78);
+
+            await page.locator('#tarot-deck [data-card-index]').nth(0).click();
+            await page.locator('#tarot-deck [data-card-index]').nth(1).click();
+            await page.locator('#tarot-deck [data-card-index]').nth(2).click();
+            await page.waitForFunction(() => document.querySelector('#tarot-results')?.hidden === false);
+            assert.equal(await page.locator('#tarot-reading-grid .tarot-card-result').count(), 3);
+
+            console.log('PROD_CHROMIUM_DIRECT_SELECTION=PASS');
+            console.log('PROD_CHROMIUM_DECK_COUNT=78');
+            console.log('PROD_CHROMIUM_RESULT_COUNT=3');
+            await browser.close();
+          })().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
           NODE
