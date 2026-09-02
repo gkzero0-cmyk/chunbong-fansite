@@ -1,42 +1,8 @@
 const DATA = require('../tarot-data.js');
 
-const DIRECT_DEFAULT_MODEL = 'gpt-5.6-sol';
-const GATEWAY_DEFAULT_MODEL = 'openai/gpt-5.6-sol';
-const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
-const GATEWAY_RESPONSES_URL = 'https://ai-gateway.vercel.sh/v1/responses';
+const LOCAL_MODEL = 'rule-based-v1';
+const LOCAL_PROVIDER = 'local-tarot-engine';
 const cardById = new Map(DATA.cards.map(card => [card.id, card]));
-
-const READING_SCHEMA = {
-  type: 'object',
-  additionalProperties: false,
-  required: ['title', 'overall', 'cards', 'advice', 'summary'],
-  properties: {
-    title: { type: 'string' },
-    overall: { type: 'string' },
-    cards: {
-      type: 'array',
-      minItems: 1,
-      maxItems: 3,
-      items: {
-        type: 'object',
-        additionalProperties: false,
-        required: ['id', 'position', 'reading'],
-        properties: {
-          id: { type: 'string' },
-          position: { type: 'string' },
-          reading: { type: 'string' }
-        }
-      }
-    },
-    advice: {
-      type: 'array',
-      minItems: 2,
-      maxItems: 4,
-      items: { type: 'string' }
-    },
-    summary: { type: 'string' }
-  }
-};
 
 function httpError(message, statusCode) {
   return Object.assign(new Error(message), { statusCode });
@@ -82,129 +48,138 @@ function validateReadingRequest(rawBody) {
   return { question, topic, spreadId, cards: validatedCards };
 }
 
-function normalizeGatewayModel(model) {
-  const value = String(model || '').trim();
-  if (!value) return GATEWAY_DEFAULT_MODEL;
-  return value.includes('/') ? value : `openai/${value}`;
-}
-
-function gatewayProvider(token, env = {}) {
-  return {
-    token,
-    url: GATEWAY_RESPONSES_URL,
-    model: normalizeGatewayModel(env.OPENAI_TAROT_MODEL || DIRECT_DEFAULT_MODEL),
-    provider: 'vercel-ai-gateway'
-  };
-}
-
-function resolveProvider(env = {}) {
-  if (env.OPENAI_API_KEY) {
-    return {
-      token: env.OPENAI_API_KEY,
-      url: OPENAI_RESPONSES_URL,
-      model: env.OPENAI_TAROT_MODEL || DIRECT_DEFAULT_MODEL,
-      provider: 'openai'
-    };
+function stableHash(value) {
+  let hash = 2166136261;
+  for (const char of String(value || '')) {
+    hash ^= char.codePointAt(0);
+    hash = Math.imul(hash, 16777619);
   }
-
-  const gatewayToken = env.AI_GATEWAY_API_KEY || env.VERCEL_OIDC_TOKEN;
-  if (gatewayToken) return gatewayProvider(gatewayToken, env);
-  return null;
+  return hash >>> 0;
 }
 
-async function loadRuntimeOidcToken() {
-  try {
-    const oidc = await import('@vercel/oidc');
-    return await oidc.getVercelOidcToken();
-  } catch (_) {
-    return '';
-  }
+function pick(values, seed) {
+  return values[seed % values.length];
 }
 
-async function resolveProviderWithRuntimeOidc(env = {}, getOidcToken = loadRuntimeOidcToken) {
-  const configured = resolveProvider(env);
-  if (configured) return configured;
-  if (typeof getOidcToken !== 'function') return null;
-
-  try {
-    const runtimeToken = await getOidcToken();
-    return runtimeToken ? gatewayProvider(runtimeToken, env) : null;
-  } catch (_) {
-    return null;
-  }
+function directionLabel(orientation) {
+  return orientation === 'upright' ? '정방향' : '역방향';
 }
 
-function buildOpenAIRequest(validated, model = DIRECT_DEFAULT_MODEL) {
+function cardMeaning(card, orientation) {
+  return orientation === 'upright' ? card.meaningUpright : card.meaningReversed;
+}
+
+function cardKeywords(card, orientation) {
+  return orientation === 'upright' ? card.keywordsUpright : card.keywordsReversed;
+}
+
+function topicHint(card, topic) {
+  return card.topicHints?.[topic] || '';
+}
+
+function containsHighRiskQuestion(question) {
+  return /(병원|의사|의료|건강|증상|약|수술|임신|법률|소송|변호사|고소|투자|주식|코인|대출|빚|안전|사고|자해|죽고|죽음)/i.test(question || '');
+}
+
+function buildCardReading(item, topic, index, seed) {
+  const { card, orientation, position } = item;
+  const direction = directionLabel(orientation);
+  const meaning = cardMeaning(card, orientation);
+  const hint = topicHint(card, topic);
+  const keyword = cardKeywords(card, orientation);
+  const lead = pick([
+    `${position} 자리의 ${card.nameKo} ${direction}은`,
+    `${card.nameKo} ${direction}이 ${position} 자리에 나온 것은`,
+    `${position} 흐름에서 보이는 ${card.nameKo} ${direction}은`
+  ], seed + index);
+
+  return `${lead} ${meaning} 핵심 키워드는 ${keyword}입니다. ${hint}`.trim();
+}
+
+function buildOverall(validated, seed) {
   const topicLabel = DATA.topics[validated.topic].label;
   const spreadLabel = DATA.spreads[validated.spreadId].label;
-  const cardText = validated.cards.map(({ card, orientation, position }) => {
-    const direction = orientation === 'upright' ? '정방향' : '역방향';
-    const keywords = orientation === 'upright' ? card.keywordsUpright : card.keywordsReversed;
-    const meaning = orientation === 'upright' ? card.meaningUpright : card.meaningReversed;
-    return `${position}: ${card.nameKo} ${direction}\n핵심 키워드: ${keywords}\n기본 의미: ${meaning}`;
-  }).join('\n\n');
+  const names = validated.cards.map(({ card, orientation }) => `${card.nameKo} ${directionLabel(orientation)}`).join(', ');
+  const questionContext = validated.question
+    ? `“${validated.question}”라는 질문을 기준으로 보면, `
+    : '';
+  const reversedCount = validated.cards.filter(card => card.orientation === 'reversed').length;
+  const pace = reversedCount === 0
+    ? '현재 흐름을 활용해 작게라도 행동으로 옮기는 쪽에 무게가 실립니다.'
+    : reversedCount === validated.cards.length
+      ? '지금은 속도를 내기보다 막히는 지점과 우선순위를 다시 점검하는 편이 좋습니다.'
+      : '밀어붙일 부분과 조절할 부분을 나눠 보는 균형이 중요합니다.';
+  const bridge = pick([
+    '카드들은 한 가지 결론을 단정하기보다 현재 선택의 장단점을 함께 살펴보라고 말합니다.',
+    '전체적으로는 가능성과 주의점을 함께 보고 현실적인 다음 행동을 고르는 흐름입니다.',
+    '이번 배열은 결과를 예언하기보다 지금 조절할 수 있는 부분에 초점을 맞추는 편이 유리하다고 보여줍니다.'
+  ], seed);
+
+  return `${questionContext}${topicLabel}의 ${spreadLabel}에서 ${names} 카드가 나왔습니다. ${bridge} ${pace}`;
+}
+
+function buildAdvice(validated, seed) {
+  const advice = [];
+  const first = validated.cards[0];
+  const primaryKeywords = cardKeywords(first.card, first.orientation).split(',').map(value => value.trim()).filter(Boolean);
+  const mainKeyword = primaryKeywords[seed % Math.max(primaryKeywords.length, 1)] || first.card.nameKo;
+
+  advice.push(`${mainKeyword}을 기준으로 지금 바로 확인할 수 있는 작은 행동 한 가지를 정해 보세요.`);
+
+  if (validated.cards.some(card => card.orientation === 'reversed')) {
+    advice.push('역방향 카드는 실패를 뜻하기보다 과속, 누락, 감정 소모처럼 조정할 지점을 먼저 확인하라는 신호로 받아들이세요.');
+  } else {
+    advice.push('흐름이 좋게 보여도 한 번에 크게 결정하기보다 확인 가능한 단계부터 실행해 보세요.');
+  }
+
+  if (validated.cards.length === 3) {
+    const last = validated.cards[2];
+    advice.push(`${last.position} 카드인 ${last.card.nameKo}의 메시지를 최종 확정이 아니라 다음 선택 전에 확인할 체크포인트로 활용해 보세요.`);
+  }
+
+  if (containsHighRiskQuestion(validated.question)) {
+    advice.push('건강·의료·법률·투자·안전처럼 결과의 영향이 큰 문제는 타로만으로 결정하지 말고 실제 정보와 관련 전문가의 판단을 함께 확인하세요.');
+  }
+
+  return advice.slice(0, 4);
+}
+
+function buildSummary(validated, seed) {
+  const first = validated.cards[0];
+  const last = validated.cards[validated.cards.length - 1];
+  const verb = pick(['점검해 보세요', '정리해 보세요', '작은 행동으로 옮겨 보세요'], seed + 7);
+
+  if (validated.cards.length === 1) {
+    return `${first.card.nameKo} ${directionLabel(first.orientation)}의 메시지처럼 ${cardKeywords(first.card, first.orientation)}을 현실적인 기준으로 삼아 ${verb}.`;
+  }
+
+  return `${first.position}의 ${first.card.nameKo}에서 시작해 ${last.position}의 ${last.card.nameKo}까지 이어지는 흐름을 보며, 지금 바꿀 수 있는 한 가지를 골라 ${verb}.`;
+}
+
+function generateLocalReading(validated) {
+  const topicLabel = DATA.topics[validated.topic].label;
+  const spreadLabel = DATA.spreads[validated.spreadId].label;
+  const seed = stableHash([
+    validated.question,
+    validated.topic,
+    validated.spreadId,
+    ...validated.cards.map(({ card, orientation, position }) => `${card.id}:${orientation}:${position}`)
+  ].join('|'));
 
   return {
-    model,
-    reasoning: { effort: 'low' },
-    max_output_tokens: 1200,
-    instructions: [
-      '당신은 타로를 자기성찰과 선택 점검을 돕는 참고 도구로 해석하는 한국어 상담자입니다.',
-      '뽑힌 카드, 정방향·역방향, 스프레드 위치를 모두 구체적으로 연결해 자연스러운 상담형 리딩을 작성하세요.',
-      '질문이 있으면 그 질문에 직접 답하되 운명이나 미래를 확정적으로 단언하거나 공포·불안을 조장하지 마세요.',
-      '건강, 법률, 투자, 안전 등 고위험 사안은 전문 진단이나 확정적 예측을 하지 말고 실제 확인 가능한 정보와 전문가의 도움을 함께 고려하도록 안내하세요.',
-      '질문자에게 실행 가능한 작은 행동이나 점검 포인트를 제안하세요.',
-      '타로 결과는 가능성과 관점을 살펴보는 참고용이라는 태도를 유지하세요.'
-    ].join(' '),
-    input: `주제: ${topicLabel}\n스프레드: ${spreadLabel}\n질문: ${validated.question || '질문 없음'}\n\n카드:\n${cardText}`,
-    text: {
-      format: {
-        type: 'json_schema',
-        name: 'tarot_reading',
-        strict: true,
-        schema: READING_SCHEMA
-      }
-    }
+    title: `${topicLabel} · ${spreadLabel}`,
+    overall: buildOverall(validated, seed),
+    cards: validated.cards.map((item, index) => ({
+      id: item.card.id,
+      position: item.position,
+      reading: buildCardReading(item, validated.topic, index, seed)
+    })),
+    advice: buildAdvice(validated, seed),
+    summary: buildSummary(validated, seed)
   };
 }
 
-function extractStructuredReading(responseBody) {
-  const directOutputText = typeof responseBody?.output_text === 'string' ? responseBody.output_text : '';
-  const nestedOutputText = (responseBody?.output || [])
-    .flatMap(item => Array.isArray(item?.content) ? item.content : [])
-    .find(part => part?.type === 'output_text')?.text;
-  const text = directOutputText || nestedOutputText;
-  if (!text) throw new Error('missing_output_text');
-
-  const reading = JSON.parse(text);
-  if (!reading || typeof reading !== 'object' || typeof reading.title !== 'string' ||
-      typeof reading.overall !== 'string' || !Array.isArray(reading.cards) ||
-      !Array.isArray(reading.advice) || typeof reading.summary !== 'string') {
-    throw new Error('invalid_reading_shape');
-  }
-  return reading;
-}
-
-async function callResponses(fetchImpl, provider, requestBody) {
-  return fetchImpl(provider.url, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      authorization: `Bearer ${provider.token}`
-    },
-    body: JSON.stringify(requestBody)
-  });
-}
-
-function classifyUpstreamFailure(status) {
-  if (status === 400) return 'ai_request_rejected';
-  if (status === 401) return 'ai_auth_failed';
-  if (status === 403) return 'ai_access_denied';
-  if (status === 404) return 'ai_model_unavailable';
-  return 'ai_upstream_failed';
-}
-
-function createHandler({ fetchImpl = global.fetch, env = process.env, getOidcToken = loadRuntimeOidcToken } = {}) {
+function createHandler() {
   return async function tarotReadingHandler(req, res) {
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'method_not_allowed' });
@@ -217,33 +192,15 @@ function createHandler({ fetchImpl = global.fetch, env = process.env, getOidcTok
       return res.status(error.statusCode || 400).json({ error: 'invalid_request' });
     }
 
-    const provider = await resolveProviderWithRuntimeOidc(env, getOidcToken);
-    if (!provider) {
-      return res.status(503).json({ error: 'ai_not_configured' });
-    }
-
-    const requestBody = buildOpenAIRequest(validated, provider.model);
-
     try {
-      const response = await callResponses(fetchImpl, provider, requestBody);
-      if (response.status === 429) {
-        return res.status(429).json({ error: 'ai_rate_limited', upstream_status: response.status });
-      }
-      if (response.status === 402) {
-        return res.status(503).json({ error: 'ai_quota_exhausted', upstream_status: response.status });
-      }
-      if (!response.ok) {
-        return res.status(502).json({
-          error: classifyUpstreamFailure(response.status),
-          upstream_status: response.status
-        });
-      }
-
-      const responseBody = await response.json();
-      const reading = extractStructuredReading(responseBody);
-      return res.status(200).json({ reading, model: provider.model, provider: provider.provider });
+      const reading = generateLocalReading(validated);
+      return res.status(200).json({
+        reading,
+        model: LOCAL_MODEL,
+        provider: LOCAL_PROVIDER
+      });
     } catch (_) {
-      return res.status(502).json({ error: 'ai_reading_failed' });
+      return res.status(500).json({ error: 'local_reading_failed' });
     }
   };
 }
@@ -252,10 +209,6 @@ const handler = createHandler();
 module.exports = handler;
 module.exports.createHandler = createHandler;
 module.exports.validateReadingRequest = validateReadingRequest;
-module.exports.buildOpenAIRequest = buildOpenAIRequest;
-module.exports.extractStructuredReading = extractStructuredReading;
-module.exports.resolveProvider = resolveProvider;
-module.exports.resolveProviderWithRuntimeOidc = resolveProviderWithRuntimeOidc;
-module.exports.loadRuntimeOidcToken = loadRuntimeOidcToken;
-module.exports.classifyUpstreamFailure = classifyUpstreamFailure;
-module.exports.READING_SCHEMA = READING_SCHEMA;
+module.exports.generateLocalReading = generateLocalReading;
+module.exports.LOCAL_MODEL = LOCAL_MODEL;
+module.exports.LOCAL_PROVIDER = LOCAL_PROVIDER;
