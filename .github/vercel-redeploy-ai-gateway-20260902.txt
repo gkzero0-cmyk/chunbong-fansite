@@ -1,0 +1,1 @@
+Redeploy production after Vercel AI Gateway/OIDC settings update on 2026-09-02.
