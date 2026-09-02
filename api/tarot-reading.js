@@ -196,6 +196,14 @@ async function callResponses(fetchImpl, provider, requestBody) {
   });
 }
 
+function classifyUpstreamFailure(status) {
+  if (status === 400) return 'ai_request_rejected';
+  if (status === 401) return 'ai_auth_failed';
+  if (status === 403) return 'ai_access_denied';
+  if (status === 404) return 'ai_model_unavailable';
+  return 'ai_upstream_failed';
+}
+
 function createHandler({ fetchImpl = global.fetch, env = process.env, getOidcToken = loadRuntimeOidcToken } = {}) {
   return async function tarotReadingHandler(req, res) {
     if (req.method !== 'POST') {
@@ -219,13 +227,16 @@ function createHandler({ fetchImpl = global.fetch, env = process.env, getOidcTok
     try {
       const response = await callResponses(fetchImpl, provider, requestBody);
       if (response.status === 429) {
-        return res.status(429).json({ error: 'ai_rate_limited' });
+        return res.status(429).json({ error: 'ai_rate_limited', upstream_status: response.status });
       }
       if (response.status === 402) {
-        return res.status(503).json({ error: 'ai_quota_exhausted' });
+        return res.status(503).json({ error: 'ai_quota_exhausted', upstream_status: response.status });
       }
       if (!response.ok) {
-        return res.status(502).json({ error: 'ai_upstream_failed' });
+        return res.status(502).json({
+          error: classifyUpstreamFailure(response.status),
+          upstream_status: response.status
+        });
       }
 
       const responseBody = await response.json();
@@ -246,4 +257,5 @@ module.exports.extractStructuredReading = extractStructuredReading;
 module.exports.resolveProvider = resolveProvider;
 module.exports.resolveProviderWithRuntimeOidc = resolveProviderWithRuntimeOidc;
 module.exports.loadRuntimeOidcToken = loadRuntimeOidcToken;
+module.exports.classifyUpstreamFailure = classifyUpstreamFailure;
 module.exports.READING_SCHEMA = READING_SCHEMA;
