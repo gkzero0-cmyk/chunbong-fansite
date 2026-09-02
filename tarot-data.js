@@ -1,16 +1,24 @@
 const CHUNBONG_TAROT_DATA = (() => {
   const topics = {
-    daily: { label: '오늘의 타로' },
-    concern: { label: '고민 상담' },
-    love: { label: '연애운' },
-    money: { label: '금전운' },
-    game: { label: '방송·게임운' }
+    general: { label: '종합타로' },
+    love: { label: '연애' },
+    relations: { label: '인간관계' },
+    broadcast: { label: '방송' },
+    crew: { label: '크루' },
+    content: { label: '콘텐츠' },
+    career: { label: '진로' },
+    money: { label: '금전' },
+    direction: { label: '앞으로의 방향' }
   };
 
   const spreads = {
-    single: { label: '한 장 메시지', positions: ['메시지'] },
-    pastPresentFuture: { label: '과거 · 현재 · 미래', positions: ['과거', '현재', '미래'] },
-    situationAdviceOutcome: { label: '상황 · 조언 · 결과', positions: ['상황', '조언', '결과'] }
+    single: { label: '한 장 메시지', positions: ['핵심 메시지'] },
+    threeFlow: { label: '3장 흐름', positions: ['과거·배경', '현재·핵심', '앞으로의 흐름'] },
+    fiveInsight: { label: '5장 인사이트', positions: ['현재 상황', '강점', '장애물', '조언', '예상 흐름'] },
+    twelveCompass: { label: '12장 종합 나침반', positions: [
+      '현재 상태', '내면', '외부 환경', '관계', '강점', '약점',
+      '기회', '장애물', '조언', '가까운 흐름', '장기 흐름', '최종 방향'
+    ] }
   };
 
   const majorSeeds = [
@@ -63,14 +71,23 @@ const CHUNBONG_TAROT_DATA = (() => {
   ];
 
   const topicHints = focus => ({
-    daily: `오늘은 ${focus}에 특히 주의를 두면 흐름을 읽기 쉽습니다.`,
-    concern: `고민의 핵심을 ${focus} 관점에서 다시 정리해 보세요.`,
-    love: `연애와 관계에서는 ${focus}을 솔직하고 현실적으로 바라보는 것이 도움이 됩니다.`,
-    money: `금전 문제에서는 ${focus}과 연결된 선택을 수치와 우선순위로 확인해 보세요.`,
-    game: `방송·게임에서는 ${focus}을 기준으로 페이스와 판단을 조절해 보세요.`
+    general: `종합 흐름에서는 ${focus}을 중심으로 균형, 타이밍, 우선순위를 함께 살펴보세요.`,
+    love: `연애에서는 ${focus}이 감정 표현, 신뢰, 경계, 관계의 속도에 어떤 영향을 주는지 살펴보세요.`,
+    relations: `인간관계에서는 ${focus}을 기준으로 신뢰, 소통, 갈등, 주고받는 균형을 점검해 보세요.`,
+    broadcast: `방송에서는 ${focus}이 페이스, 시청자 반응, 소통, 지속성에 어떤 영향을 주는지 확인해 보세요.`,
+    crew: `크루에서는 ${focus}을 역할, 협업, 신뢰, 갈등 조율과 연결해서 보세요.`,
+    content: `콘텐츠에서는 ${focus}을 아이디어, 차별화, 실행력, 타이밍, 지속 가능성과 연결해 보세요.`,
+    career: `진로에서는 ${focus}을 강점, 기술, 기회, 책임, 성장 방향과 연결해 보세요.`,
+    money: `금전에서는 ${focus}을 수입, 지출, 자원 배분, 안정성, 위험 관리와 연결해 보세요.`,
+    direction: `앞으로의 방향에서는 ${focus}을 우선순위, 방향 수정, 타이밍, 다음 행동과 연결해 보세요.`
   });
 
-  const withImageSlot = (card, index) => ({ ...card, imageSheet: Math.floor(index / 13), imageSlot: index % 13 });
+  const withImageSlot = (card, index) => ({
+    ...card,
+    deckNumber: index + 1,
+    imageSheet: Math.floor(index / 13),
+    imageSlot: index % 13
+  });
 
   const majorCards = majorSeeds.map(([nameKo, up, rev], number) => withImageSlot({
     id: `major-${String(number).padStart(2, '0')}`,

@@ -18,19 +18,19 @@ function makeRes() {
 
 const validThree = {
   question: '지금 준비 중인 일을 계속해도 괜찮을까?',
-  topic: 'concern',
-  spreadId: 'situationAdviceOutcome',
+  topic: 'general',
+  spreadId: 'threeFlow',
   cards: [
-    { id: 'major-16', orientation: 'upright', position: '상황' },
-    { id: 'major-17', orientation: 'upright', position: '조언' },
-    { id: 'cups-03', orientation: 'reversed', position: '결과' }
+    { id: 'major-16', orientation: 'upright', position: '과거·배경' },
+    { id: 'major-17', orientation: 'upright', position: '현재·핵심' },
+    { id: 'cups-03', orientation: 'reversed', position: '앞으로의 흐름' }
   ]
 };
 const validSingle = {
   question: '이번 주에 집중하면 좋은 점은?',
-  topic: 'daily',
+  topic: 'general',
   spreadId: 'single',
-  cards: [{ id: 'major-19', orientation: 'upright', position: '메시지' }]
+  cards: [{ id: 'major-19', orientation: 'upright', position: '핵심 메시지' }]
 };
 
 {
@@ -47,7 +47,7 @@ const validSingle = {
   assert.equal(res.payload.reading.cards.length, 3);
   assert.deepEqual(
     res.payload.reading.cards.map(card => [card.id, card.position]),
-    [['major-16', '상황'], ['major-17', '조언'], ['cups-03', '결과']]
+    [['major-16', '과거·배경'], ['major-17', '현재·핵심'], ['cups-03', '앞으로의 흐름']]
   );
   assert.ok(res.payload.reading.cards[0].reading.includes('탑'));
   assert.ok(res.payload.reading.cards[0].reading.includes('정방향'));
@@ -86,7 +86,6 @@ const validSingle = {
   const res = makeRes();
   await api.createHandler({ env: {} })(makeReq('POST', {
     ...validSingle,
-    topic: 'concern',
     question: '건강이 안 좋은데 병원에 가야 할까?'
   }), res);
   assert.equal(res.statusCode, 200);
@@ -102,7 +101,7 @@ const validSingle = {
 for (const mutate of [
   body => { body.cards[0].id = 'not-a-card'; },
   body => { body.cards[1].id = body.cards[0].id; },
-  body => { body.cards[0].position = '결과'; },
+  body => { body.cards[0].position = '앞으로의 흐름'; },
   body => { body.cards[0].orientation = 'sideways'; },
   body => { body.question = '가'.repeat(501); }
 ]) {

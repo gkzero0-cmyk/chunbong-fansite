@@ -13,13 +13,17 @@ assert.equal(data.cards.length, 78, 'tarot deck must contain 78 cards');
 assert.equal(data.cards.filter(card => card.arcana === 'major').length, 22, 'deck must contain 22 major cards');
 assert.equal(data.cards.filter(card => card.arcana === 'minor').length, 56, 'deck must contain 56 minor cards');
 assert.equal(new Set(data.cards.map(card => card.id)).size, 78, 'all tarot card ids must be unique');
-assert.deepEqual(data.spreads.pastPresentFuture.positions, ['과거', '현재', '미래']);
-assert.deepEqual(data.spreads.situationAdviceOutcome.positions, ['상황', '조언', '결과']);
+assert.deepEqual(data.spreads.threeFlow.positions, ['과거·배경', '현재·핵심', '앞으로의 흐름']);
+assert.deepEqual(data.spreads.fiveInsight.positions, ['현재 상황', '강점', '장애물', '조언', '예상 흐름']);
+assert.equal(data.spreads.twelveCompass.positions.length, 12);
 
 for (const card of data.cards) {
   assert.ok(card.nameKo, `${card.id} must have a Korean name`);
   assert.ok(card.meaningUpright && card.meaningReversed, `${card.id} must have both meanings`);
-  assert.ok(card.topicHints.daily && card.topicHints.concern && card.topicHints.love && card.topicHints.money && card.topicHints.game, `${card.id} must support every topic`);
+  for (const topicId of ['general','love','relations','broadcast','crew','content','career','money','direction']) {
+    assert.ok(card.topicHints[topicId], `${card.id} must support ${topicId}`);
+  }
+  assert.ok(Number.isInteger(card.deckNumber) && card.deckNumber >= 1 && card.deckNumber <= 78, `${card.id} must have a stable deck number`);
   assert.ok(Number.isInteger(card.imageSheet) && card.imageSheet >= 0 && card.imageSheet < 6, `${card.id} must map to one of six source slots`);
   assert.ok(Number.isInteger(card.imageSlot) && card.imageSlot >= 0 && card.imageSlot < 13, `${card.id} must map to a valid source slot`);
 }
@@ -34,20 +38,20 @@ assert.equal(new Set(shuffled.map(card => card.id)).size, 8, 'shuffle must not d
 assert.equal(tarot.orientationFromRandom(() => 0.1), 'upright');
 assert.equal(tarot.orientationFromRandom(() => 0.9), 'reversed');
 const sample = { card: data.cards[0], orientation: 'upright' };
-assert.ok(tarot.buildCardInterpretation(sample, 'daily', '현재').includes(data.cards[0].nameKo));
-assert.ok(tarot.buildSummary([sample], 'daily', 'single').includes('가능성'));
+assert.ok(tarot.buildCardInterpretation(sample, 'general', '핵심 메시지').includes(data.cards[0].nameKo));
+assert.ok(tarot.buildSummary([sample], 'general', 'single').includes('가능성'));
 
 const aiPayload = tarot.buildAiRequestPayload({
   question: '질문',
-  topic: 'concern',
+  topic: 'general',
   spreadId: 'single',
-  selected: [{ card: data.cards[0], orientation: 'upright', position: '메시지' }]
+  selected: [{ card: data.cards[0], orientation: 'upright', position: '핵심 메시지' }]
 });
 assert.deepEqual(aiPayload, {
   question: '질문',
-  topic: 'concern',
+  topic: 'general',
   spreadId: 'single',
-  cards: [{ id: data.cards[0].id, orientation: 'upright', position: '메시지' }]
+  cards: [{ id: data.cards[0].id, orientation: 'upright', position: '핵심 메시지' }]
 });
 
 const html = read('tarot.html');
