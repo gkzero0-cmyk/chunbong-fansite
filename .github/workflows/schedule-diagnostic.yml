@@ -1,0 +1,33 @@
+name: Schedule diagnostic
+
+on:
+  push:
+    branches: [fix/schedule-live-refresh]
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare production schedule API with static snapshot
+        run: |
+          set -euo pipefail
+          BASE='https://chunbong-fansite.vercel.app'
+          HTTP=$(curl -L -sS -o /tmp/schedule.json -w '%{http_code}' "$BASE/api/content?type=schedule")
+          echo "SCHEDULE_HTTP=$HTTP"
+          cat /tmp/schedule.json
+          node <<'NODE'
+          const fs = require('fs');
+          const payload = JSON.parse(fs.readFileSync('/tmp/schedule.json','utf8'));
+          const items = Array.isArray(payload.items) ? payload.items : [];
+          console.log('API_FALLBACK=' + Boolean(payload.fallback));
+          console.log('API_REASON=' + (payload.reason || ''));
+          console.log('API_COUNT=' + items.length);
+          console.log('API_LATEST=' + (items.at(-1)?.start || ''));
+          console.log('API_TITLES=' + items.slice(-8).map(x => `${x.start}|${x.title}`).join(' || '));
+          const content = fs.readFileSync('content.js','utf8');
+          const match = content.match(/notionScheduleUpdatedAt:\s*'([^']+)'/);
+          console.log('STATIC_UPDATED=' + (match?.[1] || ''));
+          const starts = [...content.matchAll(/start:\s*'([^']+)'/g)].map(m => m[1]);
+          console.log('STATIC_LATEST=' + (starts.sort().at(-1) || ''));
+          NODE
