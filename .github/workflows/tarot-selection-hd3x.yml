@@ -10,50 +10,30 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Patch direct card selection validation
+      - name: Install AVIF tooling
+        run: python -m pip install --disable-pip-version-check pillow pillow-avif-plugin
+      - name: Generate 3x tarot assets from original pair sources
         if: github.actor != 'github-actions[bot]'
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          path = Path('tarot.js')
-          text = path.read_text()
-          if 'function numberInputConstraintState(mode)' not in text:
-            text = text.replace(
-              "function createTarotSoundController(storage = globalThis.localStorage, AudioContextCtor = globalThis.AudioContext || globalThis.webkitAudioContext) {",
-              "function numberInputConstraintState(mode) {\n  const isNumberMode = String(mode) === 'number';\n  return { disabled: !isNumberMode, required: isNumberMode };\n}\n\nfunction createTarotSoundController(storage = globalThis.localStorage, AudioContextCtor = globalThis.AudioContext || globalThis.webkitAudioContext) {",
-              1,
-            )
-          if '  numberInputConstraintState,\n  createTarotSoundController,' not in text:
-            text = text.replace(
-              "  buildNumberSelections,\n  createTarotSoundController,",
-              "  buildNumberSelections,\n  numberInputConstraintState,\n  createTarotSoundController,",
-              1,
-            )
-          old_sync = "    if (numberPanel) numberPanel.hidden = mode !== 'number';\n    if (startButton) startButton.textContent = mode === 'number' ? '숫자로 카드 열기' : '78장 카드 섞기';"
-          if old_sync in text:
-            text = text.replace(
-              old_sync,
-              "    if (numberPanel) numberPanel.hidden = mode !== 'number';\n    const constraints = numberInputConstraintState(mode);\n    byId('tarot-number-inputs')?.querySelectorAll('input').forEach(input => {\n      input.disabled = constraints.disabled;\n      input.required = constraints.required;\n    });\n    if (startButton) startButton.textContent = mode === 'number' ? '숫자로 카드 열기' : '78장 카드 섞기';",
-              1,
-            )
-          old_count = "      if (event.target.name === 'count') renderNumberInputs(Number(event.target.value));"
-          if old_count in text:
-            text = text.replace(
-              old_count,
-              "      if (event.target.name === 'count') {\n        renderNumberInputs(Number(event.target.value));\n        syncSelectionModeUI();\n      }",
-              1,
-            )
-          path.write_text(text)
-          PY
+          set -euo pipefail
+          SOURCE_SHA=3247a55efbc9629b5707f975e779d3893d068ff5
+          git fetch --depth=1 origin "$SOURCE_SHA"
+          mkdir -p /tmp/tarot-source
+          for index in $(seq -w 0 38); do
+            git show "$SOURCE_SHA:assets/tarot/hd/pair-$index.avif" > "/tmp/tarot-source/pair-$index.avif"
+          done
+          TAROT_SOURCE_DIR=/tmp/tarot-source python scripts/upscale-tarot-hd.py
       - name: Syntax checks
         run: |
           node --check tarot.js
@@ -63,13 +43,13 @@ jobs:
         run: |
           node tests/tarot-selection-modes-regression.mjs
           node tests/tarot-hd-assets-regression.mjs
-      - name: Commit selection fix
+      - name: Commit 3x tarot assets
         if: github.actor != 'github-actions[bot]'
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add tarot.js
+          git add assets/tarot/hd/pair-*.avif scripts/upscale-tarot-hd.py
           git diff --cached --quiet && exit 0
-          git commit -m 'fix: allow direct card selection without number validation'
+          git commit -m 'feat: regenerate tarot cards at 3x resolution'
           git push origin HEAD:fix/tarot-card-selection-hd3x
