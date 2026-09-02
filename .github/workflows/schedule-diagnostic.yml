@@ -9,13 +9,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Compare production schedule API with static snapshot
+      - name: Inspect production API and current Notion page structure
         run: |
           set -euo pipefail
           BASE='https://chunbong-fansite.vercel.app'
+          NOTION_PAGE_ID='2c059c07-cee4-8093-8952-ffaf573b8c99'
+          NOTION_SOURCE='https://fire-space-8c8.notion.site/2c059c07cee480938952ffaf573b8c99?pvs=74'
+
           HTTP=$(curl -L -sS -o /tmp/schedule.json -w '%{http_code}' "$BASE/api/content?type=schedule")
           echo "SCHEDULE_HTTP=$HTTP"
-          cat /tmp/schedule.json
           node <<'NODE'
           const fs = require('fs');
           const payload = JSON.parse(fs.readFileSync('/tmp/schedule.json','utf8'));
@@ -24,10 +26,42 @@ jobs:
           console.log('API_REASON=' + (payload.reason || ''));
           console.log('API_COUNT=' + items.length);
           console.log('API_LATEST=' + (items.at(-1)?.start || ''));
-          console.log('API_TITLES=' + items.slice(-8).map(x => `${x.start}|${x.title}`).join(' || '));
           const content = fs.readFileSync('content.js','utf8');
           const match = content.match(/notionScheduleUpdatedAt:\s*'([^']+)'/);
           console.log('STATIC_UPDATED=' + (match?.[1] || ''));
           const starts = [...content.matchAll(/start:\s*'([^']+)'/g)].map(m => m[1]);
           console.log('STATIC_LATEST=' + (starts.sort().at(-1) || ''));
+          NODE
+
+          PAGE_HTTP=$(curl -L -sS -o /tmp/notion.html -w '%{http_code}' "$NOTION_SOURCE")
+          echo "NOTION_PAGE_HTTP=$PAGE_HTTP"
+          echo "NOTION_PAGE_FINAL=$(curl -L -sS -o /dev/null -w '%{url_effective}' "$NOTION_SOURCE")"
+
+          curl -sS 'https://www.notion.so/api/v3/loadPageChunk' \
+            -H 'content-type: application/json' \
+            -H 'accept: application/json,text/plain,*/*' \
+            -H "referer: $NOTION_SOURCE" \
+            -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/151 Safari/537.36' \
+            --data-binary "{\"pageId\":\"$NOTION_PAGE_ID\",\"limit\":100,\"cursor\":{\"stack\":[]},\"chunkNumber\":0,\"verticalColumns\":false}" \
+            -o /tmp/notion.json
+
+          node <<'NODE'
+          const fs = require('fs');
+          const data = JSON.parse(fs.readFileSync('/tmp/notion.json','utf8'));
+          const rm = data.recordMap || {};
+          console.log('RECORD_MAP_KEYS=' + Object.keys(rm).join(','));
+          for (const key of ['block','collection','collection_view','collection_query','notion_user']) {
+            console.log(`${key.toUpperCase()}_COUNT=${Object.keys(rm[key] || {}).length}`);
+          }
+          const blocks = Object.values(rm.block || {}).map(x => x?.value || x).filter(Boolean);
+          const typeCounts = {};
+          for (const b of blocks) typeCounts[b.type || 'unknown'] = (typeCounts[b.type || 'unknown'] || 0) + 1;
+          console.log('BLOCK_TYPES=' + JSON.stringify(typeCounts));
+          console.log('BLOCK_SUMMARY=' + blocks.slice(0,30).map(b => JSON.stringify({id:b.id,type:b.type,parent_id:b.parent_id,parent_table:b.parent_table,collection_id:b.collection_id,view_ids:b.view_ids,content:b.content})).join('\n'));
+          console.log('COLLECTION_KEYS=' + Object.keys(rm.collection || {}).join(','));
+          console.log('VIEW_KEYS=' + Object.keys(rm.collection_view || {}).join(','));
+          const html = fs.readFileSync('/tmp/notion.html','utf8');
+          const ids = [...new Set((html.match(/[0-9a-f]{32}/gi)||[]))].slice(0,30);
+          console.log('HTML_HEX_IDS=' + ids.join(','));
+          console.log('HTML_HAS_COLLECTION_VIEW=' + /collection_view/i.test(html));
           NODE
