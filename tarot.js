@@ -109,13 +109,16 @@ if (typeof module !== 'undefined' && module.exports) module.exports = TAROT_API;
 
 if (typeof document !== 'undefined') {
   const state = {
-    topic: 'daily',
+    topic: 'general',
     count: 1,
     spreadId: 'single',
+    selectionMode: 'number',
     question: '',
     deck: [],
     selected: [],
-    aiSucceeded: false
+    phase: 'setup',
+    readingSucceeded: false,
+    soundEnabled: true
   };
   const byId = id => document.getElementById(id);
   const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({
@@ -125,27 +128,62 @@ if (typeof document !== 'undefined') {
   const scrollToElement = element => element?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
 
   function readSetup() {
-    const form = byId('tarot-setup');
-    const formData = new FormData(form);
+    const formData = new FormData(byId('tarot-setup'));
     const count = Number(formData.get('count') || 1);
     return {
-      topic: String(formData.get('topic') || 'daily'),
+      topic: String(formData.get('topic') || 'general'),
       count,
-      spreadId: count === 3 ? String(formData.get('spread') || 'pastPresentFuture') : 'single',
+      spreadId: spreadIdForCount(count),
+      selectionMode: String(formData.get('selection-mode') || 'number'),
       question: byId('tarot-question').value.trim()
     };
   }
 
+  function renderNumberInputs(count) {
+    const container = byId('tarot-number-inputs');
+    if (!container) return;
+    container.replaceChildren(...Array.from({ length: count }, (_, index) => {
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.inputMode = 'numeric';
+      input.min = '1';
+      input.max = '78';
+      input.step = '1';
+      input.required = true;
+      input.placeholder = `${index + 1}번째 번호`;
+      input.setAttribute('aria-label', `${index + 1}번째 카드 번호`);
+      return input;
+    }));
+  }
+
+  function syncSelectionModeUI() {
+    const mode = String(new FormData(byId('tarot-setup')).get('selection-mode') || 'number');
+    const numberPanel = byId('tarot-number-panel');
+    const startButton = byId('tarot-shuffle');
+    if (numberPanel) numberPanel.hidden = mode !== 'number';
+    if (startButton) startButton.textContent = mode === 'number' ? '숫자로 카드 열기' : '78장 카드 섞기';
+  }
+
+  function renderSelectedSlots() {
+    const positions = DATA.spreads[state.spreadId]?.positions || [];
+    const slots = byId('tarot-selected-slots');
+    if (!slots) return;
+    slots.innerHTML = positions.map((position, index) =>
+      `<div class="tarot-selected-slot ${index < state.selected.length ? 'is-filled' : ''}" data-slot-index="${index}">${escapeHtml(position)} · ${index < state.selected.length ? '선택됨' : '대기'}</div>`
+    ).join('');
+  }
+
   function renderDeck() {
-    const visible = state.deck.slice(0, 18);
+    const visible = state.deck.slice(0, 78);
     byId('tarot-deck').innerHTML = visible.map((card, index) =>
       `<button class="tarot-card-back" type="button" data-card-index="${index}" aria-label="뒤집힌 타로 카드 ${index + 1} 선택"><span>CB</span></button>`
     ).join('');
-    byId('tarot-selection-status').textContent = `${state.count}장 중 0장을 선택했습니다.`;
+    renderSelectedSlots();
+    byId('tarot-selection-status').textContent = `78장 중 ${state.selected.length}/${state.count}장을 선택했습니다.`;
   }
 
   function resetAiPanel() {
-    state.aiSucceeded = false;
+    state.readingSucceeded = false;
     const button = byId('tarot-ai-button');
     const status = byId('tarot-ai-status');
     const content = byId('tarot-ai-content');
@@ -158,15 +196,41 @@ if (typeof document !== 'undefined') {
     content.replaceChildren();
   }
 
-  function startReading() {
-    Object.assign(state, readSetup());
-    state.deck = shuffleDeck(DATA.cards);
-    state.selected = [];
-    state.aiSucceeded = false;
+  function clearResults() {
     byId('tarot-results').hidden = true;
+    byId('tarot-results').classList.remove('is-complete');
     byId('tarot-reading-grid').innerHTML = '';
     byId('tarot-summary').innerHTML = '';
     resetAiPanel();
+  }
+
+  function startReading() {
+    Object.assign(state, readSetup());
+    clearResults();
+    byId('tarot-number-error').textContent = '';
+
+    if (state.selectionMode === 'number') {
+      const values = [...byId('tarot-number-inputs').querySelectorAll('input')].map(input => input.value);
+      try {
+        state.selected = buildNumberSelections(values, state.spreadId);
+      } catch (error) {
+        byId('tarot-number-error').textContent = error.message === 'duplicate_deck_number'
+          ? '같은 숫자는 중복해서 사용할 수 없습니다.'
+          : '1부터 78 사이의 정수를 필요한 장수만큼 입력해 주세요.';
+        state.phase = 'setup';
+        return;
+      }
+      state.deck = [];
+      byId('tarot-deck').innerHTML = '';
+      byId('tarot-selected-slots').innerHTML = '';
+      byId('tarot-selection-status').textContent = '숫자를 확인하고 카드를 펼칩니다.';
+      beginReveal();
+      return;
+    }
+
+    state.deck = shuffleDeck(DATA.cards);
+    state.selected = [];
+    state.phase = 'selecting';
     byId('tarot-deck').classList.remove('is-shuffling');
     void byId('tarot-deck').offsetWidth;
     byId('tarot-deck').classList.add('is-shuffling');
@@ -192,14 +256,16 @@ if (typeof document !== 'undefined') {
   }
 
   function renderResults() {
-    byId('tarot-reading-grid').innerHTML = state.selected.map(selection => {
+    const grid = byId('tarot-reading-grid');
+    grid.dataset.count = String(state.count);
+    grid.innerHTML = state.selected.map(selection => {
       const reversed = selection.orientation === 'reversed';
       const direction = reversed ? '역방향' : '정방향';
       const meaning = buildCardInterpretation(selection, state.topic, selection.position);
       return `<article class="tarot-card-result">
         <p class="tarot-position">${escapeHtml(selection.position)}</p>
         <div class="tarot-card-art ${reversed ? 'is-reversed' : ''}" data-sheet="${selection.card.imageSheet}" data-slot="${selection.card.imageSlot}" role="img" aria-label="${escapeHtml(selection.card.nameKo)} ${direction}"><span>카드 이미지를 불러오지 못했습니다.</span></div>
-        <div class="tarot-card-copy"><small>${direction}</small><h2>${escapeHtml(selection.card.nameKo)}</h2><p>${escapeHtml(meaning)}</p></div>
+        <div class="tarot-card-copy"><small>${direction} · DECK ${selection.deckNumber}</small><h2>${escapeHtml(selection.card.nameKo)}</h2><p>${escapeHtml(meaning)}</p></div>
       </article>`;
     }).join('');
 
@@ -211,6 +277,14 @@ if (typeof document !== 'undefined') {
     resetAiPanel();
     byId('tarot-results').hidden = false;
     scrollToElement(byId('tarot-results'));
+  }
+
+  function beginReveal() {
+    state.phase = 'revealing';
+    byId('tarot-selection-status').textContent = '카드를 순서대로 펼치고 있어요.';
+    renderResults();
+    state.phase = 'results';
+    byId('tarot-selection-status').textContent = '리딩이 준비됐습니다.';
   }
 
   function appendTextElement(parent, tag, className, text) {
@@ -248,7 +322,7 @@ if (typeof document !== 'undefined') {
   }
 
   async function requestAiReading() {
-    if (state.aiSucceeded || state.selected.length !== state.count) return;
+    if (state.readingSucceeded || state.selected.length !== state.count) return;
     const button = byId('tarot-ai-button');
     const status = byId('tarot-ai-status');
     button.disabled = true;
@@ -267,7 +341,7 @@ if (typeof document !== 'undefined') {
         throw error;
       }
       renderAiReading(payload.reading);
-      state.aiSucceeded = true;
+      state.readingSucceeded = true;
       status.textContent = '자동 상담 리딩이 준비됐습니다.';
       button.hidden = true;
     } catch (_) {
@@ -278,33 +352,53 @@ if (typeof document !== 'undefined') {
   }
 
   function selectCard(button) {
-    if (state.selected.length >= state.count || button.disabled) return;
+    if (state.phase !== 'selecting' || state.selected.length >= state.count || button.disabled) return;
     const index = Number(button.dataset.cardIndex);
     const card = state.deck[index];
     if (!card) return;
     const positions = DATA.spreads[state.spreadId].positions;
-    state.selected.push({ card, orientation: orientationFromRandom(), position: positions[state.selected.length] });
+    state.selected.push({
+      card,
+      orientation: orientationFromRandom(),
+      position: positions[state.selected.length],
+      deckNumber: card.deckNumber
+    });
     button.disabled = true;
     button.classList.add('selected');
-    byId('tarot-selection-status').textContent = `${state.count}장 중 ${state.selected.length}장을 선택했습니다.`;
-    if (state.selected.length === state.count) renderResults();
+    renderSelectedSlots();
+    byId('tarot-selection-status').textContent = `78장 중 ${state.selected.length}/${state.count}장을 선택했습니다.`;
+    if (state.selected.length === state.count) beginReveal();
+  }
+
+  function updateSoundToggle() {
+    const button = byId('tarot-sound-toggle');
+    if (!button) return;
+    button.setAttribute('aria-pressed', String(state.soundEnabled));
+    button.textContent = state.soundEnabled ? '효과음 ON' : '효과음 OFF';
   }
 
   function resetReading() {
     state.deck = [];
     state.selected = [];
-    state.aiSucceeded = false;
+    state.phase = 'setup';
+    state.readingSucceeded = false;
     byId('tarot-deck').innerHTML = '';
+    byId('tarot-selected-slots').innerHTML = '';
     byId('tarot-results').hidden = true;
+    byId('tarot-number-error').textContent = '';
     resetAiPanel();
-    byId('tarot-selection-status').textContent = '주제와 카드 수를 선택한 뒤 카드를 섞어 주세요.';
+    byId('tarot-selection-status').textContent = '주제와 카드 수, 선택 방식을 정해 주세요.';
     scrollToElement(byId('tarot-setup'));
   }
 
   const setup = byId('tarot-setup');
   if (setup) {
+    renderNumberInputs(1);
+    syncSelectionModeUI();
+    updateSoundToggle();
     setup.addEventListener('change', event => {
-      if (event.target.name === 'count') byId('tarot-spread-options').hidden = event.target.value !== '3';
+      if (event.target.name === 'count') renderNumberInputs(Number(event.target.value));
+      if (event.target.name === 'selection-mode') syncSelectionModeUI();
     });
     setup.addEventListener('submit', event => {
       event.preventDefault();
@@ -313,6 +407,10 @@ if (typeof document !== 'undefined') {
     byId('tarot-deck').addEventListener('click', event => {
       const button = event.target.closest('[data-card-index]');
       if (button) selectCard(button);
+    });
+    byId('tarot-sound-toggle').addEventListener('click', () => {
+      state.soundEnabled = !state.soundEnabled;
+      updateSoundToggle();
     });
     byId('tarot-ai-button').addEventListener('click', requestAiReading);
     byId('tarot-redraw').addEventListener('click', startReading);
