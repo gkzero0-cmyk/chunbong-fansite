@@ -56,19 +56,23 @@ assert.deepEqual(aiPayload, {
 
 const html = read('tarot.html');
 for (const token of [
-  'data-page="tarot"', 'id="tarot-setup"', 'id="tarot-spread-options"', 'id="tarot-question"',
+  'data-page="tarot"', 'id="tarot-setup"', 'id="tarot-number-panel"', 'id="tarot-number-inputs"',
+  'id="tarot-number-error"', 'id="tarot-selected-slots"', 'id="tarot-sound-toggle"', 'id="tarot-question"',
   'id="tarot-deck"', 'id="tarot-results"', 'id="tarot-reading-grid"', 'id="tarot-summary"',
   'id="tarot-ai-panel"', 'id="tarot-ai-button"', 'id="tarot-ai-status"', 'id="tarot-ai-content"',
   'tarot.css', 'tarot-data.js', 'tarot.js'
 ]) assert.ok(html.includes(token), `tarot.html should include ${token}`);
 assert.ok(html.includes('maxlength="500"'), 'question length should match server validation');
-assert.ok(html.includes('과거 · 현재 · 미래'));
-assert.ok(html.includes('상황 · 조언 · 결과'));
+assert.ok(html.includes('종합타로'));
+assert.ok(html.includes('5장'));
+assert.ok(html.includes('12장'));
+assert.ok(html.includes('숫자 직접 입력'));
+assert.ok(html.includes('카드 직접 선택'));
 assert.ok(html.includes('타로 결과는 재미와 자기성찰을 위한 참고용입니다.'));
 
 const script = read('tarot.js');
-assert.ok(script.includes("fetch('/api/tarot-reading'"), 'tarot frontend must call the server-side AI endpoint');
-assert.ok(script.includes('textContent'), 'AI output must be rendered as text, not trusted HTML');
+assert.ok(script.includes("fetch('/api/tarot-reading'"), 'tarot frontend must call the local counseling endpoint');
+assert.ok(script.includes('textContent'), 'counseling output must be rendered as text, not trusted HTML');
 assert.ok(!script.includes('OPENAI_API_KEY'), 'client code must never contain the OpenAI API key name');
 assert.ok(script.includes('assets/tarot/hd/pair-${String(pair).padStart(2, \'0\')}.avif'), 'tarot results must load the source-derived HD pair for the selected card');
 assert.ok(script.includes("backgroundSize = '200% 100%'"), 'tarot renderer must crop one card from a two-card HD pair');
@@ -77,8 +81,8 @@ assert.ok(script.includes('globalIndex = sheet * 13 + slot'), 'tarot renderer mu
 const css = read('tarot.css');
 for (const token of [
   '.tarot-stage', '.tarot-card-back', '.tarot-card-art', '.tarot-reading-grid', '.tarot-ai-panel', '.tarot-ai-content',
-  '@keyframes tarotShuffle', '@keyframes tarotReveal', '@media (prefers-reduced-motion: reduce)'
+  '.tarot-number-inputs', '.tarot-selected-slots', '@keyframes tarotShuffle', '@keyframes tarotReveal', '@media (prefers-reduced-motion: reduce)'
 ]) assert.ok(css.includes(token), `tarot.css should include ${token}`);
 assert.ok(css.includes('max-width:320px'), 'tarot artwork must not be enlarged beyond its source-derived width');
 
-console.log('tarot data, original HD pair logic, AI UI, page and styling regression test passed');
+console.log('tarot expanded data, HD pair logic, UI, page and styling regression test passed');
