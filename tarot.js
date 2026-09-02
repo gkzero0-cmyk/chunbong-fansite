@@ -56,6 +56,11 @@ function buildNumberSelections(values, spreadId, randomFn = random01) {
   }));
 }
 
+function numberInputConstraintState(mode) {
+  const isNumberMode = String(mode) === 'number';
+  return { disabled: !isNumberMode, required: isNumberMode };
+}
+
 function createTarotSoundController(storage = globalThis.localStorage, AudioContextCtor = globalThis.AudioContext || globalThis.webkitAudioContext) {
   const key = 'chunbongTarotSound';
   let stored = null;
@@ -176,6 +181,7 @@ const TAROT_API = {
   spreadIdForCount,
   validateDeckNumbers,
   buildNumberSelections,
+  numberInputConstraintState,
   createTarotSoundController,
   buildCardInterpretation,
   buildSummary,
@@ -239,6 +245,11 @@ if (typeof document !== 'undefined') {
     const numberPanel = byId('tarot-number-panel');
     const startButton = byId('tarot-shuffle');
     if (numberPanel) numberPanel.hidden = mode !== 'number';
+    const constraints = numberInputConstraintState(mode);
+    byId('tarot-number-inputs')?.querySelectorAll('input').forEach(input => {
+      input.disabled = constraints.disabled;
+      input.required = constraints.required;
+    });
     if (startButton) startButton.textContent = mode === 'number' ? '숫자로 카드 열기' : '78장 카드 섞기';
   }
 
@@ -491,7 +502,10 @@ if (typeof document !== 'undefined') {
     syncSelectionModeUI();
     updateSoundToggle();
     setup.addEventListener('change', event => {
-      if (event.target.name === 'count') renderNumberInputs(Number(event.target.value));
+      if (event.target.name === 'count') {
+      renderNumberInputs(Number(event.target.value));
+      syncSelectionModeUI();
+    }
       if (event.target.name === 'selection-mode') syncSelectionModeUI();
     });
     setup.addEventListener('submit', event => {

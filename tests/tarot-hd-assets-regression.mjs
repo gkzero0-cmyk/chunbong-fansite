@@ -19,11 +19,11 @@ for (const [index, asset] of assets.entries()) {
   assert.ok(fs.existsSync(asset), `${asset.pathname} should exist`);
   const bytes = fs.readFileSync(asset);
   totalBytes += bytes.length;
-  assert.ok(bytes.length > 14 * 1024, `pair ${index} should retain enough detail for high-DPI rendering`);
+  assert.ok(bytes.length > 20 * 1024, `pair ${index} should retain enough detail for 3x high-DPI rendering`);
   const size = readAvifSize(bytes);
-  assert.equal(size.width, 1280, `pair ${index} should contain two 640px-wide high-DPI cards`);
-  assert.equal(size.height, 960, `pair ${index} should contain 960px-high high-DPI cards`);
+  assert.equal(size.width, 1920, `pair ${index} should contain two 960px-wide high-DPI cards`);
+  assert.equal(size.height, 1440, `pair ${index} should contain 1440px-high high-DPI cards`);
 }
-assert.ok(totalBytes > 800 * 1024, '2x tarot pairs should retain substantially more detail than the 320x480 card assets');
-assert.ok(totalBytes < 8 * 1024 * 1024, '2x tarot pairs should remain practical for result-time loading');
-console.log('39 high-DPI 640x960 tarot card pairs regression test passed');
+assert.ok(totalBytes > 2 * 1024 * 1024, '3x tarot pairs should retain substantially more detail than the 2x card assets');
+assert.ok(totalBytes < 18 * 1024 * 1024, '3x tarot pairs should remain practical for result-time loading');
+console.log('39 high-DPI 960x1440 tarot card pairs regression test passed');
