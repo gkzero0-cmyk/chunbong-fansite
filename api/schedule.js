@@ -16,7 +16,14 @@ async function postNotion(endpoint, body) {
   return response.json();
 }
 
-function recordValue(entry) { return entry?.value || entry || null; }
+function recordValue(entry) {
+  let current = entry || null;
+  while (current && typeof current === 'object' && current.value && typeof current.value === 'object') {
+    if (current.id || current.type || current.schema || current.query || current.query2) break;
+    current = current.value;
+  }
+  return current || null;
+}
 function findCollection(recordMap = {}) {
   const blocks = recordMap.block || {};
   for (const entry of Object.values(blocks)) {
