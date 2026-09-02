@@ -2,7 +2,7 @@
 
 Date: 2026-09-02
 Repository: `gkzero0-cmyk/chunbong-fansite`
-Status: Approved in chat; awaiting written-spec review before implementation
+Status: Approved in chat; written-spec review pending before implementation
 
 ## 1. Goal
 
@@ -20,7 +20,7 @@ Expand the existing Chunbong fan-site tarot feature from a 1/3-card reading into
   - 금전
   - 앞으로의 방향
 - Two selection methods:
-  - direct number entry using numbers 1 through 78
+  - direct number entry using integers 1 through 78
   - direct card-back selection from the shuffled 78-card deck
 - richer card-selection and result-reveal motion
 - optional generated sound effects using the browser Web Audio API
@@ -30,22 +30,34 @@ The existing 78-card data set, 39 source-derived HD AVIF pair assets, site visua
 
 ## 2. User Flow
 
-The tarot page will use this sequence:
+### Number entry mode
 
 1. Choose a reading topic.
 2. Choose card count: 1, 3, 5, or 12.
-3. Choose a selection method:
-   - 숫자 직접 입력
-   - 카드 직접 선택
-4. Optionally enter a question, maximum 500 characters.
-5. Start the reading.
-6. Complete the chosen selection method.
-7. Reveal cards in spread order with visual and sound feedback.
+3. Choose `숫자 직접 입력`.
+4. Enter exactly the required number of unique integers from 1 through 78.
+5. Optionally enter a question, maximum 500 characters.
+6. Press the reading start button.
+7. The chosen cards receive upright/reversed orientations and reveal in spread order.
 8. Show per-card interpretations and an overall reading.
 9. Offer the existing free automatic counseling-style reading from `/api/tarot-reading`.
 10. Allow redraw or reset.
 
-The setup UI must not expose the identity of a numbered card before the result reveal.
+### Direct card selection mode
+
+1. Choose a reading topic.
+2. Choose card count: 1, 3, 5, or 12.
+3. Choose `카드 직접 선택`.
+4. Optionally enter a question, maximum 500 characters.
+5. Press the shuffle/start button.
+6. Show all 78 shuffled card backs.
+7. Select exactly the required number of cards.
+8. Reveal the selected cards in selection/spread order.
+9. Show per-card interpretations and an overall reading.
+10. Offer the existing free automatic counseling-style reading from `/api/tarot-reading`.
+11. Allow redraw or reset.
+
+The setup UI must not expose the identity of a numbered card before result reveal.
 
 ## 3. Reading Topics
 
@@ -63,9 +75,9 @@ The setup UI must not expose the identity of a numbered card before the result r
 
 Every card must support all 9 topic contexts.
 
-The base upright/reversed card meanings remain the canonical source. Topic-specific text adds context rather than replacing the core meaning.
+The base upright/reversed card meanings remain canonical. Topic-specific text adds context rather than replacing the core meaning.
 
-Topic context should emphasize:
+Topic context emphasizes:
 
 - 종합타로: overall balance, timing, priorities, major life flow
 - 연애: attraction, trust, emotional communication, boundaries, relationship pace
@@ -79,7 +91,7 @@ Topic context should emphasize:
 
 ## 4. Spread Definitions
 
-The feature will use one canonical position set for each card count. Topic-specific interpretation changes the meaning of the position, but the number of positions stays stable.
+The feature uses one canonical position set for each card count. Topic-specific interpretation changes how each position is discussed, but the position count and order stay stable.
 
 ### 1 card
 
@@ -122,7 +134,7 @@ Spread ID: `twelveCompass`
 11. 장기 흐름
 12. 최종 방향
 
-The server must derive required card count from the spread definition and reject mismatches.
+The server derives required card count from the spread definition and rejects mismatches.
 
 ## 5. Number Entry Mode
 
@@ -135,10 +147,11 @@ Number entry uses the canonical 78-card deck order.
 - Duplicate values are rejected before a reading begins.
 - Missing values, decimals, non-numeric input, and out-of-range values are rejected.
 - Validation is shown inline near the numeric controls.
+- Entered values remain in place after validation errors so they can be corrected.
 - The entered number-to-card mapping is not shown until result reveal.
 - Input order determines spread position order.
 
-Orientation is not entered by the user. Each accepted numbered card receives an upright/reversed orientation at reading start using the same cryptographically backed browser random source already used by the tarot feature when available.
+Orientation is not entered by the user. Each accepted numbered card receives an upright/reversed orientation when the reading begins, using the existing cryptographically backed browser random source when available.
 
 ## 6. Direct Card Selection Mode
 
@@ -154,8 +167,10 @@ Behavior:
 - Each selected card receives upright/reversed orientation at selection time.
 - Results do not render until the required count is complete.
 - The status line shows `selected / required` progress.
+- A compact selected-slots strip above the deck shows filled selection positions without revealing card faces.
+- The original selected back remains visibly locked and disabled in the deck.
 
-Desktop layout should use a dense responsive card-back grid. Mobile layout may reduce card-back width and allow a taller scrollable selection area rather than shrinking cards until they are unusable.
+Desktop uses a dense responsive card-back grid. Mobile uses smaller but readable card backs inside a taller scrollable selection area rather than compressing all 78 cards into one viewport.
 
 ## 7. State Model
 
@@ -172,7 +187,7 @@ Desktop layout should use a dense responsive card-back grid. Mobile layout may r
 - `readingSucceeded`
 - `soundEnabled`
 
-Both selection methods must converge into the same normalized `selected` structure:
+Both selection methods converge into the same normalized `selected` structure:
 
 ```js
 {
@@ -191,7 +206,7 @@ Every card receives a stable `deckNumber` from 1 through 78 based on its canonic
 
 This number is distinct from Major Arcana numbering such as The Fool = 0.
 
-Result cards may display the chosen deck number after reveal so users can see which numbered card they entered or which canonical card was selected.
+Result cards display `deckNumber` after reveal so users can see which numbered card was entered or which canonical card was selected.
 
 ## 9. Motion Design
 
@@ -199,39 +214,41 @@ The existing black/orange Chunbong visual identity stays unchanged. Motion is en
 
 ### Shuffle
 
-When a reading starts:
+When direct-card selection starts:
 
 - card backs briefly converge toward the center
 - cards fan/spread back into the selection area
 - small rotation and depth offsets create a physical-deck feel
 
+Number-entry mode uses a shorter deck-energy transition rather than rendering all 78 backs.
+
 ### Selection
 
-A selected card:
+A directly selected card:
 
 - rises slightly
 - gains a warm orange edge glow
 - briefly scales up
-- becomes clearly locked/selected
-
-For direct-card mode, the selected card may visually move toward a compact selected-slots strip above the deck while the original location remains disabled.
+- locks in place
+- fills the next selected-slot indicator
 
 ### Reveal
 
 After selection completes:
 
-- the page moves into a `revealing` phase
+- the page enters the `revealing` phase
 - cards appear in spread order
 - each card uses a short 3D flip/reveal animation
 - reversed cards finish the reveal rotated 180 degrees
-- 12-card readings use shorter stagger delays than 1/3/5-card readings so the sequence does not become excessively long
+- 12-card readings use a shorter stagger interval than 1/3/5-card readings so the total reveal sequence remains concise
 
 ### Result emphasis
 
 After the final card reveal:
 
-- the summary panel receives one subtle glow pulse
-- a lightweight decorative particle/spark effect may run once using CSS pseudo-elements or DOM elements with no external image dependency
+- the summary panel performs one subtle glow pulse
+- one lightweight CSS/DOM spark burst plays once around the result heading
+- the effect uses no external image asset
 
 ### Reduced motion
 
@@ -242,6 +259,7 @@ When reduced motion is requested:
 - shuffle movement is disabled or simplified
 - selected-card movement is removed
 - flip/reveal animations are replaced by immediate appearance
+- spark animation is disabled
 - no feature functionality depends on animation completion events
 
 ## 10. Sound Design
@@ -260,14 +278,15 @@ Required cues:
 Rules:
 
 - no sound plays before a user gesture unlocks the audio context
-- failures to initialize Web Audio must never block tarot use
+- failures to initialize Web Audio never block tarot use
 - a visible sound ON/OFF control is available on the tarot page
-- the control uses accessible state such as `aria-pressed`
-- preference is stored in local storage using a tarot-specific key
+- the control uses `aria-pressed`
+- preference is stored in local storage using `chunbongTarotSound`
+- when no stored preference exists, sound defaults to ON
 - sound preference is independent from reduced-motion preference
 - no network request is used for sound
 
-A small sound controller inside `tarot.js` is sufficient; a separate library or package is not required.
+A small sound controller inside `tarot.js` is sufficient; no separate library or package is required.
 
 ## 11. Local Reading Engine
 
@@ -289,7 +308,7 @@ The API keeps the current top-level response contract:
 }
 ```
 
-`rule-based-v2` indicates the expanded 1/3/5/12-card and 9-topic logic.
+`rule-based-v2` identifies the expanded 1/3/5/12-card and 9-topic logic.
 
 ### Validation
 
@@ -325,7 +344,7 @@ Overall/summary generation additionally considers:
 - concentration of court cards where relevant
 - spread-specific groups for the 12-card layout
 
-For 12-card readings, the engine must not merely concatenate twelve card meanings. It must synthesize grouped themes into:
+For 12-card readings, the engine must not merely concatenate twelve card meanings. It synthesizes grouped themes into:
 
 - core flow
 - strengths/resources
@@ -333,22 +352,22 @@ For 12-card readings, the engine must not merely concatenate twelve card meaning
 - practical advice
 - near-term vs long-term direction
 
-The reading remains reflective and non-deterministic in wording: it should not claim certainty about fate or guaranteed future events.
+Wording remains reflective and avoids deterministic claims about fate or guaranteed future events. The engine may use stable hash-based wording variation so identical inputs can remain reproducible while still choosing among multiple phrasing templates.
 
 High-risk-question safeguards for medical, legal, financial/investment, safety, and self-harm terms remain in place.
 
 ## 12. UI Structure
 
-`tarot.html` will retain the existing page shell/header/footer and tarot visual container structure.
+`tarot.html` retains the existing page shell/header/footer and tarot visual container structure.
 
-The setup form will be expanded to include:
+The setup form expands to include:
 
 - 9 topic choices
 - 4 card-count choices
 - 2 selection-method choices
 - number-entry panel shown only for numeric mode
 - question textarea
-- reading start button
+- reading start/shuffle button whose label follows the selected mode
 - sound toggle
 
 The result area retains:
@@ -363,17 +382,18 @@ The current `tarot-ai-*` internal IDs/classes may remain to avoid unrelated CSS 
 
 ## 13. Responsive Result Layout
 
-Suggested desktop result grids:
+Desktop result grids:
 
 - 1 card: centered single column
 - 3 cards: 3 columns
-- 5 cards: responsive 3 + 2 or auto-fit grid
-- 12 cards: 4 columns when space permits
+- 5 cards: auto-fit with up to 3 columns
+- 12 cards: 4 columns when viewport width allows
 
-Tablet/mobile:
+Responsive behavior:
 
-- auto-fit down to 2 columns where practical
-- 1 column on narrow screens
+- below 900px: maximum 3 columns
+- below 700px: maximum 2 columns
+- below 430px: 1 column
 
 Card art must never be enlarged beyond the existing source-derived 320px card width.
 
@@ -441,6 +461,7 @@ Required regression coverage includes:
 - required count is enforced for 1/3/5/12
 - duplicate selection is impossible
 - selected order maps to spread order
+- selected-slot progress is correct
 
 ### Reading engine/API
 
@@ -457,6 +478,7 @@ Required regression coverage includes:
 - animation classes/keyframes for shuffle, select, reveal, and completion exist
 - `prefers-reduced-motion` disables nonessential motion
 - sound toggle is accessible and persistent
+- sound defaults ON only after user-interaction unlock and respects stored OFF preference
 - no external audio URL/file is required
 
 ### Existing regressions
@@ -502,4 +524,4 @@ This change will not:
 
 ## 19. Implementation Boundary
 
-The implementation should extend the current tarot subsystem rather than replace the site architecture. Selection mode differences end at normalization into the common selected-card structure. From that point onward, rendering, animations, API payloads, interpretation, and results use one shared path. This boundary is essential to prevent separate numeric/card implementations from drifting apart.
+The implementation extends the current tarot subsystem rather than replacing the site architecture. Selection-mode differences end at normalization into the common selected-card structure. From that point onward, rendering, animations, API payloads, interpretation, and results use one shared path. This boundary prevents separate numeric/card implementations from drifting apart.
