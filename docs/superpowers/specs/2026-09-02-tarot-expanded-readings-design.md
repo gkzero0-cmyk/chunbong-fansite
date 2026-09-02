@@ -352,7 +352,7 @@ For 12-card readings, the engine must not merely concatenate twelve card meaning
 - practical advice
 - near-term vs long-term direction
 
-Wording remains reflective and avoids deterministic claims about fate or guaranteed future events. The engine may use stable hash-based wording variation so identical inputs can remain reproducible while still choosing among multiple phrasing templates.
+Wording remains reflective and avoids deterministic claims about fate or guaranteed future events. The engine uses stable hash-based wording variation so identical inputs remain reproducible while still choosing among multiple phrasing templates.
 
 High-risk-question safeguards for medical, legal, financial/investment, safety, and self-harm terms remain in place.
 
@@ -378,7 +378,7 @@ The result area retains:
 - redraw/reset controls
 - disclaimer
 
-The current `tarot-ai-*` internal IDs/classes may remain to avoid unrelated CSS churn even though visible wording stays `무료 자동 타로 상담`.
+The existing `tarot-ai-*` internal IDs/classes remain in place to avoid unrelated CSS and regression churn, while all visible wording stays `무료 자동 타로 상담`.
 
 ## 13. Responsive Result Layout
 
@@ -429,7 +429,7 @@ Primary implementation files:
 - `api/tarot-reading.js`
 - tarot-specific regression tests under `tests/`
 
-The existing site regression workflow may be updated only to include new tarot regression coverage if needed.
+The existing site regression workflow will be updated to run the new expanded tarot regression coverage in addition to its current checks.
 
 Do not restructure or remove unrelated SOOP, schedule, notice, CATCH, VOD, fan-art, or YouTube functionality.
 
