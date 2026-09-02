@@ -1,7 +1,7 @@
 const DATA = require('../tarot-data.js');
 
-const DIRECT_DEFAULT_MODEL = 'gpt-5.6-luna';
-const GATEWAY_DEFAULT_MODEL = 'openai/gpt-5.6-luna';
+const DIRECT_DEFAULT_MODEL = 'gpt-5.6-sol';
+const GATEWAY_DEFAULT_MODEL = 'openai/gpt-5.6-sol';
 const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
 const GATEWAY_RESPONSES_URL = 'https://ai-gateway.vercel.sh/v1/responses';
 const cardById = new Map(DATA.cards.map(card => [card.id, card]));
@@ -88,6 +88,15 @@ function normalizeGatewayModel(model) {
   return value.includes('/') ? value : `openai/${value}`;
 }
 
+function gatewayProvider(token, env = {}) {
+  return {
+    token,
+    url: GATEWAY_RESPONSES_URL,
+    model: normalizeGatewayModel(env.OPENAI_TAROT_MODEL || DIRECT_DEFAULT_MODEL),
+    provider: 'vercel-ai-gateway'
+  };
+}
+
 function resolveProvider(env = {}) {
   if (env.OPENAI_API_KEY) {
     return {
@@ -99,16 +108,30 @@ function resolveProvider(env = {}) {
   }
 
   const gatewayToken = env.AI_GATEWAY_API_KEY || env.VERCEL_OIDC_TOKEN;
-  if (gatewayToken) {
-    return {
-      token: gatewayToken,
-      url: GATEWAY_RESPONSES_URL,
-      model: normalizeGatewayModel(env.OPENAI_TAROT_MODEL || DIRECT_DEFAULT_MODEL),
-      provider: 'vercel-ai-gateway'
-    };
-  }
-
+  if (gatewayToken) return gatewayProvider(gatewayToken, env);
   return null;
+}
+
+async function loadRuntimeOidcToken() {
+  try {
+    const oidc = await import('@vercel/oidc');
+    return await oidc.getVercelOidcToken();
+  } catch (_) {
+    return '';
+  }
+}
+
+async function resolveProviderWithRuntimeOidc(env = {}, getOidcToken = loadRuntimeOidcToken) {
+  const configured = resolveProvider(env);
+  if (configured) return configured;
+  if (typeof getOidcToken !== 'function') return null;
+
+  try {
+    const runtimeToken = await getOidcToken();
+    return runtimeToken ? gatewayProvider(runtimeToken, env) : null;
+  } catch (_) {
+    return null;
+  }
 }
 
 function buildOpenAIRequest(validated, model = DIRECT_DEFAULT_MODEL) {
@@ -173,7 +196,7 @@ async function callResponses(fetchImpl, provider, requestBody) {
   });
 }
 
-function createHandler({ fetchImpl = global.fetch, env = process.env } = {}) {
+function createHandler({ fetchImpl = global.fetch, env = process.env, getOidcToken = loadRuntimeOidcToken } = {}) {
   return async function tarotReadingHandler(req, res) {
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'method_not_allowed' });
@@ -186,7 +209,7 @@ function createHandler({ fetchImpl = global.fetch, env = process.env } = {}) {
       return res.status(error.statusCode || 400).json({ error: 'invalid_request' });
     }
 
-    const provider = resolveProvider(env);
+    const provider = await resolveProviderWithRuntimeOidc(env, getOidcToken);
     if (!provider) {
       return res.status(503).json({ error: 'ai_not_configured' });
     }
@@ -221,4 +244,6 @@ module.exports.validateReadingRequest = validateReadingRequest;
 module.exports.buildOpenAIRequest = buildOpenAIRequest;
 module.exports.extractStructuredReading = extractStructuredReading;
 module.exports.resolveProvider = resolveProvider;
+module.exports.resolveProviderWithRuntimeOidc = resolveProviderWithRuntimeOidc;
+module.exports.loadRuntimeOidcToken = loadRuntimeOidcToken;
 module.exports.READING_SCHEMA = READING_SCHEMA;
