@@ -1,0 +1,36 @@
+name: Tarot OIDC full validation
+
+on:
+  push:
+    branches:
+      - validate/tarot-vercel-oidc-runtime-final
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+      - name: Syntax checks
+        run: |
+          node --check script.js
+          node --check page.js
+          node --check tarot-data.js
+          node --check tarot.js
+          for file in api/*.js; do node --check "$file"; done
+      - name: Run all regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          count=0
+          for file in tests/*.mjs; do
+            echo "=== $file ==="
+            node "$file"
+            count=$((count + 1))
+          done
+          echo "TOTAL_TEST_FILES=$count"
