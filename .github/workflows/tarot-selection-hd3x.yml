@@ -26,40 +26,32 @@ jobs:
           from pathlib import Path
           path = Path('tarot.js')
           text = path.read_text()
-          anchor = """function createTarotSoundController(storage = globalThis.localStorage, AudioContextCtor = globalThis.AudioContext || globalThis.webkitAudioContext) {"""
-          helper = """function numberInputConstraintState(mode) {
-            const isNumberMode = String(mode) === 'number';
-            return { disabled: !isNumberMode, required: isNumberMode };
-          }
-
-          function createTarotSoundController(storage = globalThis.localStorage, AudioContextCtor = globalThis.AudioContext || globalThis.webkitAudioContext) {"""
           if 'function numberInputConstraintState(mode)' not in text:
-            text = text.replace(anchor, helper, 1)
-          text = text.replace(
-            "  buildNumberSelections,\n  createTarotSoundController,",
-            "  buildNumberSelections,\n  numberInputConstraintState,\n  createTarotSoundController,",
-            1,
-          )
-          old_sync = """    if (numberPanel) numberPanel.hidden = mode !== 'number';
-              if (startButton) startButton.textContent = mode === 'number' ? '숫자로 카드 열기' : '78장 카드 섞기';"""
-          new_sync = """    if (numberPanel) numberPanel.hidden = mode !== 'number';
-              const constraints = numberInputConstraintState(mode);
-              byId('tarot-number-inputs')?.querySelectorAll('input').forEach(input => {
-                input.disabled = constraints.disabled;
-                input.required = constraints.required;
-              });
-              if (startButton) startButton.textContent = mode === 'number' ? '숫자로 카드 열기' : '78장 카드 섞기';"""
-          if old_sync not in text:
-            raise SystemExit('syncSelectionModeUI anchor not found')
-          text = text.replace(old_sync, new_sync, 1)
-          old_count = """      if (event.target.name === 'count') renderNumberInputs(Number(event.target.value));"""
-          new_count = """      if (event.target.name === 'count') {
-                renderNumberInputs(Number(event.target.value));
-                syncSelectionModeUI();
-              }"""
-          if old_count not in text:
-            raise SystemExit('count change anchor not found')
-          text = text.replace(old_count, new_count, 1)
+            text = text.replace(
+              "function createTarotSoundController(storage = globalThis.localStorage, AudioContextCtor = globalThis.AudioContext || globalThis.webkitAudioContext) {",
+              "function numberInputConstraintState(mode) {\n  const isNumberMode = String(mode) === 'number';\n  return { disabled: !isNumberMode, required: isNumberMode };\n}\n\nfunction createTarotSoundController(storage = globalThis.localStorage, AudioContextCtor = globalThis.AudioContext || globalThis.webkitAudioContext) {",
+              1,
+            )
+          if '  numberInputConstraintState,\n  createTarotSoundController,' not in text:
+            text = text.replace(
+              "  buildNumberSelections,\n  createTarotSoundController,",
+              "  buildNumberSelections,\n  numberInputConstraintState,\n  createTarotSoundController,",
+              1,
+            )
+          old_sync = "    if (numberPanel) numberPanel.hidden = mode !== 'number';\n    if (startButton) startButton.textContent = mode === 'number' ? '숫자로 카드 열기' : '78장 카드 섞기';"
+          if old_sync in text:
+            text = text.replace(
+              old_sync,
+              "    if (numberPanel) numberPanel.hidden = mode !== 'number';\n    const constraints = numberInputConstraintState(mode);\n    byId('tarot-number-inputs')?.querySelectorAll('input').forEach(input => {\n      input.disabled = constraints.disabled;\n      input.required = constraints.required;\n    });\n    if (startButton) startButton.textContent = mode === 'number' ? '숫자로 카드 열기' : '78장 카드 섞기';",
+              1,
+            )
+          old_count = "      if (event.target.name === 'count') renderNumberInputs(Number(event.target.value));"
+          if old_count in text:
+            text = text.replace(
+              old_count,
+              "      if (event.target.name === 'count') {\n        renderNumberInputs(Number(event.target.value));\n        syncSelectionModeUI();\n      }",
+              1,
+            )
           path.write_text(text)
           PY
       - name: Syntax checks
