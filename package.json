@@ -1,0 +1,8 @@
+{
+  "name": "chunbong-fansite",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@vercel/oidc": "3.8.5"
+  }
+}
