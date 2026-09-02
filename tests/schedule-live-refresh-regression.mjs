@@ -27,13 +27,13 @@ assert.deepEqual(
   'schedule parser must unwrap current Notion value.value record wrappers'
 );
 
+const scheduleHtml = fs.readFileSync(new URL('../schedule.html', import.meta.url), 'utf8');
+const runtimeJs = fs.readFileSync(new URL('../schedule-runtime.js', import.meta.url), 'utf8');
 const pageJs = fs.readFileSync(new URL('../page.js', import.meta.url), 'utf8');
-assert.match(pageJs, /schedule:\s*['"]\/api\/content\?type=schedule['"]/, 'schedule page must have a live schedule API endpoint');
 
-const renderStart = pageJs.indexOf('async function renderSchedulePage()');
-const renderEnd = pageJs.indexOf('function setupNoticeImageZoom', renderStart);
-const renderSchedule = pageJs.slice(renderStart, renderEnd);
-assert.match(renderSchedule, /loadContent\(['"]schedule['"]\)/, 'schedule page must fetch the live schedule API');
-assert.match(renderSchedule, /data\.notionSchedule/, 'static schedule must remain only as a fallback when the live API fails');
+assert.match(scheduleHtml, /<script src="schedule-runtime\.js"><\/script>/, 'schedule page must load its live refresh runtime');
+assert.match(runtimeJs, /\/api\/content\?type=schedule/, 'schedule runtime must fetch the live schedule API');
+assert.match(runtimeJs, /items\.length/, 'schedule runtime must preserve existing static cards when live items are unavailable');
+assert.match(pageJs, /data\.notionSchedule/, 'static schedule snapshot must remain as the fallback renderer');
 
 console.log('schedule live refresh regression test passed');
