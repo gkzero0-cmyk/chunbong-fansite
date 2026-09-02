@@ -1,5 +1,6 @@
 name: Tarot expanded baseline
 
+# Task 1 GREEN validation trigger
 on:
   push:
     branches: [feat/tarot-expanded-readings]
