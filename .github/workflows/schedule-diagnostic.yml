@@ -14,16 +14,37 @@ jobs:
           node-version: '20'
       - name: Schedule live refresh regression
         run: node tests/schedule-live-refresh-regression.mjs
-      - name: Fetch current Notion schedule with production parser
+      - name: Inspect current Notion queryCollection response
         run: |
           node <<'NODE'
+          const nativeFetch = global.fetch;
+          global.fetch = async (url, options) => {
+            const response = await nativeFetch(url, options);
+            if (String(url).includes('queryCollection')) {
+              const text = await response.clone().text();
+              console.log('QUERY_HTTP=' + response.status);
+              try {
+                const data = JSON.parse(text);
+                console.log('QUERY_TOP_KEYS=' + Object.keys(data || {}).join(','));
+                const rm = data.recordMap || {};
+                console.log('QUERY_RECORD_KEYS=' + Object.keys(rm).join(','));
+                console.log('QUERY_BLOCK_COUNT=' + Object.keys(rm.block || {}).length);
+                console.log('QUERY_COLLECTION_QUERY_COUNT=' + Object.keys(rm.collection_query || {}).length);
+                for (const [id, entry] of Object.entries(rm.block || {}).slice(0, 5)) {
+                  console.log('QUERY_BLOCK=' + id + '|' + JSON.stringify(entry));
+                }
+                const reducer = data.result?.reducerResults || data.reducerResults || data.result;
+                console.log('QUERY_RESULT=' + JSON.stringify(reducer).slice(0, 12000));
+              } catch (error) {
+                console.log('QUERY_BODY=' + text.slice(0, 12000));
+              }
+            }
+            return response;
+          };
           const fetchSchedule = require('./api/schedule');
           (async () => {
             const items = await fetchSchedule();
             console.log('LIVE_COUNT=' + items.length);
             console.log('LIVE_LATEST=' + (items.at(-1)?.start || ''));
-            console.log('LIVE_TITLES=' + items.slice(-12).map(x => `${x.start}|${x.title}`).join(' || '));
-            if (!items.length) throw new Error('live schedule is empty');
-            if (String(items.at(-1)?.start || '').slice(0, 10) <= '2026-08-31') throw new Error('live schedule is not newer than static snapshot');
           })().catch(error => { console.error(error); process.exit(1); });
           NODE
