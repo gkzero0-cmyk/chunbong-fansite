@@ -46,7 +46,7 @@ const successBody = { output: [{ type: 'message', content: [{ type: 'output_text
 
 {
   const res = makeRes();
-  await api.createHandler({ env: {}, fetchImpl: async () => { throw new Error('must not call'); } })(makeReq('POST', validThree), res);
+  await api.createHandler({ env: {}, getOidcToken: async () => undefined, fetchImpl: async () => { throw new Error('must not call'); } })(makeReq('POST', validThree), res);
   assert.equal(res.statusCode, 503);
 }
 {
@@ -91,15 +91,42 @@ for (const mutate of [
   await api.createHandler({ env: { VERCEL_OIDC_TOKEN: 'oidc-test' }, fetchImpl })(makeReq('POST', validSingle), res);
   assert.equal(res.statusCode, 200);
   assert.deepEqual(res.payload.reading, reading);
-  assert.equal(res.payload.model, 'openai/gpt-5.6-luna');
+  assert.equal(res.payload.model, 'openai/gpt-5.6-sol');
   assert.equal(requestUrl, 'https://ai-gateway.vercel.sh/v1/responses');
   assert.equal(authorization, 'Bearer oidc-test');
-  assert.equal(requestBody.model, 'openai/gpt-5.6-luna');
+  assert.equal(requestBody.model, 'openai/gpt-5.6-sol');
   assert.equal(requestBody.reasoning.effort, 'low');
   assert.equal(requestBody.text.format.type, 'json_schema');
   assert.equal(requestBody.text.format.strict, true);
   assert.ok(requestBody.instructions.includes('자기성찰'));
   assert.ok(requestBody.input.includes('태양'));
+}
+{
+  let requestUrl;
+  let requestBody;
+  let authorization;
+  let oidcCalls = 0;
+  const fetchImpl = async (url, options) => {
+    requestUrl = url;
+    requestBody = JSON.parse(options.body);
+    authorization = options.headers.authorization;
+    return response(200, successBody);
+  };
+  const res = makeRes();
+  await api.createHandler({
+    env: {},
+    getOidcToken: async () => {
+      oidcCalls += 1;
+      return 'runtime-oidc-test';
+    },
+    fetchImpl
+  })(makeReq('POST', validSingle), res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(oidcCalls, 1);
+  assert.equal(requestUrl, 'https://ai-gateway.vercel.sh/v1/responses');
+  assert.equal(authorization, 'Bearer runtime-oidc-test');
+  assert.equal(requestBody.model, 'openai/gpt-5.6-sol');
+  assert.equal(res.payload.provider, 'vercel-ai-gateway');
 }
 {
   let requestUrl;
@@ -116,4 +143,4 @@ for (const mutate of [
   assert.equal(requestBody.model, 'gpt-5.6-terra');
 }
 
-console.log('AI tarot API validation, direct OpenAI and Vercel OIDC gateway regression test passed');
+console.log('AI tarot API validation, direct OpenAI and Vercel runtime OIDC gateway regression test passed');
