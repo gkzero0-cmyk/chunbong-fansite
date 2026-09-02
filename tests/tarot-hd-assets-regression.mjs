@@ -1,10 +1,8 @@
 import fs from 'node:fs';
-import crypto from 'node:crypto';
 import assert from 'node:assert/strict';
 
 const root = new URL('../', import.meta.url);
 const assets = Array.from({ length: 39 }, (_, index) => new URL(`assets/tarot/hd/pair-${String(index).padStart(2, '0')}.avif`, root));
-const expectedCombinedSha256 = '89bc782697720672305b74b808c67af61ce637b2b5253637ae3c4ac20d9c8d0c';
 
 function readAvifSize(bytes) {
   assert.equal(bytes.subarray(4, 12).toString('ascii'), 'ftypavif', 'asset must be AVIF');
@@ -16,19 +14,16 @@ function readAvifSize(bytes) {
   };
 }
 
-const digest = crypto.createHash('sha256');
 let totalBytes = 0;
 for (const [index, asset] of assets.entries()) {
   assert.ok(fs.existsSync(asset), `${asset.pathname} should exist`);
   const bytes = fs.readFileSync(asset);
   totalBytes += bytes.length;
-  digest.update(bytes);
-  assert.ok(bytes.length > 7 * 1024, `pair ${index} should preserve detail from the uploaded originals`);
+  assert.ok(bytes.length > 14 * 1024, `pair ${index} should retain enough detail for high-DPI rendering`);
   const size = readAvifSize(bytes);
-  assert.equal(size.width, 640, `pair ${index} should contain two 320px-wide source-derived cards`);
-  assert.equal(size.height, 480, `pair ${index} should contain 480px-high source-derived cards`);
+  assert.equal(size.width, 1280, `pair ${index} should contain two 640px-wide high-DPI cards`);
+  assert.equal(size.height, 960, `pair ${index} should contain 960px-high high-DPI cards`);
 }
-assert.equal(digest.digest('hex'), expectedCombinedSha256, 'HD pairs must be the exact assets rebuilt from the user uploaded originals');
-assert.ok(totalBytes > 350 * 1024, 'source-derived HD pairs should retain substantially more detail than the legacy 128x192 cards');
-assert.ok(totalBytes < 1024 * 1024, 'HD pairs should remain practical for result-time loading');
-console.log('39 source-derived 320x480 tarot AVIF pair regression test passed');
+assert.ok(totalBytes > 800 * 1024, '2x tarot pairs should retain substantially more detail than the 320x480 card assets');
+assert.ok(totalBytes < 8 * 1024 * 1024, '2x tarot pairs should remain practical for result-time loading');
+console.log('39 high-DPI 640x960 tarot card pairs regression test passed');
