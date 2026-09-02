@@ -59,7 +59,8 @@ jobs:
           echo "PROD_URL=$BASE"
           HOME_HTTP=$(curl -L -sS -o /tmp/home -w '%{http_code}' "$BASE/")
           TAROT_PAGE_HTTP=$(curl -L -sS -o /tmp/tarot-page -w '%{http_code}' "$BASE/tarot.html")
-          ASSET_HTTP=$(curl -L -sS -o /tmp/tarot-asset -w '%{http_code}' "$BASE/assets/tarot/hd/pair-38.avif")
+          ASSET_00_HTTP=$(curl -L -sS -o /tmp/tarot-asset-00 -w '%{http_code}' "$BASE/assets/tarot/hd/pair-00.avif")
+          ASSET_38_HTTP=$(curl -L -sS -o /tmp/tarot-asset-38 -w '%{http_code}' "$BASE/assets/tarot/hd/pair-38.avif")
 
           cat > /tmp/payload.json <<'JSON'
           {
@@ -90,17 +91,37 @@ jobs:
 
           echo "HOME_HTTP=$HOME_HTTP"
           echo "TAROT_PAGE_HTTP=$TAROT_PAGE_HTTP"
-          echo "ASSET_HTTP=$ASSET_HTTP"
+          echo "ASSET_00_HTTP=$ASSET_00_HTTP"
+          echo "ASSET_38_HTTP=$ASSET_38_HTTP"
           echo "TAROT_HTTP=$TAROT_HTTP"
 
           [ "$HOME_HTTP" = "200" ]
           [ "$TAROT_PAGE_HTTP" = "200" ]
-          [ "$ASSET_HTTP" = "200" ]
+          [ "$ASSET_00_HTTP" = "200" ]
+          [ "$ASSET_38_HTTP" = "200" ]
           [ "$TAROT_HTTP" = "200" ]
           grep -q '12장' /tmp/tarot-page
 
           node <<'NODE'
           const fs = require('fs');
+
+          function avifSize(path) {
+            const bytes = fs.readFileSync(path);
+            if (bytes.subarray(4, 12).toString('ascii') !== 'ftypavif') throw new Error(`${path}: not AVIF`);
+            const offset = bytes.indexOf(Buffer.from('ispe'));
+            if (offset < 0) throw new Error(`${path}: missing ispe`);
+            return {
+              width: bytes.readUInt32BE(offset + 8),
+              height: bytes.readUInt32BE(offset + 12)
+            };
+          }
+
+          for (const path of ['/tmp/tarot-asset-00', '/tmp/tarot-asset-38']) {
+            const size = avifSize(path);
+            if (size.width !== 1280 || size.height !== 960) throw new Error(`${path}: ${size.width}x${size.height}`);
+            console.log(`TAROT_ASSET_SIZE=${size.width}x${size.height}`);
+          }
+
           const payload = JSON.parse(fs.readFileSync('/tmp/tarot-response','utf8'));
           if (payload.provider !== 'local-tarot-engine') throw new Error(`provider=${payload.provider}`);
           if (payload.model !== 'rule-based-v2') throw new Error(`model=${payload.model}`);
