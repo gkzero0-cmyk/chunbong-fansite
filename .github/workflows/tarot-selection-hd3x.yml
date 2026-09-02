@@ -34,6 +34,43 @@ jobs:
             count=$((count + 1))
           done
           echo "TOTAL_TEST_FILES=$count"
+      - name: Install Chromium browser test dependency
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install chromium
+      - name: Verify direct card selection in Chromium
+        run: |
+          set -euo pipefail
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/tarot-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
+            await page.goto('http://127.0.0.1:8000/tarot.html', { waitUntil: 'networkidle' });
+            await page.locator('input[name="count"][value="3"]').check();
+            await page.locator('input[name="selection-mode"][value="cards"]').check();
+            const constraints = await page.locator('#tarot-number-inputs input').evaluateAll(inputs => inputs.map(input => ({ disabled: input.disabled, required: input.required })));
+            assert.equal(constraints.length, 3);
+            assert.ok(constraints.every(input => input.disabled && !input.required), JSON.stringify(constraints));
+            await page.locator('#tarot-shuffle').click();
+            await page.waitForFunction(() => document.querySelectorAll('#tarot-deck [data-card-index]').length === 78);
+            assert.equal(await page.locator('#tarot-deck [data-card-index]').count(), 78);
+            await page.locator('#tarot-deck [data-card-index]').nth(0).click();
+            await page.locator('#tarot-deck [data-card-index]').nth(1).click();
+            await page.locator('#tarot-deck [data-card-index]').nth(2).click();
+            await page.waitForFunction(() => document.querySelector('#tarot-results')?.hidden === false);
+            assert.equal(await page.locator('#tarot-reading-grid .tarot-card-result').count(), 3);
+            assert.match(await page.locator('#tarot-selection-status').textContent(), /카드를 순서대로 펼치고|리딩이 준비/);
+            console.log('CHROMIUM_DIRECT_SELECTION=PASS');
+            console.log('CHROMIUM_DECK_COUNT=78');
+            console.log('CHROMIUM_RESULT_COUNT=3');
+            await browser.close();
+          })().catch(error => { console.error(error); process.exit(1); });
+          NODE
       - name: Report 3x tarot asset size
         run: |
           python - <<'PY'
