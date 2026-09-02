@@ -1,0 +1,118 @@
+name: Tarot production smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tarot-production-smoke.yml'
+  workflow_dispatch:
+
+jobs:
+  production-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Discover production URL and verify 12-card reading
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          find_base() {
+            local deployments status_url candidate code
+            deployments=$(curl -fsS -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$REPO/deployments?sha=$SHA&per_page=20" || echo '[]')
+            while read -r status_url; do
+              [ -n "$status_url" ] || continue
+              candidate=$(curl -fsS -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+                "$status_url" 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{const a=JSON.parse(s);const x=a.find(v=>v.state==='success'&&v.environment_url);if(x)process.stdout.write(x.environment_url)}catch{}})" || true)
+              if [ -n "$candidate" ]; then
+                code=$(curl -L -sS -o /tmp/home -w '%{http_code}' "$candidate/" || true)
+                if [ "$code" = "200" ] && grep -qi 'CHUNBONG' /tmp/home; then
+                  printf '%s' "${candidate%/}"
+                  return 0
+                fi
+              fi
+            done < <(printf '%s' "$deployments" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{for(const d of JSON.parse(s)) if(d.statuses_url) console.log(d.statuses_url)}catch{}})")
+
+            for candidate in \
+              'https://chunbong-fansite.vercel.app' \
+              'https://chunbong-fansite-gkzero0-9465.vercel.app'; do
+              code=$(curl -L -sS -o /tmp/home -w '%{http_code}' "$candidate/" || true)
+              if [ "$code" = "200" ] && grep -qi 'CHUNBONG' /tmp/home; then
+                printf '%s' "$candidate"
+                return 0
+              fi
+            done
+            return 1
+          }
+
+          BASE=''
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            BASE=$(find_base || true)
+            [ -n "$BASE" ] && break
+            sleep 5
+          done
+          if [ -z "$BASE" ]; then
+            echo 'PROD_URL_NOT_FOUND=1'
+            exit 1
+          fi
+
+          echo "PROD_URL=$BASE"
+          HOME_HTTP=$(curl -L -sS -o /tmp/home -w '%{http_code}' "$BASE/")
+          TAROT_PAGE_HTTP=$(curl -L -sS -o /tmp/tarot-page -w '%{http_code}' "$BASE/tarot.html")
+          ASSET_HTTP=$(curl -L -sS -o /tmp/tarot-asset -w '%{http_code}' "$BASE/assets/tarot/hd/pair-38.avif")
+
+          cat > /tmp/payload.json <<'JSON'
+          {
+            "question":"앞으로의 방향을 12장으로 종합해서 보고 싶습니다.",
+            "topic":"direction",
+            "spreadId":"twelveCompass",
+            "cards":[
+              {"id":"major-00","orientation":"upright","position":"현재 상태"},
+              {"id":"major-01","orientation":"reversed","position":"내면"},
+              {"id":"major-02","orientation":"upright","position":"외부 환경"},
+              {"id":"major-03","orientation":"reversed","position":"관계"},
+              {"id":"major-04","orientation":"upright","position":"강점"},
+              {"id":"major-05","orientation":"reversed","position":"약점"},
+              {"id":"major-06","orientation":"upright","position":"기회"},
+              {"id":"major-07","orientation":"reversed","position":"장애물"},
+              {"id":"major-08","orientation":"upright","position":"조언"},
+              {"id":"major-09","orientation":"reversed","position":"가까운 흐름"},
+              {"id":"major-10","orientation":"upright","position":"장기 흐름"},
+              {"id":"major-11","orientation":"reversed","position":"최종 방향"}
+            ]
+          }
+          JSON
+
+          TAROT_HTTP=$(curl -L -sS -o /tmp/tarot-response -w '%{http_code}' \
+            -X POST "$BASE/api/tarot-reading" \
+            -H 'content-type: application/json' \
+            --data-binary @/tmp/payload.json)
+
+          echo "HOME_HTTP=$HOME_HTTP"
+          echo "TAROT_PAGE_HTTP=$TAROT_PAGE_HTTP"
+          echo "ASSET_HTTP=$ASSET_HTTP"
+          echo "TAROT_HTTP=$TAROT_HTTP"
+
+          [ "$HOME_HTTP" = "200" ]
+          [ "$TAROT_PAGE_HTTP" = "200" ]
+          [ "$ASSET_HTTP" = "200" ]
+          [ "$TAROT_HTTP" = "200" ]
+          grep -q '12장' /tmp/tarot-page
+
+          node <<'NODE'
+          const fs = require('fs');
+          const payload = JSON.parse(fs.readFileSync('/tmp/tarot-response','utf8'));
+          if (payload.provider !== 'local-tarot-engine') throw new Error(`provider=${payload.provider}`);
+          if (payload.model !== 'rule-based-v2') throw new Error(`model=${payload.model}`);
+          if (!payload.reading || !Array.isArray(payload.reading.cards) || payload.reading.cards.length !== 12) throw new Error('invalid reading cards');
+          if (payload.reading.cards[11].position !== '최종 방향') throw new Error('invalid final position');
+          if (!payload.reading.overall || !payload.reading.summary) throw new Error('missing reading text');
+          console.log(`TAROT_PROVIDER=${payload.provider}`);
+          console.log(`TAROT_MODEL=${payload.model}`);
+          console.log(`TAROT_TITLE=${payload.reading.title}`);
+          console.log(`TAROT_CARDS=${payload.reading.cards.length}`);
+          NODE
