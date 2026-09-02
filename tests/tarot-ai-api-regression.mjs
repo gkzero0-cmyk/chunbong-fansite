@@ -15,9 +15,6 @@ function makeRes() {
     json(payload) { this.payload = payload; return this; }
   };
 }
-function response(status, body) {
-  return { ok: status >= 200 && status < 300, status, async json() { return body; } };
-}
 
 const validThree = {
   question: '지금 준비 중인 일을 계속해도 괜찮을까?',
@@ -35,25 +32,73 @@ const validSingle = {
   spreadId: 'single',
   cards: [{ id: 'major-19', orientation: 'upright', position: '메시지' }]
 };
-const reading = {
-  title: '이번 카드가 보여주는 흐름',
-  overall: '밝은 흐름을 현실적인 행동으로 이어가 보세요.',
-  cards: [{ id: 'major-19', position: '메시지', reading: '태양은 명확함과 활력을 보여줍니다.' }],
-  advice: ['이번 주 우선순위를 하나 정해 보세요.', '확인 가능한 작은 행동부터 시작하세요.'],
-  summary: '명확한 목표를 작은 행동으로 옮겨 보세요.'
-};
-const successBody = { output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify(reading) }] }] };
 
 {
   const res = makeRes();
-  await api.createHandler({ env: {}, getOidcToken: async () => undefined, fetchImpl: async () => { throw new Error('must not call'); } })(makeReq('POST', validThree), res);
-  assert.equal(res.statusCode, 503);
+  await api.createHandler({
+    fetchImpl: async () => { throw new Error('local engine must not fetch'); },
+    getOidcToken: async () => { throw new Error('local engine must not load OIDC'); },
+    env: {}
+  })(makeReq('POST', validThree), res);
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.payload.provider, 'local-tarot-engine');
+  assert.equal(res.payload.model, 'rule-based-v1');
+  assert.equal(res.payload.reading.cards.length, 3);
+  assert.deepEqual(
+    res.payload.reading.cards.map(card => [card.id, card.position]),
+    [['major-16', '상황'], ['major-17', '조언'], ['cups-03', '결과']]
+  );
+  assert.ok(res.payload.reading.cards[0].reading.includes('탑'));
+  assert.ok(res.payload.reading.cards[0].reading.includes('정방향'));
+  assert.ok(res.payload.reading.cards[2].reading.includes('역방향'));
+  assert.ok(res.payload.reading.overall.includes(validThree.question));
+  assert.ok(res.payload.reading.advice.length >= 2);
 }
+
+{
+  let fetchCalls = 0;
+  let oidcCalls = 0;
+  const res = makeRes();
+  await api.createHandler({
+    env: { OPENAI_API_KEY: 'unused', AI_GATEWAY_API_KEY: 'unused', VERCEL_OIDC_TOKEN: 'unused' },
+    fetchImpl: async () => { fetchCalls += 1; throw new Error('must not fetch'); },
+    getOidcToken: async () => { oidcCalls += 1; return 'unused'; }
+  })(makeReq('POST', validSingle), res);
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(fetchCalls, 0);
+  assert.equal(oidcCalls, 0);
+  assert.equal(res.payload.provider, 'local-tarot-engine');
+  assert.ok(res.payload.reading.cards[0].reading.includes('태양'));
+  assert.ok(res.payload.reading.summary.length > 10);
+}
+
+{
+  const a = makeRes();
+  const b = makeRes();
+  await api.createHandler({ env: {} })(makeReq('POST', validSingle), a);
+  await api.createHandler({ env: {} })(makeReq('POST', { ...validSingle, question: '이번 주에 피해야 할 점은?' }), b);
+  assert.notEqual(a.payload.reading.overall, b.payload.reading.overall);
+}
+
 {
   const res = makeRes();
-  await api.createHandler({ env: { OPENAI_API_KEY: 'test' }, fetchImpl: async () => { throw new Error('must not call'); } })(makeReq('GET', validThree), res);
+  await api.createHandler({ env: {} })(makeReq('POST', {
+    ...validSingle,
+    topic: 'concern',
+    question: '건강이 안 좋은데 병원에 가야 할까?'
+  }), res);
+  assert.equal(res.statusCode, 200);
+  assert.ok(res.payload.reading.advice.some(item => item.includes('전문가') || item.includes('의료')));
+}
+
+{
+  const res = makeRes();
+  await api.createHandler({ env: {} })(makeReq('GET', validThree), res);
   assert.equal(res.statusCode, 405);
 }
+
 for (const mutate of [
   body => { body.cards[0].id = 'not-a-card'; },
   body => { body.cards[1].id = body.cards[0].id; },
@@ -64,99 +109,8 @@ for (const mutate of [
   const bad = structuredClone(validThree);
   mutate(bad);
   const res = makeRes();
-  await api.createHandler({ env: { VERCEL_OIDC_TOKEN: 'oidc-test' }, fetchImpl: async () => { throw new Error('must not call'); } })(makeReq('POST', bad), res);
+  await api.createHandler({ env: {} })(makeReq('POST', bad), res);
   assert.equal(res.statusCode, 400);
 }
-{
-  const res = makeRes();
-  await api.createHandler({ env: { VERCEL_OIDC_TOKEN: 'oidc-test' }, fetchImpl: async () => response(429, { error: { message: 'rate limited' } }) })(makeReq('POST', validSingle), res);
-  assert.equal(res.statusCode, 429);
-}
-for (const [upstreamStatus, expectedStatus, expectedError] of [
-  [400, 502, 'ai_request_rejected'],
-  [401, 502, 'ai_auth_failed'],
-  [403, 502, 'ai_access_denied'],
-  [404, 502, 'ai_model_unavailable'],
-  [500, 502, 'ai_upstream_failed']
-]) {
-  const res = makeRes();
-  await api.createHandler({
-    env: { VERCEL_OIDC_TOKEN: 'oidc-test' },
-    fetchImpl: async () => response(upstreamStatus, { error: { message: 'safe test failure' } })
-  })(makeReq('POST', validSingle), res);
-  assert.equal(res.statusCode, expectedStatus);
-  assert.equal(res.payload.error, expectedError);
-  assert.equal(res.payload.upstream_status, upstreamStatus);
-}
-{
-  const res = makeRes();
-  await api.createHandler({ env: { VERCEL_OIDC_TOKEN: 'oidc-test' }, fetchImpl: async () => response(200, { output: [] }) })(makeReq('POST', validSingle), res);
-  assert.equal(res.statusCode, 502);
-}
-{
-  let requestUrl;
-  let requestBody;
-  let authorization;
-  const fetchImpl = async (url, options) => {
-    requestUrl = url;
-    requestBody = JSON.parse(options.body);
-    authorization = options.headers.authorization;
-    return response(200, successBody);
-  };
-  const res = makeRes();
-  await api.createHandler({ env: { VERCEL_OIDC_TOKEN: 'oidc-test' }, fetchImpl })(makeReq('POST', validSingle), res);
-  assert.equal(res.statusCode, 200);
-  assert.deepEqual(res.payload.reading, reading);
-  assert.equal(res.payload.model, 'openai/gpt-5.6-sol');
-  assert.equal(requestUrl, 'https://ai-gateway.vercel.sh/v1/responses');
-  assert.equal(authorization, 'Bearer oidc-test');
-  assert.equal(requestBody.model, 'openai/gpt-5.6-sol');
-  assert.equal(requestBody.reasoning.effort, 'low');
-  assert.equal(requestBody.text.format.type, 'json_schema');
-  assert.equal(requestBody.text.format.strict, true);
-  assert.ok(requestBody.instructions.includes('자기성찰'));
-  assert.ok(requestBody.input.includes('태양'));
-}
-{
-  let requestUrl;
-  let requestBody;
-  let authorization;
-  let oidcCalls = 0;
-  const fetchImpl = async (url, options) => {
-    requestUrl = url;
-    requestBody = JSON.parse(options.body);
-    authorization = options.headers.authorization;
-    return response(200, successBody);
-  };
-  const res = makeRes();
-  await api.createHandler({
-    env: {},
-    getOidcToken: async () => {
-      oidcCalls += 1;
-      return 'runtime-oidc-test';
-    },
-    fetchImpl
-  })(makeReq('POST', validSingle), res);
-  assert.equal(res.statusCode, 200);
-  assert.equal(oidcCalls, 1);
-  assert.equal(requestUrl, 'https://ai-gateway.vercel.sh/v1/responses');
-  assert.equal(authorization, 'Bearer runtime-oidc-test');
-  assert.equal(requestBody.model, 'openai/gpt-5.6-sol');
-  assert.equal(res.payload.provider, 'vercel-ai-gateway');
-}
-{
-  let requestUrl;
-  let requestBody;
-  const fetchImpl = async (url, options) => {
-    requestUrl = url;
-    requestBody = JSON.parse(options.body);
-    return response(200, successBody);
-  };
-  const res = makeRes();
-  await api.createHandler({ env: { OPENAI_API_KEY: 'direct-test', OPENAI_TAROT_MODEL: 'gpt-5.6-terra' }, fetchImpl })(makeReq('POST', validSingle), res);
-  assert.equal(res.statusCode, 200);
-  assert.equal(requestUrl, 'https://api.openai.com/v1/responses');
-  assert.equal(requestBody.model, 'gpt-5.6-terra');
-}
 
-console.log('AI tarot API validation, direct OpenAI, runtime OIDC, and upstream diagnostics regression test passed');
+console.log('free local tarot reading engine regression test passed');
