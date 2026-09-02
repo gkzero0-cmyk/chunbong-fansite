@@ -11,7 +11,9 @@ const selected = data.cards.slice(0,12).map((card,index) => ({
 const payload = tarot.buildAiRequestPayload({ question:'12장 테스트', topic:'direction', spreadId:'twelveCompass', selected });
 assert.equal(payload.cards.length, 12);
 assert.equal(payload.cards[11].position, '최종 방향');
-assert.ok(tarot.buildSummary(selected, 'direction', 'twelveCompass').includes('최종'));
+const baseSummary = tarot.buildSummary(selected, 'direction', 'twelveCompass');
+assert.ok(baseSummary.includes(data.spreads.twelveCompass.label));
+assert.ok(baseSummary.includes(selected[11].card.nameKo));
 
 const html = fs.readFileSync(new URL('../tarot.html', import.meta.url), 'utf8');
 const js = fs.readFileSync(new URL('../tarot.js', import.meta.url), 'utf8');
