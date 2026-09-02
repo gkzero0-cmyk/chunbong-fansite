@@ -1,0 +1,59 @@
+name: Schedule production smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/schedule-production-smoke.yml'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Verify production schedule is live and current
+        run: |
+          set -euo pipefail
+          BASE='https://chunbong-fansite.vercel.app'
+          ok=0
+          for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
+            API_HTTP=$(curl -L -sS -o /tmp/schedule.json -w '%{http_code}' "$BASE/api/content?type=schedule" || true)
+            if [ "$API_HTTP" = '200' ]; then
+              if node <<'NODE'
+          const fs = require('fs');
+          const payload = JSON.parse(fs.readFileSync('/tmp/schedule.json','utf8'));
+          const items = Array.isArray(payload.items) ? payload.items : [];
+          const latest = items.at(-1)?.start || '';
+          if (payload.fallback === true) process.exit(1);
+          if (!items.length) process.exit(1);
+          if (String(latest).slice(0,10) <= '2026-08-31') process.exit(1);
+          NODE
+              then
+                ok=1
+                break
+              fi
+            fi
+            sleep 5
+          done
+          [ "$ok" = '1' ]
+
+          PAGE_HTTP=$(curl -L -sS -o /tmp/schedule.html -w '%{http_code}' "$BASE/schedule.html")
+          LIVE_FIXES_HTTP=$(curl -L -sS -o /tmp/live-fixes.js -w '%{http_code}' "$BASE/live-fixes.js")
+          echo "API_HTTP=$API_HTTP"
+          echo "PAGE_HTTP=$PAGE_HTTP"
+          echo "LIVE_FIXES_HTTP=$LIVE_FIXES_HTTP"
+          [ "$PAGE_HTTP" = '200' ]
+          [ "$LIVE_FIXES_HTTP" = '200' ]
+          grep -q 'live-fixes.js' /tmp/schedule.html
+          ! grep -q 'schedule-runtime.js' /tmp/schedule.html
+          grep -q '/api/content?type=schedule' /tmp/live-fixes.js
+
+          node <<'NODE'
+          const fs = require('fs');
+          const payload = JSON.parse(fs.readFileSync('/tmp/schedule.json','utf8'));
+          const items = Array.isArray(payload.items) ? payload.items : [];
+          console.log('PROD_FALLBACK=' + Boolean(payload.fallback));
+          console.log('PROD_COUNT=' + items.length);
+          console.log('PROD_LATEST=' + (items.at(-1)?.start || ''));
+          console.log('PROD_TITLES=' + items.slice(-12).map(x => `${x.start}|${x.title}`).join(' || '));
+          NODE
