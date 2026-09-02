@@ -1,0 +1,51 @@
+name: Tarot formatting fix
+
+on:
+  push:
+    branches: [fix/tarot-card-selection-hd3x]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Normalize formatting
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('tarot.js')
+          text = path.read_text()
+          old = """    setup.addEventListener('change', event => {
+      if (event.target.name === 'count') {
+      renderNumberInputs(Number(event.target.value));
+      syncSelectionModeUI();
+    }
+      if (event.target.name === 'selection-mode') syncSelectionModeUI();
+    });"""
+          new = """    setup.addEventListener('change', event => {
+      if (event.target.name === 'count') {
+        renderNumberInputs(Number(event.target.value));
+        syncSelectionModeUI();
+      }
+      if (event.target.name === 'selection-mode') syncSelectionModeUI();
+    });"""
+          if old not in text:
+            raise SystemExit('formatting block not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+          node --check tarot.js
+          node tests/tarot-selection-modes-regression.mjs
+      - name: Commit formatting fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tarot.js
+          git commit -m 'style: normalize tarot selection handler formatting'
+          git push origin HEAD:fix/tarot-card-selection-hd3x
