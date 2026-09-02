@@ -14,3 +14,16 @@ jobs:
           node-version: '20'
       - name: Schedule live refresh regression
         run: node tests/schedule-live-refresh-regression.mjs
+      - name: Fetch current Notion schedule with production parser
+        run: |
+          node <<'NODE'
+          const fetchSchedule = require('./api/schedule');
+          (async () => {
+            const items = await fetchSchedule();
+            console.log('LIVE_COUNT=' + items.length);
+            console.log('LIVE_LATEST=' + (items.at(-1)?.start || ''));
+            console.log('LIVE_TITLES=' + items.slice(-12).map(x => `${x.start}|${x.title}`).join(' || '));
+            if (!items.length) throw new Error('live schedule is empty');
+            if (String(items.at(-1)?.start || '').slice(0, 10) <= '2026-08-31') throw new Error('live schedule is not newer than static snapshot');
+          })().catch(error => { console.error(error); process.exit(1); });
+          NODE
