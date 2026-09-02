@@ -8,32 +8,26 @@ on:
 jobs:
   verify-site:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Check API syntax
+      - name: Syntax checks
         run: |
-          node --check api/clips.js
-          node --check api/notice.js
-          node --check api/_shared.js
-          node --check api/tarot-reading.js
-      - name: Run Catch source regression
-        run: node tests/catch-page-source-regression.mjs
-      - name: Run Catch embed regression
-        run: node tests/catch-playback-schedule-removal-regression.mjs
-      - name: Run notice single-board regression
-        run: node tests/notice-single-board-regression.mjs
-      - name: Run Tarot feature regression
-        run: node tests/tarot-regression.mjs
-      - name: Check Tarot syntax
-        run: |
+          node --check script.js
+          node --check page.js
           node --check tarot-data.js
           node --check tarot.js
-      - name: Run Tarot AI API regression
-        run: node tests/tarot-ai-api-regression.mjs
-      - name: Run Tarot HD asset regression
-        run: node tests/tarot-hd-assets-regression.mjs
-      - name: Run multipage smoke regression
-        run: node tests/multipage-smoke.mjs
+          for file in api/*.js; do node --check "$file"; done
+      - name: Run all regression tests
+        run: |
+          set -e
+          count=0
+          for file in tests/*.mjs; do
+            echo "=== $file ==="
+            node "$file"
+            count=$((count + 1))
+          done
+          echo "TOTAL_TEST_FILES=$count"
