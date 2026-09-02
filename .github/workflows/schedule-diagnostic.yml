@@ -14,7 +14,7 @@ jobs:
           node-version: '20'
       - name: Schedule live refresh regression
         run: node tests/schedule-live-refresh-regression.mjs
-      - name: Probe Notion page-sort sync record values
+      - name: Probe current Notion reducer collection query
         run: |
           node <<'NODE'
           const PAGE_ID='2c059c07-cee4-8093-8952-ffaf573b8c99';
@@ -24,15 +24,27 @@ jobs:
           (async()=>{
             const pageRes=await fetch('https://www.notion.so/api/v3/loadPageChunk',{method:'POST',headers,body:JSON.stringify({pageId:PAGE_ID,limit:100,cursor:{stack:[]},chunkNumber:0,verticalColumns:false})});
             const page=await pageRes.json();
+            const collectionEntry=Object.values(page.recordMap?.collection||{})[0];
             const viewEntry=Object.values(page.recordMap?.collection_view||{})[0];
+            const collection=unwrap(collectionEntry)||{};
             const view=unwrap(viewEntry)||{};
-            const ids=(view.page_sort||[]).slice(-30);
-            console.log('PAGE_SORT_COUNT='+(view.page_sort||[]).length);
-            const recordVersionMap={block:Object.fromEntries(ids.map(id=>[id,-1]))};
-            const recordRes=await fetch('https://www.notion.so/api/v3/syncRecordValues',{method:'POST',headers,body:JSON.stringify({recordVersionMap})});
-            console.log('SYNC_HTTP='+recordRes.status);
-            const text=await recordRes.text();
-            console.log('SYNC_BODY='+text.slice(0,24000));
-            if(!recordRes.ok) process.exit(1);
+            const query=view.query2||view.query||{};
+            const loader={
+              type:'reducer',
+              reducers:{
+                collection_group_results:{type:'results',limit:100,loadContentCover:true},
+                'table:uncategorized:title:count':{type:'aggregation',aggregation:{property:'title',aggregator:'count'}}
+              },
+              ...query,
+              searchQuery:'',
+              userTimeZone:'Asia/Seoul'
+            };
+            const body={collection:{id:collection.id},collectionView:{id:view.id},loader};
+            console.log('QUERY_REQUEST='+JSON.stringify(body));
+            const response=await fetch('https://www.notion.so/api/v3/queryCollection',{method:'POST',headers,body:JSON.stringify(body)});
+            console.log('QUERY_HTTP='+response.status);
+            const text=await response.text();
+            console.log('QUERY_BODY='+text.slice(0,30000));
+            if(!response.ok) process.exit(1);
           })().catch(error=>{console.error(error);process.exit(1)});
           NODE
