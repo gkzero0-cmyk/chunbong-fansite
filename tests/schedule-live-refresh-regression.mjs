@@ -27,6 +27,18 @@ assert.deepEqual(
   'schedule parser must unwrap current Notion value.value record wrappers'
 );
 
+const queryBody = schedule.buildCollectionQuery?.(
+  'collection-1',
+  'view-1',
+  { query2: { calendar_by: 'date-property' } }
+);
+assert.equal(queryBody?.collection?.id, 'collection-1');
+assert.equal(queryBody?.collectionView?.id, 'view-1');
+assert.equal(queryBody?.loader?.type, 'reducer');
+assert.equal(queryBody?.loader?.calendar_by, 'date-property');
+assert.equal(queryBody?.loader?.reducers?.collection_group_results?.type, 'results');
+assert.equal(queryBody?.loader?.reducers?.collection_group_results?.limit, 100);
+
 const scheduleHtml = fs.readFileSync(new URL('../schedule.html', import.meta.url), 'utf8');
 const runtimeJs = fs.readFileSync(new URL('../schedule-runtime.js', import.meta.url), 'utf8');
 const pageJs = fs.readFileSync(new URL('../page.js', import.meta.url), 'utf8');
