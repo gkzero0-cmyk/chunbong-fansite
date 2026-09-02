@@ -14,7 +14,7 @@ jobs:
           node-version: '20'
       - name: Schedule live refresh regression
         run: node tests/schedule-live-refresh-regression.mjs
-      - name: Probe Notion page-sort record values
+      - name: Probe Notion page-sort sync record values
         run: |
           node <<'NODE'
           const PAGE_ID='2c059c07-cee4-8093-8952-ffaf573b8c99';
@@ -28,11 +28,11 @@ jobs:
             const view=unwrap(viewEntry)||{};
             const ids=(view.page_sort||[]).slice(-30);
             console.log('PAGE_SORT_COUNT='+(view.page_sort||[]).length);
-            console.log('PROBE_IDS='+ids.join(','));
-            const recordRes=await fetch('https://www.notion.so/api/v3/getRecordValues',{method:'POST',headers,body:JSON.stringify({requests:ids.map(id=>({id,table:'block'}))})});
-            console.log('RECORD_HTTP='+recordRes.status);
+            const recordVersionMap={block:Object.fromEntries(ids.map(id=>[id,-1]))};
+            const recordRes=await fetch('https://www.notion.so/api/v3/syncRecordValues',{method:'POST',headers,body:JSON.stringify({recordVersionMap})});
+            console.log('SYNC_HTTP='+recordRes.status);
             const text=await recordRes.text();
-            console.log('RECORD_BODY='+text.slice(0,20000));
+            console.log('SYNC_BODY='+text.slice(0,24000));
             if(!recordRes.ok) process.exit(1);
           })().catch(error=>{console.error(error);process.exit(1)});
           NODE
