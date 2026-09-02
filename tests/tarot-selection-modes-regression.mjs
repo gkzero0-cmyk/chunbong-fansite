@@ -29,4 +29,16 @@ assert.ok(picks.every(x => x.orientation === 'upright'));
 const shuffled = tarot.shuffleDeck(data.cards, () => 0.5);
 assert.equal(shuffled.length, 78);
 assert.equal(new Set(shuffled.map(card => card.id)).size, 78);
+
+assert.deepEqual(
+  tarot.numberInputConstraintState('number'),
+  { disabled: false, required: true },
+  'number mode must keep number inputs active and required'
+);
+assert.deepEqual(
+  tarot.numberInputConstraintState('cards'),
+  { disabled: true, required: false },
+  'direct card selection must disable hidden number inputs so native form validation cannot block submit'
+);
+
 console.log('tarot selection modes regression test passed');
