@@ -1,0 +1,54 @@
+name: Vercel production tarot probe
+
+on:
+  push:
+    branches:
+      - verify/vercel-prod-tarot-20260902
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify production site and HD tarot asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://chunbong-fansite.vercel.app'
+          home_status=$(curl --silent --show-error --location --output /tmp/home.html --write-out '%{http_code}' "$base/")
+          echo "HOME_HTTP=$home_status"
+          test "$home_status" = '200'
+
+          asset_status=$(curl --silent --show-error --location --output /tmp/pair-38.avif --write-out '%{http_code}' "$base/assets/tarot/hd/pair-38.avif")
+          echo "ASSET_HTTP=$asset_status"
+          test "$asset_status" = '200'
+          test -s /tmp/pair-38.avif
+
+      - name: Verify production tarot API POST
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://chunbong-fansite.vercel.app'
+          payload='{"question":"오늘 작업 흐름을 차분하게 점검해줘","topic":"daily","spreadId":"single","cards":[{"id":"major-00","orientation":"upright","position":"메시지"}]}'
+          status=$(curl --silent --show-error --location --request POST \
+            --header 'content-type: application/json' \
+            --data "$payload" \
+            --output /tmp/tarot-response.json \
+            --write-out '%{http_code}' \
+            "$base/api/tarot-reading")
+          echo "TAROT_HTTP=$status"
+          node - <<'NODE'
+          const fs = require('fs');
+          const raw = fs.readFileSync('/tmp/tarot-response.json', 'utf8');
+          let body;
+          try { body = JSON.parse(raw); } catch (_) {
+            console.log('TAROT_BODY_NON_JSON=' + raw.slice(0, 500));
+            process.exit(2);
+          }
+          if (body.error) console.log('TAROT_ERROR=' + body.error);
+          if (body.provider) console.log('TAROT_PROVIDER=' + body.provider);
+          if (body.model) console.log('TAROT_MODEL=' + body.model);
+          if (body.reading?.title) console.log('TAROT_TITLE=' + body.reading.title);
+          if (!body.reading || typeof body.reading.title !== 'string') process.exitCode = 3;
+          NODE
+          test "$status" = '200'
