@@ -24,11 +24,43 @@ function orientationFromRandom(randomFn = random01) {
   return randomFn() < 0.5 ? 'upright' : 'reversed';
 }
 
+function spreadIdForCount(count) {
+  const map = { 1: 'single', 3: 'threeFlow', 5: 'fiveInsight', 12: 'twelveCompass' };
+  const spreadId = map[Number(count)];
+  if (!spreadId) throw new Error('invalid_card_count');
+  return spreadId;
+}
+
+function validateDeckNumbers(values, count) {
+  if (!Array.isArray(values) || values.length !== Number(count)) throw new Error('invalid_number_count');
+  const numbers = values.map(value => {
+    const text = String(value).trim();
+    if (!/^\d+$/.test(text)) throw new Error('invalid_deck_number');
+    const number = Number(text);
+    if (number < 1 || number > 78) throw new Error('invalid_deck_number');
+    return number;
+  });
+  if (new Set(numbers).size !== numbers.length) throw new Error('duplicate_deck_number');
+  return numbers;
+}
+
+function buildNumberSelections(values, spreadId, randomFn = random01) {
+  const positions = DATA.spreads[spreadId]?.positions;
+  if (!positions) throw new Error('invalid_spread');
+  const numbers = validateDeckNumbers(values, positions.length);
+  return numbers.map((deckNumber, index) => ({
+    card: DATA.cards[deckNumber - 1],
+    orientation: orientationFromRandom(randomFn),
+    position: positions[index],
+    deckNumber
+  }));
+}
+
 function buildCardInterpretation(selection, topicId, position) {
   const { card, orientation } = selection;
   const direction = orientation === 'upright' ? '정방향' : '역방향';
   const meaning = orientation === 'upright' ? card.meaningUpright : card.meaningReversed;
-  const hint = card.topicHints[topicId] || card.topicHints.daily;
+  const hint = card.topicHints[topicId] || card.topicHints.general;
   return `${position}의 ${card.nameKo} ${direction}. ${meaning} ${hint}`;
 }
 
@@ -65,6 +97,9 @@ const TAROT_API = {
   random01,
   shuffleDeck,
   orientationFromRandom,
+  spreadIdForCount,
+  validateDeckNumbers,
+  buildNumberSelections,
   buildCardInterpretation,
   buildSummary,
   buildAiRequestPayload
