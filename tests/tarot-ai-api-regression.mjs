@@ -72,6 +72,22 @@ for (const mutate of [
   await api.createHandler({ env: { VERCEL_OIDC_TOKEN: 'oidc-test' }, fetchImpl: async () => response(429, { error: { message: 'rate limited' } }) })(makeReq('POST', validSingle), res);
   assert.equal(res.statusCode, 429);
 }
+for (const [upstreamStatus, expectedStatus, expectedError] of [
+  [400, 502, 'ai_request_rejected'],
+  [401, 502, 'ai_auth_failed'],
+  [403, 502, 'ai_access_denied'],
+  [404, 502, 'ai_model_unavailable'],
+  [500, 502, 'ai_upstream_failed']
+]) {
+  const res = makeRes();
+  await api.createHandler({
+    env: { VERCEL_OIDC_TOKEN: 'oidc-test' },
+    fetchImpl: async () => response(upstreamStatus, { error: { message: 'safe test failure' } })
+  })(makeReq('POST', validSingle), res);
+  assert.equal(res.statusCode, expectedStatus);
+  assert.equal(res.payload.error, expectedError);
+  assert.equal(res.payload.upstream_status, upstreamStatus);
+}
 {
   const res = makeRes();
   await api.createHandler({ env: { VERCEL_OIDC_TOKEN: 'oidc-test' }, fetchImpl: async () => response(200, { output: [] }) })(makeReq('POST', validSingle), res);
@@ -143,4 +159,4 @@ for (const mutate of [
   assert.equal(requestBody.model, 'gpt-5.6-terra');
 }
 
-console.log('AI tarot API validation, direct OpenAI and Vercel runtime OIDC gateway regression test passed');
+console.log('AI tarot API validation, direct OpenAI, runtime OIDC, and upstream diagnostics regression test passed');
