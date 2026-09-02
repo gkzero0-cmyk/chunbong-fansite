@@ -4,7 +4,7 @@
 
 **Goal:** Expand the fan-site tarot from 1/3-card readings into a 78-card experience supporting 1/3/5/12 cards, 9 topics, number-entry/direct-selection modes, reveal effects, generated sound, and free local rule-based-v2 counseling.
 
-**Architecture:** Keep the existing 78-card dataset, HD AVIF pair renderer, page shell, and `/api/tarot-reading` contract. Extend `tarot-data.js` into the canonical topic/spread/deck-number source, normalize both selection modes into one `selected` structure in `tarot.js`, and upgrade the server engine to derive validation and synthesis from the canonical spread definitions. Motion and Web Audio remain client-only and must never block card selection or results.
+**Architecture:** Keep the existing 78-card dataset, HD AVIF pair renderer, page shell, and `/api/tarot-reading` response shape. Extend `tarot-data.js` into the canonical source for topics/spreads/deck numbering, normalize both selection modes into one `selected` structure in `tarot.js`, and upgrade the server engine to derive validation and synthesis from canonical spread definitions. Motion and Web Audio stay client-only and must never block selection or results.
 
 **Tech Stack:** Vanilla HTML/CSS/JavaScript, CommonJS-compatible `tarot-data.js` and `tarot.js` exports for Node regression tests, Vercel Node API route, Web Audio API, existing GitHub Actions/Vercel deployment.
 
@@ -13,14 +13,14 @@
 ## Global Constraints
 
 - Keep exactly 78 tarot cards and the existing 39 source-derived HD AVIF pair assets.
-- Active topics must be exactly: `general`, `love`, `relations`, `broadcast`, `crew`, `content`, `career`, `money`, `direction`.
-- Supported reading sizes must be exactly 1, 3, 5, and 12 cards.
-- Number-entry values must be unique integers from 1 through 78 and must not reveal card identity before result reveal.
-- Direct-selection mode must make all 78 shuffled card backs eligible for selection.
+- Active topics are exactly: `general`, `love`, `relations`, `broadcast`, `crew`, `content`, `career`, `money`, `direction`.
+- Supported reading sizes are exactly 1, 3, 5, and 12 cards.
+- Number-entry values are unique integers from 1 through 78 and never reveal card identity before result reveal.
+- Direct-selection mode makes all 78 shuffled card backs eligible for selection.
 - Sound uses Web Audio only; no external audio files or URLs.
 - Sound preference key is `chunbongTarotSound`; default ON when no stored preference exists, but playback starts only after a user gesture unlocks audio.
-- Preserve `prefers-reduced-motion: reduce` support and never depend on animation completion for functionality.
-- Keep `/api/tarot-reading` free and local: `provider: local-tarot-engine`, `model: rule-based-v2`; do not add paid or external AI.
+- Preserve `prefers-reduced-motion: reduce`; no feature logic depends on animation completion.
+- Keep `/api/tarot-reading` free and local: `provider: local-tarot-engine`, `model: rule-based-v2`; add no paid/external AI.
 - Question limit remains 500 characters.
 - Do not restructure or remove unrelated SOOP, schedule, notice, CATCH, VOD, fan-art, or YouTube behavior.
 
@@ -30,10 +30,11 @@
 
 **Files:**
 - Modify: `tarot-data.js`
+- Modify: `tests/tarot-regression.mjs`
 - Test: `tests/tarot-expanded-data-regression.mjs`
 
 **Interfaces:**
-- Produces: `DATA.topics` with 9 IDs; `DATA.spreads.single|threeFlow|fiveInsight|twelveCompass`; `card.deckNumber` from 1..78; `card.topicHints[topicId]` for all 9 topics.
+- Produces: `DATA.topics`; `DATA.spreads.single|threeFlow|fiveInsight|twelveCompass`; `card.deckNumber`; `card.topicHints[topicId]` for all 9 topics.
 - Consumers: Tasks 2-6.
 
 - [ ] **Step 1: Write the failing data regression test**
@@ -57,6 +58,7 @@ assert.deepEqual(data.spreads.twelveCompass.positions, [
   '기회','장애물','조언','가까운 흐름','장기 흐름','최종 방향'
 ]);
 assert.equal(data.cards.length, 78);
+assert.equal(new Set(data.cards.map(card => card.id)).size, 78);
 assert.deepEqual(data.cards.map(card => card.deckNumber), Array.from({ length: 78 }, (_, i) => i + 1));
 for (const card of data.cards) {
   for (const topicId of topicIds) assert.ok(card.topicHints[topicId], `${card.id} missing ${topicId}`);
@@ -70,9 +72,9 @@ Run: `node tests/tarot-expanded-data-regression.mjs`
 
 Expected: FAIL because the current data has five topics, no 5/12-card spreads, and no `deckNumber`.
 
-- [ ] **Step 3: Implement the canonical topics/spreads/deck numbering**
+- [ ] **Step 3: Implement topics and spreads**
 
-In `tarot-data.js`, replace the current topic/spread definitions with:
+Use exactly:
 
 ```js
 const topics = {
@@ -98,7 +100,25 @@ const spreads = {
 };
 ```
 
-Make `topicHints(focus)` return all 9 keys, using topic-specific context without changing the card's base upright/reversed meaning. Change `withImageSlot` to:
+- [ ] **Step 4: Implement all 9 topic hints and stable deck numbers**
+
+Replace `topicHints` with:
+
+```js
+const topicHints = focus => ({
+  general: `종합 흐름에서는 ${focus}을 중심으로 균형, 타이밍, 우선순위를 함께 살펴보세요.`,
+  love: `연애에서는 ${focus}이 감정 표현, 신뢰, 경계, 관계의 속도에 어떤 영향을 주는지 살펴보세요.`,
+  relations: `인간관계에서는 ${focus}을 기준으로 신뢰, 소통, 갈등, 주고받는 균형을 점검해 보세요.`,
+  broadcast: `방송에서는 ${focus}이 페이스, 시청자 반응, 소통, 지속성에 어떤 영향을 주는지 확인해 보세요.`,
+  crew: `크루에서는 ${focus}을 역할, 협업, 신뢰, 갈등 조율과 연결해서 보세요.`,
+  content: `콘텐츠에서는 ${focus}을 아이디어, 차별화, 실행력, 타이밍, 지속 가능성과 연결해 보세요.`,
+  career: `진로에서는 ${focus}을 강점, 기술, 기회, 책임, 성장 방향과 연결해 보세요.`,
+  money: `금전에서는 ${focus}을 수입, 지출, 자원 배분, 안정성, 위험 관리와 연결해 보세요.`,
+  direction: `앞으로의 방향에서는 ${focus}을 우선순위, 방향 수정, 타이밍, 다음 행동과 연결해 보세요.`
+});
+```
+
+Change `withImageSlot` to:
 
 ```js
 const withImageSlot = (card, index) => ({
@@ -109,7 +129,27 @@ const withImageSlot = (card, index) => ({
 });
 ```
 
-- [ ] **Step 4: Run focused regressions**
+- [ ] **Step 5: Update the legacy tarot regression for intentional identifiers**
+
+In `tests/tarot-regression.mjs`, replace old spread assertions with:
+
+```js
+assert.deepEqual(data.spreads.threeFlow.positions, ['과거·배경','현재·핵심','앞으로의 흐름']);
+assert.deepEqual(data.spreads.fiveInsight.positions, ['현재 상황','강점','장애물','조언','예상 흐름']);
+assert.equal(data.spreads.twelveCompass.positions.length, 12);
+```
+
+Replace the old five-topic hint assertion with:
+
+```js
+for (const topicId of ['general','love','relations','broadcast','crew','content','career','money','direction']) {
+  assert.ok(card.topicHints[topicId], `${card.id} must support ${topicId}`);
+}
+```
+
+Use `topic: 'general'` and `spreadId: 'single'` in the sample payload test.
+
+- [ ] **Step 6: Run focused regressions**
 
 Run:
 
@@ -119,9 +159,9 @@ node tests/tarot-regression.mjs
 node tests/tarot-hd-assets-regression.mjs
 ```
 
-Expected: the new test PASS; update legacy tarot assertions only where old topic/spread IDs are intentionally replaced; HD assets remain PASS.
+Expected: PASS; HD assets unchanged.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add tarot-data.js tests/tarot-expanded-data-regression.mjs tests/tarot-regression.mjs
@@ -138,8 +178,8 @@ git commit -m "feat: expand tarot topics and spreads"
 
 **Interfaces:**
 - Consumes: `DATA.cards[*].deckNumber`, `DATA.spreads` from Task 1.
-- Produces: `spreadIdForCount(count)`, `validateDeckNumbers(values, count)`, `buildNumberSelections(values, topic, spreadId, randomFn)`, existing `shuffleDeck`, normalized selection objects `{ card, orientation, position, deckNumber }`.
-- Consumers: Task 3 UI and Task 5 payload/API integration.
+- Produces: `spreadIdForCount(count)`, `validateDeckNumbers(values, count)`, `buildNumberSelections(values, spreadId, randomFn)`, existing `shuffleDeck`, normalized `{ card, orientation, position, deckNumber }` selections.
+- Consumers: Tasks 3, 4, 6.
 
 - [ ] **Step 1: Write the failing helper regression**
 
@@ -158,18 +198,20 @@ assert.equal(tarot.spreadIdForCount(5), 'fiveInsight');
 assert.equal(tarot.spreadIdForCount(12), 'twelveCompass');
 assert.throws(() => tarot.spreadIdForCount(2));
 
-assert.deepEqual(tarot.validateDeckNumbers(['1','78'], 2), [1, 78]);
+assert.deepEqual(tarot.validateDeckNumbers(['1','40','78'], 3), [1,40,78]);
 for (const bad of [
-  { values: ['0'], count: 1 }, { values: ['79'], count: 1 },
-  { values: ['1.5'], count: 1 }, { values: [''], count: 1 },
-  { values: ['3','3'], count: 2 }
+  { values: ['0'], count: 1 },
+  { values: ['79'], count: 1 },
+  { values: ['1.5'], count: 1 },
+  { values: [''], count: 1 },
+  { values: ['3','3','8'], count: 3 },
+  { values: ['1','2'], count: 3 }
 ]) assert.throws(() => tarot.validateDeckNumbers(bad.values, bad.count));
 
-const picks = tarot.buildNumberSelections(['1','78'], 'general', 'twoTest', () => 0.1, ['A','B']);
-assert.equal(picks[0].card, data.cards[0]);
-assert.equal(picks[1].card, data.cards[77]);
-assert.deepEqual(picks.map(x => x.deckNumber), [1, 78]);
-assert.deepEqual(picks.map(x => x.position), ['A','B']);
+const picks = tarot.buildNumberSelections(['1','40','78'], 'threeFlow', () => 0.1);
+assert.deepEqual(picks.map(x => x.card), [data.cards[0], data.cards[39], data.cards[77]]);
+assert.deepEqual(picks.map(x => x.deckNumber), [1,40,78]);
+assert.deepEqual(picks.map(x => x.position), data.spreads.threeFlow.positions);
 assert.ok(picks.every(x => x.orientation === 'upright'));
 
 const shuffled = tarot.shuffleDeck(data.cards, () => 0.5);
@@ -182,11 +224,11 @@ console.log('tarot selection modes regression test passed');
 
 Run: `node tests/tarot-selection-modes-regression.mjs`
 
-Expected: FAIL because the helper functions do not yet exist.
+Expected: FAIL because the helper functions do not exist.
 
-- [ ] **Step 3: Add minimal pure helpers and export them**
+- [ ] **Step 3: Add pure helpers and export them**
 
-Add to `tarot.js` before DOM-only code:
+Add before DOM-only code:
 
 ```js
 function spreadIdForCount(count) {
@@ -202,15 +244,16 @@ function validateDeckNumbers(values, count) {
     const text = String(value).trim();
     if (!/^\d+$/.test(text)) throw new Error('invalid_deck_number');
     const number = Number(text);
-    if (!Number.isInteger(number) || number < 1 || number > 78) throw new Error('invalid_deck_number');
+    if (number < 1 || number > 78) throw new Error('invalid_deck_number');
     return number;
   });
   if (new Set(numbers).size !== numbers.length) throw new Error('duplicate_deck_number');
   return numbers;
 }
 
-function buildNumberSelections(values, topic, spreadId, randomFn = random01, positionsOverride = null) {
-  const positions = positionsOverride || DATA.spreads[spreadId]?.positions;
+function buildNumberSelections(values, spreadId, randomFn = random01) {
+  const positions = DATA.spreads[spreadId]?.positions;
+  if (!positions) throw new Error('invalid_spread');
   const numbers = validateDeckNumbers(values, positions.length);
   return numbers.map((deckNumber, index) => ({
     card: DATA.cards[deckNumber - 1],
@@ -221,9 +264,9 @@ function buildNumberSelections(values, topic, spreadId, randomFn = random01, pos
 }
 ```
 
-Export all three through `TAROT_API`.
+Export the three helpers through `TAROT_API`.
 
-- [ ] **Step 4: Run helper and existing unit regressions**
+- [ ] **Step 4: Run helper and existing regressions**
 
 Run:
 
@@ -243,7 +286,7 @@ git commit -m "feat: add tarot selection mode helpers"
 
 ---
 
-### Task 3: Expand the setup UI and direct-selection interaction
+### Task 3: Expand setup UI, number entry, and full 78-card direct selection
 
 **Files:**
 - Modify: `tarot.html`
@@ -252,9 +295,9 @@ git commit -m "feat: add tarot selection mode helpers"
 - Test: `tests/tarot-expanded-ui-regression.mjs`
 
 **Interfaces:**
-- Consumes: selection helpers from Task 2.
-- Produces DOM contracts: `name="topic"` with 9 values; `name="count"` with 1/3/5/12; `name="selection-mode"` with `number|cards`; `#tarot-number-panel`; `#tarot-number-inputs`; `#tarot-number-error`; `#tarot-selected-slots`; `#tarot-sound-toggle`; all 78 card backs in direct mode.
-- Consumers: Task 4 effects/audio and Task 5 result/API flow.
+- Consumes: Task 2 helpers.
+- Produces: 9 topic controls, 1/3/5/12 controls, `number|cards` selection method, number input panel, 78-card arena, selected-slot strip, sound toggle placeholder.
+- Consumers: Tasks 4 and 6.
 
 - [ ] **Step 1: Write the failing UI regression**
 
@@ -277,61 +320,80 @@ for (const id of ['tarot-number-panel','tarot-number-inputs','tarot-number-error
   assert.ok(html.includes(`id="${id}"`));
 }
 assert.ok(js.includes('state.deck.slice(0, 78)'));
-assert.ok(js.includes('validateDeckNumbers'));
 assert.ok(js.includes('selectionMode'));
 assert.ok(css.includes('.tarot-number-inputs'));
 assert.ok(css.includes('.tarot-selected-slots'));
 console.log('expanded tarot UI regression test passed');
 ```
 
-- [ ] **Step 2: Run the UI test and verify RED**
+- [ ] **Step 2: Run and verify RED**
 
 Run: `node tests/tarot-expanded-ui-regression.mjs`
 
-Expected: FAIL on missing topics, count options, selection mode controls, and full 78-card rendering.
+Expected: FAIL on new controls and 78-card rendering.
 
-- [ ] **Step 3: Expand `tarot.html` setup controls**
+- [ ] **Step 3: Replace setup controls in `tarot.html`**
 
-Replace the current topic/count/spread chooser with:
+Use 9 topic radio labels with values from Task 1, four count radios (`1`,`3`,`5`,`12`), and:
 
 ```html
-<fieldset class="tarot-choice-group"><legend>무엇을 볼까요?</legend>
-  <label><input type="radio" name="topic" value="general" checked><span>종합타로</span></label>
-  <label><input type="radio" name="topic" value="love"><span>연애</span></label>
-  <label><input type="radio" name="topic" value="relations"><span>인간관계</span></label>
-  <label><input type="radio" name="topic" value="broadcast"><span>방송</span></label>
-  <label><input type="radio" name="topic" value="crew"><span>크루</span></label>
-  <label><input type="radio" name="topic" value="content"><span>콘텐츠</span></label>
-  <label><input type="radio" name="topic" value="career"><span>진로</span></label>
-  <label><input type="radio" name="topic" value="money"><span>금전</span></label>
-  <label><input type="radio" name="topic" value="direction"><span>앞으로의 방향</span></label>
-</fieldset>
-<fieldset class="tarot-choice-group"><legend>몇 장을 볼까요?</legend>
-  <label><input type="radio" name="count" value="1" checked><span>1장</span></label>
-  <label><input type="radio" name="count" value="3"><span>3장</span></label>
-  <label><input type="radio" name="count" value="5"><span>5장</span></label>
-  <label><input type="radio" name="count" value="12"><span>12장</span></label>
-</fieldset>
 <fieldset class="tarot-choice-group"><legend>카드 선택 방식</legend>
   <label><input type="radio" name="selection-mode" value="number" checked><span>숫자 직접 입력</span></label>
   <label><input type="radio" name="selection-mode" value="cards"><span>카드 직접 선택</span></label>
 </fieldset>
 <section id="tarot-number-panel" class="tarot-number-panel">
+  <p class="tarot-number-help">1~78 사이 숫자를 카드 장수만큼 직접 입력하세요. 같은 숫자는 한 번만 사용할 수 있습니다.</p>
   <div id="tarot-number-inputs" class="tarot-number-inputs"></div>
   <p id="tarot-number-error" class="tarot-number-error" role="alert"></p>
 </section>
 <button id="tarot-sound-toggle" class="tarot-sound-toggle" type="button" aria-pressed="true">효과음 ON</button>
 ```
 
-- [ ] **Step 4: Implement mode-specific setup and full-deck rendering in `tarot.js`**
+Keep the 500-character textarea and existing results/counseling containers.
 
-Change state defaults to `topic: 'general'`, `selectionMode: 'number'`, and derive `spreadId` with `spreadIdForCount(count)`. Add `renderNumberInputs(count)` that creates exactly `count` number inputs with `min=1`, `max=78`, `inputMode='numeric'`, and labels `1번째 카드` etc. In `startReading()`:
+- [ ] **Step 4: Implement explicit state and mode setup in `tarot.js`**
+
+Use:
+
+```js
+const state = {
+  topic: 'general', count: 1, spreadId: 'single', selectionMode: 'number',
+  question: '', deck: [], selected: [], phase: 'setup',
+  readingSucceeded: false, soundEnabled: true
+};
+```
+
+`readSetup()` must return `topic`, `count`, `spreadId: spreadIdForCount(count)`, `selectionMode`, and trimmed question.
+
+Add:
+
+```js
+function renderNumberInputs(count) {
+  byId('tarot-number-inputs').replaceChildren(...Array.from({ length: count }, (_, index) => {
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.inputMode = 'numeric';
+    input.min = '1';
+    input.max = '78';
+    input.step = '1';
+    input.required = true;
+    input.setAttribute('aria-label', `${index + 1}번째 카드 번호`);
+    return input;
+  }));
+}
+```
+
+On count changes call `renderNumberInputs(Number(value))`. On selection-mode changes toggle `#tarot-number-panel` and update the start button label (`숫자로 카드 열기` vs `78장 카드 섞기`).
+
+- [ ] **Step 5: Implement number-mode start behavior**
+
+Inside `startReading()` after reading setup:
 
 ```js
 if (state.selectionMode === 'number') {
   const values = [...byId('tarot-number-inputs').querySelectorAll('input')].map(input => input.value);
   try {
-    state.selected = buildNumberSelections(values, state.topic, state.spreadId);
+    state.selected = buildNumberSelections(values, state.spreadId);
     byId('tarot-number-error').textContent = '';
   } catch (error) {
     byId('tarot-number-error').textContent = error.message === 'duplicate_deck_number'
@@ -342,16 +404,36 @@ if (state.selectionMode === 'number') {
   beginReveal();
   return;
 }
-state.deck = shuffleDeck(DATA.cards);
-state.selected = [];
-renderDeck();
 ```
 
-Change `renderDeck()` to use `state.deck.slice(0, 78)` and render `#tarot-selected-slots` with one slot per spread position. When `selectCard()` succeeds, append the normalized selection with `deckNumber: card.deckNumber`, mark the original back disabled, and fill the matching slot without showing the face/name.
+Do not render card names or faces before `beginReveal()`.
 
-- [ ] **Step 5: Add responsive CSS for controls, 78-card arena, slots, 5/12-card result grids**
+- [ ] **Step 6: Implement direct-card selection for all 78 backs**
 
-Add focused classes:
+For card mode:
+
+```js
+state.deck = shuffleDeck(DATA.cards);
+state.selected = [];
+state.phase = 'selecting';
+```
+
+`renderDeck()` uses `state.deck.slice(0, 78)` and renders all 78 buttons. Render `#tarot-selected-slots` with `state.count` position labels. `selectCard(button)` appends:
+
+```js
+{
+  card,
+  orientation: orientationFromRandom(),
+  position: DATA.spreads[state.spreadId].positions[state.selected.length],
+  deckNumber: card.deckNumber
+}
+```
+
+Then disable/lock the source button, fill only the corresponding slot indicator (no face/name), update `selected / required`, and call `beginReveal()` when exact count is reached.
+
+- [ ] **Step 7: Add responsive UI CSS**
+
+Add:
 
 ```css
 .tarot-number-panel{display:grid;gap:10px}
@@ -366,9 +448,9 @@ Add focused classes:
 .tarot-reading-grid[data-count="12"]{grid-template-columns:repeat(4,minmax(0,1fr))}
 ```
 
-Keep card art `max-width:320px`; add media-query reductions to max 3 columns under 900px, max 2 under 700px, one column under 430px.
+Keep `.tarot-card-art{max-width:320px}`. Under 900px cap result grids at 3 columns; under 700px at 2; under 430px at 1.
 
-- [ ] **Step 6: Run UI regressions**
+- [ ] **Step 8: Run UI regressions**
 
 Run:
 
@@ -378,9 +460,9 @@ node tests/tarot-selection-modes-regression.mjs
 node tests/tarot-regression.mjs
 ```
 
-Expected: PASS after updating intentional legacy copy assertions.
+Expected: PASS.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
 git add tarot.html tarot.js tarot.css tests/tarot-expanded-ui-regression.mjs tests/tarot-regression.mjs
@@ -389,7 +471,7 @@ git commit -m "feat: add expanded tarot selection UI"
 
 ---
 
-### Task 4: Add non-blocking reveal effects and Web Audio cues
+### Task 4: Non-blocking reveal effects and Web Audio cues
 
 **Files:**
 - Modify: `tarot.js`
@@ -397,10 +479,10 @@ git commit -m "feat: add expanded tarot selection UI"
 - Test: `tests/tarot-effects-audio-regression.mjs`
 
 **Interfaces:**
-- Produces: `createTarotSoundController(storage, AudioContextCtor)`, `soundController.play('shuffle'|'select'|'reveal'|'complete')`, `beginReveal()` phase transition, CSS classes `is-selecting`, `is-revealing`, `is-complete`.
-- Consumers: Task 5 result flow.
+- Produces: `createTarotSoundController(storage, AudioContextCtor)`, `sound.play('shuffle'|'select'|'reveal'|'complete')`, `beginReveal()`, CSS selection/reveal/completion animations.
+- Consumers: Task 6.
 
-- [ ] **Step 1: Write failing effects/audio regression**
+- [ ] **Step 1: Write the failing effects/audio regression**
 
 Create `tests/tarot-effects-audio-regression.mjs`:
 
@@ -414,32 +496,29 @@ const css = fs.readFileSync(new URL('../tarot.css', import.meta.url), 'utf8');
 const js = fs.readFileSync(new URL('../tarot.js', import.meta.url), 'utf8');
 
 const memory = new Map();
-const storage = { getItem: k => memory.has(k) ? memory.get(k) : null, setItem: (k,v) => memory.set(k,v) };
+const storage = { getItem:k => memory.has(k) ? memory.get(k) : null, setItem:(k,v) => memory.set(k,v) };
 const sound = tarot.createTarotSoundController(storage, null);
 assert.equal(sound.enabled(), true);
 sound.setEnabled(false);
 assert.equal(storage.getItem('chunbongTarotSound'), 'off');
 assert.equal(sound.enabled(), false);
-
 for (const token of ['@keyframes tarotSelect','@keyframes tarotReveal','@keyframes tarotCompleteGlow','@keyframes tarotSpark']) assert.ok(css.includes(token));
 assert.ok(css.includes('@media (prefers-reduced-motion: reduce)'));
-assert.ok(js.includes("play('shuffle')"));
-assert.ok(js.includes("play('select')"));
-assert.ok(js.includes("play('reveal')"));
-assert.ok(js.includes("play('complete')"));
+for (const cue of ['shuffle','select','reveal','complete']) assert.ok(js.includes(`play('${cue}')`));
+assert.ok(js.includes('createBuffer'));
 assert.ok(!js.match(/\.(mp3|wav|ogg)/i));
 console.log('tarot effects and audio regression test passed');
 ```
 
-- [ ] **Step 2: Run the test and verify RED**
+- [ ] **Step 2: Run and verify RED**
 
 Run: `node tests/tarot-effects-audio-regression.mjs`
 
-Expected: FAIL because sound controller and new keyframes do not exist.
+Expected: FAIL on missing sound controller/keyframes.
 
-- [ ] **Step 3: Implement a small injectable sound controller**
+- [ ] **Step 3: Implement injectable sound controller with filtered-noise shuffle**
 
-Add a pure/exported factory in `tarot.js`:
+Add and export:
 
 ```js
 function createTarotSoundController(storage = globalThis.localStorage, AudioContextCtor = globalThis.AudioContext || globalThis.webkitAudioContext) {
@@ -452,7 +531,7 @@ function createTarotSoundController(storage = globalThis.localStorage, AudioCont
     if (context.state === 'suspended') context.resume?.();
     return context;
   };
-  const tone = (frequency, duration, gain = 0.035, offset = 0) => {
+  const tone = (frequency, duration, gain = 0.03, offset = 0) => {
     const ctx = ensureContext();
     if (!ctx) return;
     const osc = ctx.createOscillator();
@@ -464,6 +543,23 @@ function createTarotSoundController(storage = globalThis.localStorage, AudioCont
     osc.start(ctx.currentTime + offset);
     osc.stop(ctx.currentTime + offset + duration);
   };
+  const swish = () => {
+    const ctx = ensureContext();
+    if (!ctx) return;
+    const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.16), ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i += 1) data[i] = Math.random() * 2 - 1;
+    const source = ctx.createBufferSource();
+    const filter = ctx.createBiquadFilter();
+    const amp = ctx.createGain();
+    source.buffer = buffer;
+    filter.type = 'bandpass';
+    filter.frequency.value = 950;
+    amp.gain.setValueAtTime(0.025, ctx.currentTime);
+    amp.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.16);
+    source.connect(filter).connect(amp).connect(ctx.destination);
+    source.start();
+  };
   return {
     enabled: () => isEnabled,
     unlock: () => { try { ensureContext(); } catch (_) {} },
@@ -471,21 +567,23 @@ function createTarotSoundController(storage = globalThis.localStorage, AudioCont
     play(name) {
       if (!isEnabled) return;
       try {
+        if (name === 'shuffle') swish();
         if (name === 'select') tone(520, 0.08);
         if (name === 'reveal') { tone(220, 0.18, 0.025); tone(740, 0.12, 0.025, 0.08); }
         if (name === 'complete') { tone(440, 0.12); tone(554, 0.12, 0.03, 0.11); tone(659, 0.16, 0.03, 0.22); }
-        if (name === 'shuffle') { tone(180, 0.07, 0.018); tone(260, 0.07, 0.018, 0.06); }
       } catch (_) {}
     }
   };
 }
 ```
 
-Wire the visible toggle to `aria-pressed`, `효과음 ON/OFF`, and user gesture unlock. Audio exceptions must be swallowed.
+- [ ] **Step 4: Wire toggle and user-gesture unlock**
 
-- [ ] **Step 4: Implement phase-safe reveal sequencing**
+Instantiate once in DOM mode. On sound-toggle click: call `unlock()`, invert enabled state, store it, update `aria-pressed`, and set label to `효과음 ON` or `효과음 OFF`. Also call `unlock()` from the setup submit/direct-card click user gesture before the first cue. Audio failure remains silent.
 
-Add `beginReveal()` that sets `state.phase = 'revealing'`, renders results immediately into the DOM with per-card CSS delay variables, and uses a short timer only for cosmetic completion. Functional state must not depend on `animationend`:
+- [ ] **Step 5: Implement reveal sequence without animation dependencies**
+
+Use:
 
 ```js
 function beginReveal() {
@@ -505,11 +603,13 @@ function beginReveal() {
 }
 ```
 
-- [ ] **Step 5: Add CSS keyframes and reduced-motion overrides**
+Play `shuffle` after the direct deck is rendered and `select` after each direct selection.
 
-Add `tarotSelect`, refine `tarotReveal`, add `tarotCompleteGlow` and `tarotSpark`; apply animation via classes and `animation-delay:var(--reveal-delay,0ms)`. In reduced-motion media query set these animations to `none!important` and keep reversed-art orientation intact.
+- [ ] **Step 6: Add motion CSS and reduced-motion overrides**
 
-- [ ] **Step 6: Run effects regressions**
+Define `@keyframes tarotSelect`, `tarotReveal`, `tarotCompleteGlow`, `tarotSpark`; use `animation-delay:var(--reveal-delay,0ms)`. Apply one completion glow/spark to the summary/result heading. In `prefers-reduced-motion: reduce`, disable all new motion while preserving `.tarot-card-art.is-reversed{transform:rotate(180deg)}`.
+
+- [ ] **Step 7: Run effects regressions**
 
 Run:
 
@@ -521,7 +621,7 @@ node tests/tarot-selection-modes-regression.mjs
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add tarot.js tarot.css tests/tarot-effects-audio-regression.mjs
@@ -538,8 +638,8 @@ git commit -m "feat: add tarot reveal effects and sound"
 - Test: `tests/tarot-expanded-api-regression.mjs`
 
 **Interfaces:**
-- Consumes: canonical `DATA.topics` and `DATA.spreads` from Task 1; normalized card payloads from Tasks 2-3.
-- Produces: HTTP 200 `{ reading, provider:'local-tarot-engine', model:'rule-based-v2' }` for valid 1/3/5/12-card requests; HTTP 400 `{ error:'invalid_request' }` for invalid payloads.
+- Consumes: Task 1 `DATA.topics`/`DATA.spreads`.
+- Produces: valid 1/3/5/12 HTTP 200 readings; invalid payload HTTP 400; `provider:'local-tarot-engine'`, `model:'rule-based-v2'`.
 
 - [ ] **Step 1: Write failing expanded API regression**
 
@@ -554,12 +654,11 @@ const data = require('../tarot-data.js');
 
 assert.equal(api.LOCAL_PROVIDER, 'local-tarot-engine');
 assert.equal(api.LOCAL_MODEL, 'rule-based-v2');
-
 for (const [spreadId, count] of [['single',1],['threeFlow',3],['fiveInsight',5],['twelveCompass',12]]) {
   const positions = data.spreads[spreadId].positions;
   const body = {
-    question: '현재 흐름을 점검해줘', topic: 'general', spreadId,
-    cards: data.cards.slice(0, count).map((card, i) => ({ id: card.id, orientation: i % 2 ? 'reversed' : 'upright', position: positions[i] }))
+    question:'현재 흐름을 점검해줘', topic:'general', spreadId,
+    cards:data.cards.slice(0,count).map((card,i) => ({ id:card.id, orientation:i%2?'reversed':'upright', position:positions[i] }))
   };
   const validated = api.validateReadingRequest(body);
   const reading = api.generateLocalReading(validated);
@@ -567,12 +666,12 @@ for (const [spreadId, count] of [['single',1],['threeFlow',3],['fiveInsight',5],
   assert.ok(reading.overall.length > 80);
   assert.ok(reading.summary.length > 20);
 }
-
 for (const topic of Object.keys(data.topics)) {
-  const body = { question:'', topic, spreadId:'single', cards:[{ id:data.cards[0].id, orientation:'upright', position:'핵심 메시지' }] };
-  assert.doesNotThrow(() => api.validateReadingRequest(body));
+  assert.doesNotThrow(() => api.validateReadingRequest({
+    question:'', topic, spreadId:'single',
+    cards:[{ id:data.cards[0].id, orientation:'upright', position:'핵심 메시지' }]
+  }));
 }
-
 assert.throws(() => api.validateReadingRequest({
   question:'', topic:'general', spreadId:'threeFlow',
   cards:[{ id:data.cards[0].id, orientation:'upright', position:'과거·배경' }]
@@ -580,21 +679,21 @@ assert.throws(() => api.validateReadingRequest({
 console.log('expanded local tarot API regression test passed');
 ```
 
-- [ ] **Step 2: Run API test and verify RED**
+- [ ] **Step 2: Run and verify RED**
 
 Run: `node tests/tarot-expanded-api-regression.mjs`
 
 Expected: FAIL on model version and 5/12-card validation.
 
-- [ ] **Step 3: Derive validation count from spread positions**
+- [ ] **Step 3: Derive validation from canonical spreads**
 
-Change:
+Set:
 
 ```js
 const LOCAL_MODEL = 'rule-based-v2';
 ```
 
-Replace hard-coded `[1,3]` validation with:
+Replace hard-coded `[1,3]` count logic with:
 
 ```js
 const positions = DATA.spreads[spreadId].positions;
@@ -603,41 +702,53 @@ if (cards.length !== positions.length || ![1,3,5,12].includes(cards.length)) {
 }
 ```
 
-Keep duplicate card, orientation, exact position, topic, spread, and 500-character validation.
+Keep unique IDs, orientation, exact position order, topic/spread existence, and 500-character question validation.
 
-- [ ] **Step 4: Add aggregate spread synthesis helpers**
+- [ ] **Step 4: Add aggregate distribution and relationship helpers**
 
-Add focused helpers:
+Add:
 
 ```js
 function summarizeDistribution(cards) {
   const majorCount = cards.filter(item => item.card.arcana === 'major').length;
   const reversedCount = cards.filter(item => item.orientation === 'reversed').length;
+  const courtCount = cards.filter(item => ['시종','기사','여왕','왕'].includes(item.card.rank)).length;
   const suits = new Map();
   for (const item of cards) if (item.card.suit) suits.set(item.card.suit, (suits.get(item.card.suit) || 0) + 1);
   const dominantSuit = [...suits.entries()].sort((a,b) => b[1] - a[1])[0] || null;
-  return { majorCount, reversedCount, dominantSuit };
+  return { majorCount, reversedCount, courtCount, dominantSuit };
+}
+
+function buildEdgeRelationship(validated) {
+  const first = validated.cards[0];
+  const last = validated.cards[validated.cards.length - 1];
+  if (validated.cards.length === 1) return '';
+  const firstKey = cardKeywords(first.card, first.orientation).split(',')[0].trim();
+  const lastKey = cardKeywords(last.card, last.orientation).split(',')[0].trim();
+  return `${first.position}의 ${firstKey}에서 ${last.position}의 ${lastKey}로 이어지는 변화를 함께 보면 시작점과 최종 방향의 차이가 더 선명해집니다.`;
 }
 
 function buildTwelveCardThemes(validated) {
   if (validated.cards.length !== 12) return '';
-  const groups = {
-    core: validated.cards.slice(0, 4),
-    resources: validated.cards.slice(4, 7),
-    friction: validated.cards.slice(7, 9),
-    direction: validated.cards.slice(9, 12)
-  };
-  return `핵심 흐름은 ${groups.core.map(x => x.card.nameKo).join(', ')}에서, 강점과 기회는 ${groups.resources.map(x => x.card.nameKo).join(', ')}에서, 조정할 지점은 ${groups.friction.map(x => x.card.nameKo).join(', ')}에서, 앞으로의 방향은 ${groups.direction.map(x => x.card.nameKo).join(', ')}에서 읽을 수 있습니다.`;
+  const core = validated.cards.slice(0, 4).map(x => x.card.nameKo).join(', ');
+  const resources = validated.cards.slice(4, 7).map(x => x.card.nameKo).join(', ');
+  const friction = validated.cards.slice(7, 9).map(x => x.card.nameKo).join(', ');
+  const direction = validated.cards.slice(9, 12).map(x => x.card.nameKo).join(', ');
+  return `핵심 흐름은 ${core}, 강점과 기회는 ${resources}, 조정할 지점은 ${friction}, 가까운 흐름부터 최종 방향은 ${direction}의 연결로 읽을 수 있습니다.`;
 }
 ```
 
-Use distribution plus first/last card and, for 12 cards, grouped themes inside `buildOverall`, `buildAdvice`, and `buildSummary`. Keep wording reflective, not deterministic.
+- [ ] **Step 5: Use aggregate analysis in overall/advice/summary**
 
-- [ ] **Step 5: Update the legacy API regression to the intentional new contract**
+In `buildOverall()`, include `summarizeDistribution`, `buildEdgeRelationship`, and `buildTwelveCardThemes`. Add sentences for dominant suit only when its count is at least 3; for court cards only when `courtCount >= 3`; for high Major Arcana concentration use `majorCount >= Math.ceil(cards.length / 3)`. Preserve stable-hash phrasing choice and reflective, non-certain wording.
 
-Change old expected model from `rule-based-v1` to `rule-based-v2`, old topic IDs/spread positions to the canonical Task 1 values, and add one real handler invocation for a 12-card payload that asserts status 200 and provider/model.
+In `buildAdvice()`, keep the current high-risk safeguard and add a 12-card advice item using the `조언`, `가까운 흐름`, `장기 흐름`, `최종 방향` positions rather than repeating all 12 card texts.
 
-- [ ] **Step 6: Run API regressions**
+- [ ] **Step 6: Update legacy API regression to v2**
+
+In `tests/tarot-ai-api-regression.mjs`, replace old topic/spread/position values with `general` / `single` / `핵심 메시지`, expect `rule-based-v2`, and add one 12-card handler call that asserts 200, 12 card readings, provider, and model.
+
+- [ ] **Step 7: Run API regressions**
 
 Run:
 
@@ -648,7 +759,7 @@ node tests/tarot-ai-api-regression.mjs
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add api/tarot-reading.js tests/tarot-expanded-api-regression.mjs tests/tarot-ai-api-regression.mjs
@@ -657,7 +768,7 @@ git commit -m "feat: expand free local tarot reading engine"
 
 ---
 
-### Task 6: Integrate results, payloads, copy, and accessibility end-to-end
+### Task 6: Integrate final results, payloads, copy, and accessibility
 
 **Files:**
 - Modify: `tarot.js`
@@ -668,7 +779,7 @@ git commit -m "feat: expand free local tarot reading engine"
 
 **Interfaces:**
 - Consumes: Tasks 1-5.
-- Produces: final client payload for all spread sizes, deck number shown only after reveal, 1/3/5/12 result grids, counseling panel that accepts 12 card responses, accessible progress/toggle/error states.
+- Produces: final arbitrary-size client payload/rendering, deck number after reveal only, 1/3/5/12 responsive grids, counseling panel for 12 cards, accessible progress/errors/toggle.
 
 - [ ] **Step 1: Write failing integration regression**
 
@@ -682,13 +793,12 @@ const require = createRequire(import.meta.url);
 const tarot = require('../tarot.js');
 const data = require('../tarot-data.js');
 
-const selected = data.cards.slice(0, 12).map((card, index) => ({
+const selected = data.cards.slice(0,12).map((card,index) => ({
   card, orientation:'upright', position:data.spreads.twelveCompass.positions[index], deckNumber:card.deckNumber
 }));
 const payload = tarot.buildAiRequestPayload({ question:'12장 테스트', topic:'direction', spreadId:'twelveCompass', selected });
 assert.equal(payload.cards.length, 12);
 assert.equal(payload.cards[11].position, '최종 방향');
-
 const html = fs.readFileSync(new URL('../tarot.html', import.meta.url), 'utf8');
 const js = fs.readFileSync(new URL('../tarot.js', import.meta.url), 'utf8');
 assert.ok(js.includes('deckNumber'));
@@ -698,11 +808,11 @@ assert.ok(html.includes('무료 자동 타로 상담'));
 console.log('expanded tarot integration regression test passed');
 ```
 
-- [ ] **Step 2: Run integration test and verify RED**
+- [ ] **Step 2: Run and verify RED**
 
 Run: `node tests/tarot-expanded-integration-regression.mjs`
 
-Expected: FAIL until result rendering and copy are updated.
+Expected: FAIL until final rendering/copy are connected.
 
 - [ ] **Step 3: Finalize result rendering**
 
@@ -712,31 +822,31 @@ In `renderResults()` set:
 byId('tarot-reading-grid').dataset.count = String(state.count);
 ```
 
-Include deck number after reveal in `.tarot-card-copy`, for example:
+After reveal, card copy includes:
 
 ```html
 <small>${direction} · DECK ${selection.deckNumber}</small>
 ```
 
-Do not show deck number-to-name mapping in number inputs or selection slots before reveal.
+Before reveal, number mode and selected-slot UI never include `card.nameKo` or card art.
 
-Change `buildSummary` and base client interpretation to use new topics/spreads without assuming only one/three cards. Ensure 12-card base summary remains concise enough to read before optional counseling.
+- [ ] **Step 4: Make base summary and counseling payload size-agnostic**
 
-- [ ] **Step 4: Finalize payload and counseling rendering**
+`buildSummary()` must use first/last selection and aggregate counts without indexing `[2]`. `buildAiRequestPayload()` keeps the existing shape and maps every selected item:
 
-Keep `buildAiRequestPayload()` shape unchanged except that it naturally carries 5/12 selected cards. Ensure `renderAiReading()` iterates arbitrary `reading.cards.length`, and button/status wording remains `무료 자동 타로 상담` rather than AI-provider wording.
-
-- [ ] **Step 5: Finish accessible UI text**
-
-Ensure:
-
-```html
-<p class="tarot-number-help">1~78 사이 숫자를 카드 장수만큼 직접 입력하세요. 같은 숫자는 한 번만 사용할 수 있습니다.</p>
+```js
+cards: (readingState.selected || []).map(({ card, orientation, position }) => ({
+  id: card.id, orientation, position
+}))
 ```
 
-Selection status uses `aria-live="polite"`; number errors use `role="alert"`; sound toggle keeps `aria-pressed`; disabled selected backs remain keyboard-inert through `disabled`.
+`renderAiReading()` continues iterating `reading.cards` without limiting length. Visible wording remains `무료 자동 타로 상담`.
 
-- [ ] **Step 6: Run integration and legacy tarot regressions**
+- [ ] **Step 5: Finalize accessibility and phase copy**
+
+`#tarot-selection-status` stays `aria-live="polite"`; number error stays `role="alert"`; sound toggle maintains `aria-pressed`; direct selected backs are real `disabled` buttons. Status messages distinguish `숫자를 확인하고 카드를 펼칩니다`, `78장 중 N장을 선택했습니다`, `카드를 순서대로 펼치고 있어요`, and `리딩이 준비됐습니다`.
+
+- [ ] **Step 6: Run integration/legacy regressions**
 
 Run:
 
@@ -759,82 +869,114 @@ git commit -m "feat: complete expanded tarot experience"
 
 ---
 
-### Task 7: Full regression, production deploy, and acceptance probe
+### Task 7: Main CI, full regression, production deploy, and 12-card acceptance probe
 
 **Files:**
-- Modify only if required by test coverage: `.github/workflows/catch-regression.yml`
-- Create temporarily on a validation branch if needed: `.github/workflows/tarot-expanded-full-validation.yml`
-- Reuse or update production probe on non-main verification branch; do not leave temporary probe workflows on `main`.
+- Modify: `.github/workflows/catch-regression.yml`
+- Create temporarily on validation branch: `.github/workflows/tarot-expanded-full-validation.yml`
+- Keep temporary validation workflow out of `main`.
 
 **Interfaces:**
-- Consumes: completed Tasks 1-6.
-- Produces: green full regression, clean `main`, successful Vercel production, observed 12-card HTTP 200 with `local-tarot-engine` / `rule-based-v2`.
+- Consumes: Tasks 1-6.
+- Produces: green full regression, clean main, successful Vercel deployment, real 12-card production HTTP 200 with `local-tarot-engine` / `rule-based-v2`.
 
-- [ ] **Step 1: Run syntax checks**
+- [ ] **Step 1: Add the new tarot regressions to permanent Site regression CI**
 
-Run:
+In `.github/workflows/catch-regression.yml`, after existing tarot tests add:
 
-```bash
-node --check script.js
-node --check page.js
-node --check tarot-data.js
-node --check tarot.js
-for file in api/*.js; do node --check "$file"; done
+```yaml
+      - name: Run expanded Tarot data regression
+        run: node tests/tarot-expanded-data-regression.mjs
+      - name: Run Tarot selection mode regression
+        run: node tests/tarot-selection-modes-regression.mjs
+      - name: Run expanded Tarot UI regression
+        run: node tests/tarot-expanded-ui-regression.mjs
+      - name: Run Tarot effects and audio regression
+        run: node tests/tarot-effects-audio-regression.mjs
+      - name: Run expanded Tarot API regression
+        run: node tests/tarot-expanded-api-regression.mjs
+      - name: Run expanded Tarot integration regression
+        run: node tests/tarot-expanded-integration-regression.mjs
 ```
 
-Expected: all exit 0.
-
-- [ ] **Step 2: Run every regression test**
-
-Run:
+- [ ] **Step 2: Commit permanent CI coverage**
 
 ```bash
-set -e
-count=0
-for file in tests/*.mjs; do
-  echo "=== $file ==="
-  node "$file"
-  count=$((count + 1))
-done
-echo "TOTAL_TEST_FILES=$count"
+git add .github/workflows/catch-regression.yml
+git commit -m "test: cover expanded tarot experience"
 ```
 
-Expected: every test PASS, including SOOP/notice/schedule/CATCH and all tarot asset tests.
+- [ ] **Step 3: Create a validation branch and temporary full-test workflow**
 
-- [ ] **Step 3: Verify source-derived tarot assets remain unchanged**
+Create `.github/workflows/tarot-expanded-full-validation.yml` only on the validation branch:
 
-Run the existing HD asset regression and confirm `assets/tarot/hd/pair-00.avif` through `pair-38.avif` remain present and the current combined SHA expectation still passes.
+```yaml
+name: Tarot expanded full validation
+on:
+  push:
+    branches: [validate/tarot-expanded-final]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Syntax checks
+        run: |
+          node --check script.js
+          node --check page.js
+          node --check tarot-data.js
+          node --check tarot.js
+          for file in api/*.js; do node --check "$file"; done
+      - name: Run all regression tests
+        run: |
+          set -e
+          count=0
+          for file in tests/*.mjs; do
+            echo "=== $file ==="
+            node "$file"
+            count=$((count + 1))
+          done
+          echo "TOTAL_TEST_FILES=$count"
+```
 
-- [ ] **Step 4: Promote the clean implementation commit to `main`**
+- [ ] **Step 4: Verify the validation run is fully green**
 
-Only promote after Steps 1-3 are green. Do not merge temporary validation workflow commits into `main`.
+Expected: syntax check PASS; every `tests/*.mjs` PASS; logs show the total test-file count. Specifically confirm existing SOOP/notice/schedule/CATCH tests and tarot HD asset tests still pass.
 
-- [ ] **Step 5: Verify main CI and Vercel deployment**
+- [ ] **Step 5: Promote only the clean implementation/CI commit to `main`**
 
-Confirm the `Site regression` workflow for the promoted main SHA completes with `success`, and the Vercel commit status for the same SHA is `success`.
+Do not promote the temporary validation workflow commit. Confirm main tree contains no `tarot-expanded-full-validation.yml`.
 
-- [ ] **Step 6: Probe production static resources**
+- [ ] **Step 6: Verify main Site regression and Vercel status**
 
-Against `https://chunbong-fansite.vercel.app` verify:
+For the final main SHA, require GitHub `Site regression` conclusion `success` and Vercel commit status `success` before production probing.
+
+- [ ] **Step 7: Probe production home and HD asset**
+
+Against `https://chunbong-fansite.vercel.app`:
 
 ```bash
-curl --fail --silent --show-error --location --output /dev/null https://chunbong-fansite.vercel.app/
-curl --fail --silent --show-error --location --output /tmp/pair-38.avif https://chunbong-fansite.vercel.app/assets/tarot/hd/pair-38.avif
+home_status=$(curl --silent --show-error --location --output /tmp/home.html --write-out '%{http_code}' https://chunbong-fansite.vercel.app/)
+asset_status=$(curl --silent --show-error --location --output /tmp/pair-38.avif --write-out '%{http_code}' https://chunbong-fansite.vercel.app/assets/tarot/hd/pair-38.avif)
+test "$home_status" = '200'
+test "$asset_status" = '200'
 test -s /tmp/pair-38.avif
 ```
 
-Expected: both HTTP 200.
+- [ ] **Step 8: Probe a real 12-card production POST**
 
-- [ ] **Step 7: Probe a real 12-card production POST**
-
-Construct payload from the first 12 canonical cards using the exact `twelveCompass` positions:
+POST:
 
 ```json
 {
-  "question": "앞으로의 방송과 콘텐츠 방향을 점검해줘",
-  "topic": "direction",
-  "spreadId": "twelveCompass",
-  "cards": [
+  "question":"앞으로의 방송과 콘텐츠 방향을 점검해줘",
+  "topic":"direction",
+  "spreadId":"twelveCompass",
+  "cards":[
     {"id":"major-00","orientation":"upright","position":"현재 상태"},
     {"id":"major-01","orientation":"reversed","position":"내면"},
     {"id":"major-02","orientation":"upright","position":"외부 환경"},
@@ -851,8 +993,8 @@ Construct payload from the first 12 canonical cards using the exact `twelveCompa
 }
 ```
 
-Expected: HTTP 200, `reading.cards.length === 12`, `provider === 'local-tarot-engine'`, `model === 'rule-based-v2'`.
+Expected: HTTP 200; `reading.cards.length === 12`; `provider === 'local-tarot-engine'`; `model === 'rule-based-v2'`.
 
-- [ ] **Step 8: Report completion only with observed evidence**
+- [ ] **Step 9: Report completion only with observed evidence**
 
-Final report must include the final `main` SHA, full-test result count, main CI status, Vercel deployment status, homepage/HD asset HTTP 200, and real 12-card production POST HTTP 200. If any acceptance probe fails, report the blocker instead of claiming completion.
+Final report includes final main SHA, full-test count, main CI success, Vercel success, homepage/HD asset HTTP 200, and real 12-card production HTTP 200. If any acceptance condition fails, report the blocker instead of claiming completion.
