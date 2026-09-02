@@ -1,0 +1,23 @@
+name: Tarot OIDC validation
+
+on:
+  push:
+    branches:
+      - fix/tarot-vercel-oidc-runtime
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies when present
+        run: |
+          if [ -f package.json ]; then npm install --ignore-scripts; fi
+      - name: Check tarot API syntax
+        run: node --check api/tarot-reading.js
+      - name: Run tarot AI API regression
+        run: node tests/tarot-ai-api-regression.mjs
