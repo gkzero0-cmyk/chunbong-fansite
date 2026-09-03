@@ -1,12 +1,10 @@
-const fs = require('node:fs');
-const path = require('node:path');
+const snapshotHistory = require('../data/chunbong-data-history.json');
 const fetchRecentVod = require('./vod');
 const fetchClipsDefault = require('./clips');
 const fetchYoutubeDefault = require('./youtube');
 const { SOOP_ID, getJson, listFrom, deepFirst, normalizeVideo } = require('./_shared');
 
 const YOUTUBE_CHANNEL = 'https://www.youtube.com/@%EC%B6%98%EB%B4%89TV';
-const HISTORY_PATH = path.join(__dirname, '..', 'data', 'chunbong-data-history.json');
 const HTML_HEADERS = {
   'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/151 Safari/537.36',
   accept: 'text/html,application/xhtml+xml',
@@ -128,12 +126,9 @@ function buildTopContent(soopItems = [], youtubeItems = []) {
 }
 
 function readSnapshotHistory() {
-  try {
-    const parsed = JSON.parse(fs.readFileSync(HISTORY_PATH, 'utf8'));
-    return parsed && Array.isArray(parsed.snapshots) ? parsed : { version: 1, snapshots: [] };
-  } catch (_) {
-    return { version: 1, snapshots: [] };
-  }
+  return snapshotHistory && Array.isArray(snapshotHistory.snapshots)
+    ? snapshotHistory
+    : { version: 1, snapshots: [] };
 }
 
 function durationFromRaw(item) {
