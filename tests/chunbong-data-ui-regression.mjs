@@ -17,6 +17,7 @@ for (const marker of [
   'id="data-recent-content"',
   'id="data-trend-chart"',
   'id="data-updated"',
+  'href="data.css"',
   'src="data.js"'
 ]) {
   assert.ok(dataHtml.includes(marker), `data.html should include ${marker}`);
@@ -37,9 +38,9 @@ assert.ok(dataJs.includes('/api/content?type=data'), 'data.js should use data AP
 assert.ok(dataJs.includes('300000'), 'data.js should refresh at five minute interval');
 assert.ok(dataJs.includes('document.hidden'), 'data.js should pause refresh while document is hidden');
 
-const styles = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
+const dataCss = fs.readFileSync(path.join(root, 'data.css'), 'utf8');
 for (const className of ['.data-kpi-grid', '.data-platform-grid', '.data-bar', '.data-top-list']) {
-  assert.ok(styles.includes(className), `styles.css should include ${className}`);
+  assert.ok(dataCss.includes(className), `data.css should include ${className}`);
 }
 
 console.log('Chunbong data UI regression test passed');
