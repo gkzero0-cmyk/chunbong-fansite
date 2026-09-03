@@ -5,7 +5,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { finalizeSession } = require('../lib/soop-analytics.js');
-const { fetchSoopLive, fetchSoopChannelProfile } = require('../lib/chunbong-data.js');
+const { fetchSoopLive, fetchSoopChannelProfile, fetchExternalSoopStats, mergeSoopMetricSources } = require('../lib/chunbong-data.js');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_STATE = path.join(__dirname, '..', 'data', 'soop-live-state.json');
@@ -95,20 +95,23 @@ function writeJson(file, value) {
 
 async function collectPublicSample(now = new Date()) {
   const capturedAt = now.toISOString();
-  const [liveResult, profileResult] = await Promise.allSettled([fetchSoopLive(), fetchSoopChannelProfile()]);
+  const [liveResult, profileResult, externalResult] = await Promise.allSettled([fetchSoopLive(), fetchSoopChannelProfile(), fetchExternalSoopStats()]);
   const live = liveResult.status === 'fulfilled'
     ? liveResult.value
     : { live: null, title: '', startedAt: '', viewerCount: null, categoryId: '', categoryName: '', followerCount: null, fanclubCount: null };
   const profile = profileResult.status === 'fulfilled'
     ? profileResult.value
     : { followerCount: null, fanclubCount: null, categoryId: '', categoryName: '' };
+  const external = externalResult.status === 'fulfilled' ? externalResult.value : {};
+  const merged = mergeSoopMetricSources(live, profile, external);
   return normalizeSample({
     ...live,
     capturedAt,
+    viewerCount: merged.viewerCount,
     categoryId: live.categoryId || profile.categoryId || '',
     categoryName: live.categoryName || profile.categoryName || '',
-    followerCount: numberOrNull(live.followerCount) ?? numberOrNull(profile.followerCount),
-    fanclubCount: numberOrNull(live.fanclubCount) ?? numberOrNull(profile.fanclubCount)
+    followerCount: merged.followerCount,
+    fanclubCount: merged.fanclubCount
   });
 }
 
