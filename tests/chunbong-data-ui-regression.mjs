@@ -58,6 +58,9 @@ for (const marker of [
   'renderYoutubePanel',
   'createSvgChart',
   'measurementBadge',
+  'data-chart-value',
+  'formatChartValue',
+  'Trackify',
   '외부 공개 기록',
   'externalHistory',
   'location.hash'
@@ -72,10 +75,13 @@ for (const className of [
   '.data-soop-view-tabs',
   '.data-chart-grid',
   '.data-chart-svg',
+  '.data-chart-value',
+  '.data-chart-tooltip',
   '.data-calendar-grid',
   '.data-calendar-day',
   '.data-calendar-detail',
   '.data-measurement-badge',
+  '.data-source-chip',
   '.data-category-row'
 ]) {
   assert.ok(dataCss.includes(className), `data.css should include ${className}`);
