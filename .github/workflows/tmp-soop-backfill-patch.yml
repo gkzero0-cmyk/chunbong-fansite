@@ -1,0 +1,91 @@
+name: Temporary SOOP backfill patch
+
+on:
+  push:
+    branches: [feat/chunbong-soop-analytics]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/chunbong-soop-analytics
+          fetch-depth: 0
+      - name: Patch external history presentation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          lib = Path('lib/chunbong-data.js')
+          text = lib.read_text()
+          if "soopExternalHistory" not in text:
+              text = text.replace(
+                  "const soopSessionHistory = require('../data/soop-sessions.json');\n",
+                  "const soopSessionHistory = require('../data/soop-sessions.json');\nconst soopExternalHistory = require('../data/soop-external-history.json');\n"
+              )
+              text = text.replace(
+                  "      measurement: soopAnalytics.measurement,\n      recentVod:",
+                  "      measurement: soopAnalytics.measurement,\n      externalHistory: {\n        cutoffKst: soopExternalHistory.cutoffKst || '',\n        backfillCount: Array.isArray(soopExternalHistory.sessions) ? soopExternalHistory.sessions.length : 0,\n        sourceSummary: soopExternalHistory.sourceSummary || null,\n        categoryReference: soopExternalHistory.categoryReference || null\n      },\n      recentVod:"
+              )
+          lib.write_text(text)
+
+          js = Path('data.js')
+          text = js.read_text()
+          text = text.replace(
+              "      public: '공개 데이터'\n",
+              "      public: '공개 데이터',\n      external: '외부 공개 기록'\n"
+          )
+          old_overview = "      kpi('팬클럽', number(o.fanclubCount), `${measurementBadge('fanclub')} 월 증감 ${esc(signed(o.fanclubDelta))}`)\n"
+          new_overview = "      kpi('팬클럽', number(o.fanclubCount), `${measurementBadge('fanclub')} 월 증감 ${esc(signed(o.fanclubDelta))}`),\n      kpi('외부 30일 참고', `${number(payload?.soop?.externalHistory?.sourceSummary?.recent30DayAverageViewers)} / ${number(payload?.soop?.externalHistory?.sourceSummary?.recent30DayPeakViewers)}`, `${measurementBadge('external')} 평균 / 최대 시청자`)\n"
+          text = text.replace(old_overview, new_overview)
+          old_categories = "    const rows = payload?.soop?.categories || [];\n    const root = $('#data-soop-categories');\n    if (!rows.length) { root.innerHTML = '<div class=\"data-empty\">카테고리 실측 데이터가 아직 없습니다.</div>'; return; }\n    root.innerHTML = rows.slice(0, 20).map(row => `<article class=\"data-category-row\"><div class=\"data-category-copy\"><strong>${esc(row.name || '미분류')}</strong><span>${number(row.streamCount)}회 · ${minutes(row.minutes)}</span></div><div class=\"data-category-bar\"><span style=\"--share:${Math.max(1, Number(row.sharePercent) || 0)}%\"></span></div><b>${number(row.sharePercent)}%</b><small>평균 ${number(row.averageViewers)} · 최대 ${number(row.maxViewers)}</small></article>`).join('');\n"
+          new_categories = "    const rows = payload?.soop?.categories || [];\n    const external = payload?.soop?.externalHistory?.categoryReference;\n    const root = $('#data-soop-categories');\n    const measured = rows.length ? rows.slice(0, 20).map(row => `<article class=\"data-category-row\"><div class=\"data-category-copy\"><strong>${esc(row.name || '미분류')}</strong><span>${number(row.streamCount)}회 · ${minutes(row.minutes)}</span></div><div class=\"data-category-bar\"><span style=\"--share:${Math.max(1, Number(row.sharePercent) || 0)}%\"></span></div><b>${number(row.sharePercent)}%</b><small>평균 ${number(row.averageViewers)} · 최대 ${number(row.maxViewers)}</small></article>`).join('') : '<div class=\"data-empty\">팬사이트 실측 카테고리 데이터는 수집 시작일부터 누적됩니다.</div>';\n    const externalRows = Array.isArray(external?.categories) ? external.categories : [];\n    const externalTotal = externalRows.reduce((sum, row) => sum + (Number(row.minutes) || 0), 0);\n    const externalBlock = externalRows.length ? `<section class=\"data-external-reference\"><div class=\"data-external-reference-head\"><div><strong>과거 카테고리 참고</strong><small>${measurementBadge('external')} Streams Charts 공개 집계</small></div><a href=\"${esc(external.url || '#')}\" target=\"_blank\" rel=\"noreferrer\">출처 ↗</a></div>${externalRows.map(row => { const share = externalTotal ? Math.round((Number(row.minutes) || 0) / externalTotal * 100) : 0; return `<article class=\"data-category-row external\"><div class=\"data-category-copy\"><strong>${esc(row.name)}</strong><span>${number(row.streams)}회 · ${minutes(row.minutes)}</span></div><div class=\"data-category-bar\"><span style=\"--share:${Math.max(1,share)}%\"></span></div><b>${share}%</b><small>외부 공개 방송시간 집계</small></article>`; }).join('')}</section>` : '';\n    root.innerHTML = `${externalBlock}<section class=\"data-measured-categories\">${measured}</section>`;\n"
+          if old_categories not in text:
+              raise SystemExit('renderSoopCategories pattern not found')
+          text = text.replace(old_categories, new_categories)
+          old_session = "    root.innerHTML = rows.map(row => `<article class=\"data-session-card\"><div><small>${esc(row.date || '')} · ${measurementBadge('viewer')}</small><strong>${esc(row.title || '춘봉 방송')}</strong></div><div class=\"data-session-metrics\"><span>방송 <b>${minutes(row.durationMinutes)}</b></span><span>평균 <b>${number(row.averageViewers)}</b></span><span>최대 <b>${number(row.maxViewers)}</b></span><span>애청자 <b>${signed(row.followerDelta)}</b></span><span>팬클럽 <b>${signed(row.fanclubDelta)}</b></span></div></article>`).join('');\n"
+          new_session = "    root.innerHTML = rows.map(row => { const badge = row.measurement === 'external-public-record' ? measurementBadge('external') : measurementBadge('viewer'); return `<article class=\"data-session-card\"><div><small>${esc(row.date || '')} · ${badge}</small><strong>${esc(row.title || '춘봉 방송')}</strong></div><div class=\"data-session-metrics\"><span>방송 <b>${minutes(row.durationMinutes)}</b></span><span>평균 <b>${number(row.averageViewers)}</b></span><span>최대 <b>${number(row.maxViewers)}</b></span><span>애청자 <b>${signed(row.followerDelta)}</b></span><span>팬클럽 <b>${signed(row.fanclubDelta)}</b></span></div></article>`; }).join('');\n"
+          if old_session not in text:
+              raise SystemExit('renderSessions pattern not found')
+          text = text.replace(old_session, new_session)
+          js.write_text(text)
+
+          css = Path('data.css')
+          css_text = css.read_text()
+          if '.data-external-reference{' not in css_text:
+              css_text += "\n.data-external-reference{display:grid;gap:10px;padding:18px;margin-bottom:16px;border:1px solid #4b3525;border-radius:20px;background:linear-gradient(155deg,#1c140f,#0d0d0d)}.data-external-reference-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.data-external-reference-head strong{display:block;font-size:16px}.data-external-reference-head small{display:flex;align-items:center;gap:8px;margin-top:5px;color:#9b8a7c;font-size:10px}.data-external-reference-head a{font-size:10px;color:var(--orange-2);font-weight:900}.data-category-row.external{background:#15100d;border-color:#36271d}.data-measured-categories{display:grid;gap:10px}\n"
+          css.write_text(css_text)
+
+          html = Path('data.html')
+          html_text = html.read_text()
+          html_text = html_text.replace(
+              '수집 시작 이전의 시청자·증감 데이터는 임의로 복원하지 않습니다.',
+              '수집 시작 이전 방송은 Streams Charts 등 외부 공개 기록에서 확인되는 방송시간·평균 시청자·주 카테고리만 외부 공개 기록으로 보완하며, 공개되지 않은 최대 시청자·애청자·팬클럽 증감은 임의로 만들지 않습니다.'
+          )
+          html.write_text(html_text)
+
+          test = Path('tests/soop-external-backfill-regression.mjs')
+          test_text = test.read_text()
+          marker = "assert.equal(history.sessions.reduce((sum, item) => sum + item.durationMinutes, 0), 12170);\n"
+          addition = marker + "const sessionStore = JSON.parse(fs.readFileSync(path.join(root, 'data', 'soop-sessions.json'), 'utf8'));\nassert.equal(sessionStore.sessions.filter(item => item.measurement === 'external-public-record').length, history.sessions.length);\n"
+          test_text = test_text.replace(marker, addition)
+          test.write_text(test_text)
+
+          ui = Path('tests/chunbong-data-ui-regression.mjs')
+          ui_text = ui.read_text()
+          ui_text = ui_text.replace("  'measurementBadge',\n", "  'measurementBadge',\n  '외부 공개 기록',\n  'externalHistory',\n")
+          ui.write_text(ui_text)
+          PY
+      - name: Remove temporary workflow and commit
+        run: |
+          rm .github/workflows/tmp-soop-backfill-patch.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/chunbong-data.js data.js data.css data.html tests/soop-external-backfill-regression.mjs tests/chunbong-data-ui-regression.mjs .github/workflows/tmp-soop-backfill-patch.yml
+          git commit -m "feat: integrate external SOOP history backfill"
+          git push origin HEAD:feat/chunbong-soop-analytics
