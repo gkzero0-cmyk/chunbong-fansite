@@ -16,34 +16,43 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Repair data history bundling
+      - name: Keep data aggregation outside Vercel api functions
         run: |
           python - <<'PY'
           from pathlib import Path
-          path = Path('api/chunbong-data.js')
-          text = path.read_text(encoding='utf-8')
-          if "const fs = require('node:fs');" in text:
-              old_head = "const fs = require('node:fs');\nconst path = require('node:path');\n"
-              new_head = "const snapshotHistory = require('../data/chunbong-data-history.json');\n"
-              if old_head not in text:
-                  raise SystemExit('dynamic fs/path imports not found')
-              text = text.replace(old_head, new_head, 1)
-              old_const = "const HISTORY_PATH = path.join(__dirname, '..', 'data', 'chunbong-data-history.json');\n"
-              if old_const not in text:
-                  raise SystemExit('HISTORY_PATH not found')
-              text = text.replace(old_const, '', 1)
-              old_fn = "function readSnapshotHistory() {\n  try {\n    const parsed = JSON.parse(fs.readFileSync(HISTORY_PATH, 'utf8'));\n    return parsed && Array.isArray(parsed.snapshots) ? parsed : { version: 1, snapshots: [] };\n  } catch (_) {\n    return { version: 1, snapshots: [] };\n  }\n}\n"
-              new_fn = "function readSnapshotHistory() {\n  return snapshotHistory && Array.isArray(snapshotHistory.snapshots)\n    ? snapshotHistory\n    : { version: 1, snapshots: [] };\n}\n"
-              if old_fn not in text:
-                  raise SystemExit('dynamic readSnapshotHistory implementation not found')
-              text = text.replace(old_fn, new_fn, 1)
-              path.write_text(text, encoding='utf-8')
+          api_path = Path('api/chunbong-data.js')
+          lib_path = Path('lib/chunbong-data.js')
+          if api_path.exists():
+              text = api_path.read_text(encoding='utf-8')
+              replacements = {
+                  "require('./vod')": "require('../api/vod')",
+                  "require('./clips')": "require('../api/clips')",
+                  "require('./youtube')": "require('../api/youtube')",
+                  "require('./_shared')": "require('../api/_shared')",
+              }
+              for old, new in replacements.items():
+                  if old not in text:
+                      raise SystemExit(f'missing import marker: {old}')
+                  text = text.replace(old, new, 1)
+              lib_path.parent.mkdir(parents=True, exist_ok=True)
+              lib_path.write_text(text, encoding='utf-8')
+              api_path.unlink()
+
+          content = Path('api/content.js')
+          text = content.read_text(encoding='utf-8')
+          text = text.replace("require('./chunbong-data')", "require('../lib/chunbong-data')")
+          content.write_text(text, encoding='utf-8')
+
+          test = Path('tests/chunbong-data-api-regression.mjs')
+          text = test.read_text(encoding='utf-8')
+          text = text.replace("require('../api/chunbong-data.js')", "require('../lib/chunbong-data.js')")
+          test.write_text(text, encoding='utf-8')
           PY
       - name: Syntax checks
         run: |
           set -e
           node --check data.js
-          node --check api/chunbong-data.js
+          node --check lib/chunbong-data.js
           node --check scripts/update-chunbong-data.mjs
           for file in api/*.js; do node --check "$file"; done
       - name: Run all regressions
@@ -56,15 +65,15 @@ jobs:
             count=$((count + 1))
           done
           echo "TOTAL_TEST_FILES=$count"
-      - name: Commit bundle repair
+      - name: Commit Vercel function-limit fix
         run: |
-          if git diff --quiet -- api/chunbong-data.js; then
-            echo 'Bundle already static'
+          if git diff --quiet -- api/content.js api/chunbong-data.js lib/chunbong-data.js tests/chunbong-data-api-regression.mjs; then
+            echo 'Aggregation already outside api directory'
           else
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add api/chunbong-data.js
-            git commit -m 'fix: statically bundle data history'
+            git add -A api/chunbong-data.js api/content.js lib/chunbong-data.js tests/chunbong-data-api-regression.mjs
+            git commit -m 'fix: keep data aggregation outside Vercel functions'
             git push
           fi
       - name: Verify Vercel preview data page and API
