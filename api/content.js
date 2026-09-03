@@ -7,7 +7,7 @@ const fetchFanart = require('./fanart');
 const fetchYoutube = require('./youtube');
 const fetchSchedule = require('./schedule');
 const fetchCatchDetail = require('./catch-detail');
-const fetchChunbongData = require('./chunbong-data');
+const fetchChunbongData = require('../lib/chunbong-data');
 
 module.exports = async function handler(req,res) {
   res.setHeader('Cache-Control','s-maxage=180, stale-while-revalidate=600');

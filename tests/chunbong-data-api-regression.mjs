@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const dataApi = require('../api/chunbong-data.js');
+const dataApi = require('../lib/chunbong-data.js');
 
 assert.equal(dataApi.parseDurationMinutes('01:30:00'), 90);
 assert.ok(Math.abs(dataApi.parseDurationMinutes('45:10') - (45 + 10 / 60)) < 0.001);
