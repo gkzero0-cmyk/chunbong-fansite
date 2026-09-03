@@ -21,37 +21,29 @@
   const viewText = item => Number.isFinite(item?.viewCount) ? `조회수 ${number(item.viewCount)}` : (item?.meta || '조회수 확인 중');
   const state = { payload: null, platform: location.hash === '#youtube' ? 'youtube' : 'soop', soopView: 'daily', calendarMonth: '' };
 
+  const SOURCE_URLS = {
+    trackify: 'https://www.trackify.kr/soop/chunbongtv', auro: 'https://auro.live/creator/afreeca/chunbongtv', softc: 'https://viewership.softc.one/channel/afreeca/chunbongtv', streamscharts: 'https://streamscharts.com/channels/chunbongtv/streams?platform=afreecatv', soop: 'https://www.sooplive.com/station/chunbongtv'
+  };
   function measurementBadge(kind) {
-    const labels = {
-      viewer: '팬사이트 5분 측정',
-      follower: 'SOOP 공개 스냅샷',
-      fanclub: 'SOOP 공개값',
-      public: '공개 데이터',
-      external: '외부 공개 기록'
-    };
-    return `<span class="data-measurement-badge">${esc(labels[kind] || labels.public)}</span>`;
+    const labels={viewer:'팬사이트 5분 측정',follower:'공개 스냅샷',fanclub:'공개 스냅샷',public:'공개 데이터',external:'외부 공개 기록','fan-site-sampled-5m':'팬사이트 5분 측정','external-public-record':'외부 공개 기록',trackify:'Trackify',auro:'Auro',softc:'Softc',streamscharts:'Streams Charts',soop:'SOOP 공개값'};
+    return `<span class="data-measurement-badge source-${esc(kind||'public')}">${esc(labels[kind]||labels.public)}</span>`;
   }
+  function sourceChip(source) { const key=String(source||'').toLowerCase(), labels={trackify:'Trackify',auro:'Auro',softc:'Softc',streamscharts:'Streams Charts',soop:'SOOP'}, url=SOURCE_URLS[key]; return url ? `<a class="data-source-chip" href="${esc(url)}" target="_blank" rel="noreferrer">${esc(labels[key]||source)} ↗</a>` : measurementBadge(source||'public'); }
+  function formatChartValue(value,kind='number') { if(!Number.isFinite(value))return '—'; if(kind==='minutes'){if(Math.abs(value)>=60){const h=value/60;return `${Number.isInteger(h)?h:h.toFixed(1)}h`;}return `${Math.round(value)}m`;} if(kind==='signed')return `${value>0?'+':''}${new Intl.NumberFormat('ko-KR').format(value)}`; if(Math.abs(value)>=10000)return new Intl.NumberFormat('ko-KR',{notation:'compact',maximumFractionDigits:1}).format(value); return new Intl.NumberFormat('ko-KR').format(value); }
+  function snapshotDeltaRows(trends=[],key){let previous=null;return trends.map(row=>{const current=Number.isFinite(row?.soop?.[key])?row.soop[key]:null;const value=current!==null&&previous!==null?current-previous:null;if(current!==null)previous=current;return{date:row?.date||'',value};});}
 
   function kpi(label, value, desc, klass = '') {
     return `<article class="data-kpi ${klass}"><small>${esc(label)}</small><strong>${esc(value)}</strong><p>${desc}</p></article>`;
   }
 
-  function createSvgChart({ title, rows = [], key, labelKey = 'date', formatter = number, empty = '측정 데이터가 아직 없습니다.' }) {
-    const clean = rows.map(row => ({ label: row?.[labelKey] || '', value: Number.isFinite(row?.[key]) ? row[key] : null })).filter(row => row.label);
-    const values = clean.map(row => row.value).filter(Number.isFinite);
-    if (!clean.length || !values.length) return `<article class="data-chart-card"><div class="data-chart-head"><strong>${esc(title)}</strong></div><div class="data-empty">${esc(empty)}</div></article>`;
-    const width = 720, height = 220, padX = 38, padY = 26;
-    const minValue = Math.min(0, ...values), maxValue = Math.max(1, ...values);
-    const span = Math.max(1, maxValue - minValue);
-    const x = index => clean.length === 1 ? width / 2 : padX + index * ((width - padX * 2) / (clean.length - 1));
-    const y = value => height - padY - ((value - minValue) / span) * (height - padY * 2);
-    const points = clean.map((row, index) => row.value === null ? null : `${x(index).toFixed(1)},${y(row.value).toFixed(1)}`).filter(Boolean).join(' ');
-    const circles = clean.map((row, index) => row.value === null ? '' : `<circle cx="${x(index).toFixed(1)}" cy="${y(row.value).toFixed(1)}" r="4"><title>${esc(row.label)} · ${esc(formatter(row.value))}</title></circle>`).join('');
-    const grid = [0,1,2,3,4].map(index => { const yy = padY + index * ((height - padY * 2) / 4); return `<line x1="${padX}" y1="${yy}" x2="${width-padX}" y2="${yy}"/>`; }).join('');
-    const step = Math.max(1, Math.ceil(clean.length / 6));
-    const labels = clean.map((row,index) => index % step ? '' : `<text x="${x(index).toFixed(1)}" y="${height-6}" text-anchor="middle">${esc(String(row.label).slice(labelKey === 'month' ? 2 : 5))}</text>`).join('');
-    const latest = [...clean].reverse().find(row => row.value !== null);
-    return `<article class="data-chart-card"><div class="data-chart-head"><strong>${esc(title)}</strong><b>${latest ? esc(formatter(latest.value)) : '-'}</b></div><svg class="data-chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(title)}"><g class="chart-grid">${grid}</g><polyline class="chart-line" points="${points}"/><g class="chart-points">${circles}</g><g class="chart-labels">${labels}</g></svg></article>`;
+  function createSvgChart({ title, rows = [], key, labelKey = 'date', formatter = number, valueKind = 'number', empty = '측정 데이터가 아직 없습니다.' }) {
+    const clean=rows.map(row=>({label:row?.[labelKey]||'',value:Number.isFinite(row?.[key])?row[key]:null})).filter(row=>row.label), values=clean.map(row=>row.value).filter(Number.isFinite);
+    if(!clean.length||!values.length)return `<article class="data-chart-card"><div class="data-chart-head"><strong>${esc(title)}</strong></div><div class="data-empty">${esc(empty)}</div></article>`;
+    const width=760,height=260,padLeft=46,padRight=28,padTop=48,padBottom=38,minValue=Math.min(0,...values),maxValue=Math.max(1,...values),span=Math.max(1,maxValue-minValue);
+    const x=i=>clean.length===1?width/2:padLeft+i*((width-padLeft-padRight)/(clean.length-1)), y=v=>height-padBottom-((v-minValue)/span)*(height-padTop-padBottom), points=clean.map((row,i)=>row.value===null?null:`${x(i).toFixed(1)},${y(row.value).toFixed(1)}`).filter(Boolean).join(' '), labelStep=Math.max(1,Math.ceil(clean.length/10));
+    const pointsAndValues=clean.map((row,i)=>{if(row.value===null)return'';const xx=x(i),yy=y(row.value),show=clean.length<=10||i%labelStep===0||i===clean.length-1;return `<g class="data-chart-point" tabindex="0"><circle cx="${xx.toFixed(1)}" cy="${yy.toFixed(1)}" r="4.5"/><title class="data-chart-tooltip">${esc(row.label)} · ${esc(formatter(row.value))}</title>${show?`<text class="data-chart-value" x="${xx.toFixed(1)}" y="${Math.max(15,yy-11).toFixed(1)}" text-anchor="middle">${esc(formatChartValue(row.value,valueKind))}</text>`:''}</g>`;}).join('');
+    const zeroY=y(0),grid=[0,1,2,3,4].map(i=>{const yy=padTop+i*((height-padTop-padBottom)/4);return `<line x1="${padLeft}" y1="${yy}" x2="${width-padRight}" y2="${yy}"/>`;}).join('')+(minValue<0?`<line class="zero-line" x1="${padLeft}" y1="${zeroY}" x2="${width-padRight}" y2="${zeroY}"/>`:''),xStep=Math.max(1,Math.ceil(clean.length/7)),labels=clean.map((row,i)=>i%xStep&&i!==clean.length-1?'':`<text x="${x(i).toFixed(1)}" y="${height-9}" text-anchor="middle">${esc(labelKey==='month'?String(row.label).slice(2):shortDate(row.label))}</text>`).join(''),latest=[...clean].reverse().find(row=>row.value!==null);
+    return `<article class="data-chart-card"><div class="data-chart-head"><strong>${esc(title)}</strong><b>${latest?esc(formatter(latest.value)):'-'}</b></div><svg class="data-chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(title)}"><g class="chart-grid">${grid}</g><polyline class="chart-line" points="${points}"/><g class="chart-points">${pointsAndValues}</g><g class="chart-labels">${labels}</g></svg></article>`;
   }
 
   function renderStatus(payload) {
@@ -72,20 +64,11 @@
   }
 
   function renderSoopOverview(payload) {
-    const o = payload?.soop?.overview || {};
-    const liveText = o.live === true ? 'LIVE' : o.live === false ? 'OFFLINE' : '확인 중';
-    const liveDesc = o.live === true ? `${esc(o.currentTitle || '현재 방송 중')} · ${esc(o.currentCategory || '카테고리 확인 중')}` : '현재 SOOP 방송 상태';
-    $('#data-soop-overview').innerHTML = [
-      kpi('SOOP STATUS', liveText, liveDesc, o.live === true ? 'live' : ''),
-      kpi('현재 시청자', number(o.currentViewerCount), `${measurementBadge('viewer')} 실시간 공개값`),
-      kpi('오늘 방송시간', minutes(o.todayDurationMinutes), `${measurementBadge('viewer')} 종료 세션 기준`),
-      kpi('이번 달 방송시간', minutes(o.monthDurationMinutes), `${measurementBadge('viewer')} 실측 누적`),
-      kpi('월 평균 시청자', number(o.monthAverageViewers), `${measurementBadge('viewer')} 샘플 가중 평균`),
-      kpi('월 최대 시청자', number(o.monthMaxViewers), `${measurementBadge('viewer')} 실측 최고값`),
-      kpi('애청자', number(o.followerCount), `${measurementBadge('follower')} 월 증감 ${esc(signed(o.followerDelta))}`),
-      kpi('팬클럽', number(o.fanclubCount), `${measurementBadge('fanclub')} 월 증감 ${esc(signed(o.fanclubDelta))}`),
-      kpi('외부 30일 참고', `${number(payload?.soop?.externalHistory?.sourceSummary?.recent30DayAverageViewers)} / ${number(payload?.soop?.externalHistory?.sourceSummary?.recent30DayPeakViewers)}`, `${measurementBadge('external')} 평균 / 최대 시청자`)
-    ].join('');
+    const o=payload?.soop?.overview||{},metricSources=payload?.soop?.live?.metricSources||o.externalFieldSources||{},liveText=o.live===true?'LIVE':o.live===false?'OFFLINE':'확인 중',liveDesc=o.live===true?`${esc(o.currentTitle||'현재 방송 중')} · ${esc(o.currentCategory||'카테고리 확인 중')}`:'현재 SOOP 방송 상태';
+    const totalMinutes=Number.isFinite(o.totalAirtimeMinutes)?o.totalAirtimeMinutes:o.knownTotalMinutes,totalSource=Number.isFinite(o.totalAirtimeMinutes)?(o.externalFieldSources?.totalAirtimeMinutes||'trackify'):'viewer';
+    const cards=[kpi('SOOP STATUS',liveText,liveDesc,o.live===true?'live':''),kpi('현재 시청자',number(o.currentViewerCount),`${measurementBadge(metricSources.viewerCount||'viewer')} 현재 공개 동접`),kpi('오늘 방송시간',minutes(o.todayDurationMinutes),`${measurementBadge('viewer')} 방송 세션 기준`),kpi('이번 달 방송시간',minutes(o.monthDurationMinutes),`${measurementBadge(o.monthDurationSource||'viewer')} 월 누적`),kpi('전체 누적 방송시간',minutes(totalMinutes),`${measurementBadge(totalSource)} 확인 가능한 전체 기록`),kpi('월 평균 시청자',number(o.monthAverageViewers),`${measurementBadge(o.monthAverageViewerSource||'viewer')} 월 평균 동접`),kpi('월 최대 시청자',number(o.monthMaxViewers),`${measurementBadge(o.monthMaxViewerSource||'viewer')} 월 최고 동접`),kpi('애청자 · 즐겨찾기',number(o.followerCount),`${measurementBadge(metricSources.followerCount||o.externalFieldSources?.followerCount||'follower')} 월 증감 ${esc(signed(o.followerDelta))}`),kpi('팬클럽',number(o.fanclubCount),`${measurementBadge(metricSources.fanclubCount||o.externalFieldSources?.fanclubCount||'fanclub')} 월 증감 ${esc(signed(o.fanclubDelta))}`),kpi('SOOP 구독자',number(o.subscriberCount),`${measurementBadge(o.externalFieldSources?.subscriberCount||'trackify')} 공개 구독 수`),kpi('서포터',number(o.supporterCount),`${measurementBadge(o.externalFieldSources?.supporterCount||'trackify')} 공개 누적`),kpi('이번 달 고유 시청자',number(o.monthUniqueViewers),`${measurementBadge(o.externalFieldSources?.monthUniqueViewers||'trackify')} 월 누적 유저`),kpi('이번 달 뷰어십',Number.isFinite(o.viewershipHours)?`${number(o.viewershipHours)}시간`:'측정 불가',`${measurementBadge(o.externalFieldSources?.viewershipHours||'trackify')} 평균×방송시간`),kpi('누적 UP',number(o.cumulativeUpCount),`${measurementBadge(o.externalFieldSources?.cumulativeUpCount||'trackify')} 누적 UP수`),kpi('누적 유저',number(o.cumulativeUsers),`${measurementBadge(o.externalFieldSources?.cumulativeUsers||'trackify')} 공개 누적`),kpi('외부 30일 참고',`${number(payload?.soop?.externalHistory?.sourceSummary?.recent30DayAverageViewers)} / ${number(payload?.soop?.externalHistory?.sourceSummary?.recent30DayPeakViewers)}`,`${measurementBadge('streamscharts')} 평균 / 최대 참고값`)];
+    const available=new Set(Object.values(o.externalFieldSources||{}).filter(Boolean)),chips=['trackify','auro','softc','streamscharts'].filter(src=>available.has(src)||payload?.soop?.externalHistory?.currentFallback?.sources?.some(item=>item.source===src)).map(sourceChip).join('');
+    $('#data-soop-overview').innerHTML=cards.join('')+(chips?`<div class="data-source-strip"><small>보조 공개 데이터</small>${chips}</div>`:'');
   }
 
   function renderDetailTable(root, rows, monthly = false) {
@@ -95,22 +78,10 @@
   }
 
   function renderSoopCharts(payload) {
-    const daily = payload?.soop?.daily || [];
-    const monthly = payload?.soop?.monthlyStats || [];
-    $('#data-soop-chart').innerHTML = [
-      createSvgChart({ title:'일별 방송시간', rows:daily, key:'durationMinutes', formatter:minutes }),
-      createSvgChart({ title:'일별 평균 시청자', rows:daily, key:'averageViewers' }),
-      createSvgChart({ title:'일별 최대 시청자', rows:daily, key:'maxViewers' }),
-      createSvgChart({ title:'애청자 일일 증감', rows:daily, key:'followerDelta', formatter:signed })
-    ].join('');
-    $('#data-soop-monthly-chart').innerHTML = [
-      createSvgChart({ title:'월별 방송시간', rows:monthly, key:'durationMinutes', labelKey:'month', formatter:minutes }),
-      createSvgChart({ title:'월 평균 시청자', rows:monthly, key:'averageViewers', labelKey:'month' }),
-      createSvgChart({ title:'월 최대 시청자', rows:monthly, key:'maxViewers', labelKey:'month' }),
-      createSvgChart({ title:'애청자 월 증감', rows:monthly, key:'followerDelta', labelKey:'month', formatter:signed })
-    ].join('');
-    renderDetailTable('#data-soop-daily-table', daily, false);
-    renderDetailTable('#data-soop-monthly-table', monthly, true);
+    const daily=payload?.soop?.daily||[],monthly=payload?.soop?.monthlyStats||[],trends=payload?.trends||[],favoriteDelta=snapshotDeltaRows(trends,'followerCount'),fanclubDelta=snapshotDeltaRows(trends,'fanclubCount');
+    $('#data-soop-chart').innerHTML=[createSvgChart({title:'일별 방송시간',rows:daily,key:'durationMinutes',formatter:minutes,valueKind:'minutes'}),createSvgChart({title:'누적 방송시간',rows:daily,key:'cumulativeMinutes',formatter:minutes,valueKind:'minutes'}),createSvgChart({title:'일별 평균 시청자',rows:daily,key:'averageViewers'}),createSvgChart({title:'일별 최대 시청자',rows:daily,key:'maxViewers'}),createSvgChart({title:'애청자 · 즐겨찾기 증감',rows:favoriteDelta,key:'value',formatter:signed,valueKind:'signed',empty:'일일 즐겨찾기 스냅샷이 2일 이상 쌓이면 표시합니다.'}),createSvgChart({title:'팬클럽 증감',rows:fanclubDelta,key:'value',formatter:signed,valueKind:'signed',empty:'일일 팬클럽 스냅샷이 2일 이상 쌓이면 표시합니다.'})].join('');
+    $('#data-soop-monthly-chart').innerHTML=[createSvgChart({title:'월별 방송시간',rows:monthly,key:'durationMinutes',labelKey:'month',formatter:minutes,valueKind:'minutes'}),createSvgChart({title:'월 평균 시청자',rows:monthly,key:'averageViewers',labelKey:'month'}),createSvgChart({title:'월 최대 시청자',rows:monthly,key:'maxViewers',labelKey:'month'}),createSvgChart({title:'애청자 월 증감',rows:monthly,key:'followerDelta',labelKey:'month',formatter:signed,valueKind:'signed'}),createSvgChart({title:'팬클럽 월 증감',rows:monthly,key:'fanclubDelta',labelKey:'month',formatter:signed,valueKind:'signed'})].join('');
+    renderDetailTable('#data-soop-daily-table',daily,false);renderDetailTable('#data-soop-monthly-table',monthly,true);
   }
 
   function renderCalendarDetail(row) {
@@ -144,14 +115,11 @@
   }
 
   function renderSoopCategories(payload) {
-    const rows = payload?.soop?.categories || [];
-    const external = payload?.soop?.externalHistory?.categoryReference;
-    const root = $('#data-soop-categories');
-    const measured = rows.length ? rows.slice(0, 20).map(row => `<article class="data-category-row"><div class="data-category-copy"><strong>${esc(row.name || '미분류')}</strong><span>${number(row.streamCount)}회 · ${minutes(row.minutes)}</span></div><div class="data-category-bar"><span style="--share:${Math.max(1, Number(row.sharePercent) || 0)}%"></span></div><b>${number(row.sharePercent)}%</b><small>평균 ${number(row.averageViewers)} · 최대 ${number(row.maxViewers)}</small></article>`).join('') : '<div class="data-empty">팬사이트 실측 카테고리 데이터는 수집 시작일부터 누적됩니다.</div>';
-    const externalRows = Array.isArray(external?.categories) ? external.categories : [];
-    const externalTotal = externalRows.reduce((sum, row) => sum + (Number(row.minutes) || 0), 0);
-    const externalBlock = externalRows.length ? `<section class="data-external-reference"><div class="data-external-reference-head"><div><strong>과거 카테고리 참고</strong><small>${measurementBadge('external')} Streams Charts 공개 집계</small></div><a href="${esc(external.url || '#')}" target="_blank" rel="noreferrer">출처 ↗</a></div>${externalRows.map(row => { const share = externalTotal ? Math.round((Number(row.minutes) || 0) / externalTotal * 100) : 0; return `<article class="data-category-row external"><div class="data-category-copy"><strong>${esc(row.name)}</strong><span>${number(row.streams)}회 · ${minutes(row.minutes)}</span></div><div class="data-category-bar"><span style="--share:${Math.max(1,share)}%"></span></div><b>${share}%</b><small>외부 공개 방송시간 집계</small></article>`; }).join('')}</section>` : '';
-    root.innerHTML = `${externalBlock}<section class="data-measured-categories">${measured}</section>`;
+    const rows=payload?.soop?.categories||[],o=payload?.soop?.overview||{},trackifyRows=Array.isArray(o.currentMonthCategories)?o.currentMonthCategories:[],external=payload?.soop?.externalHistory?.categoryReference,root=$('#data-soop-categories');
+    const trackifyBlock=trackifyRows.length?`<section class="data-external-reference trackify"><div class="data-external-reference-head"><div><strong>이번 달 카테고리 분포</strong><small>${measurementBadge('trackify')} 현재 월 공개 집계</small></div>${sourceChip('trackify')}</div>${trackifyRows.map(row=>`<article class="data-category-row external"><div class="data-category-copy"><strong>${esc(row.name||'미분류')}</strong><span>이번 달 방송 비중</span></div><div class="data-category-bar"><span style="--share:${Math.max(1,Number(row.sharePercent)||0)}%"></span></div><b>${number(row.sharePercent)}%</b><small>Trackify 월간 분포</small></article>`).join('')}</section>`:'';
+    const measured=rows.length?rows.slice(0,20).map(row=>`<article class="data-category-row"><div class="data-category-copy"><strong>${esc(row.name||'미분류')}</strong><span>${number(row.streamCount)}회 · ${minutes(row.minutes)}</span></div><div class="data-category-bar"><span style="--share:${Math.max(1,Number(row.sharePercent)||0)}%"></span></div><b>${number(row.sharePercent)}%</b><small>평균 ${number(row.averageViewers)} · 최대 ${number(row.maxViewers)}</small></article>`).join(''):'<div class="data-empty">팬사이트 실측 카테고리 데이터는 수집 시작일부터 누적됩니다.</div>';
+    const externalRows=Array.isArray(external?.categories)?external.categories:[],externalTotal=externalRows.reduce((sum,row)=>sum+(Number(row.minutes)||0),0),externalBlock=externalRows.length?`<section class="data-external-reference"><div class="data-external-reference-head"><div><strong>과거 카테고리 참고</strong><small>${measurementBadge('streamscharts')} 공개 방송시간 집계</small></div><a href="${esc(external.url||SOURCE_URLS.streamscharts)}" target="_blank" rel="noreferrer">출처 ↗</a></div>${externalRows.map(row=>{const share=externalTotal?Math.round((Number(row.minutes)||0)/externalTotal*100):0;return `<article class="data-category-row external"><div class="data-category-copy"><strong>${esc(row.name)}</strong><span>${number(row.streams)}회 · ${minutes(row.minutes)}</span></div><div class="data-category-bar"><span style="--share:${Math.max(1,share)}%"></span></div><b>${share}%</b><small>외부 공개 방송시간 집계</small></article>`;}).join('')}</section>`:'';
+    root.innerHTML=`${trackifyBlock}${externalBlock}<section class="data-measured-categories">${measured}</section>`;
   }
 
   function renderSessions(payload) {
