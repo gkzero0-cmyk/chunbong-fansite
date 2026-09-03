@@ -13,5 +13,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Target regression
-        run: node tests/chunbong-data-api-regression.mjs
+      - name: Target regressions
+        run: |
+          set -e
+          node tests/chunbong-data-api-regression.mjs
+          node tests/chunbong-data-snapshot-regression.mjs
+          node tests/chunbong-data-ui-regression.mjs
