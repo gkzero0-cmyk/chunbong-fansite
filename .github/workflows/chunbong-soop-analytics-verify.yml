@@ -13,5 +13,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Run SOOP analytics target test
-        run: node tests/soop-analytics-regression.mjs
+      - name: Run SOOP analytics target tests
+        run: |
+          node tests/soop-analytics-regression.mjs
+          node tests/chunbong-data-api-regression.mjs
