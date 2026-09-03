@@ -11,6 +11,8 @@ assert.match(workflow, /collect-soop-telemetry\.mjs/);
 assert.match(workflow, /apply-soop-session\.mjs/);
 assert.match(workflow, /soop-live-state\.json/);
 assert.match(workflow, /soop-sessions\.json/);
+assert.match(workflow, /git show-ref --verify --quiet refs\/remotes\/origin\/data\/soop-telemetry/, 'workflow must detect whether telemetry branch already exists');
+assert.match(workflow, /git worktree add -b data\/soop-telemetry/, 'first run must create telemetry branch from main');
 assert.match(workflow, /git push origin HEAD:data\/soop-telemetry/);
 assert.match(workflow, /git push origin HEAD:main/);
 
