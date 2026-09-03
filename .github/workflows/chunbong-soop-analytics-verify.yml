@@ -20,3 +20,4 @@ jobs:
           node tests/soop-telemetry-regression.mjs
           node tests/chunbong-data-snapshot-regression.mjs
           node tests/soop-telemetry-workflow-regression.mjs
+          node tests/chunbong-data-ui-regression.mjs
