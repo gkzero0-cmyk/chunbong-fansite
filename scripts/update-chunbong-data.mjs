@@ -32,11 +32,18 @@ export function upsertSnapshot(history, snapshot, limit = 400) {
 
 export function buildSnapshot(payload, now = new Date()) {
   const capturedAt = payload?.capturedAt || now.toISOString();
+  const followerCount = payload?.soop?.live?.followerCount ?? payload?.soop?.overview?.followerCount ?? null;
+  const fanclubCount = payload?.soop?.live?.fanclubCount ?? payload?.soop?.overview?.fanclubCount ?? null;
   return {
     date: kstDateKey(now),
     capturedAt,
     soop: {
       live: payload?.soop?.live?.live ?? null,
+      followerCount,
+      fanclubCount,
+      measuredTotalMinutes: payload?.soop?.overview?.measuredTotalMinutes ?? null,
+      monthAverageViewers: payload?.soop?.overview?.monthAverageViewers ?? null,
+      monthMaxViewers: payload?.soop?.overview?.monthMaxViewers ?? null,
       monthlyVodCount: payload?.soop?.monthly?.vodCount ?? null,
       monthlyVodMinutes: payload?.soop?.monthly?.vodMinutes ?? null,
       monthlyCatchCount: payload?.soop?.monthly?.catchCount ?? null,

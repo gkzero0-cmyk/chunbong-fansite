@@ -26,12 +26,21 @@ assert.equal(new Set(trimmed.snapshots.map(item => item.date)).size, 400);
 
 const built = snapshotApi.buildSnapshot({
   capturedAt: '2026-09-03T08:00:00.000Z',
-  soop: { live: { live: false }, monthly: { vodCount: 3, vodMinutes: null, catchCount: 4 } },
+  soop: {
+    live: { live: false, followerCount: 1234, fanclubCount: 77 },
+    overview: { measuredTotalMinutes: 480, monthAverageViewers: 44, monthMaxViewers: 72 },
+    monthly: { vodCount: 3, vodMinutes: null, catchCount: 4, clipCount: 2 }
+  },
   youtube: { channel: { subscriberCount: null, viewCount: null, videoCount: null }, monthly: { uploadCount: 2 } }
 }, new Date('2026-09-03T08:00:00.000Z'));
 assert.equal(built.date, '2026-09-03');
 assert.equal(built.soop.monthlyVodCount, 3);
 assert.equal(built.soop.monthlyVodMinutes, null);
+assert.equal(built.soop.followerCount, 1234);
+assert.equal(built.soop.fanclubCount, 77);
+assert.equal(built.soop.measuredTotalMinutes, 480);
+assert.equal(built.soop.monthAverageViewers, 44);
+assert.equal(built.soop.monthMaxViewers, 72);
 assert.equal(built.youtube.recentUploadCount, 2);
 
 console.log('Chunbong data snapshot regression test passed');

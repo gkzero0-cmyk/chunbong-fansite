@@ -1,0 +1,36 @@
+name: Site regression
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check JavaScript syntax
+        run: |
+          node --check data.js
+          node --check lib/chunbong-data.js
+          node --check lib/soop-analytics.js
+          node --check api/_shared.js
+          node --check scripts/collect-soop-telemetry.mjs
+          node --check scripts/apply-soop-session.mjs
+          node --check scripts/update-chunbong-data.mjs
+      - name: Run all regression tests
+        run: |
+          set -e
+          count=0
+          for file in tests/*.mjs; do
+            echo "==> $file"
+            node "$file"
+            count=$((count + 1))
+          done
+          echo "REGRESSION_TEST_FILES=$count"

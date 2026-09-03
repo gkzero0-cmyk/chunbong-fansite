@@ -10,13 +10,26 @@ const dataHtml = fs.readFileSync(dataHtmlPath, 'utf8');
 for (const marker of [
   'data-page="data"',
   'id="data-status"',
-  'id="data-summary-grid"',
-  'id="data-soop-monthly"',
-  'id="data-youtube-monthly"',
-  'id="data-top-content"',
-  'id="data-recent-content"',
-  'id="data-trend-chart"',
   'id="data-updated"',
+  'data-platform-tab="soop"',
+  'data-platform-tab="youtube"',
+  'id="data-soop-panel"',
+  'id="data-youtube-panel"',
+  'data-soop-view-tab="daily"',
+  'data-soop-view-tab="monthly"',
+  'data-soop-view-tab="calendar"',
+  'id="data-soop-overview"',
+  'id="data-soop-chart"',
+  'id="data-soop-calendar"',
+  'id="data-soop-calendar-detail"',
+  'id="data-soop-categories"',
+  'id="data-soop-sessions"',
+  'id="data-youtube-overview"',
+  'id="data-youtube-trend"',
+  'id="data-youtube-top"',
+  'id="data-youtube-recent"',
+  'id="data-calendar-prev"',
+  'id="data-calendar-next"',
   'href="data.css"',
   'src="data.js"'
 ]) {
@@ -34,12 +47,35 @@ assert.ok(indexHtml.includes('08 / DATA'), 'home portal should include DATA card
 assert.ok(indexHtml.includes('href="data.html"'), 'home portal should link to data page');
 
 const dataJs = fs.readFileSync(path.join(root, 'data.js'), 'utf8');
-assert.ok(dataJs.includes('/api/content?type=data'), 'data.js should use data API endpoint');
-assert.ok(dataJs.includes('300000'), 'data.js should refresh at five minute interval');
-assert.ok(dataJs.includes('document.hidden'), 'data.js should pause refresh while document is hidden');
+for (const marker of [
+  '/api/content?type=data',
+  '300000',
+  'document.hidden',
+  'renderSoopOverview',
+  'renderSoopCharts',
+  'renderSoopCalendar',
+  'renderSoopCategories',
+  'renderYoutubePanel',
+  'createSvgChart',
+  'measurementBadge',
+  'location.hash'
+]) {
+  assert.ok(dataJs.includes(marker), `data.js should include ${marker}`);
+}
 
 const dataCss = fs.readFileSync(path.join(root, 'data.css'), 'utf8');
-for (const className of ['.data-kpi-grid', '.data-platform-grid', '.data-bar', '.data-top-list']) {
+for (const className of [
+  '.data-platform-tabs',
+  '.data-platform-tab',
+  '.data-soop-view-tabs',
+  '.data-chart-grid',
+  '.data-chart-svg',
+  '.data-calendar-grid',
+  '.data-calendar-day',
+  '.data-calendar-detail',
+  '.data-measurement-badge',
+  '.data-category-row'
+]) {
   assert.ok(dataCss.includes(className), `data.css should include ${className}`);
 }
 

@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#ff6b18"><meta name="description" content="춘봉 SOOP 방송과 춘봉TV 유튜브 공개 데이터 대시보드"><title>춘봉 데이터 | 춘봉 팬사이트</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="data.css"></head><body data-page="data"><div class="noise" aria-hidden="true"></div>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#ff6b18"><meta name="description" content="춘봉 SOOP 방송 상세 통계와 춘봉TV 유튜브 공개 데이터 대시보드"><title>춘봉 데이터 | 춘봉 팬사이트</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="data.css"></head><body data-page="data"><div class="noise" aria-hidden="true"></div>
 <header class="site-header">
   <a class="brand" href="index.html" aria-label="춘봉 팬사이트 홈"><span class="brand-mark">CB</span><span class="brand-copy"><strong>CHUNBONG</strong><small>FAN HUB</small></span></a>
   <button class="nav-toggle" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="main-nav"><span></span><span></span><span></span></button>
@@ -6,21 +6,57 @@
   <a class="header-live" href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer">SOOP ↗</a>
 </header>
 <main class="data-page">
-  <section class="page-hero data-hero"><div class="page-shell reveal"><p class="kicker">08 / DATA</p><h1>춘봉 데이터</h1><p>춘봉(chunbongtv)의 SOOP 방송 활동과 춘봉TV YouTube 공개 데이터를 한곳에서 확인합니다. 공개 지표를 기반으로 하며, 매일 스냅샷을 쌓아 변화 추이를 기록합니다.</p><div class="page-actions"><a class="btn btn-primary" href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer">SOOP 방송국 ↗</a><a class="btn btn-ghost" href="https://www.youtube.com/@%EC%B6%98%EB%B4%89TV" target="_blank" rel="noreferrer">춘봉TV ↗</a></div></div></section>
+  <section class="page-hero data-hero"><div class="page-shell reveal"><p class="kicker">08 / DATA</p><h1>춘봉 데이터</h1><p>SOOP 방송 기록과 춘봉TV YouTube 데이터를 플랫폼별로 나누어 확인합니다. SOOP 시청자 통계는 공개 시청자 수를 팬사이트가 주기적으로 측정해 방송별·일별·월별로 집계합니다.</p><div class="page-actions"><a class="btn btn-primary" href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer">SOOP 방송국 ↗</a><a class="btn btn-ghost" href="https://www.youtube.com/@%EC%B6%98%EB%B4%89TV" target="_blank" rel="noreferrer">춘봉TV ↗</a></div></div></section>
   <section class="content-section"><div class="page-shell data-shell">
     <div class="data-status reveal" id="data-status"><span class="data-pulse"></span><div><strong>공개 데이터를 불러오는 중입니다.</strong><p id="data-updated">SOOP · YouTube</p></div><button id="data-retry" class="btn btn-ghost" type="button">새로고침</button></div>
 
-    <section class="data-section" aria-labelledby="data-summary-title"><div class="section-head reveal"><div><p class="kicker">AT A GLANCE</p><h2 id="data-summary-title">지금의 춘봉</h2></div><p>5분마다 자동 갱신</p></div><div class="data-kpi-grid" id="data-summary-grid"><div class="loading-card">핵심 지표를 불러오는 중...</div></div></section>
+    <div class="data-platform-tabs reveal" role="tablist" aria-label="플랫폼 데이터 선택">
+      <button class="data-platform-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="data-soop-panel" data-platform-tab="soop"><span>SOOP</span><strong>SOOP 데이터</strong><small>방송 · 시청자 · 성장 · 카테고리</small></button>
+      <button class="data-platform-tab" type="button" role="tab" aria-selected="false" aria-controls="data-youtube-panel" data-platform-tab="youtube"><span>YOUTUBE</span><strong>YouTube 데이터</strong><small>채널 · 조회수 · 업로드 · 콘텐츠</small></button>
+    </div>
 
-    <section class="data-section" aria-labelledby="data-platform-title"><div class="section-head reveal"><div><p class="kicker">THIS MONTH</p><h2 id="data-platform-title">플랫폼 활동</h2></div><p>한국 시간(KST) 기준</p></div><div class="data-platform-grid"><article class="data-platform-card" id="data-soop-monthly"><div class="loading-card">SOOP 데이터를 불러오는 중...</div></article><article class="data-platform-card youtube-data-card" id="data-youtube-monthly"><div class="loading-card">YouTube 데이터를 불러오는 중...</div></article></div></section>
+    <section class="data-platform-panel" id="data-soop-panel" data-platform-panel="soop" role="tabpanel">
+      <div class="section-head reveal"><div><p class="kicker">SOOP OVERVIEW</p><h2>방송 데이터 한눈에 보기</h2></div><p>시청자 지표 · 팬사이트 5분 측정</p></div>
+      <div class="data-kpi-grid data-soop-kpis" id="data-soop-overview"><div class="loading-card">SOOP 핵심 지표를 불러오는 중...</div></div>
 
-    <section class="data-section" aria-labelledby="data-trend-title"><div class="section-head reveal"><div><p class="kicker">HISTORY</p><h2 id="data-trend-title">데이터 변화</h2></div><p>매일 공개 지표 스냅샷 누적</p></div><div class="data-trend-card" id="data-trend-chart"><div class="loading-card">누적 데이터를 확인하는 중...</div></div></section>
+      <div class="data-soop-view-tabs" role="tablist" aria-label="SOOP 통계 보기 방식">
+        <button class="is-active" type="button" data-soop-view-tab="daily" aria-selected="true">일별</button>
+        <button type="button" data-soop-view-tab="monthly" aria-selected="false">월별</button>
+        <button type="button" data-soop-view-tab="calendar" aria-selected="false">캘린더</button>
+      </div>
 
-    <section class="data-section" aria-labelledby="data-top-title"><div class="section-head reveal"><div><p class="kicker">TOP CONTENT</p><h2 id="data-top-title">반응이 큰 콘텐츠</h2></div><p>현재 수집 가능한 조회수 기준</p></div><div class="data-top-content" id="data-top-content"><div class="loading-card">TOP 콘텐츠를 계산하는 중...</div></div></section>
+      <section class="data-soop-view is-active" data-soop-view="daily">
+        <div class="section-head compact"><div><p class="kicker">DAILY</p><h2>일별 방송 흐름</h2></div><p>방송시간 · 평균/최대 시청자 · 성장</p></div>
+        <div class="data-chart-grid" id="data-soop-chart"><div class="loading-card">일별 그래프를 계산하는 중...</div></div>
+        <div class="data-table-card"><div class="data-table-head"><strong>일별 상세</strong><span>측정 시작일부터 누적</span></div><div class="data-detail-table" id="data-soop-daily-table"></div></div>
+      </section>
 
-    <section class="data-section" aria-labelledby="data-recent-title"><div class="section-head reveal"><div><p class="kicker">RECENT</p><h2 id="data-recent-title">최근 활동</h2></div><p>SOOP 다시보기 · 춘봉TV 동영상</p></div><div class="data-recent-grid" id="data-recent-content"><div class="loading-card">최근 콘텐츠를 불러오는 중...</div></div></section>
+      <section class="data-soop-view" data-soop-view="monthly" hidden>
+        <div class="section-head compact"><div><p class="kicker">MONTHLY</p><h2>월별 방송 흐름</h2></div><p>월간 활동과 성장 비교</p></div>
+        <div class="data-chart-grid" id="data-soop-monthly-chart"></div>
+        <div class="data-table-card"><div class="data-table-head"><strong>월별 상세</strong><span>KST 기준</span></div><div class="data-detail-table" id="data-soop-monthly-table"></div></div>
+      </section>
 
-    <div class="source-note reveal">이 페이지는 공개된 SOOP·YouTube 정보를 자동 수집해 정리합니다. SOOP 월간 방송시간은 공개 응답에서 재생시간을 확인할 수 있는 다시보기만 합산하며, YouTube 구독자·총 조회수·영상 수는 공개 채널 페이지에서 안정적으로 확인되는 경우에만 표시합니다. 장기 변화 그래프는 팬사이트가 기록을 시작한 날부터 누적됩니다.</div>
+      <section class="data-soop-view" data-soop-view="calendar" hidden>
+        <div class="section-head compact"><div><p class="kicker">CALENDAR</p><h2>방송 캘린더</h2></div><div class="data-calendar-controls"><button id="data-calendar-prev" type="button" aria-label="이전 달">←</button><strong id="data-calendar-month">-</strong><button id="data-calendar-next" type="button" aria-label="다음 달">→</button></div></div>
+        <div class="data-calendar-wrap"><div><div class="data-calendar-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div><div class="data-calendar-grid" id="data-soop-calendar"></div></div><aside class="data-calendar-detail" id="data-soop-calendar-detail"><div class="data-empty">방송한 날짜를 선택하면 상세 기록을 보여줍니다.</div></aside></div>
+      </section>
+
+      <section class="data-section data-category-section"><div class="section-head compact"><div><p class="kicker">CATEGORY</p><h2>방송 카테고리 분석</h2></div><p>방송시간 비중 · 평균/최대 시청자</p></div><div class="data-category-list" id="data-soop-categories"><div class="loading-card">카테고리 데이터를 계산하는 중...</div></div></section>
+
+      <section class="data-section"><div class="section-head compact"><div><p class="kicker">STREAM SESSIONS</p><h2>최근 방송 상세</h2></div><p>팬사이트 실측 세션</p></div><div class="data-session-list" id="data-soop-sessions"><div class="data-empty">측정된 방송 세션이 쌓이면 표시됩니다.</div></div></section>
+
+      <div class="source-note reveal"><strong>SOOP 데이터 기준</strong> · 평균/최대 시청자는 약 5분 간격의 공개 시청자 수를 팬사이트가 측정해 계산합니다. 애청자·팬클럽 값이 공개 응답에서 안정적으로 확인되지 않는 시점에는 <b>측정 불가</b>로 표시합니다. 수집 시작 이전의 시청자·증감 데이터는 임의로 복원하지 않습니다.</div>
+    </section>
+
+    <section class="data-platform-panel" id="data-youtube-panel" data-platform-panel="youtube" role="tabpanel" hidden>
+      <div class="section-head reveal"><div><p class="kicker">YOUTUBE OVERVIEW</p><h2>춘봉TV 채널 데이터</h2></div><p>공개 채널·콘텐츠 지표</p></div>
+      <div class="data-kpi-grid" id="data-youtube-overview"><div class="loading-card">YouTube 채널 지표를 불러오는 중...</div></div>
+      <section class="data-section"><div class="section-head compact"><div><p class="kicker">HISTORY</p><h2>채널 변화</h2></div><p>일일 공개 스냅샷</p></div><div class="data-chart-grid" id="data-youtube-trend"></div></section>
+      <section class="data-section"><div class="section-head compact"><div><p class="kicker">TOP CONTENT</p><h2>반응이 큰 콘텐츠</h2></div><p>수집 가능한 조회수 기준</p></div><div class="data-top-content" id="data-youtube-top"></div></section>
+      <section class="data-section"><div class="section-head compact"><div><p class="kicker">RECENT</p><h2>최근 업로드</h2></div><p>영상 · Shorts</p></div><div class="data-recent-grid" id="data-youtube-recent"></div></section>
+      <div class="source-note reveal">YouTube 구독자·총 조회수·영상 수는 춘봉TV 공개 채널 페이지에서 확인 가능한 값을 기록합니다. 공개 페이지 구조가 변경되어 값이 확인되지 않으면 해당 지표만 일시적으로 비웁니다.</div>
+    </section>
   </div></section>
 </main>
 <footer><div class="footer-brand"><span class="brand-mark">CB</span><div><strong>CHUNBONG FAN HUB</strong><p>비공식 팬사이트 · 공개 데이터를 팬사이트 안에서 보기 좋게 정리합니다.</p></div></div><div class="footer-links"><a href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer">SOOP ↗</a><a href="https://www.youtube.com/@%EC%B6%98%EB%B4%89TV" target="_blank" rel="noreferrer">YOUTUBE ↗</a><a href="https://cafe.naver.com/chunbongtv" target="_blank" rel="noreferrer">NAVER CAFE ↗</a></div><p class="copyright">© 2026 CHUNBONG FAN HUB · Unofficial fan project</p></footer>
