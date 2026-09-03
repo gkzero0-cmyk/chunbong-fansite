@@ -1,0 +1,80 @@
+name: SOOP telemetry
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: chunbong-soop-telemetry
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Load telemetry branch state
+        run: |
+          set -euo pipefail
+          git fetch origin refs/heads/data/soop-telemetry:refs/remotes/origin/data/soop-telemetry || true
+          if git show refs/remotes/origin/data/soop-telemetry:data/soop-live-state.json > /tmp/soop-live-state.json 2>/dev/null; then
+            echo 'Loaded previous telemetry state'
+          else
+            printf '%s\n' '{"version":1,"session":null,"lastProfile":null}' > /tmp/soop-live-state.json
+          fi
+      - name: Collect public SOOP sample
+        run: |
+          SOOP_STATE_PATH=/tmp/soop-live-state.json \
+          SOOP_NEXT_STATE_PATH=/tmp/soop-next-state.json \
+          SOOP_FINAL_SESSION_PATH=/tmp/soop-final-session.json \
+          node scripts/collect-soop-telemetry.mjs
+      - name: Persist transient telemetry state
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm -rf /tmp/soop-telemetry-worktree
+          git worktree add --detach /tmp/soop-telemetry-worktree refs/remotes/origin/data/soop-telemetry
+          cd /tmp/soop-telemetry-worktree
+          git checkout -B data/soop-telemetry
+          mkdir -p data
+          cp /tmp/soop-next-state.json data/soop-live-state.json
+          if git diff --quiet -- data/soop-live-state.json; then
+            echo 'Telemetry state unchanged'
+          else
+            git add data/soop-live-state.json
+            git commit -m 'data: update SOOP live telemetry'
+            git push origin HEAD:data/soop-telemetry
+          fi
+      - name: Persist finalized stream session to main
+        run: |
+          set -euo pipefail
+          if ! node -e "const x=require('/tmp/soop-final-session.json'); process.exit(x&&x.id?0:1)"; then
+            echo 'No finalized session'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout main
+          git pull --rebase origin main
+          SOOP_SESSION_INPUT=/tmp/soop-final-session.json \
+          SOOP_SESSION_STORE=data/soop-sessions.json \
+          node scripts/apply-soop-session.mjs
+          if git diff --quiet -- data/soop-sessions.json; then
+            echo 'Session already stored'
+            exit 0
+          fi
+          git add data/soop-sessions.json
+          git commit -m 'data: add completed SOOP stream session'
+          git push origin HEAD:main
