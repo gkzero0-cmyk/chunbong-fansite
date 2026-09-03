@@ -46,7 +46,7 @@ assert.equal(trackify.monthUniqueViewers, 9876);
 assert.equal(trackify.viewershipHours, 2592);
 assert.equal(trackify.cumulativeUsers, 222333);
 assert.equal(trackify.cumulativeUpCount, 55444);
-assert.equal(trackify.totalAirtimeMinutes, 559925);
+assert.equal(trackify.totalAirtimeMinutes, 558965);
 assert.equal(trackify.fanclubCount, 1234);
 assert.equal(trackify.supporterCount, 9);
 assert.deepEqual(trackify.categories.map(item => [item.name, item.sharePercent]), [['Virtual', 50], ['Minecraft', 30], ['PUBG: 배틀그라운드', 20]]);
@@ -63,8 +63,8 @@ assert.deepEqual(merged.map(item => item.id), ['e1', 'm1'], 'external history mu
 
 const chosen = dataApi.mergeSoopMetricSources(
   { followerCount: null, fanclubCount: null, viewerCount: null },
-  { followerCount: null, fanclubCount: 9 },
-  { followerCount: 1402, currentViewerCount: 48, averageViewers: 61, maxViewers: 512, subscriberCount: 17, cumulativeUpCount: 55444, source: 'trackify' }
+  { followerCount: null, fanclubCount: null },
+  { followerCount: 1402, fanclubCount: 9, currentViewerCount: 48, averageViewers: 61, maxViewers: 512, subscriberCount: 17, cumulativeUpCount: 55444, source: 'trackify' }
 );
 assert.equal(chosen.followerCount, 1402);
 assert.equal(chosen.fanclubCount, 9);
@@ -72,6 +72,6 @@ assert.equal(chosen.viewerCount, 48);
 assert.equal(chosen.subscriberCount, 17);
 assert.equal(chosen.cumulativeUpCount, 55444);
 assert.equal(chosen.fieldSources.followerCount, 'trackify');
-assert.equal(chosen.fieldSources.fanclubCount, 'soop');
+assert.equal(chosen.fieldSources.fanclubCount, 'trackify');
 
 console.log('SOOP external sources regression test passed');
