@@ -1,0 +1,17 @@
+name: Chunbong data feature tests
+
+on:
+  push:
+    branches: [feat/chunbong-data-dashboard]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Target regression
+        run: node tests/chunbong-data-api-regression.mjs
