@@ -18,3 +18,5 @@ for f in tests/*.mjs; do node "$f"; done
 ```
 
 Vercel Git deployment enabled
+
+<!-- production-redeploy-marker: chunbong-soop-analytics-final -->
