@@ -55,10 +55,11 @@ jobs:
           fi
           mkdir -p data
           cp /tmp/soop-next-state.json data/soop-live-state.json
-          if git diff --quiet -- data/soop-live-state.json; then
+          git checkout main -- vercel.json
+          git add data/soop-live-state.json vercel.json
+          if git diff --cached --quiet -- data/soop-live-state.json vercel.json; then
             echo 'Telemetry state unchanged'
           else
-            git add data/soop-live-state.json
             git commit -m 'data: update SOOP live telemetry'
             git push origin HEAD:data/soop-telemetry
           fi
