@@ -45,9 +45,14 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           rm -rf /tmp/soop-telemetry-worktree
-          git worktree add --detach /tmp/soop-telemetry-worktree refs/remotes/origin/data/soop-telemetry
-          cd /tmp/soop-telemetry-worktree
-          git checkout -B data/soop-telemetry
+          if git show-ref --verify --quiet refs/remotes/origin/data/soop-telemetry; then
+            git worktree add --detach /tmp/soop-telemetry-worktree refs/remotes/origin/data/soop-telemetry
+            cd /tmp/soop-telemetry-worktree
+            git checkout -B data/soop-telemetry
+          else
+            git worktree add -b data/soop-telemetry /tmp/soop-telemetry-worktree main
+            cd /tmp/soop-telemetry-worktree
+          fi
           mkdir -p data
           cp /tmp/soop-next-state.json data/soop-live-state.json
           if git diff --quiet -- data/soop-live-state.json; then
