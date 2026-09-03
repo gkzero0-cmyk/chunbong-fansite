@@ -5,44 +5,52 @@ on:
     branches: [feat/chunbong-soop-analytics]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Apply pending dashboard patch
-        run: python scripts/apply-soop-dashboard-patch.py
-      - name: Commit applied patch
-        run: |
-          if git diff --quiet; then
-            echo "NO_PATCH_CHANGES=1"
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add lib/chunbong-data.js data.js data.css data.html
-            git commit -m "feat: complete detailed SOOP data dashboard"
-            git push origin HEAD:feat/chunbong-soop-analytics
-          fi
       - name: Syntax checks
         run: |
           node --check data.js
           node --check lib/chunbong-data.js
           node --check lib/soop-external.js
+          node --check scripts/update-chunbong-data.mjs
           node --check scripts/collect-soop-telemetry.mjs
-      - name: Run SOOP analytics target tests
+      - name: Run all regression tests
         run: |
-          node tests/soop-analytics-regression.mjs
-          node tests/chunbong-data-api-regression.mjs
-          node tests/soop-external-sources-regression.mjs
-          node tests/soop-telemetry-regression.mjs
-          node tests/chunbong-data-snapshot-regression.mjs
-          node tests/soop-telemetry-workflow-regression.mjs
-          node tests/chunbong-data-ui-regression.mjs
+          set -e
+          count=0
+          for test in tests/*.mjs; do
+            echo "=== $test ==="
+            node "$test"
+            count=$((count + 1))
+          done
+          echo "TEST_FILES=$count"
+      - name: Probe aggregate data module
+        run: |
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const fetchData = require('./lib/chunbong-data');
+          (async () => {
+            const payload = await fetchData();
+            assert.equal(payload.fallback, false, 'aggregate data must not be total fallback');
+            assert.ok(payload.soop && payload.soop.overview, 'SOOP overview required');
+            assert.ok(Array.isArray(payload.soop.daily), 'SOOP daily required');
+            assert.ok(Array.isArray(payload.soop.monthlyStats), 'SOOP monthlyStats required');
+            assert.ok(Array.isArray(payload.soop.categories), 'SOOP categories required');
+            assert.ok(payload.youtube && payload.youtube.channel, 'YouTube channel required');
+            console.log(`SOOP_DAILY=${payload.soop.daily.length}`);
+            console.log(`SOOP_MONTHLY=${payload.soop.monthlyStats.length}`);
+            console.log(`SOOP_CATEGORIES=${payload.soop.categories.length}`);
+            console.log(`SOOP_SESSIONS=${payload.soop.recentSessions?.length || 0}`);
+            console.log(`YOUTUBE_VIDEOS=${payload.youtube.recentVideos?.length || 0}`);
+            console.log(`ERRORS=${payload.errors?.length || 0}`);
+          })().catch(error => { console.error(error); process.exit(1); });
+          NODE
