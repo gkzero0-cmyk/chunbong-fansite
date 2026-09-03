@@ -1,0 +1,42 @@
+name: Chunbong data production probe
+
+on:
+  push:
+    branches: [feat/chunbong-soop-analytics]
+    paths: ['.github/workflows/chunbong-data-production-probe.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Probe production page and API
+        run: |
+          set -e
+          BASE='https://chunbong-fansite.vercel.app'
+          curl -fsSL "$BASE/data.html" -o /tmp/data.html
+          grep -q 'data-platform-tab="soop"' /tmp/data.html
+          grep -q 'data-platform-tab="youtube"' /tmp/data.html
+          grep -q 'data-soop-view-tab="daily"' /tmp/data.html
+          grep -q 'data-soop-view-tab="monthly"' /tmp/data.html
+          grep -q 'data-soop-view-tab="calendar"' /tmp/data.html
+          curl -fsSL "$BASE/api/content?type=data" -o /tmp/data.json
+          node <<'NODE'
+          const fs = require('node:fs');
+          const assert = require('node:assert/strict');
+          const p = JSON.parse(fs.readFileSync('/tmp/data.json','utf8'));
+          assert.equal(p.fallback, false);
+          assert.ok(p.soop?.overview, 'missing SOOP overview');
+          assert.ok(Array.isArray(p.soop?.daily), 'missing SOOP daily');
+          assert.ok(Array.isArray(p.soop?.monthlyStats), 'missing SOOP monthlyStats');
+          assert.ok(Array.isArray(p.soop?.categories), 'missing SOOP categories');
+          assert.ok(p.youtube?.channel, 'missing YouTube channel');
+          console.log(`PROD_DAILY=${p.soop.daily.length}`);
+          console.log(`PROD_MONTHLY=${p.soop.monthlyStats.length}`);
+          console.log(`PROD_CATEGORIES=${p.soop.categories.length}`);
+          console.log(`PROD_SESSIONS=${p.soop.recentSessions?.length || 0}`);
+          console.log(`PROD_ERRORS=${p.errors?.length || 0}`);
+          NODE
