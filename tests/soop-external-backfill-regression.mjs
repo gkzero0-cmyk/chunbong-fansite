@@ -13,6 +13,8 @@ assert.ok(history.sessions.length >= 19, 'at least 19 pre-Sep-3 public stream re
 assert.ok(history.sessions.every(item => item.measurement === 'external-public-record'));
 assert.ok(history.sessions.every(item => item.date < '2026-09-03'), 'today KST must not be included in historical backfill');
 assert.equal(history.sessions.reduce((sum, item) => sum + item.durationMinutes, 0), 12170);
+const sessionStore = JSON.parse(fs.readFileSync(path.join(root, 'data', 'soop-sessions.json'), 'utf8'));
+assert.equal(sessionStore.sessions.filter(item => item.measurement === 'external-public-record').length, history.sessions.length);
 assert.ok(history.sessions.some(item => item.date === '2026-09-02' && item.averageViewers === 44));
 assert.ok(history.sessions.every(item => item.maxViewers === null), 'per-stream peak must stay null when source does not expose it publicly');
 assert.ok(history.categoryReference.categories.some(item => item.name === 'Minecraft' && item.minutes === 7005));

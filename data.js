@@ -26,7 +26,8 @@
       viewer: '팬사이트 5분 측정',
       follower: 'SOOP 공개 스냅샷',
       fanclub: 'SOOP 공개값',
-      public: '공개 데이터'
+      public: '공개 데이터',
+      external: '외부 공개 기록'
     };
     return `<span class="data-measurement-badge">${esc(labels[kind] || labels.public)}</span>`;
   }
@@ -82,7 +83,8 @@
       kpi('월 평균 시청자', number(o.monthAverageViewers), `${measurementBadge('viewer')} 샘플 가중 평균`),
       kpi('월 최대 시청자', number(o.monthMaxViewers), `${measurementBadge('viewer')} 실측 최고값`),
       kpi('애청자', number(o.followerCount), `${measurementBadge('follower')} 월 증감 ${esc(signed(o.followerDelta))}`),
-      kpi('팬클럽', number(o.fanclubCount), `${measurementBadge('fanclub')} 월 증감 ${esc(signed(o.fanclubDelta))}`)
+      kpi('팬클럽', number(o.fanclubCount), `${measurementBadge('fanclub')} 월 증감 ${esc(signed(o.fanclubDelta))}`),
+      kpi('외부 30일 참고', `${number(payload?.soop?.externalHistory?.sourceSummary?.recent30DayAverageViewers)} / ${number(payload?.soop?.externalHistory?.sourceSummary?.recent30DayPeakViewers)}`, `${measurementBadge('external')} 평균 / 최대 시청자`)
     ].join('');
   }
 
@@ -143,16 +145,20 @@
 
   function renderSoopCategories(payload) {
     const rows = payload?.soop?.categories || [];
+    const external = payload?.soop?.externalHistory?.categoryReference;
     const root = $('#data-soop-categories');
-    if (!rows.length) { root.innerHTML = '<div class="data-empty">카테고리 실측 데이터가 아직 없습니다.</div>'; return; }
-    root.innerHTML = rows.slice(0, 20).map(row => `<article class="data-category-row"><div class="data-category-copy"><strong>${esc(row.name || '미분류')}</strong><span>${number(row.streamCount)}회 · ${minutes(row.minutes)}</span></div><div class="data-category-bar"><span style="--share:${Math.max(1, Number(row.sharePercent) || 0)}%"></span></div><b>${number(row.sharePercent)}%</b><small>평균 ${number(row.averageViewers)} · 최대 ${number(row.maxViewers)}</small></article>`).join('');
+    const measured = rows.length ? rows.slice(0, 20).map(row => `<article class="data-category-row"><div class="data-category-copy"><strong>${esc(row.name || '미분류')}</strong><span>${number(row.streamCount)}회 · ${minutes(row.minutes)}</span></div><div class="data-category-bar"><span style="--share:${Math.max(1, Number(row.sharePercent) || 0)}%"></span></div><b>${number(row.sharePercent)}%</b><small>평균 ${number(row.averageViewers)} · 최대 ${number(row.maxViewers)}</small></article>`).join('') : '<div class="data-empty">팬사이트 실측 카테고리 데이터는 수집 시작일부터 누적됩니다.</div>';
+    const externalRows = Array.isArray(external?.categories) ? external.categories : [];
+    const externalTotal = externalRows.reduce((sum, row) => sum + (Number(row.minutes) || 0), 0);
+    const externalBlock = externalRows.length ? `<section class="data-external-reference"><div class="data-external-reference-head"><div><strong>과거 카테고리 참고</strong><small>${measurementBadge('external')} Streams Charts 공개 집계</small></div><a href="${esc(external.url || '#')}" target="_blank" rel="noreferrer">출처 ↗</a></div>${externalRows.map(row => { const share = externalTotal ? Math.round((Number(row.minutes) || 0) / externalTotal * 100) : 0; return `<article class="data-category-row external"><div class="data-category-copy"><strong>${esc(row.name)}</strong><span>${number(row.streams)}회 · ${minutes(row.minutes)}</span></div><div class="data-category-bar"><span style="--share:${Math.max(1,share)}%"></span></div><b>${share}%</b><small>외부 공개 방송시간 집계</small></article>`; }).join('')}</section>` : '';
+    root.innerHTML = `${externalBlock}<section class="data-measured-categories">${measured}</section>`;
   }
 
   function renderSessions(payload) {
     const rows = payload?.soop?.recentSessions || [];
     const root = $('#data-soop-sessions');
     if (!rows.length) { root.innerHTML = '<div class="data-empty">실측 방송 세션이 쌓이면 방송별 평균·최대 시청자를 표시합니다.</div>'; return; }
-    root.innerHTML = rows.map(row => `<article class="data-session-card"><div><small>${esc(row.date || '')} · ${measurementBadge('viewer')}</small><strong>${esc(row.title || '춘봉 방송')}</strong></div><div class="data-session-metrics"><span>방송 <b>${minutes(row.durationMinutes)}</b></span><span>평균 <b>${number(row.averageViewers)}</b></span><span>최대 <b>${number(row.maxViewers)}</b></span><span>애청자 <b>${signed(row.followerDelta)}</b></span><span>팬클럽 <b>${signed(row.fanclubDelta)}</b></span></div></article>`).join('');
+    root.innerHTML = rows.map(row => { const badge = row.measurement === 'external-public-record' ? measurementBadge('external') : measurementBadge('viewer'); return `<article class="data-session-card"><div><small>${esc(row.date || '')} · ${badge}</small><strong>${esc(row.title || '춘봉 방송')}</strong></div><div class="data-session-metrics"><span>방송 <b>${minutes(row.durationMinutes)}</b></span><span>평균 <b>${number(row.averageViewers)}</b></span><span>최대 <b>${number(row.maxViewers)}</b></span><span>애청자 <b>${signed(row.followerDelta)}</b></span><span>팬클럽 <b>${signed(row.fanclubDelta)}</b></span></div></article>`; }).join('');
   }
 
   function topPanel(title, items) {

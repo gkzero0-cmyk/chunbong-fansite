@@ -58,6 +58,8 @@ for (const marker of [
   'renderYoutubePanel',
   'createSvgChart',
   'measurementBadge',
+  '외부 공개 기록',
+  'externalHistory',
   'location.hash'
 ]) {
   assert.ok(dataJs.includes(marker), `data.js should include ${marker}`);
