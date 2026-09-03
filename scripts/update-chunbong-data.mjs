@@ -34,6 +34,7 @@ export function buildSnapshot(payload, now = new Date()) {
   const capturedAt = payload?.capturedAt || now.toISOString();
   const followerCount = payload?.soop?.live?.followerCount ?? payload?.soop?.overview?.followerCount ?? null;
   const fanclubCount = payload?.soop?.live?.fanclubCount ?? payload?.soop?.overview?.fanclubCount ?? null;
+  const overview = payload?.soop?.overview || {};
   return {
     date: kstDateKey(now),
     capturedAt,
@@ -41,9 +42,16 @@ export function buildSnapshot(payload, now = new Date()) {
       live: payload?.soop?.live?.live ?? null,
       followerCount,
       fanclubCount,
-      measuredTotalMinutes: payload?.soop?.overview?.measuredTotalMinutes ?? null,
-      monthAverageViewers: payload?.soop?.overview?.monthAverageViewers ?? null,
-      monthMaxViewers: payload?.soop?.overview?.monthMaxViewers ?? null,
+      measuredTotalMinutes: overview.measuredTotalMinutes ?? null,
+      totalAirtimeMinutes: overview.totalAirtimeMinutes ?? null,
+      monthAverageViewers: overview.monthAverageViewers ?? null,
+      monthMaxViewers: overview.monthMaxViewers ?? null,
+      subscriberCount: overview.subscriberCount ?? null,
+      supporterCount: overview.supporterCount ?? null,
+      monthUniqueViewers: overview.monthUniqueViewers ?? null,
+      viewershipHours: overview.viewershipHours ?? null,
+      cumulativeUsers: overview.cumulativeUsers ?? null,
+      cumulativeUpCount: overview.cumulativeUpCount ?? null,
       monthlyVodCount: payload?.soop?.monthly?.vodCount ?? null,
       monthlyVodMinutes: payload?.soop?.monthly?.vodMinutes ?? null,
       monthlyCatchCount: payload?.soop?.monthly?.catchCount ?? null,
