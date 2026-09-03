@@ -13,6 +13,9 @@ assert.match(workflow, /soop-live-state\.json/);
 assert.match(workflow, /soop-sessions\.json/);
 assert.match(workflow, /git show-ref --verify --quiet refs\/remotes\/origin\/data\/soop-telemetry/, 'workflow must detect whether telemetry branch already exists');
 assert.match(workflow, /git worktree add -b data\/soop-telemetry/, 'first run must create telemetry branch from main');
+assert.match(workflow, /git checkout main -- vercel\.json/, 'telemetry branch must receive the current Vercel deployment suppression config');
+assert.match(workflow, /git add data\/soop-live-state\.json vercel\.json/, 'new telemetry state must be staged before change detection');
+assert.match(workflow, /git diff --cached --quiet -- data\/soop-live-state\.json vercel\.json/, 'workflow must detect staged new files, including the first state file');
 assert.match(workflow, /git push origin HEAD:data\/soop-telemetry/);
 assert.match(workflow, /git push origin HEAD:main/);
 
