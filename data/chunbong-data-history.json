@@ -1,4 +1,22 @@
 {
   "version": 1,
-  "snapshots": []
+  "snapshots": [
+    {
+      "date": "2026-09-03",
+      "capturedAt": "2026-09-03T10:22:13.544Z",
+      "soop": {
+        "live": false,
+        "monthlyVodCount": 2,
+        "monthlyVodMinutes": null,
+        "monthlyCatchCount": 0,
+        "monthlyClipCount": 1
+      },
+      "youtube": {
+        "subscriberCount": 2670,
+        "viewCount": 6755605,
+        "videoCount": 203,
+        "recentUploadCount": 0
+      }
+    }
+  ]
 }
