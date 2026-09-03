@@ -1,0 +1,69 @@
+name: Apply SOOP overview metric patch
+
+on:
+  push:
+    branches: [feat/chunbong-soop-analytics]
+    paths:
+      - '.github/workflows/chunbong-soop-overview-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/chunbong-soop-analytics
+          fetch-depth: 0
+      - name: Patch overview metric exposure
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('lib/chunbong-data.js')
+          s=p.read_text()
+          old="""  soopAnalytics.overview.knownTotalMinutes = soopAnalytics.overview.measuredTotalMinutes;
+  soopAnalytics.overview.externalAverageViewers = mergedMetrics.averageViewers ?? externalSummary.recent30DayAverageViewers ?? null;
+  soopAnalytics.overview.externalMaxViewers = mergedMetrics.maxViewers ?? externalSummary.recent30DayPeakViewers ?? null;
+  soopAnalytics.overview.externalMinViewers = mergedMetrics.minViewers ?? null;
+  soopAnalytics.overview.externalAirtimeMinutes = mergedMetrics.airtimeMinutes ?? externalSummary.recent30DayAirtimeMinutes ?? null;
+  soopAnalytics.overview.externalFieldSources = mergedMetrics.fieldSources;
+"""
+          new="""  soopAnalytics.overview.knownTotalMinutes = soopAnalytics.overview.measuredTotalMinutes;
+  soopAnalytics.overview.externalAverageViewers = mergedMetrics.averageViewers ?? externalSummary.recent30DayAverageViewers ?? null;
+  soopAnalytics.overview.externalMaxViewers = mergedMetrics.maxViewers ?? externalSummary.recent30DayPeakViewers ?? null;
+  soopAnalytics.overview.externalMinViewers = mergedMetrics.minViewers ?? null;
+  soopAnalytics.overview.externalAirtimeMinutes = mergedMetrics.airtimeMinutes ?? externalSummary.recent30DayAirtimeMinutes ?? null;
+  soopAnalytics.overview.totalAirtimeMinutes = mergedMetrics.totalAirtimeMinutes ?? null;
+  soopAnalytics.overview.subscriberCount = mergedMetrics.subscriberCount ?? null;
+  soopAnalytics.overview.supporterCount = mergedMetrics.supporterCount ?? null;
+  soopAnalytics.overview.monthUniqueViewers = mergedMetrics.monthUniqueViewers ?? null;
+  soopAnalytics.overview.viewershipHours = mergedMetrics.viewershipHours ?? null;
+  soopAnalytics.overview.cumulativeUsers = mergedMetrics.cumulativeUsers ?? null;
+  soopAnalytics.overview.cumulativeUpCount = mergedMetrics.cumulativeUpCount ?? null;
+  soopAnalytics.overview.currentMonthCategories = Array.isArray(mergedMetrics.categories) ? mergedMetrics.categories : [];
+  soopAnalytics.overview.externalFieldSources = mergedMetrics.fieldSources;
+  if (mergedMetrics.fieldSources?.airtimeMinutes === 'trackify' && Number.isFinite(mergedMetrics.airtimeMinutes)) {
+    soopAnalytics.overview.monthDurationMinutes = mergedMetrics.airtimeMinutes;
+    soopAnalytics.overview.monthDurationSource = 'trackify';
+  }
+  if (mergedMetrics.fieldSources?.averageViewers === 'trackify' && Number.isFinite(mergedMetrics.averageViewers)) {
+    soopAnalytics.overview.monthAverageViewers = mergedMetrics.averageViewers;
+    soopAnalytics.overview.monthAverageViewerSource = 'trackify';
+  }
+  if (mergedMetrics.fieldSources?.maxViewers === 'trackify' && Number.isFinite(mergedMetrics.maxViewers)) {
+    soopAnalytics.overview.monthMaxViewers = mergedMetrics.maxViewers;
+    soopAnalytics.overview.monthMaxViewerSource = 'trackify';
+  }
+"""
+          assert old in s
+          p.write_text(s.replace(old,new,1))
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/chunbong-data.js
+          git commit -m "feat: expose Trackify SOOP overview metrics"
+          git push origin HEAD:feat/chunbong-soop-analytics
