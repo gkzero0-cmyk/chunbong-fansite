@@ -23,7 +23,29 @@ function deepFirst(obj, paths) {
     const value = path.split('.').reduce((cur, key) => cur?.[key], obj);
     if (value !== undefined && value !== null && value !== '') return value;
   }
-  return undefined;
+
+  const simpleKeys = new Set(paths.filter(path => !path.includes('.')));
+  if (!simpleKeys.size || !obj || typeof obj !== 'object') return undefined;
+  const seen = new Set();
+  let found;
+  const walk = node => {
+    if (found !== undefined || !node || typeof node !== 'object' || seen.has(node)) return;
+    seen.add(node);
+    if (!Array.isArray(node)) {
+      for (const [key, value] of Object.entries(node)) {
+        if (simpleKeys.has(key) && value !== undefined && value !== null && value !== '') {
+          found = value;
+          return;
+        }
+      }
+    }
+    for (const child of Array.isArray(node) ? node : Object.values(node)) {
+      walk(child);
+      if (found !== undefined) return;
+    }
+  };
+  walk(obj);
+  return found;
 }
 const clean = (value = '') => String(value).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 function structuredText(value, seen = new Set()) {
