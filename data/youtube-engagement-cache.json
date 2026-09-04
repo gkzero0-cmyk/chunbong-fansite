@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-04T20:21:26.406Z",
+  "capturedAt": "2026-09-04T20:26:09.845Z",
   "source": "https://www.youtube.com/@%EC%B6%98%EB%B4%89TV",
   "itemCount": 203,
   "items": [
@@ -99,7 +99,7 @@
       "kind": "shorts",
       "title": "범죄경력회보서 요구하는 여친때문에 싸웠습니다",
       "publishedAt": "2026-08-09T00:00:00.000Z",
-      "viewCount": 24349,
+      "viewCount": 24350,
       "commentCount": 48,
       "link": "https://www.youtube.com/shorts/sSUVf_aD3MI"
     },
@@ -338,6 +338,15 @@
       "link": "https://www.youtube.com/shorts/mE5GqQp4xR8"
     },
     {
+      "id": "ogkwEv5ggaY",
+      "kind": "shorts",
+      "title": "드디어 본색을 드러낸 성심당",
+      "publishedAt": "2026-04-09T00:00:00.000Z",
+      "viewCount": 21257,
+      "commentCount": 20,
+      "link": "https://www.youtube.com/shorts/ogkwEv5ggaY"
+    },
+    {
       "id": "gafiARyeKMI",
       "kind": "shorts",
       "title": "고용노동부가 추천하는 쉬었음청년 대체용어",
@@ -433,7 +442,7 @@
       "title": "업무 중 노래, 핸드폰 사용 일만 잘 하면 상관없다는 빌런",
       "publishedAt": "2026-03-18T00:00:00.000Z",
       "viewCount": 31171,
-      "commentCount": 34,
+      "commentCount": 35,
       "link": "https://www.youtube.com/shorts/kSHRcJEerXc"
     },
     {
@@ -496,7 +505,7 @@
       "title": "회사에 내용 증명 보낸 MZ사원",
       "publishedAt": "2026-03-08T00:00:00.000Z",
       "viewCount": 58439,
-      "commentCount": 220,
+      "commentCount": 219,
       "link": "https://www.youtube.com/shorts/cX9f-GVpDNE"
     },
     {
@@ -693,7 +702,7 @@
       "kind": "shorts",
       "title": "미인의 연상녀가 웅이를 좋아한 이유",
       "publishedAt": "2026-02-08T00:00:00.000Z",
-      "viewCount": 27226,
+      "viewCount": 27000,
       "commentCount": 19,
       "link": "https://www.youtube.com/shorts/vveEpUYwK_w"
     },
@@ -955,7 +964,7 @@
       "title": "자동차 로고의 중요성",
       "publishedAt": "2026-01-09T00:00:00.000Z",
       "viewCount": 432576,
-      "commentCount": 205,
+      "commentCount": 206,
       "link": "https://www.youtube.com/shorts/61TrcUBtRJE"
     },
     {
@@ -1143,7 +1152,7 @@
       "kind": "shorts",
       "title": "매운 짬뽕에 도전한 쯔양님 ㄷㄷ",
       "publishedAt": "2025-12-18T00:00:00.000Z",
-      "viewCount": 4975,
+      "viewCount": 4900,
       "commentCount": 6,
       "link": "https://www.youtube.com/shorts/ciVLE3_7j-w"
     },
@@ -1317,6 +1326,15 @@
       "viewCount": 2375,
       "commentCount": 1,
       "link": "https://www.youtube.com/shorts/IaQsDfxLJP4"
+    },
+    {
+      "id": "hUTsygOJ_Wg",
+      "kind": "shorts",
+      "title": "초대권을 위한 니니의 골든",
+      "publishedAt": "2025-11-24T00:00:00.000Z",
+      "viewCount": 12735,
+      "commentCount": 5,
+      "link": "https://www.youtube.com/shorts/hUTsygOJ_Wg"
     },
     {
       "id": "1B5EHY7RQRU",
@@ -1812,24 +1830,6 @@
       "viewCount": 1287,
       "commentCount": 2,
       "link": "https://www.youtube.com/shorts/tWDofIVuloQ"
-    },
-    {
-      "id": "hUTsygOJ_Wg",
-      "kind": "shorts",
-      "title": "초대권을 위한 니니의 골든",
-      "publishedAt": "",
-      "viewCount": 12000,
-      "commentCount": 5,
-      "link": "https://www.youtube.com/shorts/hUTsygOJ_Wg"
-    },
-    {
-      "id": "ogkwEv5ggaY",
-      "kind": "shorts",
-      "title": "드디어 본색을 드러낸 성심당",
-      "publishedAt": "",
-      "viewCount": 21000,
-      "commentCount": 20,
-      "link": "https://www.youtube.com/shorts/ogkwEv5ggaY"
     }
   ]
 }

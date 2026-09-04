@@ -49,10 +49,10 @@
     },
     {
       "date": "2026-09-05",
-      "capturedAt": "2026-09-04T17:57:13.871Z",
+      "capturedAt": "2026-09-04T20:26:10.063Z",
       "soop": {
         "live": false,
-        "followerCount": 29787,
+        "followerCount": 29791,
         "fanclubCount": 7598,
         "measuredTotalMinutes": 232376,
         "totalAirtimeMinutes": 616680,
@@ -61,7 +61,7 @@
         "subscriberCount": 44,
         "supporterCount": 23,
         "monthUniqueViewers": null,
-        "viewershipHours": 1572,
+        "viewershipHours": 1688,
         "cumulativeUsers": null,
         "cumulativeUpCount": 79507,
         "monthlyVodCount": 2,
