@@ -1,18 +1,26 @@
 {
-  "checkedAt": "2026-09-04T15:48:01.556Z",
+  "checkedAt": "2026-09-04T16:34:11.378Z",
   "baseUrl": "https://chunbong-fansite.vercel.app",
   "endpoints": {
     "dataJs": {
       "status": 200,
       "bytes": 32002
     },
+    "dataEnhancementsJs": {
+      "status": 200,
+      "bytes": 8722
+    },
+    "dataEnhancementsCss": {
+      "status": 200,
+      "bytes": 1135
+    },
     "dataHtml": {
       "status": 200,
-      "bytes": 9839
+      "bytes": 9521
     },
     "apiData": {
       "status": 200,
-      "bytes": 78051
+      "bytes": 27901
     }
   },
   "staticChecks": {
@@ -25,7 +33,21 @@
       "refresh=1": true,
       "cache:'no-store'": true
     },
+    "enhancementTokens": {
+      "normalizeDailyTrendRows": true,
+      "formatFullDate": true,
+      "hideUnavailableSoopCards": true,
+      "installDataFetchTransform": true
+    },
+    "enhancementCssTokens": {
+      "font-size:18px": true,
+      "font-size:28px": true,
+      "font-size:13px": true,
+      "font-size:17px": true
+    },
     "dataHtmlHasDataJs": true,
+    "dataHtmlHasEnhancements": true,
+    "dataHtmlHidesLegacySourceCopy": true,
     "manualRefreshNoStore": true
   },
   "apiSummary": {
@@ -33,15 +55,18 @@
     "fallback": false,
     "currentFallback": false,
     "reason": null,
-    "capturedAt": "2026-09-04T15:47:59.499Z",
+    "capturedAt": "2026-09-04T16:34:09.870Z",
     "errors": [],
     "errorCount": 0,
+    "sourceSummaryCleared": true,
+    "categoryReferenceCleared": true,
+    "legacySessionCount": 0,
     "arrayCounts": {
-      "daily": 17,
-      "monthlyStats": 2,
-      "calendar": 17,
-      "categories": 5,
-      "recentSessions": 19
+      "daily": 0,
+      "monthlyStats": 0,
+      "calendar": 0,
+      "categories": 0,
+      "recentSessions": 0
     },
     "trackify": {
       "sourcePresent": true,
@@ -72,9 +97,9 @@
       "videoCount": 203,
       "snapshotFallback": false,
       "monthlyUploadCount": 2,
-      "recentVideoCount": 0,
+      "recentVideoCount": 12,
       "recentShortCount": 12,
-      "newestVideoDate": null,
+      "newestVideoDate": "2026-08-05T09:00:38+00:00",
       "newestShortDate": "2026-09-02T09:00:12+00:00"
     }
   },
