@@ -1,11 +1,12 @@
 name: Chunbong data snapshot
 
-# Temporary feature-branch bootstrap: refresh the real Trackify cache once before merge.
 on:
   push:
-    branches: [fix/trackify-soop-history]
+    branches: [main]
     paths:
       - '.github/workflows/chunbong-data-snapshot.yml'
+      - 'scripts/update-trackify-soop-cache.mjs'
+      - 'lib/soop-external.js'
   schedule:
     - cron: '10 6 * * *'
   workflow_dispatch:
