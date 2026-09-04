@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#ff6b18"><meta name="description" content="춘봉 SOOP 방송 상세 통계와 춘봉TV 유튜브 공개 데이터 대시보드"><title>춘봉 데이터 | 춘봉 팬사이트</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="data.css"></head><body data-page="data"><div class="noise" aria-hidden="true"></div>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#ff6b18"><meta name="description" content="춘봉 SOOP 방송 상세 통계와 춘봉TV 유튜브 공개 데이터 대시보드"><title>춘봉 데이터 | 춘봉 팬사이트</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="data.css"><link rel="stylesheet" href="data-enhancements.css"></head><body data-page="data"><div class="noise" aria-hidden="true"></div>
 <header class="site-header">
   <a class="brand" href="index.html" aria-label="춘봉 팬사이트 홈"><span class="brand-mark">CB</span><span class="brand-copy"><strong>CHUNBONG</strong><small>FAN HUB</small></span></a>
   <button class="nav-toggle" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="main-nav"><span></span><span></span><span></span></button>
@@ -16,7 +16,7 @@
     </div>
 
     <section class="data-platform-panel" id="data-soop-panel" data-platform-panel="soop" role="tabpanel">
-      <div class="section-head reveal"><div><p class="kicker">SOOP OVERVIEW</p><h2>방송 데이터 한눈에 보기</h2></div><p>시청자 지표 · 팬사이트 5분 측정</p></div>
+      <div class="section-head reveal"><div><p class="kicker">SOOP OVERVIEW</p><h2>방송 데이터 한눈에 보기</h2></div><p>방송 · 시청자 · 성장 지표</p></div>
       <div class="data-kpi-grid data-soop-kpis" id="data-soop-overview"><div class="loading-card">SOOP 핵심 지표를 불러오는 중...</div></div>
 
       <div class="data-soop-view-tabs" role="tablist" aria-label="SOOP 통계 보기 방식">
@@ -44,15 +44,15 @@
 
       <section class="data-section data-category-section"><div class="section-head compact"><div><p class="kicker">CATEGORY</p><h2>방송 카테고리 분석</h2></div><p>방송시간 비중 · 평균/최대 시청자</p></div><div class="data-category-list" id="data-soop-categories"><div class="loading-card">카테고리 데이터를 계산하는 중...</div></div></section>
 
-      <section class="data-section"><div class="section-head compact"><div><p class="kicker">STREAM SESSIONS</p><h2>최근 방송 상세</h2></div><p>팬사이트 실측 세션</p></div><div class="data-session-list" id="data-soop-sessions"><div class="data-empty">측정된 방송 세션이 쌓이면 표시됩니다.</div></div></section>
+      <section class="data-section"><div class="section-head compact"><div><p class="kicker">STREAM SESSIONS</p><h2>최근 방송 상세</h2></div><p>방송별 기록</p></div><div class="data-session-list" id="data-soop-sessions"><div class="data-empty">측정된 방송 세션이 쌓이면 표시됩니다.</div></div></section>
 
-      <div class="source-note reveal"><strong>SOOP 데이터 기준</strong> · 평균/최대 시청자는 약 5분 간격의 공개 시청자 수를 팬사이트가 측정해 계산합니다. 애청자·팬클럽 값이 공개 응답에서 안정적으로 확인되지 않는 시점에는 <b>측정 불가</b>로 표시합니다. 수집 시작 이전 방송은 Streams Charts 등 외부 공개 기록에서 확인되는 방송시간·평균 시청자·주 카테고리만 외부 공개 기록으로 보완하며, 공개되지 않은 최대 시청자·애청자·팬클럽 증감은 임의로 만들지 않습니다.</div>
+      <div class="source-note reveal">실제로 확인되는 값만 표시하며, 확인되지 않는 항목은 화면에서 제외합니다. 그래프는 기록된 날짜별 실제 값을 기준으로 표시합니다.</div>
     </section>
 
     <section class="data-platform-panel" id="data-youtube-panel" data-platform-panel="youtube" role="tabpanel" hidden>
       <div class="section-head reveal"><div><p class="kicker">YOUTUBE OVERVIEW</p><h2>춘봉TV 채널 데이터</h2></div><p>공개 채널·콘텐츠 지표</p></div>
       <div class="data-kpi-grid" id="data-youtube-overview"><div class="loading-card">YouTube 채널 지표를 불러오는 중...</div></div>
-      <section class="data-section"><div class="section-head compact"><div><p class="kicker">HISTORY</p><h2>채널 변화</h2></div><p>일일 공개 스냅샷</p></div><div class="data-chart-grid" id="data-youtube-trend"></div></section>
+      <section class="data-section"><div class="section-head compact"><div><p class="kicker">HISTORY</p><h2>채널 변화</h2></div><p>날짜별 공개 스냅샷</p></div><div class="data-chart-grid" id="data-youtube-trend"></div></section>
       <section class="data-section"><div class="section-head compact"><div><p class="kicker">TOP CONTENT</p><h2>반응이 큰 콘텐츠</h2></div><p>수집 가능한 조회수 기준</p></div><div class="data-top-content" id="data-youtube-top"></div></section>
       <section class="data-section"><div class="section-head compact"><div><p class="kicker">RECENT</p><h2>최근 업로드</h2></div><p>영상 · Shorts</p></div><div class="data-recent-grid" id="data-youtube-recent"></div></section>
       <div class="source-note reveal">YouTube 구독자·총 조회수·영상 수는 춘봉TV 공개 채널 페이지에서 확인 가능한 값을 기록합니다. 공개 페이지 구조가 변경되어 값이 확인되지 않으면 해당 지표만 일시적으로 비웁니다.</div>
@@ -60,4 +60,4 @@
   </div></section>
 </main>
 <footer><div class="footer-brand"><span class="brand-mark">CB</span><div><strong>CHUNBONG FAN HUB</strong><p>비공식 팬사이트 · 공개 데이터를 팬사이트 안에서 보기 좋게 정리합니다.</p></div></div><div class="footer-links"><a href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer">SOOP ↗</a><a href="https://www.youtube.com/@%EC%B6%98%EB%B4%89TV" target="_blank" rel="noreferrer">YOUTUBE ↗</a><a href="https://cafe.naver.com/chunbongtv" target="_blank" rel="noreferrer">NAVER CAFE ↗</a></div><p class="copyright">© 2026 CHUNBONG FAN HUB · Unofficial fan project</p></footer>
-<button class="to-top" type="button" aria-label="맨 위로 이동">↑</button><script src="content.js"></script><script src="page.js"></script><script src="data.js"></script></body></html>
+<button class="to-top" type="button" aria-label="맨 위로 이동">↑</button><script src="content.js"></script><script src="page.js"></script><script src="data-enhancements.js"></script><script src="data.js"></script></body></html>
