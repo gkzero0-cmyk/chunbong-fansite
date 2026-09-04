@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
-import { buildTrackifyCache } from '../scripts/update-trackify-soop-cache.mjs';
+import { buildTrackifyCache, historyToFreshCache } from '../scripts/update-trackify-soop-cache.mjs';
 
 assert.equal(typeof buildTrackifyCache, 'function', 'Trackify cache builder should be exported');
+assert.equal(typeof historyToFreshCache, 'function', 'Trackify API history adapter should be exported');
 
 const previous = {
   version: 1,
@@ -18,6 +19,12 @@ const fresh = {
     { id: 'trackify-2', startedAt: '2026-08-02T10:00:00+09:00', date: '2026-08-02', durationMinutes: 120, averageViewers: 20 }
   ]
 };
+
+assert.deepEqual(
+  historyToFreshCache({ stats: fresh.stats, sessions: fresh.sessions, profileHtml: '<legacy html>' }),
+  fresh,
+  'cache refresh must consume Trackify JSON stats directly rather than reparsing SPA HTML'
+);
 
 const next = buildTrackifyCache(previous, fresh, new Date('2026-09-04T12:00:00.000Z'));
 assert.equal(next.version, 1);
