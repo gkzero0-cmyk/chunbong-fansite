@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-04T16:34:11.378Z",
+  "checkedAt": "2026-09-04T18:02:13.752Z",
   "baseUrl": "https://chunbong-fansite.vercel.app",
   "endpoints": {
     "dataJs": {
@@ -20,7 +20,7 @@
     },
     "apiData": {
       "status": 200,
-      "bytes": 27901
+      "bytes": 928110
     }
   },
   "staticChecks": {
@@ -55,40 +55,41 @@
     "fallback": false,
     "currentFallback": false,
     "reason": null,
-    "capturedAt": "2026-09-04T16:34:09.870Z",
+    "capturedAt": "2026-09-04T18:02:10.365Z",
     "errors": [],
     "errorCount": 0,
     "sourceSummaryCleared": true,
     "categoryReferenceCleared": true,
     "legacySessionCount": 0,
+    "trackifyHistorySessionCount": 328,
     "arrayCounts": {
-      "daily": 0,
-      "monthlyStats": 0,
-      "calendar": 0,
-      "categories": 0,
-      "recentSessions": 0
+      "daily": 289,
+      "monthlyStats": 14,
+      "calendar": 289,
+      "categories": 19,
+      "recentSessions": 30
     },
     "trackify": {
       "sourcePresent": true,
       "fields": {
-        "subscriberCount": null,
-        "supporterCount": null,
+        "subscriberCount": 44,
+        "supporterCount": 23,
         "monthUniqueViewers": null,
-        "viewershipHours": null,
+        "viewershipHours": 1579,
         "cumulativeUsers": null,
-        "cumulativeUpCount": null,
-        "monthlyStarCount": null,
-        "starsPerHour": null,
-        "monthlySupporterCount": null,
-        "monthlyChatCount": null,
+        "cumulativeUpCount": 79507,
+        "monthlyStarCount": 12968,
+        "starsPerHour": 375,
+        "monthlySupporterCount": 51,
+        "monthlyChatCount": 10103,
         "monthlyKickCount": null,
-        "monthlyMuteCount": null,
-        "stationOpenedAt": "",
-        "latestBroadcastDate": "",
+        "monthlyMuteCount": 4,
+        "stationOpenedAt": "2022-09-29T14:58:14",
+        "latestBroadcastDate": "2026-09-04T16:52:52",
         "categoryRankings": []
       },
       "categoryCount": 0,
-      "categoryDistributionCount": 0,
+      "categoryDistributionCount": 6,
       "excludedDonorRankingPresent": false
     },
     "youtube": {
