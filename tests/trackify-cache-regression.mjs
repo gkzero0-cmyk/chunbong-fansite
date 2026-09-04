@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
-import { createRequire } from 'node:module';
+import { buildTrackifyCache } from '../scripts/update-trackify-soop-cache.mjs';
 
-const require = createRequire(import.meta.url);
-const external = require('../lib/soop-external.js');
-
-assert.equal(typeof external.buildTrackifyCache, 'function', 'Trackify cache builder should be exported');
+assert.equal(typeof buildTrackifyCache, 'function', 'Trackify cache builder should be exported');
 
 const previous = {
   version: 1,
@@ -22,7 +19,7 @@ const fresh = {
   ]
 };
 
-const next = external.buildTrackifyCache(previous, fresh, new Date('2026-09-04T12:00:00.000Z'));
+const next = buildTrackifyCache(previous, fresh, new Date('2026-09-04T12:00:00.000Z'));
 assert.equal(next.version, 1);
 assert.equal(next.capturedAt, '2026-09-04T12:00:00.000Z');
 assert.equal(next.stats.followerCount, 29783, 'fresh finite Trackify metrics should replace cached values');
@@ -30,8 +27,9 @@ assert.equal(next.stats.subscriberCount, 20, 'missing fresh Trackify metrics sho
 assert.deepEqual(next.sessions.map(item => item.id), ['trackify-1', 'trackify-2']);
 assert.equal(next.sessions[0].durationMinutes, 65, 'fresh session detail should replace cached session with the same id');
 
-const outage = external.buildTrackifyCache(next, { stats: null, sessions: [] }, new Date('2026-09-05T12:00:00.000Z'));
+const outage = buildTrackifyCache(next, { stats: null, sessions: [] }, new Date('2026-09-05T12:00:00.000Z'));
 assert.equal(outage.stats.followerCount, 29783, 'temporary Trackify failure must not erase the last good stats');
 assert.equal(outage.sessions.length, 2, 'temporary Trackify failure must not erase historical sessions');
+assert.equal(outage.capturedAt, next.capturedAt, 'outage must preserve the last successful capture time');
 
 console.log('Trackify cache regression test passed');
