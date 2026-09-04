@@ -1,10 +1,10 @@
 {
-  "checkedAt": "2026-09-04T15:46:09.527Z",
+  "checkedAt": "2026-09-04T15:48:01.556Z",
   "baseUrl": "https://chunbong-fansite.vercel.app",
   "endpoints": {
     "dataJs": {
       "status": 200,
-      "bytes": 26443
+      "bytes": 32002
     },
     "dataHtml": {
       "status": 200,
@@ -12,28 +12,28 @@
     },
     "apiData": {
       "status": 200,
-      "bytes": 80237
+      "bytes": 78051
     }
   },
   "staticChecks": {
     "dataJsExpectedTokens": {
       "sourceChip": true,
       "monthUniqueViewers": true,
-      "monthlyStarCount": false,
-      "mergeYoutubeRecent": false,
-      "data-chart-crosshair": false,
-      "refresh=1": false,
-      "cache:'no-store'": false
+      "monthlyStarCount": true,
+      "mergeYoutubeRecent": true,
+      "data-chart-crosshair": true,
+      "refresh=1": true,
+      "cache:'no-store'": true
     },
     "dataHtmlHasDataJs": true,
-    "manualRefreshNoStore": false
+    "manualRefreshNoStore": true
   },
   "apiSummary": {
     "parseError": null,
     "fallback": false,
     "currentFallback": false,
     "reason": null,
-    "capturedAt": "2026-09-04T15:46:06.139Z",
+    "capturedAt": "2026-09-04T15:47:59.499Z",
     "errors": [],
     "errorCount": 0,
     "arrayCounts": {
@@ -58,11 +58,11 @@
         "monthlyChatCount": null,
         "monthlyKickCount": null,
         "monthlyMuteCount": null,
-        "stationOpenedAt": null,
-        "latestBroadcastDate": null,
-        "categoryRankings": null
+        "stationOpenedAt": "",
+        "latestBroadcastDate": "",
+        "categoryRankings": []
       },
-      "categoryCount": null,
+      "categoryCount": 0,
       "categoryDistributionCount": 0,
       "excludedDonorRankingPresent": false
     },
@@ -70,13 +70,13 @@
       "subscriberCount": 2680,
       "viewCount": 6755605,
       "videoCount": 203,
-      "snapshotFallback": null,
-      "monthlyUploadCount": 0,
-      "recentVideoCount": 12,
+      "snapshotFallback": false,
+      "monthlyUploadCount": 2,
+      "recentVideoCount": 0,
       "recentShortCount": 12,
-      "newestVideoDate": "4주 전",
-      "newestShortDate": null
+      "newestVideoDate": null,
+      "newestShortDate": "2026-09-02T09:00:12+00:00"
     }
   },
-  "ok": false
+  "ok": true
 }
