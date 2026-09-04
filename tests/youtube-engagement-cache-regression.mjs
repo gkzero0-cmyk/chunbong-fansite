@@ -16,7 +16,11 @@ assert.ok(Array.isArray(cache.items));
 
 const updater = fs.readFileSync(updaterPath, 'utf8');
 assert.match(updater, /MAX_CONCURRENCY\s*=\s*6/);
+assert.match(updater, /DISCOVERY_RETRY_ATTEMPTS\s*=\s*3/);
+assert.match(updater, /async function withRetry/);
 assert.match(updater, /fetchAllChannelItems/);
+assert.match(updater, /withRetry\(\(\) => fetchAllChannelItems\('videos'\)/);
+assert.match(updater, /withRetry\(\(\) => fetchAllChannelItems\('shorts'\)/);
 assert.match(updater, /fetchWatchMetrics/);
 assert.match(updater, /mergeEngagementCache/);
 assert.match(updater, /previous\.items/);
