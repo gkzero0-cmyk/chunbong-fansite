@@ -35,3 +35,14 @@ jobs:
             count=$((count + 1))
           done
           echo "REGRESSION_TEST_FILES=$count"
+      - name: Probe live Trackify Chunbong history
+        run: |
+          node scripts/update-trackify-soop-cache.mjs
+          node - <<'NODE'
+          const cache = require('./data/trackify-soop-cache.json');
+          console.log(`TRACKIFY_ASSERT_SESSIONS=${cache.sessions?.length || 0}`);
+          console.log(`TRACKIFY_ASSERT_STATS=${cache.stats ? Object.values(cache.stats).filter(v => v !== null && v !== '' && (!Array.isArray(v) || v.length)).length : 0}`);
+          if (!Array.isArray(cache.sessions) || cache.sessions.length === 0) {
+            throw new Error('No live Chunbong Trackify broadcast sessions were discovered');
+          }
+          NODE
