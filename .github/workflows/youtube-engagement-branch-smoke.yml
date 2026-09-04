@@ -23,75 +23,78 @@ jobs:
         run: |
           node <<'NODE'
           const youtube = require('./api/youtube');
-          const HEADERS = {
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/151 Safari/537.36',
-            accept: 'text/html,application/xhtml+xml',
-            'accept-language': 'ko-KR,ko;q=0.9,en;q=0.8'
-          };
-          const videos = await youtube.fetchAllChannelItems('videos', { maxPages: 2 });
-          const first = videos[0];
-          if (!first?.id) throw new Error('No diagnostic video found');
-          console.log('VIDEO_ID=' + first.id);
-          console.log('BROWSE_META=' + JSON.stringify({ title: first.title, meta: first.meta, date: first.date, dateIso: first.dateIso }));
+          async function main() {
+            const HEADERS = {
+              'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/151 Safari/537.36',
+              accept: 'text/html,application/xhtml+xml',
+              'accept-language': 'ko-KR,ko;q=0.9,en;q=0.8'
+            };
+            const videos = await youtube.fetchAllChannelItems('videos', { maxPages: 2 });
+            const first = videos[0];
+            if (!first?.id) throw new Error('No diagnostic video found');
+            console.log('VIDEO_ID=' + first.id);
+            console.log('BROWSE_META=' + JSON.stringify({ title: first.title, meta: first.meta, date: first.date, dateIso: first.dateIso }));
 
-          const watchRes = await fetch(`https://www.youtube.com/watch?v=${first.id}&hl=ko&gl=KR`, { headers: HEADERS });
-          const watchHtml = await watchRes.text();
-          const title = watchHtml.match(/<title>([\s\S]*?)<\/title>/i)?.[1]?.replace(/\s+/g, ' ').slice(0, 180) || '';
-          console.log('WATCH=' + JSON.stringify({
-            status: watchRes.status,
-            bytes: watchHtml.length,
-            title,
-            hasPlayerMarker: watchHtml.includes('ytInitialPlayerResponse'),
-            hasVideoDetails: watchHtml.includes('"videoDetails"'),
-            hasViewCount: watchHtml.includes('"viewCount"'),
-            hasCommentCount: /"(?:commentCount|commentsCount)"/.test(watchHtml),
-            botChallenge: /confirm you.?re not a bot|unusual traffic|sign in/i.test(watchHtml)
-          }));
-          console.log('WATCH_PARSED=' + JSON.stringify(youtube.extractWatchMetricsFromHtml(watchHtml)));
+            const watchRes = await fetch(`https://www.youtube.com/watch?v=${first.id}&hl=ko&gl=KR`, { headers: HEADERS });
+            const watchHtml = await watchRes.text();
+            const title = watchHtml.match(/<title>([\s\S]*?)<\/title>/i)?.[1]?.replace(/\s+/g, ' ').slice(0, 180) || '';
+            console.log('WATCH=' + JSON.stringify({
+              status: watchRes.status,
+              bytes: watchHtml.length,
+              title,
+              hasPlayerMarker: watchHtml.includes('ytInitialPlayerResponse'),
+              hasVideoDetails: watchHtml.includes('"videoDetails"'),
+              hasViewCount: watchHtml.includes('"viewCount"'),
+              hasCommentCount: /"(?:commentCount|commentsCount)"/.test(watchHtml),
+              botChallenge: /confirm you.?re not a bot|unusual traffic|sign in/i.test(watchHtml)
+            }));
+            console.log('WATCH_PARSED=' + JSON.stringify(youtube.extractWatchMetricsFromHtml(watchHtml)));
 
-          const tabRes = await fetch(`${youtube.CHANNEL}/videos?hl=ko&gl=KR`, { headers: HEADERS });
-          const tabHtml = await tabRes.text();
-          const config = youtube.extractInnertubeConfig(tabHtml);
-          console.log('CONFIG=' + JSON.stringify({ hasApiKey: !!config.apiKey, clientVersion: config.clientVersion, clientName: config.clientName, hasVisitorData: !!config.visitorData }));
-          if (!config.apiKey || !config.clientVersion) throw new Error('Missing innertube config');
-          const apiHeaders = {
-            ...HEADERS,
-            accept: 'application/json',
-            'content-type': 'application/json',
-            'x-youtube-client-name': String(config.clientName || 1),
-            'x-youtube-client-version': config.clientVersion
-          };
-          const context = { client: { clientName: 'WEB', clientVersion: config.clientVersion, hl: 'ko', gl: 'KR', ...(config.visitorData ? { visitorData: config.visitorData } : {}) } };
-          const playerRes = await fetch(`https://www.youtube.com/youtubei/v1/player?key=${encodeURIComponent(config.apiKey)}&prettyPrint=false`, {
-            method: 'POST', headers: apiHeaders, body: JSON.stringify({ context, videoId: first.id })
-          });
-          const player = await playerRes.json().catch(() => ({}));
-          console.log('PLAYER=' + JSON.stringify({
-            status: playerRes.status,
-            playabilityStatus: player?.playabilityStatus?.status || null,
-            viewCount: player?.videoDetails?.viewCount ?? null,
-            publishDate: player?.microformat?.playerMicroformatRenderer?.publishDate || null,
-            uploadDate: player?.microformat?.playerMicroformatRenderer?.uploadDate || null
-          }));
+            const tabRes = await fetch(`${youtube.CHANNEL}/videos?hl=ko&gl=KR`, { headers: HEADERS });
+            const tabHtml = await tabRes.text();
+            const config = youtube.extractInnertubeConfig(tabHtml);
+            console.log('CONFIG=' + JSON.stringify({ hasApiKey: !!config.apiKey, clientVersion: config.clientVersion, clientName: config.clientName, hasVisitorData: !!config.visitorData }));
+            if (!config.apiKey || !config.clientVersion) throw new Error('Missing innertube config');
+            const apiHeaders = {
+              ...HEADERS,
+              accept: 'application/json',
+              'content-type': 'application/json',
+              'x-youtube-client-name': String(config.clientName || 1),
+              'x-youtube-client-version': config.clientVersion
+            };
+            const context = { client: { clientName: 'WEB', clientVersion: config.clientVersion, hl: 'ko', gl: 'KR', ...(config.visitorData ? { visitorData: config.visitorData } : {}) } };
+            const playerRes = await fetch(`https://www.youtube.com/youtubei/v1/player?key=${encodeURIComponent(config.apiKey)}&prettyPrint=false`, {
+              method: 'POST', headers: apiHeaders, body: JSON.stringify({ context, videoId: first.id })
+            });
+            const player = await playerRes.json().catch(() => ({}));
+            console.log('PLAYER=' + JSON.stringify({
+              status: playerRes.status,
+              playabilityStatus: player?.playabilityStatus?.status || null,
+              viewCount: player?.videoDetails?.viewCount ?? null,
+              publishDate: player?.microformat?.playerMicroformatRenderer?.publishDate || null,
+              uploadDate: player?.microformat?.playerMicroformatRenderer?.uploadDate || null
+            }));
 
-          const nextRes = await fetch(`https://www.youtube.com/youtubei/v1/next?key=${encodeURIComponent(config.apiKey)}&prettyPrint=false`, {
-            method: 'POST', headers: apiHeaders, body: JSON.stringify({ context, videoId: first.id })
-          });
-          const next = await nextRes.json().catch(() => ({}));
-          const texts = [];
-          const found = [];
-          const seen = new Set();
-          const walk = node => {
-            if (!node || typeof node !== 'object' || seen.has(node)) return;
-            seen.add(node);
-            if (!Array.isArray(node)) {
-              for (const [key, value] of Object.entries(node)) {
-                if (/commentCount|commentsCount|countText/i.test(key)) found.push({ key, value: typeof value === 'object' ? JSON.stringify(value).slice(0, 240) : String(value).slice(0, 240) });
-                if (typeof value === 'string' && /댓글|comment/i.test(value) && texts.length < 20) texts.push(value.slice(0, 240));
+            const nextRes = await fetch(`https://www.youtube.com/youtubei/v1/next?key=${encodeURIComponent(config.apiKey)}&prettyPrint=false`, {
+              method: 'POST', headers: apiHeaders, body: JSON.stringify({ context, videoId: first.id })
+            });
+            const next = await nextRes.json().catch(() => ({}));
+            const texts = [];
+            const found = [];
+            const seen = new Set();
+            const walk = node => {
+              if (!node || typeof node !== 'object' || seen.has(node)) return;
+              seen.add(node);
+              if (!Array.isArray(node)) {
+                for (const [key, value] of Object.entries(node)) {
+                  if (/commentCount|commentsCount|countText/i.test(key)) found.push({ key, value: typeof value === 'object' ? JSON.stringify(value).slice(0, 240) : String(value).slice(0, 240) });
+                  if (typeof value === 'string' && /댓글|comment/i.test(value) && texts.length < 20) texts.push(value.slice(0, 240));
+                }
               }
-            }
-            for (const child of Array.isArray(node) ? node : Object.values(node)) walk(child);
-          };
-          walk(next);
-          console.log('NEXT=' + JSON.stringify({ status: nextRes.status, found: found.slice(0, 20), texts: texts.slice(0, 20) }));
+              for (const child of Array.isArray(node) ? node : Object.values(node)) walk(child);
+            };
+            walk(next);
+            console.log('NEXT=' + JSON.stringify({ status: nextRes.status, found: found.slice(0, 20), texts: texts.slice(0, 20) }));
+          }
+          main().catch(error => { console.error(error); process.exit(1); });
           NODE
