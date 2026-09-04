@@ -11,92 +11,36 @@ permissions:
   contents: read
 
 jobs:
-  diagnose:
+  collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Trace YouTube metric payloads
+      - name: Collect complete YouTube engagement cache
+        run: node scripts/update-youtube-engagement-cache.mjs
+      - name: Verify collected cache
         run: |
           node <<'NODE'
-          const youtube = require('./api/youtube');
-          async function main() {
-            const HEADERS = {
-              'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/151 Safari/537.36',
-              accept: 'text/html,application/xhtml+xml',
-              'accept-language': 'ko-KR,ko;q=0.9,en;q=0.8'
-            };
-            const videos = await youtube.fetchAllChannelItems('videos', { maxPages: 2 });
-            const first = videos[0];
-            if (!first?.id) throw new Error('No diagnostic video found');
-            console.log('VIDEO=' + JSON.stringify(first));
-
-            const watchRes = await fetch(`https://www.youtube.com/watch?v=${first.id}&hl=ko&gl=KR`, { headers: HEADERS });
-            const watchHtml = await watchRes.text();
-            for (const marker of ['ytInitialPlayerResponse', '"videoDetails"', '"viewCount"']) {
-              const index = watchHtml.indexOf(marker);
-              console.log(`WATCH_SNIPPET_${marker.replace(/\W/g, '_')}=` + (index >= 0 ? watchHtml.slice(Math.max(0, index - 220), index + 620).replace(/\s+/g, ' ') : 'NOT_FOUND'));
-            }
-
-            const tabRes = await fetch(`${youtube.CHANNEL}/videos?hl=ko&gl=KR`, { headers: HEADERS });
-            const tabHtml = await tabRes.text();
-            const config = youtube.extractInnertubeConfig(tabHtml);
-            if (!config.apiKey || !config.clientVersion) throw new Error('Missing innertube config');
-            const apiHeaders = {
-              ...HEADERS,
-              accept: 'application/json',
-              'content-type': 'application/json',
-              'x-youtube-client-name': String(config.clientName || 1),
-              'x-youtube-client-version': config.clientVersion
-            };
-            const context = { client: { clientName: 'WEB', clientVersion: config.clientVersion, hl: 'ko', gl: 'KR', ...(config.visitorData ? { visitorData: config.visitorData } : {}) } };
-            const callNext = body => fetch(`https://www.youtube.com/youtubei/v1/next?key=${encodeURIComponent(config.apiKey)}&prettyPrint=false`, {
-              method: 'POST', headers: apiHeaders, body: JSON.stringify(body)
-            }).then(async response => ({ response, payload: await response.json().catch(() => ({})) }));
-
-            const firstNext = await callNext({ context, videoId: first.id });
-            const continuationCandidates = [];
-            const seen = new Set();
-            const walk = (node, path = '') => {
-              if (!node || typeof node !== 'object' || seen.has(node)) return;
-              seen.add(node);
-              const token = node?.continuationCommand?.token || node?.continuationEndpoint?.continuationCommand?.token || node?.continuationItemRenderer?.continuationEndpoint?.continuationCommand?.token;
-              if (token) {
-                const text = JSON.stringify(node);
-                continuationCandidates.push({ token, path, commentish: /comment|댓글|engagement-panel-comments-section/i.test(text), sample: text.slice(0, 700) });
-              }
-              if (Array.isArray(node)) node.forEach((child, index) => walk(child, `${path}[${index}]`));
-              else Object.entries(node).forEach(([key, child]) => walk(child, path ? `${path}.${key}` : key));
-            };
-            walk(firstNext.payload);
-            console.log('CONTINUATIONS=' + JSON.stringify(continuationCandidates.slice(0, 30)));
-            const commentCandidate = continuationCandidates.find(item => item.commentish) || continuationCandidates[0];
-            if (!commentCandidate) throw new Error('No next continuation candidate');
-            console.log('COMMENT_CONTINUATION_PATH=' + commentCandidate.path);
-
-            const commentNext = await callNext({ context, continuation: commentCandidate.token });
-            const matches = [];
-            const strings = [];
-            const seen2 = new Set();
-            const walk2 = node => {
-              if (!node || typeof node !== 'object' || seen2.has(node)) return;
-              seen2.add(node);
-              if (!Array.isArray(node)) {
-                for (const [key, value] of Object.entries(node)) {
-                  if (/commentCount|commentsCount|countText|titleText|headerText/i.test(key)) {
-                    const serialized = typeof value === 'object' ? JSON.stringify(value) : String(value);
-                    if (/comment|댓글|\d/.test(serialized)) matches.push({ key, value: serialized.slice(0, 500) });
-                  }
-                  if (typeof value === 'string' && /댓글|comment|개$/.test(value) && strings.length < 40) strings.push(value.slice(0, 300));
-                }
-              }
-              for (const child of Array.isArray(node) ? node : Object.values(node)) walk2(child);
-            };
-            walk2(commentNext.payload);
-            console.log('COMMENT_NEXT=' + JSON.stringify({ status: commentNext.response.status, matches: matches.slice(0, 40), strings: strings.slice(0, 40) }));
-          }
-          main().catch(error => { console.error(error); process.exit(1); });
+          const cache = require('./data/youtube-engagement-cache.json');
+          const items = Array.isArray(cache.items) ? cache.items : [];
+          const views = items.filter(item => Number.isFinite(item.viewCount)).length;
+          const comments = items.filter(item => Number.isFinite(item.commentCount)).length;
+          const published = items.filter(item => /^20\d{2}-\d{2}-\d{2}/.test(String(item.publishedAt || ''))).length;
+          const positiveComments = items.filter(item => Number.isFinite(item.commentCount) && item.commentCount > 0).length;
+          const summary = {
+            itemCount: items.length,
+            views,
+            comments,
+            positiveComments,
+            published,
+            capturedAt: cache.capturedAt,
+            viewCoverage: items.length ? Math.round((views / items.length) * 1000) / 10 : 0,
+            commentCoverage: items.length ? Math.round((comments / items.length) * 1000) / 10 : 0,
+            publishedCoverage: items.length ? Math.round((published / items.length) * 1000) / 10 : 0
+          };
+          console.log(JSON.stringify(summary, null, 2));
+          if (!(items.length >= 150 && views > 0 && comments > 0 && positiveComments > 0 && published > 0)) process.exit(1);
           NODE
