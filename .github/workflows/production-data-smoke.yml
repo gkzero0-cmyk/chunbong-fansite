@@ -12,7 +12,11 @@ on:
       - 'lib/soop-analytics.js'
       - 'data.js'
       - 'data.css'
+      - 'data-enhancements.js'
+      - 'data-enhancements.css'
       - 'data.html'
+      - 'data/soop-external-history.json'
+      - 'data/soop-sessions.json'
   workflow_dispatch:
 
 permissions:
@@ -47,15 +51,19 @@ jobs:
               -o "$out" -w '%{http_code}' "${BASE}${path}" || printf '000'
           }
           DATA_JS_STATUS="$(fetch_one '/data.js' '.smoke/data.js' '.smoke/data-js.headers')"
+          DATA_ENHANCEMENTS_JS_STATUS="$(fetch_one '/data-enhancements.js' '.smoke/data-enhancements.js' '.smoke/data-enhancements-js.headers')"
+          DATA_ENHANCEMENTS_CSS_STATUS="$(fetch_one '/data-enhancements.css' '.smoke/data-enhancements.css' '.smoke/data-enhancements-css.headers')"
           DATA_HTML_STATUS="$(fetch_one '/data.html' '.smoke/data.html' '.smoke/data-html.headers')"
           TS="$(date +%s%3N)"
           API_STATUS="$(fetch_one "/api/content?type=data&refresh=1&_ts=${TS}" '.smoke/api.json' '.smoke/api.headers')"
-          export DATA_JS_STATUS DATA_HTML_STATUS API_STATUS BASE
+          export DATA_JS_STATUS DATA_ENHANCEMENTS_JS_STATUS DATA_ENHANCEMENTS_CSS_STATUS DATA_HTML_STATUS API_STATUS BASE
           node <<'NODE'
           const fs = require('fs');
           const read = (p) => { try { return fs.readFileSync(p, 'utf8'); } catch { return ''; } };
           const size = (p) => { try { return fs.statSync(p).size; } catch { return 0; } };
           const js = read('.smoke/data.js');
+          const enhancementsJs = read('.smoke/data-enhancements.js');
+          const enhancementsCss = read('.smoke/data-enhancements.css');
           const html = read('.smoke/data.html');
           const apiHeaders = read('.smoke/api.headers');
           const apiText = read('.smoke/api.json');
@@ -65,7 +73,9 @@ jobs:
           const arrCount = (value) => Array.isArray(value) ? value.length : null;
           const errors = payload?.errors ?? null;
           const overview = payload?.soop?.overview || {};
-          const external = payload?.soop?.externalHistory?.currentFallback || {};
+          const externalHistory = payload?.soop?.externalHistory || {};
+          const external = externalHistory?.currentFallback || {};
+          const recentSessions = Array.isArray(payload?.soop?.recentSessions) ? payload.soop.recentSessions : [];
           const youtube = payload?.youtube || {};
           const channel = youtube.channel || {};
           const recentVideos = Array.isArray(youtube.recentVideos) ? youtube.recentVideos : [];
@@ -74,22 +84,36 @@ jobs:
             'sourceChip', 'monthUniqueViewers', 'monthlyStarCount', 'mergeYoutubeRecent',
             'data-chart-crosshair', 'refresh=1', "cache:'no-store'"
           ];
+          const enhancementTokens = ['normalizeDailyTrendRows', 'formatFullDate', 'hideUnavailableSoopCards', 'installDataFetchTransform'];
+          const enhancementCssTokens = ['font-size:18px', 'font-size:28px', 'font-size:13px', 'font-size:17px'];
           const overviewFields = [
             'subscriberCount','supporterCount','monthUniqueViewers','viewershipHours','cumulativeUsers','cumulativeUpCount',
             'monthlyStarCount','starsPerHour','monthlySupporterCount','monthlyChatCount','monthlyKickCount','monthlyMuteCount',
             'stationOpenedAt','latestBroadcastDate','categoryRankings'
           ];
+          const legacySessionCount = recentSessions.filter(item => {
+            const text = `${item?.id || ''} ${item?.source?.name || ''} ${item?.source?.url || ''}`.toLowerCase();
+            return text.includes('streamscharts') || text.includes('streams charts') || text.includes('auro.live');
+          }).length;
+          const sourceSummaryCleared = externalHistory.sourceSummary === null;
+          const categoryReferenceCleared = externalHistory.categoryReference === null;
           const result = {
             checkedAt: new Date().toISOString(),
             baseUrl: process.env.BASE,
             endpoints: {
               dataJs: { status: Number(process.env.DATA_JS_STATUS) || 0, bytes: size('.smoke/data.js') },
+              dataEnhancementsJs: { status: Number(process.env.DATA_ENHANCEMENTS_JS_STATUS) || 0, bytes: size('.smoke/data-enhancements.js') },
+              dataEnhancementsCss: { status: Number(process.env.DATA_ENHANCEMENTS_CSS_STATUS) || 0, bytes: size('.smoke/data-enhancements.css') },
               dataHtml: { status: Number(process.env.DATA_HTML_STATUS) || 0, bytes: size('.smoke/data.html') },
               apiData: { status: Number(process.env.API_STATUS) || 0, bytes: size('.smoke/api.json') }
             },
             staticChecks: {
               dataJsExpectedTokens: expectedTokens.reduce((acc, token) => ({ ...acc, [token]: js.includes(token) }), {}),
+              enhancementTokens: enhancementTokens.reduce((acc, token) => ({ ...acc, [token]: enhancementsJs.includes(token) }), {}),
+              enhancementCssTokens: enhancementCssTokens.reduce((acc, token) => ({ ...acc, [token]: enhancementsCss.includes(token) }), {}),
               dataHtmlHasDataJs: html.includes('data.js'),
+              dataHtmlHasEnhancements: html.includes('data-enhancements.js') && html.includes('data-enhancements.css'),
+              dataHtmlHidesLegacySourceCopy: !/Streams Charts|streamscharts|auro\.live/i.test(html),
               manualRefreshNoStore: /cache-control:\s*no-store(?:,\s*max-age=0)?/i.test(apiHeaders)
             },
             apiSummary: {
@@ -100,6 +124,9 @@ jobs:
               capturedAt: payload?.capturedAt ?? null,
               errors,
               errorCount: Array.isArray(errors) ? errors.length : (errors && typeof errors === 'object' ? Object.keys(errors).length : 0),
+              sourceSummaryCleared,
+              categoryReferenceCleared,
+              legacySessionCount,
               arrayCounts: {
                 daily: arrCount(payload?.soop?.daily),
                 monthlyStats: arrCount(payload?.soop?.monthlyStats),
@@ -128,15 +155,25 @@ jobs:
             }
           };
           const tokenChecks = Object.values(result.staticChecks.dataJsExpectedTokens).every(Boolean);
+          const enhancementChecks = Object.values(result.staticChecks.enhancementTokens).every(Boolean)
+            && Object.values(result.staticChecks.enhancementCssTokens).every(Boolean);
           const youtubeChannelOk = [channel.subscriberCount, channel.viewCount, channel.videoCount].every(Number.isFinite);
           result.ok = result.endpoints.dataJs.status === 200
+            && result.endpoints.dataEnhancementsJs.status === 200
+            && result.endpoints.dataEnhancementsCss.status === 200
             && result.endpoints.dataHtml.status === 200
             && result.endpoints.apiData.status === 200
             && tokenChecks
+            && enhancementChecks
             && result.staticChecks.dataHtmlHasDataJs
+            && result.staticChecks.dataHtmlHasEnhancements
+            && result.staticChecks.dataHtmlHidesLegacySourceCopy
             && result.staticChecks.manualRefreshNoStore
             && !result.apiSummary.parseError
             && result.apiSummary.fallback !== true
+            && result.apiSummary.sourceSummaryCleared
+            && result.apiSummary.categoryReferenceCleared
+            && result.apiSummary.legacySessionCount === 0
             && youtubeChannelOk
             && !result.apiSummary.trackify.excludedDonorRankingPresent;
           fs.writeFileSync('data/production-smoke-latest.json', JSON.stringify(result, null, 2) + '\n');
