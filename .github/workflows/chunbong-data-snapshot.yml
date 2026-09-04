@@ -6,7 +6,10 @@ on:
     paths:
       - '.github/workflows/chunbong-data-snapshot.yml'
       - 'scripts/update-trackify-soop-cache.mjs'
+      - 'scripts/update-youtube-engagement-cache.mjs'
       - 'lib/soop-external.js'
+      - 'lib/youtube-engagement.js'
+      - 'api/youtube.js'
   schedule:
     - cron: '10 6 * * *'
   workflow_dispatch:
@@ -17,7 +20,7 @@ permissions:
 jobs:
   snapshot:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,16 +28,19 @@ jobs:
           node-version: '24'
       - name: Refresh Trackify SOOP history
         run: node scripts/update-trackify-soop-cache.mjs
+      - name: Refresh YouTube engagement cache
+        run: node scripts/update-youtube-engagement-cache.mjs
       - name: Capture production snapshot
         run: node scripts/update-chunbong-data.mjs
       - name: Commit changed history
         run: |
-          if git diff --quiet -- data/trackify-soop-cache.json data/chunbong-data-history.json; then
+          if git diff --quiet -- data/trackify-soop-cache.json data/youtube-engagement-cache.json data/chunbong-data-history.json; then
             echo 'No snapshot change'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/trackify-soop-cache.json data/chunbong-data-history.json
+          git add data/trackify-soop-cache.json data/youtube-engagement-cache.json data/chunbong-data-history.json
           git commit -m 'data: update Chunbong daily snapshot'
+          git pull --rebase origin main || true
           git push

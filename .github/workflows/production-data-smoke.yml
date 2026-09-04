@@ -10,7 +10,9 @@ on:
       - 'lib/chunbong-data.js'
       - 'lib/soop-external.js'
       - 'lib/soop-analytics.js'
+      - 'lib/youtube-engagement.js'
       - 'scripts/update-trackify-soop-cache.mjs'
+      - 'scripts/update-youtube-engagement-cache.mjs'
       - 'data.js'
       - 'data.css'
       - 'data-enhancements.js'
@@ -19,6 +21,7 @@ on:
       - 'data/soop-external-history.json'
       - 'data/soop-sessions.json'
       - 'data/trackify-soop-cache.json'
+      - 'data/youtube-engagement-cache.json'
   workflow_dispatch:
 
 permissions:
@@ -82,14 +85,32 @@ jobs:
           const trackifyHistorySessionCount = trackifySessions.filter(item => item?.measurement === 'trackify-public-record' || String(item?.id || '').startsWith('trackify-')).length;
           const youtube = payload?.youtube || {};
           const channel = youtube.channel || {};
+          const engagement = youtube.engagement || {};
+          const engagementRankings = engagement.rankings || {};
           const recentVideos = Array.isArray(youtube.recentVideos) ? youtube.recentVideos : [];
           const recentShorts = Array.isArray(youtube.recentShorts) ? youtube.recentShorts : [];
+          const rankingCount = (range, metric) => arrCount(engagementRankings?.[range]?.[metric]) ?? 0;
+          const engagementItemCount = Number.isFinite(engagement.itemCount) ? engagement.itemCount : 0;
+          const engagementRankingCounts = {
+            allTime: { views: rankingCount('allTime', 'views'), comments: rankingCount('allTime', 'comments') },
+            currentMonth: { views: rankingCount('currentMonth', 'views'), comments: rankingCount('currentMonth', 'comments') },
+            recentThreeMonths: { views: rankingCount('recentThreeMonths', 'views'), comments: rankingCount('recentThreeMonths', 'comments') }
+          };
+          const engagementRankingShapeOk = ['allTime', 'currentMonth', 'recentThreeMonths'].every(range =>
+            ['views', 'comments'].every(metric => Array.isArray(engagementRankings?.[range]?.[metric]) && engagementRankings[range][metric].length <= 5)
+          );
           const expectedTokens = [
             'sourceChip', 'monthUniqueViewers', 'monthlyStarCount', 'mergeYoutubeRecent',
             'data-chart-crosshair', 'refresh=1', "cache:'no-store'"
           ];
-          const enhancementTokens = ['normalizeDailyTrendRows', 'formatFullDate', 'hideUnavailableSoopCards', 'installDataFetchTransform'];
-          const enhancementCssTokens = ['font-size:18px', 'font-size:28px', 'font-size:13px', 'font-size:17px'];
+          const enhancementTokens = [
+            'normalizeDailyTrendRows', 'formatFullDate', 'hideUnavailableSoopCards', 'installDataFetchTransform',
+            'renderYoutubeEngagement', 'data-engagement-range', 'data-engagement-metric'
+          ];
+          const enhancementCssTokens = [
+            'font-size:18px', 'font-size:28px', 'font-size:13px', 'font-size:17px',
+            '.data-engagement-controls', '.data-engagement-button'
+          ];
           const overviewFields = [
             'subscriberCount','supporterCount','monthUniqueViewers','viewershipHours','cumulativeUsers','cumulativeUpCount',
             'monthlyStarCount','starsPerHour','monthlySupporterCount','monthlyChatCount','monthlyKickCount','monthlyMuteCount',
@@ -155,7 +176,14 @@ jobs:
                 recentVideoCount: recentVideos.length,
                 recentShortCount: recentShorts.length,
                 newestVideoDate: recentVideos[0]?.dateIso || recentVideos[0]?.date || null,
-                newestShortDate: recentShorts[0]?.dateIso || recentShorts[0]?.date || null
+                newestShortDate: recentShorts[0]?.dateIso || recentShorts[0]?.date || null,
+                engagement: {
+                  source: engagement.source || null,
+                  capturedAt: engagement.capturedAt || null,
+                  engagementItemCount,
+                  engagementRankingCounts,
+                  engagementRankingShapeOk
+                }
               }
             }
           };
@@ -163,6 +191,10 @@ jobs:
           const enhancementChecks = Object.values(result.staticChecks.enhancementTokens).every(Boolean)
             && Object.values(result.staticChecks.enhancementCssTokens).every(Boolean);
           const youtubeChannelOk = [channel.subscriberCount, channel.viewCount, channel.videoCount].every(Number.isFinite);
+          const youtubeEngagementOk = engagementItemCount > 0
+            && engagementRankingShapeOk
+            && engagementRankingCounts.allTime.views > 0
+            && engagementRankingCounts.allTime.comments > 0;
           result.ok = result.endpoints.dataJs.status === 200
             && result.endpoints.dataEnhancementsJs.status === 200
             && result.endpoints.dataEnhancementsCss.status === 200
@@ -181,10 +213,12 @@ jobs:
             && result.apiSummary.legacySessionCount === 0
             && result.apiSummary.trackifyHistorySessionCount > 0
             && result.apiSummary.arrayCounts.daily > 0
+            && result.apiSummary.arrayCounts.daily <= 10
             && result.apiSummary.arrayCounts.monthlyStats > 0
             && result.apiSummary.arrayCounts.calendar > 0
             && result.apiSummary.arrayCounts.recentSessions > 0
             && youtubeChannelOk
+            && youtubeEngagementOk
             && !result.apiSummary.trackify.excludedDonorRankingPresent;
           fs.writeFileSync('data/production-smoke-latest.json', JSON.stringify(result, null, 2) + '\n');
           console.log(JSON.stringify(result, null, 2));

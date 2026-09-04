@@ -8,6 +8,8 @@ const fetchYoutube = require('./youtube');
 const fetchSchedule = require('./schedule');
 const fetchCatchDetail = require('./catch-detail');
 const fetchChunbongData = require('../lib/chunbong-data');
+const youtubeEngagementCache = require('../data/youtube-engagement-cache.json');
+const { buildEngagementRankings } = require('../lib/youtube-engagement');
 
 function compactCalendarSession(session = {}) {
   return {
@@ -57,29 +59,53 @@ function compactCalendarRow(row = {}) {
   };
 }
 
-function compactDataPayload(payload) {
+function engagementSummary(cache = youtubeEngagementCache, now = new Date()) {
+  const items = Array.isArray(cache?.items) ? cache.items : [];
+  return {
+    capturedAt: cache?.capturedAt || '',
+    source: cache?.source || '',
+    itemCount: Number.isFinite(cache?.itemCount) ? cache.itemCount : items.length,
+    rankings: buildEngagementRankings(items, now)
+  };
+}
+
+function compactDataPayload(payload, options = {}) {
   if (!payload || typeof payload !== 'object') return payload;
   const soop = payload.soop;
   const history = soop?.externalHistory;
   const currentFallback = history?.currentFallback;
-  if (!soop || !history || !currentFallback || typeof currentFallback !== 'object') return payload;
+  const cache = options.youtubeEngagementCache || youtubeEngagementCache;
+  const now = options.now instanceof Date
+    ? options.now
+    : new Date(payload.capturedAt || Date.now());
 
-  const sessions = Array.isArray(currentFallback.sessions) ? currentFallback.sessions : [];
-  return {
-    ...payload,
-    soop: {
-      ...soop,
-      daily: (Array.isArray(soop.daily) ? soop.daily : []).map(compactDailyRow),
-      calendar: (Array.isArray(soop.calendar) ? soop.calendar : []).map(compactCalendarRow),
-      recentSessions: (Array.isArray(soop.recentSessions) ? soop.recentSessions : []).map(compactRecentSession),
-      externalHistory: {
-        ...history,
-        currentFallback: {
-          ...currentFallback,
-          trackifySessionCount: sessions.length,
-          sessions: sessions.slice(-12).map(session => ({ id: session?.id, measurement: session?.measurement }))
+  let compacted = payload;
+  if (soop && history && currentFallback && typeof currentFallback === 'object') {
+    const sessions = Array.isArray(currentFallback.sessions) ? currentFallback.sessions : [];
+    compacted = {
+      ...payload,
+      soop: {
+        ...soop,
+        daily: (Array.isArray(soop.daily) ? soop.daily : []).map(compactDailyRow),
+        calendar: (Array.isArray(soop.calendar) ? soop.calendar : []).map(compactCalendarRow),
+        recentSessions: (Array.isArray(soop.recentSessions) ? soop.recentSessions : []).map(compactRecentSession),
+        externalHistory: {
+          ...history,
+          currentFallback: {
+            ...currentFallback,
+            trackifySessionCount: sessions.length,
+            sessions: sessions.slice(-12).map(session => ({ id: session?.id, measurement: session?.measurement }))
+          }
         }
       }
+    };
+  }
+
+  return {
+    ...compacted,
+    youtube: {
+      ...(compacted.youtube || {}),
+      engagement: engagementSummary(cache, now)
     }
   };
 }
@@ -104,3 +130,4 @@ async function handler(req,res) {
 
 module.exports = handler;
 module.exports.compactDataPayload = compactDataPayload;
+module.exports.engagementSummary = engagementSummary;
