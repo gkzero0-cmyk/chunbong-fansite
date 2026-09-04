@@ -14,7 +14,7 @@ assert.match(source, /별풍선 시급/);
 assert.match(source, /이번 달 채금/);
 assert.match(source, /DISALLOWED_SOOP_LABELS/);
 
-let transformedFetch = null;
+const dates = Array.from({ length: 14 }, (_, index) => new Date(Date.UTC(2026, 7, 20 + index)).toISOString().slice(0, 10));
 const nativePayload = {
   fallback: false,
   capturedAt: '2026-09-05T00:00:00Z',
@@ -22,9 +22,9 @@ const nativePayload = {
   trends: [],
   soop: {
     overview: {},
-    daily: Array.from({ length: 14 }, (_, index) => ({ date: `2026-08-${String(index + 20).padStart(2, '0')}`, durationMinutes: index + 1 })),
+    daily: dates.map((date, index) => ({ date, durationMinutes: index + 1 })),
     monthlyStats: [{ month: '2026-08' }],
-    calendar: Array.from({ length: 14 }, (_, index) => ({ date: `2026-08-${String(index + 20).padStart(2, '0')}` })),
+    calendar: dates.map(date => ({ date })),
     recentSessions: [],
     externalHistory: { currentFallback: { sources: [], errors: [], fieldSources: {} } }
   }
@@ -69,8 +69,7 @@ vm.runInNewContext(source, {
   Headers: FakeHeaders,
   Response: FakeResponse
 });
-transformedFetch = window.fetch;
-const response = await transformedFetch('/api/content?type=data');
+const response = await window.fetch('/api/content?type=data');
 const payload = await response.json();
 assert.equal(payload.soop.daily.length, 10, 'SOOP daily payload presented to the dashboard must be limited to the latest 10 days');
 assert.equal(payload.soop.daily[0].date, '2026-08-24');
