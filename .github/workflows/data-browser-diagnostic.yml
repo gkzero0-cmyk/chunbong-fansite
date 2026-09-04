@@ -36,7 +36,7 @@ jobs:
             --disable-dev-shm-usage \
             --virtual-time-budget=15000 \
             --dump-dom \
-            'https://chunbong-fansite.vercel.app/data.html?browser-diagnostic=2' \
+            'https://chunbong-fansite.vercel.app/data.html?browser-diagnostic=3' \
             > /tmp/data-dom.html 2> /tmp/chrome-stderr.log
           code=$?
           set -e
