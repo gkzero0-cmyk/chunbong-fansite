@@ -240,11 +240,20 @@
   function enhanceChartLabels() {
     document.querySelectorAll('.data-chart-hover').forEach(point => {
       const labelNode = point.querySelector('.data-chart-hover-card text:not(.value)');
-      if (labelNode) labelNode.textContent = formatFullDate(labelNode.textContent.trim());
+      if (labelNode) {
+        const nextLabel = formatFullDate(labelNode.textContent.trim());
+        if (labelNode.textContent !== nextLabel) labelNode.textContent = nextLabel;
+      }
       const title = point.querySelector('title');
-      if (title) title.textContent = title.textContent.replace(/^(20\d{2})-(\d{2})-(\d{2})/, '$1.$2.$3');
+      if (title) {
+        const nextTitle = title.textContent.replace(/^(20\d{2})-(\d{2})-(\d{2})/, '$1.$2.$3');
+        if (title.textContent !== nextTitle) title.textContent = nextTitle;
+      }
       const aria = point.getAttribute('aria-label');
-      if (aria) point.setAttribute('aria-label', aria.replace(/^(20\d{2})-(\d{2})-(\d{2})/, '$1.$2.$3'));
+      if (aria) {
+        const nextAria = aria.replace(/^(20\d{2})-(\d{2})-(\d{2})/, '$1.$2.$3');
+        if (aria !== nextAria) point.setAttribute('aria-label', nextAria);
+      }
     });
   }
 
