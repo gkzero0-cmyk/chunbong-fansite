@@ -9,6 +9,54 @@ const fetchSchedule = require('./schedule');
 const fetchCatchDetail = require('./catch-detail');
 const fetchChunbongData = require('../lib/chunbong-data');
 
+function compactCalendarSession(session = {}) {
+  return {
+    title: session.title,
+    durationMinutes: session.durationMinutes,
+    averageViewers: session.averageViewers,
+    maxViewers: session.maxViewers
+  };
+}
+
+function compactRecentSession(session = {}) {
+  return {
+    date: session.date,
+    measurement: session.measurement,
+    title: session.title,
+    durationMinutes: session.durationMinutes,
+    averageViewers: session.averageViewers,
+    maxViewers: session.maxViewers,
+    followerDelta: session.followerDelta,
+    fanclubDelta: session.fanclubDelta
+  };
+}
+
+function compactDailyRow(row = {}) {
+  return {
+    date: row.date,
+    streamCount: row.streamCount,
+    durationMinutes: row.durationMinutes,
+    cumulativeMinutes: row.cumulativeMinutes,
+    averageViewers: row.averageViewers,
+    maxViewers: row.maxViewers,
+    followerDelta: row.followerDelta,
+    fanclubDelta: row.fanclubDelta
+  };
+}
+
+function compactCalendarRow(row = {}) {
+  return {
+    date: row.date,
+    streamCount: row.streamCount,
+    durationMinutes: row.durationMinutes,
+    averageViewers: row.averageViewers,
+    maxViewers: row.maxViewers,
+    followerDelta: row.followerDelta,
+    fanclubDelta: row.fanclubDelta,
+    sessions: (Array.isArray(row.sessions) ? row.sessions : []).map(compactCalendarSession)
+  };
+}
+
 function compactDataPayload(payload) {
   if (!payload || typeof payload !== 'object') return payload;
   const soop = payload.soop;
@@ -21,12 +69,15 @@ function compactDataPayload(payload) {
     ...payload,
     soop: {
       ...soop,
+      daily: (Array.isArray(soop.daily) ? soop.daily : []).map(compactDailyRow),
+      calendar: (Array.isArray(soop.calendar) ? soop.calendar : []).map(compactCalendarRow),
+      recentSessions: (Array.isArray(soop.recentSessions) ? soop.recentSessions : []).map(compactRecentSession),
       externalHistory: {
         ...history,
         currentFallback: {
           ...currentFallback,
           trackifySessionCount: sessions.length,
-          sessions: sessions.slice(-12)
+          sessions: sessions.slice(-12).map(session => ({ id: session?.id, measurement: session?.measurement }))
         }
       }
     }
