@@ -129,10 +129,20 @@
     return typeof url === 'string' && /[?&]refresh=1(?:&|$)/.test(url);
   }
 
+  function cacheablePayload(payload) {
+    return !!(
+      payload
+      && typeof payload === 'object'
+      && payload.fallback !== true
+      && payload.soop
+      && payload.youtube
+    );
+  }
+
   function readCachedPayload() {
     try {
       const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
-      if (!cached?.payload || typeof cached.payload !== 'object') return null;
+      if (!cacheablePayload(cached?.payload)) return null;
       return stripLegacySoopData(cached.payload);
     } catch (_) {
       return null;
@@ -140,6 +150,7 @@
   }
 
   function writeCachedPayload(payload) {
+    if (!cacheablePayload(payload)) return;
     try {
       localStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), payload }));
     } catch (_) {}
@@ -193,7 +204,7 @@
         if (cached) {
           initialCacheServed = true;
           fetchTransformAndCache(input, init).then(({ payload }) => {
-            if (payload) queueFreshRender(payload);
+            if (cacheablePayload(payload)) queueFreshRender(payload);
           }).catch(() => {});
           return responseFromPayload(cached);
         }
