@@ -35,29 +35,28 @@ jobs:
             count=$((count + 1))
           done
           echo "REGRESSION_TEST_FILES=$count"
-      - name: Probe Trackify profile API chunk
+      - name: Probe Trackify API module
         run: |
           node - <<'NODE'
           const base = 'https://www.trackify.kr';
           const headers = { 'user-agent':'Mozilla/5.0 Chrome/152', 'accept-language':'ko-KR,ko;q=0.9' };
-          const chunks = ['/assets/_id_-BvClGgng.js','/assets/_id_-DtuoK1hR.js'];
-          for (const chunk of chunks) {
-            const response = await fetch(new URL(chunk, base), { headers });
-            const js = await response.text();
-            console.log(`TRACKIFY_CHUNK=${chunk} HTTP=${response.status} BYTES=${js.length}`);
-            const literals = [...new Set((js.match(/["'`]([^"'`]*(?:\/api\/|broadcast|stream|history|record|detail|profile)[^"'`]*)["'`]/gi) || []).map(token=>token.slice(1,-1)))];
-            console.log('TRACKIFY_CHUNK_LITERALS=' + JSON.stringify(literals.slice(0,320), null, 2));
-            for (const needle of ['/api/','broadcast','stream','history','record']) {
-              let start=0, shown=0;
-              console.log(`CONTEXT ${chunk} ${needle} BEGIN`);
-              while (shown < 18) {
-                const at = js.toLowerCase().indexOf(needle.toLowerCase(), start);
-                if (at < 0) break;
-                console.log(js.slice(Math.max(0, at-700), Math.min(js.length, at+1200)));
-                start = at + needle.length;
-                shown++;
-              }
-              console.log(`CONTEXT ${chunk} ${needle} END`);
+          const chunk = '/assets/TrackifyApi-CyUyuZyo.js';
+          const response = await fetch(new URL(chunk, base), { headers });
+          const js = await response.text();
+          console.log(`TRACKIFY_API_HTTP=${response.status}`);
+          console.log(`TRACKIFY_API_BYTES=${js.length}`);
+          const literals = [...new Set((js.match(/["'`]([^"'`]*(?:\/api\/|streamer|broadcast|trend|batch|timeseries|category)[^"'`]*)["'`]/gi) || []).map(token=>token.slice(1,-1)))];
+          console.log('TRACKIFY_API_LITERALS=' + JSON.stringify(literals, null, 2));
+          for (const needle of ['streamerBroadcasts','streamerOverview','streamerTrendMulti','batch','broadcastDetail','streamerTimeseries','streamerCategoryDistribution']) {
+            let start=0, shown=0;
+            console.log(`TRACKIFY_API_CONTEXT_${needle.toUpperCase()}_BEGIN`);
+            while (shown < 8) {
+              const at = js.indexOf(needle, start);
+              if (at < 0) break;
+              console.log(js.slice(Math.max(0, at-1100), Math.min(js.length, at+1800)));
+              start = at + needle.length;
+              shown++;
             }
+            console.log(`TRACKIFY_API_CONTEXT_${needle.toUpperCase()}_END`);
           }
           NODE
