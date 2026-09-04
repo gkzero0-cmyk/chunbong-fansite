@@ -4,6 +4,7 @@
   const nativeFetch = window.fetch.bind(window);
   const DATA_ENDPOINT = '/api/content?type=data';
   const CACHE_KEY = 'chunbong-data-dashboard-v1';
+  const DISALLOWED_SOOP_LABELS = new Set(['이번 달 별풍선', '별풍선 시급', '이번 달 채금']);
   let pendingFreshPayload = null;
   let initialCacheServed = false;
 
@@ -27,6 +28,14 @@
     const text = String(value || '');
     const match = text.match(/^(20\d{2})-(\d{2})-(\d{2})$/);
     return match ? `${match[1]}.${match[2]}.${match[3]}` : text;
+  }
+
+  function limitDailyRows(rows = []) {
+    return (Array.isArray(rows) ? rows : [])
+      .filter(row => /^20\d{2}-\d{2}-\d{2}$/.test(String(row?.date || '').slice(0, 10)))
+      .slice()
+      .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+      .slice(-10);
   }
 
   function normalizeDailyTrendRows(rows = [], payload = {}) {
@@ -76,6 +85,7 @@
     const soop = payload.soop;
     if (!soop || typeof soop !== 'object') return payload;
 
+    soop.daily = limitDailyRows(soop.daily);
     const history = soop.externalHistory || {};
     const cutoffKst = String(history.cutoffKst || '');
     const currentFallback = history.currentFallback && typeof history.currentFallback === 'object'
@@ -224,7 +234,7 @@
     panel.querySelectorAll('.data-kpi').forEach(card => {
       const label = card.querySelector('small')?.textContent.trim() || '';
       const value = card.querySelector('strong')?.textContent.trim() || '';
-      if (value === '측정 불가' || label === '외부 30일 참고') card.remove();
+      if (value === '측정 불가' || label === '외부 30일 참고' || DISALLOWED_SOOP_LABELS.has(label)) card.remove();
     });
     panel.querySelectorAll('.data-source-strip,.data-source-chip,.data-measurement-badge').forEach(node => node.remove());
     panel.querySelectorAll('#data-soop-chart .data-chart-card,#data-soop-monthly-chart .data-chart-card').forEach(card => {
