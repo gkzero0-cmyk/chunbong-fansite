@@ -34,7 +34,7 @@ assert.equal(monthly.youtube.uploadCount, 3, 'monthly uploads should include Sho
 assert.equal(typeof dataApi.extractYoutubeChannelStatsFromHtml, 'function', 'data adapter should expose resilient channel stat parser');
 const channelStats = dataApi.extractYoutubeChannelStatsFromHtml(`
   <html><head><meta itemprop="interactionCount" content="6755605"></head><body>
-  <script>var ytInitialData = {"header":{"pageHeaderRenderer":{"content":{"pageHeaderViewModel":{"metadata":{"contentMetadataViewModel":{"metadataRows":[{"metadataParts":[{"text":{"content":"구독자 2.68천명"}},{"text":{"content":"동영상 203개"}}]}}}}}}},"about":{"aboutChannelViewModel":{"viewCountText":"조회수 6,755,605회"}}};</script>
+  <script>var ytInitialData = {"header":{"metadataRows":[{"metadataParts":[{"text":{"content":"구독자 2.68천명"}},{"text":{"content":"동영상 203개"}}]}]},"about":{"viewCountText":"조회수 6,755,605회"}};</script>
   </body></html>
 `);
 assert.equal(channelStats.subscriberCount, 2680);
