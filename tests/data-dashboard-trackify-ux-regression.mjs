@@ -96,6 +96,7 @@ for (const marker of [
 ]) {
   assert.ok(productionSmoke.includes(marker), `production smoke should verify ${marker}`);
 }
+assert.ok(productionSmoke.includes('git pull --rebase origin main'), 'production smoke result commit must rebase before push to survive concurrent snapshot updates');
 
 assert.ok(dataJs.includes('createSvgChart'), 'existing shared SOOP/YouTube interactive chart renderer must remain in use');
 
