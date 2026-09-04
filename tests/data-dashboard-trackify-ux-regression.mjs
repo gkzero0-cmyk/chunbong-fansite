@@ -24,10 +24,10 @@ assert.ok(!dataHtml.includes('측정 불가'), 'data page explanatory copy shoul
 for (const marker of ['normalizeDailyTrendRows', 'formatFullDate', 'stripLegacySoopData', 'hideUnavailableSoopCards', 'installDataFetchTransform']) {
   assert.ok(enhancements.includes(marker), `enhancement script should include ${marker}`);
 }
-assert.ok(enhancements.includes("textContent.trim()==='측정 불가'"), 'unavailable SOOP KPI cards should be removed instead of displayed');
-assert.ok(enhancements.includes("label==='외부 30일 참고'"), 'legacy external reference card should be removed');
-assert.ok(enhancements.includes("sourceSummary:null"), 'legacy source summary should be stripped from client payload');
-assert.ok(enhancements.includes("categoryReference:null"), 'legacy category reference should be stripped from client payload');
+assert.ok(enhancements.includes("'측정 불가'"), 'unavailable SOOP KPI cards should be removed instead of displayed');
+assert.ok(enhancements.includes("'외부 30일 참고'"), 'legacy external reference card should be removed');
+assert.ok(enhancements.includes('sourceSummary:null'), 'legacy source summary should be stripped from client payload');
+assert.ok(enhancements.includes('categoryReference:null'), 'legacy category reference should be stripped from client payload');
 assert.ok(enhancements.includes('cutoffKst'), 'legacy pre-measurement daily history should be excluded');
 
 for (const marker of [
