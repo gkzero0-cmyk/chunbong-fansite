@@ -19,7 +19,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Diagnose YouTube public metric sources
+      - name: Trace YouTube metric payloads
         run: |
           node <<'NODE'
           const youtube = require('./api/youtube');
@@ -32,28 +32,18 @@ jobs:
             const videos = await youtube.fetchAllChannelItems('videos', { maxPages: 2 });
             const first = videos[0];
             if (!first?.id) throw new Error('No diagnostic video found');
-            console.log('VIDEO_ID=' + first.id);
-            console.log('BROWSE_META=' + JSON.stringify({ title: first.title, meta: first.meta, date: first.date, dateIso: first.dateIso }));
+            console.log('VIDEO=' + JSON.stringify(first));
 
             const watchRes = await fetch(`https://www.youtube.com/watch?v=${first.id}&hl=ko&gl=KR`, { headers: HEADERS });
             const watchHtml = await watchRes.text();
-            const title = watchHtml.match(/<title>([\s\S]*?)<\/title>/i)?.[1]?.replace(/\s+/g, ' ').slice(0, 180) || '';
-            console.log('WATCH=' + JSON.stringify({
-              status: watchRes.status,
-              bytes: watchHtml.length,
-              title,
-              hasPlayerMarker: watchHtml.includes('ytInitialPlayerResponse'),
-              hasVideoDetails: watchHtml.includes('"videoDetails"'),
-              hasViewCount: watchHtml.includes('"viewCount"'),
-              hasCommentCount: /"(?:commentCount|commentsCount)"/.test(watchHtml),
-              botChallenge: /confirm you.?re not a bot|unusual traffic|sign in/i.test(watchHtml)
-            }));
-            console.log('WATCH_PARSED=' + JSON.stringify(youtube.extractWatchMetricsFromHtml(watchHtml)));
+            for (const marker of ['ytInitialPlayerResponse', '"videoDetails"', '"viewCount"']) {
+              const index = watchHtml.indexOf(marker);
+              console.log(`WATCH_SNIPPET_${marker.replace(/\W/g, '_')}=` + (index >= 0 ? watchHtml.slice(Math.max(0, index - 220), index + 620).replace(/\s+/g, ' ') : 'NOT_FOUND'));
+            }
 
             const tabRes = await fetch(`${youtube.CHANNEL}/videos?hl=ko&gl=KR`, { headers: HEADERS });
             const tabHtml = await tabRes.text();
             const config = youtube.extractInnertubeConfig(tabHtml);
-            console.log('CONFIG=' + JSON.stringify({ hasApiKey: !!config.apiKey, clientVersion: config.clientVersion, clientName: config.clientName, hasVisitorData: !!config.visitorData }));
             if (!config.apiKey || !config.clientVersion) throw new Error('Missing innertube config');
             const apiHeaders = {
               ...HEADERS,
@@ -63,38 +53,50 @@ jobs:
               'x-youtube-client-version': config.clientVersion
             };
             const context = { client: { clientName: 'WEB', clientVersion: config.clientVersion, hl: 'ko', gl: 'KR', ...(config.visitorData ? { visitorData: config.visitorData } : {}) } };
-            const playerRes = await fetch(`https://www.youtube.com/youtubei/v1/player?key=${encodeURIComponent(config.apiKey)}&prettyPrint=false`, {
-              method: 'POST', headers: apiHeaders, body: JSON.stringify({ context, videoId: first.id })
-            });
-            const player = await playerRes.json().catch(() => ({}));
-            console.log('PLAYER=' + JSON.stringify({
-              status: playerRes.status,
-              playabilityStatus: player?.playabilityStatus?.status || null,
-              viewCount: player?.videoDetails?.viewCount ?? null,
-              publishDate: player?.microformat?.playerMicroformatRenderer?.publishDate || null,
-              uploadDate: player?.microformat?.playerMicroformatRenderer?.uploadDate || null
-            }));
+            const callNext = body => fetch(`https://www.youtube.com/youtubei/v1/next?key=${encodeURIComponent(config.apiKey)}&prettyPrint=false`, {
+              method: 'POST', headers: apiHeaders, body: JSON.stringify(body)
+            }).then(async response => ({ response, payload: await response.json().catch(() => ({})) }));
 
-            const nextRes = await fetch(`https://www.youtube.com/youtubei/v1/next?key=${encodeURIComponent(config.apiKey)}&prettyPrint=false`, {
-              method: 'POST', headers: apiHeaders, body: JSON.stringify({ context, videoId: first.id })
-            });
-            const next = await nextRes.json().catch(() => ({}));
-            const texts = [];
-            const found = [];
+            const firstNext = await callNext({ context, videoId: first.id });
+            const continuationCandidates = [];
             const seen = new Set();
-            const walk = node => {
+            const walk = (node, path = '') => {
               if (!node || typeof node !== 'object' || seen.has(node)) return;
               seen.add(node);
+              const token = node?.continuationCommand?.token || node?.continuationEndpoint?.continuationCommand?.token || node?.continuationItemRenderer?.continuationEndpoint?.continuationCommand?.token;
+              if (token) {
+                const text = JSON.stringify(node);
+                continuationCandidates.push({ token, path, commentish: /comment|댓글|engagement-panel-comments-section/i.test(text), sample: text.slice(0, 700) });
+              }
+              if (Array.isArray(node)) node.forEach((child, index) => walk(child, `${path}[${index}]`));
+              else Object.entries(node).forEach(([key, child]) => walk(child, path ? `${path}.${key}` : key));
+            };
+            walk(firstNext.payload);
+            console.log('CONTINUATIONS=' + JSON.stringify(continuationCandidates.slice(0, 30)));
+            const commentCandidate = continuationCandidates.find(item => item.commentish) || continuationCandidates[0];
+            if (!commentCandidate) throw new Error('No next continuation candidate');
+            console.log('COMMENT_CONTINUATION_PATH=' + commentCandidate.path);
+
+            const commentNext = await callNext({ context, continuation: commentCandidate.token });
+            const matches = [];
+            const strings = [];
+            const seen2 = new Set();
+            const walk2 = node => {
+              if (!node || typeof node !== 'object' || seen2.has(node)) return;
+              seen2.add(node);
               if (!Array.isArray(node)) {
                 for (const [key, value] of Object.entries(node)) {
-                  if (/commentCount|commentsCount|countText/i.test(key)) found.push({ key, value: typeof value === 'object' ? JSON.stringify(value).slice(0, 240) : String(value).slice(0, 240) });
-                  if (typeof value === 'string' && /댓글|comment/i.test(value) && texts.length < 20) texts.push(value.slice(0, 240));
+                  if (/commentCount|commentsCount|countText|titleText|headerText/i.test(key)) {
+                    const serialized = typeof value === 'object' ? JSON.stringify(value) : String(value);
+                    if (/comment|댓글|\d/.test(serialized)) matches.push({ key, value: serialized.slice(0, 500) });
+                  }
+                  if (typeof value === 'string' && /댓글|comment|개$/.test(value) && strings.length < 40) strings.push(value.slice(0, 300));
                 }
               }
-              for (const child of Array.isArray(node) ? node : Object.values(node)) walk(child);
+              for (const child of Array.isArray(node) ? node : Object.values(node)) walk2(child);
             };
-            walk(next);
-            console.log('NEXT=' + JSON.stringify({ status: nextRes.status, found: found.slice(0, 20), texts: texts.slice(0, 20) }));
+            walk2(commentNext.payload);
+            console.log('COMMENT_NEXT=' + JSON.stringify({ status: commentNext.response.status, matches: matches.slice(0, 40), strings: strings.slice(0, 40) }));
           }
           main().catch(error => { console.error(error); process.exit(1); });
           NODE
