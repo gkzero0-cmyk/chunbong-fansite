@@ -5,6 +5,14 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/production-data-smoke.yml'
+      - 'api/content.js'
+      - 'api/youtube.js'
+      - 'lib/chunbong-data.js'
+      - 'lib/soop-external.js'
+      - 'lib/soop-analytics.js'
+      - 'data.js'
+      - 'data.css'
+      - 'data.html'
   workflow_dispatch:
 
 permissions:
@@ -20,7 +28,9 @@ jobs:
           ref: main
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
+      - name: Wait for production deployment
+        run: sleep 25
       - name: Fetch production endpoints
         shell: bash
         run: |
@@ -30,13 +40,16 @@ jobs:
           fetch_one() {
             local path="$1"
             local out="$2"
+            local headers="$3"
             curl -L -sS --connect-timeout 15 --max-time 60 \
               -H 'cache-control: no-cache' \
+              -D "$headers" \
               -o "$out" -w '%{http_code}' "${BASE}${path}" || printf '000'
           }
-          DATA_JS_STATUS="$(fetch_one '/data.js' '.smoke/data.js')"
-          DATA_HTML_STATUS="$(fetch_one '/data.html' '.smoke/data.html')"
-          API_STATUS="$(fetch_one '/api/content?type=data' '.smoke/api.json')"
+          DATA_JS_STATUS="$(fetch_one '/data.js' '.smoke/data.js' '.smoke/data-js.headers')"
+          DATA_HTML_STATUS="$(fetch_one '/data.html' '.smoke/data.html' '.smoke/data-html.headers')"
+          TS="$(date +%s%3N)"
+          API_STATUS="$(fetch_one "/api/content?type=data&refresh=1&_ts=${TS}" '.smoke/api.json' '.smoke/api.headers')"
           export DATA_JS_STATUS DATA_HTML_STATUS API_STATUS BASE
           node <<'NODE'
           const fs = require('fs');
@@ -44,12 +57,28 @@ jobs:
           const size = (p) => { try { return fs.statSync(p).size; } catch { return 0; } };
           const js = read('.smoke/data.js');
           const html = read('.smoke/data.html');
+          const apiHeaders = read('.smoke/api.headers');
           const apiText = read('.smoke/api.json');
           let payload = null;
           let parseError = null;
           try { payload = JSON.parse(apiText); } catch (error) { parseError = error.message; }
           const arrCount = (value) => Array.isArray(value) ? value.length : null;
           const errors = payload?.errors ?? null;
+          const overview = payload?.soop?.overview || {};
+          const external = payload?.soop?.externalHistory?.currentFallback || {};
+          const youtube = payload?.youtube || {};
+          const channel = youtube.channel || {};
+          const recentVideos = Array.isArray(youtube.recentVideos) ? youtube.recentVideos : [];
+          const recentShorts = Array.isArray(youtube.recentShorts) ? youtube.recentShorts : [];
+          const expectedTokens = [
+            'sourceChip', 'monthUniqueViewers', 'monthlyStarCount', 'mergeYoutubeRecent',
+            'data-chart-crosshair', 'refresh=1', "cache:'no-store'"
+          ];
+          const overviewFields = [
+            'subscriberCount','supporterCount','monthUniqueViewers','viewershipHours','cumulativeUsers','cumulativeUpCount',
+            'monthlyStarCount','starsPerHour','monthlySupporterCount','monthlyChatCount','monthlyKickCount','monthlyMuteCount',
+            'stationOpenedAt','latestBroadcastDate','categoryRankings'
+          ];
           const result = {
             checkedAt: new Date().toISOString(),
             baseUrl: process.env.BASE,
@@ -59,9 +88,9 @@ jobs:
               apiData: { status: Number(process.env.API_STATUS) || 0, bytes: size('.smoke/api.json') }
             },
             staticChecks: {
-              dataJsExpectedTokens: ['sourceChip', '외부 30일 참고', 'monthUniqueViewers', 'subscriberCount', 'cumulativeUpCount']
-                .reduce((acc, token) => ({ ...acc, [token]: js.includes(token) }), {}),
-              dataHtmlHasDataJs: html.includes('data.js')
+              dataJsExpectedTokens: expectedTokens.reduce((acc, token) => ({ ...acc, [token]: js.includes(token) }), {}),
+              dataHtmlHasDataJs: html.includes('data.js'),
+              manualRefreshNoStore: /cache-control:\s*no-store(?:,\s*max-age=0)?/i.test(apiHeaders)
             },
             apiSummary: {
               parseError,
@@ -77,14 +106,39 @@ jobs:
                 calendar: arrCount(payload?.soop?.calendar),
                 categories: arrCount(payload?.soop?.categories),
                 recentSessions: arrCount(payload?.soop?.recentSessions)
+              },
+              trackify: {
+                sourcePresent: Array.isArray(external?.sources) && external.sources.some(item => item?.source === 'trackify'),
+                fields: overviewFields.reduce((acc, field) => ({ ...acc, [field]: overview[field] ?? external[field] ?? null }), {}),
+                categoryCount: arrCount(overview.categoryRankings),
+                categoryDistributionCount: arrCount(overview.currentMonthCategories),
+                excludedDonorRankingPresent: Object.prototype.hasOwnProperty.call(external, 'donorRanking') || Object.prototype.hasOwnProperty.call(overview, 'donorRanking')
+              },
+              youtube: {
+                subscriberCount: channel.subscriberCount ?? null,
+                viewCount: channel.viewCount ?? null,
+                videoCount: channel.videoCount ?? null,
+                snapshotFallback: channel.snapshotFallback ?? null,
+                monthlyUploadCount: youtube?.monthly?.uploadCount ?? null,
+                recentVideoCount: recentVideos.length,
+                recentShortCount: recentShorts.length,
+                newestVideoDate: recentVideos[0]?.dateIso || recentVideos[0]?.date || null,
+                newestShortDate: recentShorts[0]?.dateIso || recentShorts[0]?.date || null
               }
             }
           };
+          const tokenChecks = Object.values(result.staticChecks.dataJsExpectedTokens).every(Boolean);
+          const youtubeChannelOk = [channel.subscriberCount, channel.viewCount, channel.videoCount].every(Number.isFinite);
           result.ok = result.endpoints.dataJs.status === 200
             && result.endpoints.dataHtml.status === 200
             && result.endpoints.apiData.status === 200
+            && tokenChecks
+            && result.staticChecks.dataHtmlHasDataJs
+            && result.staticChecks.manualRefreshNoStore
             && !result.apiSummary.parseError
-            && result.apiSummary.fallback !== true;
+            && result.apiSummary.fallback !== true
+            && youtubeChannelOk
+            && !result.apiSummary.trackify.excludedDonorRankingPresent;
           fs.writeFileSync('data/production-smoke-latest.json', JSON.stringify(result, null, 2) + '\n');
           console.log(JSON.stringify(result, null, 2));
           NODE
