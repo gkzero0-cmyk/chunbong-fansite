@@ -11,12 +11,11 @@ async function getText(url) {
   return response.text();
 }
 
-function extractInitialData(html) {
-  const markers = ['var ytInitialData =', 'window["ytInitialData"] =', 'ytInitialData ='];
+function extractJsonAssignment(html, markers) {
   for (const marker of markers) {
-    const markerIndex = html.indexOf(marker);
+    const markerIndex = String(html).indexOf(marker);
     if (markerIndex < 0) continue;
-    const start = html.indexOf('{', markerIndex + marker.length);
+    const start = String(html).indexOf('{', markerIndex + marker.length);
     if (start < 0) continue;
     let depth = 0, inString = false, escaped = false;
     for (let i = start; i < html.length; i++) {
@@ -38,6 +37,14 @@ function extractInitialData(html) {
     }
   }
   return null;
+}
+
+function extractInitialData(html) {
+  return extractJsonAssignment(html, ['var ytInitialData =', 'window["ytInitialData"] =', 'ytInitialData =']);
+}
+
+function extractInitialPlayerResponse(html) {
+  return extractJsonAssignment(html, ['var ytInitialPlayerResponse =', 'window["ytInitialPlayerResponse"] =', 'ytInitialPlayerResponse =']);
 }
 
 function textValue(value) {
@@ -108,21 +115,22 @@ function metadataTextParts(renderer) {
   return rows.flatMap(row => row?.metadataParts || []).map(part => textValue(part?.text)).filter(Boolean);
 }
 
-function normalizeLockup(renderer) {
+function normalizeLockup(renderer, kind = 'videos') {
   const id = String(renderer?.contentId || '');
   if (!/^[A-Za-z0-9_-]{11}$/.test(id)) return null;
   const metaParts = metadataTextParts(renderer);
   const thumbModel = renderer?.contentImage?.thumbnailViewModel?.image || renderer?.contentImage?.collectionThumbnailViewModel?.primaryThumbnail?.thumbnailViewModel?.image;
   const date = metaParts.find(value => /전$|ago$|\d{4}[.\/-]/i.test(value)) || '';
+  const isShort = kind === 'shorts';
   return {
     id,
-    kind: 'videos',
-    title: textValue(renderer?.metadata?.lockupMetadataViewModel?.title) || '춘봉TV 동영상',
+    kind: isShort ? 'shorts' : 'videos',
+    title: textValue(renderer?.metadata?.lockupMetadataViewModel?.title) || (isShort ? '춘봉TV Shorts' : '춘봉TV 동영상'),
     date,
     dateIso: directDateIso(date),
     meta: metaParts.find(value => /조회|view/i.test(value)) || metaParts[0] || '',
     thumb: bestThumb(thumbModel) || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
-    link: `https://www.youtube.com/watch?v=${id}`,
+    link: isShort ? `https://www.youtube.com/shorts/${id}` : `https://www.youtube.com/watch?v=${id}`,
     embed: `https://www.youtube.com/embed/${id}?rel=0`,
     platform: 'youtube'
   };
@@ -152,23 +160,91 @@ function normalizeShort(renderer) {
   };
 }
 
-function collect(root, type) {
-  const out = [], seen = new Set();
-  const walk = (node) => {
-    if (!node || typeof node !== 'object') return;
-    const candidates = type === 'videos'
-      ? [node.videoRenderer, node.gridVideoRenderer, node.lockupViewModel]
-      : [node.shortsLockupViewModel, node.reelItemRenderer];
-    for (const candidate of candidates) {
-      const item = type === 'videos' ? (candidate === node.lockupViewModel ? normalizeLockup(candidate) : normalizeVideo(candidate)) : normalizeShort(candidate);
-      if (item && !seen.has(item.id)) { seen.add(item.id); out.push(item); }
+function continuationTokenFrom(root) {
+  let token = '';
+  const seen = new Set();
+  const walk = node => {
+    if (token || !node || typeof node !== 'object' || seen.has(node)) return;
+    seen.add(node);
+    const direct = node?.continuationItemRenderer?.continuationEndpoint?.continuationCommand?.token
+      || node?.continuationEndpoint?.continuationCommand?.token
+      || node?.nextContinuationData?.continuation;
+    if (direct) { token = String(direct); return; }
+    for (const child of Array.isArray(node) ? node : Object.values(node)) {
+      walk(child);
+      if (token) return;
     }
-    if (out.length >= 24) return;
-    if (Array.isArray(node)) node.forEach(walk);
-    else Object.values(node).forEach(walk);
   };
   walk(root);
-  return out.slice(0, 24);
+  return token;
+}
+
+function collectBrowsePage(root, typeHint = '') {
+  const out = [], seenIds = new Set(), seenNodes = new Set();
+  const push = item => {
+    if (!item?.id || seenIds.has(item.id)) return;
+    seenIds.add(item.id);
+    out.push(item);
+  };
+  const walk = node => {
+    if (!node || typeof node !== 'object' || seenNodes.has(node)) return;
+    seenNodes.add(node);
+    push(normalizeVideo(node.videoRenderer));
+    push(normalizeVideo(node.gridVideoRenderer));
+    if (node.lockupViewModel) push(normalizeLockup(node.lockupViewModel, typeHint === 'shorts' ? 'shorts' : 'videos'));
+    push(normalizeShort(node.shortsLockupViewModel));
+    push(normalizeShort(node.reelItemRenderer));
+    for (const child of Array.isArray(node) ? node : Object.values(node)) walk(child);
+  };
+  walk(root);
+  return { items: out, nextToken: continuationTokenFrom(root) };
+}
+
+function collect(root, type) {
+  const page = collectBrowsePage(root, type);
+  return page.items.filter(item => item.kind === type).slice(0, 24);
+}
+
+function extractInnertubeConfig(html = '') {
+  const text = String(html);
+  const apiKey = text.match(/"INNERTUBE_API_KEY"\s*:\s*"([^"]+)"/)?.[1] || '';
+  const clientVersion = text.match(/"INNERTUBE_CLIENT_VERSION"\s*:\s*"([^"]+)"/)?.[1] || '';
+  const clientNameRaw = text.match(/"INNERTUBE_CONTEXT_CLIENT_NAME"\s*:\s*"?(\d+)"?/)?.[1];
+  const visitorData = text.match(/"VISITOR_DATA"\s*:\s*"([^"]+)"/)?.[1] || '';
+  return {
+    apiKey,
+    clientVersion,
+    clientName: clientNameRaw ? Number(clientNameRaw) : 1,
+    visitorData
+  };
+}
+
+async function fetchBrowseContinuation(token, config) {
+  if (!token || !config?.apiKey || !config?.clientVersion) return null;
+  const response = await fetch(`https://www.youtube.com/youtubei/v1/browse?key=${encodeURIComponent(config.apiKey)}&prettyPrint=false`, {
+    method: 'POST',
+    headers: {
+      ...HEADERS,
+      accept: 'application/json',
+      'content-type': 'application/json',
+      'x-youtube-client-name': String(config.clientName || 1),
+      'x-youtube-client-version': config.clientVersion
+    },
+    body: JSON.stringify({
+      context: {
+        client: {
+          clientName: 'WEB',
+          clientVersion: config.clientVersion,
+          hl: 'ko',
+          gl: 'KR',
+          ...(config.visitorData ? { visitorData: config.visitorData } : {})
+        }
+      },
+      continuation: token
+    })
+  });
+  if (!response.ok) throw new Error(`youtube browse continuation ${response.status}`);
+  return response.json();
 }
 
 async function fetchTab(type) {
@@ -176,6 +252,94 @@ async function fetchTab(type) {
   const data = extractInitialData(html);
   if (!data) return [];
   return collect(data, type);
+}
+
+async function fetchAllChannelItems(type, { maxPages = 50 } = {}) {
+  if (!['videos', 'shorts'].includes(type)) throw new Error(`unsupported youtube tab ${type}`);
+  const html = await getText(`${CHANNEL}/${type}?hl=ko&gl=KR`);
+  const data = extractInitialData(html);
+  if (!data) return [];
+  const config = extractInnertubeConfig(html);
+  const byId = new Map();
+  const initial = collectBrowsePage(data, type);
+  for (const item of initial.items.filter(item => item.kind === type)) byId.set(item.id, item);
+  let token = initial.nextToken;
+  const seenTokens = new Set();
+  let pageCount = 1;
+  while (token && config.apiKey && config.clientVersion && pageCount < maxPages && !seenTokens.has(token)) {
+    seenTokens.add(token);
+    const payload = await fetchBrowseContinuation(token, config);
+    if (!payload) break;
+    const page = collectBrowsePage(payload, type);
+    for (const item of page.items.filter(item => item.kind === type)) {
+      const existing = byId.get(item.id);
+      byId.set(item.id, existing ? { ...existing, ...item, date: item.date || existing.date, dateIso: item.dateIso || existing.dateIso } : item);
+    }
+    token = page.nextToken;
+    pageCount += 1;
+  }
+  return [...byId.values()];
+}
+
+function parseExactCount(value) {
+  if (typeof value === 'number') return Number.isFinite(value) ? Math.max(0, Math.round(value)) : null;
+  const text = textValue(value) || String(value || '');
+  const match = text.replace(/,/g, '').match(/\d+/);
+  if (!match) return null;
+  const parsed = Number(match[0]);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function findCommentCount(root) {
+  let found = null;
+  const seen = new Set();
+  const walk = node => {
+    if (found !== null || !node || typeof node !== 'object' || seen.has(node)) return;
+    seen.add(node);
+    if (!Array.isArray(node)) {
+      for (const [key, value] of Object.entries(node)) {
+        if (/^(?:commentCount|commentsCount|countText)$/i.test(key)) {
+          const text = textValue(value) || (typeof value === 'string' || typeof value === 'number' ? String(value) : '');
+          if (key === 'countText' && !/댓글|comment/i.test(text)) continue;
+          const count = parseExactCount(value);
+          if (count !== null) { found = count; return; }
+        }
+      }
+    }
+    for (const child of Array.isArray(node) ? node : Object.values(node)) {
+      walk(child);
+      if (found !== null) return;
+    }
+  };
+  walk(root);
+  return found;
+}
+
+function normalizePublishedAt(value) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  if (/^20\d{2}-\d{2}-\d{2}$/.test(text)) return `${text}T00:00:00.000Z`;
+  const direct = directDateIso(text);
+  if (direct) return direct;
+  const time = Date.parse(text);
+  return Number.isFinite(time) ? new Date(time).toISOString() : '';
+}
+
+function extractWatchMetricsFromHtml(html = '') {
+  const player = extractInitialPlayerResponse(html) || {};
+  const initialData = extractInitialData(html) || {};
+  const microformat = player?.microformat?.playerMicroformatRenderer || {};
+  return {
+    viewCount: parseExactCount(player?.videoDetails?.viewCount),
+    commentCount: findCommentCount(initialData),
+    publishedAt: normalizePublishedAt(microformat.publishDate || microformat.uploadDate || '')
+  };
+}
+
+async function fetchWatchMetrics(id) {
+  if (!id) return { viewCount: null, commentCount: null, publishedAt: '' };
+  const html = await getText(`https://www.youtube.com/watch?v=${encodeURIComponent(id)}&hl=ko&gl=KR`);
+  return extractWatchMetricsFromHtml(html);
 }
 
 function decodeXml(value = '') {
@@ -286,3 +450,9 @@ module.exports.normalizeLockup = normalizeLockup;
 module.exports.mergeRecentItems = mergeRecentItems;
 module.exports.parseRssEntries = parseRssEntries;
 module.exports.extractChannelId = extractChannelId;
+module.exports.collectBrowsePage = collectBrowsePage;
+module.exports.extractInnertubeConfig = extractInnertubeConfig;
+module.exports.extractWatchMetricsFromHtml = extractWatchMetricsFromHtml;
+module.exports.fetchAllChannelItems = fetchAllChannelItems;
+module.exports.fetchWatchMetrics = fetchWatchMetrics;
+module.exports.CHANNEL = CHANNEL;
