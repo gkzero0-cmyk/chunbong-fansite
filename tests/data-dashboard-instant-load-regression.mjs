@@ -28,7 +28,10 @@ const externalSessions = Array.from({ length: 20 }, (_, index) => {
     averageViewers: 42,
     maxViewers: 60,
     viewerSampleCount: 12,
-    categories: [],
+    followerDelta: index % 2,
+    fanclubDelta: index % 3 === 0 ? 1 : 0,
+    title: `춘봉 방송 ${id}`,
+    categories: [{ name: 'Virtual', minutes: 60, averageViewers: 42, maxViewers: 60, sampleCount: 12 }],
     measurement: 'trackify-public-api',
     source: `https://www.trackify.kr/soop/broadcast/${id}`
   };
@@ -61,9 +64,26 @@ const currentFallback = payload?.soop?.externalHistory?.currentFallback || {};
 assert.ok(Array.isArray(currentFallback.sessions), 'public payload should keep a small compatibility sample for production smoke checks');
 assert.ok(currentFallback.sessions.length <= 12, 'public dashboard payload must not duplicate the full Trackify session history');
 assert.equal(currentFallback.trackifySessionCount, 20, 'public payload should retain the full Trackify history count without sending every raw session');
-assert.ok(payload.soop.daily.length >= 1, 'aggregated daily history must remain available after raw sessions are trimmed');
-assert.ok(payload.soop.calendar.length >= 1, 'aggregated calendar history must remain available after raw sessions are trimmed');
-assert.ok(payload.soop.recentSessions.length >= 1, 'recent session cards must remain available after raw sessions are trimmed');
+assert.deepEqual(Object.keys(currentFallback.sessions[0] || {}).sort(), ['id', 'measurement'], 'Trackify compatibility samples should contain only smoke-test identity fields');
+
+assert.ok(payload.soop.daily.length >= 1, 'aggregated daily history must remain available');
+assert.equal(Object.prototype.hasOwnProperty.call(payload.soop.daily[0], 'sessions'), false, 'daily chart rows must not duplicate raw session records');
+assert.equal(Object.prototype.hasOwnProperty.call(payload.soop.daily[0], 'categories'), false, 'daily chart rows must not duplicate category details');
+
+assert.ok(payload.soop.calendar.length >= 1, 'aggregated calendar history must remain available');
+assert.equal(Object.prototype.hasOwnProperty.call(payload.soop.calendar[0], 'categories'), false, 'calendar rows should omit unused category aggregates');
+assert.deepEqual(
+  Object.keys(payload.soop.calendar[0]?.sessions?.[0] || {}).sort(),
+  ['averageViewers', 'durationMinutes', 'maxViewers', 'title'],
+  'calendar session detail should contain only fields rendered by the calendar UI'
+);
+
+assert.ok(payload.soop.recentSessions.length >= 1, 'recent session cards must remain available');
+assert.deepEqual(
+  Object.keys(payload.soop.recentSessions[0] || {}).sort(),
+  ['averageViewers', 'date', 'durationMinutes', 'fanclubDelta', 'followerDelta', 'maxViewers', 'measurement', 'title'],
+  'recent session cards should contain only fields rendered by the UI'
+);
 
 for (const marker of [
   "const CACHE_KEY = 'chunbong-data-dashboard-v1'",
