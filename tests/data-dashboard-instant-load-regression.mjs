@@ -9,6 +9,7 @@ const trackifyCacheFixture = require('../data/trackify-soop-cache.json');
 trackifyCacheFixture.stats = null;
 trackifyCacheFixture.sessions = [];
 const dataApi = require('../lib/chunbong-data.js');
+const contentApi = require('../api/content.js');
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dataJs = fs.readFileSync(path.join(root, 'data.js'), 'utf8');
@@ -33,7 +34,7 @@ const externalSessions = Array.from({ length: 20 }, (_, index) => {
   };
 });
 
-const payload = await dataApi.fetchChunbongData({
+const rawPayload = await dataApi.fetchChunbongData({
   fetchVod: async () => [],
   fetchClips: async () => ({ catch: [], clip: [], items: [] }),
   fetchYoutube: async () => ({ videos: [], shorts: [], items: [] }),
@@ -55,6 +56,7 @@ const payload = await dataApi.fetchChunbongData({
   now: new Date('2026-09-04T03:00:00Z')
 });
 
+const payload = contentApi.compactDataPayload(rawPayload);
 const currentFallback = payload?.soop?.externalHistory?.currentFallback || {};
 assert.ok(Array.isArray(currentFallback.sessions), 'public payload should keep a small compatibility sample for production smoke checks');
 assert.ok(currentFallback.sessions.length <= 12, 'public dashboard payload must not duplicate the full Trackify session history');
