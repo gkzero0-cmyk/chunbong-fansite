@@ -11,22 +11,24 @@ permissions:
 jobs:
   snapshot:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
+      - name: Refresh Trackify SOOP history
+        run: node scripts/update-trackify-soop-cache.mjs
       - name: Capture production snapshot
         run: node scripts/update-chunbong-data.mjs
       - name: Commit changed history
         run: |
-          if git diff --quiet -- data/chunbong-data-history.json; then
+          if git diff --quiet -- data/trackify-soop-cache.json data/chunbong-data-history.json; then
             echo 'No snapshot change'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/chunbong-data-history.json
+          git add data/trackify-soop-cache.json data/chunbong-data-history.json
           git commit -m 'data: update Chunbong daily snapshot'
           git push
