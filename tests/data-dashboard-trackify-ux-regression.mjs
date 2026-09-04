@@ -11,6 +11,7 @@ const soopExternal = fs.readFileSync(path.join(root, 'lib', 'soop-external.js'),
 const enhancementsPath = path.join(root, 'data-enhancements.js');
 const enhancementsCssPath = path.join(root, 'data-enhancements.css');
 const externalHistoryPath = path.join(root, 'data', 'soop-external-history.json');
+const productionSmokePath = path.join(root, '.github', 'workflows', 'production-data-smoke.yml');
 
 assert.ok(fs.existsSync(enhancementsPath), 'data enhancement script should exist');
 assert.ok(fs.existsSync(enhancementsCssPath), 'data enhancement stylesheet should exist');
@@ -19,6 +20,7 @@ const enhancements = fs.readFileSync(enhancementsPath, 'utf8');
 const enhancementsCss = fs.readFileSync(enhancementsCssPath, 'utf8');
 const externalHistoryText = fs.readFileSync(externalHistoryPath, 'utf8');
 const externalHistory = JSON.parse(externalHistoryText);
+const productionSmoke = fs.readFileSync(productionSmokePath, 'utf8');
 
 assert.equal(externalHistory.sourceSummary, null, 'legacy Streams Charts summary should be removed at the data source');
 assert.equal(externalHistory.categoryReference, null, 'legacy Streams Charts category reference should be removed at the data source');
@@ -56,6 +58,19 @@ assert.ok(!soopExternal.includes('auroFollowers'), 'Auro follower history should
 assert.ok(!soopExternal.includes('streamsCharts'), 'Streams Charts source should be removed');
 assert.ok(soopExternal.includes("['trackify', SOURCES.trackify]"), 'Trackify must remain the primary external source');
 assert.ok(soopExternal.indexOf("['trackify', SOURCES.trackify]") < soopExternal.indexOf("['softc', SOURCES.softc]"), 'Trackify must be attempted before Softc');
+
+for (const marker of [
+  "'data-enhancements.js'",
+  "'data-enhancements.css'",
+  "'data/soop-external-history.json'",
+  "'/data-enhancements.js'",
+  "'/data-enhancements.css'",
+  'normalizeDailyTrendRows',
+  'sourceSummary === null',
+  'legacySessionCount'
+]) {
+  assert.ok(productionSmoke.includes(marker), `production smoke should verify ${marker}`);
+}
 
 assert.ok(dataJs.includes('createSvgChart'), 'existing shared SOOP/YouTube interactive chart renderer must remain in use');
 
