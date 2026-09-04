@@ -3,6 +3,9 @@
 
   const nativeFetch = window.fetch.bind(window);
   const DATA_ENDPOINT = '/api/content?type=data';
+  const CACHE_KEY = 'chunbong-data-dashboard-v1';
+  let pendingFreshPayload = null;
+  let initialCacheServed = false;
 
   function finite(value) {
     return typeof value === 'number' && Number.isFinite(value) ? value : null;
@@ -121,22 +124,96 @@
     return typeof url === 'string' && url.includes(DATA_ENDPOINT);
   }
 
+  function isForcedDataRequest(input) {
+    const url = typeof input === 'string' ? input : input?.url;
+    return typeof url === 'string' && /[?&]refresh=1(?:&|$)/.test(url);
+  }
+
+  function cacheablePayload(payload) {
+    return !!(
+      payload
+      && typeof payload === 'object'
+      && payload.fallback !== true
+      && payload.soop
+      && payload.youtube
+    );
+  }
+
+  function readCachedPayload() {
+    try {
+      const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+      if (!cacheablePayload(cached?.payload)) return null;
+      return stripLegacySoopData(cached.payload);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writeCachedPayload(payload) {
+    if (!cacheablePayload(payload)) return;
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), payload }));
+    } catch (_) {}
+  }
+
+  function responseFromPayload(payload, response = null) {
+    const headers = new Headers(response?.headers || { 'content-type': 'application/json; charset=utf-8' });
+    headers.set('content-type', 'application/json; charset=utf-8');
+    headers.delete('content-length');
+    headers.delete('content-encoding');
+    headers.delete('etag');
+    return new Response(JSON.stringify(payload), {
+      status: response?.status || 200,
+      statusText: response?.statusText || 'OK',
+      headers
+    });
+  }
+
+  function queueFreshRender(payload) {
+    pendingFreshPayload = payload;
+    setTimeout(() => {
+      const button = document.querySelector('#data-retry');
+      if (button && !button.disabled) button.click();
+    }, 0);
+  }
+
+  async function fetchTransformAndCache(input, init) {
+    const response = await nativeFetch(input, init);
+    if (!response.ok) return { response, payload: null };
+    try {
+      const payload = stripLegacySoopData(await response.clone().json());
+      writeCachedPayload(payload);
+      return { response, payload };
+    } catch (_) {
+      return { response, payload: null };
+    }
+  }
+
   function installDataFetchTransform() {
     window.fetch = async function transformedFetch(input, init) {
-      const response = await nativeFetch(input, init);
-      if (!isDataRequest(input) || !response.ok) return response;
-      try {
-        const payload = await response.clone().json();
-        const transformed = stripLegacySoopData(payload);
-        const headers = new Headers(response.headers);
-        headers.set('content-type', 'application/json; charset=utf-8');
-        headers.delete('content-length');
-        headers.delete('content-encoding');
-        headers.delete('etag');
-        return new Response(JSON.stringify(transformed), { status: response.status, statusText: response.statusText, headers });
-      } catch (_) {
-        return response;
+      if (!isDataRequest(input)) return nativeFetch(input, init);
+
+      if (isForcedDataRequest(input) && pendingFreshPayload) {
+        const payload = pendingFreshPayload;
+        pendingFreshPayload = null;
+        return responseFromPayload(payload);
       }
+
+      if (!isForcedDataRequest(input) && !initialCacheServed) {
+        const cached = readCachedPayload();
+        if (cached) {
+          initialCacheServed = true;
+          fetchTransformAndCache(input, init).then(({ payload }) => {
+            if (cacheablePayload(payload)) queueFreshRender(payload);
+          }).catch(() => {});
+          return responseFromPayload(cached);
+        }
+      }
+
+      const { response, payload } = await fetchTransformAndCache(input, init);
+      if (!response.ok || !payload) return response;
+      initialCacheServed = true;
+      return responseFromPayload(payload, response);
     };
   }
 
