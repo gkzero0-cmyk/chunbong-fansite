@@ -1,6 +1,10 @@
 name: Chunbong data snapshot
 
 on:
+  push:
+    branches: [fix/trackify-soop-history]
+    paths:
+      - '.github/workflows/chunbong-data-snapshot.yml'
   schedule:
     - cron: '10 6 * * *'
   workflow_dispatch:
