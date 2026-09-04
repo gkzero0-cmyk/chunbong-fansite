@@ -56,8 +56,9 @@ for (const marker of [
 assert.ok(!soopExternal.includes('auroHome'), 'Auro source should be removed');
 assert.ok(!soopExternal.includes('auroFollowers'), 'Auro follower history should be removed');
 assert.ok(!soopExternal.includes('streamsCharts'), 'Streams Charts source should be removed');
-assert.ok(soopExternal.includes("['trackify', SOURCES.trackify]"), 'Trackify must remain the primary external source');
-assert.ok(soopExternal.indexOf("['trackify', SOURCES.trackify]") < soopExternal.indexOf("['softc', SOURCES.softc]"), 'Trackify must be attempted before Softc');
+assert.ok(soopExternal.includes('fetchTrackifySoopHistory'), 'Trackify broadcast history collector must exist');
+assert.ok(soopExternal.includes('const trackifyPromise = fetchTrackifySoopHistory'), 'Trackify must remain the primary external source');
+assert.ok(soopExternal.indexOf('const trackifyPromise = fetchTrackifySoopHistory') < soopExternal.indexOf("const softcRequests = [['softc', SOURCES.softc]"), 'Trackify must be attempted before Softc');
 
 for (const marker of [
   "'data-enhancements.js'",
