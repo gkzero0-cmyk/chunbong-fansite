@@ -17,6 +17,8 @@ const {
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cachePath = path.join(root, 'data', 'youtube-engagement-cache.json');
 const MAX_CONCURRENCY = 6;
+const DISCOVERY_RETRY_ATTEMPTS = 3;
+const DISCOVERY_RETRY_DELAY_MS = 1000;
 
 function readCache() {
   try {
@@ -52,6 +54,26 @@ function dedupe(items) {
   return [...byId.values()];
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function withRetry(task, attempts = DISCOVERY_RETRY_ATTEMPTS) {
+  let lastError = null;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await task();
+    } catch (error) {
+      lastError = error;
+      if (attempt >= attempts) break;
+      const delay = DISCOVERY_RETRY_DELAY_MS * attempt;
+      console.warn(`YouTube discovery attempt ${attempt}/${attempts} failed: ${error?.message || error}; retrying in ${delay}ms`);
+      await sleep(delay);
+    }
+  }
+  throw lastError || new Error('YouTube discovery failed');
+}
+
 async function mapLimit(items, limit, mapper) {
   const out = new Array(items.length);
   let cursor = 0;
@@ -68,8 +90,8 @@ async function mapLimit(items, limit, mapper) {
 
 const previous = readCache();
 const [videos, shorts] = await Promise.all([
-  fetchAllChannelItems('videos'),
-  fetchAllChannelItems('shorts')
+  withRetry(() => fetchAllChannelItems('videos')),
+  withRetry(() => fetchAllChannelItems('shorts'))
 ]);
 const discovered = dedupe([...videos, ...shorts]);
 
