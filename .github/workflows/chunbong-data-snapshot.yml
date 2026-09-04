@@ -1,5 +1,6 @@
 name: Chunbong data snapshot
 
+# Temporary feature-branch bootstrap: refresh the real Trackify cache once before merge.
 on:
   push:
     branches: [fix/trackify-soop-history]
