@@ -70,7 +70,9 @@ for (const marker of [
   'localStorage.getItem(CACHE_KEY)',
   'localStorage.setItem(CACHE_KEY',
   'pendingFreshPayload',
-  'initialCacheServed'
+  'initialCacheServed',
+  'function cacheablePayload(payload)',
+  'payload.fallback !== true'
 ]) {
   assert.ok(clientJs.includes(marker), `dashboard client should include instant-load cache marker: ${marker}`);
 }
