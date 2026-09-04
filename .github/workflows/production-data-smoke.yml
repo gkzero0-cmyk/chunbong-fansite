@@ -199,6 +199,7 @@ jobs:
             echo 'No smoke result change'
           else
             git commit -m 'ci: record production data smoke result'
+            git pull --rebase origin main
             git push
           fi
       - name: Require successful production smoke
