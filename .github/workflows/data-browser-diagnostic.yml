@@ -1,0 +1,63 @@
+name: Data browser diagnostic
+
+on:
+  push:
+    branches:
+      - debug/data-browser-runtime
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find Chrome
+        id: chrome
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$CHROME" ]; then
+            echo 'Chrome/Chromium not found' >&2
+            exit 1
+          fi
+          echo "path=$CHROME" >> "$GITHUB_OUTPUT"
+          "$CHROME" --version
+      - name: Execute production data page
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME='${{ steps.chrome.outputs.path }}'
+          set +e
+          "$CHROME" \
+            --headless=new \
+            --disable-gpu \
+            --no-sandbox \
+            --disable-dev-shm-usage \
+            --virtual-time-budget=15000 \
+            --dump-dom \
+            'https://chunbong-fansite.vercel.app/data.html?browser-diagnostic=1' \
+            > /tmp/data-dom.html 2> /tmp/chrome-stderr.log
+          code=$?
+          set -e
+          echo "CHROME_EXIT=$code"
+          echo '=== STATUS TEXT ==='
+          grep -oE '공개 데이터를 불러오는 중입니다\.|SOOP · YouTube 공개 데이터가 최신 상태입니다\.|춘봉 데이터를 불러오지 못했습니다\.|일부 공개 지표는 현재 확인할 수 없습니다\.' /tmp/data-dom.html | head -20 || true
+          echo '=== LOADING PLACEHOLDERS ==='
+          grep -oE 'SOOP 핵심 지표를 불러오는 중\.\.\.|일별 그래프를 계산하는 중\.\.\.|카테고리 데이터를 계산하는 중\.\.\.' /tmp/data-dom.html | head -20 || true
+          echo '=== RENDER MARKERS ==='
+          grep -oE 'SOOP STATUS|오늘 방송시간|이번 달 방송시간|최근 방송 상세' /tmp/data-dom.html | head -20 || true
+          echo '=== CHROME STDERR ==='
+          tail -200 /tmp/chrome-stderr.log || true
+          if grep -q '공개 데이터를 불러오는 중입니다.' /tmp/data-dom.html; then
+            echo 'Browser remained in loading state after 15 seconds' >&2
+            exit 2
+          fi
+          if grep -q 'SOOP 핵심 지표를 불러오는 중...' /tmp/data-dom.html; then
+            echo 'SOOP KPI placeholder was not replaced' >&2
+            exit 3
+          fi
+          if ! grep -q 'SOOP STATUS' /tmp/data-dom.html; then
+            echo 'Rendered SOOP KPI marker missing' >&2
+            exit 4
+          fi
