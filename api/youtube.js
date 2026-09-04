@@ -92,17 +92,37 @@ function relativeDateMs(value, now = new Date()) {
   return 0;
 }
 
+function parseDisplayCount(value) {
+  const text = (textValue(value) || String(value || '')).replace(/,/g, '').trim();
+  if (!text) return null;
+  const match = text.match(/(\d+(?:\.\d+)?)\s*(억|만|천|[KMB])?/i);
+  if (!match) return null;
+  const base = Number(match[1]);
+  if (!Number.isFinite(base)) return null;
+  const unit = String(match[2] || '').toUpperCase();
+  const multiplier = unit === '억' ? 100000000
+    : unit === '만' ? 10000
+    : unit === '천' ? 1000
+    : unit === 'K' ? 1000
+    : unit === 'M' ? 1000000
+    : unit === 'B' ? 1000000000
+    : 1;
+  return Math.max(0, Math.round(base * multiplier));
+}
+
 function normalizeVideo(renderer) {
   const id = renderer?.videoId;
   if (!id) return null;
   const date = textValue(renderer.publishedTimeText);
+  const meta = textValue(renderer.viewCountText);
   return {
     id,
     kind: 'videos',
     title: textValue(renderer.title) || '춘봉TV 동영상',
     date,
     dateIso: directDateIso(date),
-    meta: textValue(renderer.viewCountText),
+    meta,
+    viewCount: parseDisplayCount(meta),
     thumb: bestThumb(renderer.thumbnail) || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
     link: `https://www.youtube.com/watch?v=${id}`,
     embed: `https://www.youtube.com/embed/${id}?rel=0`,
@@ -121,6 +141,7 @@ function normalizeLockup(renderer, kind = 'videos') {
   const metaParts = metadataTextParts(renderer);
   const thumbModel = renderer?.contentImage?.thumbnailViewModel?.image || renderer?.contentImage?.collectionThumbnailViewModel?.primaryThumbnail?.thumbnailViewModel?.image;
   const date = metaParts.find(value => /전$|ago$|\d{4}[.\/-]/i.test(value)) || '';
+  const meta = metaParts.find(value => /조회|view/i.test(value)) || metaParts[0] || '';
   const isShort = kind === 'shorts';
   return {
     id,
@@ -128,7 +149,8 @@ function normalizeLockup(renderer, kind = 'videos') {
     title: textValue(renderer?.metadata?.lockupMetadataViewModel?.title) || (isShort ? '춘봉TV Shorts' : '춘봉TV 동영상'),
     date,
     dateIso: directDateIso(date),
-    meta: metaParts.find(value => /조회|view/i.test(value)) || metaParts[0] || '',
+    meta,
+    viewCount: parseDisplayCount(meta),
     thumb: bestThumb(thumbModel) || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
     link: isShort ? `https://www.youtube.com/shorts/${id}` : `https://www.youtube.com/watch?v=${id}`,
     embed: `https://www.youtube.com/embed/${id}?rel=0`,
@@ -146,13 +168,15 @@ function normalizeShort(renderer) {
   const date = textValue(renderer?.publishedTimeText)
     || metaParts.find(value => /전$|ago$|\d{4}[.\/-]/i.test(value))
     || '';
+  const meta = textValue(renderer?.overlayMetadata?.secondaryText) || textValue(renderer?.viewCountText) || metaParts.find(value => /조회|view/i.test(value)) || '';
   return {
     id,
     kind: 'shorts',
     title: textValue(renderer?.overlayMetadata?.primaryText) || textValue(renderer?.title) || '춘봉TV Shorts',
     date,
     dateIso: directDateIso(date),
-    meta: textValue(renderer?.overlayMetadata?.secondaryText) || textValue(renderer?.viewCountText) || metaParts.find(value => /조회|view/i.test(value)) || '',
+    meta,
+    viewCount: parseDisplayCount(meta),
     thumb: bestThumb(renderer.thumbnail) || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
     link: `https://www.youtube.com/shorts/${id}`,
     embed: `https://www.youtube.com/embed/${id}?rel=0`,
@@ -219,29 +243,34 @@ function extractInnertubeConfig(html = '') {
   };
 }
 
+function innertubeHeaders(config) {
+  return {
+    ...HEADERS,
+    accept: 'application/json',
+    'content-type': 'application/json',
+    'x-youtube-client-name': String(config.clientName || 1),
+    'x-youtube-client-version': config.clientVersion
+  };
+}
+
+function innertubeContext(config) {
+  return {
+    client: {
+      clientName: 'WEB',
+      clientVersion: config.clientVersion,
+      hl: 'ko',
+      gl: 'KR',
+      ...(config.visitorData ? { visitorData: config.visitorData } : {})
+    }
+  };
+}
+
 async function fetchBrowseContinuation(token, config) {
   if (!token || !config?.apiKey || !config?.clientVersion) return null;
   const response = await fetch(`https://www.youtube.com/youtubei/v1/browse?key=${encodeURIComponent(config.apiKey)}&prettyPrint=false`, {
     method: 'POST',
-    headers: {
-      ...HEADERS,
-      accept: 'application/json',
-      'content-type': 'application/json',
-      'x-youtube-client-name': String(config.clientName || 1),
-      'x-youtube-client-version': config.clientVersion
-    },
-    body: JSON.stringify({
-      context: {
-        client: {
-          clientName: 'WEB',
-          clientVersion: config.clientVersion,
-          hl: 'ko',
-          gl: 'KR',
-          ...(config.visitorData ? { visitorData: config.visitorData } : {})
-        }
-      },
-      continuation: token
-    })
+    headers: innertubeHeaders(config),
+    body: JSON.stringify({ context: innertubeContext(config), continuation: token })
   });
   if (!response.ok) throw new Error(`youtube browse continuation ${response.status}`);
   return response.json();
@@ -273,7 +302,14 @@ async function fetchAllChannelItems(type, { maxPages = 50 } = {}) {
     const page = collectBrowsePage(payload, type);
     for (const item of page.items.filter(item => item.kind === type)) {
       const existing = byId.get(item.id);
-      byId.set(item.id, existing ? { ...existing, ...item, date: item.date || existing.date, dateIso: item.dateIso || existing.dateIso } : item);
+      byId.set(item.id, existing ? {
+        ...existing,
+        ...item,
+        date: item.date || existing.date,
+        dateIso: item.dateIso || existing.dateIso,
+        meta: item.meta || existing.meta,
+        viewCount: Number.isFinite(item.viewCount) ? item.viewCount : existing.viewCount
+      } : item);
     }
     token = page.nextToken;
     pageCount += 1;
@@ -325,21 +361,164 @@ function normalizePublishedAt(value) {
   return Number.isFinite(time) ? new Date(time).toISOString() : '';
 }
 
+function findFirstRenderer(root, key) {
+  let found = null;
+  const seen = new Set();
+  const walk = node => {
+    if (found || !node || typeof node !== 'object' || seen.has(node)) return;
+    seen.add(node);
+    if (!Array.isArray(node) && node[key] && typeof node[key] === 'object') {
+      found = node[key];
+      return;
+    }
+    for (const child of Array.isArray(node) ? node : Object.values(node)) {
+      walk(child);
+      if (found) return;
+    }
+  };
+  walk(root);
+  return found;
+}
+
+function findExactPublishedAt(root) {
+  let found = '';
+  const seen = new Set();
+  const preferredKeys = new Set(['dateText', 'publishDate', 'publishedAt', 'uploadDate']);
+  const walk = node => {
+    if (found || !node || typeof node !== 'object' || seen.has(node)) return;
+    seen.add(node);
+    if (!Array.isArray(node)) {
+      for (const [key, value] of Object.entries(node)) {
+        if (!preferredKeys.has(key)) continue;
+        const text = textValue(value) || (typeof value === 'string' ? value : '');
+        const exact = normalizePublishedAt(text);
+        if (exact && /^20\d{2}-\d{2}-\d{2}/.test(exact)) {
+          found = exact;
+          return;
+        }
+      }
+    }
+    for (const child of Array.isArray(node) ? node : Object.values(node)) {
+      walk(child);
+      if (found) return;
+    }
+  };
+  walk(root);
+  return found;
+}
+
 function extractWatchMetricsFromHtml(html = '') {
   const player = extractInitialPlayerResponse(html) || {};
   const initialData = extractInitialData(html) || {};
   const microformat = player?.microformat?.playerMicroformatRenderer || {};
+  const primary = findFirstRenderer(initialData, 'videoPrimaryInfoRenderer') || {};
+  const primaryView = primary?.viewCount?.videoViewCountRenderer?.viewCount
+    || primary?.viewCount?.videoViewCountRenderer?.shortViewCount
+    || primary?.viewCount;
+  const playerDate = normalizePublishedAt(microformat.publishDate || microformat.uploadDate || '');
+  const primaryDate = normalizePublishedAt(textValue(primary?.dateText));
   return {
-    viewCount: parseExactCount(player?.videoDetails?.viewCount),
+    viewCount: parseExactCount(player?.videoDetails?.viewCount) ?? parseDisplayCount(primaryView),
     commentCount: findCommentCount(initialData),
-    publishedAt: normalizePublishedAt(microformat.publishDate || microformat.uploadDate || '')
+    publishedAt: playerDate || primaryDate || findExactPublishedAt(initialData)
   };
+}
+
+function findCommentsContinuation(source) {
+  const root = typeof source === 'string' ? (extractInitialData(source) || {}) : (source || {});
+  let token = '';
+  const seen = new Set();
+  const walk = (node, inComments = false) => {
+    if (token || !node || typeof node !== 'object' || seen.has(node)) return;
+    seen.add(node);
+    const contextText = [
+      node.sectionIdentifier,
+      node.targetId,
+      node.panelId,
+      node.identifier?.tag
+    ].filter(Boolean).join(' ');
+    const commentContext = inComments || /comment|댓글/i.test(contextText);
+    if (commentContext) {
+      const direct = node?.continuationItemRenderer?.continuationEndpoint?.continuationCommand?.token
+        || node?.continuationEndpoint?.continuationCommand?.token;
+      if (direct) { token = String(direct); return; }
+    }
+    const entries = Array.isArray(node) ? node.map((value, index) => [String(index), value]) : Object.entries(node);
+    for (const [key, child] of entries) {
+      walk(child, commentContext || /comment/i.test(key));
+      if (token) return;
+    }
+  };
+  walk(root);
+  return token;
+}
+
+function extractCommentPage(root = {}) {
+  let best = { count: 0, nextToken: '' };
+  const seen = new Set();
+  const inspectItems = items => {
+    if (!Array.isArray(items)) return;
+    const count = items.filter(item => item?.commentThreadRenderer).length;
+    if (!count) return;
+    const next = items.find(item => item?.continuationItemRenderer)?.continuationItemRenderer?.continuationEndpoint?.continuationCommand?.token || '';
+    if (count > best.count) best = { count, nextToken: String(next || '') };
+  };
+  const walk = node => {
+    if (!node || typeof node !== 'object' || seen.has(node)) return;
+    seen.add(node);
+    inspectItems(node.continuationItems);
+    for (const child of Array.isArray(node) ? node : Object.values(node)) walk(child);
+  };
+  walk(root);
+  return best;
+}
+
+async function fetchNextPayload(body, config) {
+  const response = await fetch(`https://www.youtube.com/youtubei/v1/next?key=${encodeURIComponent(config.apiKey)}&prettyPrint=false`, {
+    method: 'POST',
+    headers: innertubeHeaders(config),
+    body: JSON.stringify({ context: innertubeContext(config), ...body })
+  });
+  if (!response.ok) throw new Error(`youtube next ${response.status}`);
+  return response.json();
+}
+
+async function fetchCommentCount(token, config, { maxPages = 200 } = {}) {
+  if (!token || !config?.apiKey || !config?.clientVersion) return null;
+  let total = 0;
+  let pageToken = token;
+  const seenTokens = new Set();
+  let page = 0;
+  while (pageToken && page < maxPages && !seenTokens.has(pageToken)) {
+    seenTokens.add(pageToken);
+    const payload = await fetchNextPayload({ continuation: pageToken }, config);
+    const result = extractCommentPage(payload);
+    total += result.count;
+    pageToken = result.nextToken;
+    page += 1;
+    if (!result.count && !pageToken) break;
+  }
+  return total;
 }
 
 async function fetchWatchMetrics(id) {
   if (!id) return { viewCount: null, commentCount: null, publishedAt: '' };
   const html = await getText(`https://www.youtube.com/watch?v=${encodeURIComponent(id)}&hl=ko&gl=KR`);
-  return extractWatchMetricsFromHtml(html);
+  const metrics = extractWatchMetricsFromHtml(html);
+  if (Number.isFinite(metrics.commentCount)) return metrics;
+
+  const config = extractInnertubeConfig(html);
+  if (!config.apiKey || !config.clientVersion) return metrics;
+  let token = findCommentsContinuation(html);
+  if (!token) {
+    const initialNext = await fetchNextPayload({ videoId: id }, config);
+    const directCount = findCommentCount(initialNext);
+    if (Number.isFinite(directCount)) return { ...metrics, commentCount: directCount };
+    token = findCommentsContinuation(initialNext);
+  }
+  if (!token) return metrics;
+  const commentCount = await fetchCommentCount(token, config);
+  return { ...metrics, commentCount };
 }
 
 function decodeXml(value = '') {
@@ -397,7 +576,8 @@ function enrichWithRss(items = [], rssEntries = []) {
       title: item.title || rss.title,
       date: rss.dateIso ? rss.dateIso.slice(0, 10) : item.date,
       dateIso: rss.dateIso || item.dateIso || '',
-      meta: item.meta || (Number.isFinite(rss.viewCount) ? `조회수 ${rss.viewCount}회` : '')
+      meta: item.meta || (Number.isFinite(rss.viewCount) ? `조회수 ${rss.viewCount}회` : ''),
+      viewCount: Number.isFinite(item.viewCount) ? item.viewCount : rss.viewCount
     };
   });
 }
@@ -418,7 +598,8 @@ function mergeRecentItems(videos = [], shorts = [], limit = 24, now = new Date()
       kind: shortWins ? 'shorts' : (item.kind || existing.kind),
       link: shortWins ? `https://www.youtube.com/shorts/${item.id}` : (item.link || existing.link),
       dateIso: item.dateIso || existing.dateIso || '',
-      date: item.date || existing.date || ''
+      date: item.date || existing.date || '',
+      viewCount: Number.isFinite(item.viewCount) ? item.viewCount : existing.viewCount
     });
   }
   return [...byId.values()]
@@ -453,6 +634,10 @@ module.exports.extractChannelId = extractChannelId;
 module.exports.collectBrowsePage = collectBrowsePage;
 module.exports.extractInnertubeConfig = extractInnertubeConfig;
 module.exports.extractWatchMetricsFromHtml = extractWatchMetricsFromHtml;
+module.exports.findCommentsContinuation = findCommentsContinuation;
+module.exports.extractCommentPage = extractCommentPage;
+module.exports.fetchCommentCount = fetchCommentCount;
 module.exports.fetchAllChannelItems = fetchAllChannelItems;
 module.exports.fetchWatchMetrics = fetchWatchMetrics;
+module.exports.parseDisplayCount = parseDisplayCount;
 module.exports.CHANNEL = CHANNEL;
