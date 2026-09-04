@@ -5,25 +5,27 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const historyPath = path.join(root, 'data', 'soop-external-history.json');
+const sessionPath = path.join(root, 'data', 'soop-sessions.json');
 assert.ok(fs.existsSync(historyPath), 'external SOOP history file should exist');
-const history = JSON.parse(fs.readFileSync(historyPath, 'utf8'));
+assert.ok(fs.existsSync(sessionPath), 'SOOP session store should exist');
+
+const historyText = fs.readFileSync(historyPath, 'utf8');
+const history = JSON.parse(historyText);
 assert.equal(history.cutoffKst, '2026-09-03');
-assert.equal(history.sourceSummary.name, 'Streams Charts');
-assert.ok(history.sessions.length >= 19, 'at least 19 pre-Sep-3 public stream records should be backfilled');
-assert.ok(history.sessions.every(item => item.measurement === 'external-public-record'));
-assert.ok(history.sessions.every(item => item.date < '2026-09-03'), 'today KST must not be included in historical backfill');
-assert.equal(history.sessions.reduce((sum, item) => sum + item.durationMinutes, 0), 12170);
-const sessionStore = JSON.parse(fs.readFileSync(path.join(root, 'data', 'soop-sessions.json'), 'utf8'));
-assert.equal(sessionStore.sessions.filter(item => item.measurement === 'external-public-record').length, history.sessions.length);
-assert.ok(history.sessions.some(item => item.date === '2026-09-02' && item.averageViewers === 44));
-assert.ok(history.sessions.every(item => item.maxViewers === null), 'per-stream peak must stay null when source does not expose it publicly');
-assert.ok(history.categoryReference.categories.some(item => item.name === 'Minecraft' && item.minutes === 7005));
+assert.equal(history.sourceSummary, null);
+assert.equal(history.categoryReference, null);
+assert.deepEqual(history.sessions, [], 'legacy public backfill must stay removed');
+assert.ok(!/Streams Charts|streamscharts|auro\.live/i.test(historyText), 'legacy provider references must stay removed');
+
+const sessionText = fs.readFileSync(sessionPath, 'utf8');
+const sessionStore = JSON.parse(sessionText);
+assert.ok(Array.isArray(sessionStore.sessions));
+assert.equal(sessionStore.sessions.filter(item => item.measurement === 'external-public-record').length, 0, 'legacy external sessions must not remain in the measured store');
+assert.ok(!/Streams Charts|streamscharts|auro\.live/i.test(sessionText), 'session store must not contain legacy provider references');
 
 const analyticsUrl = pathToFileURL(path.join(root, 'lib', 'soop-analytics.js')).href;
 const analytics = await import(analyticsUrl);
-const result = analytics.buildSoopAnalytics(history.sessions, [], { live: false }, new Date('2026-09-03T11:00:00Z'));
-assert.equal(result.overview.measuredTotalMinutes, 12170);
-assert.ok(result.daily.some(item => item.date === '2026-08-25' && item.streamCount === 3));
-assert.ok(result.monthly.some(item => item.month === '2026-08'));
+const result = analytics.buildSoopAnalytics(sessionStore.sessions, [], { live: false }, new Date('2026-09-05T00:00:00Z'));
+assert.equal(result.overview.measuredTotalMinutes, sessionStore.sessions.reduce((sum, item) => sum + (Number.isFinite(item?.durationMinutes) ? item.durationMinutes : 0), 0));
 
-console.log('SOOP external backfill regression test passed');
+console.log('SOOP legacy external-history removal regression test passed');
