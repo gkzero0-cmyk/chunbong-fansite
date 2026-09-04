@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { fetchChunbongData } = require('../lib/chunbong-data.js');
+const { compactDataPayload } = require('../api/content.js');
 
 const cacheFixture = {
   version: 1,
@@ -20,17 +20,21 @@ const cacheFixture = {
   ]
 };
 
-const payload = await fetchChunbongData({
-  fetchVod: async () => [],
-  fetchClips: async () => ({ catch: [], clip: [], items: [] }),
-  fetchYoutube: async () => ({ videos: [], shorts: [], items: [] }),
-  fetchLive: async () => ({ live: false, title: '', startedAt: '', viewerCount: null, categoryId: '', categoryName: '', followerCount: null, fanclubCount: null, source: 'test-live' }),
-  fetchSoopProfile: async () => ({ categoryId: '', categoryName: '', followerCount: null, fanclubCount: null, source: 'test-profile' }),
-  fetchYoutubeChannel: async () => ({ subscriberCount: 1, viewCount: 2, videoCount: 3, source: 'test-channel' }),
-  readSnapshots: () => ({ version: 1, snapshots: [] }),
-  readSessions: () => ({ version: 1, sessions: [] }),
-  readExternalHistory: () => ({ version: 1, cutoffKst: '', sessions: [], sourceSummary: null, categoryReference: null }),
-  readYoutubeEngagementCache: () => cacheFixture,
+const basePayload = {
+  capturedAt: '2026-09-05T12:00:00.000Z',
+  soop: {
+    daily: [],
+    calendar: [],
+    recentSessions: [],
+    externalHistory: { currentFallback: { sessions: [] } }
+  },
+  youtube: { channel: {}, monthly: {}, recentVideos: [], recentShorts: [] },
+  errors: [],
+  fallback: false
+};
+
+const payload = compactDataPayload(basePayload, {
+  youtubeEngagementCache: cacheFixture,
   now: new Date('2026-09-05T12:00:00.000Z')
 });
 
