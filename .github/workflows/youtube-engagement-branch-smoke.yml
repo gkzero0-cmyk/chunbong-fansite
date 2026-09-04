@@ -1,0 +1,33 @@
+name: YouTube engagement branch smoke
+
+on:
+  push:
+    branches: [feat/youtube-engagement-rankings]
+    paths:
+      - '.github/workflows/youtube-engagement-branch-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Collect complete YouTube engagement cache
+        run: node scripts/update-youtube-engagement-cache.mjs
+      - name: Verify collected cache
+        run: |
+          node <<'NODE'
+          const cache = require('./data/youtube-engagement-cache.json');
+          const items = Array.isArray(cache.items) ? cache.items : [];
+          const views = items.filter(item => Number.isFinite(item.viewCount)).length;
+          const comments = items.filter(item => Number.isFinite(item.commentCount)).length;
+          console.log(JSON.stringify({ itemCount: items.length, views, comments, capturedAt: cache.capturedAt }, null, 2));
+          if (!(items.length > 0 && views > 0 && comments > 0)) process.exit(1);
+          NODE
