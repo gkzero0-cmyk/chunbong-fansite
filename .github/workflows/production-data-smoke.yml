@@ -10,6 +10,7 @@ on:
       - 'lib/chunbong-data.js'
       - 'lib/soop-external.js'
       - 'lib/soop-analytics.js'
+      - 'scripts/update-trackify-soop-cache.mjs'
       - 'data.js'
       - 'data.css'
       - 'data-enhancements.js'
@@ -17,6 +18,7 @@ on:
       - 'data.html'
       - 'data/soop-external-history.json'
       - 'data/soop-sessions.json'
+      - 'data/trackify-soop-cache.json'
   workflow_dispatch:
 
 permissions:
@@ -76,6 +78,8 @@ jobs:
           const externalHistory = payload?.soop?.externalHistory || {};
           const external = externalHistory?.currentFallback || {};
           const recentSessions = Array.isArray(payload?.soop?.recentSessions) ? payload.soop.recentSessions : [];
+          const trackifySessions = Array.isArray(external?.sessions) ? external.sessions : [];
+          const trackifyHistorySessionCount = trackifySessions.filter(item => item?.measurement === 'trackify-public-record' || String(item?.id || '').startsWith('trackify-')).length;
           const youtube = payload?.youtube || {};
           const channel = youtube.channel || {};
           const recentVideos = Array.isArray(youtube.recentVideos) ? youtube.recentVideos : [];
@@ -127,6 +131,7 @@ jobs:
               sourceSummaryCleared,
               categoryReferenceCleared,
               legacySessionCount,
+              trackifyHistorySessionCount,
               arrayCounts: {
                 daily: arrCount(payload?.soop?.daily),
                 monthlyStats: arrCount(payload?.soop?.monthlyStats),
@@ -174,6 +179,11 @@ jobs:
             && result.apiSummary.sourceSummaryCleared
             && result.apiSummary.categoryReferenceCleared
             && result.apiSummary.legacySessionCount === 0
+            && result.apiSummary.trackifyHistorySessionCount > 0
+            && result.apiSummary.arrayCounts.daily > 0
+            && result.apiSummary.arrayCounts.monthlyStats > 0
+            && result.apiSummary.arrayCounts.calendar > 0
+            && result.apiSummary.arrayCounts.recentSessions > 0
             && youtubeChannelOk
             && !result.apiSummary.trackify.excludedDonorRankingPresent;
           fs.writeFileSync('data/production-smoke-latest.json', JSON.stringify(result, null, 2) + '\n');

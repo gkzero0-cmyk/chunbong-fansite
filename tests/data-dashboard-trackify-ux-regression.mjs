@@ -12,15 +12,24 @@ const enhancementsPath = path.join(root, 'data-enhancements.js');
 const enhancementsCssPath = path.join(root, 'data-enhancements.css');
 const externalHistoryPath = path.join(root, 'data', 'soop-external-history.json');
 const productionSmokePath = path.join(root, '.github', 'workflows', 'production-data-smoke.yml');
+const snapshotWorkflowPath = path.join(root, '.github', 'workflows', 'chunbong-data-snapshot.yml');
+const siteRegressionPath = path.join(root, '.github', 'workflows', 'site-regression.yml');
+const trackifyCachePath = path.join(root, 'data', 'trackify-soop-cache.json');
+const trackifyUpdaterPath = path.join(root, 'scripts', 'update-trackify-soop-cache.mjs');
 
 assert.ok(fs.existsSync(enhancementsPath), 'data enhancement script should exist');
 assert.ok(fs.existsSync(enhancementsCssPath), 'data enhancement stylesheet should exist');
+assert.ok(fs.existsSync(trackifyCachePath), 'persistent Trackify cache should exist');
+assert.ok(fs.existsSync(trackifyUpdaterPath), 'Trackify cache updater should exist');
 execFileSync(process.execPath, ['--check', enhancementsPath], { stdio: 'pipe' });
+execFileSync(process.execPath, ['--check', trackifyUpdaterPath], { stdio: 'pipe' });
 const enhancements = fs.readFileSync(enhancementsPath, 'utf8');
 const enhancementsCss = fs.readFileSync(enhancementsCssPath, 'utf8');
 const externalHistoryText = fs.readFileSync(externalHistoryPath, 'utf8');
 const externalHistory = JSON.parse(externalHistoryText);
 const productionSmoke = fs.readFileSync(productionSmokePath, 'utf8');
+const snapshotWorkflow = fs.readFileSync(snapshotWorkflowPath, 'utf8');
+const siteRegression = fs.readFileSync(siteRegressionPath, 'utf8');
 
 assert.equal(externalHistory.sourceSummary, null, 'legacy Streams Charts summary should be removed at the data source');
 assert.equal(externalHistory.categoryReference, null, 'legacy Streams Charts category reference should be removed at the data source');
@@ -56,18 +65,34 @@ for (const marker of [
 assert.ok(!soopExternal.includes('auroHome'), 'Auro source should be removed');
 assert.ok(!soopExternal.includes('auroFollowers'), 'Auro follower history should be removed');
 assert.ok(!soopExternal.includes('streamsCharts'), 'Streams Charts source should be removed');
-assert.ok(soopExternal.includes("['trackify', SOURCES.trackify]"), 'Trackify must remain the primary external source');
-assert.ok(soopExternal.indexOf("['trackify', SOURCES.trackify]") < soopExternal.indexOf("['softc', SOURCES.softc]"), 'Trackify must be attempted before Softc');
+assert.ok(soopExternal.includes('fetchTrackifySoopHistory'), 'Trackify broadcast history collector must exist');
+assert.ok(soopExternal.includes('const trackifyPromise = fetchTrackifySoopHistory'), 'Trackify must remain the primary external source');
+assert.ok(soopExternal.indexOf('const trackifyPromise = fetchTrackifySoopHistory') < soopExternal.indexOf("const softcRequests = [['softc', SOURCES.softc]"), 'Trackify must be attempted before Softc');
+
+assert.ok(snapshotWorkflow.includes("node-version: '24'"), 'snapshot workflow should use Node 24');
+assert.ok(snapshotWorkflow.includes('node scripts/update-trackify-soop-cache.mjs'), 'snapshot workflow must refresh Trackify history before the fan-site snapshot');
+assert.ok(snapshotWorkflow.includes('data/trackify-soop-cache.json'), 'snapshot workflow must commit the persistent Trackify cache');
+assert.ok(snapshotWorkflow.includes('branches: [main]'), 'snapshot workflow push trigger must target main after feature validation');
+assert.ok(!snapshotWorkflow.includes('fix/trackify-soop-history'), 'snapshot workflow must not retain the temporary feature-branch trigger');
+assert.ok(siteRegression.includes('node --check scripts/update-trackify-soop-cache.mjs'), 'site regression must syntax-check the Trackify updater');
+assert.ok(!siteRegression.includes('Probe live Chunbong Trackify API'), 'temporary live Trackify diagnostic step must be removed before merge');
+assert.ok(!siteRegression.includes('TRACKIFY_PROBE_SUMMARY'), 'temporary Trackify diagnostic output must be removed before merge');
 
 for (const marker of [
   "'data-enhancements.js'",
   "'data-enhancements.css'",
   "'data/soop-external-history.json'",
+  "'data/trackify-soop-cache.json'",
   "'/data-enhancements.js'",
   "'/data-enhancements.css'",
   'normalizeDailyTrendRows',
   'sourceSummary === null',
-  'legacySessionCount'
+  'legacySessionCount',
+  'trackifyHistorySessionCount',
+  'result.apiSummary.arrayCounts.daily > 0',
+  'result.apiSummary.arrayCounts.monthlyStats > 0',
+  'result.apiSummary.arrayCounts.calendar > 0',
+  'result.apiSummary.arrayCounts.recentSessions > 0'
 ]) {
   assert.ok(productionSmoke.includes(marker), `production smoke should verify ${marker}`);
 }

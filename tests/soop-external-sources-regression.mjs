@@ -2,6 +2,10 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
+// This parser/merge unit test must not inherit the persisted production Trackify session cache.
+const trackifyCacheFixture = require('../data/trackify-soop-cache.json');
+trackifyCacheFixture.stats = null;
+trackifyCacheFixture.sessions = [];
 const dataApi = require('../lib/chunbong-data.js');
 
 const auro = dataApi.extractExternalSoopStatsFromHtml(`
