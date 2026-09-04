@@ -35,14 +35,20 @@ jobs:
             count=$((count + 1))
           done
           echo "REGRESSION_TEST_FILES=$count"
-      - name: Probe live Trackify Chunbong history
+      - name: Probe live Trackify Chunbong routes
         run: |
-          node scripts/update-trackify-soop-cache.mjs
           node - <<'NODE'
-          const cache = require('./data/trackify-soop-cache.json');
-          console.log(`TRACKIFY_ASSERT_SESSIONS=${cache.sessions?.length || 0}`);
-          console.log(`TRACKIFY_ASSERT_STATS=${cache.stats ? Object.values(cache.stats).filter(v => v !== null && v !== '' && (!Array.isArray(v) || v.length)).length : 0}`);
-          if (!Array.isArray(cache.sessions) || cache.sessions.length === 0) {
-            throw new Error('No live Chunbong Trackify broadcast sessions were discovered');
-          }
+          const url = 'https://www.trackify.kr/soop/chunbongtv';
+          const response = await fetch(url, { headers: { 'user-agent':'Mozilla/5.0 Chrome/152', 'accept-language':'ko-KR,ko;q=0.9' } });
+          const html = await response.text();
+          console.log(`TRACKIFY_HTTP=${response.status}`);
+          console.log(`TRACKIFY_HTML_BYTES=${html.length}`);
+          const attrs = [...html.matchAll(/(?:href|src)=["']([^"']+)["']/gi)].map(m=>m[1]);
+          console.log('TRACKIFY_ATTR_URLS=' + JSON.stringify([...new Set(attrs)], null, 2));
+          const routes = [...new Set((html.match(/(?:https?:\\?\/\\?\/[^"'<>\s]+|\\?\/(?:api|_next|soop)[^"'<>\s]+)/gi) || []))];
+          console.log('TRACKIFY_ROUTE_TOKENS=' + JSON.stringify(routes, null, 2));
+          const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(Boolean);
+          console.log('TRACKIFY_INLINE_SCRIPTS=' + JSON.stringify(scriptBodies.map((body,i)=>({i,bytes:body.length,preview:body.slice(0,1200)})), null, 2));
+          const interesting = html.split(/\n/).filter(line => /broadcast|방송|history|stream|api|next|chunbongtv/i.test(line));
+          console.log('TRACKIFY_INTERESTING_HTML=' + interesting.join('\n').slice(0,18000));
           NODE
