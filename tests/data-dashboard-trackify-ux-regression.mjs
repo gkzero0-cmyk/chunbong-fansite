@@ -69,10 +69,14 @@ assert.ok(soopExternal.includes('fetchTrackifySoopHistory'), 'Trackify broadcast
 assert.ok(soopExternal.includes('const trackifyPromise = fetchTrackifySoopHistory'), 'Trackify must remain the primary external source');
 assert.ok(soopExternal.indexOf('const trackifyPromise = fetchTrackifySoopHistory') < soopExternal.indexOf("const softcRequests = [['softc', SOURCES.softc]"), 'Trackify must be attempted before Softc');
 
-assert.ok(snapshotWorkflow.includes('node-version: \'24\''), 'snapshot workflow should use Node 24');
+assert.ok(snapshotWorkflow.includes("node-version: '24'"), 'snapshot workflow should use Node 24');
 assert.ok(snapshotWorkflow.includes('node scripts/update-trackify-soop-cache.mjs'), 'snapshot workflow must refresh Trackify history before the fan-site snapshot');
 assert.ok(snapshotWorkflow.includes('data/trackify-soop-cache.json'), 'snapshot workflow must commit the persistent Trackify cache');
+assert.ok(snapshotWorkflow.includes('branches: [main]'), 'snapshot workflow push trigger must target main after feature validation');
+assert.ok(!snapshotWorkflow.includes('fix/trackify-soop-history'), 'snapshot workflow must not retain the temporary feature-branch trigger');
 assert.ok(siteRegression.includes('node --check scripts/update-trackify-soop-cache.mjs'), 'site regression must syntax-check the Trackify updater');
+assert.ok(!siteRegression.includes('Probe live Chunbong Trackify API'), 'temporary live Trackify diagnostic step must be removed before merge');
+assert.ok(!siteRegression.includes('TRACKIFY_PROBE_SUMMARY'), 'temporary Trackify diagnostic output must be removed before merge');
 
 for (const marker of [
   "'data-enhancements.js'",
