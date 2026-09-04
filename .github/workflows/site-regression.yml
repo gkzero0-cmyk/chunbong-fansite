@@ -35,32 +35,29 @@ jobs:
             count=$((count + 1))
           done
           echo "REGRESSION_TEST_FILES=$count"
-      - name: Probe Trackify SPA API routes
+      - name: Probe Trackify profile API chunk
         run: |
           node - <<'NODE'
           const base = 'https://www.trackify.kr';
           const headers = { 'user-agent':'Mozilla/5.0 Chrome/152', 'accept-language':'ko-KR,ko;q=0.9' };
-          const html = await (await fetch(`${base}/soop/chunbongtv`, { headers })).text();
-          const asset = html.match(/<script[^>]+src=["']([^"']*index-[^"']+\.js)["']/i)?.[1];
-          if (!asset) throw new Error('Trackify app bundle not found');
-          const jsResponse = await fetch(new URL(asset, base), { headers });
-          const js = await jsResponse.text();
-          console.log(`TRACKIFY_BUNDLE=${asset}`);
-          console.log(`TRACKIFY_BUNDLE_HTTP=${jsResponse.status}`);
-          console.log(`TRACKIFY_BUNDLE_BYTES=${js.length}`);
-          const stringRoutes = [...new Set((js.match(/["'`]([^"'`]*(?:\/api\/|\/soop\/|broadcast|history)[^"'`]*)["'`]/gi) || []).map(token=>token.slice(1,-1)))];
-          console.log('TRACKIFY_BUNDLE_ROUTE_STRINGS=' + JSON.stringify(stringRoutes.slice(0,240), null, 2));
-          for (const needle of ['broadcast','history','streamer','profile','chunbong','sanctions']) {
-            let start = 0;
-            let shown = 0;
-            console.log(`TRACKIFY_CONTEXT_${needle.toUpperCase()}_BEGIN`);
-            while (shown < 12) {
-              const at = js.toLowerCase().indexOf(needle, start);
-              if (at < 0) break;
-              console.log(js.slice(Math.max(0, at - 500), Math.min(js.length, at + 900)));
-              start = at + needle.length;
-              shown += 1;
+          const chunks = ['/assets/_id_-BvClGgng.js','/assets/_id_-DtuoK1hR.js'];
+          for (const chunk of chunks) {
+            const response = await fetch(new URL(chunk, base), { headers });
+            const js = await response.text();
+            console.log(`TRACKIFY_CHUNK=${chunk} HTTP=${response.status} BYTES=${js.length}`);
+            const literals = [...new Set((js.match(/["'`]([^"'`]*(?:\/api\/|broadcast|stream|history|record|detail|profile)[^"'`]*)["'`]/gi) || []).map(token=>token.slice(1,-1)))];
+            console.log('TRACKIFY_CHUNK_LITERALS=' + JSON.stringify(literals.slice(0,320), null, 2));
+            for (const needle of ['/api/','broadcast','stream','history','record']) {
+              let start=0, shown=0;
+              console.log(`CONTEXT ${chunk} ${needle} BEGIN`);
+              while (shown < 18) {
+                const at = js.toLowerCase().indexOf(needle.toLowerCase(), start);
+                if (at < 0) break;
+                console.log(js.slice(Math.max(0, at-700), Math.min(js.length, at+1200)));
+                start = at + needle.length;
+                shown++;
+              }
+              console.log(`CONTEXT ${chunk} ${needle} END`);
             }
-            console.log(`TRACKIFY_CONTEXT_${needle.toUpperCase()}_END`);
           }
           NODE
