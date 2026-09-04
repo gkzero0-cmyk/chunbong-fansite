@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-04T14:40:21.110Z",
+  "checkedAt": "2026-09-04T15:46:09.527Z",
   "baseUrl": "https://chunbong-fansite.vercel.app",
   "endpoints": {
     "dataJs": {
@@ -12,25 +12,28 @@
     },
     "apiData": {
       "status": 200,
-      "bytes": 80255
+      "bytes": 80237
     }
   },
   "staticChecks": {
     "dataJsExpectedTokens": {
       "sourceChip": true,
-      "외부 30일 참고": true,
       "monthUniqueViewers": true,
-      "subscriberCount": true,
-      "cumulativeUpCount": true
+      "monthlyStarCount": false,
+      "mergeYoutubeRecent": false,
+      "data-chart-crosshair": false,
+      "refresh=1": false,
+      "cache:'no-store'": false
     },
-    "dataHtmlHasDataJs": true
+    "dataHtmlHasDataJs": true,
+    "manualRefreshNoStore": false
   },
   "apiSummary": {
     "parseError": null,
     "fallback": false,
     "currentFallback": false,
     "reason": null,
-    "capturedAt": "2026-09-04T14:40:19.116Z",
+    "capturedAt": "2026-09-04T15:46:06.139Z",
     "errors": [],
     "errorCount": 0,
     "arrayCounts": {
@@ -39,7 +42,41 @@
       "calendar": 17,
       "categories": 5,
       "recentSessions": 19
+    },
+    "trackify": {
+      "sourcePresent": true,
+      "fields": {
+        "subscriberCount": null,
+        "supporterCount": null,
+        "monthUniqueViewers": null,
+        "viewershipHours": null,
+        "cumulativeUsers": null,
+        "cumulativeUpCount": null,
+        "monthlyStarCount": null,
+        "starsPerHour": null,
+        "monthlySupporterCount": null,
+        "monthlyChatCount": null,
+        "monthlyKickCount": null,
+        "monthlyMuteCount": null,
+        "stationOpenedAt": null,
+        "latestBroadcastDate": null,
+        "categoryRankings": null
+      },
+      "categoryCount": null,
+      "categoryDistributionCount": 0,
+      "excludedDonorRankingPresent": false
+    },
+    "youtube": {
+      "subscriberCount": 2680,
+      "viewCount": 6755605,
+      "videoCount": 203,
+      "snapshotFallback": null,
+      "monthlyUploadCount": 0,
+      "recentVideoCount": 12,
+      "recentShortCount": 12,
+      "newestVideoDate": "4주 전",
+      "newestShortDate": null
     }
   },
-  "ok": true
+  "ok": false
 }
