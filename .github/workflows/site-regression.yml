@@ -24,6 +24,7 @@ jobs:
           node --check scripts/collect-soop-telemetry.mjs
           node --check scripts/apply-soop-session.mjs
           node --check scripts/update-chunbong-data.mjs
+          node --check scripts/update-trackify-soop-cache.mjs
       - name: Run all regression tests
         run: |
           set -e
