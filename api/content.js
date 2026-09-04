@@ -10,8 +10,9 @@ const fetchCatchDetail = require('./catch-detail');
 const fetchChunbongData = require('../lib/chunbong-data');
 
 module.exports = async function handler(req,res) {
-  res.setHeader('Cache-Control','s-maxage=180, stale-while-revalidate=600');
   const type=req.query?.type;
+  const forceDataRefresh=type==='data'&&String(req.query?.refresh||'')==='1';
+  res.setHeader('Cache-Control',forceDataRefresh?'no-store, max-age=0':'s-maxage=180, stale-while-revalidate=600');
   try {
     if(type==='vod'){const items=await fetchVod();return res.status(200).json({items,source:type,fallback:!items.length});}
     if(type==='notice'){const items=await fetchNotice();return res.status(200).json({items,source:type,fallback:!items.length});}
