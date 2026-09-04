@@ -59,39 +59,12 @@
 
   function legacyExternalSession(item) {
     const source = `${item?.source?.name || ''} ${item?.source?.url || ''}`.toLowerCase();
-    return source.includes('streamscharts') || source.includes('streams charts') || source.includes('auro') || item?.measurement === 'external-public-record';
-  }
-
-  function buildMonthlyFromDaily(rows = []) {
-    const groups = new Map();
-    for (const row of rows) {
-      const month = String(row?.date || '').slice(0, 7);
-      if (!/^20\d{2}-\d{2}$/.test(month)) continue;
-      if (!groups.has(month)) groups.set(month, []);
-      groups.get(month).push(row);
-    }
-    return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([month, monthRows]) => {
-      const durationMinutes = Math.round(monthRows.reduce((sum, row) => sum + (finite(row?.durationMinutes) ?? 0), 0));
-      const streamCount = monthRows.reduce((sum, row) => sum + (finite(row?.streamCount) ?? 0), 0);
-      const weighted = monthRows.filter(row => finite(row?.averageViewers) !== null);
-      const totalWeight = weighted.reduce((sum, row) => sum + Math.max(1, finite(row?.streamCount) ?? 1), 0);
-      const averageViewers = totalWeight ? Math.round(weighted.reduce((sum, row) => sum + row.averageViewers * Math.max(1, finite(row?.streamCount) ?? 1), 0) / totalWeight) : null;
-      const peaks = monthRows.map(row => finite(row?.maxViewers)).filter(Number.isFinite);
-      const followerDeltas = monthRows.map(row => finite(row?.followerDelta)).filter(Number.isFinite);
-      const fanclubDeltas = monthRows.map(row => finite(row?.fanclubDelta)).filter(Number.isFinite);
-      return {
-        month,
-        activeDays: monthRows.length,
-        streamCount,
-        durationMinutes,
-        averageStreamMinutes: streamCount ? Math.round(durationMinutes / streamCount) : 0,
-        averageViewers,
-        maxViewers: peaks.length ? Math.max(...peaks) : null,
-        followerDelta: followerDeltas.length ? followerDeltas.reduce((sum, value) => sum + value, 0) : null,
-        fanclubDelta: fanclubDeltas.length ? fanclubDeltas.reduce((sum, value) => sum + value, 0) : null,
-        categories: []
-      };
-    });
+    const id = String(item?.id || '').toLowerCase();
+    return source.includes('streamscharts')
+      || source.includes('streams charts')
+      || source.includes('auro.live')
+      || id.startsWith('external-streamscharts-')
+      || id.startsWith('external-auro-');
   }
 
   function stripLegacySoopData(payload) {
@@ -112,14 +85,8 @@
       currentFallback.fieldSources = Object.fromEntries(Object.entries(currentFallback.fieldSources).filter(([, source]) => allowedSources.has(String(source || '').toLowerCase()) || String(source || '').toLowerCase() === 'soop'));
     }
 
-    soop.externalHistory = { ...history, backfillCount: 0, sourceSummary:null, categoryReference:null, currentFallback };
+    soop.externalHistory = { ...history, cutoffKst, backfillCount: 0, sourceSummary:null, categoryReference:null, currentFallback };
     soop.recentSessions = (Array.isArray(soop.recentSessions) ? soop.recentSessions : []).filter(item => !legacyExternalSession(item));
-
-    if (/^20\d{2}-\d{2}-\d{2}$/.test(cutoffKst)) {
-      soop.daily = (Array.isArray(soop.daily) ? soop.daily : []).filter(row => String(row?.date || '') >= cutoffKst);
-      soop.calendar = (Array.isArray(soop.calendar) ? soop.calendar : []).filter(row => String(row?.date || '') >= cutoffKst);
-      soop.monthlyStats = buildMonthlyFromDaily(soop.daily);
-    }
 
     const overview = soop.overview || {};
     const prefer = (field, fallbackField = field) => {
@@ -163,6 +130,9 @@
         const transformed = stripLegacySoopData(payload);
         const headers = new Headers(response.headers);
         headers.set('content-type', 'application/json; charset=utf-8');
+        headers.delete('content-length');
+        headers.delete('content-encoding');
+        headers.delete('etag');
         return new Response(JSON.stringify(transformed), { status: response.status, statusText: response.statusText, headers });
       } catch (_) {
         return response;
