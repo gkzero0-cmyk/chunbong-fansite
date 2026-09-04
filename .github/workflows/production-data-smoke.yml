@@ -1,0 +1,104 @@
+name: Production data smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/production-data-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Fetch production endpoints
+        shell: bash
+        run: |
+          set -u
+          BASE='https://chunbong-fansite.vercel.app'
+          mkdir -p .smoke data
+          fetch_one() {
+            local path="$1"
+            local out="$2"
+            curl -L -sS --connect-timeout 15 --max-time 60 \
+              -H 'cache-control: no-cache' \
+              -o "$out" -w '%{http_code}' "${BASE}${path}" || printf '000'
+          }
+          DATA_JS_STATUS="$(fetch_one '/data.js' '.smoke/data.js')"
+          DATA_HTML_STATUS="$(fetch_one '/data.html' '.smoke/data.html')"
+          API_STATUS="$(fetch_one '/api/content?type=data' '.smoke/api.json')"
+          export DATA_JS_STATUS DATA_HTML_STATUS API_STATUS BASE
+          node <<'NODE'
+          const fs = require('fs');
+          const read = (p) => { try { return fs.readFileSync(p, 'utf8'); } catch { return ''; } };
+          const size = (p) => { try { return fs.statSync(p).size; } catch { return 0; } };
+          const js = read('.smoke/data.js');
+          const html = read('.smoke/data.html');
+          const apiText = read('.smoke/api.json');
+          let payload = null;
+          let parseError = null;
+          try { payload = JSON.parse(apiText); } catch (error) { parseError = error.message; }
+          const arrCount = (value) => Array.isArray(value) ? value.length : null;
+          const errors = payload?.errors ?? null;
+          const result = {
+            checkedAt: new Date().toISOString(),
+            baseUrl: process.env.BASE,
+            endpoints: {
+              dataJs: { status: Number(process.env.DATA_JS_STATUS) || 0, bytes: size('.smoke/data.js') },
+              dataHtml: { status: Number(process.env.DATA_HTML_STATUS) || 0, bytes: size('.smoke/data.html') },
+              apiData: { status: Number(process.env.API_STATUS) || 0, bytes: size('.smoke/api.json') }
+            },
+            staticChecks: {
+              dataJsExpectedTokens: ['sourceChip', '외부 30일 참고', 'monthUniqueViewers', 'subscriberCount', 'cumulativeUpCount']
+                .reduce((acc, token) => ({ ...acc, [token]: js.includes(token) }), {}),
+              dataHtmlHasDataJs: html.includes('data.js')
+            },
+            apiSummary: {
+              parseError,
+              fallback: payload?.fallback ?? null,
+              currentFallback: payload?.currentFallback ?? payload?.fallback ?? null,
+              reason: payload?.reason ?? null,
+              capturedAt: payload?.capturedAt ?? null,
+              errors,
+              errorCount: Array.isArray(errors) ? errors.length : (errors && typeof errors === 'object' ? Object.keys(errors).length : 0),
+              arrayCounts: {
+                daily: arrCount(payload?.soop?.daily),
+                monthlyStats: arrCount(payload?.soop?.monthlyStats),
+                calendar: arrCount(payload?.soop?.calendar),
+                categories: arrCount(payload?.soop?.categories),
+                recentSessions: arrCount(payload?.soop?.recentSessions)
+              }
+            }
+          };
+          result.ok = result.endpoints.dataJs.status === 200
+            && result.endpoints.dataHtml.status === 200
+            && result.endpoints.apiData.status === 200
+            && !result.apiSummary.parseError
+            && result.apiSummary.fallback !== true;
+          fs.writeFileSync('data/production-smoke-latest.json', JSON.stringify(result, null, 2) + '\n');
+          console.log(JSON.stringify(result, null, 2));
+          NODE
+      - name: Commit smoke result
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/production-smoke-latest.json
+          if git diff --cached --quiet; then
+            echo 'No smoke result change'
+          else
+            git commit -m 'ci: record production data smoke result'
+            git push
+          fi
+      - name: Require successful production smoke
+        run: node -e "const r=require('./data/production-smoke-latest.json'); if(!r.ok){console.error(r); process.exit(1)}"
