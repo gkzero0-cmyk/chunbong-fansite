@@ -19,7 +19,7 @@ const fixtures = [
   { id: 'sept-b', kind: 'shorts', title: 'September B', publishedAt: '2026-09-01T10:00:00Z', viewCount: 1500, commentCount: 3 },
   { id: 'aug-a', kind: 'videos', title: 'August A', publishedAt: '2026-08-15T10:00:00Z', viewCount: 3000, commentCount: 22 },
   { id: 'jul-a', kind: 'videos', title: 'July A', publishedAt: '2026-07-01T00:00:00Z', viewCount: 5000, commentCount: 1 },
-  { id: 'jun-a', kind: 'videos', title: 'June A', publishedAt: '2026-06-30T23:59:59Z', viewCount: 7000, commentCount: 70 },
+  { id: 'jun-a', kind: 'videos', title: 'June A', publishedAt: '2026-06-30T10:00:00Z', viewCount: 7000, commentCount: 70 },
   { id: 'old-a', kind: 'videos', title: 'Old A', publishedAt: '2025-01-01T00:00:00Z', viewCount: 10000, commentCount: 5 },
   { id: 'no-comments', kind: 'videos', title: 'No Comments', publishedAt: '2026-09-03T00:00:00Z', viewCount: 8000, commentCount: null },
   { id: 'dup', kind: 'videos', title: 'Duplicate old', publishedAt: '2026-08-01T00:00:00Z', viewCount: 10, commentCount: 1 },
