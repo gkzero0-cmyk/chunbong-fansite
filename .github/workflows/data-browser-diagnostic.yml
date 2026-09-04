@@ -8,7 +8,7 @@ on:
 jobs:
   browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
       - name: Find Chrome
@@ -29,14 +29,14 @@ jobs:
           set -euo pipefail
           CHROME='${{ steps.chrome.outputs.path }}'
           set +e
-          "$CHROME" \
+          timeout 45s "$CHROME" \
             --headless=new \
             --disable-gpu \
             --no-sandbox \
             --disable-dev-shm-usage \
             --virtual-time-budget=15000 \
             --dump-dom \
-            'https://chunbong-fansite.vercel.app/data.html?browser-diagnostic=1' \
+            'https://chunbong-fansite.vercel.app/data.html?browser-diagnostic=2' \
             > /tmp/data-dom.html 2> /tmp/chrome-stderr.log
           code=$?
           set -e
