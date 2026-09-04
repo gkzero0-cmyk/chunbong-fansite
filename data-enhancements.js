@@ -7,9 +7,25 @@
   const DISALLOWED_SOOP_LABELS = new Set(['이번 달 별풍선', '별풍선 시급', '이번 달 채금']);
   let pendingFreshPayload = null;
   let initialCacheServed = false;
+  let latestPayload = null;
+  let youtubeEngagementRange = 'allTime';
+  let youtubeEngagementMetric = 'views';
 
   function finite(value) {
     return typeof value === 'number' && Number.isFinite(value) ? value : null;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  function numberText(value) {
+    return Number.isFinite(value) ? new Intl.NumberFormat('ko-KR').format(value) : '—';
   }
 
   function kstDateKey(value) {
@@ -81,6 +97,7 @@
 
   function stripLegacySoopData(payload) {
     if (!payload || typeof payload !== 'object') return payload;
+    latestPayload = payload;
     payload.trends = normalizeDailyTrendRows(payload.trends, payload);
     const soop = payload.soop;
     if (!soop || typeof soop !== 'object') return payload;
@@ -227,6 +244,54 @@
     };
   }
 
+  function engagementDate(item) {
+    const date = String(item?.publishedAt || '').slice(0, 10);
+    return formatFullDate(date) || (item?.kind === 'shorts' ? 'SHORTS' : 'VIDEO');
+  }
+
+  function renderYoutubeEngagement(payload = latestPayload) {
+    const root = document.querySelector('#data-youtube-top');
+    const engagement = payload?.youtube?.engagement;
+    const rankings = engagement?.rankings;
+    if (!root || !rankings) return;
+
+    const items = rankings?.[youtubeEngagementRange]?.[youtubeEngagementMetric] || [];
+    const rangeLabels = { allTime: '전체', currentMonth: '이번 달', recentThreeMonths: '최근 3달' };
+    const metricLabels = { views: '조회수', comments: '댓글' };
+    const signature = [
+      engagement.capturedAt || '',
+      engagement.itemCount || 0,
+      youtubeEngagementRange,
+      youtubeEngagementMetric,
+      ...items.map(item => `${item.id}:${youtubeEngagementMetric === 'comments' ? item.commentCount : item.viewCount}`)
+    ].join('|');
+    if (root.dataset.engagementSignature === signature && root.querySelector('.data-engagement-controls')) return;
+
+    const rangeButtons = Object.entries(rangeLabels).map(([key, label]) => `<button type="button" class="${key === youtubeEngagementRange ? 'is-active' : ''}" data-youtube-engagement-range="${key}">${label}</button>`).join('');
+    const metricButtons = Object.entries(metricLabels).map(([key, label]) => `<button type="button" class="${key === youtubeEngagementMetric ? 'is-active' : ''}" data-youtube-engagement-metric="${key}">${label}</button>`).join('');
+    const rows = items.length ? `<ol class="data-engagement-list">${items.map((item, index) => {
+      const metricText = youtubeEngagementMetric === 'comments'
+        ? `댓글 ${numberText(item.commentCount)}개`
+        : `조회수 ${numberText(item.viewCount)}`;
+      const kind = item.kind === 'shorts' ? 'SHORTS' : 'VIDEO';
+      return `<li class="data-engagement-item"><span class="data-engagement-rank">${index + 1}</span><a href="${escapeHtml(item.link || '#')}" target="_blank" rel="noreferrer"><strong>${escapeHtml(item.title || '제목 없음')}</strong><small>${kind} · ${escapeHtml(engagementDate(item))}</small></a><b>${escapeHtml(metricText)}</b></li>`;
+    }).join('')}</ol>` : '<div class="data-empty">해당 기간에 공개 수치를 확인할 수 있는 콘텐츠가 없습니다.</div>';
+
+    root.innerHTML = `<div class="data-engagement-controls"><div class="data-engagement-toggle" role="group" aria-label="집계 기간">${rangeButtons}</div><div class="data-engagement-toggle" role="group" aria-label="정렬 기준">${metricButtons}</div></div><div class="data-engagement-heading"><div><strong>${rangeLabels[youtubeEngagementRange]} · ${metricLabels[youtubeEngagementMetric]} 높은 순</strong><small>영상 · Shorts 통합 공개 콘텐츠</small></div>${Number.isFinite(engagement.itemCount) ? `<span>${numberText(engagement.itemCount)}개 분석</span>` : ''}</div>${rows}`;
+    root.dataset.engagementSignature = signature;
+
+    root.querySelectorAll('[data-youtube-engagement-range]').forEach(button => button.addEventListener('click', () => {
+      youtubeEngagementRange = button.dataset.youtubeEngagementRange || 'allTime';
+      root.dataset.engagementSignature = '';
+      renderYoutubeEngagement(payload);
+    }));
+    root.querySelectorAll('[data-youtube-engagement-metric]').forEach(button => button.addEventListener('click', () => {
+      youtubeEngagementMetric = button.dataset.youtubeEngagementMetric || 'views';
+      root.dataset.engagementSignature = '';
+      renderYoutubeEngagement(payload);
+    }));
+  }
+
   function hideUnavailableSoopCards() {
     const panel = document.querySelector('#data-soop-panel');
     if (!panel) return;
@@ -268,6 +333,7 @@
   }
 
   function refreshPresentation() {
+    renderYoutubeEngagement();
     hideUnavailableSoopCards();
     enhanceChartLabels();
   }
