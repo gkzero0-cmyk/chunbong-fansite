@@ -35,20 +35,32 @@ jobs:
             count=$((count + 1))
           done
           echo "REGRESSION_TEST_FILES=$count"
-      - name: Probe live Trackify Chunbong routes
+      - name: Probe Trackify SPA API routes
         run: |
           node - <<'NODE'
-          const url = 'https://www.trackify.kr/soop/chunbongtv';
-          const response = await fetch(url, { headers: { 'user-agent':'Mozilla/5.0 Chrome/152', 'accept-language':'ko-KR,ko;q=0.9' } });
-          const html = await response.text();
-          console.log(`TRACKIFY_HTTP=${response.status}`);
-          console.log(`TRACKIFY_HTML_BYTES=${html.length}`);
-          const attrs = [...html.matchAll(/(?:href|src)=["']([^"']+)["']/gi)].map(m=>m[1]);
-          console.log('TRACKIFY_ATTR_URLS=' + JSON.stringify([...new Set(attrs)], null, 2));
-          const routes = [...new Set((html.match(/(?:https?:\\?\/\\?\/[^"'<>\s]+|\\?\/(?:api|_next|soop)[^"'<>\s]+)/gi) || []))];
-          console.log('TRACKIFY_ROUTE_TOKENS=' + JSON.stringify(routes, null, 2));
-          const scriptBodies = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(Boolean);
-          console.log('TRACKIFY_INLINE_SCRIPTS=' + JSON.stringify(scriptBodies.map((body,i)=>({i,bytes:body.length,preview:body.slice(0,1200)})), null, 2));
-          const interesting = html.split(/\n/).filter(line => /broadcast|방송|history|stream|api|next|chunbongtv/i.test(line));
-          console.log('TRACKIFY_INTERESTING_HTML=' + interesting.join('\n').slice(0,18000));
+          const base = 'https://www.trackify.kr';
+          const headers = { 'user-agent':'Mozilla/5.0 Chrome/152', 'accept-language':'ko-KR,ko;q=0.9' };
+          const html = await (await fetch(`${base}/soop/chunbongtv`, { headers })).text();
+          const asset = html.match(/<script[^>]+src=["']([^"']*index-[^"']+\.js)["']/i)?.[1];
+          if (!asset) throw new Error('Trackify app bundle not found');
+          const jsResponse = await fetch(new URL(asset, base), { headers });
+          const js = await jsResponse.text();
+          console.log(`TRACKIFY_BUNDLE=${asset}`);
+          console.log(`TRACKIFY_BUNDLE_HTTP=${jsResponse.status}`);
+          console.log(`TRACKIFY_BUNDLE_BYTES=${js.length}`);
+          const stringRoutes = [...new Set((js.match(/["'`]([^"'`]*(?:\/api\/|\/soop\/|broadcast|history)[^"'`]*)["'`]/gi) || []).map(token=>token.slice(1,-1)))];
+          console.log('TRACKIFY_BUNDLE_ROUTE_STRINGS=' + JSON.stringify(stringRoutes.slice(0,240), null, 2));
+          for (const needle of ['broadcast','history','streamer','profile','chunbong','sanctions']) {
+            let start = 0;
+            let shown = 0;
+            console.log(`TRACKIFY_CONTEXT_${needle.toUpperCase()}_BEGIN`);
+            while (shown < 12) {
+              const at = js.toLowerCase().indexOf(needle, start);
+              if (at < 0) break;
+              console.log(js.slice(Math.max(0, at - 500), Math.min(js.length, at + 900)));
+              start = at + needle.length;
+              shown += 1;
+            }
+            console.log(`TRACKIFY_CONTEXT_${needle.toUpperCase()}_END`);
+          }
           NODE
