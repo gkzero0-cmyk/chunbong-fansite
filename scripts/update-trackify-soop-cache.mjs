@@ -6,7 +6,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const require = createRequire(import.meta.url);
 const {
   fetchTrackifySoopHistory,
-  extractExternalSoopStatsFromHtml,
   mergeTrackifySessions
 } = require('../lib/soop-external.js');
 
@@ -29,6 +28,13 @@ function mergeLastGoodObject(previous = {}, fresh = {}) {
     if (meaningful(value) || (typeof value === 'number' && value === 0)) result[key] = value;
   }
   return result;
+}
+
+export function historyToFreshCache(history = {}) {
+  return {
+    stats: history?.stats && typeof history.stats === 'object' && !Array.isArray(history.stats) ? history.stats : null,
+    sessions: Array.isArray(history?.sessions) ? history.sessions : []
+  };
 }
 
 export function buildTrackifyCache(previous = {}, fresh = {}, now = new Date()) {
@@ -54,11 +60,9 @@ function readCache() {
 
 async function main() {
   const previous = readCache();
-  const history = await fetchTrackifySoopHistory({ maxBroadcasts: 240, maxPages: 20 });
-  const freshStats = history.profileHtml
-    ? extractExternalSoopStatsFromHtml(history.profileHtml, 'trackify')
-    : null;
-  const next = buildTrackifyCache(previous, { stats: freshStats, sessions: history.sessions }, new Date());
+  const history = await fetchTrackifySoopHistory({ maxBroadcasts: 900, maxPages: 30, pageSize: 30 });
+  const fresh = historyToFreshCache(history);
+  const next = buildTrackifyCache(previous, fresh, new Date());
 
   if (!next.sessions.length && !next.stats) {
     throw new Error(`Trackify returned no usable data (${history.errors?.length || 0} fetch errors)`);
@@ -66,7 +70,7 @@ async function main() {
 
   fs.mkdirSync(path.dirname(CACHE_PATH), { recursive: true });
   fs.writeFileSync(CACHE_PATH, `${JSON.stringify(next, null, 2)}\n`);
-  console.log(`TRACKIFY_PROFILE_BYTES=${history.profileHtml?.length || 0}`);
+  console.log(`TRACKIFY_STATS=${fresh.stats ? 1 : 0}`);
   console.log(`TRACKIFY_BROADCAST_LINKS=${history.broadcastLinks?.length || 0}`);
   console.log(`TRACKIFY_NEW_SESSIONS=${history.sessions?.length || 0}`);
   console.log(`TRACKIFY_CACHED_SESSIONS=${next.sessions.length}`);
