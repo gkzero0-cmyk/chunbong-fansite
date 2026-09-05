@@ -19,6 +19,21 @@ assert.deepEqual(points.map(item => [item.date, item.followerCount]), [
 ]);
 assert.ok(points.every(item => item.source === 'trackify' && item.confidence === 1));
 
+const trendPoints = history.extractTrackifyFollowerPoints({
+  favorite: {
+    type: 'favorite_day',
+    points: [
+      { ts: '2026-09-05T00:00:00', value: 29766 },
+      { ts: '2026-09-04T00:00:00', value: 29784 },
+      { ts: '2026-09-03T00:00:00', value: null }
+    ]
+  }
+}, '2026-09-06T00:00:00.000Z');
+assert.deepEqual(trendPoints.map(item => [item.date, item.followerCount]), [
+  ['2026-09-04', 29784],
+  ['2026-09-05', 29766]
+], 'Trackify streamer trend favorite points must be accepted as exact dated observations');
+
 const directSnapshots = history.snapshotsToFollowerPoints({ snapshots: [
   { date: '2026-09-01', capturedAt: '2026-09-01T23:00:00Z', soop: { followerCount: 29735 } },
   { date: '2026-09-02', capturedAt: '2026-09-02T23:00:00Z', soop: { followerCount: null } }
