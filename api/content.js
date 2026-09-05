@@ -11,6 +11,17 @@ const fetchChunbongData = require('../lib/chunbong-data');
 const youtubeEngagementCache = require('../data/youtube-engagement-cache.json');
 const { buildEngagementRankings } = require('../lib/youtube-engagement');
 
+function compactCategory(row = {}) {
+  return {
+    name: row.name,
+    minutes: row.minutes,
+    streamCount: row.streamCount,
+    sharePercent: row.sharePercent,
+    averageViewers: row.averageViewers,
+    maxViewers: row.maxViewers
+  };
+}
+
 function compactCalendarSession(session = {}) {
   return {
     title: session.title,
@@ -43,6 +54,21 @@ function compactDailyRow(row = {}) {
     maxViewers: row.maxViewers,
     followerDelta: row.followerDelta,
     fanclubDelta: row.fanclubDelta
+  };
+}
+
+function compactMonthlyRow(row = {}) {
+  return {
+    month: row.month,
+    activeDays: row.activeDays,
+    streamCount: row.streamCount,
+    durationMinutes: row.durationMinutes,
+    averageStreamMinutes: row.averageStreamMinutes,
+    averageViewers: row.averageViewers,
+    maxViewers: row.maxViewers,
+    followerDelta: row.followerDelta,
+    fanclubDelta: row.fanclubDelta,
+    categories: (Array.isArray(row.categories) ? row.categories : []).map(compactCategory)
   };
 }
 
@@ -80,23 +106,35 @@ function compactDataPayload(payload, options = {}) {
     : new Date(payload.capturedAt || Date.now());
 
   let compacted = payload;
-  if (soop && history && currentFallback && typeof currentFallback === 'object') {
-    const sessions = Array.isArray(currentFallback.sessions) ? currentFallback.sessions : [];
+  if (soop) {
+    const sessions = Array.isArray(currentFallback?.sessions) ? currentFallback.sessions : [];
+    const categoryPeriods = soop.categoryPeriods || {};
     compacted = {
       ...payload,
       soop: {
         ...soop,
         daily: (Array.isArray(soop.daily) ? soop.daily : []).map(compactDailyRow),
+        monthlyStats: (Array.isArray(soop.monthlyStats) ? soop.monthlyStats : []).map(compactMonthlyRow),
         calendar: (Array.isArray(soop.calendar) ? soop.calendar : []).map(compactCalendarRow),
+        categories: (Array.isArray(soop.categories) ? soop.categories : []).map(compactCategory),
+        categoryPeriods: {
+          recentThreeMonths: (Array.isArray(categoryPeriods.recentThreeMonths) ? categoryPeriods.recentThreeMonths : []).map(compactCategory),
+          recentThreeMonthsStart: categoryPeriods.recentThreeMonthsStart || '',
+          throughDate: categoryPeriods.throughDate || ''
+        },
         recentSessions: (Array.isArray(soop.recentSessions) ? soop.recentSessions : []).map(compactRecentSession),
-        externalHistory: {
-          ...history,
-          currentFallback: {
-            ...currentFallback,
-            trackifySessionCount: sessions.length,
-            sessions: sessions.slice(-12).map(session => ({ id: session?.id, measurement: session?.measurement }))
+        ...(history ? {
+          externalHistory: {
+            ...history,
+            ...(currentFallback && typeof currentFallback === 'object' ? {
+              currentFallback: {
+                ...currentFallback,
+                trackifySessionCount: sessions.length,
+                sessions: sessions.slice(-12).map(session => ({ id: session?.id, measurement: session?.measurement }))
+              }
+            } : {})
           }
-        }
+        } : {})
       }
     };
   }
@@ -132,3 +170,5 @@ async function handler(req,res) {
 module.exports = handler;
 module.exports.compactDataPayload = compactDataPayload;
 module.exports.engagementSummary = engagementSummary;
+module.exports.compactCategory = compactCategory;
+module.exports.compactMonthlyRow = compactMonthlyRow;
