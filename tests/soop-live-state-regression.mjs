@@ -23,6 +23,22 @@ assert.equal(structured.viewerCount, 73);
 assert.equal(structured.categoryId, '00810000');
 assert.equal(structured.categoryName, '버추얼');
 
+const topLevel = normalizeSoopBroadPayload({
+  broadNo: 296896937,
+  broadCateNo: 40017,
+  userId: 'chunbongtv',
+  broadTitle: '식당 직원 구했습니다. 근데 일을 잘 못하네요.',
+  broadStart: '2026-09-05T07:58:59.000Z',
+  currentSumViewer: 78,
+  categoryName: '마인크래프트'
+}, 'soop-channel');
+assert.equal(topLevel.live, true, 'real SOOP section/broad response is a top-level broadcast object');
+assert.equal(topLevel.broadcastId, '296896937');
+assert.equal(topLevel.viewerCount, 78);
+assert.equal(topLevel.categoryId, '40017');
+assert.equal(topLevel.categoryName, '마인크래프트');
+assert.equal(topLevel.startedAt, '2026-09-05T07:58:59.000Z');
+
 const resolved = resolveLiveState([
   { live: false, authoritative: false, source: 'html-fallback' },
   structured
