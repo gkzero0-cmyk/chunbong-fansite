@@ -16,6 +16,12 @@ path = ROOT / 'lib' / 'chunbong-data.js'
 text = path.read_text()
 text = replace_once(
     text,
+    "const soopExternalHistory = require('../data/soop-external-history.json');",
+    "const soopExternalHistory = require('../data/soop-external-history.json');\nconst soopFollowerHistory = require('../data/soop-follower-history.json');",
+    'follower history data import'
+)
+text = replace_once(
+    text,
     "const { fetchExternalSoopStats, mergeExternalSessions, mergeSoopMetricSources, extractExternalSoopStatsFromHtml } = require('./soop-external');",
     "const { fetchExternalSoopStats, mergeExternalSessions, mergeSoopMetricSources, extractExternalSoopStatsFromHtml } = require('./soop-external');\nconst { fetchSoopStructuredLive, resolveLiveState } = require('./soop-live-state');",
     'live resolver import'
@@ -73,11 +79,42 @@ if new_live not in text:
     if count != 1:
         raise SystemExit('missing patch anchor: fetchSoopLive body')
 
+read_follower = """function readFollowerHistory() {\n  return soopFollowerHistory && Array.isArray(soopFollowerHistory.points)\n    ? soopFollowerHistory\n    : { version: 1, points: [] };\n}\n\n"""
+anchor = "function readSoopSessionHistory() {"
+if read_follower not in text:
+    if anchor not in text:
+        raise SystemExit('missing patch anchor: read follower history')
+    text = text.replace(anchor, read_follower + anchor, 1)
+
+text = replace_once(
+    text,
+    "  const readSessions = deps.readSessions || readSoopSessionHistory;",
+    "  const readSessions = deps.readSessions || readSoopSessionHistory;\n  const readFollower = deps.readFollowerHistory || readFollowerHistory;",
+    'follower history dependency'
+)
+text = replace_once(
+    text,
+    "  const soopAnalytics = buildSoopAnalytics(sessions, snapshots?.snapshots || [], live, now);",
+    "  const followerHistory = readFollower();\n  const soopAnalytics = buildSoopAnalytics(sessions, snapshots?.snapshots || [], live, now, { followerHistory: followerHistory?.points || [] });",
+    'analytics follower history call'
+)
+text = replace_once(
+    text,
+    "      categories: soopAnalytics.categories,\n      recentSessions: soopAnalytics.recentSessions,",
+    "      categories: soopAnalytics.categories,\n      categoryPeriods: soopAnalytics.categoryPeriods,\n      recentSessions: soopAnalytics.recentSessions,",
+    'category periods response'
+)
 text = replace_once(
     text,
     "module.exports.fetchSoopLive = fetchSoopLive;",
     "module.exports.fetchSoopLive = fetchSoopLive;\nmodule.exports.fetchSoopStructuredLive = fetchSoopStructuredLive;",
     'structured live export'
 )
+text = replace_once(
+    text,
+    "module.exports.readSnapshotHistory = readSnapshotHistory;",
+    "module.exports.readSnapshotHistory = readSnapshotHistory;\nmodule.exports.readFollowerHistory = readFollowerHistory;",
+    'follower history export'
+)
 path.write_text(text)
-print('APPLIED_TASK1_LIVE_PATCH=1')
+print('APPLIED_SOOP_CORE_FEATURE_PATCH=1')
