@@ -90,3 +90,5 @@ jobs:
           git commit -m 'fix: preserve full SOOP history for period controls'
           git pull --rebase origin feat/soop-history-live-category-controls
           git push origin HEAD:feat/soop-history-live-category-controls
+
+# Rerun after updating the daily display regression to the approved rolling-week contract.
