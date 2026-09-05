@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-05T20:57:38.904Z",
+  "checkedAt": "2026-09-05T21:01:01.593Z",
   "baseUrl": "https://chunbong-fansite.vercel.app",
   "endpoints": {
     "dataJs": {
@@ -39,8 +39,10 @@
       "hideUnavailableSoopCards": true,
       "installDataFetchTransform": true,
       "renderYoutubeEngagement": true,
-      "data-engagement-range": false,
-      "data-engagement-metric": false
+      "data-youtube-engagement-range": true,
+      "data-youtube-engagement-metric": true,
+      "soop.daily = limitDailyRows(soop.daily)": true,
+      "slice(-10)": true
     },
     "enhancementCssTokens": {
       "font-size:18px": true,
@@ -48,7 +50,7 @@
       "font-size:13px": true,
       "font-size:17px": true,
       ".data-engagement-controls": true,
-      ".data-engagement-button": false
+      ".data-engagement-toggle button": true
     },
     "dataHtmlHasDataJs": true,
     "dataHtmlHasEnhancements": true,
@@ -60,7 +62,7 @@
     "fallback": false,
     "currentFallback": false,
     "reason": null,
-    "capturedAt": "2026-09-05T20:57:36.808Z",
+    "capturedAt": "2026-09-05T21:00:59.425Z",
     "errors": [],
     "errorCount": 0,
     "sourceSummaryCleared": true,
@@ -83,8 +85,8 @@
         "viewershipHours": 2458,
         "cumulativeUsers": null,
         "cumulativeUpCount": 79597,
-        "monthlyStarCount": 18147,
-        "starsPerHour": 358,
+        "monthlyStarCount": 18154,
+        "starsPerHour": 359,
         "monthlySupporterCount": 62,
         "monthlyChatCount": 13375,
         "monthlyKickCount": null,
@@ -129,5 +131,5 @@
       }
     }
   },
-  "ok": false
+  "ok": true
 }
