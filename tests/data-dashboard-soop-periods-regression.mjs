@@ -5,6 +5,7 @@ import vm from 'node:vm';
 const html = fs.readFileSync(new URL('../data.html', import.meta.url), 'utf8');
 const js = fs.readFileSync(new URL('../data.js', import.meta.url), 'utf8');
 const periods = fs.readFileSync(new URL('../data-soop-periods.js', import.meta.url), 'utf8');
+const enhancements = fs.readFileSync(new URL('../data-enhancements.js', import.meta.url), 'utf8');
 
 assert.ok(html.includes('id="data-daily-periods"'), 'daily view must expose rolling-week controls');
 assert.ok(html.includes('id="data-month-periods"'), 'monthly view must expose data-driven month controls');
@@ -13,6 +14,7 @@ for (const marker of ['data-soop-week-index','data-soop-month-value','최근 3�
 assert.ok(!periods.includes("kpi('이번 달 후원자'"), 'removed monthly supporter KPI must not be rendered');
 assert.ok(periods.includes("label==='이번 달 후원자'"), 'controller must remove stale cached monthly supporter cards');
 assert.ok(!periods.includes('slice(-10)'), 'period controller must operate on full daily API history');
+assert.ok(!enhancements.includes('soop.daily = limitDailyRows(soop.daily)'), 'fetch transform must preserve full SOOP daily history for older rolling weeks');
 
 const helperStart = js.indexOf('function buildRollingWeekOptions');
 const helperEnd = js.indexOf('function kpi', helperStart);
