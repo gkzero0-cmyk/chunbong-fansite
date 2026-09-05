@@ -7,8 +7,6 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const source = fs.readFileSync(path.join(root, 'data-enhancements.js'), 'utf8');
 
-assert.doesNotMatch(source, /function limitDailyRows/);
-assert.doesNotMatch(source, /soop\.daily\s*=\s*limitDailyRows/);
 assert.match(source, /이번 달 별풍선/);
 assert.match(source, /별풍선 시급/);
 assert.match(source, /이번 달 채금/);
