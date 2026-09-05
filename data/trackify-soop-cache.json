@@ -1,49 +1,49 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-04T20:25:28.834Z",
+  "capturedAt": "2026-09-05T06:25:43.979Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 29784,
-    "fanclubCount": 7598,
-    "subscriberCount": 44,
+    "followerCount": 29776,
+    "fanclubCount": 7606,
+    "subscriberCount": 41,
     "supporterCount": 23,
     "averageViewers": 46,
     "maxViewers": 75,
-    "airtimeMinutes": 2217,
-    "viewershipHours": 1688,
-    "cumulativeUpCount": 79507,
-    "totalAirtimeMinutes": 616680,
-    "monthlyStarCount": 13098,
-    "starsPerHour": 354,
+    "airtimeMinutes": 2265,
+    "viewershipHours": 1731,
+    "cumulativeUpCount": 79585,
+    "totalAirtimeMinutes": 617477,
+    "monthlyStarCount": 13108,
+    "starsPerHour": 347,
     "monthlySupporterCount": 51,
-    "monthlyChatCount": 10410,
+    "monthlyChatCount": 10444,
     "monthlyMuteCount": 4,
     "stationOpenedAt": "2022-09-29T14:58:14",
     "latestBroadcastDate": "2026-09-04T16:52:52",
     "categories": [
       {
         "name": "버추얼",
-        "minutes": 7171,
-        "streamCount": 15,
-        "sharePercent": 31.2
+        "minutes": 7967,
+        "streamCount": 16,
+        "sharePercent": 33.5
       },
       {
         "name": "마인크래프트",
         "minutes": 6688,
         "streamCount": 13,
-        "sharePercent": 29.1
+        "sharePercent": 28.1
       },
       {
         "name": "오버워치",
         "minutes": 5774,
         "streamCount": 11,
-        "sharePercent": 25.1
+        "sharePercent": 24.3
       },
       {
         "name": "PUBG: 배틀그라운드",
         "minutes": 2805,
         "streamCount": 9,
-        "sharePercent": 12.2
+        "sharePercent": 11.8
       },
       {
         "name": "아르마 3",
@@ -11211,6 +11211,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/296870505"
+    },
+    {
+      "id": "trackify-296870537",
+      "broadcastId": "296870537",
+      "date": "2026-09-04",
+      "startedAt": "2026-09-04T16:52:52+09:00",
+      "endedAt": "2026-09-05T06:09:13+09:00",
+      "durationMinutes": 796,
+      "averageViewers": 49,
+      "maxViewers": 75,
+      "viewerSampleCount": 159,
+      "uniqueViewers": null,
+      "starCount": 9011,
+      "supporterCount": 38,
+      "chatCount": 1792,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "전직 요식업계 종사자의 요리서버 오픈런",
+      "categories": [
+        {
+          "id": "00810000",
+          "name": "버추얼",
+          "minutes": 796,
+          "sampleCount": 159,
+          "averageViewers": 49,
+          "maxViewers": 75
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/296870537"
     }
   ]
 }

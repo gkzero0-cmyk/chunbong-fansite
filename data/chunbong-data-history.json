@@ -49,22 +49,22 @@
     },
     {
       "date": "2026-09-05",
-      "capturedAt": "2026-09-04T20:26:10.063Z",
+      "capturedAt": "2026-09-05T06:26:23.596Z",
       "soop": {
         "live": false,
-        "followerCount": 29791,
-        "fanclubCount": 7598,
-        "measuredTotalMinutes": 232376,
-        "totalAirtimeMinutes": 616680,
+        "followerCount": 29774,
+        "fanclubCount": 7606,
+        "measuredTotalMinutes": 233172,
+        "totalAirtimeMinutes": 617477,
         "monthAverageViewers": 46,
         "monthMaxViewers": 75,
-        "subscriberCount": 44,
+        "subscriberCount": 41,
         "supporterCount": 23,
         "monthUniqueViewers": null,
-        "viewershipHours": 1688,
+        "viewershipHours": 1731,
         "cumulativeUsers": null,
-        "cumulativeUpCount": 79507,
-        "monthlyVodCount": 2,
+        "cumulativeUpCount": 79585,
+        "monthlyVodCount": 3,
         "monthlyVodMinutes": null,
         "monthlyCatchCount": 1,
         "monthlyClipCount": 3
@@ -73,7 +73,7 @@
         "subscriberCount": 2680,
         "viewCount": 6755605,
         "videoCount": 203,
-        "recentUploadCount": 2
+        "recentUploadCount": 0
       }
     }
   ]
