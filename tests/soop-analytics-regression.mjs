@@ -115,4 +115,25 @@ assert.equal(result.measurement.viewer, 'fan-site-sampled-5m');
 assert.equal(result.measurement.follower, 'public-snapshot');
 assert.equal(result.measurement.fanclub, 'public-snapshot-or-unavailable');
 
+const mergedFollowerSnapshots = analytics.mergeFollowerSnapshots(
+  [
+    { date: '2026-09-04', soop: { followerCount: null, fanclubCount: 70 } },
+    { date: '2026-09-05', soop: { followerCount: 30100, fanclubCount: 71 } }
+  ],
+  [
+    { date: '2026-09-04', followerCount: 30000, source: 'trackify' },
+    { date: '2026-09-05', followerCount: 30090, source: 'trackify' }
+  ]
+);
+assert.equal(
+  mergedFollowerSnapshots.find(item => item.date === '2026-09-04')?.soop?.followerCount,
+  30000,
+  'null direct snapshots must not erase exact Trackify favorite history'
+);
+assert.equal(
+  mergedFollowerSnapshots.find(item => item.date === '2026-09-05')?.soop?.followerCount,
+  30100,
+  'finite same-day fan-site snapshots must override retrospective Trackify favorite history'
+);
+
 console.log('SOOP analytics regression test passed');
