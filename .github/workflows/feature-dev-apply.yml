@@ -1,0 +1,39 @@
+name: Feature dev apply
+
+on:
+  push:
+    branches: [feat/soop-history-live-category-controls]
+    paths:
+      - '.github/workflows/feature-dev-apply.yml'
+      - 'scripts/dev-apply-soop-feature.py'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/soop-history-live-category-controls
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply feature patch
+        run: python scripts/dev-apply-soop-feature.py
+      - name: Commit generated edits
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo 'No generated edits'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/chunbong-data.js
+          git commit -m 'fix: wire structured SOOP live resolver'
+          git pull --rebase origin feat/soop-history-live-category-controls
+          git push origin HEAD:feat/soop-history-live-category-controls
