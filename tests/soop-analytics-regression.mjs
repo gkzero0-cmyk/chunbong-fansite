@@ -110,7 +110,7 @@ assert.equal(september.fanclubDelta, 1);
 
 assert.equal(result.calendar.find(item => item.date === '2026-09-03').durationMinutes, 240);
 assert.deepEqual(result.categories.map(item => [item.name, item.minutes]), [['버추얼', 360], ['종합게임', 60]]);
-assert.equal(result.categories[0].sharePercent, 86);
+assert.equal(result.categories[0].sharePercent, 85.7);
 assert.equal(result.measurement.viewer, 'fan-site-sampled-5m');
 assert.equal(result.measurement.follower, 'public-snapshot');
 assert.equal(result.measurement.fanclub, 'public-snapshot-or-unavailable');
