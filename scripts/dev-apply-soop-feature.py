@@ -68,7 +68,8 @@ new_live = r'''async function fetchSoopLive() {
 }'''
 pattern = re.compile(r"async function fetchSoopLive\(\) \{.*?\n\}\n\nasync function fetchSoopChannelProfile", re.S)
 if new_live not in text:
-    text, count = pattern.subn(new_live + "\n\nasync function fetchSoopChannelProfile", text, count=1)
+    replacement = new_live + "\n\nasync function fetchSoopChannelProfile"
+    text, count = pattern.subn(lambda _match: replacement, text, count=1)
     if count != 1:
         raise SystemExit('missing patch anchor: fetchSoopLive body')
 
