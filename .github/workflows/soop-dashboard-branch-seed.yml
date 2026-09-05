@@ -1,4 +1,4 @@
-name: SOOP dashboard branch seed
+name: SOOP dashboard branch finalizer
 
 on:
   push:
@@ -10,9 +10,9 @@ permissions:
   contents: write
 
 jobs:
-  seed:
+  finalize:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,27 +21,72 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Collect exact Trackify favorite history
-        run: node scripts/update-soop-follower-history.mjs
-      - name: Verify current structured SOOP live parser
+      - name: Remove legacy 10-day truncation and stale smoke expectations
         run: |
-          node <<'NODE'
-          const { fetchSoopStructuredLive } = require('./lib/soop-live-state.js');
-          fetchSoopStructuredLive().then(value=>{
-            console.log('SOOP_LIVE_RESULT='+JSON.stringify(value));
-            if(value.live !== true) process.exit(2);
-          }).catch(error=>{console.error(error);process.exit(1)});
-          NODE
-      - name: Commit seeded history
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('data-enhancements.js')
+          text = p.read_text()
+          text2, count = re.subn(
+              r"\n  function limitDailyRows\(rows = \[\]\) \{.*?\n  \}\n\n  function normalizeDailyTrendRows",
+              "\n  function normalizeDailyTrendRows",
+              text,
+              count=1,
+              flags=re.S,
+          )
+          if count != 1:
+              raise SystemExit('expected one limitDailyRows helper')
+          text2, count2 = re.subn(r"\n    soop\.daily = limitDailyRows\(soop\.daily\);", "", text2, count=1)
+          if count2 != 1:
+              raise SystemExit('expected one SOOP daily truncation assignment')
+          p.write_text(text2)
+
+          smoke = Path('.github/workflows/production-data-smoke.yml')
+          s = smoke.read_text()
+          old = "            'renderYoutubeEngagement', 'data-youtube-engagement-range', 'data-youtube-engagement-metric',\n            'soop.daily = limitDailyRows(soop.daily)', 'slice(-10)'"
+          new = "            'renderYoutubeEngagement', 'data-youtube-engagement-range', 'data-youtube-engagement-metric'"
+          if old not in s:
+              raise SystemExit('expected legacy production smoke truncation tokens')
+          smoke.write_text(s.replace(old, new, 1))
+          PY
+      - name: Remove temporary diagnostics
+        run: |
+          rm -f notes/tree-swap-readme.txt
+          rm -f docs/superpowers/plans/2026-09-06-soop-live-history-category.md
+          rm -f .github/workflows/soop-dashboard-branch-seed.yml
+      - name: Verify JavaScript syntax
+        run: |
+          node --check data.js
+          node --check data-core.js
+          node --check data-soop-periods.js
+          node --check data-enhancements.js
+          node --check lib/chunbong-data.js
+          node --check lib/soop-analytics.js
+          node --check lib/soop-live-state.js
+          node --check lib/soop-follower-history.js
+          node --check scripts/update-soop-follower-history.mjs
+      - name: Run all regression tests
+        run: |
+          set -e
+          count=0
+          for file in tests/*.mjs; do
+            echo "==> $file"
+            node "$file"
+            count=$((count + 1))
+          done
+          echo "REGRESSION_TEST_FILES=$count"
+      - name: Commit verified cleanup
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          if git diff --quiet -- data/soop-follower-history.json; then
-            echo 'Follower history unchanged'
+          git add -A data-enhancements.js .github/workflows/production-data-smoke.yml .github/workflows/soop-dashboard-branch-seed.yml notes/tree-swap-readme.txt docs/superpowers/plans/2026-09-06-soop-live-history-category.md
+          if git diff --cached --quiet; then
+            echo 'No cleanup changes'
             exit 0
           fi
-          git add data/soop-follower-history.json
-          git commit -m 'data: seed Trackify favorite history'
+          git commit -m 'fix: preserve full SOOP history for period controls'
           git pull --rebase origin feat/soop-history-live-category-controls
           git push origin HEAD:feat/soop-history-live-category-controls
