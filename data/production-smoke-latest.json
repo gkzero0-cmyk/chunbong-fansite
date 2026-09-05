@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-04T20:25:58.312Z",
+  "checkedAt": "2026-09-05T20:57:38.904Z",
   "baseUrl": "https://chunbong-fansite.vercel.app",
   "endpoints": {
     "dataJs": {
@@ -8,11 +8,11 @@
     },
     "dataEnhancementsJs": {
       "status": 200,
-      "bytes": 11306
+      "bytes": 15940
     },
     "dataEnhancementsCss": {
       "status": 200,
-      "bytes": 1135
+      "bytes": 3363
     },
     "dataHtml": {
       "status": 200,
@@ -20,7 +20,7 @@
     },
     "apiData": {
       "status": 200,
-      "bytes": 174608
+      "bytes": 180533
     }
   },
   "staticChecks": {
@@ -38,7 +38,7 @@
       "formatFullDate": true,
       "hideUnavailableSoopCards": true,
       "installDataFetchTransform": true,
-      "renderYoutubeEngagement": false,
+      "renderYoutubeEngagement": true,
       "data-engagement-range": false,
       "data-engagement-metric": false
     },
@@ -47,7 +47,7 @@
       "font-size:28px": true,
       "font-size:13px": true,
       "font-size:17px": true,
-      ".data-engagement-controls": false,
+      ".data-engagement-controls": true,
       ".data-engagement-button": false
     },
     "dataHtmlHasDataJs": true,
@@ -60,7 +60,7 @@
     "fallback": false,
     "currentFallback": false,
     "reason": null,
-    "capturedAt": "2026-09-04T20:25:56.072Z",
+    "capturedAt": "2026-09-05T20:57:36.808Z",
     "errors": [],
     "errorCount": 0,
     "sourceSummaryCleared": true,
@@ -77,20 +77,20 @@
     "trackify": {
       "sourcePresent": true,
       "fields": {
-        "subscriberCount": 44,
+        "subscriberCount": 41,
         "supporterCount": 23,
         "monthUniqueViewers": null,
-        "viewershipHours": 1688,
+        "viewershipHours": 2458,
         "cumulativeUsers": null,
-        "cumulativeUpCount": 79507,
-        "monthlyStarCount": 13098,
-        "starsPerHour": 354,
-        "monthlySupporterCount": 51,
-        "monthlyChatCount": 10410,
+        "cumulativeUpCount": 79597,
+        "monthlyStarCount": 18147,
+        "starsPerHour": 358,
+        "monthlySupporterCount": 62,
+        "monthlyChatCount": 13375,
         "monthlyKickCount": null,
         "monthlyMuteCount": 4,
         "stationOpenedAt": "2022-09-29T14:58:14",
-        "latestBroadcastDate": "2026-09-04T16:52:52",
+        "latestBroadcastDate": "2026-09-05T16:58:59",
         "categoryRankings": []
       },
       "categoryCount": 0,
@@ -99,33 +99,33 @@
     },
     "youtube": {
       "subscriberCount": 2680,
-      "viewCount": 6755605,
-      "videoCount": 203,
+      "viewCount": 6756378,
+      "videoCount": 204,
       "snapshotFallback": false,
-      "monthlyUploadCount": 2,
+      "monthlyUploadCount": 3,
       "recentVideoCount": 12,
       "recentShortCount": 12,
-      "newestVideoDate": "2026-08-05T09:00:38+00:00",
-      "newestShortDate": "2026-09-02T09:00:12+00:00",
+      "newestVideoDate": "1개월 전",
+      "newestShortDate": "2026-09-05T09:00:16+00:00",
       "engagement": {
-        "source": null,
-        "capturedAt": null,
-        "engagementItemCount": 0,
+        "source": "https://www.youtube.com/@%EC%B6%98%EB%B4%89TV",
+        "capturedAt": "2026-09-05T06:26:22.688Z",
+        "engagementItemCount": 203,
         "engagementRankingCounts": {
           "allTime": {
-            "views": 0,
-            "comments": 0
+            "views": 5,
+            "comments": 5
           },
           "currentMonth": {
-            "views": 0,
-            "comments": 0
+            "views": 2,
+            "comments": 2
           },
           "recentThreeMonths": {
-            "views": 0,
-            "comments": 0
+            "views": 5,
+            "comments": 5
           }
         },
-        "engagementRankingShapeOk": false
+        "engagementRankingShapeOk": true
       }
     }
   },
