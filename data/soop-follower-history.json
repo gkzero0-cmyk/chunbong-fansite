@@ -1,4 +1,19 @@
 {
   "version": 1,
-  "points": []
+  "points": [
+    {
+      "date": "2026-09-04",
+      "followerCount": 29780,
+      "source": "fan-site-snapshot",
+      "capturedAt": "2026-09-04T06:27:34.181Z",
+      "confidence": 2
+    },
+    {
+      "date": "2026-09-05",
+      "followerCount": 29774,
+      "source": "fan-site-snapshot",
+      "capturedAt": "2026-09-05T06:26:23.596Z",
+      "confidence": 2
+    }
+  ]
 }
