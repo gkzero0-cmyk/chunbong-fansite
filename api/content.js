@@ -110,6 +110,7 @@ function compactDataPayload(payload, options = {}) {
   };
 }
 
+// Vercel entry point for multiplexed content requests.
 async function handler(req,res) {
   const type=req.query?.type;
   const forceDataRefresh=type==='data'&&String(req.query?.refresh||'')==='1';
