@@ -105,11 +105,12 @@ jobs:
           ];
           const enhancementTokens = [
             'normalizeDailyTrendRows', 'formatFullDate', 'hideUnavailableSoopCards', 'installDataFetchTransform',
-            'renderYoutubeEngagement', 'data-engagement-range', 'data-engagement-metric'
+            'renderYoutubeEngagement', 'data-youtube-engagement-range', 'data-youtube-engagement-metric',
+            'soop.daily = limitDailyRows(soop.daily)', 'slice(-10)'
           ];
           const enhancementCssTokens = [
             'font-size:18px', 'font-size:28px', 'font-size:13px', 'font-size:17px',
-            '.data-engagement-controls', '.data-engagement-button'
+            '.data-engagement-controls', '.data-engagement-toggle button'
           ];
           const overviewFields = [
             'subscriberCount','supporterCount','monthUniqueViewers','viewershipHours','cumulativeUsers','cumulativeUpCount',
@@ -213,7 +214,6 @@ jobs:
             && result.apiSummary.legacySessionCount === 0
             && result.apiSummary.trackifyHistorySessionCount > 0
             && result.apiSummary.arrayCounts.daily > 0
-            && result.apiSummary.arrayCounts.daily <= 10
             && result.apiSummary.arrayCounts.monthlyStats > 0
             && result.apiSummary.arrayCounts.calendar > 0
             && result.apiSummary.arrayCounts.recentSessions > 0
