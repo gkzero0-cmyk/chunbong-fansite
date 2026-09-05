@@ -30,7 +30,7 @@ jobs:
           node-version: '24'
       - name: Refresh Trackify SOOP history
         run: node scripts/update-trackify-soop-cache.mjs
-      - name: Refresh SOOP follower history
+      - name: Refresh SOOP favorite history
         run: node scripts/update-soop-follower-history.mjs
       - name: Refresh YouTube engagement cache
         run: node scripts/update-youtube-engagement-cache.mjs
