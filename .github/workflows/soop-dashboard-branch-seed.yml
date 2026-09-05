@@ -12,76 +12,28 @@ permissions:
 jobs:
   seed:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
           ref: feat/soop-history-live-category-controls
-          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Seed exact follower history
-        run: node scripts/update-soop-follower-history.mjs
-      - name: Probe SOOP structured endpoint with browser headers
-        run: |
-          node <<'NODE'
-          const url='https://api-channel.sooplive.co.kr/v1.1/channel/chunbongtv/home/section/broad';
-          const variants=[
-            ['basic',{'user-agent':'Mozilla/5.0','accept':'application/json'}],
-            ['browser',{'user-agent':'Mozilla/5.0','accept':'application/json,text/plain,*/*','referer':'https://www.sooplive.co.kr/','origin':'https://www.sooplive.co.kr','accept-language':'ko-KR,ko;q=0.9'}],
-            ['com',{'user-agent':'Mozilla/5.0','accept':'application/json,text/plain,*/*','referer':'https://www.sooplive.com/','origin':'https://www.sooplive.com','accept-language':'ko-KR,ko;q=0.9'}]
-          ];
-          (async()=>{
-            for(const [name,headers] of variants){
-              try{
-                const r=await fetch(url,{headers});
-                const text=await r.text();
-                let json=null;try{json=JSON.parse(text)}catch{}
-                const describe=node=>node&&typeof node==='object'?{keys:Object.keys(node).slice(0,50),broad:node.broad??node?.data?.broad??null,dataKeys:node.data&&typeof node.data==='object'?Object.keys(node.data).slice(0,40):[]}:null;
-                console.log(`SOOP_${name.toUpperCase()}=${JSON.stringify({status:r.status,bytes:text.length,shape:describe(json),preview:text.slice(0,800)})}`);
-              }catch(e){console.log(`SOOP_${name.toUpperCase()}_ERROR=${e?.message||String(e)}`)}
-            }
-          })();
-          NODE
-      - name: Inspect Trackify profile chunk around time-series calls
+      - name: Inspect Trackify API client and test favorite trend
         run: |
           node <<'NODE'
           const base='https://www.trackify.kr';
-          const headers={'user-agent':'Mozilla/5.0','accept':'text/html,application/javascript,*/*'};
-          const get=async url=>{const r=await fetch(url,{headers});if(!r.ok)throw new Error(`${url} ${r.status}`);return r.text()};
+          const headers={'user-agent':'Mozilla/5.0','accept':'application/javascript,application/json,*/*'};
+          const get=async url=>{const r=await fetch(url,{headers});const text=await r.text();if(!r.ok)throw new Error(`${url} ${r.status} ${text.slice(0,200)}`);return text};
           (async()=>{
-            const html=await get(`${base}/soop/chunbongtv`);
-            const entry=html.match(/<script[^>]+src=["']([^"']*index-[^"']+\.js)["']/)?.[1];
-            const indexUrl=new URL(entry,base).href;
-            const index=await get(indexUrl);
-            const chunkNames=[...new Set([...index.matchAll(/_id_-[A-Za-z0-9_-]+\.js/g)].map(m=>m[0]))];
-            console.log('TRACKIFY_ID_CHUNKS='+JSON.stringify(chunkNames));
-            const urls=chunkNames.map(name=>new URL(`/assets/${name}`,base).href);
-            for(const url of urls){
-              let code='';try{code=await get(url)}catch{continue}
-              if(!/fanCount|broadStartAt|monthAvgViewer|category-distribution|granularity|broadcasts/.test(code))continue;
-              console.log('TRACKIFY_CHUNK='+url.split('/').at(-1));
-              for(const needle of ['fanCount','broadStartAt','granularity','category-distribution','broadcasts','monthAvgViewer','history','chart']){
-                let pos=0,count=0;
-                while((pos=code.indexOf(needle,pos))>=0&&count<8){
-                  console.log(`TRACKIFY_SNIPPET_${needle}_${count}=`+code.slice(Math.max(0,pos-700),Math.min(code.length,pos+1000)).replace(/\s+/g,' '));
-                  pos+=needle.length;count++;
-                }
+            const code=await get(`${base}/assets/TrackifyApi-CyUyuZyo.js`);
+            for(const needle of ['streamerTrendMulti','streamerTrend','batch','streamerOverview']){
+              let pos=0,count=0;
+              while((pos=code.indexOf(needle,pos))>=0&&count<10){
+                console.log(`API_${needle}_${count}=`+code.slice(Math.max(0,pos-1200),Math.min(code.length,pos+2200)).replace(/\s+/g,' '));
+                pos+=needle.length;count++;
               }
             }
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
-      - name: Commit seeded follower history
-        run: |
-          set -euo pipefail
-          if git diff --quiet -- data/soop-follower-history.json; then
-            echo 'No follower history change'
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/soop-follower-history.json
-          git commit -m 'data: seed SOOP favorite history'
-          git pull --rebase origin feat/soop-history-live-category-controls
-          git push origin HEAD:feat/soop-history-live-category-controls
