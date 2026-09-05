@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: soop-feature-dev-apply
+  cancel-in-progress: false
+
 jobs:
   apply:
     runs-on: ubuntu-latest
@@ -37,3 +41,5 @@ jobs:
           git commit -m 'feat: wire SOOP history and period dashboard'
           git pull --rebase origin feat/soop-history-live-category-controls
           git push origin HEAD:feat/soop-history-live-category-controls
+
+# Temporary branch-only generator; remove before merge.
