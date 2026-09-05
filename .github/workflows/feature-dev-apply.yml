@@ -33,7 +33,7 @@ jobs:
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add lib/chunbong-data.js
-          git commit -m 'fix: wire structured SOOP live resolver'
+          git add lib/chunbong-data.js data.js data-enhancements.js data-enhancements.css
+          git commit -m 'feat: wire SOOP history and period dashboard'
           git pull --rebase origin feat/soop-history-live-category-controls
           git push origin HEAD:feat/soop-history-live-category-controls
