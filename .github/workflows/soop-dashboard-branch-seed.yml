@@ -6,32 +6,42 @@ on:
     paths:
       - '.github/workflows/soop-dashboard-branch-seed.yml'
 
+permissions:
+  contents: write
+
 jobs:
-  probe:
+  seed:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
           ref: feat/soop-history-live-category-controls
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Probe Trackify favorite daily trend
+      - name: Collect exact Trackify favorite history
+        run: node scripts/update-soop-follower-history.mjs
+      - name: Verify current structured SOOP live parser
         run: |
           node <<'NODE'
-          const url=new URL('https://www.trackify.kr/api/v1/p/soop/streamer/chunbongtv/trend');
-          url.searchParams.set('metrics','favorite');
-          url.searchParams.set('granularity','day');
-          url.searchParams.set('count','500');
-          url.searchParams.set('from','2025-09-01');
-          url.searchParams.set('to','2026-09-07');
-          fetch(url,{headers:{'user-agent':'Mozilla/5.0','accept':'application/json'}}).then(async r=>{
-            const text=await r.text();
-            console.log('TREND_STATUS='+r.status);
-            console.log('TREND_BYTES='+text.length);
-            let j;try{j=JSON.parse(text)}catch{console.log('TREND_TEXT='+text.slice(0,4000));process.exit(1)}
-            console.log('TREND_TOP_KEYS='+JSON.stringify(Object.keys(j||{})));
-            console.log('TREND_JSON='+JSON.stringify(j).slice(0,16000));
-          }).catch(e=>{console.error(e);process.exit(1)});
+          const { fetchSoopStructuredLive } = require('./lib/soop-live-state.js');
+          fetchSoopStructuredLive().then(value=>{
+            console.log('SOOP_LIVE_RESULT='+JSON.stringify(value));
+            if(value.live !== true) process.exit(2);
+          }).catch(error=>{console.error(error);process.exit(1)});
           NODE
+      - name: Commit seeded history
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git diff --quiet -- data/soop-follower-history.json; then
+            echo 'Follower history unchanged'
+            exit 0
+          fi
+          git add data/soop-follower-history.json
+          git commit -m 'data: seed Trackify favorite history'
+          git pull --rebase origin feat/soop-history-live-category-controls
+          git push origin HEAD:feat/soop-history-live-category-controls
