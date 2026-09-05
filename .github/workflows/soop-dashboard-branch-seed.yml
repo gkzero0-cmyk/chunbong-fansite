@@ -1,0 +1,72 @@
+name: SOOP dashboard branch seed
+
+on:
+  push:
+    branches: [feat/soop-history-live-category-controls]
+    paths:
+      - '.github/workflows/soop-dashboard-branch-seed.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/soop-history-live-category-controls
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Seed exact follower history
+        run: node scripts/update-soop-follower-history.mjs
+      - name: Probe structured SOOP live state
+        run: |
+          node <<'NODE'
+          const { fetchSoopStructuredLive } = require('./lib/soop-live-state.js');
+          fetchSoopStructuredLive().then(value => {
+            console.log('SOOP_STRUCTURED_LIVE=' + JSON.stringify(value));
+          }).catch(error => {
+            console.log('SOOP_STRUCTURED_LIVE_ERROR=' + (error?.message || String(error)));
+          });
+          NODE
+      - name: Inspect Trackify day payload shape
+        run: |
+          node <<'NODE'
+          const url='https://www.trackify.kr/api/v1/p/soop/streamer/chunbongtv?granularity=day&period=2026-09';
+          fetch(url,{headers:{accept:'application/json','user-agent':'Mozilla/5.0'}}).then(async r=>{
+            console.log('TRACKIFY_DAY_STATUS='+r.status);
+            const j=await r.json();
+            const rows=[];
+            const seen=new Set();
+            const walk=(node,path='root')=>{
+              if(!node||typeof node!=='object'||seen.has(node)||rows.length>=30)return;
+              seen.add(node);
+              if(Array.isArray(node)){
+                if(node.length&&node[0]&&typeof node[0]==='object') rows.push({path,length:node.length,keys:Object.keys(node[0]).slice(0,30)});
+                node.slice(0,3).forEach((v,i)=>walk(v,`${path}[${i}]`));
+              } else {
+                for(const [k,v] of Object.entries(node)) walk(v,`${path}.${k}`);
+              }
+            };
+            walk(j);
+            console.log('TRACKIFY_DAY_ARRAYS='+JSON.stringify(rows));
+            console.log('TRACKIFY_TOP_KEYS='+JSON.stringify(Object.keys(j).slice(0,80)));
+          }).catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - name: Commit seeded follower history
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- data/soop-follower-history.json; then
+            echo 'No follower history change'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/soop-follower-history.json
+          git commit -m 'data: seed SOOP favorite history'
+          git pull --rebase origin feat/soop-history-live-category-controls
+          git push origin HEAD:feat/soop-history-live-category-controls
