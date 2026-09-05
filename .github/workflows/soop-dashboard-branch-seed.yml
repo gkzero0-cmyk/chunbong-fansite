@@ -27,35 +27,39 @@ jobs:
         run: |
           node <<'NODE'
           const { fetchSoopStructuredLive } = require('./lib/soop-live-state.js');
-          fetchSoopStructuredLive().then(value => {
-            console.log('SOOP_STRUCTURED_LIVE=' + JSON.stringify(value));
-          }).catch(error => {
-            console.log('SOOP_STRUCTURED_LIVE_ERROR=' + (error?.message || String(error)));
-          });
+          fetchSoopStructuredLive().then(value => console.log('SOOP_STRUCTURED_LIVE=' + JSON.stringify(value)))
+            .catch(error => console.log('SOOP_STRUCTURED_LIVE_ERROR=' + (error?.message || String(error))));
           NODE
-      - name: Inspect Trackify day payload shape
+      - name: Discover Trackify time-series API from frontend assets
         run: |
           node <<'NODE'
-          const url='https://www.trackify.kr/api/v1/p/soop/streamer/chunbongtv?granularity=day&period=2026-09';
-          fetch(url,{headers:{accept:'application/json','user-agent':'Mozilla/5.0'}}).then(async r=>{
-            console.log('TRACKIFY_DAY_STATUS='+r.status);
-            const j=await r.json();
-            const rows=[];
+          const headers={'user-agent':'Mozilla/5.0','accept':'text/html,application/javascript,*/*'};
+          const base='https://www.trackify.kr';
+          const get=async url=>{const r=await fetch(url,{headers});if(!r.ok)throw new Error(`${url} ${r.status}`);return r.text()};
+          (async()=>{
+            const html=await get(`${base}/soop/chunbongtv`);
+            const entry=[...html.matchAll(/<script[^>]+src=["']([^"']+\.js[^"']*)["']/g)].map(m=>new URL(m[1],base).href);
+            const queue=[...entry];
             const seen=new Set();
-            const walk=(node,path='root')=>{
-              if(!node||typeof node!=='object'||seen.has(node)||rows.length>=30)return;
-              seen.add(node);
-              if(Array.isArray(node)){
-                if(node.length&&node[0]&&typeof node[0]==='object') rows.push({path,length:node.length,keys:Object.keys(node[0]).slice(0,30)});
-                node.slice(0,3).forEach((v,i)=>walk(v,`${path}[${i}]`));
-              } else {
-                for(const [k,v] of Object.entries(node)) walk(v,`${path}.${k}`);
+            const candidates=[];
+            for(let cursor=0;cursor<queue.length&&seen.size<100;cursor++){
+              const url=queue[cursor]; if(seen.has(url)) continue; seen.add(url);
+              let code=''; try{code=await get(url)}catch{continue}
+              if(/fanCount|favorite|follower|granularity|category-distribution|monthAvgViewer/.test(code)){
+                const api=[...code.matchAll(/(?:["'`])([^"'`\n]{0,180}(?:\/api\/v1\/p\/soop|\/streamer\/)[^"'`\n]{0,220})(?:["'`])/g)].map(m=>m[1]);
+                candidates.push({asset:url.split('/').at(-1),api:[...new Set(api)].slice(0,40)});
               }
-            };
-            walk(j);
-            console.log('TRACKIFY_DAY_ARRAYS='+JSON.stringify(rows));
-            console.log('TRACKIFY_TOP_KEYS='+JSON.stringify(Object.keys(j).slice(0,80)));
-          }).catch(e=>{console.error(e);process.exit(1)});
+              for(const match of code.matchAll(/["'`]([^"'`\n]*\/assets\/[^"'`\n]+\.js)["'`]/g)){
+                try{const asset=new URL(match[1],base).href;if(!seen.has(asset)&&!queue.includes(asset))queue.push(asset)}catch{}
+              }
+              for(const match of code.matchAll(/["'`]([^"'`\n]*_id_[^"'`\n]+\.js)["'`]/g)){
+                try{const asset=new URL(match[1],url).href;if(!seen.has(asset)&&!queue.includes(asset))queue.push(asset)}catch{}
+              }
+            }
+            console.log('TRACKIFY_ENTRY='+JSON.stringify(entry));
+            console.log('TRACKIFY_ASSET_COUNT='+seen.size);
+            console.log('TRACKIFY_API_CANDIDATES='+JSON.stringify(candidates));
+          })().catch(e=>{console.error(e);process.exit(1)});
           NODE
       - name: Commit seeded follower history
         run: |
