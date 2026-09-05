@@ -1,11 +1,9 @@
 name: Feature dev apply
 
 on:
-  push:
-    branches: [feat/soop-history-live-category-controls]
-    paths:
-      - '.github/workflows/feature-dev-apply.yml'
-      - 'scripts/dev-apply-soop-feature.py'
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
@@ -16,6 +14,7 @@ concurrency:
 
 jobs:
   apply:
+    if: github.head_ref == 'feat/soop-history-live-category-controls'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
