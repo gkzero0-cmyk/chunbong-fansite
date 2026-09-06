@@ -20,6 +20,7 @@ jobs:
           node --check data.js
           node --check data-core.js
           node --check data-soop-periods.js
+          node --check data-soop-periods-v2.js
           node --check data-enhancements.js
           node --check lib/chunbong-data.js
           node --check lib/soop-analytics.js
