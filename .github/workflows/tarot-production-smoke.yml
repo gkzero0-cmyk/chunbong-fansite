@@ -8,7 +8,9 @@ on:
       - 'tarot.html'
       - 'tarot.css'
       - 'tarot-quality.css'
+      - 'tarot-composite.css'
       - 'tarot.js'
+      - 'tarot-composite.js'
       - 'tarot-data.js'
       - 'api/tarot-reading.js'
       - 'assets/tarot/hd/**'
@@ -21,7 +23,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Wait for production tarot deployment
         run: |
@@ -32,13 +34,18 @@ jobs:
             PAGE_HTTP=$(curl -L -sS -o /tmp/tarot-page -w '%{http_code}' "$BASE/tarot.html" || true)
             JS_HTTP=$(curl -L -sS -o /tmp/tarot-js -w '%{http_code}' "$BASE/tarot.js" || true)
             CSS_HTTP=$(curl -L -sS -o /tmp/tarot-quality-css -w '%{http_code}' "$BASE/tarot-quality.css" || true)
+            COMPOSITE_JS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-js -w '%{http_code}' "$BASE/tarot-composite.js" || true)
+            COMPOSITE_CSS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-css -w '%{http_code}' "$BASE/tarot-composite.css" || true)
             ASSET_HTTP=$(curl -L -sS -o /tmp/tarot-asset -w '%{http_code}' "$BASE/assets/tarot/hd/pair-00.avif" || true)
 
-            if [ "$PAGE_HTTP" = '200' ] && [ "$JS_HTTP" = '200' ] && [ "$CSS_HTTP" = '200' ] && [ "$ASSET_HTTP" = '200' ] \
+            if [ "$PAGE_HTTP" = '200' ] && [ "$JS_HTTP" = '200' ] && [ "$CSS_HTTP" = '200' ] \
+              && [ "$COMPOSITE_JS_HTTP" = '200' ] && [ "$COMPOSITE_CSS_HTTP" = '200' ] && [ "$ASSET_HTTP" = '200' ] \
               && grep -q 'toggleDirectSelection' /tmp/tarot-js \
-              && grep -q 'feConvolveMatrix' /tmp/tarot-js \
               && grep -q 'tarot-confirm-selection' /tmp/tarot-page \
-              && grep -q 'tarot-card-dialog' /tmp/tarot-quality-css; then
+              && grep -q 'tarot-composite.js' /tmp/tarot-page \
+              && grep -q 'tarot-composite.css' /tmp/tarot-page \
+              && grep -q 'tarot-vector-title' /tmp/tarot-composite-js \
+              && grep -q 'tarot-card-composite' /tmp/tarot-composite-css; then
               if node <<'NODE'
           const fs = require('fs');
           const bytes = fs.readFileSync('/tmp/tarot-asset');
@@ -55,20 +62,22 @@ jobs:
               fi
             fi
 
-            echo "PROD_WAIT_ATTEMPT=$attempt PAGE=$PAGE_HTTP JS=$JS_HTTP CSS=$CSS_HTTP ASSET=$ASSET_HTTP"
+            echo "PROD_WAIT_ATTEMPT=$attempt PAGE=$PAGE_HTTP JS=$JS_HTTP CSS=$CSS_HTTP COMPOSITE_JS=$COMPOSITE_JS_HTTP COMPOSITE_CSS=$COMPOSITE_CSS_HTTP ASSET=$ASSET_HTTP"
             sleep 5
           done
 
           echo 'PROD_READY=0'
           exit 1
 
-      - name: Verify production HTTP, 3x assets and 12-card API
+      - name: Verify production HTTP, vector composite, assets and 12-card API
         run: |
           set -euo pipefail
           BASE='https://chunbong-fansite.vercel.app'
           HOME_HTTP=$(curl -L -sS -o /tmp/home -w '%{http_code}' "$BASE/")
           TAROT_PAGE_HTTP=$(curl -L -sS -o /tmp/tarot-page -w '%{http_code}' "$BASE/tarot.html")
           QUALITY_CSS_HTTP=$(curl -L -sS -o /tmp/tarot-quality-css -w '%{http_code}' "$BASE/tarot-quality.css")
+          COMPOSITE_JS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-js -w '%{http_code}' "$BASE/tarot-composite.js")
+          COMPOSITE_CSS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-css -w '%{http_code}' "$BASE/tarot-composite.css")
           ASSET_00_HTTP=$(curl -L -sS -o /tmp/tarot-asset-00 -w '%{http_code}' "$BASE/assets/tarot/hd/pair-00.avif")
           ASSET_38_HTTP=$(curl -L -sS -o /tmp/tarot-asset-38 -w '%{http_code}' "$BASE/assets/tarot/hd/pair-38.avif")
 
@@ -102,6 +111,8 @@ jobs:
           echo "HOME_HTTP=$HOME_HTTP"
           echo "TAROT_PAGE_HTTP=$TAROT_PAGE_HTTP"
           echo "QUALITY_CSS_HTTP=$QUALITY_CSS_HTTP"
+          echo "COMPOSITE_JS_HTTP=$COMPOSITE_JS_HTTP"
+          echo "COMPOSITE_CSS_HTTP=$COMPOSITE_CSS_HTTP"
           echo "ASSET_00_HTTP=$ASSET_00_HTTP"
           echo "ASSET_38_HTTP=$ASSET_38_HTTP"
           echo "TAROT_HTTP=$TAROT_HTTP"
@@ -109,12 +120,17 @@ jobs:
           [ "$HOME_HTTP" = '200' ]
           [ "$TAROT_PAGE_HTTP" = '200' ]
           [ "$QUALITY_CSS_HTTP" = '200' ]
+          [ "$COMPOSITE_JS_HTTP" = '200' ]
+          [ "$COMPOSITE_CSS_HTTP" = '200' ]
           [ "$ASSET_00_HTTP" = '200' ]
           [ "$ASSET_38_HTTP" = '200' ]
           [ "$TAROT_HTTP" = '200' ]
           grep -q '12장' /tmp/tarot-page
-          grep -q 'tarot-quality.css' /tmp/tarot-page
-          grep -q 'tarot-card-art-button' /tmp/tarot-quality-css
+          grep -q 'tarot-composite.css' /tmp/tarot-page
+          grep -q 'tarot-composite.js' /tmp/tarot-page
+          grep -q 'tarot-vector-title' /tmp/tarot-composite-js
+          grep -q 'tarot-vector-frame' /tmp/tarot-composite-js
+          grep -q 'tarot-card-composite' /tmp/tarot-composite-css
 
           node <<'NODE'
           const fs = require('fs');
@@ -153,7 +169,7 @@ jobs:
           npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install chromium
 
-      - name: Verify direct card reselect, confirm and zoom in production Chromium
+      - name: Verify direct card reselect, vector composite and zoom in production Chromium
         run: |
           node <<'NODE'
           const assert = require('node:assert/strict');
@@ -198,19 +214,29 @@ jobs:
 
             await confirm.click();
             await page.waitForFunction(() => document.querySelector('#tarot-results')?.hidden === false);
+            await page.waitForFunction(() => document.querySelectorAll('#tarot-reading-grid .tarot-composite-svg').length === 3);
             assert.equal(await page.locator('#tarot-reading-grid .tarot-card-result').count(), 3);
-            assert.equal(await page.locator('#tarot-reading-grid feConvolveMatrix').count(), 3, 'each result card should use the sharp SVG crop filter');
-            assert.equal(await page.locator('#tarot-reading-grid .tarot-card-art-svg image').count(), 3);
+            assert.equal(await page.locator('#tarot-reading-grid .tarot-composite-svg').count(), 3);
+            assert.equal(await page.locator('#tarot-reading-grid .tarot-vector-title').count(), 3);
+            assert.equal(await page.locator('#tarot-reading-grid .tarot-vector-rank').count(), 3);
+            assert.equal(await page.locator('#tarot-reading-grid .tarot-composite-art-layer image').count(), 3);
+            assert.equal(await page.locator('#tarot-reading-grid feConvolveMatrix').count(), 0, 'legacy raster-text sharpening must disappear after composite upgrade');
+            const titles = await page.locator('#tarot-reading-grid .tarot-vector-title').allTextContents();
+            assert.ok(titles.every(title => title.trim().length > 0), JSON.stringify(titles));
 
             await page.locator('#tarot-reading-grid .tarot-card-art-button').first().click();
             await page.waitForFunction(() => document.querySelector('#tarot-card-zoom')?.open === true);
-            assert.equal(await page.locator('#tarot-card-zoom .tarot-card-art-svg image').count(), 1);
+            await page.waitForFunction(() => document.querySelectorAll('#tarot-card-zoom .tarot-composite-svg').length === 1);
+            assert.equal(await page.locator('#tarot-card-zoom .tarot-composite-svg').count(), 1);
+            assert.equal(await page.locator('#tarot-card-zoom .tarot-vector-title').count(), 1);
+            assert.equal(await page.locator('#tarot-card-zoom feConvolveMatrix').count(), 0);
             await page.locator('#tarot-card-zoom-close').click();
             await page.waitForFunction(() => document.querySelector('#tarot-card-zoom')?.open === false);
 
             console.log('PROD_CHROMIUM_DIRECT_RESELECT=PASS');
             console.log('PROD_CHROMIUM_EXPLICIT_CONFIRM=PASS');
-            console.log('PROD_CHROMIUM_SHARP_SVG=PASS');
+            console.log('PROD_CHROMIUM_VECTOR_COMPOSITE=PASS');
+            console.log('PROD_CHROMIUM_LIVE_VECTOR_TEXT=PASS');
             console.log('PROD_CHROMIUM_CARD_ZOOM=PASS');
             console.log('PROD_CHROMIUM_DECK_COUNT=78');
             console.log('PROD_CHROMIUM_RESULT_COUNT=3');
