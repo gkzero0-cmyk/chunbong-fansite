@@ -918,11 +918,22 @@
         "categoryName": "마인크래프트",
         "followerCount": 29809,
         "fanclubCount": 7615
+      },
+      {
+        "capturedAt": "2026-09-06T20:01:19.205Z",
+        "live": true,
+        "startedAt": "2026-09-06T06:59:44.000Z",
+        "title": "오늘 생일 같은 날(생일은 아님)",
+        "viewerCount": 58,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 29809,
+        "fanclubCount": 7615
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-06T19:54:04.972Z",
+    "capturedAt": "2026-09-06T20:01:19.205Z",
     "followerCount": 29809,
     "fanclubCount": 7615
   }
