@@ -1,1 +1,0 @@
-TDD RED: tarot direct reselect + explicit confirm + sharper SVG rendering regression added first.
