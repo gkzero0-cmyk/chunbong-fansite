@@ -14,6 +14,7 @@ on:
       - 'tarot-data.js'
       - 'api/tarot-reading.js'
       - 'assets/tarot/hd/**'
+      - 'assets/tarot/original/**'
       - '.github/workflows/tarot-production-smoke.yml'
 
 jobs:
@@ -36,24 +37,25 @@ jobs:
             CSS_HTTP=$(curl -L -sS -o /tmp/tarot-quality-css -w '%{http_code}' "$BASE/tarot-quality.css" || true)
             COMPOSITE_JS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-js -w '%{http_code}' "$BASE/tarot-composite.js" || true)
             COMPOSITE_CSS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-css -w '%{http_code}' "$BASE/tarot-composite.css" || true)
-            ASSET_HTTP=$(curl -L -sS -o /tmp/tarot-asset -w '%{http_code}' "$BASE/assets/tarot/hd/pair-00.avif" || true)
+            ORIGINAL_ASSET_HTTP=$(curl -L -sS -o /tmp/tarot-original-asset -w '%{http_code}' "$BASE/assets/tarot/original/sheet-0.avif" || true)
 
             if [ "$PAGE_HTTP" = '200' ] && [ "$JS_HTTP" = '200' ] && [ "$CSS_HTTP" = '200' ] \
-              && [ "$COMPOSITE_JS_HTTP" = '200' ] && [ "$COMPOSITE_CSS_HTTP" = '200' ] && [ "$ASSET_HTTP" = '200' ] \
+              && [ "$COMPOSITE_JS_HTTP" = '200' ] && [ "$COMPOSITE_CSS_HTTP" = '200' ] && [ "$ORIGINAL_ASSET_HTTP" = '200' ] \
               && grep -q 'toggleDirectSelection' /tmp/tarot-js \
               && grep -q 'tarot-confirm-selection' /tmp/tarot-page \
               && grep -q 'tarot-composite.js' /tmp/tarot-page \
               && grep -q 'tarot-composite.css' /tmp/tarot-page \
               && grep -q 'tarot-vector-title' /tmp/tarot-composite-js \
+              && grep -q 'originalArtworkDescriptor' /tmp/tarot-composite-js \
               && grep -q 'tarot-card-composite' /tmp/tarot-composite-css; then
               if node <<'NODE'
           const fs = require('fs');
-          const bytes = fs.readFileSync('/tmp/tarot-asset');
+          const bytes = fs.readFileSync('/tmp/tarot-original-asset');
           const offset = bytes.indexOf(Buffer.from('ispe'));
           if (bytes.subarray(4, 12).toString('ascii') !== 'ftypavif' || offset < 0) process.exit(1);
           const width = bytes.readUInt32BE(offset + 8);
           const height = bytes.readUInt32BE(offset + 12);
-          process.exit(width === 1920 && height === 1440 ? 0 : 1);
+          process.exit(width === 10400 && height === 1200 ? 0 : 1);
           NODE
               then
                 echo "PROD_READY=1"
@@ -62,14 +64,14 @@ jobs:
               fi
             fi
 
-            echo "PROD_WAIT_ATTEMPT=$attempt PAGE=$PAGE_HTTP JS=$JS_HTTP CSS=$CSS_HTTP COMPOSITE_JS=$COMPOSITE_JS_HTTP COMPOSITE_CSS=$COMPOSITE_CSS_HTTP ASSET=$ASSET_HTTP"
+            echo "PROD_WAIT_ATTEMPT=$attempt PAGE=$PAGE_HTTP JS=$JS_HTTP CSS=$CSS_HTTP COMPOSITE_JS=$COMPOSITE_JS_HTTP COMPOSITE_CSS=$COMPOSITE_CSS_HTTP ORIGINAL_ASSET=$ORIGINAL_ASSET_HTTP"
             sleep 5
           done
 
           echo 'PROD_READY=0'
           exit 1
 
-      - name: Verify production HTTP, vector composite, assets and 12-card API
+      - name: Verify production HTTP, vector composite, original assets and 12-card API
         run: |
           set -euo pipefail
           BASE='https://chunbong-fansite.vercel.app'
@@ -78,8 +80,8 @@ jobs:
           QUALITY_CSS_HTTP=$(curl -L -sS -o /tmp/tarot-quality-css -w '%{http_code}' "$BASE/tarot-quality.css")
           COMPOSITE_JS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-js -w '%{http_code}' "$BASE/tarot-composite.js")
           COMPOSITE_CSS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-css -w '%{http_code}' "$BASE/tarot-composite.css")
-          ASSET_00_HTTP=$(curl -L -sS -o /tmp/tarot-asset-00 -w '%{http_code}' "$BASE/assets/tarot/hd/pair-00.avif")
-          ASSET_38_HTTP=$(curl -L -sS -o /tmp/tarot-asset-38 -w '%{http_code}' "$BASE/assets/tarot/hd/pair-38.avif")
+          ORIGINAL_0_HTTP=$(curl -L -sS -o /tmp/tarot-original-0 -w '%{http_code}' "$BASE/assets/tarot/original/sheet-0.avif")
+          ORIGINAL_5_HTTP=$(curl -L -sS -o /tmp/tarot-original-5 -w '%{http_code}' "$BASE/assets/tarot/original/sheet-5.avif")
 
           cat > /tmp/payload.json <<'JSON'
           {
@@ -113,8 +115,8 @@ jobs:
           echo "QUALITY_CSS_HTTP=$QUALITY_CSS_HTTP"
           echo "COMPOSITE_JS_HTTP=$COMPOSITE_JS_HTTP"
           echo "COMPOSITE_CSS_HTTP=$COMPOSITE_CSS_HTTP"
-          echo "ASSET_00_HTTP=$ASSET_00_HTTP"
-          echo "ASSET_38_HTTP=$ASSET_38_HTTP"
+          echo "ORIGINAL_0_HTTP=$ORIGINAL_0_HTTP"
+          echo "ORIGINAL_5_HTTP=$ORIGINAL_5_HTTP"
           echo "TAROT_HTTP=$TAROT_HTTP"
 
           [ "$HOME_HTTP" = '200' ]
@@ -122,14 +124,15 @@ jobs:
           [ "$QUALITY_CSS_HTTP" = '200' ]
           [ "$COMPOSITE_JS_HTTP" = '200' ]
           [ "$COMPOSITE_CSS_HTTP" = '200' ]
-          [ "$ASSET_00_HTTP" = '200' ]
-          [ "$ASSET_38_HTTP" = '200' ]
+          [ "$ORIGINAL_0_HTTP" = '200' ]
+          [ "$ORIGINAL_5_HTTP" = '200' ]
           [ "$TAROT_HTTP" = '200' ]
           grep -q '12장' /tmp/tarot-page
           grep -q 'tarot-composite.css' /tmp/tarot-page
           grep -q 'tarot-composite.js' /tmp/tarot-page
           grep -q 'tarot-vector-title' /tmp/tarot-composite-js
           grep -q 'tarot-vector-frame' /tmp/tarot-composite-js
+          grep -q 'originalArtworkDescriptor' /tmp/tarot-composite-js
           grep -q 'tarot-card-composite' /tmp/tarot-composite-css
 
           node <<'NODE'
@@ -146,10 +149,10 @@ jobs:
             };
           }
 
-          for (const path of ['/tmp/tarot-asset-00', '/tmp/tarot-asset-38']) {
+          for (const path of ['/tmp/tarot-original-0', '/tmp/tarot-original-5']) {
             const size = avifSize(path);
-            if (size.width !== 1920 || size.height !== 1440) throw new Error(`${path}: ${size.width}x${size.height}`);
-            console.log(`TAROT_ASSET_SIZE=${size.width}x${size.height}`);
+            if (size.width !== 10400 || size.height !== 1200) throw new Error(`${path}: ${size.width}x${size.height}`);
+            console.log(`TAROT_ORIGINAL_ASSET_SIZE=${size.width}x${size.height}`);
           }
 
           const payload = JSON.parse(fs.readFileSync('/tmp/tarot-response', 'utf8'));
@@ -169,7 +172,7 @@ jobs:
           npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install chromium
 
-      - name: Verify direct card reselect, vector composite and zoom in production Chromium
+      - name: Verify direct card reselect, centered numbers, original artwork and zoom in production Chromium
         run: |
           node <<'NODE'
           const assert = require('node:assert/strict');
@@ -191,6 +194,24 @@ jobs:
             await page.locator('#tarot-shuffle').click();
             await page.waitForFunction(() => document.querySelectorAll('#tarot-deck [data-card-index]').length === 78);
             assert.equal(await page.locator('#tarot-deck [data-card-index]').count(), 78);
+
+            const badgeState = await page.locator('#tarot-deck .tarot-card-back').evaluateAll(cards => {
+              const read = card => {
+                const span = card.querySelector('span');
+                const badge = getComputedStyle(span, '::after');
+                const cardRect = card.getBoundingClientRect();
+                const spanRect = span.getBoundingClientRect();
+                return {
+                  content: badge.content.replace(/["']/g, ''),
+                  dx: Math.abs((cardRect.left + cardRect.width / 2) - (spanRect.left + spanRect.width / 2)),
+                  dy: Math.abs((cardRect.top + cardRect.height / 2) - (spanRect.top + spanRect.height / 2))
+                };
+              };
+              return [read(cards[0]), read(cards[77])];
+            });
+            assert.equal(badgeState[0].content, '1');
+            assert.equal(badgeState[1].content, '78');
+            assert.ok(badgeState.every(item => item.dx < 1 && item.dy < 1), JSON.stringify(badgeState));
 
             const card0 = page.locator('#tarot-deck [data-card-index]').nth(0);
             const card1 = page.locator('#tarot-deck [data-card-index]').nth(1);
@@ -219,10 +240,14 @@ jobs:
             assert.equal(await page.locator('#tarot-reading-grid .tarot-composite-svg').count(), 3);
             assert.equal(await page.locator('#tarot-reading-grid .tarot-vector-title').count(), 3);
             assert.equal(await page.locator('#tarot-reading-grid .tarot-vector-rank').count(), 3);
-            assert.equal(await page.locator('#tarot-reading-grid .tarot-composite-art-layer image').count(), 3);
+            assert.equal(await page.locator('#tarot-reading-grid .tarot-composite-art-image').count(), 3);
             assert.equal(await page.locator('#tarot-reading-grid feConvolveMatrix').count(), 0, 'legacy raster-text sharpening must disappear after composite upgrade');
             const titles = await page.locator('#tarot-reading-grid .tarot-vector-title').allTextContents();
             assert.ok(titles.every(title => title.trim().length > 0), JSON.stringify(titles));
+            const originalHrefs = await page.locator('#tarot-reading-grid .tarot-composite-art-image').evaluateAll(images =>
+              images.map(image => image.getAttribute('href') || image.getAttribute('xlink:href') || '')
+            );
+            assert.ok(originalHrefs.every(href => href.includes('assets/tarot/original/sheet-')), JSON.stringify(originalHrefs));
 
             await page.locator('#tarot-reading-grid .tarot-card-art-button').first().click();
             await page.waitForFunction(() => document.querySelector('#tarot-card-zoom')?.open === true);
@@ -230,12 +255,16 @@ jobs:
             assert.equal(await page.locator('#tarot-card-zoom .tarot-composite-svg').count(), 1);
             assert.equal(await page.locator('#tarot-card-zoom .tarot-vector-title').count(), 1);
             assert.equal(await page.locator('#tarot-card-zoom feConvolveMatrix').count(), 0);
+            const zoomHref = await page.locator('#tarot-card-zoom .tarot-composite-art-image').getAttribute('href');
+            assert.ok(zoomHref.includes('assets/tarot/original/sheet-'), zoomHref);
             await page.locator('#tarot-card-zoom-close').click();
             await page.waitForFunction(() => document.querySelector('#tarot-card-zoom')?.open === false);
 
             console.log('PROD_CHROMIUM_DIRECT_RESELECT=PASS');
+            console.log('PROD_CHROMIUM_CENTERED_DECK_NUMBERS=PASS');
             console.log('PROD_CHROMIUM_EXPLICIT_CONFIRM=PASS');
             console.log('PROD_CHROMIUM_VECTOR_COMPOSITE=PASS');
+            console.log('PROD_CHROMIUM_UPLOADED_ORIGINAL_ART=PASS');
             console.log('PROD_CHROMIUM_LIVE_VECTOR_TEXT=PASS');
             console.log('PROD_CHROMIUM_CARD_ZOOM=PASS');
             console.log('PROD_CHROMIUM_DECK_COUNT=78');
