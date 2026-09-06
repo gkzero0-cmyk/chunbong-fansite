@@ -32,13 +32,13 @@ assert.match(upright, /class="tarot-composite-svg"/, 'composite must render its 
 assert.match(upright, /class="tarot-vector-frame"/, 'frame must be vector markup, not inherited raster pixels');
 assert.match(upright, /class="tarot-vector-title"[^>]*>NINE OF WANDS<\/text>/, 'English card title must be live SVG text');
 assert.match(upright, /class="tarot-vector-rank"[^>]*>IX<\/text>/, 'rank mark must be live SVG text');
-assert.match(upright, /clipPath id="test-upright-art-clip"><rect x="88" y="200" width="784" height="1040"/, 'illustration crop must be vertically symmetric so reversal cannot expose the raster title/rank areas');
+assert.match(upright, /clipPath id="test-upright-art-clip"><rect x="88" y="126" width="784" height="1060"/, 'illustration crop must exclude the original raster rank/title regions');
 assert.match(upright, /class="tarot-composite-art-layer" clip-path="url\(#test-upright-art-clip\)"/, 'the illustration viewport must remain fixed');
 assert.doesNotMatch(upright, /feConvolveMatrix|tarot-sharp/, 'composite must not sharpen raster text because raster text is no longer displayed');
 
 const reversed = composite.buildCompositeSvg(wandsNine, { url: 'assets/tarot/hd/pair-22.avif', sourceX: 0 }, true, 'test-reversed');
 assert.match(reversed, /class="tarot-composite-art-layer" clip-path="url\(#test-reversed-art-clip\)"/, 'reversed readings must keep the illustration clipping viewport fixed');
-assert.match(reversed, /class="tarot-composite-art-image"[^>]*transform="rotate\(180 480 720\)"/, 'reversed readings must rotate only the raster illustration inside the fixed crop');
+assert.match(reversed, /class="tarot-composite-art-image"[^>]*transform="rotate\(180 480 656\)"/, 'reversed readings must rotate only the raster illustration around the crop center');
 assert.doesNotMatch(reversed, /class="tarot-composite-art-layer" transform="rotate/, 'the clipping group itself must never rotate');
 assert.match(reversed, /class="tarot-vector-title"[^>]*>NINE OF WANDS<\/text>/, 'vector title must remain upright and readable in reversed readings');
 assert.doesNotMatch(reversed, /tarot-vector-title"[^>]*transform="rotate/, 'title itself must never be reversed');
