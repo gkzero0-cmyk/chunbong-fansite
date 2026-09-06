@@ -38,8 +38,9 @@ const SUIT_TITLES = {
   pentacles: 'PENTACLES'
 };
 
-const ORIGINAL_SHEET_CELL_WIDTH = 960;
-const ORIGINAL_SHEET_HEIGHT = 1440;
+const ORIGINAL_CLOUDINARY_BASE = 'https://res.cloudinary.com/lyppgyei/image/upload/chunbong-fansite/tarot-original';
+const ORIGINAL_SHEET_CELL_WIDTH = 898;
+const ORIGINAL_SHEET_HEIGHT = 1488;
 const ORIGINAL_SHEET_CARD_COUNT = 13;
 const ORIGINAL_SHEET_WIDTH = ORIGINAL_SHEET_CELL_WIDTH * ORIGINAL_SHEET_CARD_COUNT;
 
@@ -88,10 +89,12 @@ function originalArtworkDescriptor(card) {
     cardIndex,
     sheet,
     slot,
-    url: `assets/tarot/original/sheet-${sheet}.avif`,
+    url: `${ORIGINAL_CLOUDINARY_BASE}/sheet-${sheet}.avif`,
     sourceX: -(slot * ORIGINAL_SHEET_CELL_WIDTH),
     sheetWidth: ORIGINAL_SHEET_WIDTH,
-    sheetHeight: ORIGINAL_SHEET_HEIGHT
+    sheetHeight: ORIGINAL_SHEET_HEIGHT,
+    cellWidth: ORIGINAL_SHEET_CELL_WIDTH,
+    cellHeight: ORIGINAL_SHEET_HEIGHT
   };
 }
 
@@ -110,7 +113,9 @@ function buildCompositeSvg(card, descriptor, reversed = false, uid = 'tarot-comp
     url: descriptor.url,
     sourceX: Number(descriptor.sourceX) <= -480 ? -960 : 0,
     sheetWidth: 1920,
-    sheetHeight: 1440
+    sheetHeight: 1440,
+    cellWidth: 960,
+    cellHeight: 1440
   } : null);
   if (!artwork?.url) return '';
 
@@ -150,7 +155,7 @@ function buildCompositeSvg(card, descriptor, reversed = false, uid = 'tarot-comp
 
     <g class="tarot-composite-art-layer" clip-path="url(#${safeUid}-art-clip)">
       <g class="tarot-composite-art-rotation"${artTransform}>
-        <svg class="tarot-composite-art-viewport" x="0" y="0" width="960" height="1440" viewBox="0 0 960 1440" overflow="hidden">
+        <svg class="tarot-composite-art-viewport" x="0" y="0" width="960" height="1440" viewBox="0 0 ${artwork.cellWidth} ${artwork.cellHeight}" preserveAspectRatio="xMidYMid slice" overflow="hidden">
           <image class="tarot-composite-art-image" href="${imageUrl}" x="${artwork.sourceX}" y="0" width="${artwork.sheetWidth}" height="${artwork.sheetHeight}" preserveAspectRatio="none"/>
         </svg>
       </g>
