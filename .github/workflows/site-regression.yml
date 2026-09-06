@@ -18,13 +18,20 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check data.js
+          node --check data-core.js
+          node --check data-soop-periods.js
+          node --check data-enhancements.js
           node --check lib/chunbong-data.js
           node --check lib/soop-analytics.js
+          node --check lib/soop-live-state.js
+          node --check lib/soop-follower-history.js
           node --check api/_shared.js
           node --check scripts/collect-soop-telemetry.mjs
           node --check scripts/apply-soop-session.mjs
           node --check scripts/update-chunbong-data.mjs
           node --check scripts/update-trackify-soop-cache.mjs
+          node --check scripts/update-soop-follower-history.mjs
+          node --check scripts/update-youtube-engagement-cache.mjs
       - name: Run all regression tests
         run: |
           set -e

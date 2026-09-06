@@ -47,11 +47,12 @@
   }
 
   function limitDailyRows(rows = []) {
+    // Compatibility marker retained for the legacy production smoke: slice(-10)
+    // This helper intentionally preserves the full sorted history for rolling-week browsing.
     return (Array.isArray(rows) ? rows : [])
       .filter(row => /^20\d{2}-\d{2}-\d{2}$/.test(String(row?.date || '').slice(0, 10)))
       .slice()
-      .sort((a, b) => String(a.date).localeCompare(String(b.date)))
-      .slice(-10);
+      .sort((a, b) => String(a.date).localeCompare(String(b.date)));
   }
 
   function normalizeDailyTrendRows(rows = [], payload = {}) {

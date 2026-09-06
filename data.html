@@ -27,12 +27,14 @@
 
       <section class="data-soop-view is-active" data-soop-view="daily">
         <div class="section-head compact"><div><p class="kicker">DAILY</p><h2>일별 방송 흐름</h2></div><p>방송시간 · 평균/최대 시청자 · 성장</p></div>
+        <div class="data-period-controls" id="data-daily-periods" aria-label="일별 기간 선택"></div>
         <div class="data-chart-grid" id="data-soop-chart"><div class="loading-card">일별 그래프를 계산하는 중...</div></div>
-        <div class="data-table-card"><div class="data-table-head"><strong>일별 상세</strong><span>측정 시작일부터 누적</span></div><div class="data-detail-table" id="data-soop-daily-table"></div></div>
+        <div class="data-table-card"><div class="data-table-head"><strong>일별 상세</strong><span>오늘 기준 7일 단위</span></div><div class="data-detail-table" id="data-soop-daily-table"></div></div>
       </section>
 
       <section class="data-soop-view" data-soop-view="monthly" hidden>
         <div class="section-head compact"><div><p class="kicker">MONTHLY</p><h2>월별 방송 흐름</h2></div><p>월간 활동과 성장 비교</p></div>
+        <div class="data-period-controls" id="data-month-periods" aria-label="월 선택"></div>
         <div class="data-chart-grid" id="data-soop-monthly-chart"></div>
         <div class="data-table-card"><div class="data-table-head"><strong>월별 상세</strong><span>KST 기준</span></div><div class="data-detail-table" id="data-soop-monthly-table"></div></div>
       </section>
@@ -42,7 +44,7 @@
         <div class="data-calendar-wrap"><div><div class="data-calendar-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div><div class="data-calendar-grid" id="data-soop-calendar"></div></div><aside class="data-calendar-detail" id="data-soop-calendar-detail"><div class="data-empty">방송한 날짜를 선택하면 상세 기록을 보여줍니다.</div></aside></div>
       </section>
 
-      <section class="data-section data-category-section"><div class="section-head compact"><div><p class="kicker">CATEGORY</p><h2>방송 카테고리 분석</h2></div><p>방송시간 비중 · 평균/최대 시청자</p></div><div class="data-category-list" id="data-soop-categories"><div class="loading-card">카테고리 데이터를 계산하는 중...</div></div></section>
+      <section class="data-section data-category-section"><div class="section-head compact"><div><p class="kicker">CATEGORY</p><h2>방송 카테고리 분석</h2></div><p>횟수 · 방송시간 · 비중 · 평균/최대 시청자</p></div><div class="data-category-list" id="data-soop-categories"><div class="loading-card">카테고리 데이터를 계산하는 중...</div></div></section>
 
       <section class="data-section"><div class="section-head compact"><div><p class="kicker">STREAM SESSIONS</p><h2>최근 방송 상세</h2></div><p>방송별 기록</p></div><div class="data-session-list" id="data-soop-sessions"><div class="data-empty">측정된 방송 세션이 쌓이면 표시됩니다.</div></div></section>
 

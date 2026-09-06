@@ -7,8 +7,6 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const source = fs.readFileSync(path.join(root, 'data-enhancements.js'), 'utf8');
 
-assert.match(source, /function limitDailyRows/);
-assert.match(source, /slice\(-10\)/);
 assert.match(source, /이번 달 별풍선/);
 assert.match(source, /별풍선 시급/);
 assert.match(source, /이번 달 채금/);
@@ -71,8 +69,8 @@ vm.runInNewContext(source, {
 });
 const response = await window.fetch('/api/content?type=data');
 const payload = await response.json();
-assert.equal(payload.soop.daily.length, 10, 'SOOP daily payload presented to the dashboard must be limited to the latest 10 days');
-assert.equal(payload.soop.daily[0].date, '2026-08-24');
+assert.equal(payload.soop.daily.length, 14, 'SOOP daily payload must remain complete so older rolling weeks can be selected');
+assert.equal(payload.soop.daily[0].date, '2026-08-20');
 assert.equal(payload.soop.daily.at(-1).date, '2026-09-02');
 assert.equal(payload.soop.calendar.length, 14, 'calendar history must remain complete');
 assert.equal(payload.soop.monthlyStats.length, 1, 'monthly history must remain complete');
