@@ -53,6 +53,7 @@ function compactDailyRow(row = {}) {
     averageViewers: row.averageViewers,
     maxViewers: row.maxViewers,
     followerDelta: row.followerDelta,
+    fanclubCount: row.fanclubCount,
     fanclubDelta: row.fanclubDelta
   };
 }
@@ -63,10 +64,12 @@ function compactMonthlyRow(row = {}) {
     activeDays: row.activeDays,
     streamCount: row.streamCount,
     durationMinutes: row.durationMinutes,
+    cumulativeMinutes: row.cumulativeMinutes,
     averageStreamMinutes: row.averageStreamMinutes,
     averageViewers: row.averageViewers,
     maxViewers: row.maxViewers,
     followerDelta: row.followerDelta,
+    fanclubCount: row.fanclubCount,
     fanclubDelta: row.fanclubDelta,
     categories: (Array.isArray(row.categories) ? row.categories : []).map(compactCategory)
   };
