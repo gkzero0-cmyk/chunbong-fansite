@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
+// Cloudinary-backed uploaded-original tarot regression.
 const require = createRequire(import.meta.url);
 const composite = require('../tarot-composite.js');
 const data = require('../tarot-data.js');
