@@ -599,11 +599,22 @@
         "categoryName": "마인크래프트",
         "followerCount": 29812,
         "fanclubCount": 7612
+      },
+      {
+        "capturedAt": "2026-09-06T15:43:58.210Z",
+        "live": true,
+        "startedAt": "2026-09-06T06:59:44.000Z",
+        "title": "오늘 내 생일인가보다.",
+        "viewerCount": 72,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 29812,
+        "fanclubCount": 7612
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-06T15:36:01.637Z",
+    "capturedAt": "2026-09-06T15:43:58.210Z",
     "followerCount": 29812,
     "fanclubCount": 7612
   }
