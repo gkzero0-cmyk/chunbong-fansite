@@ -14,7 +14,6 @@ on:
       - 'tarot-data.js'
       - 'api/tarot-reading.js'
       - 'assets/tarot/hd/**'
-      - 'assets/tarot/original/**'
       - '.github/workflows/tarot-production-smoke.yml'
 
 jobs:
@@ -30,6 +29,7 @@ jobs:
         run: |
           set -euo pipefail
           BASE='https://chunbong-fansite.vercel.app'
+          ORIGINAL_BASE='https://res.cloudinary.com/lyppgyei/image/upload/chunbong-fansite/tarot-original'
 
           for attempt in $(seq 1 60); do
             PAGE_HTTP=$(curl -L -sS -o /tmp/tarot-page -w '%{http_code}' "$BASE/tarot.html" || true)
@@ -37,7 +37,7 @@ jobs:
             CSS_HTTP=$(curl -L -sS -o /tmp/tarot-quality-css -w '%{http_code}' "$BASE/tarot-quality.css" || true)
             COMPOSITE_JS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-js -w '%{http_code}' "$BASE/tarot-composite.js" || true)
             COMPOSITE_CSS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-css -w '%{http_code}' "$BASE/tarot-composite.css" || true)
-            ORIGINAL_ASSET_HTTP=$(curl -L -sS -o /tmp/tarot-original-asset -w '%{http_code}' "$BASE/assets/tarot/original/sheet-0.avif" || true)
+            ORIGINAL_ASSET_HTTP=$(curl -L -sS -o /tmp/tarot-original-asset -w '%{http_code}' "$ORIGINAL_BASE/sheet-0.avif" || true)
 
             if [ "$PAGE_HTTP" = '200' ] && [ "$JS_HTTP" = '200' ] && [ "$CSS_HTTP" = '200' ] \
               && [ "$COMPOSITE_JS_HTTP" = '200' ] && [ "$COMPOSITE_CSS_HTTP" = '200' ] && [ "$ORIGINAL_ASSET_HTTP" = '200' ] \
@@ -47,6 +47,7 @@ jobs:
               && grep -q 'tarot-composite.css' /tmp/tarot-page \
               && grep -q 'tarot-vector-title' /tmp/tarot-composite-js \
               && grep -q 'originalArtworkDescriptor' /tmp/tarot-composite-js \
+              && grep -q 'res.cloudinary.com/lyppgyei/image/upload/chunbong-fansite/tarot-original' /tmp/tarot-composite-js \
               && grep -q 'tarot-card-composite' /tmp/tarot-composite-css; then
               if node <<'NODE'
           const fs = require('fs');
@@ -55,7 +56,7 @@ jobs:
           if (bytes.subarray(4, 12).toString('ascii') !== 'ftypavif' || offset < 0) process.exit(1);
           const width = bytes.readUInt32BE(offset + 8);
           const height = bytes.readUInt32BE(offset + 12);
-          process.exit(width === 10400 && height === 1200 ? 0 : 1);
+          process.exit(width === 11674 && height === 1488 ? 0 : 1);
           NODE
               then
                 echo "PROD_READY=1"
@@ -75,13 +76,14 @@ jobs:
         run: |
           set -euo pipefail
           BASE='https://chunbong-fansite.vercel.app'
+          ORIGINAL_BASE='https://res.cloudinary.com/lyppgyei/image/upload/chunbong-fansite/tarot-original'
           HOME_HTTP=$(curl -L -sS -o /tmp/home -w '%{http_code}' "$BASE/")
           TAROT_PAGE_HTTP=$(curl -L -sS -o /tmp/tarot-page -w '%{http_code}' "$BASE/tarot.html")
           QUALITY_CSS_HTTP=$(curl -L -sS -o /tmp/tarot-quality-css -w '%{http_code}' "$BASE/tarot-quality.css")
           COMPOSITE_JS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-js -w '%{http_code}' "$BASE/tarot-composite.js")
           COMPOSITE_CSS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-css -w '%{http_code}' "$BASE/tarot-composite.css")
-          ORIGINAL_0_HTTP=$(curl -L -sS -o /tmp/tarot-original-0 -w '%{http_code}' "$BASE/assets/tarot/original/sheet-0.avif")
-          ORIGINAL_5_HTTP=$(curl -L -sS -o /tmp/tarot-original-5 -w '%{http_code}' "$BASE/assets/tarot/original/sheet-5.avif")
+          ORIGINAL_0_HTTP=$(curl -L -sS -o /tmp/tarot-original-0 -w '%{http_code}' "$ORIGINAL_BASE/sheet-0.avif")
+          ORIGINAL_5_HTTP=$(curl -L -sS -o /tmp/tarot-original-5 -w '%{http_code}' "$ORIGINAL_BASE/sheet-5.avif")
 
           cat > /tmp/payload.json <<'JSON'
           {
@@ -133,6 +135,7 @@ jobs:
           grep -q 'tarot-vector-title' /tmp/tarot-composite-js
           grep -q 'tarot-vector-frame' /tmp/tarot-composite-js
           grep -q 'originalArtworkDescriptor' /tmp/tarot-composite-js
+          grep -q 'res.cloudinary.com/lyppgyei/image/upload/chunbong-fansite/tarot-original' /tmp/tarot-composite-js
           grep -q 'tarot-card-composite' /tmp/tarot-composite-css
 
           node <<'NODE'
@@ -151,7 +154,7 @@ jobs:
 
           for (const path of ['/tmp/tarot-original-0', '/tmp/tarot-original-5']) {
             const size = avifSize(path);
-            if (size.width !== 10400 || size.height !== 1200) throw new Error(`${path}: ${size.width}x${size.height}`);
+            if (size.width !== 11674 || size.height !== 1488) throw new Error(`${path}: ${size.width}x${size.height}`);
             console.log(`TAROT_ORIGINAL_ASSET_SIZE=${size.width}x${size.height}`);
           }
 
@@ -247,7 +250,7 @@ jobs:
             const originalHrefs = await page.locator('#tarot-reading-grid .tarot-composite-art-image').evaluateAll(images =>
               images.map(image => image.getAttribute('href') || image.getAttribute('xlink:href') || '')
             );
-            assert.ok(originalHrefs.every(href => href.includes('assets/tarot/original/sheet-')), JSON.stringify(originalHrefs));
+            assert.ok(originalHrefs.every(href => href.includes('res.cloudinary.com/lyppgyei/image/upload/chunbong-fansite/tarot-original/sheet-')), JSON.stringify(originalHrefs));
 
             await page.locator('#tarot-reading-grid .tarot-card-art-button').first().click();
             await page.waitForFunction(() => document.querySelector('#tarot-card-zoom')?.open === true);
@@ -256,7 +259,7 @@ jobs:
             assert.equal(await page.locator('#tarot-card-zoom .tarot-vector-title').count(), 1);
             assert.equal(await page.locator('#tarot-card-zoom feConvolveMatrix').count(), 0);
             const zoomHref = await page.locator('#tarot-card-zoom .tarot-composite-art-image').getAttribute('href');
-            assert.ok(zoomHref.includes('assets/tarot/original/sheet-'), zoomHref);
+            assert.ok(zoomHref.includes('res.cloudinary.com/lyppgyei/image/upload/chunbong-fansite/tarot-original/sheet-'), zoomHref);
             await page.locator('#tarot-card-zoom-close').click();
             await page.waitForFunction(() => document.querySelector('#tarot-card-zoom')?.open === false);
 
