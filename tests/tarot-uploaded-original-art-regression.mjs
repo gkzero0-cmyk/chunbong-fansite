@@ -8,32 +8,32 @@ const data = require('../tarot-data.js');
 const root = new URL('../', import.meta.url);
 const read = path => fs.readFileSync(new URL(path, root), 'utf8');
 
+const CLOUDINARY_BASE = 'https://res.cloudinary.com/lyppgyei/image/upload/chunbong-fansite/tarot-original';
+
 assert.equal(typeof composite.originalArtworkDescriptor, 'function', 'composite renderer should expose original artwork mapping');
 assert.deepEqual(composite.originalArtworkDescriptor(data.cards[0]), {
   cardIndex: 0,
-  pair: 0,
-  pairSlot: 0,
-  url: 'assets/tarot/original/pair-00.avif',
+  sheet: 0,
+  slot: 0,
+  url: `${CLOUDINARY_BASE}/sheet-0.avif`,
   sourceX: 0,
-  pairWidth: 1440,
-  pairHeight: 1193
-}, 'first card should map to the first uploaded-original pair slot');
-assert.equal(composite.originalArtworkDescriptor(data.cards[1]).sourceX, -720, 'second card should use the next 720px source cell');
+  sheetWidth: 11674,
+  sheetHeight: 1488,
+  cellWidth: 898,
+  cellHeight: 1488
+}, 'first card should use the first uploaded-original Cloudinary sheet slot');
+assert.equal(composite.originalArtworkDescriptor(data.cards[1]).sourceX, -898, 'second card should advance by one exact uploaded-original card width');
 assert.deepEqual(composite.originalArtworkDescriptor(data.cards[77]), {
   cardIndex: 77,
-  pair: 38,
-  pairSlot: 1,
-  url: 'assets/tarot/original/pair-38.avif',
-  sourceX: -720,
-  pairWidth: 1440,
-  pairHeight: 1193
-}, 'last card should map to pair 38 slot 1');
-
-for (let pair = 0; pair < 39; pair += 1) {
-  const file = new URL(`assets/tarot/original/pair-${String(pair).padStart(2, '0')}.avif`, root);
-  const stat = fs.statSync(file);
-  assert.ok(stat.size > 30_000, `${file.pathname} should contain uploaded-original artwork, not a tiny placeholder`);
-}
+  sheet: 5,
+  slot: 12,
+  url: `${CLOUDINARY_BASE}/sheet-5.avif`,
+  sourceX: -(12 * 898),
+  sheetWidth: 11674,
+  sheetHeight: 1488,
+  cellWidth: 898,
+  cellHeight: 1488
+}, 'last card should map to sheet 5 slot 12');
 
 const svg = composite.buildCompositeSvg(
   data.cards[0],
@@ -41,10 +41,10 @@ const svg = composite.buildCompositeSvg(
   false,
   'uploaded-original-test'
 );
-assert.match(svg, /href="assets\/tarot\/original\/pair-00\.avif"/, 'composite should render the uploaded-original pair instead of the old super-resolution pair');
-assert.match(svg, /width="1280" height="1060"/, 'two 720px original cells should scale together without stretching one card independently');
+assert.match(svg, /href="https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/chunbong-fansite\/tarot-original\/sheet-0\.avif"/, 'composite should render the uploaded-original Cloudinary sheet instead of the old super-resolution pair');
+assert.match(svg, /viewBox="0 0 898 1488"/, 'one original 898×1488 card must be isolated before it is scaled into the vector frame');
 assert.match(svg, /class="tarot-composite-art-viewport"/, 'the selected source cell must be clipped before direction rotation');
-assert.match(svg, /x="160" y="126" width="640" height="1060"/, 'uploaded portrait art should use the centered 640×1060 viewport');
+assert.match(svg, /width="11674" height="1488"/, 'the full 13-card original sheet must preserve its native pixel geometry');
 
 const reversed = composite.buildCompositeSvg(
   data.cards[0],
