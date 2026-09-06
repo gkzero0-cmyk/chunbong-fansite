@@ -1,0 +1,94 @@
+name: Vercel Hobby recovery
+
+on:
+  schedule:
+    - cron: '30 2,8,14,20 7 9 *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Gate bounded recovery window
+        id: gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_EVENT_NAME" == "schedule" && "$(date -u +%F)" != "2026-09-07" ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Outside the one-day recovery window; no action."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Check whether production is already current
+        if: steps.gate.outputs.run == 'true'
+        id: precheck
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://chunbong-fansite.vercel.app'
+          curl -fsSL --retry 2 --max-time 60 -H 'cache-control: no-cache' "$BASE/api/content?type=data&refresh=1&_recovery_pre=$(date +%s)" -o /tmp/chunbong-production.json
+          node <<'NODE'
+          const fs=require('fs');
+          const payload=JSON.parse(fs.readFileSync('/tmp/chunbong-production.json','utf8'));
+          const daily=Array.isArray(payload?.soop?.daily)?payload.soop.daily:[];
+          const row=daily.find(item=>item?.date === '2026-09-05');
+          const ready=Boolean(row && row.fanclubDelta === 8 && row.fanclubCount === 7606);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `ready=${ready}\n`);
+          console.log(JSON.stringify({ready,row:row||null,capturedAt:payload?.capturedAt||null},null,2));
+          NODE
+      - name: Trigger one Git-backed production redeploy attempt
+        if: steps.gate.outputs.run == 'true' && steps.precheck.outputs.ready != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          MARKER='.github/vercel-redeploy-recovery.txt'
+          printf 'Retry Vercel production after Hobby deployment limit window.\nTriggered at %s UTC.\n' "$(date -u +%FT%TZ)" > "$MARKER"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$MARKER"
+          git commit -m 'chore: retry Vercel production after Hobby limit window'
+          git pull --rebase origin main
+          git push origin main
+      - name: Verify refreshed production data
+        if: steps.gate.outputs.run == 'true' && steps.precheck.outputs.ready != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://chunbong-fansite.vercel.app'
+          for attempt in $(seq 1 15); do
+            sleep 20
+            echo "production verification attempt $attempt/15"
+            if curl -fsSL --max-time 60 -H 'cache-control: no-cache' "$BASE/api/content?type=data&refresh=1&_recovery_check=$(date +%s)" -o /tmp/chunbong-production.json; then
+              if node <<'NODE'
+          const fs=require('fs');
+          const payload=JSON.parse(fs.readFileSync('/tmp/chunbong-production.json','utf8'));
+          const daily=Array.isArray(payload?.soop?.daily)?payload.soop.daily:[];
+          const monthly=Array.isArray(payload?.soop?.monthlyStats)?payload.soop.monthlyStats:[];
+          const row=daily.find(item=>item?.date === '2026-09-05');
+          const latestMonthly=monthly.find(item=>item?.month === '2026-09');
+          const ok=Boolean(
+            row && row.fanclubCount === 7606 && row.fanclubDelta === 8 &&
+            Number.isFinite(row.cumulativeMinutes) &&
+            latestMonthly && Number.isFinite(latestMonthly.fanclubCount) &&
+            Number.isFinite(latestMonthly.fanclubDelta) &&
+            Number.isFinite(latestMonthly.cumulativeMinutes)
+          );
+          console.log(JSON.stringify({ok,row:row||null,latestMonthly:latestMonthly||null,capturedAt:payload?.capturedAt||null},null,2));
+          process.exit(ok?0:1);
+          NODE
+              then
+                echo 'Production SOOP history is current.'
+                exit 0
+              fi
+            fi
+          done
+          echo 'Production did not refresh within the bounded verification window.' >&2
+          exit 1
