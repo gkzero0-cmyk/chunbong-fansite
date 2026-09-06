@@ -1,6 +1,10 @@
 name: Tarot super-resolution assets
 
 on:
+  pull_request:
+    paths:
+      - 'scripts/upscale-tarot-hd.py'
+      - '.github/workflows/tarot-superres-assets.yml'
   push:
     branches: [main]
     paths:
@@ -12,7 +16,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: tarot-superres-assets
+  group: tarot-superres-assets-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -70,7 +74,16 @@ jobs:
           sha256sum assets/tarot/hd/pair-*.avif > /tmp/tarot-superres.sha256
           head -3 /tmp/tarot-superres.sha256
 
+      - name: Upload super-resolution preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: tarot-superres-preview
+          path: assets/tarot/hd/pair-00.avif
+          if-no-files-found: error
+          retention-days: 3
+
       - name: Commit regenerated tarot assets
+        if: github.event_name != 'pull_request'
         id: commit
         run: |
           git config user.name 'github-actions[bot]'
@@ -89,6 +102,7 @@ jobs:
           fi
 
       - name: Verify exact regenerated asset reached production
+        if: github.event_name != 'pull_request'
         env:
           LOCAL_SHA256: ${{ steps.commit.outputs.local_sha256 }}
         run: |
