@@ -13,13 +13,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Inspect firestorage share markup
+      - name: Inspect firestorage download client
         run: |
           set -euo pipefail
-          curl -L -sS 'https://firestorage.ai/ja/f/NXaEyykYgfuX' -o /tmp/share.html
-          echo "SHARE_BYTES=$(wc -c </tmp/share.html)"
-          echo '=== interesting URLs ==='
-          grep -Eo 'https?://[^"<> ]+' /tmp/share.html | sed 's/&amp;/\&/g' | sort -u | head -80 || true
-          echo '=== href/src/download markers ==='
-          grep -Eio '.{0,120}(href=|src=|download|file_id|fileId|shareId|NXaEyykYgfuX).{0,180}' /tmp/share.html | head -120 || true
+          BASE='https://firestorage.ai'
+          SHARE="$BASE/ja/f/NXaEyykYgfuX"
+          curl -L -sS "$SHARE" -o /tmp/share.html
+          CHUNK=$(grep -Eo '/_next/static/chunks/app/\(files\)/ja/f/page-[a-z0-9]+\.js' /tmp/share.html | head -1)
+          echo "CHUNK=$CHUNK"
+          test -n "$CHUNK"
+          curl -L -sS "$BASE$CHUNK" -o /tmp/page.js
+          echo "CHUNK_BYTES=$(wc -c </tmp/page.js)"
+          echo '=== API/download markers ==='
+          grep -Eo '.{0,180}(fetch\(|/api/|download|shareId|fileId|file_id|publicId|signed|presign).{0,260}' /tmp/page.js | head -160 || true
           exit 1
