@@ -58,9 +58,9 @@ const html = read('tarot.html');
 for (const token of [
   'data-page="tarot"', 'id="tarot-setup"', 'id="tarot-number-panel"', 'id="tarot-number-inputs"',
   'id="tarot-number-error"', 'id="tarot-selected-slots"', 'id="tarot-sound-toggle"', 'id="tarot-question"',
-  'id="tarot-deck"', 'id="tarot-results"', 'id="tarot-reading-grid"', 'id="tarot-summary"',
-  'id="tarot-ai-panel"', 'id="tarot-ai-button"', 'id="tarot-ai-status"', 'id="tarot-ai-content"',
-  'tarot.css', 'tarot-data.js', 'tarot.js'
+  'id="tarot-deck"', 'id="tarot-confirm-selection"', 'id="tarot-results"', 'id="tarot-reading-grid"', 'id="tarot-summary"',
+  'id="tarot-ai-panel"', 'id="tarot-ai-button"', 'id="tarot-ai-status"', 'id="tarot-ai-content"', 'id="tarot-card-zoom"',
+  'tarot.css', 'tarot-quality.css', 'tarot-data.js', 'tarot.js'
 ]) assert.ok(html.includes(token), `tarot.html should include ${token}`);
 assert.ok(html.includes('maxlength="500"'), 'question length should match server validation');
 assert.ok(html.includes('종합타로'));
@@ -75,14 +75,24 @@ assert.ok(script.includes("fetch('/api/tarot-reading'"), 'tarot frontend must ca
 assert.ok(script.includes('textContent'), 'counseling output must be rendered as text, not trusted HTML');
 assert.ok(!script.includes('OPENAI_API_KEY'), 'client code must never contain the OpenAI API key name');
 assert.ok(script.includes('assets/tarot/hd/pair-${String(pair).padStart(2, \'0\')}.avif'), 'tarot results must load the source-derived HD pair for the selected card');
-assert.ok(script.includes("backgroundSize = '200% 100%'"), 'tarot renderer must crop one card from a two-card HD pair');
 assert.ok(script.includes('globalIndex = sheet * 13 + slot'), 'tarot renderer must map all 78 legacy slots into HD pairs');
+assert.ok(script.includes('viewBox="0 0 960 1440"'), 'tarot renderer must crop one exact 960x1440 card region from a pair');
+assert.ok(script.includes('width="1920" height="1440"'), 'SVG crop must preserve the pair asset pixel geometry');
+assert.ok(script.includes('feConvolveMatrix'), 'tarot artwork must use the mild sharpening pass');
+assert.ok(!script.includes("backgroundSize = '200% 100%'"), 'result rendering must not rely on CSS background sprite scaling');
+assert.ok(script.includes('toggleDirectSelection'), 'direct selection must support cancel and reselect');
+assert.ok(script.includes('selectionCanComplete'), 'direct selection reveal must require the configured count');
 
 const css = read('tarot.css');
 for (const token of [
   '.tarot-stage', '.tarot-card-back', '.tarot-card-art', '.tarot-reading-grid', '.tarot-ai-panel', '.tarot-ai-content',
   '.tarot-number-inputs', '.tarot-selected-slots', '@keyframes tarotShuffle', '@keyframes tarotReveal', '@media (prefers-reduced-motion: reduce)'
 ]) assert.ok(css.includes(token), `tarot.css should include ${token}`);
-assert.ok(css.includes('max-width:320px'), 'tarot artwork must not be enlarged beyond its source-derived width');
+const qualityCss = read('tarot-quality.css');
+for (const token of ['.tarot-card-art-button', '.tarot-card-art-svg', '.tarot-card-dialog', '.tarot-card-back.selected']) {
+  assert.ok(qualityCss.includes(token), `tarot-quality.css should include ${token}`);
+}
+assert.ok(qualityCss.includes('max-width:320px'), 'normal result cards should remain within the detail-preserving display width');
+assert.ok(qualityCss.includes('width:min(72vw,600px)'), 'zoom view should provide a substantially larger inspection view');
 
-console.log('tarot expanded data, HD pair logic, UI, page and styling regression test passed');
+console.log('tarot expanded data, exact HD crop, reselect UI, page and styling regression test passed');
