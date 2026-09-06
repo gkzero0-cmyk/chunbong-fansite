@@ -20,29 +20,27 @@ jobs:
         run: |
           npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install chromium
-      - name: Inspect firestorage share in Chromium
+      - name: Inspect firestorage download URLs
         run: |
           node <<'NODE'
           const { chromium } = require('playwright');
           (async () => {
             const browser = await chromium.launch({ headless: true });
             const page = await browser.newPage({ acceptDownloads: true });
-            const responses = [];
-            page.on('response', r => {
-              const url = r.url();
-              if (/api|download|file|share|storage/i.test(url)) responses.push([r.status(), url]);
-            });
             await page.goto('https://firestorage.ai/ja/f/NXaEyykYgfuX', { waitUntil: 'networkidle', timeout: 60000 });
-            await page.waitForTimeout(2500);
-            console.log('BODY_TEXT_START');
-            console.log((await page.locator('body').innerText()).slice(0, 12000));
-            console.log('BODY_TEXT_END');
-            console.log('ANCHORS_START');
-            console.log(await page.locator('a').evaluateAll(els => els.map(a => ({text:(a.textContent||'').trim(), href:a.href, download:a.getAttribute('download')}))));
-            console.log('BUTTONS_START');
-            console.log(await page.locator('button').evaluateAll(els => els.map(b => ({text:(b.textContent||'').trim(), aria:b.getAttribute('aria-label'), cls:b.className}))));
-            console.log('RESPONSES_START');
-            console.log(responses.slice(-100));
+            await page.waitForFunction(() => document.body.innerText.includes('保存ファイル 6件'), null, { timeout: 30000 });
+            const buttons = page.getByRole('button', { name: 'ダウンロード', exact: true });
+            const count = await buttons.count();
+            console.log(`DOWNLOAD_BUTTONS=${count}`);
+            for (let index = 0; index < count; index += 1) {
+              const [download] = await Promise.all([
+                page.waitForEvent('download', { timeout: 30000 }),
+                buttons.nth(index).click()
+              ]);
+              console.log(`DOWNLOAD_${index}_NAME=${download.suggestedFilename()}`);
+              console.log(`DOWNLOAD_${index}_URL=${download.url()}`);
+              await download.cancel();
+            }
             await browser.close();
             process.exit(1);
           })().catch(error => { console.error(error); process.exit(1); });
