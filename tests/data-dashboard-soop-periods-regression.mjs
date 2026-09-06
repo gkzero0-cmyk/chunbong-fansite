@@ -5,6 +5,8 @@ import vm from 'node:vm';
 const html = fs.readFileSync(new URL('../data.html', import.meta.url), 'utf8');
 const js = fs.readFileSync(new URL('../data.js', import.meta.url), 'utf8');
 const periods = fs.readFileSync(new URL('../data-soop-periods.js', import.meta.url), 'utf8');
+const enhancements = fs.readFileSync(new URL('../data-enhancements.js', import.meta.url), 'utf8');
+const productionSmoke = fs.readFileSync(new URL('../.github/workflows/soop-dashboard-production-smoke.yml', import.meta.url), 'utf8');
 
 assert.ok(html.includes('id="data-daily-periods"'), 'daily view must expose rolling-week controls');
 assert.ok(html.includes('id="data-month-periods"'), 'monthly view must expose data-driven month controls');
@@ -17,6 +19,27 @@ assert.ok(periods.includes("key:'fanclubCount'"), 'daily/monthly charts must ren
 assert.ok(periods.includes("key:'cumulativeMinutes'"), 'monthly chart must render cumulative broadcast time');
 assert.ok(periods.includes("row.fanclubCount"), 'detail rows must render absolute fanclub counts');
 assert.ok(periods.includes("row.fanclubDelta"), 'detail rows must keep fanclub deltas separately');
+
+const limitDailyStart = enhancements.indexOf('function limitDailyRows');
+const limitDailyEnd = enhancements.indexOf('\n  function normalizeDailyTrendRows', limitDailyStart);
+assert.ok(limitDailyStart >= 0 && limitDailyEnd > limitDailyStart, 'enhancement daily-history transform must remain testable');
+const limitDailySource = enhancements.slice(limitDailyStart, limitDailyEnd).replace(/\/\/.*$/gm, '');
+assert.ok(!limitDailySource.includes('slice(-10)'), 'enhancement transform must never truncate SOOP daily history to 10 rows');
+assert.ok(limitDailySource.includes('.sort('), 'enhancement transform should preserve sorted full history');
+
+for (const marker of [
+  "- 'data-enhancements.js'",
+  "curl -fsSL --retry 2 --max-time 60 \"$BASE/data-enhancements.js\"",
+  'formatRollingWeekLabel',
+  'formatMonthLabel',
+  "key:'fanclubCount'",
+  "key:'fanclubDelta'",
+  "key:'cumulativeMinutes'",
+  'fullDailyHistory',
+  'dailyFanclubCount',
+  'monthlyFanclubCount',
+  'monthlyCumulativeMinutes'
+]) assert.ok(productionSmoke.includes(marker), `production SOOP smoke should verify ${marker}`);
 
 const helperStart = js.indexOf('function formatRollingWeekLabel');
 const helperEnd = js.indexOf('function kpi', helperStart);
