@@ -1,0 +1,52 @@
+name: Trackify fanclub probe
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/trackify-fanclub-probe.yml'
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Probe public Trackify trend metrics
+        run: |
+          node <<'NODE'
+          const base='https://www.trackify.kr/api/v1/p/soop/streamer/chunbongtv/trend';
+          const variants=['fanclub','fanclubCnt','favorite,fanclub','favorite,fanclubCnt','favorite'];
+          for (const metrics of variants) {
+            const url=new URL(base);
+            url.searchParams.set('metrics',metrics);
+            url.searchParams.set('granularity','day');
+            url.searchParams.set('count','62');
+            url.searchParams.set('from','2026-08-01');
+            url.searchParams.set('to','2026-09-07');
+            try {
+              const response=await fetch(url,{headers:{'user-agent':'Mozilla/5.0','accept':'application/json','accept-language':'ko-KR,ko;q=0.9,en;q=0.8'}});
+              const text=await response.text();
+              let parsed=null;
+              try { parsed=JSON.parse(text); } catch {}
+              const summarize=value=>{
+                if(!value||typeof value!=='object') return value;
+                const out={};
+                for(const [key,item] of Object.entries(value)) {
+                  if(Array.isArray(item)) out[key]={length:item.length,first:item[0]||null,last:item.at(-1)||null};
+                  else if(item&&typeof item==='object'&&Array.isArray(item.points)) out[key]={points:item.points.length,first:item.points[0]||null,last:item.points.at(-1)||null};
+                  else if(item===null||['string','number','boolean'].includes(typeof item)) out[key]=item;
+                  else out[key]={keys:Object.keys(item||{}).slice(0,20)};
+                }
+                return out;
+              };
+              console.log(`METRICS=${metrics} STATUS=${response.status}`);
+              console.log(JSON.stringify(summarize(parsed),null,2));
+              if(!parsed) console.log(text.slice(0,1000));
+            } catch(error) {
+              console.log(`METRICS=${metrics} ERROR=${error.message}`);
+            }
+          }
+          NODE
