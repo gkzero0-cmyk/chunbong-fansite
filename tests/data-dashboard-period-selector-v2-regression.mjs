@@ -22,6 +22,9 @@ assert.ok(!v2.includes('options.map(item=>`<button'), 'daily period history must
 assert.ok(v2.includes('calendar'), 'daily history merge must use calendar history as a fallback');
 assert.ok(v2.includes('monthlyStats'), 'monthly history merge must preserve API monthly history');
 assert.ok(v2.includes('7606 (+7)') || v2.includes('countDeltaText'), 'combined fanclub labels must render count and delta together');
+for (const marker of ['MutationObserver','schedulePersistentRender','state.applying','data-soop-chart','data-soop-monthly-chart']) {
+  assert.ok(v2.includes(marker), `v2 controller must preserve compact charts after core refreshes via ${marker}`);
+}
 assert.ok(css.includes('.data-period-select'), 'compact select styling must exist');
 assert.ok(css.includes('.data-chart-hover-card text.value'), 'hover value text must be enlarged');
 assert.ok(css.includes('font-size:20px'), 'hover value text must be materially larger');
