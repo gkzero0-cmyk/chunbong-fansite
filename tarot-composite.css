@@ -3,10 +3,10 @@
 .tarot-card-art.tarot-card-composite.is-reversed{transform:none!important}
 .tarot-card-art.tarot-card-composite .tarot-composite-svg{display:block;width:100%;height:100%;overflow:visible;border-radius:18px;shape-rendering:geometricPrecision;text-rendering:geometricPrecision}
 .tarot-card-art.tarot-card-composite .tarot-composite-svg image{image-rendering:auto}
-.tarot-card-art.tarot-card-composite .tarot-composite-art-image{filter:contrast(1.05) saturate(1.015) brightness(1.005)}
+.tarot-card-art.tarot-card-composite .tarot-composite-art-image{filter:none}
 .tarot-card-art.tarot-card-composite .tarot-vector-frame,.tarot-card-art.tarot-card-composite .tarot-vector-title-plate,.tarot-card-art.tarot-card-composite .tarot-vector-rank-medallion{vector-effect:non-scaling-stroke}
 .tarot-card-art.tarot-card-composite .tarot-vector-title,.tarot-card-art.tarot-card-composite .tarot-vector-rank{font-synthesis:none;text-rendering:geometricPrecision}
-.tarot-card-art-button:hover .tarot-card-art.tarot-card-composite .tarot-composite-art-image{filter:contrast(1.06) saturate(1.02) brightness(1.02)}
+.tarot-card-art-button:hover .tarot-card-art.tarot-card-composite .tarot-composite-art-image{filter:none}
 .tarot-card-dialog-art .tarot-card-art.tarot-card-composite{width:min(76vw,640px);max-width:640px}
 .tarot-card-dialog-note{max-width:660px}
 
