@@ -90,7 +90,7 @@ function originalArtworkDescriptor(card) {
     sheet,
     slot,
     url: `${ORIGINAL_CLOUDINARY_BASE}/sheet-${sheet}.avif`,
-    sourceX: -(slot * ORIGINAL_SHEET_CELL_WIDTH),
+    sourceX: slot === 0 ? 0 : -(slot * ORIGINAL_SHEET_CELL_WIDTH),
     sheetWidth: ORIGINAL_SHEET_WIDTH,
     sheetHeight: ORIGINAL_SHEET_HEIGHT,
     cellWidth: ORIGINAL_SHEET_CELL_WIDTH,
