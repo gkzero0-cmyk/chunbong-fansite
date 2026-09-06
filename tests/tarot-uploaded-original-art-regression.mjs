@@ -3,43 +3,56 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const tarot = require('../tarot.js');
 const composite = require('../tarot-composite.js');
 const data = require('../tarot-data.js');
 const root = new URL('../', import.meta.url);
 const read = path => fs.readFileSync(new URL(path, root), 'utf8');
 
-const first = tarot.cardArtworkDescriptor(data.cards[0]);
-assert.deepEqual(first, {
-  pair: 0,
-  pairSlot: 0,
-  url: 'assets/tarot/original/pair-00.webp',
-  sourceX: 0
-}, 'first card should use the uploaded original-art atlas');
+assert.equal(typeof composite.originalArtworkDescriptor, 'function', 'composite renderer should expose original artwork mapping');
+assert.deepEqual(composite.originalArtworkDescriptor(data.cards[0]), {
+  cardIndex: 0,
+  sheet: 0,
+  slot: 0,
+  url: 'assets/tarot/original/sheet-0.avif',
+  sourceX: 0,
+  sheetWidth: 12480,
+  sheetHeight: 1440
+}, 'first card should map to the first uploaded-art sheet slot');
+assert.equal(composite.originalArtworkDescriptor(data.cards[1]).sourceX, -960, 'second card should use the next exact 960px logical sheet cell');
+assert.deepEqual(composite.originalArtworkDescriptor(data.cards[77]), {
+  cardIndex: 77,
+  sheet: 5,
+  slot: 12,
+  url: 'assets/tarot/original/sheet-5.avif',
+  sourceX: -11520,
+  sheetWidth: 12480,
+  sheetHeight: 1440
+}, 'last card should map to sheet 5 slot 12');
 
-const second = tarot.cardArtworkDescriptor(data.cards[1]);
-assert.equal(second.url, 'assets/tarot/original/pair-00.webp');
-assert.equal(second.sourceX, -898, 'right card in an uploaded pair should use the original 898px source width');
-
-const last = tarot.cardArtworkDescriptor(data.cards[77]);
-assert.equal(last.url, 'assets/tarot/original/pair-38.webp');
-assert.equal(last.sourceX, -898);
-
-for (let pair = 0; pair < 39; pair += 1) {
-  const file = new URL(`assets/tarot/original/pair-${String(pair).padStart(2, '0')}.webp`, root);
+for (let sheet = 0; sheet < 6; sheet += 1) {
+  const file = new URL(`assets/tarot/original/sheet-${sheet}.avif`, root);
   const stat = fs.statSync(file);
-  assert.ok(stat.size > 250_000, `${file.pathname} should contain a full-resolution uploaded-art pair`);
+  assert.ok(stat.size > 250_000, `${file.pathname} should contain uploaded-original artwork, not a tiny placeholder`);
 }
 
 const svg = composite.buildCompositeSvg(
   data.cards[0],
-  { url: 'assets/tarot/original/pair-00.webp', sourceX: 0 },
+  { url: 'assets/tarot/hd/pair-00.avif', sourceX: 0 },
   false,
   'uploaded-original-test'
 );
-assert.match(svg, /viewBox="0 0 898 1488"/, 'composite should preserve the uploaded artwork aspect and full source frame');
-assert.match(svg, /width="1796" height="1488"/, 'pair source must retain both 898x1488 uploaded originals without low-res stretching');
-assert.match(svg, /preserveAspectRatio="xMidYMid meet"/, 'uploaded artwork should not be cropped or stretched');
+assert.match(svg, /href="assets\/tarot\/original\/sheet-0\.avif"/, 'composite should render the uploaded-original sheet instead of the old super-resolution pair');
+assert.match(svg, /width="12480" height="1440"/, 'original sheet should use thirteen 960px logical cells without stretching individual cards');
+assert.match(svg, /class="tarot-composite-art-viewport"/, 'sprite slot must be isolated in its own viewport before direction rotation');
+
+const reversed = composite.buildCompositeSvg(
+  data.cards[0],
+  { url: 'assets/tarot/hd/pair-00.avif', sourceX: 0 },
+  true,
+  'uploaded-original-reversed'
+);
+assert.match(reversed, /class="tarot-composite-art-rotation" transform="rotate\(180 480 656\)"/, 'reversed readings should rotate the isolated uploaded illustration only');
+assert.doesNotMatch(reversed, /class="tarot-vector-title"[^>]*transform=/, 'vector labels must remain upright');
 
 const compositeCss = read('tarot-composite.css');
 assert.match(compositeCss, /#tarot-deck \.tarot-card-back\{[^}]*display:grid[^}]*place-items:center/, 'direct-selection card numbers must be centered by the card button itself');
