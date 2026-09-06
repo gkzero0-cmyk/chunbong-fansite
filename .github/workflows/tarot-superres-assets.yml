@@ -35,9 +35,13 @@ jobs:
       - name: Install CPU super-resolution dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install numpy==1.26.4
           python -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.1.2 torchvision==0.16.2
-          python -m pip install basicsr==1.4.2 realesrgan==0.3.0 pillow==10.4.0 pillow-avif-plugin==1.4.6 opencv-python-headless==4.10.0.84
+          python -m pip install basicsr==1.4.2 realesrgan==0.3.0 pillow==10.4.0 pillow-avif-plugin==1.4.6 opencv-python==4.10.0.84 opencv-python-headless==4.10.0.84 numpy==1.26.4
+          python - <<'PY'
+          import numpy, torch, cv2
+          assert numpy.__version__ == '1.26.4', numpy.__version__
+          print(f'NUMPY={numpy.__version__} TORCH={torch.__version__} OPENCV={cv2.__version__}')
+          PY
 
       - name: Download pinned Real-ESRGAN anime model
         run: |
