@@ -1,1 +1,0 @@
-The regression test was committed before production changes. CI is expected to fail until implementation lands.
