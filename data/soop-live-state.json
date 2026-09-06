@@ -4,7 +4,7 @@
     "active": true,
     "sessionId": "2026-09-06T06:59:44.000Z",
     "startedAt": "2026-09-06T06:59:44.000Z",
-    "title": "오늘 내 생일인가보다.",
+    "title": "오늘 생일 같은 날(생일은 아님)",
     "samples": [
       {
         "capturedAt": "2026-09-06T07:02:51.052Z",
@@ -731,12 +731,23 @@
         "categoryName": "마인크래프트",
         "followerCount": 29813,
         "fanclubCount": 7615
+      },
+      {
+        "capturedAt": "2026-09-06T17:33:07.344Z",
+        "live": true,
+        "startedAt": "2026-09-06T06:59:44.000Z",
+        "title": "오늘 생일 같은 날(생일은 아님)",
+        "viewerCount": 65,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 29815,
+        "fanclubCount": 7615
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-06T17:25:39.640Z",
-    "followerCount": 29813,
+    "capturedAt": "2026-09-06T17:33:07.344Z",
+    "followerCount": 29815,
     "fanclubCount": 7615
   }
 }
