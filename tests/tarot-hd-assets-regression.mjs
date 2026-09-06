@@ -15,15 +15,18 @@ function readAvifSize(bytes) {
 }
 
 let totalBytes = 0;
+let maxPairBytes = 0;
 for (const [index, asset] of assets.entries()) {
   assert.ok(fs.existsSync(asset), `${asset.pathname} should exist`);
   const bytes = fs.readFileSync(asset);
   totalBytes += bytes.length;
-  assert.ok(bytes.length > 20 * 1024, `pair ${index} should retain enough detail for 3x high-DPI rendering`);
+  maxPairBytes = Math.max(maxPairBytes, bytes.length);
+  assert.ok(bytes.length > 1024 * 1024, `pair ${index} should retain the learned super-resolution detail budget`);
+  assert.ok(bytes.length < 2.5 * 1024 * 1024, `pair ${index} should stay practical for on-demand single-pair loading`);
   const size = readAvifSize(bytes);
   assert.equal(size.width, 1920, `pair ${index} should contain two 960px-wide high-DPI cards`);
   assert.equal(size.height, 1440, `pair ${index} should contain 1440px-high high-DPI cards`);
 }
-assert.ok(totalBytes > 2 * 1024 * 1024, '3x tarot pairs should retain substantially more detail than the 2x card assets');
-assert.ok(totalBytes < 18 * 1024 * 1024, '3x tarot pairs should remain practical for result-time loading');
-console.log('39 high-DPI 960x1440 tarot card pairs regression test passed');
+assert.ok(totalBytes > 48 * 1024 * 1024, 'Real-ESRGAN tarot pairs should retain the high-detail encode produced by the learned super-resolution pipeline');
+assert.ok(totalBytes < 64 * 1024 * 1024, 'the complete 39-pair archive should remain bounded even though result views load pairs on demand');
+console.log(`39 learned-super-resolution tarot pairs regression test passed; total=${totalBytes} maxPair=${maxPairBytes}`);
