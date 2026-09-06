@@ -5,6 +5,7 @@
       "data/soop-telemetry": false
     }
   },
+
   "headers": [
     {
       "source": "/(.*)",
