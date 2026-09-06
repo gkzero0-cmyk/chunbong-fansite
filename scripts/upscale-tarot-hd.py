@@ -20,6 +20,7 @@ CARD_TARGET_SIZE = (960, 1440)
 TARGET_SIZE = (1920, 1440)
 MODEL_NAME = 'RealESRGAN_x4plus_anime_6B'
 MODEL_PATH = Path(os.environ.get('TAROT_SUPERRES_MODEL', f'weights/{MODEL_NAME}.pth'))
+MAX_PAIRS = int(os.environ.get('TAROT_MAX_PAIRS', '39'))
 
 
 def source_pair_bytes(filename: str) -> bytes:
@@ -80,9 +81,10 @@ def rebuild_pair(filename: str, target_path: Path, upsampler: RealESRGANer) -> N
     left = superresolve_card(left_source, upsampler)
     right = superresolve_card(right_source, upsampler)
 
-    # The learned 4x stage is 2560x1920 across the two reconstructed cards.
-    if (left.width + right.width) * 4 // 3 != MODEL_SIZE[0]:
+    if CARD_MODEL_SIZE[0] * 2 != MODEL_SIZE[0] or CARD_MODEL_SIZE[1] != MODEL_SIZE[1]:
         raise RuntimeError('unexpected learned pair geometry')
+    if left.size != CARD_TARGET_SIZE or right.size != CARD_TARGET_SIZE:
+        raise RuntimeError('unexpected final card geometry')
 
     result = Image.new('RGB', TARGET_SIZE)
     result.paste(left, (0, 0))
@@ -99,20 +101,24 @@ def rebuild_pair(filename: str, target_path: Path, upsampler: RealESRGANer) -> N
 
 
 def main() -> None:
-    targets = sorted(ASSET_DIR.glob('pair-*.avif'))
-    if len(targets) != 39:
-        raise RuntimeError(f'expected 39 tarot pair assets, found {len(targets)}')
+    all_targets = sorted(ASSET_DIR.glob('pair-*.avif'))
+    if len(all_targets) != 39:
+        raise RuntimeError(f'expected 39 tarot pair assets, found {len(all_targets)}')
+    if MAX_PAIRS < 1 or MAX_PAIRS > 39:
+        raise RuntimeError(f'TAROT_MAX_PAIRS must be between 1 and 39, got {MAX_PAIRS}')
+    targets = all_targets[:MAX_PAIRS]
 
     upsampler = create_upsampler()
     for index, target_path in enumerate(targets, start=1):
         rebuild_pair(target_path.name, target_path, upsampler)
-        print(f'SUPERRES_PAIR={index:02d}/39 {target_path.name}', flush=True)
+        print(f'SUPERRES_PAIR={index:02d}/{len(targets):02d} {target_path.name}', flush=True)
 
     print(f'SUPERRES_MODEL={MODEL_NAME}')
     print(f'SOURCE_REF={SOURCE_REF}')
     print(f'SOURCE_SIZE={SOURCE_SIZE[0]}x{SOURCE_SIZE[1]}')
     print(f'MODEL_SIZE={MODEL_SIZE[0]}x{MODEL_SIZE[1]}')
     print(f'TARGET_SIZE={TARGET_SIZE[0]}x{TARGET_SIZE[1]}')
+    print(f'PROCESSED_PAIRS={len(targets)}')
 
 
 if __name__ == '__main__':
