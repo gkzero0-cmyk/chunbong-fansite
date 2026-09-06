@@ -1,0 +1,25 @@
+name: Tarot Firestorage import
+
+on:
+  push:
+    branches: ['fix/tarot-original-art-centered-numbers']
+    paths: ['.github/workflows/tarot-firestorage-import.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect firestorage share markup
+        run: |
+          set -euo pipefail
+          curl -L -sS 'https://firestorage.ai/ja/f/NXaEyykYgfuX' -o /tmp/share.html
+          echo "SHARE_BYTES=$(wc -c </tmp/share.html)"
+          echo '=== interesting URLs ==='
+          grep -Eo 'https?://[^"<> ]+' /tmp/share.html | sed 's/&amp;/\&/g' | sort -u | head -80 || true
+          echo '=== href/src/download markers ==='
+          grep -Eio '.{0,120}(href=|src=|download|file_id|fileId|shareId|NXaEyykYgfuX).{0,180}' /tmp/share.html | head -120 || true
+          exit 1
