@@ -9,8 +9,9 @@ assert.ok(workflow.includes("- 'tarot-composite.css'"), 'production smoke must t
 assert.ok(workflow.includes('COMPOSITE_JS_HTTP='), 'production readiness polling must fetch tarot-composite.js');
 assert.ok(workflow.includes('COMPOSITE_CSS_HTTP='), 'production readiness polling must fetch tarot-composite.css');
 assert.ok(workflow.includes('ORIGINAL_ASSET_HTTP='), 'production readiness polling must fetch the uploaded-original artwork sheet');
-assert.ok(workflow.includes(`${cloudinaryBase}/sheet-0.avif`), 'production smoke must verify the first Cloudinary original sheet');
-assert.ok(workflow.includes(`${cloudinaryBase}/sheet-5.avif`), 'production smoke must verify the last Cloudinary original sheet');
+assert.ok(workflow.includes(`ORIGINAL_BASE='${cloudinaryBase}'`), 'production smoke must pin the Cloudinary original-art base URL');
+assert.ok(workflow.includes('$ORIGINAL_BASE/sheet-0.avif'), 'production smoke must verify the first Cloudinary original sheet');
+assert.ok(workflow.includes('$ORIGINAL_BASE/sheet-5.avif'), 'production smoke must verify the last Cloudinary original sheet');
 assert.ok(!workflow.includes("- 'assets/tarot/original/**'"), 'Cloudinary-backed originals must not pretend to be repository binary assets');
 assert.ok(workflow.includes("grep -q 'tarot-composite.js' /tmp/tarot-page"), 'production page must prove the composite renderer is loaded');
 assert.ok(workflow.includes("grep -q 'originalArtworkDescriptor' /tmp/tarot-composite-js"), 'production JS must prove uploaded-original mapping is deployed');
