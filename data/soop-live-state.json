@@ -808,11 +808,22 @@
         "categoryName": "마인크래프트",
         "followerCount": 29812,
         "fanclubCount": 7615
+      },
+      {
+        "capturedAt": "2026-09-06T18:42:00.579Z",
+        "live": true,
+        "startedAt": "2026-09-06T06:59:44.000Z",
+        "title": "오늘 생일 같은 날(생일은 아님)",
+        "viewerCount": 61,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 29812,
+        "fanclubCount": 7615
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-06T18:31:36.917Z",
+    "capturedAt": "2026-09-06T18:42:00.579Z",
     "followerCount": 29812,
     "fanclubCount": 7615
   }
