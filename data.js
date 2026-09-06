@@ -46,7 +46,10 @@
     document.body.appendChild(script);
   });
 
-  load('data-core.js').then(()=>load('data-soop-periods-v2.js')).catch(error=>console.error(error));
+  load('data-core.js')
+    .then(()=>load('data-soop-periods-v2.js'))
+    .then(()=>load('data-soop-periods-v2-persistence.js'))
+    .catch(error=>console.error(error));
 })();
 
 /* Compatibility markers retained for static regressions while the original implementation lives in data-core.js and the compact period UI lives in data-soop-periods-v2.js. Legacy production smoke still recognizes data-soop-periods.js as a compatibility asset:
