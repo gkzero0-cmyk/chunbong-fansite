@@ -7,6 +7,7 @@ on:
     paths:
       - 'tarot.html'
       - 'tarot.css'
+      - 'tarot-quality.css'
       - 'tarot.js'
       - 'tarot-data.js'
       - 'api/tarot-reading.js'
@@ -30,9 +31,14 @@ jobs:
           for attempt in $(seq 1 60); do
             PAGE_HTTP=$(curl -L -sS -o /tmp/tarot-page -w '%{http_code}' "$BASE/tarot.html" || true)
             JS_HTTP=$(curl -L -sS -o /tmp/tarot-js -w '%{http_code}' "$BASE/tarot.js" || true)
+            CSS_HTTP=$(curl -L -sS -o /tmp/tarot-quality-css -w '%{http_code}' "$BASE/tarot-quality.css" || true)
             ASSET_HTTP=$(curl -L -sS -o /tmp/tarot-asset -w '%{http_code}' "$BASE/assets/tarot/hd/pair-00.avif" || true)
 
-            if [ "$PAGE_HTTP" = '200' ] && [ "$JS_HTTP" = '200' ] && [ "$ASSET_HTTP" = '200' ] && grep -q 'numberInputConstraintState' /tmp/tarot-js; then
+            if [ "$PAGE_HTTP" = '200' ] && [ "$JS_HTTP" = '200' ] && [ "$CSS_HTTP" = '200' ] && [ "$ASSET_HTTP" = '200' ] \
+              && grep -q 'toggleDirectSelection' /tmp/tarot-js \
+              && grep -q 'feConvolveMatrix' /tmp/tarot-js \
+              && grep -q 'tarot-confirm-selection' /tmp/tarot-page \
+              && grep -q 'tarot-card-dialog' /tmp/tarot-quality-css; then
               if node <<'NODE'
           const fs = require('fs');
           const bytes = fs.readFileSync('/tmp/tarot-asset');
@@ -49,7 +55,7 @@ jobs:
               fi
             fi
 
-            echo "PROD_WAIT_ATTEMPT=$attempt PAGE=$PAGE_HTTP JS=$JS_HTTP ASSET=$ASSET_HTTP"
+            echo "PROD_WAIT_ATTEMPT=$attempt PAGE=$PAGE_HTTP JS=$JS_HTTP CSS=$CSS_HTTP ASSET=$ASSET_HTTP"
             sleep 5
           done
 
@@ -62,6 +68,7 @@ jobs:
           BASE='https://chunbong-fansite.vercel.app'
           HOME_HTTP=$(curl -L -sS -o /tmp/home -w '%{http_code}' "$BASE/")
           TAROT_PAGE_HTTP=$(curl -L -sS -o /tmp/tarot-page -w '%{http_code}' "$BASE/tarot.html")
+          QUALITY_CSS_HTTP=$(curl -L -sS -o /tmp/tarot-quality-css -w '%{http_code}' "$BASE/tarot-quality.css")
           ASSET_00_HTTP=$(curl -L -sS -o /tmp/tarot-asset-00 -w '%{http_code}' "$BASE/assets/tarot/hd/pair-00.avif")
           ASSET_38_HTTP=$(curl -L -sS -o /tmp/tarot-asset-38 -w '%{http_code}' "$BASE/assets/tarot/hd/pair-38.avif")
 
@@ -94,16 +101,20 @@ jobs:
 
           echo "HOME_HTTP=$HOME_HTTP"
           echo "TAROT_PAGE_HTTP=$TAROT_PAGE_HTTP"
+          echo "QUALITY_CSS_HTTP=$QUALITY_CSS_HTTP"
           echo "ASSET_00_HTTP=$ASSET_00_HTTP"
           echo "ASSET_38_HTTP=$ASSET_38_HTTP"
           echo "TAROT_HTTP=$TAROT_HTTP"
 
           [ "$HOME_HTTP" = '200' ]
           [ "$TAROT_PAGE_HTTP" = '200' ]
+          [ "$QUALITY_CSS_HTTP" = '200' ]
           [ "$ASSET_00_HTTP" = '200' ]
           [ "$ASSET_38_HTTP" = '200' ]
           [ "$TAROT_HTTP" = '200' ]
           grep -q '12장' /tmp/tarot-page
+          grep -q 'tarot-quality.css' /tmp/tarot-page
+          grep -q 'tarot-card-art-button' /tmp/tarot-quality-css
 
           node <<'NODE'
           const fs = require('fs');
@@ -142,7 +153,7 @@ jobs:
           npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install chromium
 
-      - name: Verify direct card selection in production Chromium
+      - name: Verify direct card reselect, confirm and zoom in production Chromium
         run: |
           node <<'NODE'
           const assert = require('node:assert/strict');
@@ -150,7 +161,7 @@ jobs:
 
           (async () => {
             const browser = await chromium.launch({ headless: true });
-            const page = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
+            const page = await browser.newPage({ viewport: { width: 1280, height: 1000 }, deviceScaleFactor: 2 });
             await page.goto('https://chunbong-fansite.vercel.app/tarot.html', { waitUntil: 'networkidle' });
             await page.locator('input[name="count"][value="3"]').check();
             await page.locator('input[name="selection-mode"][value="cards"]').check();
@@ -165,13 +176,42 @@ jobs:
             await page.waitForFunction(() => document.querySelectorAll('#tarot-deck [data-card-index]').length === 78);
             assert.equal(await page.locator('#tarot-deck [data-card-index]').count(), 78);
 
-            await page.locator('#tarot-deck [data-card-index]').nth(0).click();
-            await page.locator('#tarot-deck [data-card-index]').nth(1).click();
-            await page.locator('#tarot-deck [data-card-index]').nth(2).click();
+            const card0 = page.locator('#tarot-deck [data-card-index]').nth(0);
+            const card1 = page.locator('#tarot-deck [data-card-index]').nth(1);
+            const card2 = page.locator('#tarot-deck [data-card-index]').nth(2);
+            const card3 = page.locator('#tarot-deck [data-card-index]').nth(3);
+            const confirm = page.locator('#tarot-confirm-selection');
+
+            await card0.click();
+            await card1.click();
+            await card2.click();
+            assert.equal(await page.locator('#tarot-deck .tarot-card-back.selected').count(), 3);
+            assert.equal(await confirm.isDisabled(), false);
+            assert.equal(await page.locator('#tarot-results').isHidden(), true, 'full selection must wait for explicit confirmation');
+
+            await card0.click();
+            assert.equal(await page.locator('#tarot-deck .tarot-card-back.selected').count(), 2, 'clicking selected card must cancel it');
+            assert.equal(await confirm.isDisabled(), true, 'confirm must disable after a cancellation');
+            await card3.click();
+            assert.equal(await page.locator('#tarot-deck .tarot-card-back.selected').count(), 3);
+            assert.equal(await confirm.isDisabled(), false);
+
+            await confirm.click();
             await page.waitForFunction(() => document.querySelector('#tarot-results')?.hidden === false);
             assert.equal(await page.locator('#tarot-reading-grid .tarot-card-result').count(), 3);
+            assert.equal(await page.locator('#tarot-reading-grid feConvolveMatrix').count(), 3, 'each result card should use the sharp SVG crop filter');
+            assert.equal(await page.locator('#tarot-reading-grid .tarot-card-art-svg image').count(), 3);
 
-            console.log('PROD_CHROMIUM_DIRECT_SELECTION=PASS');
+            await page.locator('#tarot-reading-grid .tarot-card-art-button').first().click();
+            await page.waitForFunction(() => document.querySelector('#tarot-card-zoom')?.open === true);
+            assert.equal(await page.locator('#tarot-card-zoom .tarot-card-art-svg image').count(), 1);
+            await page.locator('#tarot-card-zoom-close').click();
+            await page.waitForFunction(() => document.querySelector('#tarot-card-zoom')?.open === false);
+
+            console.log('PROD_CHROMIUM_DIRECT_RESELECT=PASS');
+            console.log('PROD_CHROMIUM_EXPLICIT_CONFIRM=PASS');
+            console.log('PROD_CHROMIUM_SHARP_SVG=PASS');
+            console.log('PROD_CHROMIUM_CARD_ZOOM=PASS');
             console.log('PROD_CHROMIUM_DECK_COUNT=78');
             console.log('PROD_CHROMIUM_RESULT_COUNT=3');
             await browser.close();
