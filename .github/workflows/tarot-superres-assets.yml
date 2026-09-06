@@ -1,0 +1,111 @@
+name: Tarot super-resolution assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/upscale-tarot-hd.py'
+      - '.github/workflows/tarot-superres-assets.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tarot-superres-assets
+  cancel-in-progress: false
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install CPU super-resolution dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy==1.26.4
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.1.2 torchvision==0.16.2
+          python -m pip install basicsr==1.4.2 realesrgan==0.3.0 pillow==10.4.0 pillow-avif-plugin==1.4.6 opencv-python-headless==4.10.0.84
+
+      - name: Download pinned Real-ESRGAN anime model
+        run: |
+          mkdir -p weights
+          curl -L --fail --retry 3 --retry-delay 2 \
+            -o weights/RealESRGAN_x4plus_anime_6B.pth \
+            https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth
+          test -s weights/RealESRGAN_x4plus_anime_6B.pth
+
+      - name: Rebuild 39 tarot pairs from preserved sources
+        env:
+          TAROT_SUPERRES_MODEL: weights/RealESRGAN_x4plus_anime_6B.pth
+        run: python scripts/upscale-tarot-hd.py
+
+      - name: Verify regenerated AVIF geometry
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          import pillow_avif  # noqa: F401
+
+          files = sorted(Path('assets/tarot/hd').glob('pair-*.avif'))
+          assert len(files) == 39, len(files)
+          sizes = []
+          for path in files:
+              with Image.open(path) as image:
+                  assert image.size == (1920, 1440), (path, image.size)
+              sizes.append(path.stat().st_size)
+          assert min(sizes) > 50_000, min(sizes)
+          print(f'SUPERRES_PAIR_COUNT={len(files)}')
+          print(f'SUPERRES_MIN_BYTES={min(sizes)}')
+          print(f'SUPERRES_TOTAL_BYTES={sum(sizes)}')
+          PY
+          sha256sum assets/tarot/hd/pair-*.avif > /tmp/tarot-superres.sha256
+          head -3 /tmp/tarot-superres.sha256
+
+      - name: Commit regenerated tarot assets
+        id: commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/tarot/hd/pair-*.avif
+          LOCAL_SHA256=$(sha256sum assets/tarot/hd/pair-00.avif | awk '{print $1}')
+          echo "local_sha256=$LOCAL_SHA256" >> "$GITHUB_OUTPUT"
+          if git diff --cached --quiet; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            echo 'SUPERRES_ASSETS_UNCHANGED=true'
+          else
+            git commit -m 'assets: regenerate tarot cards with Real-ESRGAN'
+            git push origin HEAD:main
+            echo 'changed=true' >> "$GITHUB_OUTPUT"
+            echo "asset_commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Verify exact regenerated asset reached production
+        env:
+          LOCAL_SHA256: ${{ steps.commit.outputs.local_sha256 }}
+        run: |
+          BASE='https://chunbong-fansite.vercel.app/assets/tarot/hd/pair-00.avif'
+          for attempt in $(seq 1 120); do
+            HTTP=$(curl -L -sS -o /tmp/tarot-prod-pair.avif -w '%{http_code}' "$BASE?superres=${GITHUB_RUN_ID}-${attempt}" || true)
+            if [ "$HTTP" = '200' ]; then
+              REMOTE_SHA256=$(sha256sum /tmp/tarot-prod-pair.avif | awk '{print $1}')
+              echo "PROD_ATTEMPT=$attempt HTTP=$HTTP REMOTE_SHA256=$REMOTE_SHA256"
+              if [ "$REMOTE_SHA256" = "$LOCAL_SHA256" ]; then
+                echo 'PROD_TAROT_SUPERRES_ASSET=PASS'
+                exit 0
+              fi
+            else
+              echo "PROD_ATTEMPT=$attempt HTTP=$HTTP"
+            fi
+            sleep 5
+          done
+          echo 'Production never served the regenerated pair-00 AVIF bytes.' >&2
+          exit 1
