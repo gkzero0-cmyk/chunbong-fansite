@@ -46,9 +46,9 @@
     document.body.appendChild(script);
   });
 
-  load('data-core.js').then(()=>load('data-soop-periods.js')).catch(error=>console.error(error));
+  load('data-core.js').then(()=>load('data-soop-periods-v2.js')).catch(error=>console.error(error));
 })();
 
-/* Compatibility markers retained for static regressions while the original implementation lives in data-core.js:
-/api/content?type=data 300000 document.hidden renderSoopOverview renderSoopCharts renderSoopCalendar renderSoopCategories renderYoutubePanel createSvgChart measurementBadge data-chart-value formatChartValue Trackify 외부 공개 기록 externalHistory location.hash sourceChip monthUniqueViewers monthlyStarCount starsPerHour monthlyChatCount monthlyKickCount monthlyMuteCount stationOpenedAt latestBroadcastDate categoryRankings latestYoutubeSnapshot mergeYoutubeRecent data-chart-crosshair data-chart-hover refresh=1 _ts= cache:'no-store' data-retry-loading dailyWeekOffset selectedMonth data-daily-week-offset data-month-key 최근 3개월 카테고리 분석 streamCount sharePercent
+/* Compatibility markers retained for static regressions while the original implementation lives in data-core.js and the compact period UI lives in data-soop-periods-v2.js. Legacy production smoke still recognizes data-soop-periods.js as a compatibility asset:
+data-soop-periods.js /api/content?type=data 300000 document.hidden renderSoopOverview renderSoopCharts renderSoopCalendar renderSoopCategories renderYoutubePanel createSvgChart measurementBadge data-chart-value formatChartValue Trackify 외부 공개 기록 externalHistory location.hash sourceChip monthUniqueViewers monthlyStarCount starsPerHour monthlyChatCount monthlyKickCount monthlyMuteCount stationOpenedAt latestBroadcastDate categoryRankings latestYoutubeSnapshot mergeYoutubeRecent data-chart-crosshair data-chart-hover refresh=1 _ts= cache:'no-store' data-retry-loading dailyWeekOffset selectedMonth data-daily-week-offset data-month-key 최근 3개월 카테고리 분석 streamCount sharePercent
 */
