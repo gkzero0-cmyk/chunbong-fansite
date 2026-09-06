@@ -258,12 +258,23 @@
         "categoryName": "마인크래프트",
         "followerCount": 29813,
         "fanclubCount": 7612
+      },
+      {
+        "capturedAt": "2026-09-06T10:47:20.840Z",
+        "live": true,
+        "startedAt": "2026-09-06T06:59:44.000Z",
+        "title": "1강만 더하면 서버 1등..강화석좀 부탁드립니다",
+        "viewerCount": 61,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 29810,
+        "fanclubCount": 7612
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-06T10:40:11.455Z",
-    "followerCount": 29813,
+    "capturedAt": "2026-09-06T10:47:20.840Z",
+    "followerCount": 29810,
     "fanclubCount": 7612
   }
 }
