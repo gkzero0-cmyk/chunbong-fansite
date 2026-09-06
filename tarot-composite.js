@@ -90,7 +90,7 @@ function buildCompositeSvg(card, descriptor, reversed = false, uid = 'tarot-comp
   const rankMark = escapeXml(meta.rankMark);
   const sourceX = Number(descriptor.sourceX) <= -480 ? -960 : 0;
   const imageUrl = escapeXml(descriptor.url);
-  const artTransform = reversed ? ' transform="rotate(180 480 720)"' : '';
+  const artTransform = reversed ? ' transform="rotate(180 480 656)"' : '';
   const fontSize = titleFontSize(meta.title);
 
   return `<svg class="tarot-composite-svg" viewBox="0 0 960 1440" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${title}">
@@ -119,8 +119,8 @@ function buildCompositeSvg(card, descriptor, reversed = false, uid = 'tarot-comp
     <rect class="tarot-vector-frame" x="45" y="45" width="870" height="1350" rx="43" fill="#120d07" stroke="#f7d77a" stroke-width="5"/>
     <rect x="68" y="102" width="824" height="1110" rx="38" fill="#080604" stroke="url(#${safeUid}-frame-gold)" stroke-width="11"/>
 
-    <g class="tarot-composite-art-layer"${artTransform} clip-path="url(#${safeUid}-art-clip)">
-      <image href="${imageUrl}" x="${sourceX}" y="0" width="1920" height="1440" preserveAspectRatio="none"/>
+    <g class="tarot-composite-art-layer" clip-path="url(#${safeUid}-art-clip)">
+      <image class="tarot-composite-art-image" href="${imageUrl}" x="${sourceX}" y="0" width="1920" height="1440" preserveAspectRatio="none"${artTransform}/>
     </g>
 
     <rect x="78" y="116" width="804" height="1080" rx="35" fill="none" stroke="#f8da7e" stroke-width="8"/>
