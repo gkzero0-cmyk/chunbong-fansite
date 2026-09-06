@@ -18,7 +18,7 @@ assert.ok(periods.includes("key:'cumulativeMinutes'"), 'monthly chart must rende
 assert.ok(periods.includes("row.fanclubCount"), 'detail rows must render absolute fanclub counts');
 assert.ok(periods.includes("row.fanclubDelta"), 'detail rows must keep fanclub deltas separately');
 
-const helperStart = js.indexOf('function buildRollingWeekOptions');
+const helperStart = js.indexOf('function formatRollingWeekLabel');
 const helperEnd = js.indexOf('function kpi', helperStart);
 assert.ok(helperStart >= 0 && helperEnd > helperStart, 'period helpers must be independently testable');
 const helperSource = `${js.slice(helperStart, helperEnd)}\nthis.periodHelpers={buildRollingWeekOptions,filterDailyByWeek,availableMonthKeys,formatRollingWeekLabel,formatMonthLabel};`;
