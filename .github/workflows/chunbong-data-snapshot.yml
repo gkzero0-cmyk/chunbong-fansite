@@ -30,12 +30,12 @@ jobs:
           node-version: '24'
       - name: Refresh Trackify SOOP history
         run: node scripts/update-trackify-soop-cache.mjs
+      - name: Capture production snapshot
+        run: node scripts/update-chunbong-data.mjs
       - name: Refresh SOOP favorite history
         run: node scripts/update-soop-follower-history.mjs
       - name: Refresh YouTube engagement cache
         run: node scripts/update-youtube-engagement-cache.mjs
-      - name: Capture production snapshot
-        run: node scripts/update-chunbong-data.mjs
       - name: Commit changed history
         run: |
           if git diff --quiet -- data/trackify-soop-cache.json data/soop-follower-history.json data/youtube-engagement-cache.json data/chunbong-data-history.json; then
