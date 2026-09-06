@@ -1,49 +1,49 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-05T06:25:43.979Z",
+  "capturedAt": "2026-09-06T00:04:15.064Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 29776,
+    "followerCount": 29766,
     "fanclubCount": 7606,
     "subscriberCount": 41,
     "supporterCount": 23,
-    "averageViewers": 46,
-    "maxViewers": 75,
-    "airtimeMinutes": 2265,
-    "viewershipHours": 1731,
-    "cumulativeUpCount": 79585,
+    "averageViewers": 50,
+    "maxViewers": 87,
+    "airtimeMinutes": 3215,
+    "viewershipHours": 2664,
+    "cumulativeUpCount": 79597,
     "totalAirtimeMinutes": 617477,
-    "monthlyStarCount": 13108,
-    "starsPerHour": 347,
-    "monthlySupporterCount": 51,
-    "monthlyChatCount": 10444,
+    "monthlyStarCount": 20288,
+    "starsPerHour": 379,
+    "monthlySupporterCount": 68,
+    "monthlyChatCount": 13744,
     "monthlyMuteCount": 4,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-09-04T16:52:52",
+    "latestBroadcastDate": "2026-09-05T16:58:59",
     "categories": [
       {
-        "name": "버추얼",
-        "minutes": 7967,
-        "streamCount": 16,
-        "sharePercent": 33.5
+        "name": "마인크래프트",
+        "minutes": 7638,
+        "streamCount": 14,
+        "sharePercent": 31.7
       },
       {
-        "name": "마인크래프트",
-        "minutes": 6688,
-        "streamCount": 13,
-        "sharePercent": 28.1
+        "name": "버추얼",
+        "minutes": 7307,
+        "streamCount": 15,
+        "sharePercent": 30.4
       },
       {
         "name": "오버워치",
         "minutes": 5774,
         "streamCount": 11,
-        "sharePercent": 24.3
+        "sharePercent": 24
       },
       {
         "name": "PUBG: 배틀그라운드",
         "minutes": 2805,
         "streamCount": 9,
-        "sharePercent": 11.8
+        "sharePercent": 11.7
       },
       {
         "name": "아르마 3",
@@ -11245,6 +11245,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/296870537"
+    },
+    {
+      "id": "trackify-296896937",
+      "broadcastId": "296896937",
+      "date": "2026-09-05",
+      "startedAt": "2026-09-05T16:58:59+09:00",
+      "endedAt": "2026-09-06T08:48:38+09:00",
+      "durationMinutes": 950,
+      "averageViewers": 59,
+      "maxViewers": 87,
+      "viewerSampleCount": 190,
+      "uniqueViewers": null,
+      "starCount": 7180,
+      "supporterCount": 33,
+      "chatCount": 3300,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "식당 직원 구했습니다. 근데 일을 잘 못하네요.",
+      "categories": [
+        {
+          "id": "00040017",
+          "name": "마인크래프트",
+          "minutes": 950,
+          "sampleCount": 190,
+          "averageViewers": 59,
+          "maxViewers": 87
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/296896937"
     }
   ]
 }
