@@ -88,24 +88,35 @@ assert.equal(result.overview.monthAverageViewers, 43);
 assert.equal(result.overview.monthMaxViewers, 80);
 
 assert.equal(result.daily.length, 3);
+const aug31 = result.daily.find(item => item.date === '2026-08-31');
+assert.equal(aug31.fanclubCount, null, 'daily fanclub count must stay unavailable when no exact public snapshot exists');
+const sep2 = result.daily.find(item => item.date === '2026-09-02');
+assert.equal(sep2.fanclubCount, 50, 'daily rows must expose exact fanclub count for that date');
 const sep3 = result.daily.find(item => item.date === '2026-09-03');
 assert.equal(sep3.streamCount, 1);
 assert.equal(sep3.durationMinutes, 240);
 assert.equal(sep3.averageViewers, 50);
 assert.equal(sep3.maxViewers, 80);
 assert.equal(sep3.followerDelta, 5);
+assert.equal(sep3.fanclubCount, 51);
 assert.equal(sep3.fanclubDelta, 1);
 assert.equal(sep3.cumulativeMinutes, 420);
 assert.equal(sep3.categories[0].name, '버추얼');
 
+const august = result.monthly.find(item => item.month === '2026-08');
+assert.equal(august.durationMinutes, 60);
+assert.equal(august.cumulativeMinutes, 60, 'monthly rows must expose cumulative measured broadcast time');
+assert.equal(august.fanclubCount, null, 'monthly fanclub count must not be interpolated into months without a public value');
 const september = result.monthly.find(item => item.month === '2026-09');
 assert.equal(september.activeDays, 2);
 assert.equal(september.streamCount, 2);
 assert.equal(september.durationMinutes, 360);
+assert.equal(september.cumulativeMinutes, 420);
 assert.equal(september.averageStreamMinutes, 180);
 assert.equal(september.averageViewers, 43);
 assert.equal(september.maxViewers, 80);
 assert.equal(september.followerDelta, 5);
+assert.equal(september.fanclubCount, 51, 'monthly rows must expose the latest exact fanclub count in the month');
 assert.equal(september.fanclubDelta, 1);
 
 assert.equal(result.calendar.find(item => item.date === '2026-09-03').durationMinutes, 240);
