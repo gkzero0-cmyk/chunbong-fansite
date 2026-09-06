@@ -17,7 +17,7 @@ permissions:
 
 concurrency:
   group: tarot-superres-assets-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   regenerate:
@@ -51,9 +51,10 @@ jobs:
             https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth
           test -s weights/RealESRGAN_x4plus_anime_6B.pth
 
-      - name: Rebuild 39 tarot pairs from preserved sources
+      - name: Rebuild tarot pairs from preserved sources
         env:
           TAROT_SUPERRES_MODEL: weights/RealESRGAN_x4plus_anime_6B.pth
+          TAROT_MAX_PAIRS: ${{ github.event_name == 'pull_request' && '1' || '39' }}
         run: python scripts/upscale-tarot-hd.py
 
       - name: Verify regenerated AVIF geometry
