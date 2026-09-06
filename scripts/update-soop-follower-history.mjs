@@ -60,7 +60,7 @@ export function monthBounds(month) {
 async function fetchMonth(month, fetchImpl = fetch) {
   const { from, to } = monthBounds(month);
   const url = new URL(TREND_URL);
-  url.searchParams.set('metrics', 'favorite');
+  url.searchParams.set('metrics', 'favorite,fanclub');
   url.searchParams.set('granularity', 'day');
   url.searchParams.set('count', '62');
   url.searchParams.set('from', from);
@@ -98,6 +98,7 @@ async function main() {
   fs.writeFileSync(HISTORY_PATH, `${JSON.stringify(next, null, 2)}\n`);
   console.log(`SOOP_FOLLOWER_HISTORY_POINTS=${points.length}`);
   console.log(`SOOP_FOLLOWER_HISTORY_TRACKIFY_POINTS=${collected.points.length}`);
+  console.log(`SOOP_FANCLUB_HISTORY_POINTS=${points.filter(point => Number.isFinite(point?.fanclubCount)).length}`);
   console.log(`SOOP_FOLLOWER_HISTORY_FETCH_ERRORS=${collected.errors.length}`);
   if (collected.errors.length) console.log(`SOOP_FOLLOWER_HISTORY_FAILED_MONTHS=${collected.errors.map(error => error.month).join(',')}`);
 }
