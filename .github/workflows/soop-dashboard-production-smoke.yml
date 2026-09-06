@@ -9,6 +9,8 @@ on:
       - 'data.js'
       - 'data-core.js'
       - 'data-soop-periods.js'
+      - 'data-soop-periods-v2.js'
+      - 'data-soop-periods-v2.css'
       - 'data-enhancements.js'
       - 'lib/chunbong-data.js'
       - 'lib/soop-analytics.js'
@@ -38,6 +40,8 @@ jobs:
           curl -fsSL --retry 2 --max-time 60 "$BASE/data.js" -o .smoke/data.js
           curl -fsSL --retry 2 --max-time 60 "$BASE/data-core.js" -o .smoke/data-core.js
           curl -fsSL --retry 2 --max-time 60 "$BASE/data-soop-periods.js" -o .smoke/data-soop-periods.js
+          curl -fsSL --retry 2 --max-time 60 "$BASE/data-soop-periods-v2.js" -o .smoke/data-soop-periods-v2.js
+          curl -fsSL --retry 2 --max-time 60 "$BASE/data-soop-periods-v2.css" -o .smoke/data-soop-periods-v2.css
           curl -fsSL --retry 2 --max-time 60 "$BASE/data-enhancements.js" -o .smoke/data-enhancements.js
           curl -fsSL --retry 2 --max-time 60 -H 'cache-control: no-cache' "$BASE/api/content?type=data&refresh=1&_soop_smoke=$(date +%s)" -o .smoke/api.json
           node <<'NODE'
@@ -45,10 +49,14 @@ jobs:
           const loader=fs.readFileSync('.smoke/data.js','utf8');
           const core=fs.readFileSync('.smoke/data-core.js','utf8');
           const periods=fs.readFileSync('.smoke/data-soop-periods.js','utf8');
+          const v2=fs.readFileSync('.smoke/data-soop-periods-v2.js','utf8');
+          const v2css=fs.readFileSync('.smoke/data-soop-periods-v2.css','utf8');
           const enhancements=fs.readFileSync('.smoke/data-enhancements.js','utf8');
           const payload=JSON.parse(fs.readFileSync('.smoke/api.json','utf8'));
-          const requiredLoader=['data-core.js','data-soop-periods.js','buildRollingWeekOptions','filterDailyByWeek','availableMonthKeys','formatRollingWeekLabel','formatMonthLabel'];
+          const requiredLoader=['data-core.js','data-soop-periods-v2.js','buildRollingWeekOptions','filterDailyByWeek','availableMonthKeys','formatRollingWeekLabel','formatMonthLabel'];
           const requiredPeriods=['data-soop-week-index','data-soop-month-value','최근 3개월 분석','XMLHttpRequest','이번 달 후원자','팬클럽 수','팬클럽 증감',"key:'fanclubCount'","key:'fanclubDelta'","key:'cumulativeMinutes'"];
+          const requiredV2=['mergeDailyHistory','mergeMonthlyHistory','data-daily-month-select','data-daily-week-select','data-month-year-select','fanclubCombinedChart','periodFanclubDeltaSum','countDeltaText','fanclubCount','fanclubDelta','cumulativeMinutes'];
+          const requiredV2Css=['.data-period-select','font-size:20px','.data-chart-hover-card text.value','.data-fanclub-combined'];
           const daily=Array.isArray(payload?.soop?.daily)?payload.soop.daily:[];
           const monthly=Array.isArray(payload?.soop?.monthlyStats)?payload.soop.monthlyStats:[];
           const selected=monthly.at?.(-1)?.categories || [];
@@ -75,7 +83,9 @@ jobs:
             selectedCategoryShape:categoryShape(selected),
             recentCategoryShape:categoryShape(recent),
             loaderTokens:requiredLoader.every(token=>loader.includes(token)),
-            periodTokens:requiredPeriods.every(token=>periods.includes(token)),
+            legacyPeriodTokens:requiredPeriods.every(token=>periods.includes(token)),
+            compactPeriodTokens:requiredV2.every(token=>v2.includes(token)),
+            compactPeriodCss:requiredV2Css.every(token=>v2css.includes(token)),
             oldCorePreserved:core.includes('renderYoutubePanel')&&core.includes('createSvgChart'),
             supporterNotRendered:!periods.includes("kpi('이번 달 후원자'"),
             fullDailyHistory,
