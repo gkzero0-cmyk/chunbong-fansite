@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/soop-dashboard-production-smoke.yml'
+      - 'api/content.js'
       - 'data.js'
       - 'data-core.js'
       - 'data-soop-periods.js'
