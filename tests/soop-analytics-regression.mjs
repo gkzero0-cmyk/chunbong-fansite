@@ -44,27 +44,9 @@ assert.equal(replaced.sessions.length, 1, 'same session id should not duplicate'
 assert.equal(replaced.sessions[0].maxViewers, 72);
 
 const sessions = [
-  {
-    id: 's1', startedAt: '2026-08-31T12:00:00.000Z', endedAt: '2026-08-31T13:00:00.000Z', date: '2026-08-31',
-    durationMinutes: 60, averageViewers: 20, maxViewers: 30, viewerSampleCount: 12,
-    followerDelta: 1, fanclubDelta: 0,
-    categories: [{ name: '버추얼', minutes: 60, sampleCount: 12, averageViewers: 20, maxViewers: 30 }]
-  },
-  {
-    id: 's2', startedAt: '2026-09-02T10:00:00.000Z', endedAt: '2026-09-02T12:00:00.000Z', date: '2026-09-02',
-    durationMinutes: 120, averageViewers: 30, maxViewers: 45, viewerSampleCount: 24,
-    followerDelta: 2, fanclubDelta: 1,
-    categories: [{ name: '버추얼', minutes: 120, sampleCount: 24, averageViewers: 30, maxViewers: 45 }]
-  },
-  {
-    id: 's3', startedAt: '2026-09-03T10:00:00.000Z', endedAt: '2026-09-03T14:00:00.000Z', date: '2026-09-03',
-    durationMinutes: 240, averageViewers: 50, maxViewers: 80, viewerSampleCount: 48,
-    followerDelta: 5, fanclubDelta: 2,
-    categories: [
-      { name: '버추얼', minutes: 180, sampleCount: 36, averageViewers: 48, maxViewers: 75 },
-      { name: '종합게임', minutes: 60, sampleCount: 12, averageViewers: 56, maxViewers: 80 }
-    ]
-  }
+  { id:'s1', startedAt:'2026-08-31T12:00:00.000Z', endedAt:'2026-08-31T13:00:00.000Z', date:'2026-08-31', durationMinutes:60, averageViewers:20, maxViewers:30, viewerSampleCount:12, followerDelta:1, fanclubDelta:0, categories:[{name:'버추얼',minutes:60,sampleCount:12,averageViewers:20,maxViewers:30}] },
+  { id:'s2', startedAt:'2026-09-02T10:00:00.000Z', endedAt:'2026-09-02T12:00:00.000Z', date:'2026-09-02', durationMinutes:120, averageViewers:30, maxViewers:45, viewerSampleCount:24, followerDelta:2, fanclubDelta:1, categories:[{name:'버추얼',minutes:120,sampleCount:24,averageViewers:30,maxViewers:45}] },
+  { id:'s3', startedAt:'2026-09-03T10:00:00.000Z', endedAt:'2026-09-03T14:00:00.000Z', date:'2026-09-03', durationMinutes:240, averageViewers:50, maxViewers:80, viewerSampleCount:48, followerDelta:5, fanclubDelta:2, categories:[{name:'버추얼',minutes:180,sampleCount:36,averageViewers:48,maxViewers:75},{name:'종합게임',minutes:60,sampleCount:12,averageViewers:56,maxViewers:80}] }
 ];
 
 const snapshots = [
@@ -72,13 +54,7 @@ const snapshots = [
   { date: '2026-09-03', soop: { followerCount: 1005, fanclubCount: 51 } }
 ];
 
-const result = analytics.buildSoopAnalytics(
-  sessions,
-  snapshots,
-  { live: true, viewerCount: 61, title: '현재 방송', categoryName: '버추얼', followerCount: 1005, fanclubCount: 51 },
-  new Date('2026-09-03T15:00:00.000Z')
-);
-
+const result = analytics.buildSoopAnalytics(sessions, snapshots, { live:true, viewerCount:61, title:'현재 방송', categoryName:'버추얼', followerCount:1005, fanclubCount:51 }, new Date('2026-09-03T15:00:00.000Z'));
 assert.equal(result.overview.measuredTotalMinutes, 420);
 assert.equal(result.overview.currentViewerCount, 61);
 assert.equal(result.overview.followerCount, 1005);
@@ -86,65 +62,39 @@ assert.equal(result.overview.fanclubCount, 51);
 assert.equal(result.overview.monthDurationMinutes, 360);
 assert.equal(result.overview.monthAverageViewers, 43);
 assert.equal(result.overview.monthMaxViewers, 80);
-
 assert.equal(result.daily.length, 3);
-const aug31 = result.daily.find(item => item.date === '2026-08-31');
-assert.equal(aug31.fanclubCount, null, 'daily fanclub count must stay unavailable when no exact public snapshot exists');
-const sep2 = result.daily.find(item => item.date === '2026-09-02');
-assert.equal(sep2.fanclubCount, 50, 'daily rows must expose exact fanclub count for that date');
-const sep3 = result.daily.find(item => item.date === '2026-09-03');
-assert.equal(sep3.streamCount, 1);
-assert.equal(sep3.durationMinutes, 240);
-assert.equal(sep3.averageViewers, 50);
-assert.equal(sep3.maxViewers, 80);
-assert.equal(sep3.followerDelta, 5);
-assert.equal(sep3.fanclubCount, 51);
-assert.equal(sep3.fanclubDelta, 1);
-assert.equal(sep3.cumulativeMinutes, 420);
-assert.equal(sep3.categories[0].name, '버추얼');
-
-const august = result.monthly.find(item => item.month === '2026-08');
-assert.equal(august.durationMinutes, 60);
-assert.equal(august.cumulativeMinutes, 60, 'monthly rows must expose cumulative measured broadcast time');
-assert.equal(august.fanclubCount, null, 'monthly fanclub count must not be interpolated into months without a public value');
-const september = result.monthly.find(item => item.month === '2026-09');
-assert.equal(september.activeDays, 2);
-assert.equal(september.streamCount, 2);
-assert.equal(september.durationMinutes, 360);
-assert.equal(september.cumulativeMinutes, 420);
-assert.equal(september.averageStreamMinutes, 180);
-assert.equal(september.averageViewers, 43);
-assert.equal(september.maxViewers, 80);
-assert.equal(september.followerDelta, 5);
-assert.equal(september.fanclubCount, 51, 'monthly rows must expose the latest exact fanclub count in the month');
-assert.equal(september.fanclubDelta, 1);
-
-assert.equal(result.calendar.find(item => item.date === '2026-09-03').durationMinutes, 240);
-assert.deepEqual(result.categories.map(item => [item.name, item.minutes]), [['버추얼', 360], ['종합게임', 60]]);
-assert.equal(result.categories[0].sharePercent, 85.7);
-assert.equal(result.measurement.viewer, 'fan-site-sampled-5m');
-assert.equal(result.measurement.follower, 'public-snapshot');
-assert.equal(result.measurement.fanclub, 'public-snapshot-or-unavailable');
+const aug31=result.daily.find(item=>item.date==='2026-08-31');
+assert.equal(aug31.fanclubCount,null);
+const sep2=result.daily.find(item=>item.date==='2026-09-02');
+assert.equal(sep2.fanclubCount,50);
+const sep3=result.daily.find(item=>item.date==='2026-09-03');
+assert.equal(sep3.streamCount,1); assert.equal(sep3.durationMinutes,240); assert.equal(sep3.averageViewers,50); assert.equal(sep3.maxViewers,80); assert.equal(sep3.followerDelta,5); assert.equal(sep3.fanclubCount,51); assert.equal(sep3.fanclubDelta,1); assert.equal(sep3.cumulativeMinutes,420); assert.equal(sep3.categories[0].name,'버추얼');
+const august=result.monthly.find(item=>item.month==='2026-08');
+assert.equal(august.durationMinutes,60); assert.equal(august.cumulativeMinutes,60); assert.equal(august.fanclubCount,null);
+const september=result.monthly.find(item=>item.month==='2026-09');
+assert.equal(september.activeDays,2); assert.equal(september.streamCount,2); assert.equal(september.durationMinutes,360); assert.equal(september.cumulativeMinutes,420); assert.equal(september.averageStreamMinutes,180); assert.equal(september.averageViewers,43); assert.equal(september.maxViewers,80); assert.equal(september.followerDelta,5); assert.equal(september.fanclubCount,51); assert.equal(september.fanclubDelta,1);
+assert.equal(result.calendar.find(item=>item.date==='2026-09-03').durationMinutes,240);
+assert.deepEqual(result.categories.map(item=>[item.name,item.minutes]),[['버추얼',360],['종합게임',60]]);
+assert.equal(result.categories[0].sharePercent,85.7);
+assert.equal(result.measurement.viewer,'fan-site-sampled-5m');
+assert.equal(result.measurement.follower,'public-snapshot');
+assert.equal(result.measurement.fanclub,'public-snapshot-or-unavailable');
 
 const mergedFollowerSnapshots = analytics.mergeFollowerSnapshots(
   [
-    { date: '2026-09-04', soop: { followerCount: null, fanclubCount: 70 } },
-    { date: '2026-09-05', soop: { followerCount: 30100, fanclubCount: 71 } }
+    { date:'2026-09-04', soop:{ followerCount:null, fanclubCount:null } },
+    { date:'2026-09-05', soop:{ followerCount:30100, fanclubCount:72 } }
   ],
   [
-    { date: '2026-09-04', followerCount: 30000, source: 'trackify' },
-    { date: '2026-09-05', followerCount: 30090, source: 'trackify' }
+    { date:'2026-09-04', followerCount:30000, fanclubCount:70, source:'trackify' },
+    { date:'2026-09-05', followerCount:30090, fanclubCount:71, source:'trackify' }
   ]
 );
-assert.equal(
-  mergedFollowerSnapshots.find(item => item.date === '2026-09-04')?.soop?.followerCount,
-  30000,
-  'null direct snapshots must not erase exact Trackify favorite history'
-);
-assert.equal(
-  mergedFollowerSnapshots.find(item => item.date === '2026-09-05')?.soop?.followerCount,
-  30100,
-  'finite same-day fan-site snapshots must override retrospective Trackify favorite history'
-);
+const mergedSep4=mergedFollowerSnapshots.find(item=>item.date==='2026-09-04');
+const mergedSep5=mergedFollowerSnapshots.find(item=>item.date==='2026-09-05');
+assert.equal(mergedSep4?.soop?.followerCount,30000,'null direct snapshots must not erase exact Trackify favorite history');
+assert.equal(mergedSep4?.soop?.fanclubCount,70,'null direct snapshots must not erase exact Trackify fanclub history');
+assert.equal(mergedSep5?.soop?.followerCount,30100,'finite same-day fan-site follower snapshots must override Trackify history');
+assert.equal(mergedSep5?.soop?.fanclubCount,72,'finite same-day fan-site fanclub snapshots must override Trackify history');
 
 console.log('SOOP analytics regression test passed');
