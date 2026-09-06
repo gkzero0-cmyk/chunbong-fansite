@@ -1,10 +1,10 @@
 {
-  "checkedAt": "2026-09-06T00:04:38.942Z",
+  "checkedAt": "2026-09-06T00:44:47.087Z",
   "baseUrl": "https://chunbong-fansite.vercel.app",
   "endpoints": {
     "dataJs": {
       "status": 200,
-      "bytes": 3022
+      "bytes": 3649
     },
     "dataEnhancementsJs": {
       "status": 200,
@@ -20,7 +20,7 @@
     },
     "apiData": {
       "status": 200,
-      "bytes": 181173
+      "bytes": 182094
     }
   },
   "staticChecks": {
@@ -62,7 +62,7 @@
     "fallback": false,
     "currentFallback": false,
     "reason": null,
-    "capturedAt": "2026-09-06T00:04:36.731Z",
+    "capturedAt": "2026-09-06T00:44:44.161Z",
     "errors": [],
     "errorCount": 0,
     "sourceSummaryCleared": true,
@@ -111,16 +111,16 @@
       "newestShortDate": "2026-09-05T09:00:16+00:00",
       "engagement": {
         "source": "https://www.youtube.com/@%EC%B6%98%EB%B4%89TV",
-        "capturedAt": "2026-09-05T06:26:22.688Z",
-        "engagementItemCount": 203,
+        "capturedAt": "2026-09-06T00:05:07.623Z",
+        "engagementItemCount": 204,
         "engagementRankingCounts": {
           "allTime": {
             "views": 5,
             "comments": 5
           },
           "currentMonth": {
-            "views": 2,
-            "comments": 2
+            "views": 3,
+            "comments": 3
           },
           "recentThreeMonths": {
             "views": 5,
