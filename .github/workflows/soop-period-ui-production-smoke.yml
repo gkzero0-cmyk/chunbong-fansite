@@ -1,0 +1,58 @@
+name: SOOP period UI production smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/soop-period-ui-production-smoke.yml'
+      - 'data.js'
+      - 'data-soop-periods-v2.js'
+      - 'data-soop-periods-v2-persistence.js'
+      - 'data-soop-periods-v2.css'
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Wait for Vercel production
+        run: sleep 35
+      - name: Verify compact period UI assets and data
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://chunbong-fansite.vercel.app'
+          mkdir -p .smoke
+          curl -fsSL --retry 2 --max-time 60 "$BASE/data.js" -o .smoke/data.js
+          curl -fsSL --retry 2 --max-time 60 "$BASE/data-soop-periods-v2.js" -o .smoke/v2.js
+          curl -fsSL --retry 2 --max-time 60 "$BASE/data-soop-periods-v2-persistence.js" -o .smoke/persistence.js
+          curl -fsSL --retry 2 --max-time 60 "$BASE/data-soop-periods-v2.css" -o .smoke/v2.css
+          curl -fsSL --retry 2 --max-time 60 -H 'cache-control: no-cache' "$BASE/api/content?type=data&refresh=1&_period_ui_smoke=$(date +%s)" -o .smoke/api.json
+          node <<'NODE'
+          const fs=require('fs');
+          const loader=fs.readFileSync('.smoke/data.js','utf8');
+          const v2=fs.readFileSync('.smoke/v2.js','utf8');
+          const persistence=fs.readFileSync('.smoke/persistence.js','utf8');
+          const css=fs.readFileSync('.smoke/v2.css','utf8');
+          const payload=JSON.parse(fs.readFileSync('.smoke/api.json','utf8'));
+          const daily=Array.isArray(payload?.soop?.daily)?payload.soop.daily:[];
+          const monthly=Array.isArray(payload?.soop?.monthlyStats)?payload.soop.monthlyStats:[];
+          const checks={
+            loader:loader.includes("load('data-soop-periods-v2.js')")&&loader.includes("load('data-soop-periods-v2-persistence.js')"),
+            compactSelectors:['data-daily-month-select','data-daily-week-select','data-month-year-select'].every(token=>v2.includes(token)),
+            combinedFanclub:['fanclubCombinedChart','periodFanclubDeltaSum','countDeltaText'].every(token=>v2.includes(token)),
+            persistence:['MutationObserver','schedulePersistentRender','data-fanclub-combined','data-retry'].every(token=>persistence.includes(token)),
+            hoverText:css.includes('.data-chart-hover-card text.value')&&css.includes('font-size:20px'),
+            history:daily.length>10&&monthly.length>1,
+            priorHistory:daily.some(row=>String(row?.date||'').startsWith('2025-'))||monthly.some(row=>String(row?.month||'').startsWith('2025-')),
+            fanclub:daily.some(row=>Number.isFinite(row?.fanclubCount)&&Number.isFinite(row?.fanclubDelta)),
+            cumulative:daily.some(row=>Number.isFinite(row?.cumulativeMinutes))&&monthly.some(row=>Number.isFinite(row?.cumulativeMinutes))
+          };
+          console.log(JSON.stringify({daily:daily.length,monthly:monthly.length,checks},null,2));
+          if(!Object.values(checks).every(Boolean)) process.exit(1);
+          NODE
