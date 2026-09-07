@@ -365,6 +365,11 @@
     });
   }
 
+  function calendarBindingsCurrent() {
+    const buttons=$$('[data-calendar-date]');
+    return buttons.length > 0 && buttons.every(button=>button.dataset.v3Bound==='1');
+  }
+
   function isV3Current() {
     return !!(
       $('#data-soop-chart .data-v3-chart')
@@ -373,6 +378,7 @@
       && $('#data-daily-periods .data-daily-week-select')
       && $('#data-month-periods .data-month-year-select')
       && $('#data-month-periods .data-month-month-select')
+      && calendarBindingsCurrent()
     );
   }
 
@@ -423,6 +429,6 @@
   const panel=$('#data-soop-panel');
   if(panel)observer.observe(panel,{childList:true,subtree:true});
 
-  window.__CHUNBONG_SOOP_PERIOD_V3__={mergeDailyHistory,mergeMonthlyHistory,countDeltaText,followerCombinedChart,fanclubCombinedChart,calendarMonthMetrics,renderCalendarDetail,apply};
+  window.__CHUNBONG_SOOP_PERIOD_V3__={mergeDailyHistory,mergeMonthlyHistory,countDeltaText,followerCombinedChart,fanclubCombinedChart,calendarMonthMetrics,renderCalendarDetail,calendarBindingsCurrent,isV3Current,apply};
   window.__CHUNBONG_SOOP_PERIOD_V2__=window.__CHUNBONG_SOOP_PERIOD_V3__;
 })();
