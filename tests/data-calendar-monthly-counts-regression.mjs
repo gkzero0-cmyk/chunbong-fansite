@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const source = fs.readFileSync(new URL('../data-soop-periods-v3.js', import.meta.url), 'utf8');
+const detailRoot = { innerHTML: '' };
 
 const context = {
   console,
@@ -10,7 +11,11 @@ const context = {
   Date,
   setTimeout,
   document: {
-    querySelector: () => null,
+    querySelector(selector) {
+      if (selector === '#data-soop-calendar-detail') return detailRoot;
+      if (selector === 'link[href="data-soop-periods-v2.css"]') return {};
+      return null;
+    },
     querySelectorAll: () => [],
     createElement: () => ({}),
     head: { appendChild() {} }
@@ -25,41 +30,47 @@ vm.createContext(context);
 vm.runInContext(source, context);
 
 const api = context.window.__CHUNBONG_SOOP_PERIOD_V3__;
-assert.equal(typeof api?.calendarMonthMetrics, 'function', 'calendar UI must expose a month-level count resolver');
+assert.equal(typeof api?.renderCalendarDetail, 'function', 'calendar UI must expose its detail renderer');
 
-const payload = {
-  capturedAt: '2026-09-07T12:00:00.000Z',
-  soop: {
-    daily: [
-      { date:'2026-07-31', followerCount:29803, fanclubCount:7586 },
-      { date:'2026-08-31', followerCount:29793, followerDelta:-10, fanclubCount:7591, fanclubDelta:5 },
-      { date:'2026-09-01', followerCount:29769, followerDelta:-24, fanclubCount:7595, fanclubDelta:4 },
-      { date:'2026-09-07', followerCount:29768, followerDelta:-1, fanclubCount:7615, fanclubDelta:20 }
-    ],
-    calendar: [
-      { date:'2026-08-31', followerCount:29793, followerDelta:-10, fanclubCount:7591, fanclubDelta:5 },
-      { date:'2026-09-01', followerCount:29769, followerDelta:-24, fanclubCount:7595, fanclubDelta:4 },
-      { date:'2026-09-07', followerCount:29768, followerDelta:-1, fanclubCount:7615, fanclubDelta:20 }
-    ],
-    monthlyStats: [
-      { month:'2026-08', followerDelta:-10, fanclubDelta:5 },
-      { month:'2026-09', followerCount:29768, followerDelta:-18, fanclubCount:7615, fanclubDelta:24 }
-    ],
-    overview: {}
-  },
-  trends: []
+const fixedMonthlyMetrics = {
+  followerCount: 29778,
+  followerDelta: -15,
+  fanclubCount: 7615,
+  fanclubDelta: 24
 };
 
-const september = api.calendarMonthMetrics(payload, '2026-09-01');
-assert.equal(september.followerCount, 29768, 'September calendar cards must use the month-end/latest follower count, not the selected day count');
-assert.equal(september.followerDelta, -18, 'September calendar cards must use the monthly follower delta');
-assert.equal(september.fanclubCount, 7615, 'September calendar cards must use the month-end/latest fanclub count, not the selected day count');
-assert.equal(september.fanclubDelta, 24, 'September calendar cards must use the monthly fanclub delta');
+api.renderCalendarDetail({
+  date: '2026-09-01',
+  streamCount: 1,
+  durationMinutes: 418,
+  averageViewers: 45,
+  maxViewers: 59,
+  followerCount: 29769,
+  followerDelta: -24,
+  fanclubCount: 7595,
+  fanclubDelta: 4,
+  sessions: []
+}, fixedMonthlyMetrics);
 
-const august = api.calendarMonthMetrics(payload, '2026-08-15');
-assert.equal(august.followerCount, 29793, 'Past months must fall back to the last recorded follower count in that month');
-assert.equal(august.followerDelta, -10, 'Past months must keep the stored monthly follower delta');
-assert.equal(august.fanclubCount, 7591, 'Past months must fall back to the last recorded fanclub count in that month');
-assert.equal(august.fanclubDelta, 5, 'Past months must keep the stored monthly fanclub delta');
+assert.ok(detailRoot.innerHTML.includes('애청자 <b>29,769 (-24)</b>'), 'September 1 must display that selected day’s follower count and delta');
+assert.ok(detailRoot.innerHTML.includes('팬클럽 <b>7,595 (+4)</b>'), 'September 1 must display that selected day’s fanclub count and delta');
+assert.ok(!detailRoot.innerHTML.includes('애청자 <b>29,778 (-15)</b>'), 'calendar detail must not reuse one fixed monthly follower value for every day');
 
-console.log('Calendar monthly count presentation regression test passed');
+api.renderCalendarDetail({
+  date: '2026-09-02',
+  streamCount: 1,
+  durationMinutes: 793,
+  averageViewers: 43,
+  maxViewers: 65,
+  followerCount: 29771,
+  followerDelta: 2,
+  fanclubCount: 7598,
+  fanclubDelta: 3,
+  sessions: []
+}, fixedMonthlyMetrics);
+
+assert.ok(detailRoot.innerHTML.includes('애청자 <b>29,771 (+2)</b>'), 'changing the selected date must update the follower value');
+assert.ok(detailRoot.innerHTML.includes('팬클럽 <b>7,598 (+3)</b>'), 'changing the selected date must update the fanclub value');
+assert.ok(!detailRoot.innerHTML.includes('팬클럽 <b>7,615 (+24)</b>'), 'calendar detail must not reuse one fixed monthly fanclub value for every day');
+
+console.log('Calendar selected-day follower/fanclub regression test passed');
