@@ -149,6 +149,49 @@
       .sort((a,b)=>a.month.localeCompare(b.month));
   }
 
+  function dailyMonthMetric(rows = [], month = '', countKey = '') {
+    const key = monthKey(month);
+    if (!key) return { count:null, delta:null };
+    const start = `${key}-01`;
+    let previous = null;
+    let count = null;
+    for (const row of rows) {
+      const date = dateKey(row?.date);
+      if (!date) continue;
+      const value = Number.isFinite(row?.[countKey]) ? row[countKey] : null;
+      if (date < start) {
+        if (value !== null) previous = value;
+        continue;
+      }
+      if (monthKey(date) !== key) {
+        if (date > start) break;
+        continue;
+      }
+      if (value !== null) count = value;
+    }
+    return {
+      count,
+      delta: Number.isFinite(count) && Number.isFinite(previous) ? count - previous : null
+    };
+  }
+
+  function calendarMonthMetrics(payload = {}, date = '', dailyRows = null, monthlyRows = null) {
+    const month = monthKey(date);
+    if (!month) return { month:'', followerCount:null, followerDelta:null, fanclubCount:null, fanclubDelta:null };
+    const daily = Array.isArray(dailyRows) ? dailyRows : mergeDailyHistory(payload);
+    const monthly = Array.isArray(monthlyRows) ? monthlyRows : mergeMonthlyHistory(payload);
+    const summary = monthly.find(row => row.month === month) || {};
+    const followerFallback = dailyMonthMetric(daily, month, 'followerCount');
+    const fanclubFallback = dailyMonthMetric(daily, month, 'fanclubCount');
+    return {
+      month,
+      followerCount: Number.isFinite(summary.followerCount) ? summary.followerCount : followerFallback.count,
+      followerDelta: Number.isFinite(summary.followerDelta) ? summary.followerDelta : followerFallback.delta,
+      fanclubCount: Number.isFinite(summary.fanclubCount) ? summary.fanclubCount : fanclubFallback.count,
+      fanclubDelta: Number.isFinite(summary.fanclubDelta) ? summary.fanclubDelta : fanclubFallback.delta
+    };
+  }
+
   function shiftDateKey(key, days) {
     const date = new Date(`${key}T12:00:00Z`);
     if (Number.isNaN(date.getTime())) return '';
@@ -289,26 +332,29 @@
     renderDetail('#data-soop-monthly-table',rows,true);
   }
 
-  function renderCalendarDetail(row) {
+  function renderCalendarDetail(row, monthlyMetrics = null) {
     const root=$('#data-soop-calendar-detail');
     if(!root)return;
     if(!row){root.innerHTML='<div class="data-empty">방송한 날짜를 선택하면 상세 기록을 보여줍니다.</div>';return;}
     const sessions=Array.isArray(row.sessions)?row.sessions:[];
-    root.innerHTML=`<small>${esc(row.date)}</small><h3>${number(row.streamCount)}회 방송 · ${esc(minutes(row.durationMinutes))}</h3><div class="data-calendar-stats"><span>평균 <b>${number(row.averageViewers)}</b></span><span>최대 <b>${number(row.maxViewers)}</b></span><span>애청자 <b>${esc(countDeltaText(row.followerCount,row.followerDelta))}</b></span><span>팬클럽 <b>${esc(countDeltaText(row.fanclubCount,row.fanclubDelta))}</b></span></div>${sessions.map(session=>`<article class="data-calendar-session"><strong>${esc(session.title||'춘봉 방송')}</strong><span>${esc(minutes(session.durationMinutes))} · 평균 ${number(session.averageViewers)} · 최대 ${number(session.maxViewers)}</span></article>`).join('')}`;
+    const counts=monthlyMetrics||row;
+    root.innerHTML=`<small>${esc(row.date)}</small><h3>${number(row.streamCount)}회 방송 · ${esc(minutes(row.durationMinutes))}</h3><div class="data-calendar-stats"><span>평균 <b>${number(row.averageViewers)}</b></span><span>최대 <b>${number(row.maxViewers)}</b></span><span>애청자 <b>${esc(countDeltaText(counts.followerCount,counts.followerDelta))}</b></span><span>팬클럽 <b>${esc(countDeltaText(counts.fanclubCount,counts.fanclubDelta))}</b></span></div>${sessions.map(session=>`<article class="data-calendar-session"><strong>${esc(session.title||'춘봉 방송')}</strong><span>${esc(minutes(session.durationMinutes))} · 평균 ${number(session.averageViewers)} · 최대 ${number(session.maxViewers)}</span></article>`).join('')}`;
   }
 
   function enhanceCalendar(payload) {
-    const rows=mergeDailyHistory(payload),map=new Map(rows.map(row=>[row.date,row]));
+    const rows=mergeDailyHistory(payload),monthlyRows=mergeMonthlyHistory(payload),map=new Map(rows.map(row=>[row.date,row]));
+    const monthlyMap=new Map([...new Set(rows.map(row=>monthKey(row.date)).filter(Boolean))].map(month=>[month,calendarMonthMetrics(payload,`${month}-01`,rows,monthlyRows)]));
+    const renderDate=date=>renderCalendarDetail(map.get(date),monthlyMap.get(monthKey(date))||null);
     $$('[data-calendar-date]').forEach(button=>{
       if(button.dataset.v3Bound==='1')return;
       button.dataset.v3Bound='1';
-      button.addEventListener('click',()=>setTimeout(()=>renderCalendarDetail(map.get(button.dataset.calendarDate)),0));
+      button.addEventListener('click',()=>setTimeout(()=>renderDate(button.dataset.calendarDate),0));
     });
     const shown=dateKey($('#data-soop-calendar-detail small')?.textContent||'');
-    if(shown&&map.has(shown))renderCalendarDetail(map.get(shown));
+    if(shown&&map.has(shown))renderDate(shown);
     else {
       const first=$('[data-calendar-date]:not([disabled])');
-      if(first&&map.has(first.dataset.calendarDate))renderCalendarDetail(map.get(first.dataset.calendarDate));
+      if(first&&map.has(first.dataset.calendarDate))renderDate(first.dataset.calendarDate);
     }
   }
 
@@ -377,6 +423,6 @@
   const panel=$('#data-soop-panel');
   if(panel)observer.observe(panel,{childList:true,subtree:true});
 
-  window.__CHUNBONG_SOOP_PERIOD_V3__={mergeDailyHistory,mergeMonthlyHistory,countDeltaText,followerCombinedChart,fanclubCombinedChart,renderCalendarDetail,apply};
+  window.__CHUNBONG_SOOP_PERIOD_V3__={mergeDailyHistory,mergeMonthlyHistory,countDeltaText,followerCombinedChart,fanclubCombinedChart,calendarMonthMetrics,renderCalendarDetail,apply};
   window.__CHUNBONG_SOOP_PERIOD_V2__=window.__CHUNBONG_SOOP_PERIOD_V3__;
 })();
