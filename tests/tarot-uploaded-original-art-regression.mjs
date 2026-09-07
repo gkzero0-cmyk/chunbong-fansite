@@ -58,7 +58,7 @@ assert.doesNotMatch(reversed, /class="tarot-vector-title"[^>]*transform=/, 'vect
 
 const compositeCss = read('tarot-composite.css');
 assert.match(compositeCss, /#tarot-deck \.tarot-card-back\{[^}]*display:grid[^}]*place-items:center/, 'direct-selection card numbers must be centered by the card button itself');
-assert.match(compositeCss, /#tarot-deck \.tarot-card-back span::after\{[^}]*width:44px[^}]*height:44px/, 'direct-selection number should use one consistent centered circular badge');
+assert.match(compositeCss, /#tarot-deck \.tarot-card-back-number\{[^}]*display:grid[^}]*place-items:center[^}]*width:44px[^}]*height:44px/, 'direct-selection number should use one consistent centered circular DOM badge');
 assert.match(compositeCss, /#tarot-deck \.tarot-card-back\.selected\{[^}]*opacity:1/, 'selected card must keep the center number legible');
 assert.match(compositeCss, /\.tarot-composite-art-image\{filter:none/, 'uploaded original artwork should not be reprocessed by a CSS clarity filter');
 
