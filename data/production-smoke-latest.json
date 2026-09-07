@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-07T10:06:24.312Z",
+  "checkedAt": "2026-09-07T12:58:16.405Z",
   "baseUrl": "https://chunbong-fansite.vercel.app",
   "endpoints": {
     "dataJs": {
@@ -20,7 +20,7 @@
     },
     "apiData": {
       "status": 200,
-      "bytes": 194645
+      "bytes": 213561
     }
   },
   "staticChecks": {
@@ -62,7 +62,7 @@
     "fallback": false,
     "currentFallback": false,
     "reason": null,
-    "capturedAt": "2026-09-07T10:06:21.688Z",
+    "capturedAt": "2026-09-07T12:58:14.020Z",
     "errors": [],
     "errorCount": 0,
     "sourceSummaryCleared": true,
@@ -82,13 +82,13 @@
         "subscriberCount": 48,
         "supporterCount": 23,
         "monthUniqueViewers": null,
-        "viewershipHours": 3514,
+        "viewershipHours": 3666,
         "cumulativeUsers": null,
         "cumulativeUpCount": 79721,
-        "monthlyStarCount": 57969,
-        "starsPerHour": 845,
-        "monthlySupporterCount": 85,
-        "monthlyChatCount": 18063,
+        "monthlyStarCount": 58279,
+        "starsPerHour": 815,
+        "monthlySupporterCount": 87,
+        "monthlyChatCount": 18612,
         "monthlyKickCount": null,
         "monthlyMuteCount": 4,
         "stationOpenedAt": "2022-09-29T14:58:14",
