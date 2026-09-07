@@ -1,72 +1,11 @@
 name: Temporary calendar month-switch fix
 
 on:
-  push:
-    branches:
-      - fix/calendar-month-switch-metrics
-
-permissions:
-  contents: write
+  workflow_dispatch:
 
 jobs:
-  patch:
+  noop:
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: fix/calendar-month-switch-metrics
-          fetch-depth: 0
-      - name: Patch V3 calendar freshness check
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-
-          path = Path('data-soop-periods-v3.js')
-          text = path.read_text()
-
-          if 'function calendarBindingsCurrent()' not in text:
-              replacement = "\n".join([
-                  "  function calendarBindingsCurrent() {",
-                  "    const buttons=$$('[data-calendar-date]');",
-                  "    return buttons.length > 0 && buttons.every(button=>button.dataset.v3Bound==='1');",
-                  "  }",
-                  "",
-                  "  function isV3Current() {",
-                  "    return !!(",
-                  "      $('#data-soop-chart .data-v3-chart')",
-                  "      && $('#data-soop-monthly-chart .data-v3-chart')",
-                  "      && $('#data-daily-periods .data-daily-month-select')",
-                  "      && $('#data-daily-periods .data-daily-week-select')",
-                  "      && $('#data-month-periods .data-month-year-select')",
-                  "      && $('#data-month-periods .data-month-month-select')",
-                  "      && calendarBindingsCurrent()",
-                  "    );",
-                  "  }",
-                  "",
-                  "  function apply"
-              ])
-              text, count = re.subn(r"  function isV3Current\(\) \{.*?\n  \}\n\n  function apply", replacement, text, count=1, flags=re.S)
-              if count != 1:
-                  raise SystemExit('expected isV3Current block not found')
-
-          old_export = "window.__CHUNBONG_SOOP_PERIOD_V3__={mergeDailyHistory,mergeMonthlyHistory,countDeltaText,followerCombinedChart,fanclubCombinedChart,calendarMonthMetrics,renderCalendarDetail,apply};"
-          new_export = "window.__CHUNBONG_SOOP_PERIOD_V3__={mergeDailyHistory,mergeMonthlyHistory,countDeltaText,followerCombinedChart,fanclubCombinedChart,calendarMonthMetrics,renderCalendarDetail,calendarBindingsCurrent,isV3Current,apply};"
-          if old_export in text:
-              text = text.replace(old_export, new_export, 1)
-          elif new_export not in text:
-              raise SystemExit('expected V3 export line not found')
-
-          path.write_text(text)
-          PY
-      - name: Commit patch when needed
-        run: |
-          if git diff --quiet -- data-soop-periods-v3.js; then
-            echo "Already patched"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data-soop-periods-v3.js
-          git commit -m "fix: rebind calendar metrics after month switch"
-          git push origin HEAD:fix/calendar-month-switch-metrics
+      - run: echo removed
