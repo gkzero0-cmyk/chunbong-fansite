@@ -340,7 +340,7 @@ if (typeof document !== 'undefined') {
   function renderDeck() {
     const visible = state.deck.slice(0, 78);
     byId('tarot-deck').innerHTML = visible.map((card, index) =>
-      `<button class="tarot-card-back" type="button" data-card-index="${index}" aria-pressed="false" aria-label="뒤집힌 타로 카드 ${index + 1} 선택"><span>CB</span></button>`
+      `<button class="tarot-card-back" type="button" data-card-index="${index}" aria-pressed="false" aria-label="뒤집힌 타로 카드 ${index + 1} 선택"><span class="tarot-card-back-number" aria-hidden="true">${index + 1}</span></button>`
     ).join('');
     updateDirectSelectionUI();
   }

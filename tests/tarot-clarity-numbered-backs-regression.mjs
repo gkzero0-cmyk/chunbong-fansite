@@ -26,12 +26,25 @@ assert.match(
   /\.tarot-composite-art-image\{[^}]*filter:none/,
   'uploaded original artwork must not be softened or artificially sharpened by a CSS clarity filter'
 );
-assert.match(compositeCss, /#tarot-deck\{counter-reset:tarot-card-back\}/, 'direct-selection deck must reset a sequential card counter');
-assert.match(compositeCss, /#tarot-deck \.tarot-card-back\{[^}]*counter-increment:tarot-card-back[^}]*display:grid[^}]*place-items:center/, 'every visible card back must increment and center its sequential number');
-assert.match(compositeCss, /content:counter\(tarot-card-back\)/, 'card backs must display 1 through 78 instead of the CB placeholder');
-assert.match(compositeCss, /#tarot-deck \.tarot-card-back span::after\{[^}]*width:44px[^}]*height:44px/, 'desktop card-back number badge must have one stable centered circular size');
+assert.doesNotMatch(compositeCss, /content:counter\(tarot-card-back\)/, 'visible card numbers must not depend on CSS counter pseudo-content');
+assert.match(
+  compositeCss,
+  /#tarot-deck \.tarot-card-back-number\{[^}]*display:grid[^}]*place-items:center[^}]*width:44px[^}]*height:44px/,
+  'desktop card-back number badge must be one stable centered DOM element'
+);
 
 const tarotSource = fs.readFileSync(new URL('tarot.js', root), 'utf8');
+assert.match(
+  tarotSource,
+  /<span class="tarot-card-back-number" aria-hidden="true">\$\{index \+ 1\}<\/span>/,
+  'direct-selection cards must render their visible 1–78 number as real DOM text'
+);
 assert.match(tarotSource, /aria-label="뒤집힌 타로 카드 \$\{index \+ 1\} 선택"/, 'numeric card-back positions must remain exposed to assistive technology');
 
-console.log('tarot clarity and numbered card-back regression test passed');
+const smokeWorkflow = fs.readFileSync(new URL('.github/workflows/tarot-production-smoke.yml', root), 'utf8');
+assert.match(smokeWorkflow, /text:\s*span\.textContent\.trim\(\)/, 'production smoke must verify the real DOM number text');
+assert.doesNotMatch(smokeWorkflow, /getComputedStyle\(span,\s*'::after'\)/, 'production smoke must not read unresolved CSS counter pseudo-content');
+assert.match(smokeWorkflow, /badgeState\[0\]\.text,\s*'1'/, 'production smoke must verify the first visible deck number');
+assert.match(smokeWorkflow, /badgeState\[1\]\.text,\s*'78'/, 'production smoke must verify the last visible deck number');
+
+console.log('tarot clarity and DOM-numbered card-back regression test passed');

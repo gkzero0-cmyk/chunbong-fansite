@@ -201,19 +201,18 @@ jobs:
             const badgeState = await page.locator('#tarot-deck .tarot-card-back').evaluateAll(cards => {
               const read = card => {
                 const span = card.querySelector('span');
-                const badge = getComputedStyle(span, '::after');
                 const cardRect = card.getBoundingClientRect();
                 const spanRect = span.getBoundingClientRect();
                 return {
-                  content: badge.content.replace(/["']/g, ''),
+                  text: span.textContent.trim(),
                   dx: Math.abs((cardRect.left + cardRect.width / 2) - (spanRect.left + spanRect.width / 2)),
                   dy: Math.abs((cardRect.top + cardRect.height / 2) - (spanRect.top + spanRect.height / 2))
                 };
               };
               return [read(cards[0]), read(cards[77])];
             });
-            assert.equal(badgeState[0].content, '1');
-            assert.equal(badgeState[1].content, '78');
+            assert.equal(badgeState[0].text, '1');
+            assert.equal(badgeState[1].text, '78');
             assert.ok(badgeState.every(item => item.dx < 1 && item.dy < 1), JSON.stringify(badgeState));
 
             const card0 = page.locator('#tarot-deck [data-card-index]').nth(0);
