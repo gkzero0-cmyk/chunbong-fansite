@@ -1083,12 +1083,23 @@
         "categoryName": "버추얼",
         "followerCount": 29761,
         "fanclubCount": 7615
+      },
+      {
+        "capturedAt": "2026-09-07T10:57:35.093Z",
+        "live": true,
+        "startedAt": "2026-09-07T08:03:11.000Z",
+        "title": "춘식당 오픈 단체주문 환영합니다",
+        "viewerCount": 50,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 29760,
+        "fanclubCount": 7615
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-07T10:50:08.435Z",
-    "followerCount": 29761,
+    "capturedAt": "2026-09-07T10:57:35.093Z",
+    "followerCount": 29760,
     "fanclubCount": 7615
   }
 }
