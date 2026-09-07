@@ -82,4 +82,15 @@ assert.equal(compacted.soop.calendar[0].fanclubCount, 7615, 'calendar API rows m
 assert.equal(compacted.soop.monthlyStats[0].fanclubDelta, 24, 'monthly fanclub delta must compare against the previous month-end value');
 assert.equal(compacted.soop.overview.fanclubDelta, 24, 'overview fanclub delta must use the same previous month-end baseline');
 
+const noPriorBaselinePayload = structuredClone(payload);
+noPriorBaselinePayload.soop.overview.fanclubDelta = 7;
+noPriorBaselinePayload.soop.monthlyStats[0].fanclubDelta = 7;
+const noPriorBaseline = compactDataPayload(noPriorBaselinePayload, {
+  soopMetricHistory: { points: [{ date: '2026-09-07', fanclubCount: 7615 }] },
+  youtubeEngagementCache: { items: [] },
+  now: new Date('2026-09-07T10:00:00.000Z')
+});
+assert.equal(noPriorBaseline.soop.monthlyStats[0].fanclubDelta, 7, 'without a previous-month baseline, keep the upstream monthly delta instead of inventing zero');
+assert.equal(noPriorBaseline.soop.overview.fanclubDelta, 7, 'overview must keep the upstream delta when no previous-month baseline exists');
+
 console.log('SOOP compact data count contract regression test passed');
