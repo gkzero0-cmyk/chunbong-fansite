@@ -38,6 +38,12 @@ const SUIT_TITLES = {
   pentacles: 'PENTACLES'
 };
 
+const ORIGINAL_CLOUDINARY_BASE = 'https://res.cloudinary.com/lyppgyei/image/upload/chunbong-fansite/tarot-original';
+const ORIGINAL_SHEET_CELL_WIDTH = 898;
+const ORIGINAL_SHEET_HEIGHT = 1488;
+const ORIGINAL_SHEET_CARD_COUNT = 13;
+const ORIGINAL_SHEET_WIDTH = ORIGINAL_SHEET_CELL_WIDTH * ORIGINAL_SHEET_CARD_COUNT;
+
 function escapeXml(value) {
   return String(value ?? '').replace(/[&<>"']/g, character => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;'
@@ -74,6 +80,24 @@ function descriptorFromLegacyImage(href, x) {
   return { cardIndex, url, sourceX: pairSlot === 1 ? -960 : 0 };
 }
 
+function originalArtworkDescriptor(card) {
+  const cardIndex = Number(card?.deckNumber) - 1;
+  if (!Number.isInteger(cardIndex) || cardIndex < 0 || cardIndex > 77) return null;
+  const sheet = Math.floor(cardIndex / ORIGINAL_SHEET_CARD_COUNT);
+  const slot = cardIndex % ORIGINAL_SHEET_CARD_COUNT;
+  return {
+    cardIndex,
+    sheet,
+    slot,
+    url: `${ORIGINAL_CLOUDINARY_BASE}/sheet-${sheet}.avif`,
+    sourceX: slot === 0 ? 0 : -(slot * ORIGINAL_SHEET_CELL_WIDTH),
+    sheetWidth: ORIGINAL_SHEET_WIDTH,
+    sheetHeight: ORIGINAL_SHEET_HEIGHT,
+    cellWidth: ORIGINAL_SHEET_CELL_WIDTH,
+    cellHeight: ORIGINAL_SHEET_HEIGHT
+  };
+}
+
 function titleFontSize(title) {
   const length = String(title || '').length;
   if (length >= 19) return 42;
@@ -83,13 +107,23 @@ function titleFontSize(title) {
 }
 
 function buildCompositeSvg(card, descriptor, reversed = false, uid = 'tarot-composite') {
-  if (!descriptor?.url) return '';
+  const original = originalArtworkDescriptor(card);
+  const artwork = original || (descriptor?.url ? {
+    cardIndex: Number(card?.deckNumber) - 1,
+    url: descriptor.url,
+    sourceX: Number(descriptor.sourceX) <= -480 ? -960 : 0,
+    sheetWidth: 1920,
+    sheetHeight: 1440,
+    cellWidth: 960,
+    cellHeight: 1440
+  } : null);
+  if (!artwork?.url) return '';
+
   const safeUid = String(uid).replace(/[^a-zA-Z0-9_-]/g, '-');
   const meta = cardDisplayMeta(card);
   const title = escapeXml(meta.title);
   const rankMark = escapeXml(meta.rankMark);
-  const sourceX = Number(descriptor.sourceX) <= -480 ? -960 : 0;
-  const imageUrl = escapeXml(descriptor.url);
+  const imageUrl = escapeXml(artwork.url);
   const artTransform = reversed ? ' transform="rotate(180 480 656)"' : '';
   const fontSize = titleFontSize(meta.title);
 
@@ -120,7 +154,11 @@ function buildCompositeSvg(card, descriptor, reversed = false, uid = 'tarot-comp
     <rect x="68" y="102" width="824" height="1110" rx="38" fill="#080604" stroke="url(#${safeUid}-frame-gold)" stroke-width="11"/>
 
     <g class="tarot-composite-art-layer" clip-path="url(#${safeUid}-art-clip)">
-      <image class="tarot-composite-art-image" href="${imageUrl}" x="${sourceX}" y="0" width="1920" height="1440" preserveAspectRatio="none"${artTransform}/>
+      <g class="tarot-composite-art-rotation"${artTransform}>
+        <svg class="tarot-composite-art-viewport" x="0" y="0" width="960" height="1440" viewBox="0 0 ${artwork.cellWidth} ${artwork.cellHeight}" preserveAspectRatio="xMidYMid slice" overflow="hidden">
+          <image class="tarot-composite-art-image" href="${imageUrl}" x="${artwork.sourceX}" y="0" width="${artwork.sheetWidth}" height="${artwork.sheetHeight}" preserveAspectRatio="none"/>
+        </svg>
+      </g>
     </g>
 
     <rect x="78" y="116" width="804" height="1080" rx="35" fill="none" stroke="#f8da7e" stroke-width="8"/>
@@ -181,6 +219,7 @@ function upgradeAll(root = document) {
 const TAROT_COMPOSITE_API = {
   cardDisplayMeta,
   descriptorFromLegacyImage,
+  originalArtworkDescriptor,
   buildCompositeSvg,
   upgradeLegacySvg,
   upgradeAll

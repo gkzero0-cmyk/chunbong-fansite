@@ -23,12 +23,13 @@ const compositeCss = fs.readFileSync(new URL('tarot-composite.css', root), 'utf8
 assert.ok(!compositeCss.includes('filter:drop-shadow('), 'whole SVG must not be drop-shadow filtered because that can rasterize and soften vector text/frame');
 assert.match(
   compositeCss,
-  /\.tarot-composite-art-image\{[^}]*filter:contrast\(/,
-  'clarity enhancement must target only the raster illustration layer'
+  /\.tarot-composite-art-image\{[^}]*filter:none/,
+  'uploaded original artwork must not be softened or artificially sharpened by a CSS clarity filter'
 );
 assert.match(compositeCss, /#tarot-deck\{counter-reset:tarot-card-back\}/, 'direct-selection deck must reset a sequential card counter');
-assert.match(compositeCss, /#tarot-deck \.tarot-card-back\{counter-increment:tarot-card-back\}/, 'every visible card back must increment the sequential counter');
+assert.match(compositeCss, /#tarot-deck \.tarot-card-back\{[^}]*counter-increment:tarot-card-back[^}]*display:grid[^}]*place-items:center/, 'every visible card back must increment and center its sequential number');
 assert.match(compositeCss, /content:counter\(tarot-card-back\)/, 'card backs must display 1 through 78 instead of the CB placeholder');
+assert.match(compositeCss, /#tarot-deck \.tarot-card-back span::after\{[^}]*width:44px[^}]*height:44px/, 'desktop card-back number badge must have one stable centered circular size');
 
 const tarotSource = fs.readFileSync(new URL('tarot.js', root), 'utf8');
 assert.match(tarotSource, /aria-label="뒤집힌 타로 카드 \$\{index \+ 1\} 선택"/, 'numeric card-back positions must remain exposed to assistive technology');
