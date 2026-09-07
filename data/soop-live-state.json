@@ -962,11 +962,22 @@
         "categoryName": "버추얼",
         "followerCount": 29774,
         "fanclubCount": 7615
+      },
+      {
+        "capturedAt": "2026-09-07T08:50:28.432Z",
+        "live": true,
+        "startedAt": "2026-09-07T08:03:11.000Z",
+        "title": "청백 전곡 같이보기 - 심사위원출신아저씨의 은밀한 취미",
+        "viewerCount": 85,
+        "categoryId": "810000",
+        "categoryName": "Virtual",
+        "followerCount": 29774,
+        "fanclubCount": 7615
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-07T08:38:41.025Z",
+    "capturedAt": "2026-09-07T08:50:28.432Z",
     "followerCount": 29774,
     "fanclubCount": 7615
   }
