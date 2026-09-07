@@ -53,6 +53,7 @@ function compactDailyRow(row = {}) {
     cumulativeMinutes: row.cumulativeMinutes,
     averageViewers: row.averageViewers,
     maxViewers: row.maxViewers,
+    followerCount: row.followerCount,
     followerDelta: row.followerDelta,
     fanclubCount: row.fanclubCount,
     fanclubDelta: row.fanclubDelta
@@ -69,6 +70,7 @@ function compactMonthlyRow(row = {}) {
     averageStreamMinutes: row.averageStreamMinutes,
     averageViewers: row.averageViewers,
     maxViewers: row.maxViewers,
+    followerCount: row.followerCount,
     followerDelta: row.followerDelta,
     fanclubCount: row.fanclubCount,
     fanclubDelta: row.fanclubDelta,
@@ -83,7 +85,9 @@ function compactCalendarRow(row = {}) {
     durationMinutes: row.durationMinutes,
     averageViewers: row.averageViewers,
     maxViewers: row.maxViewers,
+    followerCount: row.followerCount,
     followerDelta: row.followerDelta,
+    fanclubCount: row.fanclubCount,
     fanclubDelta: row.fanclubDelta,
     sessions: (Array.isArray(row.sessions) ? row.sessions : []).map(compactCalendarSession)
   };
@@ -109,6 +113,15 @@ function fanclubHistoryState(history = soopMetricHistory) {
   return { rows, byDate, deltaByDate };
 }
 
+function latestFanclubBefore(rows = [], date = '') {
+  let previous = null;
+  for (const point of rows) {
+    if (point.date >= date) break;
+    if (Number.isFinite(point.fanclubCount)) previous = point.fanclubCount;
+  }
+  return previous;
+}
+
 function enrichSoopFanclub(soop = {}, history = soopMetricHistory, now = new Date()) {
   if (!soop || typeof soop !== 'object') return soop;
   const state = fanclubHistoryState(history);
@@ -128,10 +141,13 @@ function enrichSoopFanclub(soop = {}, history = soopMetricHistory, now = new Dat
     const points = state.rows.filter(point => point.date.startsWith(`${month}-`));
     const first = points[0]?.fanclubCount;
     const last = points.at(-1)?.fanclubCount;
+    const previous = latestFanclubBefore(state.rows, `${month}-01`);
+    const hasBaseline = Number.isFinite(previous) || points.length >= 2;
+    const baseline = Number.isFinite(previous) ? previous : first;
     return {
       ...row,
       fanclubCount: Number.isFinite(last) ? last : row?.fanclubCount,
-      fanclubDelta: Number.isFinite(first) && Number.isFinite(last) && points.length >= 2 ? last - first : row?.fanclubDelta
+      fanclubDelta: hasBaseline && Number.isFinite(baseline) && Number.isFinite(last) ? last - baseline : row?.fanclubDelta
     };
   });
   const nowMonth = (() => {
@@ -143,12 +159,15 @@ function enrichSoopFanclub(soop = {}, history = soopMetricHistory, now = new Dat
   const monthPoints = state.rows.filter(point => point.date.startsWith(`${nowMonth}-`));
   const monthFirst = monthPoints[0]?.fanclubCount;
   const monthLast = monthPoints.at(-1)?.fanclubCount;
+  const previousMonthEnd = latestFanclubBefore(state.rows, `${nowMonth}-01`);
+  const hasMonthBaseline = Number.isFinite(previousMonthEnd) || monthPoints.length >= 2;
+  const monthBaseline = Number.isFinite(previousMonthEnd) ? previousMonthEnd : monthFirst;
   return {
     ...soop,
     overview: {
       ...(soop.overview || {}),
       fanclubCount: Number.isFinite(latest) ? latest : soop?.overview?.fanclubCount,
-      fanclubDelta: Number.isFinite(monthFirst) && Number.isFinite(monthLast) && monthPoints.length >= 2 ? monthLast - monthFirst : soop?.overview?.fanclubDelta
+      fanclubDelta: hasMonthBaseline && Number.isFinite(monthBaseline) && Number.isFinite(monthLast) ? monthLast - monthBaseline : soop?.overview?.fanclubDelta
     },
     daily,
     monthlyStats

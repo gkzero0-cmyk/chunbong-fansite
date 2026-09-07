@@ -32,12 +32,16 @@ for (const marker of [
   "curl -fsSL --retry 2 --max-time 60 \"$BASE/data-enhancements.js\"",
   'formatRollingWeekLabel',
   'formatMonthLabel',
-  "key:'fanclubCount'",
-  "key:'fanclubDelta'",
+  "countKey:'fanclubCount'",
+  "deltaKey:'fanclubDelta'",
   "key:'cumulativeMinutes'",
   'fullDailyHistory',
+  'dailyFollowerCount',
   'dailyFanclubCount',
+  'monthlyFollowerCount',
   'monthlyFanclubCount',
+  'calendarFollowerCount',
+  'calendarFanclubCount',
   'monthlyCumulativeMinutes'
 ]) assert.ok(productionSmoke.includes(marker), `production SOOP smoke should verify ${marker}`);
 

@@ -11,8 +11,7 @@ on:
       - 'api/content.js'
       - 'data.js'
       - 'data-core.js'
-      - 'data-soop-periods.js'
-      - 'data-soop-periods-v2.js'
+      - 'data-soop-periods-v3.js'
       - 'data-soop-periods-v2.css'
       - 'data-enhancements.js'
       - 'lib/chunbong-data.js'
@@ -45,8 +44,7 @@ jobs:
           mkdir -p .smoke
           curl -fsSL --retry 2 --max-time 60 "$BASE/data.js" -o .smoke/data.js
           curl -fsSL --retry 2 --max-time 60 "$BASE/data-core.js" -o .smoke/data-core.js
-          curl -fsSL --retry 2 --max-time 60 "$BASE/data-soop-periods.js" -o .smoke/data-soop-periods.js
-          curl -fsSL --retry 2 --max-time 60 "$BASE/data-soop-periods-v2.js" -o .smoke/data-soop-periods-v2.js
+          curl -fsSL --retry 2 --max-time 60 "$BASE/data-soop-periods-v3.js" -o .smoke/data-soop-periods-v3.js
           curl -fsSL --retry 2 --max-time 60 "$BASE/data-soop-periods-v2.css" -o .smoke/data-soop-periods-v2.css
           curl -fsSL --retry 2 --max-time 60 "$BASE/data-enhancements.js" -o .smoke/data-enhancements.js
           curl -fsSL --retry 2 --max-time 60 -H 'cache-control: no-cache' "$BASE/api/content?type=data&refresh=1&_soop_smoke=$(date +%s)" -o .smoke/api.json
@@ -54,17 +52,17 @@ jobs:
           const fs=require('fs');
           const loader=fs.readFileSync('.smoke/data.js','utf8');
           const core=fs.readFileSync('.smoke/data-core.js','utf8');
-          const periods=fs.readFileSync('.smoke/data-soop-periods.js','utf8');
-          const v2=fs.readFileSync('.smoke/data-soop-periods-v2.js','utf8');
-          const v2css=fs.readFileSync('.smoke/data-soop-periods-v2.css','utf8');
+          const v3=fs.readFileSync('.smoke/data-soop-periods-v3.js','utf8');
+          const periodCss=fs.readFileSync('.smoke/data-soop-periods-v2.css','utf8');
           const enhancements=fs.readFileSync('.smoke/data-enhancements.js','utf8');
           const payload=JSON.parse(fs.readFileSync('.smoke/api.json','utf8'));
-          const requiredLoader=['data-core.js','data-soop-periods-v2.js','buildRollingWeekOptions','filterDailyByWeek','availableMonthKeys','formatRollingWeekLabel','formatMonthLabel'];
-          const requiredPeriods=['data-soop-week-index','data-soop-month-value','최근 3개월 분석','XMLHttpRequest','이번 달 후원자','팬클럽 수','팬클럽 증감',"key:'fanclubCount'","key:'fanclubDelta'","key:'cumulativeMinutes'"];
-          const requiredV2=['mergeDailyHistory','mergeMonthlyHistory','data-daily-month-select','data-daily-week-select','data-month-year-select','fanclubCombinedChart','periodFanclubDeltaSum','countDeltaText','fanclubCount','fanclubDelta','cumulativeMinutes'];
-          const requiredV2Css=['.data-period-select','font-size:20px','.data-chart-hover-card text.value','.data-fanclub-combined'];
+          const requiredLoader=['data-core.js','data-soop-periods-v3.js','buildRollingWeekOptions','filterDailyByWeek','availableMonthKeys','formatRollingWeekLabel','formatMonthLabel'];
+          const exactV3Loader=loader.includes("load('data-soop-periods-v3.js')")&&!loader.includes("load('data-soop-periods-v2.js')")&&!loader.includes("load('data-soop-periods-v2-persistence.js')");
+          const requiredV3=['mergeDailyHistory','mergeMonthlyHistory','data-daily-month-select','data-daily-week-select','data-month-year-select','data-month-month-select','followerCombinedChart','fanclubCombinedChart','countDeltaText','renderCalendarDetail',"countKey:'followerCount'","countKey:'fanclubCount'","deltaKey:'fanclubDelta'","key:'cumulativeMinutes'",'followerCount','fanclubCount','cumulativeMinutes'];
+          const requiredPeriodCss=['.data-period-select','font-size:20px','.data-chart-hover-card text.value','.data-fanclub-combined'];
           const daily=Array.isArray(payload?.soop?.daily)?payload.soop.daily:[];
           const monthly=Array.isArray(payload?.soop?.monthlyStats)?payload.soop.monthlyStats:[];
+          const calendar=Array.isArray(payload?.soop?.calendar)?payload.soop.calendar:[];
           const selected=monthly.at?.(-1)?.categories || [];
           const recent=payload?.soop?.categoryPeriods?.recentThreeMonths || [];
           const categoryShape=rows=>Array.isArray(rows)&&rows.every(row=>Number.isFinite(row?.streamCount)&&Number.isFinite(row?.minutes)&&Number.isFinite(row?.sharePercent));
@@ -74,32 +72,40 @@ jobs:
           const limitSource=limitStart>=0&&limitEnd>limitStart?enhancements.slice(limitStart,limitEnd).replace(/\/\/.*$/gm,''):'';
           const fullDailyHistory=limitStart>=0&&limitEnd>limitStart&&!limitSource.includes('slice(-10)')&&limitSource.includes('.sort(')&&daily.length>10;
           const yearAwareHistory=daily.some(row=>String(row?.date||'').startsWith('2025-'))||monthly.some(row=>String(row?.month||'').startsWith('2025-'));
+          const dailyFollowerCount=daily.some(row=>Number.isFinite(row?.followerCount));
           const dailyFanclubCount=daily.some(row=>Number.isFinite(row?.fanclubCount));
           const dailyFanclubDelta=daily.some(row=>Number.isFinite(row?.fanclubDelta));
+          const monthlyFollowerCount=monthly.some(row=>Number.isFinite(row?.followerCount));
           const monthlyFanclubCount=monthly.some(row=>Number.isFinite(row?.fanclubCount));
           const monthlyFanclubDelta=monthly.some(row=>Number.isFinite(row?.fanclubDelta));
+          const calendarFollowerCount=calendar.some(row=>Number.isFinite(row?.followerCount));
+          const calendarFanclubCount=calendar.some(row=>Number.isFinite(row?.fanclubCount));
           const dailyCumulativeMinutes=daily.length>0&&daily.every(row=>Number.isFinite(row?.cumulativeMinutes));
           const monthlyCumulativeMinutes=monthly.length>0&&monthly.every(row=>Number.isFinite(row?.cumulativeMinutes));
           const checks={
             fallback:payload?.fallback!==true,
             daily:daily.length>0,
             monthly:monthly.length>0,
+            calendar:calendar.length>0,
             liveContract:live===true||live===false||live===null,
             recentThreeMonths:Array.isArray(recent),
             selectedCategoryShape:categoryShape(selected),
             recentCategoryShape:categoryShape(recent),
-            loaderTokens:requiredLoader.every(token=>loader.includes(token)),
-            legacyPeriodTokens:requiredPeriods.every(token=>periods.includes(token)),
-            compactPeriodTokens:requiredV2.every(token=>v2.includes(token)),
-            compactPeriodCss:requiredV2Css.every(token=>v2css.includes(token)),
+            activeLoaderV3:exactV3Loader&&requiredLoader.every(token=>loader.includes(token)),
+            periodV3Tokens:requiredV3.every(token=>v3.includes(token)),
+            compactPeriodCss:requiredPeriodCss.every(token=>periodCss.includes(token)),
             oldCorePreserved:core.includes('renderYoutubePanel')&&core.includes('createSvgChart'),
-            supporterNotRendered:!periods.includes("kpi('이번 달 후원자'"),
+            supporterNotRendered:v3.includes("label === '이번 달 후원자'"),
             fullDailyHistory,
             yearAwareHistory,
+            dailyFollowerCount,
             dailyFanclubCount,
             dailyFanclubDelta,
+            monthlyFollowerCount,
             monthlyFanclubCount,
             monthlyFanclubDelta,
+            calendarFollowerCount,
+            calendarFanclubCount,
             dailyCumulativeMinutes,
             monthlyCumulativeMinutes
           };
@@ -112,9 +118,10 @@ jobs:
             monthly:monthly.length,
             oldestMonth:monthly[0]?.month||null,
             newestMonth:monthly.at(-1)?.month||null,
+            calendar:calendar.length,
             recentCategories:recent.length,
-            latestDailyFanclub:daily.filter(row=>Number.isFinite(row?.fanclubCount)).at(-1)||null,
-            latestMonthlyFanclub:monthly.filter(row=>Number.isFinite(row?.fanclubCount)).at(-1)||null,
+            latestDaily:daily.filter(row=>Number.isFinite(row?.followerCount)||Number.isFinite(row?.fanclubCount)).at(-1)||null,
+            latestMonthly:monthly.filter(row=>Number.isFinite(row?.followerCount)||Number.isFinite(row?.fanclubCount)).at(-1)||null,
             checks
           },null,2));
           if(!Object.values(checks).every(Boolean)) process.exit(1);
