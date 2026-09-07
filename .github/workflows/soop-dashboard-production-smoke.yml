@@ -57,7 +57,7 @@ jobs:
           const enhancements=fs.readFileSync('.smoke/data-enhancements.js','utf8');
           const payload=JSON.parse(fs.readFileSync('.smoke/api.json','utf8'));
           const requiredLoader=['data-core.js','data-soop-periods-v3.js','buildRollingWeekOptions','filterDailyByWeek','availableMonthKeys','formatRollingWeekLabel','formatMonthLabel'];
-          const requiredV3=['mergeDailyHistory','mergeMonthlyHistory','data-daily-month-select','data-daily-week-select','data-month-year-select','data-month-month-select','followerCombinedChart','fanclubCombinedChart','countDeltaText','renderCalendarDetail','followerCount','fanclubCount','cumulativeMinutes'];
+          const requiredV3=['mergeDailyHistory','mergeMonthlyHistory','data-daily-month-select','data-daily-week-select','data-month-year-select','data-month-month-select','followerCombinedChart','fanclubCombinedChart','countDeltaText','renderCalendarDetail',"key:'followerCount'","key:'fanclubCount'","key:'fanclubDelta'","key:'cumulativeMinutes'",'followerCount','fanclubCount','cumulativeMinutes'];
           const requiredPeriodCss=['.data-period-select','font-size:20px','.data-chart-hover-card text.value','.data-fanclub-combined'];
           const daily=Array.isArray(payload?.soop?.daily)?payload.soop.daily:[];
           const monthly=Array.isArray(payload?.soop?.monthlyStats)?payload.soop.monthlyStats:[];
