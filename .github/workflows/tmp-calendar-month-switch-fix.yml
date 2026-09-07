@@ -20,41 +20,35 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
           path = Path('data-soop-periods-v3.js')
           text = path.read_text()
-          old = """  function isV3Current() {
-            return !!(
-              $('#data-soop-chart .data-v3-chart')
-              && $('#data-soop-monthly-chart .data-v3-chart')
-              && $('#data-daily-periods .data-daily-month-select')
-              && $('#data-daily-periods .data-daily-week-select')
-              && $('#data-month-periods .data-month-year-select')
-              && $('#data-month-periods .data-month-month-select')
-            );
-          }
-          """
-          new = """  function calendarBindingsCurrent() {
-            const buttons=$$('[data-calendar-date]');
-            return buttons.length > 0 && buttons.every(button=>button.dataset.v3Bound==='1');
-          }
 
-          function isV3Current() {
-            return !!(
-              $('#data-soop-chart .data-v3-chart')
-              && $('#data-soop-monthly-chart .data-v3-chart')
-              && $('#data-daily-periods .data-daily-month-select')
-              && $('#data-daily-periods .data-daily-week-select')
-              && $('#data-month-periods .data-month-year-select')
-              && $('#data-month-periods .data-month-month-select')
-              && calendarBindingsCurrent()
-            );
-          }
-          """
-          if old in text:
-              text = text.replace(old, new, 1)
-          elif 'function calendarBindingsCurrent()' not in text:
-              raise SystemExit('expected isV3Current block not found')
+          if 'function calendarBindingsCurrent()' not in text:
+              replacement = "\n".join([
+                  "  function calendarBindingsCurrent() {",
+                  "    const buttons=$$('[data-calendar-date]');",
+                  "    return buttons.length > 0 && buttons.every(button=>button.dataset.v3Bound==='1');",
+                  "  }",
+                  "",
+                  "  function isV3Current() {",
+                  "    return !!(",
+                  "      $('#data-soop-chart .data-v3-chart')",
+                  "      && $('#data-soop-monthly-chart .data-v3-chart')",
+                  "      && $('#data-daily-periods .data-daily-month-select')",
+                  "      && $('#data-daily-periods .data-daily-week-select')",
+                  "      && $('#data-month-periods .data-month-year-select')",
+                  "      && $('#data-month-periods .data-month-month-select')",
+                  "      && calendarBindingsCurrent()",
+                  "    );",
+                  "  }",
+                  "",
+                  "  function apply"
+              ])
+              text, count = re.subn(r"  function isV3Current\(\) \{.*?\n  \}\n\n  function apply", replacement, text, count=1, flags=re.S)
+              if count != 1:
+                  raise SystemExit('expected isV3Current block not found')
 
           old_export = "window.__CHUNBONG_SOOP_PERIOD_V3__={mergeDailyHistory,mergeMonthlyHistory,countDeltaText,followerCombinedChart,fanclubCombinedChart,calendarMonthMetrics,renderCalendarDetail,apply};"
           new_export = "window.__CHUNBONG_SOOP_PERIOD_V3__={mergeDailyHistory,mergeMonthlyHistory,countDeltaText,followerCombinedChart,fanclubCombinedChart,calendarMonthMetrics,renderCalendarDetail,calendarBindingsCurrent,isV3Current,apply};"
