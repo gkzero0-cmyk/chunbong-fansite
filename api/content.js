@@ -142,11 +142,12 @@ function enrichSoopFanclub(soop = {}, history = soopMetricHistory, now = new Dat
     const first = points[0]?.fanclubCount;
     const last = points.at(-1)?.fanclubCount;
     const previous = latestFanclubBefore(state.rows, `${month}-01`);
+    const hasBaseline = Number.isFinite(previous) || points.length >= 2;
     const baseline = Number.isFinite(previous) ? previous : first;
     return {
       ...row,
       fanclubCount: Number.isFinite(last) ? last : row?.fanclubCount,
-      fanclubDelta: Number.isFinite(baseline) && Number.isFinite(last) ? last - baseline : row?.fanclubDelta
+      fanclubDelta: hasBaseline && Number.isFinite(baseline) && Number.isFinite(last) ? last - baseline : row?.fanclubDelta
     };
   });
   const nowMonth = (() => {
@@ -159,13 +160,14 @@ function enrichSoopFanclub(soop = {}, history = soopMetricHistory, now = new Dat
   const monthFirst = monthPoints[0]?.fanclubCount;
   const monthLast = monthPoints.at(-1)?.fanclubCount;
   const previousMonthEnd = latestFanclubBefore(state.rows, `${nowMonth}-01`);
+  const hasMonthBaseline = Number.isFinite(previousMonthEnd) || monthPoints.length >= 2;
   const monthBaseline = Number.isFinite(previousMonthEnd) ? previousMonthEnd : monthFirst;
   return {
     ...soop,
     overview: {
       ...(soop.overview || {}),
       fanclubCount: Number.isFinite(latest) ? latest : soop?.overview?.fanclubCount,
-      fanclubDelta: Number.isFinite(monthBaseline) && Number.isFinite(monthLast) ? monthLast - monthBaseline : soop?.overview?.fanclubDelta
+      fanclubDelta: hasMonthBaseline && Number.isFinite(monthBaseline) && Number.isFinite(monthLast) ? monthLast - monthBaseline : soop?.overview?.fanclubDelta
     },
     daily,
     monthlyStats
