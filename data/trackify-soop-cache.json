@@ -1,49 +1,49 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-06T16:34:27.057Z",
+  "capturedAt": "2026-09-07T06:31:01.865Z",
   "stats": {
     "source": "trackify",
     "followerCount": 29811,
     "fanclubCount": 7615,
     "subscriberCount": 48,
     "supporterCount": 23,
-    "averageViewers": 50,
+    "averageViewers": 51,
     "maxViewers": 87,
-    "airtimeMinutes": 3788,
-    "viewershipHours": 3187,
+    "airtimeMinutes": 3997,
+    "viewershipHours": 3408,
     "cumulativeUpCount": 79721,
     "totalAirtimeMinutes": 618907,
-    "monthlyStarCount": 51081,
-    "starsPerHour": 809,
-    "monthlySupporterCount": 80,
-    "monthlyChatCount": 16712,
+    "monthlyStarCount": 57359,
+    "starsPerHour": 861,
+    "monthlySupporterCount": 83,
+    "monthlyChatCount": 17835,
     "monthlyMuteCount": 4,
     "stationOpenedAt": "2022-09-29T14:58:14",
     "latestBroadcastDate": "2026-09-06T15:59:44",
     "categories": [
       {
         "name": "마인크래프트",
-        "minutes": 7638,
-        "streamCount": 14,
-        "sharePercent": 33.1
+        "minutes": 8420,
+        "streamCount": 15,
+        "sharePercent": 35.3
       },
       {
         "name": "버추얼",
         "minutes": 6337,
         "streamCount": 14,
-        "sharePercent": 27.4
+        "sharePercent": 26.5
       },
       {
         "name": "오버워치",
         "minutes": 5774,
         "streamCount": 11,
-        "sharePercent": 25
+        "sharePercent": 24.2
       },
       {
         "name": "PUBG: 배틀그라운드",
         "minutes": 2805,
         "streamCount": 9,
-        "sharePercent": 12.1
+        "sharePercent": 11.7
       },
       {
         "name": "아르마 3",
@@ -11279,6 +11279,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/296896937"
+    },
+    {
+      "id": "trackify-296921273",
+      "broadcastId": "296921273",
+      "date": "2026-09-06",
+      "startedAt": "2026-09-06T15:59:44+09:00",
+      "endedAt": "2026-09-07T05:01:44+09:00",
+      "durationMinutes": 782,
+      "averageViewers": 57,
+      "maxViewers": 83,
+      "viewerSampleCount": 156,
+      "uniqueViewers": null,
+      "starCount": 37071,
+      "supporterCount": 23,
+      "chatCount": 4091,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "오늘 생일 같은 날(생일은 아님)",
+      "categories": [
+        {
+          "id": "00040017",
+          "name": "마인크래프트",
+          "minutes": 782,
+          "sampleCount": 156,
+          "averageViewers": 57,
+          "maxViewers": 83
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/296921273"
     }
   ]
 }
