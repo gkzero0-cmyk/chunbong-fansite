@@ -5,9 +5,8 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const analytics = require('../lib/soop-analytics.js');
 const root = new URL('../', import.meta.url);
-const core = fs.readFileSync(new URL('data-core.js', root), 'utf8');
-const periods = fs.readFileSync(new URL('data-soop-periods-v2.js', root), 'utf8');
-const enhancements = fs.readFileSync(new URL('data-enhancements.js', root), 'utf8');
+const loader = fs.readFileSync(new URL('data.js', root), 'utf8');
+const v3Path = new URL('data-soop-periods-v3.js', root);
 
 const sessions = [
   {
@@ -57,16 +56,19 @@ const sep2 = result.daily.find(row => row.date === '2026-09-02');
 assert.equal(sep2?.averageViewers, null, 'Trackify 0/0 legacy viewer placeholders must be treated as unavailable');
 assert.equal(sep2?.maxViewers, null, 'Trackify 0/0 legacy viewer placeholders must not draw a false zero line');
 
-assert.ok(!core.includes("kpi('이번 달 후원자'"), 'the unsupported monthly supporter KPI must be removed');
-assert.ok(core.includes('countDeltaText(row.followerCount,row.followerDelta)'), 'calendar favorite value must render count and delta together');
-assert.ok(core.includes('countDeltaText(row.fanclubCount,row.fanclubDelta)'), 'calendar fanclub value must render count and delta together');
-assert.ok(core.includes('chunbong-data:render'), 'core renderer must hand fresh payloads to the period renderer instead of racing it');
+assert.ok(fs.existsSync(v3Path), 'single-owner SOOP period renderer v3 must exist');
+const periods = fs.readFileSync(v3Path, 'utf8');
+assert.ok(loader.includes("load('data-soop-periods-v3.js')"), 'data loader must use the v3 period renderer');
+assert.ok(!loader.includes("load('data-soop-periods-v2.js')"), 'legacy v2 period renderer must no longer race the active renderer');
+assert.ok(!loader.includes("load('data-soop-periods-v2-persistence.js')"), 'retry-click persistence workaround must no longer be active');
 
-for (const marker of ['monthlyMonth', 'data-month-month-select', 'followerCombinedChart', 'chunbong-data:render']) {
-  assert.ok(periods.includes(marker), `period renderer must include ${marker}`);
-}
+for (const marker of [
+  'monthlyMonth', 'data-month-month-select', 'followerCombinedChart', 'fanclubCombinedChart',
+  'countDeltaText(row.followerCount,row.followerDelta)', 'countDeltaText(row.fanclubCount,row.fanclubDelta)',
+  '이번 달 후원자', 'MutationObserver'
+]) assert.ok(periods.includes(marker), `v3 renderer must include ${marker}`);
 assert.ok(periods.includes("value=\"all\""), 'monthly period selector must include an all-months option');
-assert.ok(periods.includes('countDeltaText(row.followerCount,row.followerDelta)'), 'detail favorite values must show count plus delta');
-assert.ok(!enhancements.includes("'이번 달 후원자'"), 'presentation filters must not carry the removed monthly supporter KPI');
+assert.ok(periods.includes("label === '이번 달 후원자'"), 'v3 must remove the monthly supporter KPI after core refreshes');
+assert.ok(periods.includes('renderCalendarDetail'), 'v3 must own calendar detail count+delta presentation');
 
 console.log('Chunbong data consistency fix regression test passed');
