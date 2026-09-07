@@ -57,6 +57,7 @@ jobs:
           const enhancements=fs.readFileSync('.smoke/data-enhancements.js','utf8');
           const payload=JSON.parse(fs.readFileSync('.smoke/api.json','utf8'));
           const requiredLoader=['data-core.js','data-soop-periods-v3.js','buildRollingWeekOptions','filterDailyByWeek','availableMonthKeys','formatRollingWeekLabel','formatMonthLabel'];
+          const exactV3Loader=loader.includes("load('data-soop-periods-v3.js')")&&!loader.includes("load('data-soop-periods-v2.js')")&&!loader.includes("load('data-soop-periods-v2-persistence.js')");
           const requiredV3=['mergeDailyHistory','mergeMonthlyHistory','data-daily-month-select','data-daily-week-select','data-month-year-select','data-month-month-select','followerCombinedChart','fanclubCombinedChart','countDeltaText','renderCalendarDetail',"key:'followerCount'","key:'fanclubCount'","key:'fanclubDelta'","key:'cumulativeMinutes'",'followerCount','fanclubCount','cumulativeMinutes'];
           const requiredPeriodCss=['.data-period-select','font-size:20px','.data-chart-hover-card text.value','.data-fanclub-combined'];
           const daily=Array.isArray(payload?.soop?.daily)?payload.soop.daily:[];
@@ -90,7 +91,7 @@ jobs:
             recentThreeMonths:Array.isArray(recent),
             selectedCategoryShape:categoryShape(selected),
             recentCategoryShape:categoryShape(recent),
-            activeLoaderV3:requiredLoader.every(token=>loader.includes(token))&&!loader.includes("load('data-soop-periods-v2.js')")&&!loader.includes("load('data-soop-periods-v2-persistence.js')"),
+            activeLoaderV3:exactV3Loader&&requiredLoader.every(token=>loader.includes(token)),
             periodV3Tokens:requiredV3.every(token=>v3.includes(token)),
             compactPeriodCss:requiredPeriodCss.every(token=>periodCss.includes(token)),
             oldCorePreserved:core.includes('renderYoutubePanel')&&core.includes('createSvgChart'),
