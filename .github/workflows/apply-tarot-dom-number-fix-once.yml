@@ -54,19 +54,31 @@ jobs:
           css.write_text(before + block + end + after)
 
           workflow = Path('.github/workflows/tarot-production-smoke.yml')
-          workflow_source = workflow.read_text()
-          replacements = [
-              ("                const badge = getComputedStyle(span, '::after');\n", ''),
-              ("                  content: badge.content.replace(/[\\\"']/g, ''),\n", "                  text: span.textContent.trim(),\n"),
-              ("            assert.equal(badgeState[0].content, '1');\n", "            assert.equal(badgeState[0].text, '1');\n"),
-              ("            assert.equal(badgeState[1].content, '78');\n", "            assert.equal(badgeState[1].text, '78');\n"),
-          ]
-          for old_text, new_text in replacements:
-              count = workflow_source.count(old_text)
-              if count != 1:
-                  raise SystemExit(f'tarot production smoke replacement count={count}: {old_text!r}')
-              workflow_source = workflow_source.replace(old_text, new_text, 1)
-          workflow.write_text(workflow_source)
+          lines = workflow.read_text().splitlines(keepends=True)
+          out = []
+          removed_badge = changed_content = changed_first = changed_last = 0
+          for line in lines:
+              if "const badge = getComputedStyle(span, '::after');" in line:
+                  removed_badge += 1
+                  continue
+              if 'content: badge.content.replace(' in line:
+                  indent = line[:len(line) - len(line.lstrip())]
+                  out.append(f'{indent}text: span.textContent.trim(),\n')
+                  changed_content += 1
+                  continue
+              if "assert.equal(badgeState[0].content, '1');" in line:
+                  out.append(line.replace('badgeState[0].content', 'badgeState[0].text'))
+                  changed_first += 1
+                  continue
+              if "assert.equal(badgeState[1].content, '78');" in line:
+                  out.append(line.replace('badgeState[1].content', 'badgeState[1].text'))
+                  changed_last += 1
+                  continue
+              out.append(line)
+          counts = (removed_badge, changed_content, changed_first, changed_last)
+          if counts != (1, 1, 1, 1):
+              raise SystemExit(f'tarot production smoke line replacements={counts}')
+          workflow.write_text(''.join(out))
           PY
 
           node --check tarot.js
