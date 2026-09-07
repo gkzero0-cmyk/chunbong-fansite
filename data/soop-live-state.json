@@ -1292,12 +1292,23 @@
         "categoryName": "버추얼",
         "followerCount": 29776,
         "fanclubCount": 7615
+      },
+      {
+        "capturedAt": "2026-09-07T14:56:25.044Z",
+        "live": true,
+        "startedAt": "2026-09-07T08:03:11.000Z",
+        "title": "마병대4 신청했습니다 UP 부탁드립니다 형님들",
+        "viewerCount": 71,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 29777,
+        "fanclubCount": 7615
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-07T14:46:29.197Z",
-    "followerCount": 29776,
+    "capturedAt": "2026-09-07T14:56:25.044Z",
+    "followerCount": 29777,
     "fanclubCount": 7615
   }
 }
