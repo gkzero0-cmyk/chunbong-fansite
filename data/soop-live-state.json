@@ -4,7 +4,7 @@
     "active": true,
     "sessionId": "2026-09-06T06:59:44.000Z",
     "startedAt": "2026-09-06T06:59:44.000Z",
-    "title": "청백 전곡 같이보기 - 심사위원출신아저씨의 은밀한 취미",
+    "title": "춘식당 오픈 단체주문 환영합니다",
     "samples": [
       {
         "capturedAt": "2026-09-06T07:02:51.052Z",
@@ -973,12 +973,23 @@
         "categoryName": "Virtual",
         "followerCount": 29774,
         "fanclubCount": 7615
+      },
+      {
+        "capturedAt": "2026-09-07T08:59:46.102Z",
+        "live": true,
+        "startedAt": "2026-09-07T08:03:11.000Z",
+        "title": "춘식당 오픈 단체주문 환영합니다",
+        "viewerCount": 45,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 29772,
+        "fanclubCount": 7615
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-07T08:50:28.432Z",
-    "followerCount": 29774,
+    "capturedAt": "2026-09-07T08:59:46.102Z",
+    "followerCount": 29772,
     "fanclubCount": 7615
   }
 }
