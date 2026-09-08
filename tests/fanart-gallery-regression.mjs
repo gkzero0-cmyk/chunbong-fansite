@@ -23,6 +23,7 @@ assert.deepEqual(images, [
 ], 'all original post images must be extracted in order without duplicates');
 
 const gallery = fs.readFileSync(galleryUrl, 'utf8');
+assert.doesNotThrow(() => new Function(gallery), 'fanart gallery runtime must be valid JavaScript');
 assert.match(gallery, /\/api\/fanart-detail\?id=/, 'gallery must fetch images from the selected original post');
 assert.match(gallery, /fanart-gallery-prev/, 'gallery must provide a previous-image control');
 assert.match(gallery, /fanart-gallery-next/, 'gallery must provide a next-image control');
