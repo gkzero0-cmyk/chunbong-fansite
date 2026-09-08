@@ -3,7 +3,7 @@
 
   const SOURCE_ID = '202862381';
   const SOURCE_URL = `https://www.sooplive.com/station/chunbongtv/post/${SOURCE_ID}`;
-  const API = `/api/content?type=notice-detail&id=${SOURCE_ID}`;
+  const API = '/api/content?type=notice-detail&id=202862381';
   const REFRESH_MS = 5 * 60 * 1000;
   const root = document.getElementById('history-content');
   const status = document.getElementById('history-sync-status');
