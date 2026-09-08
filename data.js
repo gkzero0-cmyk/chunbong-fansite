@@ -48,6 +48,7 @@
 
   load('data-soop-periods-v3.js')
     .then(()=>load('data-core.js'))
+    .then(()=>load('data-recent-session-metrics.js'))
     .catch(error=>console.error(error));
 })();
 
