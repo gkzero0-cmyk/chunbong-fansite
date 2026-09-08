@@ -9,7 +9,8 @@ window.CHUNBONG_CONTENT = {
     youtube: 'https://www.youtube.com/@%EC%B6%98%EB%B4%89TV',
     cafe: 'https://cafe.naver.com/chunbongtv',
     notion: 'https://fire-space-8c8.notion.site/2c059c07cee480938952ffaf573b8c99',
-    saza: 'https://saza-company.vercel.app/'
+    saza: 'https://saza-company.vercel.app/',
+    history: 'https://www.sooplive.com/station/chunbongtv/post/202862381'
   },
   schedulePostId: '203015477',
   notionScheduleUpdatedAt: '2026-08-26T20:28:56Z',
@@ -44,3 +45,14 @@ window.CHUNBONG_CONTENT = {
     ]
   }
 };
+
+(() => {
+  const nav = document.getElementById('main-nav');
+  if (!nav || nav.querySelector('[data-nav="history"]')) return;
+  const link = document.createElement('a');
+  link.dataset.nav = 'history';
+  link.href = 'history.html';
+  link.textContent = '방송 이력';
+  const dataLink = nav.querySelector('[data-nav="data"]');
+  nav.insertBefore(link, dataLink || null);
+})();
