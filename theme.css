@@ -1,0 +1,40 @@
+:root[data-theme="light"]{color-scheme:light;--black:#f7f4ef;--panel:#fff;--panel-2:#f2ede7;--line:#ddd4cb;--text:#201914;--muted:#70665f}
+:root[data-theme="dark"]{color-scheme:dark}
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:94px;height:40px;padding:0 13px;border:1px solid #343434;border-radius:999px;background:#121212;color:#f7f3ef;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap;transition:.2s}
+.theme-toggle:hover{border-color:#ff782f88;transform:translateY(-1px)}.theme-toggle-icon{font-size:14px;line-height:1}
+[data-theme="light"] body{background:#f7f4ef;color:#201914}
+[data-theme="light"] .noise{opacity:.012}
+[data-theme="light"] .site-header{background:#fffaf5e8;border-bottom-color:#ddd4cb;box-shadow:0 8px 28px #6c4a2a0c}
+[data-theme="light"] .brand-copy strong,[data-theme="light"] .main-nav a:hover{color:#201914}
+[data-theme="light"] .main-nav a{color:#6f665f}[data-theme="light"] .main-nav a.active{color:#df570c;background:#ff6b1812}
+[data-theme="light"] .theme-toggle{background:#fff;border-color:#d8cec5;color:#34271e;box-shadow:0 5px 18px #6c4a2a0d}
+[data-theme="light"] .nav-toggle{background:#fff;border-color:#d8cec5}[data-theme="light"] .nav-toggle span{background:#33271f}
+[data-theme="light"] .page-hero{border-bottom-color:#ddd4cb}[data-theme="light"] .page-hero:before{background:#ff6b1810}
+[data-theme="light"] .hero-copy h1 span{color:#2a211b}[data-theme="light"] .hero-character{filter:drop-shadow(0 30px 45px #68452124)}
+[data-theme="light"] .status-card{background:#ffffffed;border-color:#ded5cc;box-shadow:0 14px 45px #6c4a2a20}
+[data-theme="light"] .hero-tags span,[data-theme="light"] .hero-tags a{border-color:#ded5cc;color:#776b62;background:#ffffff90}
+[data-theme="light"] .btn-ghost{background:#fff;border-color:#d8cec5;color:#34271e}
+[data-theme="light"] .loading-card,[data-theme="light"] .empty-card{background:#fff;border-color:#d8cec5}
+[data-theme="light"] .portal-card{background:linear-gradient(160deg,#fff,#f7f1eb);border-color:#ded5cc;box-shadow:0 12px 35px #6c4a2a0d}
+[data-theme="light"] .portal-card:hover{background:linear-gradient(160deg,#fff7ef,#fff);border-color:#ff762f70}
+[data-theme="light"] .portal-card p{color:#756a62}[data-theme="light"] .official-strip a{background:#fff;border-color:#ded5cc;color:#4f443c}
+[data-theme="light"] .schedule-card{background:linear-gradient(155deg,#fff,#f6f0ea);border-color:#ded5cc;box-shadow:0 12px 30px #6c4a2a0c}
+[data-theme="light"] .schedule-card .time{color:#2e241e}[data-theme="light"] .schedule-number{color:#1d130a0b}
+[data-theme="light"] .notice-card{background:#fff;border-color:#ded5cc}[data-theme="light"] .notice-index{color:#b9ada3}[data-theme="light"] .notice-body.open{border-top-color:#ece4dc}[data-theme="light"] .notice-body p{color:#51463e}
+[data-theme="light"] .video-viewer,[data-theme="light"] .video-list-card{background:#fff;border-color:#ded5cc}[data-theme="light"] .video-list-card:hover,[data-theme="light"] .video-list-card.selected{background:#fff5ed}
+[data-theme="light"] .player-info{border-top-color:#e5ddd5}[data-theme="light"] .player-info p,[data-theme="light"] .video-copy small{color:#756b63}
+[data-theme="light"] .fanart-card{background:#fff;border-color:#ded5cc;box-shadow:0 10px 28px #6c4a2a0b}[data-theme="light"] .fanart-image{background:linear-gradient(135deg,#fff2e6,#f3ece5)}
+[data-theme="light"] .fanart-copy small{color:#756b63}[data-theme="light"] .fanart-modal{background:#fff;color:#201914;border-color:#d8cec5;box-shadow:0 30px 100px #4a2a1633}
+[data-theme="light"] .fanart-modal-media{background:#f3eee8}[data-theme="light"] .dialog-close{background:#ffffffed;color:#2b211a;border-color:#d8cec5}
+[data-theme="light"] .fanart-modal-copy p{color:#756b63}[data-theme="light"] .source-note{background:#fff3e8;color:#6f6259}
+[data-theme="light"] footer{background:#f0ebe5;border-top-color:#d8cec5}[data-theme="light"] .footer-brand p,[data-theme="light"] .footer-links{color:#72675f}[data-theme="light"] .copyright{color:#998d84}
+[data-theme="light"] .to-top{background:#fff;color:#2f241d;border-color:#d8cec5;box-shadow:0 8px 24px #6c4a2a18}
+[data-theme="light"] .history-guide,[data-theme="light"] .history-content-shell,[data-theme="light"] .history-document{background:#fff!important;border-color:#ded5cc!important;color:#201914!important}
+[data-theme="light"] .history-source-body,[data-theme="light"] .history-document-head,[data-theme="light"] .history-document-foot{border-color:#e6ddd5!important;color:#4e433b!important}
+[data-theme="light"] .data-page :is(.data-status,.data-platform-tab,.data-kpi-card,.data-table-card,.data-chart-card,.data-calendar-wrap,.data-calendar-detail,.data-category-card,.data-session-card,.data-top-card,.data-recent-card,.data-soop-view-tabs){background:#fff!important;border-color:#ded5cc!important;color:#201914!important}
+[data-theme="light"] .data-page :is(.data-detail-table,.data-category-list,.data-session-list,.data-top-content,.data-recent-grid) :is(p,small,span){color:#6f655d}
+[data-theme="light"] .data-page button{border-color:#d8cec5}
+[data-theme="light"] .tarot-page :is(.tarot-setup,.tarot-stage,.tarot-summary,.tarot-ai-panel,.tarot-reading-card,.tarot-card-dialog-inner){background:#fff!important;border-color:#ded5cc!important;color:#201914!important}
+[data-theme="light"] .tarot-page :is(input,textarea){background:#fffaf6!important;color:#201914!important;border-color:#d8cec5!important}
+@media(max-width:1050px){.theme-toggle{min-width:42px;width:42px;padding:0}.theme-toggle-label{display:none}}
+@media(max-width:760px){.site-header{gap:8px}.theme-toggle{order:2}.header-live{order:3}.nav-toggle{order:4}}
