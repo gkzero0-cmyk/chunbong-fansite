@@ -1,37 +1,37 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-07T06:31:01.865Z",
+  "capturedAt": "2026-09-08T06:28:45.026Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 29811,
+    "followerCount": 29770,
     "fanclubCount": 7615,
     "subscriberCount": 48,
     "supporterCount": 23,
-    "averageViewers": 51,
-    "maxViewers": 87,
-    "airtimeMinutes": 3997,
-    "viewershipHours": 3408,
-    "cumulativeUpCount": 79721,
-    "totalAirtimeMinutes": 618907,
-    "monthlyStarCount": 57359,
-    "starsPerHour": 861,
-    "monthlySupporterCount": 83,
-    "monthlyChatCount": 17835,
+    "averageViewers": 52,
+    "maxViewers": 106,
+    "airtimeMinutes": 4526,
+    "viewershipHours": 3889,
+    "cumulativeUpCount": 79788,
+    "totalAirtimeMinutes": 619208,
+    "monthlyStarCount": 58533,
+    "starsPerHour": 776,
+    "monthlySupporterCount": 91,
+    "monthlyChatCount": 19502,
     "monthlyMuteCount": 4,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-09-06T15:59:44",
+    "latestBroadcastDate": "2026-09-07T17:03:11",
     "categories": [
       {
         "name": "마인크래프트",
-        "minutes": 8420,
-        "streamCount": 15,
+        "minutes": 8432,
+        "streamCount": 16,
         "sharePercent": 35.3
       },
       {
         "name": "버추얼",
-        "minutes": 6337,
+        "minutes": 6311,
         "streamCount": 14,
-        "sharePercent": 26.5
+        "sharePercent": 26.4
       },
       {
         "name": "오버워치",
@@ -43,7 +43,7 @@
         "name": "PUBG: 배틀그라운드",
         "minutes": 2805,
         "streamCount": 9,
-        "sharePercent": 11.7
+        "sharePercent": 11.8
       },
       {
         "name": "아르마 3",
@@ -11313,6 +11313,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/296921273"
+    },
+    {
+      "id": "trackify-296945391",
+      "broadcastId": "296945391",
+      "date": "2026-09-07",
+      "startedAt": "2026-09-07T17:03:11+09:00",
+      "endedAt": "2026-09-08T01:52:01+09:00",
+      "durationMinutes": 529,
+      "averageViewers": 55,
+      "maxViewers": 106,
+      "viewerSampleCount": 106,
+      "uniqueViewers": null,
+      "starCount": 1174,
+      "supporterCount": 16,
+      "chatCount": 1667,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "마병대4 신청했습니다 UP 부탁드립니다 형님들",
+      "categories": [
+        {
+          "id": "00810000",
+          "name": "버추얼",
+          "minutes": 529,
+          "sampleCount": 106,
+          "averageViewers": 55,
+          "maxViewers": 106
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/296945391"
     }
   ]
 }
