@@ -6,7 +6,7 @@ assert.equal(fs.existsSync('history.js'), true, 'history.js must load the SOOP b
 
 const html = fs.readFileSync('history.html', 'utf8');
 const js = fs.readFileSync('history.js', 'utf8');
-const page = fs.readFileSync('page.js', 'utf8');
+const shared = fs.readFileSync('content.js', 'utf8');
 
 assert.match(html, /data-page=["']history["']/, 'history page must participate in the shared navigation state');
 assert.match(html, /춘봉 방송 이력/, 'history page must be clearly titled');
@@ -19,7 +19,7 @@ assert.match(js, /item\.html/, 'history runtime must render the sanitized source
 assert.match(js, /5\s*\*\s*60\s*\*\s*1000|300000/, 'history runtime must periodically refresh the source');
 assert.match(js, /SOOP 원본|원본에서 보기/, 'history runtime must preserve an obvious path back to the SOOP source');
 
-assert.match(page, /history\.html/, 'shared navigation must expose the broadcast history page');
-assert.match(page, /방송 이력/, 'shared navigation must label the new page in Korean');
+assert.match(shared, /history\.html/, 'shared navigation must expose the broadcast history page');
+assert.match(shared, /방송 이력/, 'shared navigation must label the new page in Korean');
 
 console.log('broadcast history page regression checks passed');
