@@ -56,3 +56,53 @@ window.CHUNBONG_CONTENT = {
   const dataLink = nav.querySelector('[data-nav="data"]');
   nav.insertBefore(link, dataLink || null);
 })();
+
+(() => {
+  const STORAGE_KEY = 'chunbong-theme';
+  const root = document.documentElement;
+  const header = document.querySelector('.site-header');
+  if (!document.querySelector('link[data-theme-styles]')) {
+    const stylesheet = document.createElement('link');
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = 'theme.css';
+    stylesheet.dataset.themeStyles = 'true';
+    document.head.appendChild(stylesheet);
+  }
+
+  let saved = 'dark';
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === 'light' || stored === 'dark') saved = stored;
+  } catch (_) {}
+
+  const applyTheme = (theme) => {
+    const next = theme === 'light' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    const button = document.querySelector('.theme-toggle');
+    if (button) {
+      const light = next === 'light';
+      button.setAttribute('aria-pressed', String(light));
+      button.setAttribute('aria-label', light ? '다크 모드로 전환' : '라이트 모드로 전환');
+      button.title = light ? '다크 모드로 전환' : '라이트 모드로 전환';
+      const icon = button.querySelector('.theme-toggle-icon');
+      const label = button.querySelector('.theme-toggle-label');
+      if (icon) icon.textContent = light ? '🌙' : '☀';
+      if (label) label.textContent = light ? '다크' : '라이트';
+    }
+  };
+
+  applyTheme(saved);
+  if (!header || header.querySelector('.theme-toggle')) return;
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'theme-toggle';
+  button.innerHTML = '<span class="theme-toggle-icon" aria-hidden="true"></span><span class="theme-toggle-label"></span>';
+  button.addEventListener('click', () => {
+    const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+    try { localStorage.setItem(STORAGE_KEY, next); } catch (_) {}
+    applyTheme(next);
+  });
+  const live = header.querySelector('.header-live');
+  header.insertBefore(button, live || null);
+  applyTheme(saved);
+})();
