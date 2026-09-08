@@ -106,3 +106,11 @@ window.CHUNBONG_CONTENT = {
   header.insertBefore(button, live || null);
   applyTheme(saved);
 })();
+
+(() => {
+  if (document.body.dataset.page !== 'fanart' || document.querySelector('script[data-fanart-gallery-runtime]')) return;
+  const script = document.createElement('script');
+  script.src = 'fanart-gallery.js';
+  script.dataset.fanartGalleryRuntime = 'true';
+  document.body.appendChild(script);
+})();
