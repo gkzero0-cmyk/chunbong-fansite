@@ -90,7 +90,7 @@
     if (!articleId) return;
     loading.hidden = false;
     try {
-      const response = await fetch(`/api/fanart-detail?id=${encodeURIComponent(articleId)}`, {
+      const response = await fetch(`/api/content?type=fanart-detail&id=${encodeURIComponent(articleId)}`, {
         headers: { accept: 'application/json' }
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
