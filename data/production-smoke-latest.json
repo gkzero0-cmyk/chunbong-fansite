@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-08T21:11:59.763Z",
+  "checkedAt": "2026-09-08T22:19:07.729Z",
   "baseUrl": "https://chunbong-fansite.vercel.app",
   "endpoints": {
     "dataJs": {
@@ -62,7 +62,7 @@
     "fallback": false,
     "currentFallback": false,
     "reason": null,
-    "capturedAt": "2026-09-08T21:11:57.396Z",
+    "capturedAt": "2026-09-08T22:19:05.398Z",
     "errors": [],
     "errorCount": 0,
     "sourceSummaryCleared": true,
