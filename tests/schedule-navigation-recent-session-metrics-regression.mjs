@@ -38,18 +38,19 @@ const sampleItems = [
   { title: 'today', start: '2026-09-09', end: '' },
   { title: 'future', start: '2026-09-10', end: '' }
 ];
+const titles = items => Array.from(items, item => item.title);
 assert.deepEqual(
-  helpers.upcomingItems(sampleItems, '2026-09-09').map(item => item.title),
+  titles(helpers.upcomingItems(sampleItems, '2026-09-09')),
   ['today', 'future'],
   'default schedule view must start at today and contain only today/future items'
 );
 assert.deepEqual(
-  helpers.previousWeekItems(sampleItems, '2026-09-09', 1).map(item => item.title),
+  titles(helpers.previousWeekItems(sampleItems, '2026-09-09', 1)),
   ['last-week', 'yesterday'],
   'previous schedule view must show the immediately preceding seven days'
 );
 assert.deepEqual(
-  helpers.previousWeekItems(sampleItems, '2026-09-09', 2).map(item => item.title),
+  titles(helpers.previousWeekItems(sampleItems, '2026-09-09', 2)),
   ['older'],
   'older previous-week navigation must move backward by another seven-day window'
 );
