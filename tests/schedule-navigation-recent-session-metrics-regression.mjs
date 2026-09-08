@@ -82,4 +82,29 @@ assert.equal(recent.followerDelta, 12, 'recent session must inherit the follower
 assert.equal(recent.fanclubCount, 7621, 'recent session must inherit the fanclub count for its broadcast date');
 assert.equal(recent.fanclubDelta, 6, 'recent session must inherit the fanclub delta for its broadcast date');
 
+const dataJs = fs.readFileSync(new URL('../data.js', import.meta.url), 'utf8');
+const recentMetricsUrl = new URL('../data-recent-session-metrics.js', import.meta.url);
+assert.match(dataJs, /data-recent-session-metrics\.js/, 'data dashboard must load the recent-session metric presenter');
+assert.equal(fs.existsSync(recentMetricsUrl), true, 'recent-session metric presenter must exist');
+const recentMetricsSource = fs.readFileSync(recentMetricsUrl, 'utf8');
+const recentContext = {
+  window: {},
+  document: {
+    body: { dataset: { page: 'test' } },
+    querySelector: () => null,
+    querySelectorAll: () => []
+  },
+  fetch: async () => ({ ok: false, status: 503, json: async () => ({}) }),
+  Intl,
+  console,
+  setInterval: () => 0,
+  requestAnimationFrame: callback => callback(),
+  MutationObserver: class { observe() {} }
+};
+vm.runInNewContext(recentMetricsSource, recentContext, { filename: 'data-recent-session-metrics.js' });
+const metricHelpers = recentContext.window.__CHUNBONG_RECENT_SESSION_METRIC_HELPERS__;
+assert.ok(metricHelpers, 'recent-session metric presenter must expose its count/delta formatter');
+assert.equal(metricHelpers.countDeltaText(29790, 12), '29,790 (+12)', 'recent follower metric must show both total count and daily change');
+assert.equal(metricHelpers.countDeltaText(7621, 6), '7,621 (+6)', 'recent fanclub metric must show both total count and daily change');
+
 console.log('schedule navigation and recent session metrics regression test passed');
