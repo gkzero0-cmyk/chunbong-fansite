@@ -1,10 +1,10 @@
 {
-  "checkedAt": "2026-09-07T12:58:16.405Z",
+  "checkedAt": "2026-09-08T21:11:59.763Z",
   "baseUrl": "https://chunbong-fansite.vercel.app",
   "endpoints": {
     "dataJs": {
       "status": 200,
-      "bytes": 3808
+      "bytes": 3862
     },
     "dataEnhancementsJs": {
       "status": 200,
@@ -20,7 +20,7 @@
     },
     "apiData": {
       "status": 200,
-      "bytes": 213561
+      "bytes": 214291
     }
   },
   "staticChecks": {
@@ -62,7 +62,7 @@
     "fallback": false,
     "currentFallback": false,
     "reason": null,
-    "capturedAt": "2026-09-07T12:58:14.020Z",
+    "capturedAt": "2026-09-08T21:11:57.396Z",
     "errors": [],
     "errorCount": 0,
     "sourceSummaryCleared": true,
@@ -79,20 +79,20 @@
     "trackify": {
       "sourcePresent": true,
       "fields": {
-        "subscriberCount": 48,
+        "subscriberCount": 46,
         "supporterCount": 23,
         "monthUniqueViewers": null,
-        "viewershipHours": 3666,
+        "viewershipHours": 3889,
         "cumulativeUsers": null,
-        "cumulativeUpCount": 79721,
-        "monthlyStarCount": 58279,
-        "starsPerHour": 815,
-        "monthlySupporterCount": 87,
-        "monthlyChatCount": 18612,
+        "cumulativeUpCount": 79822,
+        "monthlyStarCount": 58533,
+        "starsPerHour": 776,
+        "monthlySupporterCount": 91,
+        "monthlyChatCount": 19502,
         "monthlyKickCount": null,
         "monthlyMuteCount": 4,
         "stationOpenedAt": "2022-09-29T14:58:14",
-        "latestBroadcastDate": "2026-09-06T15:59:44",
+        "latestBroadcastDate": "2026-09-07T17:03:11",
         "categoryRankings": []
       },
       "categoryCount": 0,
@@ -101,17 +101,17 @@
     },
     "youtube": {
       "subscriberCount": 2680,
-      "viewCount": 6757094,
-      "videoCount": 205,
+      "viewCount": 6757413,
+      "videoCount": 206,
       "snapshotFallback": false,
-      "monthlyUploadCount": 4,
+      "monthlyUploadCount": 5,
       "recentVideoCount": 12,
       "recentShortCount": 12,
       "newestVideoDate": "1개월 전",
-      "newestShortDate": "2026-09-06T09:00:32+00:00",
+      "newestShortDate": "2026-09-08T09:00:27+00:00",
       "engagement": {
         "source": "https://www.youtube.com/@%EC%B6%98%EB%B4%89TV",
-        "capturedAt": "2026-09-07T06:31:46.462Z",
+        "capturedAt": "2026-09-08T06:29:28.564Z",
         "engagementItemCount": 205,
         "engagementRankingCounts": {
           "allTime": {
