@@ -12,7 +12,7 @@ const styles = read('styles.css');
 const liveFixes = read('live-fixes.js');
 
 assert.match(index, /hero-actions[\s\S]*youtube\.com\/@%EC%B6%98%EB%B4%89TV/i, 'home hero should have a YouTube shortcut button');
-assert.match(index, /YouTube 바로가기/, 'home hero should label the YouTube shortcut clearly');
+assert.match(index, />YouTube ↗<\/a>/, 'home hero should label the YouTube shortcut clearly');
 
 assert.ok(notice.includes('id="notice-image-modal"'), 'notice page should include an image lightbox dialog');
 assert.ok(page.includes('NOTICE_REFRESH_MS'), 'notice page should define an automatic refresh interval');
