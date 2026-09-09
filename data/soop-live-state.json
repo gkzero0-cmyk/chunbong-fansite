@@ -4,7 +4,7 @@
     "active": true,
     "sessionId": "2026-09-06T06:59:44.000Z",
     "startedAt": "2026-09-06T06:59:44.000Z",
-    "title": "버추얼 종합대회 시즌3 : 넥버워치",
+    "title": "(!드롭스)버추얼 종합대회 시즌3 : 넥버워치",
     "samples": [
       {
         "capturedAt": "2026-09-06T07:02:51.052Z",
@@ -1457,11 +1457,22 @@
         "categoryName": "오버워치",
         "followerCount": 29876,
         "fanclubCount": 7620
+      },
+      {
+        "capturedAt": "2026-09-09T09:17:23.295Z",
+        "live": true,
+        "startedAt": "2026-09-09T08:29:53.000Z",
+        "title": "(!드롭스)버추얼 종합대회 시즌3 : 넥버워치",
+        "viewerCount": 40,
+        "categoryId": "40058",
+        "categoryName": "오버워치",
+        "followerCount": 29876,
+        "fanclubCount": 7620
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-09T09:01:49.322Z",
+    "capturedAt": "2026-09-09T09:17:23.295Z",
     "followerCount": 29876,
     "fanclubCount": 7620
   }
