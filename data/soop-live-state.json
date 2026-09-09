@@ -1468,11 +1468,22 @@
         "categoryName": "오버워치",
         "followerCount": 29876,
         "fanclubCount": 7620
+      },
+      {
+        "capturedAt": "2026-09-09T09:31:38.573Z",
+        "live": true,
+        "startedAt": "2026-09-09T08:29:53.000Z",
+        "title": "(!드롭스)버추얼 종합대회 시즌3 : 넥버워치",
+        "viewerCount": 40,
+        "categoryId": "40058",
+        "categoryName": "오버워치",
+        "followerCount": 29876,
+        "fanclubCount": 7620
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-09T09:17:23.295Z",
+    "capturedAt": "2026-09-09T09:31:38.573Z",
     "followerCount": 29876,
     "fanclubCount": 7620
   }
