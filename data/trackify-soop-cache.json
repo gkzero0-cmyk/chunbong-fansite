@@ -1,18 +1,18 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-08T06:28:45.026Z",
+  "capturedAt": "2026-09-09T06:29:08.105Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 29770,
-    "fanclubCount": 7615,
-    "subscriberCount": 48,
+    "followerCount": 29805,
+    "fanclubCount": 7621,
+    "subscriberCount": 46,
     "supporterCount": 23,
     "averageViewers": 52,
     "maxViewers": 106,
     "airtimeMinutes": 4526,
     "viewershipHours": 3889,
-    "cumulativeUpCount": 79788,
-    "totalAirtimeMinutes": 619208,
+    "cumulativeUpCount": 79822,
+    "totalAirtimeMinutes": 619737,
     "monthlyStarCount": 58533,
     "starsPerHour": 776,
     "monthlySupporterCount": 91,
@@ -23,33 +23,33 @@
     "categories": [
       {
         "name": "마인크래프트",
-        "minutes": 8432,
-        "streamCount": 16,
-        "sharePercent": 35.3
-      },
-      {
-        "name": "버추얼",
-        "minutes": 6311,
-        "streamCount": 14,
-        "sharePercent": 26.4
+        "minutes": 7740,
+        "streamCount": 15,
+        "sharePercent": 34.7
       },
       {
         "name": "오버워치",
         "minutes": 5774,
         "streamCount": 11,
-        "sharePercent": 24.2
+        "sharePercent": 25.9
+      },
+      {
+        "name": "버추얼",
+        "minutes": 5736,
+        "streamCount": 13,
+        "sharePercent": 25.7
       },
       {
         "name": "PUBG: 배틀그라운드",
-        "minutes": 2805,
-        "streamCount": 9,
-        "sharePercent": 11.8
+        "minutes": 2533,
+        "streamCount": 8,
+        "sharePercent": 11.3
       },
       {
         "name": "아르마 3",
         "minutes": 376,
         "streamCount": 2,
-        "sharePercent": 1.6
+        "sharePercent": 1.7
       },
       {
         "name": "발더스 게이트 3",
