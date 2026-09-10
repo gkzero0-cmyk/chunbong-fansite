@@ -1,0 +1,52 @@
+name: Seed VOD hero asset
+
+on:
+  push:
+    branches: [feature/vod-hero-banner]
+    paths:
+      - '.github/workflows/seed-vod-hero-asset.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  seed:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/vod-hero-banner
+      - name: Download validated VOD banner and commit it
+        shell: bash
+        run: |
+          set -euo pipefail
+          META=$(curl -fsS -X POST 'https://api.firestorage.ai/dev/file/shares/v3hhzzTnz_6_/files/01a08cf887597342b5d1c59ea91907df/download')
+          DOWNLOAD_URL=$(META="$META" python3 - <<'PY'
+          import json, os
+          payload = json.loads(os.environ['META'])
+          url = payload.get('downloadUrl')
+          if not url:
+              raise SystemExit(f'missing downloadUrl: {payload}')
+          print(url)
+          PY
+          )
+          mkdir -p assets
+          curl -fsSL "$DOWNLOAD_URL" -o assets/vod-hero-banner.jpg
+          python3 - <<'PY'
+          from pathlib import Path
+          data = Path('assets/vod-hero-banner.jpg').read_bytes()
+          if len(data) < 100_000 or not data.startswith(b'\xff\xd8') or not data.endswith(b'\xff\xd9'):
+              raise SystemExit(f'invalid JPEG bytes: {len(data)}')
+          print(f'VALID_VOD_BANNER bytes={len(data)}')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/vod-hero-banner.jpg
+          if git diff --cached --quiet; then
+            echo 'VOD banner asset already present.'
+            exit 0
+          fi
+          git commit -m 'Add VOD hero banner image'
+          git push origin HEAD:feature/vod-hero-banner
