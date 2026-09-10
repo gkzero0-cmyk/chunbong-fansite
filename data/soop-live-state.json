@@ -4,7 +4,7 @@
     "active": true,
     "sessionId": "2026-09-06T06:59:44.000Z",
     "startedAt": "2026-09-06T06:59:44.000Z",
-    "title": "7시 페이퍼컴퍼니 면접",
+    "title": "하요리) 51개 부탁드립니다 졸업하고 싶습니다",
     "samples": [
       {
         "capturedAt": "2026-09-06T07:02:51.052Z",
@@ -1831,12 +1831,23 @@
         "categoryName": "버추얼",
         "followerCount": 29894,
         "fanclubCount": 7621
+      },
+      {
+        "capturedAt": "2026-09-10T10:45:47.862Z",
+        "live": true,
+        "startedAt": "2026-09-10T08:41:31.000Z",
+        "title": "하요리) 51개 부탁드립니다 졸업하고 싶습니다",
+        "viewerCount": 47,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 29898,
+        "fanclubCount": 7621
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-10T10:33:57.899Z",
-    "followerCount": 29894,
+    "capturedAt": "2026-09-10T10:45:47.862Z",
+    "followerCount": 29898,
     "fanclubCount": 7621
   }
 }
