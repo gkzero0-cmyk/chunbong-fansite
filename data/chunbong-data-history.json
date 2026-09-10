@@ -191,6 +191,35 @@
         "videoCount": 206,
         "recentUploadCount": 0
       }
+    },
+    {
+      "date": "2026-09-10",
+      "capturedAt": "2026-09-10T06:29:03.516Z",
+      "soop": {
+        "live": null,
+        "followerCount": 29896,
+        "fanclubCount": 7621,
+        "measuredTotalMinutes": 235773,
+        "totalAirtimeMinutes": 620077,
+        "monthAverageViewers": 51,
+        "monthMaxViewers": 106,
+        "subscriberCount": 45,
+        "supporterCount": 23,
+        "monthUniqueViewers": null,
+        "viewershipHours": 4134,
+        "cumulativeUsers": null,
+        "cumulativeUpCount": 79860,
+        "monthlyVodCount": 7,
+        "monthlyVodMinutes": null,
+        "monthlyCatchCount": 4,
+        "monthlyClipCount": 12
+      },
+      "youtube": {
+        "subscriberCount": 2680,
+        "viewCount": 6837049,
+        "videoCount": 206,
+        "recentUploadCount": 0
+      }
     }
   ]
 }

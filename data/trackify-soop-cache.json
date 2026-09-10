@@ -1,49 +1,49 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-09T06:29:08.105Z",
+  "capturedAt": "2026-09-10T06:29:02.708Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 29805,
+    "followerCount": 29897,
     "fanclubCount": 7621,
-    "subscriberCount": 46,
+    "subscriberCount": 45,
     "supporterCount": 23,
-    "averageViewers": 52,
+    "averageViewers": 51,
     "maxViewers": 106,
-    "airtimeMinutes": 4526,
-    "viewershipHours": 3889,
-    "cumulativeUpCount": 79822,
-    "totalAirtimeMinutes": 619737,
+    "airtimeMinutes": 4866,
+    "viewershipHours": 4134,
+    "cumulativeUpCount": 79860,
+    "totalAirtimeMinutes": 620077,
     "monthlyStarCount": 58533,
-    "starsPerHour": 776,
+    "starsPerHour": 722,
     "monthlySupporterCount": 91,
-    "monthlyChatCount": 19502,
+    "monthlyChatCount": 19724,
     "monthlyMuteCount": 4,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-09-07T17:03:11",
+    "latestBroadcastDate": "2026-09-09T17:29:53",
     "categories": [
       {
         "name": "마인크래프트",
         "minutes": 7740,
         "streamCount": 15,
-        "sharePercent": 34.7
+        "sharePercent": 34.2
       },
       {
         "name": "오버워치",
-        "minutes": 5774,
-        "streamCount": 11,
-        "sharePercent": 25.9
+        "minutes": 6114,
+        "streamCount": 12,
+        "sharePercent": 27
       },
       {
         "name": "버추얼",
-        "minutes": 5736,
-        "streamCount": 13,
-        "sharePercent": 25.7
+        "minutes": 5737,
+        "streamCount": 14,
+        "sharePercent": 25.3
       },
       {
         "name": "PUBG: 배틀그라운드",
         "minutes": 2533,
         "streamCount": 8,
-        "sharePercent": 11.3
+        "sharePercent": 11.2
       },
       {
         "name": "아르마 3",
@@ -11347,6 +11347,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/296945391"
+    },
+    {
+      "id": "trackify-296993753",
+      "broadcastId": "296993753",
+      "date": "2026-09-09",
+      "startedAt": "2026-09-09T17:29:53+09:00",
+      "endedAt": "2026-09-09T23:10:02+09:00",
+      "durationMinutes": 340,
+      "averageViewers": 43,
+      "maxViewers": 61,
+      "viewerSampleCount": 68,
+      "uniqueViewers": null,
+      "starCount": null,
+      "supporterCount": null,
+      "chatCount": 222,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "버추얼 종합대회 시즌3 : 넥버워치",
+      "categories": [
+        {
+          "id": "00040058",
+          "name": "오버워치",
+          "minutes": 340,
+          "sampleCount": 68,
+          "averageViewers": 43,
+          "maxViewers": 61
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/296993753"
     }
   ]
 }
