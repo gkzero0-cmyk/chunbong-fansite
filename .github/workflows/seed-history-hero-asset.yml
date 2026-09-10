@@ -1,0 +1,52 @@
+name: Seed History hero asset
+
+on:
+  push:
+    branches: [feature/history-hero-banner]
+    paths:
+      - '.github/workflows/seed-history-hero-asset.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  seed:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/history-hero-banner
+      - name: Download validated history banner and commit it
+        shell: bash
+        run: |
+          set -euo pipefail
+          META=$(curl -fsS -X POST 'https://api.firestorage.ai/dev/file/shares/hO1Vty5R9G-D/files/01a08d4b4db8728fb887de691c1b5bd4/download')
+          DOWNLOAD_URL=$(META="$META" python3 - <<'PY'
+          import json, os
+          payload = json.loads(os.environ['META'])
+          url = payload.get('downloadUrl')
+          if not url:
+              raise SystemExit(f'missing downloadUrl: {payload}')
+          print(url)
+          PY
+          )
+          mkdir -p assets
+          curl -fsSL "$DOWNLOAD_URL" -o assets/history-hero-banner.jpg
+          python3 - <<'PY'
+          from pathlib import Path
+          data = Path('assets/history-hero-banner.jpg').read_bytes()
+          if len(data) < 100_000 or not data.startswith(b'\xff\xd8') or not data.endswith(b'\xff\xd9'):
+              raise SystemExit(f'invalid JPEG bytes: {len(data)}')
+          print(f'VALID_HISTORY_BANNER bytes={len(data)}')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/history-hero-banner.jpg
+          if git diff --cached --quiet; then
+            echo 'History banner asset already present.'
+            exit 0
+          fi
+          git commit -m 'Add broadcast history hero banner image'
+          git push origin HEAD:feature/history-hero-banner
