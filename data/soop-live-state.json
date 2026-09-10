@@ -1776,12 +1776,23 @@
         "categoryName": "버추얼",
         "followerCount": 29902,
         "fanclubCount": 7621
+      },
+      {
+        "capturedAt": "2026-09-10T09:47:22.679Z",
+        "live": true,
+        "startedAt": "2026-09-10T08:41:31.000Z",
+        "title": "뭔가 다들 오랜만인것 같습니다.",
+        "viewerCount": 36,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 29899,
+        "fanclubCount": 7621
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-10T09:35:14.220Z",
-    "followerCount": 29902,
+    "capturedAt": "2026-09-10T09:47:22.679Z",
+    "followerCount": 29899,
     "fanclubCount": 7621
   }
 }
