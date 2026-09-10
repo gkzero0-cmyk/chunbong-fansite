@@ -2480,11 +2480,22 @@
         "categoryName": "버추얼",
         "followerCount": 29918,
         "fanclubCount": 7629
+      },
+      {
+        "capturedAt": "2026-09-10T21:27:10.932Z",
+        "live": true,
+        "startedAt": "2026-09-10T08:41:31.000Z",
+        "title": "배그 w. 김옥독, 서라0, 김옥찌",
+        "viewerCount": 48,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 29918,
+        "fanclubCount": 7629
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-10T21:17:03.306Z",
+    "capturedAt": "2026-09-10T21:27:10.932Z",
     "followerCount": 29918,
     "fanclubCount": 7629
   }
