@@ -1886,11 +1886,22 @@
         "categoryName": "버추얼",
         "followerCount": 29895,
         "fanclubCount": 7621
+      },
+      {
+        "capturedAt": "2026-09-10T11:40:59.450Z",
+        "live": true,
+        "startedAt": "2026-09-10T08:41:31.000Z",
+        "title": "하요리) 51개 부탁드립니다 졸업하고 싶습니다",
+        "viewerCount": 46,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 29895,
+        "fanclubCount": 7621
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-10T11:29:48.312Z",
+    "capturedAt": "2026-09-10T11:40:59.450Z",
     "followerCount": 29895,
     "fanclubCount": 7621
   }
