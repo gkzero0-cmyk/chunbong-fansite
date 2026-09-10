@@ -1820,11 +1820,22 @@
         "categoryName": "버추얼",
         "followerCount": 29894,
         "fanclubCount": 7621
+      },
+      {
+        "capturedAt": "2026-09-10T10:33:57.899Z",
+        "live": true,
+        "startedAt": "2026-09-10T08:41:31.000Z",
+        "title": "7시 페이퍼컴퍼니 면접",
+        "viewerCount": 53,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 29894,
+        "fanclubCount": 7621
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-10T10:20:58.740Z",
+    "capturedAt": "2026-09-10T10:33:57.899Z",
     "followerCount": 29894,
     "fanclubCount": 7621
   }
