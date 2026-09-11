@@ -2986,11 +2986,22 @@
         "categoryName": "버추얼",
         "followerCount": 30071,
         "fanclubCount": 7635
+      },
+      {
+        "capturedAt": "2026-09-11T15:45:11.208Z",
+        "live": true,
+        "startedAt": "2026-09-11T07:56:24.000Z",
+        "title": "개방송",
+        "viewerCount": 42,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30071,
+        "fanclubCount": 7635
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-11T15:32:33.481Z",
+    "capturedAt": "2026-09-11T15:45:11.208Z",
     "followerCount": 30071,
     "fanclubCount": 7635
   }
