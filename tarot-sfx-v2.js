@@ -145,6 +145,10 @@ function createEnhancedTarotSoundController(storage = globalThis.localStorage, A
   };
 }
 
+function hasRenderedTarotCards(results) {
+  return Boolean(results?.querySelector?.('.tarot-card-result'));
+}
+
 function installEnhancedTarotSfx(root = globalThis) {
   const documentRef = root.document;
   if (!documentRef) return null;
@@ -182,7 +186,7 @@ function installEnhancedTarotSfx(root = globalThis) {
   };
 
   const triggerRevealFx = () => {
-    if (!results || results.hidden) return;
+    if (!results || results.hidden || !hasRenderedTarotCards(results)) return;
     results.classList.remove('is-revealing');
     void results.offsetWidth;
     results.classList.add('is-revealing');
@@ -241,7 +245,7 @@ function installEnhancedTarotSfx(root = globalThis) {
   return controller;
 }
 
-const TAROT_SFX_V2 = { createEnhancedTarotSoundController, installEnhancedTarotSfx };
+const TAROT_SFX_V2 = { createEnhancedTarotSoundController, installEnhancedTarotSfx, hasRenderedTarotCards };
 if (typeof window !== 'undefined') {
   window.CHUNBONG_TAROT_SFX_V2 = TAROT_SFX_V2;
   installEnhancedTarotSfx(window);

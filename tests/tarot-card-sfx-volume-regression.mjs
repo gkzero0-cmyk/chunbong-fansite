@@ -123,4 +123,9 @@ for (const keyframe of ['tarotRevealBurst', 'tarotRevealSpark', 'tarotArtFlare']
 }
 assert.ok(css.includes('.tarot-results.is-revealing'), 'enhanced reveal styling should be scoped to the reveal phase');
 
+assert.equal(typeof enhanced.hasRenderedTarotCards, 'function', 'enhanced reveal should expose a rendered-card guard');
+assert.equal(enhanced.hasRenderedTarotCards({ querySelector: () => null }), false, 'empty result area must not trigger reveal SFX/FX');
+assert.equal(enhanced.hasRenderedTarotCards({ querySelector: selector => selector === '.tarot-card-result' ? {} : null }), true, 'rendered Tarot cards should allow reveal SFX/FX');
+assert.ok(js.includes('!hasRenderedTarotCards(results)'), 'reveal trigger should guard against empty result areas');
+
 console.log('tarot enhanced card SFX and reveal FX regression test passed');
