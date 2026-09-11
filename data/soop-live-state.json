@@ -2777,12 +2777,23 @@
         "categoryName": "버추얼",
         "followerCount": 30079,
         "fanclubCount": 7629
+      },
+      {
+        "capturedAt": "2026-09-11T11:53:37.814Z",
+        "live": true,
+        "startedAt": "2026-09-11T07:56:24.000Z",
+        "title": "오늘 하요리 졸업하고 앞으로 할 일 정리",
+        "viewerCount": 40,
+        "categoryId": "810000",
+        "categoryName": "Virtual",
+        "followerCount": 30082,
+        "fanclubCount": 7629
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-11T11:46:05.116Z",
-    "followerCount": 30079,
+    "capturedAt": "2026-09-11T11:53:37.814Z",
+    "followerCount": 30082,
     "fanclubCount": 7629
   }
 }
