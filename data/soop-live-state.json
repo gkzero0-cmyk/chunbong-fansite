@@ -3052,11 +3052,22 @@
         "categoryName": "버추얼",
         "followerCount": 30071,
         "fanclubCount": 7635
+      },
+      {
+        "capturedAt": "2026-09-11T17:47:04.930Z",
+        "live": true,
+        "startedAt": "2026-09-11T17:30:38.000Z",
+        "title": "작업방송",
+        "viewerCount": 9,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30071,
+        "fanclubCount": 7635
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-11T17:39:51.010Z",
+    "capturedAt": "2026-09-11T17:47:04.930Z",
     "followerCount": 30071,
     "fanclubCount": 7635
   }
