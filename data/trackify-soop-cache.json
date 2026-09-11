@@ -1,43 +1,43 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-10T06:29:02.708Z",
+  "capturedAt": "2026-09-11T06:28:15.036Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 29897,
-    "fanclubCount": 7621,
+    "followerCount": 29917,
+    "fanclubCount": 7629,
     "subscriberCount": 45,
     "supporterCount": 23,
-    "averageViewers": 51,
+    "averageViewers": 50,
     "maxViewers": 106,
-    "airtimeMinutes": 4866,
-    "viewershipHours": 4134,
-    "cumulativeUpCount": 79860,
-    "totalAirtimeMinutes": 620077,
-    "monthlyStarCount": 58533,
-    "starsPerHour": 722,
-    "monthlySupporterCount": 91,
-    "monthlyChatCount": 19724,
+    "airtimeMinutes": 5677,
+    "viewershipHours": 4774,
+    "cumulativeUpCount": 79933,
+    "totalAirtimeMinutes": 620456,
+    "monthlyStarCount": 68407,
+    "starsPerHour": 723,
+    "monthlySupporterCount": 109,
+    "monthlyChatCount": 22968,
     "monthlyMuteCount": 4,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-09-09T17:29:53",
+    "latestBroadcastDate": "2026-09-10T17:41:31",
     "categories": [
       {
         "name": "마인크래프트",
-        "minutes": 7740,
+        "minutes": 6830,
+        "streamCount": 13,
+        "sharePercent": 30.3
+      },
+      {
+        "name": "버추얼",
+        "minutes": 6548,
         "streamCount": 15,
-        "sharePercent": 34.2
+        "sharePercent": 29
       },
       {
         "name": "오버워치",
         "minutes": 6114,
         "streamCount": 12,
-        "sharePercent": 27
-      },
-      {
-        "name": "버추얼",
-        "minutes": 5737,
-        "streamCount": 14,
-        "sharePercent": 25.3
+        "sharePercent": 27.1
       },
       {
         "name": "PUBG: 배틀그라운드",
@@ -11381,6 +11381,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/296993753"
+    },
+    {
+      "id": "trackify-297017555",
+      "broadcastId": "297017555",
+      "date": "2026-09-10",
+      "startedAt": "2026-09-10T17:41:31+09:00",
+      "endedAt": "2026-09-11T07:13:03+09:00",
+      "durationMinutes": 812,
+      "averageViewers": 47,
+      "maxViewers": 63,
+      "viewerSampleCount": 162,
+      "uniqueViewers": null,
+      "starCount": 9874,
+      "supporterCount": 36,
+      "chatCount": 3244,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "배그 w. 김옥독, 서라0, 김옥찌",
+      "categories": [
+        {
+          "id": "00810000",
+          "name": "버추얼",
+          "minutes": 812,
+          "sampleCount": 162,
+          "averageViewers": 47,
+          "maxViewers": 63
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297017555"
     }
   ]
 }
