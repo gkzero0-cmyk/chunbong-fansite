@@ -108,9 +108,20 @@ function cardArtworkDescriptor(card) {
 
 function createTarotSoundController(storage = globalThis.localStorage, AudioContextCtor = globalThis.AudioContext || globalThis.webkitAudioContext) {
   const key = 'chunbongTarotSound';
+  const volumeKey = 'chunbongTarotVolume';
   let stored = null;
-  try { stored = storage?.getItem?.(key); } catch (_) {}
+  let storedVolume = null;
+  try {
+    stored = storage?.getItem?.(key);
+    storedVolume = storage?.getItem?.(volumeKey);
+  } catch (_) {}
   let isEnabled = stored !== 'off';
+  const clampVolume = value => {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return 0.7;
+    return Math.min(1, Math.max(0, number));
+  };
+  let volumeLevel = storedVolume == null ? 0.7 : clampVolume(storedVolume);
   let context = null;
 
   const ensureContext = () => {
@@ -120,58 +131,100 @@ function createTarotSoundController(storage = globalThis.localStorage, AudioCont
     return context;
   };
 
-  const tone = (frequency, duration, gain = 0.03, offset = 0) => {
+  const scaledGain = gain => Math.max(Number(gain || 0) * volumeLevel, 0.0001);
+
+  const tone = (frequency, duration, gain = 0.03, offset = 0, type = 'sine') => {
+    if (volumeLevel <= 0) return;
     const ctx = ensureContext();
     if (!ctx) return;
     const osc = ctx.createOscillator();
     const amp = ctx.createGain();
-    osc.type = 'sine';
+    osc.type = type;
     osc.frequency.value = frequency;
     const start = ctx.currentTime + offset;
-    amp.gain.setValueAtTime(Math.max(gain, 0.0001), start);
+    amp.gain.setValueAtTime(scaledGain(gain), start);
     amp.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     osc.connect(amp).connect(ctx.destination);
     osc.start(start);
     osc.stop(start + duration);
   };
 
-  const swish = () => {
+  const noiseBurst = ({ duration = 0.08, gain = 0.04, frequency = 1200, q = 0.8, offset = 0, type = 'bandpass', startFrequency = null, endFrequency = null } = {}) => {
+    if (volumeLevel <= 0) return;
     const ctx = ensureContext();
     if (!ctx) return;
-    const duration = 0.16;
-    const buffer = ctx.createBuffer(1, Math.max(1, Math.floor(ctx.sampleRate * duration)), ctx.sampleRate);
+    const length = Math.max(1, Math.floor(ctx.sampleRate * duration));
+    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
     const data = buffer.getChannelData(0);
-    for (let index = 0; index < data.length; index += 1) data[index] = Math.random() * 2 - 1;
+    for (let index = 0; index < data.length; index += 1) {
+      const progress = index / Math.max(1, data.length - 1);
+      const envelope = Math.sin(Math.PI * progress);
+      data[index] = (Math.random() * 2 - 1) * envelope;
+    }
     const source = ctx.createBufferSource();
     const filter = ctx.createBiquadFilter();
     const amp = ctx.createGain();
     source.buffer = buffer;
-    filter.type = 'bandpass';
-    filter.frequency.value = 950;
-    filter.Q.value = 0.8;
-    amp.gain.setValueAtTime(0.025, ctx.currentTime);
-    amp.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+    filter.type = type;
+    filter.Q.value = q;
+    const start = ctx.currentTime + offset;
+    const firstFrequency = Math.max(40, Number(startFrequency || frequency));
+    filter.frequency.value = firstFrequency;
+    if (endFrequency && typeof filter.frequency.setValueAtTime === 'function' && typeof filter.frequency.exponentialRampToValueAtTime === 'function') {
+      filter.frequency.setValueAtTime(firstFrequency, start);
+      filter.frequency.exponentialRampToValueAtTime(Math.max(40, Number(endFrequency)), start + duration);
+    }
+    amp.gain.setValueAtTime(scaledGain(gain), start);
+    amp.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     source.connect(filter).connect(amp).connect(ctx.destination);
-    source.start(ctx.currentTime);
-    source.stop(ctx.currentTime + duration);
+    source.start(start);
+    source.stop(start + duration);
+  };
+
+  const cardShuffle = () => {
+    for (let index = 0; index < 8; index += 1) {
+      noiseBurst({
+        duration: 0.052 + (index % 2) * 0.012,
+        gain: 0.052,
+        frequency: 1050 + index * 105,
+        q: 0.72,
+        offset: index * 0.041
+      });
+    }
+    noiseBurst({ duration: 0.22, gain: 0.018, frequency: 620, q: 0.55, offset: 0.02 });
+  };
+
+  const cardSlap = () => {
+    noiseBurst({ duration: 0.06, gain: 0.12, frequency: 760, q: 0.45, type: 'lowpass' });
+    noiseBurst({ duration: 0.028, gain: 0.048, frequency: 2300, q: 1.1, offset: 0.012 });
+    tone(118, 0.07, 0.052, 0.004, 'triangle');
+  };
+
+  const cardSpread = () => {
+    noiseBurst({ duration: 0.36, gain: 0.072, frequency: 1450, q: 0.72, startFrequency: 680, endFrequency: 2750 });
+    for (let index = 0; index < 5; index += 1) {
+      noiseBurst({ duration: 0.045, gain: 0.025, frequency: 1400 + index * 210, q: 0.95, offset: 0.045 + index * 0.058 });
+    }
   };
 
   return {
     enabled: () => isEnabled,
+    volume: () => volumeLevel,
     unlock: () => { try { ensureContext(); } catch (_) {} },
     setEnabled(value) {
       isEnabled = Boolean(value);
       try { storage?.setItem?.(key, isEnabled ? 'on' : 'off'); } catch (_) {}
     },
+    setVolume(value) {
+      volumeLevel = clampVolume(value);
+      try { storage?.setItem?.(volumeKey, String(volumeLevel)); } catch (_) {}
+    },
     play(name) {
-      if (!isEnabled) return;
+      if (!isEnabled || volumeLevel <= 0) return;
       try {
-        if (name === 'shuffle') swish();
-        if (name === 'select') tone(520, 0.08, 0.025);
-        if (name === 'reveal') {
-          tone(220, 0.18, 0.022);
-          tone(740, 0.12, 0.024, 0.08);
-        }
+        if (name === 'shuffle') cardShuffle();
+        if (name === 'select') cardSlap();
+        if (name === 'reveal') cardSpread();
         if (name === 'complete') {
           tone(440, 0.12, 0.026);
           tone(554, 0.12, 0.028, 0.11);
@@ -181,7 +234,6 @@ function createTarotSoundController(storage = globalThis.localStorage, AudioCont
     }
   };
 }
-
 function buildCardInterpretation(selection, topicId, position) {
   const { card, orientation } = selection;
   const direction = orientation === 'upright' ? '정방향' : '역방향';
@@ -250,7 +302,8 @@ if (typeof document !== 'undefined') {
     selected: [],
     phase: 'setup',
     readingSucceeded: false,
-    soundEnabled: soundController.enabled()
+    soundEnabled: soundController.enabled(),
+    soundVolume: soundController.volume()
   };
   const byId = id => document.getElementById(id);
   const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({
@@ -571,13 +624,39 @@ if (typeof document !== 'undefined') {
     if (wasSelected) button.focus();
   }
 
-  function updateSoundToggle() {
-    const button = byId('tarot-sound-toggle');
-    if (!button) return;
-    state.soundEnabled = soundController.enabled();
-    button.setAttribute('aria-pressed', String(state.soundEnabled));
-    button.textContent = state.soundEnabled ? '효과음 ON' : '효과음 OFF';
+function updateSoundToggle() {
+  const button = byId('tarot-sound-toggle');
+  if (!button) return;
+  state.soundEnabled = soundController.enabled();
+  button.setAttribute('aria-pressed', String(state.soundEnabled));
+  button.textContent = state.soundEnabled ? '효과음 ON' : '효과음 OFF';
+}
+
+function updateVolumeUI() {
+  const current = soundController.volume();
+  const percent = Math.round(current * 100);
+  state.soundVolume = current;
+  const button = byId('tarot-volume-toggle');
+  const range = byId('tarot-volume-range');
+  const output = byId('tarot-volume-value');
+  if (button) button.textContent = `${percent === 0 ? '🔇' : '🔊'} 음량 ${percent}%`;
+  if (range) {
+    range.value = String(percent);
+    range.setAttribute('aria-valuetext', `${percent}%`);
   }
+  if (output) output.textContent = `${percent}%`;
+}
+
+function toggleVolumePanel(force) {
+  const button = byId('tarot-volume-toggle');
+  const panel = byId('tarot-volume-panel');
+  if (!button || !panel) return;
+  const expanded = typeof force === 'boolean'
+    ? force
+    : button.getAttribute('aria-expanded') !== 'true';
+  button.setAttribute('aria-expanded', String(expanded));
+  panel.hidden = !expanded;
+}
 
   function resetReading() {
     state.deck = [];
@@ -605,6 +684,7 @@ if (typeof document !== 'undefined') {
     renderNumberInputs(1);
     syncSelectionModeUI();
     updateSoundToggle();
+    updateVolumeUI();
     setup.addEventListener('change', event => {
       if (event.target.name === 'count') {
         renderNumberInputs(Number(event.target.value));
@@ -635,6 +715,19 @@ if (typeof document !== 'undefined') {
       soundController.unlock();
       soundController.setEnabled(!soundController.enabled());
       updateSoundToggle();
+    });
+    byId('tarot-volume-toggle')?.addEventListener('click', () => {
+      toggleVolumePanel();
+    });
+    byId('tarot-volume-range')?.addEventListener('input', event => {
+      soundController.unlock();
+      soundController.setVolume(Number(event.target.value) / 100);
+      updateVolumeUI();
+    });
+    byId('tarot-volume-panel')?.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      toggleVolumePanel(false);
+      byId('tarot-volume-toggle')?.focus();
     });
     byId('tarot-ai-button').addEventListener('click', requestAiReading);
     byId('tarot-redraw').addEventListener('click', startReading);
