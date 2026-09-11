@@ -37,7 +37,7 @@
       </section>
       <label class="tarot-question-label" for="tarot-question">질문 또는 고민 <span>선택 입력 · 최대 500자</span></label>
       <textarea id="tarot-question" maxlength="500" placeholder="예: 앞으로의 방송과 콘텐츠 방향을 어떻게 잡는 게 좋을까?"></textarea>
-      <div class="tarot-setup-actions"><button id="tarot-shuffle" class="btn btn-primary" type="submit">숫자로 카드 열기</button><button id="tarot-sound-toggle" class="tarot-sound-toggle" type="button" aria-pressed="true">효과음 ON</button></div>
+      <div class="tarot-setup-actions"><button id="tarot-shuffle" class="btn btn-primary" type="submit">숫자로 카드 열기</button><button id="tarot-sound-toggle" class="tarot-sound-toggle" type="button" aria-pressed="true">효과음 ON</button><div class="tarot-volume-control"><button id="tarot-volume-toggle" class="tarot-volume-toggle" type="button" aria-expanded="false" aria-controls="tarot-volume-panel">🔊 음량 70%</button><div id="tarot-volume-panel" class="tarot-volume-panel" hidden><input id="tarot-volume-range" type="range" min="0" max="100" step="1" value="70" aria-label="효과음 음량"><output id="tarot-volume-value" for="tarot-volume-range">70%</output></div></div></div>
     </form>
     <section id="tarot-stage" class="tarot-stage reveal" aria-live="polite">
       <p id="tarot-selection-status">주제와 카드 수, 선택 방식을 정해 주세요.</p>
