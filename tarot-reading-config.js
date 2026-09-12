@@ -20,7 +20,7 @@
     single: { label: '1장 핵심', count: 1, positions: ['핵심 메시지'], kind: 'flow' },
     threeFlow: { label: '3장 흐름', count: 3, positions: ['과거·배경','현재·핵심','앞으로의 흐름'], kind: 'flow' },
     fiveInsight: { label: '5장 심층', count: 5, positions: ['현재 상황','강점','장애물','조언','예상 흐름'], kind: 'flow' },
-    twelveCompass: { label: '12장 종합', count: 12, positions: ['현재 상태','내면','외부 환경','인간관계','강점','약점','기회','장애물','해야 할 것','가까운 미래','장기 흐름','최종 방향'], kind: 'flow' },
+    twelveCompass: { label: '12장 종합', count: 12, positions: ['현재 상태','내면','외부 환경','관계','강점','약점','기회','장애물','조언','가까운 흐름','장기 흐름','최종 방향'], kind: 'flow' },
 
     love3: { label: '3장 연애 흐름', count: 3, positions: ['현재 관계','상대와의 핵심','앞으로의 흐름'], kind: 'relationship' },
     love6: { label: '6장 나와 상대', count: 6, positions: ['나 · 마음','나 · 행동','나 · 기대','상대 · 마음','상대 · 행동','상대 · 기대'], kind: 'relationship' },
@@ -49,21 +49,11 @@
   };
 
   const flowSets = {
-    general: [
-      ['single','1장 핵심'],['threeFlow','3장 흐름'],['fiveInsight','5장 심층'],['twelveCompass','12장 종합']
-    ],
-    broadcast: [
-      ['single','1장 방송 메시지'],['threeFlow','3장 방송 흐름'],['fiveInsight','5장 방송 심층'],['twelveCompass','12장 방송 종합']
-    ],
-    content: [
-      ['single','1장 콘텐츠 한마디'],['threeFlow','3장 콘텐츠 흐름'],['fiveInsight','5장 콘텐츠 진단'],['twelveCompass','12장 콘텐츠 종합']
-    ],
-    money: [
-      ['single','1장 금전 메시지'],['threeFlow','3장 금전 흐름'],['fiveInsight','5장 금전 진단'],['twelveCompass','12장 금전 종합']
-    ],
-    direction: [
-      ['single','1장 핵심 방향'],['threeFlow','3장 단기 흐름'],['fiveInsight','5장 방향 심층'],['twelveCompass','12장 장기 나침반']
-    ]
+    general: [['single','1장 핵심'],['threeFlow','3장 흐름'],['fiveInsight','5장 심층'],['twelveCompass','12장 종합']],
+    broadcast: [['single','1장 방송 메시지'],['threeFlow','3장 방송 흐름'],['fiveInsight','5장 방송 심층'],['twelveCompass','12장 방송 종합']],
+    content: [['single','1장 콘텐츠 한마디'],['threeFlow','3장 콘텐츠 흐름'],['fiveInsight','5장 콘텐츠 진단'],['twelveCompass','12장 콘텐츠 종합']],
+    money: [['single','1장 금전 메시지'],['threeFlow','3장 금전 흐름'],['fiveInsight','5장 금전 진단'],['twelveCompass','12장 금전 종합']],
+    direction: [['single','1장 핵심 방향'],['threeFlow','3장 단기 흐름'],['fiveInsight','5장 방향 심층'],['twelveCompass','12장 장기 나침반']]
   };
 
   const toChoices = pairs => pairs.map(([spreadId, label]) => ({ spreadId, label, count: spreads[spreadId].count }));
@@ -83,10 +73,8 @@
   function choicesForTopic(topicId) {
     return topicSpreads[topicId] || topicSpreads.general;
   }
-
   function isSpreadAllowed(topicId, spreadId) {
     return choicesForTopic(topicId).some(choice => choice.spreadId === spreadId);
   }
-
   return { topics, spreads, topicSpreads, choicesForTopic, isSpreadAllowed };
 });
