@@ -44,6 +44,7 @@ assert.equal(reading.engine, 'topic-structured-v3');
 assert.deepEqual(Object.keys(reading.glance), ['conclusion','positive','caution','action']);
 for (const key of Object.keys(reading.glance)) assert.ok(reading.glance[key].length > 12, `${key} must be useful`);
 assert.ok(!reading.glance.conclusion.includes(choiceBody.question), 'question text should not be repeated inside the conclusion card');
+assert.ok(reading.glance.conclusion.includes('A와 B'), 'choice conclusion must describe both options instead of centering one side');
 assert.equal(reading.comparison.type, 'choice');
 assert.equal(reading.comparison.leftLabel, 'A');
 assert.equal(reading.comparison.rightLabel, 'B');
@@ -72,6 +73,7 @@ const relationshipReading = api.generateLocalReading(api.validateReadingRequest(
 assert.equal(relationshipReading.comparison.type, 'relationship');
 assert.equal(relationshipReading.comparison.leftLabel, '나');
 assert.equal(relationshipReading.comparison.rightLabel, '상대');
+assert.ok(relationshipReading.glance.conclusion.includes('나와 상대'), 'relationship conclusion must describe both sides together');
 assert.ok(relationshipReading.comparison.bridge.length > 10);
 assert.ok(!relationshipReading.comparison.bridge.includes('상대 · 기대의'), 'six-card relationship comparison must not invent a single bridge card');
 
