@@ -3338,12 +3338,23 @@
         "categoryName": "버추얼",
         "followerCount": 30067,
         "fanclubCount": 7635
+      },
+      {
+        "capturedAt": "2026-09-12T09:49:20.138Z",
+        "live": true,
+        "startedAt": "2026-09-12T08:48:56.000Z",
+        "title": "마린이 엔더런 w. 마룽, 진사애, 아야네 세나",
+        "viewerCount": 33,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30069,
+        "fanclubCount": 7635
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-12T09:42:02.771Z",
-    "followerCount": 30067,
+    "capturedAt": "2026-09-12T09:49:20.138Z",
+    "followerCount": 30069,
     "fanclubCount": 7635
   }
 }
