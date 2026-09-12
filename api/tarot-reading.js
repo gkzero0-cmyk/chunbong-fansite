@@ -119,6 +119,20 @@ function cardLabel(item) {
   return `${item.card.nameKo} ${directionLabel(item.orientation)}`;
 }
 
+function hasFinalConsonant(value) {
+  const text = String(value || '').trim();
+  for (let index = text.length - 1; index >= 0; index -= 1) {
+    const code = text.charCodeAt(index);
+    if (code >= 0xac00 && code <= 0xd7a3) return (code - 0xac00) % 28 !== 0;
+  }
+  return false;
+}
+
+function withParticle(value, consonantParticle, vowelParticle) {
+  const text = String(value || '');
+  return `${text}${hasFinalConsonant(text) ? consonantParticle : vowelParticle}`;
+}
+
 function firstMatching(cards, pattern, fallbackIndex = 0) {
   return cards.find(item => pattern.test(item.position)) || cards[fallbackIndex] || cards[0];
 }
@@ -133,9 +147,9 @@ function roleSentence(position, topic) {
 
 function buildCardReading(item, topic, index, seed) {
   const intro = pick([
-    `${item.position}에서는 ${cardLabel(item)}가 나왔습니다.`,
+    `${item.position}에서는 ${withParticle(cardLabel(item), '이', '가')} 나왔습니다.`,
     `${item.position} 카드가 ${cardLabel(item)}입니다.`,
-    `${item.position}을 보면 ${cardLabel(item)}가 잡힙니다.`
+    `${item.position}을 보면 ${withParticle(cardLabel(item), '이', '가')} 잡힙니다.`
   ], seed + index);
   return cleanSentence(`${intro} ${compactMeaning(item, 118)} ${roleSentence(item.position, topic)}`);
 }
@@ -184,9 +198,9 @@ function buildChoiceConclusion(cards) {
   if (preference.side) {
     const winningFocus = preference.side === 'A' ? aFocus : bFocus;
     const otherFocus = preference.side === 'A' ? bFocus : aFocus;
-    return cleanSentence(`지금 카드만 보면 A와 B 중 ${preference.side} 쪽이 더 안정적으로 보입니다. ${preference.side}의 ${winningFocus.position.replace(/^[AB]\s*·\s*/, '')}에 나온 ${cardLabel(winningFocus)}는 ${compactMeaning(winningFocus, 58)} 반대쪽의 ${cardLabel(otherFocus)}보다 지금 감당하기 쉬운 선택에 가깝습니다.`);
+    return cleanSentence(`지금 카드만 보면 A와 B 중 ${preference.side} 쪽이 더 안정적으로 보입니다. ${preference.side}의 ${winningFocus.position.replace(/^[AB]\s*·\s*/, '')}에 나온 ${withParticle(cardLabel(winningFocus), '은', '는')} ${compactMeaning(winningFocus, 58)} 반대쪽의 ${cardLabel(otherFocus)}보다 지금 감당하기 쉬운 선택에 가깝습니다.`);
   }
-  return cleanSentence(`지금 카드만 보면 A와 B의 차이가 아주 크지는 않습니다. A의 ${cardLabel(aFocus)}와 B의 ${cardLabel(bFocus)}가 서로 다른 장단점을 보여주므로, 더 빨리 얻는 것보다 내가 실제로 감당할 수 있는 부담이 어느 쪽인지 보는 게 중요합니다.`);
+  return cleanSentence(`지금 카드만 보면 A와 B의 차이가 아주 크지는 않습니다. A의 ${withParticle(cardLabel(aFocus), '과', '와')} B의 ${withParticle(cardLabel(bFocus), '이', '가')} 서로 다른 장단점을 보여주므로, 더 빨리 얻는 것보다 내가 실제로 감당할 수 있는 부담이 어느 쪽인지 보는 게 중요합니다.`);
 }
 
 function relationshipGroups(validated) {
@@ -212,12 +226,12 @@ function buildRelationshipConclusion(validated) {
   const mineScore = relationshipScore(mine);
   const otherScore = relationshipScore(other);
   if (mineScore > otherScore) {
-    return cleanSentence(`지금은 나와 ${rightLabel}를 비교하면, 내 쪽 마음이나 의지가 더 앞서 있고 ${rightLabel}는 조금 더 조심스럽게 거리를 보는 모습입니다. 나는 ${cardLabel(mineFocus)}, ${rightLabel}는 ${cardLabel(otherFocus)}가 잡혀서 서로의 속도 차이를 먼저 맞추는 게 중요합니다.`);
+    return cleanSentence(`지금은 나와 ${rightLabel}를 비교하면, 내 쪽 마음이나 의지가 더 앞서 있고 ${rightLabel}는 조금 더 조심스럽게 거리를 보는 모습입니다. 나는 ${cardLabel(mineFocus)}, ${rightLabel}는 ${withParticle(cardLabel(otherFocus), '이', '가')} 잡혀서 서로의 속도 차이를 먼저 맞추는 게 중요합니다.`);
   }
   if (otherScore > mineScore) {
-    return cleanSentence(`지금은 나와 ${rightLabel}를 비교하면, ${rightLabel} 쪽이 조금 더 열려 있고 내 쪽에서 생각이 많거나 조심스러운 모습입니다. 나는 ${cardLabel(mineFocus)}, ${rightLabel}는 ${cardLabel(otherFocus)}가 잡혀서 내 마음을 먼저 정리하면 관계가 훨씬 선명해집니다.`);
+    return cleanSentence(`지금은 나와 ${rightLabel}를 비교하면, ${rightLabel} 쪽이 조금 더 열려 있고 내 쪽에서 생각이 많거나 조심스러운 모습입니다. 나는 ${cardLabel(mineFocus)}, ${rightLabel}는 ${withParticle(cardLabel(otherFocus), '이', '가')} 잡혀서 내 마음을 먼저 정리하면 관계가 훨씬 선명해집니다.`);
   }
-  return cleanSentence(`지금은 나와 ${rightLabel}의 온도 차이가 아주 크지는 않지만 표현 방식이 다릅니다. 나는 ${cardLabel(mineFocus)}, ${rightLabel}는 ${cardLabel(otherFocus)}가 잡혀서 말보다 실제 행동을 비교해 보는 게 좋습니다.`);
+  return cleanSentence(`지금은 나와 ${rightLabel}의 온도 차이가 아주 크지는 않지만 표현 방식이 다릅니다. 나는 ${cardLabel(mineFocus)}, ${rightLabel}는 ${withParticle(cardLabel(otherFocus), '이', '가')} 잡혀서 말보다 실제 행동을 비교해 보는 게 좋습니다.`);
 }
 
 function buildConclusion(validated) {
@@ -231,10 +245,10 @@ function buildConclusion(validated) {
   const final = firstMatching(validated.cards, /최종|결과|앞으로|미래|흐름/, validated.cards.length - 1);
   const caution = validated.cards.find(item => item.orientation === 'reversed' || /장애물|위험|단점|약점|불안|문제/.test(item.position));
   if (final.orientation === 'upright') {
-    const cautionText = caution && caution !== final ? ` 다만 ${caution.position}의 ${cardLabel(caution)}는 서두르면 놓치기 쉬운 부분을 보여줍니다.` : '';
-    return cleanSentence(`지금은 크게 방향을 뒤집기보다 현재 하던 것을 이어가도 괜찮아 보입니다. ${final.position}의 ${cardLabel(final)}가 ${compactMeaning(final, 72)}${cautionText}`);
+    const cautionText = caution && caution !== final ? ` 다만 ${caution.position}의 ${withParticle(cardLabel(caution), '은', '는')} 서두르면 놓치기 쉬운 부분을 보여줍니다.` : '';
+    return cleanSentence(`지금은 크게 방향을 뒤집기보다 현재 하던 것을 이어가도 괜찮아 보입니다. ${final.position}의 ${withParticle(cardLabel(final), '이', '가')} ${compactMeaning(final, 72)}${cautionText}`);
   }
-  return cleanSentence(`지금은 결과를 서두르기보다 막히는 부분부터 정리하는 게 먼저입니다. ${final.position}의 ${cardLabel(final)}가 ${compactMeaning(final, 72)} 한 번에 바꾸려 하지 말고 가장 불편한 한 가지부터 손보세요.`);
+  return cleanSentence(`지금은 결과를 서두르기보다 막히는 부분부터 정리하는 게 먼저입니다. ${final.position}의 ${withParticle(cardLabel(final), '이', '가')} ${compactMeaning(final, 72)} 한 번에 바꾸려 하지 말고 가장 불편한 한 가지부터 손보세요.`);
 }
 
 function buildPositive(validated) {
@@ -280,7 +294,7 @@ function summarizeChoiceSide(items, label) {
   const score = scoreChoice(items);
   const focus = choiceFocus(items);
   const tone = score >= 2 ? '장점이 부담보다 더 잘 보입니다' : score <= -2 ? '장점보다 부담을 먼저 확인해야 합니다' : '장점과 부담이 비슷하게 섞여 있습니다';
-  return cleanSentence(`${label}는 ${tone}. 특히 ${focus.position.replace(/^[AB]\s*·\s*/, '')}의 ${cardLabel(focus)}가 중요하고, ${compactMeaning(focus, 76)}`);
+  return cleanSentence(`${label}는 ${tone}. 특히 ${focus.position.replace(/^[AB]\s*·\s*/, '')}의 ${withParticle(cardLabel(focus), '이', '가')} 중요하고, ${compactMeaning(focus, 76)}`);
 }
 
 function summarizeRelationshipSide(items, label) {
@@ -288,7 +302,7 @@ function summarizeRelationshipSide(items, label) {
   const score = relationshipScore(items);
   const focus = relationshipFocus(items);
   const tone = score > 0 ? '마음이나 행동을 드러낼 여지가 더 있습니다' : score < 0 ? '아직 조심스럽거나 생각이 많은 편입니다' : '열림과 조심스러움이 함께 있습니다';
-  return cleanSentence(`${label}는 ${tone}. ${focus.position.replace(/^.+?·\s*/, '')}의 ${cardLabel(focus)}를 보면 ${compactMeaning(focus, 76)}`);
+  return cleanSentence(`${label}는 ${tone}. ${focus.position.replace(/^.+?·\s*/, '')}의 ${withParticle(cardLabel(focus), '을', '를')} 보면 ${compactMeaning(focus, 76)}`);
 }
 
 function buildComparison(validated) {
@@ -301,7 +315,7 @@ function buildComparison(validated) {
     if (preference.side) {
       verdict = `지금은 ${preference.side} 쪽이 한 단계 더 편안해 보입니다. ${guidance ? `${guidance.position}의 ${cardLabel(guidance)}도 참고하되, ` : ''}최종 결정 전에는 실제 비용·시간·부담 중 가장 중요한 한 가지를 확인하세요.`;
     } else {
-      verdict = `A와 B의 차이가 크지 않습니다. ${guidance ? `${guidance.position}의 ${cardLabel(guidance)}를 참고하고, ` : ''}더 좋아 보이는 쪽보다 실패했을 때 감당하기 쉬운 쪽을 고르는 편이 안전합니다.`;
+      verdict = `A와 B의 차이가 크지 않습니다. ${guidance ? `${guidance.position}의 ${withParticle(cardLabel(guidance), '을', '를')} 참고하고, ` : ''}더 좋아 보이는 쪽보다 실패했을 때 감당하기 쉬운 쪽을 고르는 편이 안전합니다.`;
     }
     return {
       type: 'choice', leftLabel: 'A', rightLabel: 'B',
@@ -321,7 +335,7 @@ function buildComparison(validated) {
       : otherScore > mineScore
         ? `지금은 ${rightLabel} 쪽이 더 열려 있고 내 쪽이 조심스러운 편입니다.`
         : `지금은 둘의 온도 차이보다 표현 방식의 차이가 더 커 보입니다.`;
-    const bridge = cleanSentence(`${difference} ${bridgeCard ? `${bridgeCard.position}의 ${cardLabel(bridgeCard)}를 보면 ${compactMeaning(bridgeCard, 68)}` : '서로 기대하는 것이 같은지 먼저 확인해 보세요.'}`);
+    const bridge = cleanSentence(`${difference} ${bridgeCard ? `${bridgeCard.position}의 ${withParticle(cardLabel(bridgeCard), '을', '를')} 보면 ${compactMeaning(bridgeCard, 68)}` : '서로 기대하는 것이 같은지 먼저 확인해 보세요.'}`);
     return {
       type: 'relationship', leftLabel: '나', rightLabel,
       leftSummary: summarizeRelationshipSide(mine, '나'),
@@ -374,19 +388,19 @@ function detailReason(validated, comparison) {
     const bFocus = choiceFocus(b);
     const preference = choicePreference(validated.cards);
     const verdict = preference.side ? `${preference.side} 쪽이 상대적으로 편안하게 잡힙니다.` : '두 쪽의 우열은 크지 않습니다.';
-    return cleanSentence(`A의 ${cardLabel(aFocus)}와 B의 ${cardLabel(bFocus)}를 가장 먼저 비교했습니다. A는 ${compactMeaning(aFocus, 54)} B는 ${compactMeaning(bFocus, 54)} 그래서 ${verdict}`);
+    return cleanSentence(`A의 ${withParticle(cardLabel(aFocus), '과', '와')} B의 ${withParticle(cardLabel(bFocus), '을', '를')} 가장 먼저 비교했습니다. A는 ${compactMeaning(aFocus, 54)} B는 ${compactMeaning(bFocus, 54)} 그래서 ${verdict}`);
   }
   if (type === 'relationship') {
     const { mine, other, rightLabel } = relationshipGroups(validated);
     if (mine.length && other.length) {
       const mineFocus = relationshipFocus(mine);
       const otherFocus = relationshipFocus(other);
-      return cleanSentence(`내 쪽의 ${cardLabel(mineFocus)}와 ${rightLabel} 쪽의 ${cardLabel(otherFocus)}를 먼저 봤습니다. 두 카드의 방향과 마음·행동 카드가 같은 말을 하는지 비교해서 지금의 거리감과 속도 차이를 판단했습니다.`);
+      return cleanSentence(`내 쪽의 ${withParticle(cardLabel(mineFocus), '과', '와')} ${rightLabel} 쪽의 ${withParticle(cardLabel(otherFocus), '을', '를')} 먼저 봤습니다. 두 카드의 방향과 마음·행동 카드가 같은 말을 하는지 비교해서 지금의 거리감과 속도 차이를 판단했습니다.`);
     }
   }
   const current = firstMatching(validated.cards, /현재|핵심/, 0);
   const final = firstMatching(validated.cards, /최종|결과|앞으로|흐름/, validated.cards.length - 1);
-  return cleanSentence(`현재 쪽의 ${cardLabel(current)}와 결과 쪽의 ${cardLabel(final)}를 연결해서 봤습니다. 지금 상태에서 ${compactMeaning(current, 58)} 이어서 결과 카드가 ${compactMeaning(final, 58)}라고 말하기 때문에 이 결론이 나옵니다.`);
+  return cleanSentence(`현재 쪽의 ${withParticle(cardLabel(current), '과', '와')} 결과 쪽의 ${withParticle(cardLabel(final), '을', '를')} 연결해서 봤습니다. 지금 상태에서 ${compactMeaning(current, 58)} 이어서 결과 카드가 ${compactMeaning(final, 58)}라고 말하기 때문에 이 결론이 나옵니다.`);
 }
 
 function buildDetail(validated, glance, readings, comparison) {
