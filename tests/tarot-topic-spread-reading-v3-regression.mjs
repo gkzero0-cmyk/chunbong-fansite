@@ -43,12 +43,14 @@ const reading = api.generateLocalReading(validated);
 assert.equal(reading.engine, 'topic-structured-v3');
 assert.deepEqual(Object.keys(reading.glance), ['conclusion','positive','caution','action']);
 for (const key of Object.keys(reading.glance)) assert.ok(reading.glance[key].length > 12, `${key} must be useful`);
+assert.ok(!reading.glance.conclusion.includes(choiceBody.question), 'question text should not be repeated inside the conclusion card');
 assert.equal(reading.comparison.type, 'choice');
 assert.equal(reading.comparison.leftLabel, 'A');
 assert.equal(reading.comparison.rightLabel, 'B');
 assert.ok(reading.comparison.leftSummary.length > 10);
 assert.ok(reading.comparison.rightSummary.length > 10);
 assert.ok(reading.comparison.verdict.length > 10);
+assert.ok(!reading.comparison.verdict.includes('B · 예상 결과의'), 'six-card A/B comparison must not privilege B as the verdict card');
 assert.ok(reading.detail.answer.length > 15);
 assert.ok(reading.detail.reason.length > 15);
 assert.ok(reading.detail.keyCards.length >= 2 && reading.detail.keyCards.length <= 4);
@@ -71,6 +73,7 @@ assert.equal(relationshipReading.comparison.type, 'relationship');
 assert.equal(relationshipReading.comparison.leftLabel, '나');
 assert.equal(relationshipReading.comparison.rightLabel, '상대');
 assert.ok(relationshipReading.comparison.bridge.length > 10);
+assert.ok(!relationshipReading.comparison.bridge.includes('상대 · 기대의'), 'six-card relationship comparison must not invent a single bridge card');
 
 assert.throws(() => api.validateReadingRequest({ ...choiceBody, spreadId: 'threeFlow' }), /invalid_spread_for_topic|invalid_reading/);
 
