@@ -24,7 +24,9 @@ function normalizeBoardPost(item) {
 async function fetchHostPage(host, page) {
   const url = `${host}/api/${SOOP_ID}/board/?${noticeParams(page)}`;
   try {
-    return listFrom(await getJson(url))
+    const payload = await getJson(url);
+    const pinned = Array.isArray(payload?.notice_data) ? payload.notice_data : [];
+    return [...listFrom(payload), ...pinned]
       .map(normalizeBoardPost)
       .filter(item => item.boardNumber === BOARD_NUMBER);
   } catch (_) {
