@@ -3976,11 +3976,22 @@
         "categoryName": "버추얼",
         "followerCount": 30095,
         "fanclubCount": 7635
+      },
+      {
+        "capturedAt": "2026-09-12T18:50:31.583Z",
+        "live": true,
+        "startedAt": "2026-09-12T08:48:56.000Z",
+        "title": "그냥서버 작업 전 잔잔 총 소통 방송",
+        "viewerCount": 35,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30095,
+        "fanclubCount": 7635
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-12T18:43:10.594Z",
+    "capturedAt": "2026-09-12T18:50:31.583Z",
     "followerCount": 30095,
     "fanclubCount": 7635
   }
