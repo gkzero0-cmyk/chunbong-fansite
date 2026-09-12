@@ -152,6 +152,29 @@ function firstMatching(cards, pattern, fallbackIndex = 0) {
 
 function buildConclusion(validated, seed) {
   const cards = validated.cards;
+  const type = CONFIG.topics[validated.topic]?.type;
+
+  if (type === 'choice') {
+    const a = cards.filter(item => /^A\s*·/.test(item.position));
+    const b = cards.filter(item => /^B\s*·/.test(item.position));
+    if (a.length && b.length) {
+      const aFocus = a.find(item => /예상 결과|결과|흐름/.test(item.position)) || a[a.length - 1];
+      const bFocus = b.find(item => /예상 결과|결과|흐름/.test(item.position)) || b[b.length - 1];
+      return `A와 B를 함께 보면, A 쪽은 ${cardLabel(aFocus)}, B 쪽은 ${cardLabel(bFocus)}의 흐름이 중심입니다. 어느 한쪽을 정답으로 고정하기보다 두 선택의 장점과 부담을 같은 기준으로 비교해 보세요.`;
+    }
+  }
+
+  if (type === 'relationship') {
+    const rightLabel = validated.topic === 'crew' ? '상대·크루' : '상대';
+    const mine = cards.filter(item => /^나\s*·/.test(item.position));
+    const other = cards.filter(item => /^상대\s*·/.test(item.position) || /^상대·크루\s*·/.test(item.position));
+    if (mine.length && other.length) {
+      const mineFocus = mine.find(item => /마음|감정|입장|역할/.test(item.position)) || mine[0];
+      const otherFocus = other.find(item => /마음|감정|입장|역할/.test(item.position)) || other[0];
+      return `나와 ${rightLabel}를 함께 보면, 내 쪽은 ${cardLabel(mineFocus)}, ${rightLabel} 쪽은 ${cardLabel(otherFocus)}의 흐름이 두드러집니다. 누가 맞는지를 가르기보다 마음과 행동의 차이가 어디에서 생기는지 같이 보는 것이 중요합니다.`;
+    }
+  }
+
   const final = firstMatching(cards, /최종|결과|앞으로|미래|흐름/, cards.length - 1);
   const core = firstMatching(cards, /핵심|현재/, Math.min(1, cards.length - 1));
   const topic = topicDefinition(validated.topic)?.label || '이번 질문';
