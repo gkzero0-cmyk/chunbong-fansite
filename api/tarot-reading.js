@@ -1,8 +1,10 @@
 const DATA = require('../tarot-data.js');
+const CONFIG = require('../tarot-reading-config.js');
 
 const LOCAL_MODEL = 'rule-based-v2';
 const LOCAL_PROVIDER = 'local-tarot-engine';
 const cardById = new Map(DATA.cards.map(card => [card.id, card]));
+const LEGACY_SPREADS = new Set(['single', 'threeFlow', 'fiveInsight', 'twelveCompass']);
 
 function httpError(message, statusCode) {
   return Object.assign(new Error(message), { statusCode });
@@ -16,6 +18,23 @@ function normalizeBody(body) {
   throw httpError('invalid_body', 400);
 }
 
+function topicDefinition(topic) {
+  return CONFIG.topics[topic] || DATA.topics[topic] || null;
+}
+
+function spreadDefinition(spreadId) {
+  return CONFIG.spreads[spreadId] || DATA.spreads[spreadId] || null;
+}
+
+function spreadAllowedForTopic(topic, spreadId) {
+  if (CONFIG.topics[topic]) {
+    if (CONFIG.isSpreadAllowed(topic, spreadId)) return true;
+    if (DATA.topics[topic] && LEGACY_SPREADS.has(spreadId)) return true;
+    return false;
+  }
+  return Boolean(DATA.topics[topic] && LEGACY_SPREADS.has(spreadId));
+}
+
 function validateReadingRequest(rawBody) {
   const body = normalizeBody(rawBody);
   const question = typeof body.question === 'string' ? body.question.trim() : '';
@@ -23,13 +42,14 @@ function validateReadingRequest(rawBody) {
 
   const topic = String(body.topic || '');
   const spreadId = String(body.spreadId || '');
-  if (!DATA.topics[topic] || !DATA.spreads[spreadId]) throw httpError('invalid_reading', 400);
+  const topicDef = topicDefinition(topic);
+  const spread = spreadDefinition(spreadId);
+  if (!topicDef || !spread) throw httpError('invalid_reading', 400);
+  if (!spreadAllowedForTopic(topic, spreadId)) throw httpError('invalid_spread_for_topic', 400);
 
   const cards = Array.isArray(body.cards) ? body.cards : [];
-  const positions = DATA.spreads[spreadId].positions;
-  if (cards.length !== positions.length || ![1, 3, 5, 12].includes(cards.length)) {
-    throw httpError('invalid_card_count', 400);
-  }
+  const positions = spread.positions;
+  if (cards.length !== positions.length) throw httpError('invalid_card_count', 400);
 
   const seen = new Set();
   const validatedCards = cards.map((item, index) => {
@@ -41,11 +61,10 @@ function validateReadingRequest(rawBody) {
     const orientation = String(item?.orientation || '');
     if (!['upright', 'reversed'].includes(orientation)) throw httpError('invalid_orientation', 400);
     if (item?.position !== positions[index]) throw httpError('invalid_position', 400);
-
     return { card, orientation, position: positions[index] };
   });
 
-  return { question, topic, spreadId, cards: validatedCards };
+  return { question, topic, spreadId, spread, topicDef, cards: validatedCards };
 }
 
 function stableHash(value) {
@@ -58,7 +77,7 @@ function stableHash(value) {
 }
 
 function pick(values, seed) {
-  return values[seed % values.length];
+  return values[Math.abs(seed) % values.length];
 }
 
 function directionLabel(orientation) {
@@ -73,195 +92,276 @@ function cardKeywords(card, orientation) {
   return orientation === 'upright' ? card.keywordsUpright : card.keywordsReversed;
 }
 
-function topicHint(card, topic) {
-  return card.topicHints?.[topic] || card.topicHints?.general || '';
+function hintTopic(topic) {
+  if (topic === 'partner') return 'love';
+  if (topic === 'choice') return 'general';
+  return topic;
 }
 
-function containsHighRiskQuestion(question) {
-  return /(병원|의사|의료|건강|증상|약|수술|임신|법률|소송|변호사|고소|투자|주식|코인|대출|빚|안전|사고|자해|죽고|죽음)/i.test(question || '');
+function topicHint(card, topic) {
+  const id = hintTopic(topic);
+  return card.topicHints?.[id] || card.topicHints?.general || '';
+}
+
+function stripMeaningLead(card, orientation) {
+  const raw = cardMeaning(card, orientation);
+  const marker = orientation === 'upright' ? '정방향은 ' : '역방향은 ';
+  const at = raw.indexOf(marker);
+  return at >= 0 ? raw.slice(at + marker.length) : raw;
+}
+
+function roleSentence(position, topic) {
+  if (/장애물|위험|단점|불안|문제|약점|피해야/.test(position)) return '이 자리는 겁을 주는 결과라기보다 미리 조절할 부분을 알려주는 자리로 보는 편이 좋습니다.';
+  if (/조언|해야 할|필요한 노력|핵심 메시지/.test(position)) return '생각으로만 두기보다 현실에서 확인할 수 있는 작은 행동으로 옮기는 것이 포인트입니다.';
+  if (/결과|최종|앞으로|미래|흐름/.test(position)) return '확정된 미래라기보다 지금의 선택이 이어질 때 나타나기 쉬운 방향으로 읽어 주세요.';
+  if (topic === 'partner' || topic === 'love' || topic === 'relations' || topic === 'crew') return '말보다 실제 태도와 주고받는 균형을 함께 확인하면 이 카드의 의미가 더 선명해집니다.';
+  return '현재 상황에서 실제로 조절할 수 있는 부분에 초점을 맞추면 카드의 메시지를 활용하기 쉽습니다.';
 }
 
 function buildCardReading(item, topic, index, seed) {
   const { card, orientation, position } = item;
   const direction = directionLabel(orientation);
-  const meaning = cardMeaning(card, orientation);
-  const hint = topicHint(card, topic);
-  const keyword = cardKeywords(card, orientation);
-  const lead = pick([
-    `${position} 자리의 ${card.nameKo} ${direction}은`,
-    `${card.nameKo} ${direction}이 ${position} 자리에 나온 것은`,
-    `${position} 흐름에서 보이는 ${card.nameKo} ${direction}은`
+  const meaning = stripMeaningLead(card, orientation);
+  const open = pick([
+    `${position}에서 ${card.nameKo} ${direction}은 ${meaning}`,
+    `${card.nameKo} ${direction}이 ${position}에 나온 흐름은 ${meaning}`,
+    `${position}의 핵심은 ${card.nameKo} ${direction}입니다. ${meaning}`
   ], seed + index);
-
-  return `${lead} ${meaning} 핵심 키워드는 ${keyword}입니다. ${hint}`.trim();
+  return `${open} ${roleSentence(position, topic)}`.replace(/\s+/g, ' ').trim();
 }
 
 function summarizeDistribution(cards) {
   const majorCount = cards.filter(item => item.card.arcana === 'major').length;
   const reversedCount = cards.filter(item => item.orientation === 'reversed').length;
-  const courtCount = cards.filter(item => ['시종', '기사', '여왕', '왕'].includes(item.card.rank)).length;
   const suits = new Map();
   for (const item of cards) {
     if (!item.card.suit) continue;
     suits.set(item.card.suit, (suits.get(item.card.suit) || 0) + 1);
   }
   const dominantSuit = [...suits.entries()].sort((a, b) => b[1] - a[1])[0] || null;
-  return { majorCount, reversedCount, courtCount, dominantSuit };
+  return { majorCount, reversedCount, dominantSuit };
 }
 
-function buildEdgeRelationship(validated) {
-  if (validated.cards.length === 1) return '';
-  const first = validated.cards[0];
-  const last = validated.cards[validated.cards.length - 1];
-  const firstKey = cardKeywords(first.card, first.orientation).split(',')[0].trim();
-  const lastKey = cardKeywords(last.card, last.orientation).split(',')[0].trim();
-  return `${first.position}의 ${firstKey}에서 ${last.position}의 ${lastKey}로 이어지는 변화를 함께 보면 시작점과 최종 방향의 차이가 더 선명해집니다.`;
+function cardLabel(item) {
+  return `${item.card.nameKo} ${directionLabel(item.orientation)}`;
 }
 
-function buildTwelveCardThemes(validated) {
-  if (validated.cards.length !== 12) return '';
-  const core = validated.cards.slice(0, 4).map(item => item.card.nameKo).join(', ');
-  const resources = validated.cards.slice(4, 7).map(item => item.card.nameKo).join(', ');
-  const friction = validated.cards.slice(7, 9).map(item => item.card.nameKo).join(', ');
-  const direction = validated.cards.slice(9, 12).map(item => item.card.nameKo).join(', ');
-  return `핵심 흐름은 ${core}, 강점과 기회는 ${resources}, 조정할 지점은 ${friction}, 가까운 흐름부터 최종 방향은 ${direction}의 연결로 읽을 수 있습니다.`;
+function firstMatching(cards, pattern, fallbackIndex = 0) {
+  return cards.find(item => pattern.test(item.position)) || cards[fallbackIndex] || cards[0];
 }
 
-function buildDistributionText(validated) {
-  const stats = summarizeDistribution(validated.cards);
-  const parts = [];
-  if (stats.majorCount >= Math.ceil(validated.cards.length / 3)) {
-    parts.push(`메이저 아르카나가 ${stats.majorCount}장이라 일시적인 기분보다 큰 선택과 방향 전환의 비중이 비교적 큽니다.`);
+function buildConclusion(validated, seed) {
+  const cards = validated.cards;
+  const type = CONFIG.topics[validated.topic]?.type;
+
+  if (type === 'choice') {
+    const a = cards.filter(item => /^A\s*·/.test(item.position));
+    const b = cards.filter(item => /^B\s*·/.test(item.position));
+    if (a.length && b.length) {
+      const aFocus = a.find(item => /예상 결과|결과|흐름/.test(item.position)) || a[a.length - 1];
+      const bFocus = b.find(item => /예상 결과|결과|흐름/.test(item.position)) || b[b.length - 1];
+      return `A와 B를 함께 보면, A 쪽은 ${cardLabel(aFocus)}, B 쪽은 ${cardLabel(bFocus)}의 흐름이 중심입니다. 어느 한쪽을 정답으로 고정하기보다 두 선택의 장점과 부담을 같은 기준으로 비교해 보세요.`;
+    }
   }
-  if (stats.dominantSuit && stats.dominantSuit[1] >= 3) {
-    parts.push(`${stats.dominantSuit[0]} 카드가 ${stats.dominantSuit[1]}장으로 반복되어 이 슈트가 상징하는 영역을 우선 점검할 필요가 있습니다.`);
-  }
-  if (stats.courtCount >= 3) {
-    parts.push(`인물 성향과 역할을 나타내는 코트 카드가 ${stats.courtCount}장이라 관계 속 역할 분담과 태도의 영향도 크게 보입니다.`);
-  }
-  return parts.join(' ');
-}
 
-function buildOverall(validated, seed) {
-  const topicLabel = DATA.topics[validated.topic].label;
-  const spreadLabel = DATA.spreads[validated.spreadId].label;
-  const questionContext = validated.question ? `“${validated.question}”라는 질문을 기준으로 보면, ` : '';
-  const stats = summarizeDistribution(validated.cards);
-  const pace = stats.reversedCount === 0
-    ? '현재 흐름을 활용해 작게라도 행동으로 옮기는 쪽에 무게가 실립니다.'
-    : stats.reversedCount === validated.cards.length
-      ? '지금은 속도를 내기보다 막히는 지점과 우선순위를 다시 점검하는 편이 좋습니다.'
-      : `정방향과 역방향이 섞여 있어 밀어붙일 부분과 조절할 부분을 나누는 균형이 중요합니다.`;
+  if (type === 'relationship') {
+    const rightLabel = validated.topic === 'crew' ? '상대·크루' : '상대';
+    const mine = cards.filter(item => /^나\s*·/.test(item.position));
+    const other = cards.filter(item => /^상대\s*·/.test(item.position) || /^상대·크루\s*·/.test(item.position));
+    if (mine.length && other.length) {
+      const mineFocus = mine.find(item => /마음|감정|입장|역할/.test(item.position)) || mine[0];
+      const otherFocus = other.find(item => /마음|감정|입장|역할/.test(item.position)) || other[0];
+      return `나와 ${rightLabel}를 함께 보면, 내 쪽은 ${cardLabel(mineFocus)}, ${rightLabel} 쪽은 ${cardLabel(otherFocus)}의 흐름이 두드러집니다. 누가 맞는지를 가르기보다 마음과 행동의 차이가 어디에서 생기는지 같이 보는 것이 중요합니다.`;
+    }
+  }
+
+  const final = firstMatching(cards, /최종|결과|앞으로|미래|흐름/, cards.length - 1);
+  const core = firstMatching(cards, /핵심|현재/, Math.min(1, cards.length - 1));
+  const topic = topicDefinition(validated.topic)?.label || '이번 질문';
+  const direction = final.orientation === 'upright'
+    ? `${final.card.nameKo}의 흐름처럼 움직일 여지가 살아 있습니다.`
+    : `${final.card.nameKo}이 보여주는 막힘을 먼저 정리해야 다음 흐름이 편해집니다.`;
   const bridge = pick([
-    '카드들은 한 가지 결론을 단정하기보다 현재 선택의 장단점을 함께 살펴보라고 말합니다.',
-    '전체적으로는 가능성과 주의점을 함께 보고 현실적인 다음 행동을 고르는 흐름입니다.',
-    '이번 배열은 결과를 예언하기보다 지금 조절할 수 있는 부분에 초점을 맞추는 편이 유리하다고 보여줍니다.'
+    `${core.card.nameKo}이 보여주는 현재 상태를 무시하지 않는 것이 중요합니다.`,
+    `지금은 결과를 서두르기보다 ${core.card.nameKo}이 가리키는 핵심부터 정리하는 편이 좋습니다.`,
+    `${core.card.nameKo}의 메시지를 기준으로 우선순위를 하나 정하면 판단이 훨씬 쉬워집니다.`
   ], seed);
-  const focusCards = validated.cards.length <= 5
-    ? validated.cards.map(({ card, orientation }) => `${card.nameKo} ${directionLabel(orientation)}`).join(', ')
-    : `${validated.cards[0].card.nameKo}에서 ${validated.cards[validated.cards.length - 1].card.nameKo}까지의 12장 흐름`;
-  const distribution = buildDistributionText(validated);
-  const edges = buildEdgeRelationship(validated);
-  const twelve = buildTwelveCardThemes(validated);
-
-  return `${questionContext}${topicLabel}의 ${spreadLabel}에서 ${focusCards}을 중심으로 읽었습니다. ${bridge} ${pace} ${distribution} ${edges} ${twelve}`.replace(/\s+/g, ' ').trim();
+  return `${topic}에서는 ${direction} ${bridge}`;
 }
 
-function buildAdvice(validated, seed) {
-  const advice = [];
-  const first = validated.cards[0];
-  const primaryKeywords = cardKeywords(first.card, first.orientation).split(',').map(value => value.trim()).filter(Boolean);
-  const mainKeyword = primaryKeywords[seed % Math.max(primaryKeywords.length, 1)] || first.card.nameKo;
-
-  advice.push(`${mainKeyword}을 기준으로 지금 바로 확인할 수 있는 작은 행동 한 가지를 정해 보세요.`);
-
-  if (validated.cards.some(card => card.orientation === 'reversed')) {
-    advice.push('역방향 카드는 실패를 뜻하기보다 과속, 누락, 감정 소모처럼 조정할 지점을 먼저 확인하라는 신호로 받아들이세요.');
-  } else {
-    advice.push('흐름이 좋게 보여도 한 번에 크게 결정하기보다 확인 가능한 단계부터 실행해 보세요.');
-  }
-
-  if (validated.cards.length === 3 || validated.cards.length === 5) {
-    const last = validated.cards[validated.cards.length - 1];
-    advice.push(`${last.position} 카드인 ${last.card.nameKo}의 메시지를 최종 확정이 아니라 다음 선택 전에 확인할 체크포인트로 활용해 보세요.`);
-  }
-
-  if (validated.cards.length === 12) {
-    const adviceCard = validated.cards[8];
-    const near = validated.cards[9];
-    const longTerm = validated.cards[10];
-    const final = validated.cards[11];
-    advice.push(`${adviceCard.position}의 ${adviceCard.card.nameKo}를 먼저 행동 기준으로 삼고, ${near.position}의 ${near.card.nameKo}와 ${longTerm.position}의 ${longTerm.card.nameKo} 사이에서 속도를 조절한 뒤 ${final.position}의 ${final.card.nameKo}를 장기 체크포인트로 활용해 보세요.`);
-  }
-
-  if (containsHighRiskQuestion(validated.question)) {
-    advice.push('건강·의료·법률·투자·안전처럼 결과의 영향이 큰 문제는 타로만으로 결정하지 말고 실제 정보와 관련 전문가의 판단을 함께 확인하세요.');
-  }
-
-  return advice.slice(0, 4);
+function buildPositive(validated) {
+  const good = validated.cards.filter(item => item.orientation === 'upright' && !/장애물|위험|단점|약점|불안|문제/.test(item.position));
+  const picks = (good.length ? good : validated.cards).slice(0, 2);
+  const names = picks.map(cardLabel).join('과 ');
+  return `${names}에서 살릴 수 있는 힘이 보입니다. 이미 되는 부분을 크게 바꾸기보다 이 강점을 실제 선택과 행동에 연결할수록 흐름이 안정됩니다.`;
 }
 
-function buildSummary(validated, seed) {
-  const first = validated.cards[0];
-  const last = validated.cards[validated.cards.length - 1];
-  const verb = pick(['점검해 보세요', '정리해 보세요', '작은 행동으로 옮겨 보세요'], seed + 7);
+function buildCaution(validated) {
+  const caution = validated.cards.find(item => item.orientation === 'reversed' || /장애물|위험|단점|약점|불안|문제/.test(item.position));
+  if (!caution) return '큰 경고가 두드러지기보다는 좋은 흐름을 과하게 밀어붙이지 않는 것이 중요합니다. 속도보다 확인 가능한 단계와 균형을 지켜 주세요.';
+  return `${caution.position}의 ${cardLabel(caution)}은 특히 점검할 부분입니다. 실패를 뜻한다기보다 과속, 오해, 누락처럼 미리 조절하면 줄일 수 있는 변수로 받아들이는 편이 좋습니다.`;
+}
 
-  if (validated.cards.length === 1) {
-    return `${first.card.nameKo} ${directionLabel(first.orientation)}의 메시지처럼 ${cardKeywords(first.card, first.orientation)}을 현실적인 기준으로 삼아 ${verb}.`;
+function buildAction(validated) {
+  const action = firstMatching(validated.cards, /조언|해야 할|필요한 노력|핵심 메시지|최종 방향/, validated.cards.length - 1);
+  const keyword = cardKeywords(action.card, action.orientation).split(',')[0].trim();
+  return `${action.position}의 ${action.card.nameKo}을 행동 기준으로 삼아 보세요. 오늘 바로 확인할 수 있는 일 중 “${keyword}”과 연결되는 한 가지를 정하고, 그 결과를 본 뒤 다음 선택을 이어가는 방식이 좋습니다.`;
+}
+
+function buildGlance(validated, seed) {
+  return {
+    conclusion: buildConclusion(validated, seed),
+    positive: buildPositive(validated),
+    caution: buildCaution(validated),
+    action: buildAction(validated)
+  };
+}
+
+function summarizeGroup(items, label) {
+  if (!items.length) return `${label} 쪽은 별도 카드가 없어 전체 흐름 안에서 함께 보는 편이 좋습니다.`;
+  const first = items[0];
+  const last = items[items.length - 1];
+  const reversed = items.filter(item => item.orientation === 'reversed').length;
+  const tone = reversed > items.length / 2 ? '조심스럽게 속도를 맞추는 흐름' : '움직일 여지가 비교적 살아 있는 흐름';
+  return `${label} 쪽은 ${cardLabel(first)}에서 ${cardLabel(last)}로 이어지며 ${tone}입니다. 각 카드의 장점과 부담을 따로 보기보다 서로 연결해서 보는 것이 좋습니다.`;
+}
+
+function buildComparison(validated) {
+  const type = CONFIG.topics[validated.topic]?.type;
+  if (type === 'choice') {
+    const a = validated.cards.filter(item => /^A\s*·/.test(item.position));
+    const b = validated.cards.filter(item => /^B\s*·/.test(item.position));
+    const guidance = validated.cards.find(item => /^(조언|지금 필요한 조언|최종 방향|현재 나에게 더 맞는 방향)$/.test(item.position));
+    const verdict = guidance
+      ? `${guidance.position}의 ${cardLabel(guidance)}을 기준으로 보면 어느 쪽이 무조건 정답이라기보다 지금 감당하기 쉬운 조건과 우선순위를 먼저 고르는 것이 핵심입니다.`
+      : 'A와 B를 같은 기준으로 비교했습니다. 두 선택의 장점과 부담을 나란히 보고, 실제로 감당 가능한 조건과 지금의 우선순위가 어느 쪽에 더 가까운지 확인해 보세요.';
+    return {
+      type: 'choice', leftLabel: 'A', rightLabel: 'B',
+      leftSummary: summarizeGroup(a, 'A'),
+      rightSummary: summarizeGroup(b, 'B'),
+      verdict
+    };
   }
-
-  if (validated.cards.length === 12) {
-    const stats = summarizeDistribution(validated.cards);
-    const reversal = stats.reversedCount >= 6 ? '조정과 재점검' : '실행과 조율';
-    return `${first.position}의 ${first.card.nameKo}에서 ${last.position}의 ${last.card.nameKo}까지 이어지는 12장 흐름은 ${reversal}을 함께 요구합니다. 강점·기회와 장애물·조언을 나눠 보고 지금 바꿀 수 있는 우선순위 한 가지부터 ${verb}.`;
+  if (type === 'relationship') {
+    const rightLabel = validated.topic === 'crew' ? '상대·크루' : '상대';
+    const mine = validated.cards.filter(item => /^나\s*·/.test(item.position));
+    const other = validated.cards.filter(item => /^상대\s*·/.test(item.position) || /^상대·크루\s*·/.test(item.position));
+    if (!mine.length || !other.length) return null;
+    const bridgeCard = validated.cards.find(item => /^(관계의 핵심|관계의 진짜 핵심|관계 조언|협업 성공의 핵심|협업 핵심|앞으로의 관계|앞으로의 연애 흐름|최종 결과|말하지 않는 핵심|관계를 풀어가는 핵심)$/.test(item.position));
+    const bridge = bridgeCard
+      ? `${bridgeCard.position}의 ${cardLabel(bridgeCard)}이 두 쪽을 연결하는 핵심입니다. 누가 맞는지를 가르기보다 마음과 행동의 차이가 어디에서 생기는지 확인해 보세요.`
+      : `나와 ${rightLabel}의 마음·행동·기대를 같은 기준으로 비교했습니다. 어느 한쪽을 관계의 결론으로 두기보다 서로의 차이가 어디에서 생기는지 확인해 보세요.`;
+    return {
+      type: 'relationship', leftLabel: '나', rightLabel,
+      leftSummary: summarizeGroup(mine, '나'),
+      rightSummary: summarizeGroup(other, rightLabel),
+      bridge
+    };
   }
+  return null;
+}
 
-  return `${first.position}의 ${first.card.nameKo}에서 시작해 ${last.position}의 ${last.card.nameKo}까지 이어지는 흐름을 보며, 지금 바꿀 수 있는 한 가지를 골라 ${verb}.`;
+function chooseKeyCards(validated, readings) {
+  const indexes = [];
+  validated.cards.forEach((item, index) => { if (item.card.arcana === 'major' && indexes.length < 2) indexes.push(index); });
+  for (const pattern of [/핵심|현재/, /조언|해야 할|필요한 노력/, /최종|결과|앞으로|흐름/]) {
+    const index = validated.cards.findIndex(item => pattern.test(item.position));
+    if (index >= 0 && !indexes.includes(index)) indexes.push(index);
+  }
+  if (!indexes.length) indexes.push(0);
+  if (indexes.length === 1 && validated.cards.length > 1) indexes.push(validated.cards.length - 1);
+  return indexes.slice(0, 4).map(index => ({
+    id: validated.cards[index].card.id,
+    name: validated.cards[index].card.nameKo,
+    position: validated.cards[index].position,
+    reading: readings[index].reading
+  }));
+}
+
+function containsHighRiskQuestion(question) {
+  return /(병원|의사|의료|건강|증상|약|수술|임신|법률|소송|변호사|고소|투자|주식|코인|대출|빚|안전|사고|자해|죽고|죽음)/i.test(question || '');
+}
+
+function buildAdvice(validated, glance) {
+  const actions = [
+    glance.action,
+    '카드에서 좋게 보이는 부분과 주의할 부분을 각각 하나씩 적은 뒤, 실제 상황에서 확인 가능한 사실과 비교해 보세요.'
+  ];
+  if (validated.cards.some(item => item.orientation === 'reversed')) actions.push('역방향 카드는 나쁜 결말이 아니라 조정 신호로 보고, 서두르기보다 막히는 이유를 먼저 확인해 보세요.');
+  if (containsHighRiskQuestion(validated.question)) actions.push('건강·의료·법률·투자·안전처럼 영향이 큰 문제는 타로만으로 결정하지 말고 실제 정보와 관련 전문가의 판단을 함께 확인하세요.');
+  return actions.slice(0, 4);
+}
+
+function buildDetail(validated, glance, readings, comparison) {
+  const keyCards = chooseKeyCards(validated, readings);
+  const stats = summarizeDistribution(validated.cards);
+  const reasonParts = [
+    `${keyCards.map(item => `${item.position}의 ${item.name}`).join(', ')}가 이번 리딩의 중심을 잡고 있습니다.`
+  ];
+  if (stats.majorCount) reasonParts.push(`메이저 아르카나가 ${stats.majorCount}장이라 단순한 기분보다 방향과 선택의 의미가 조금 더 크게 보입니다.`);
+  if (comparison?.type === 'choice') reasonParts.push('A와 B를 같은 기준으로 나눠 보았기 때문에 결과보다 각 선택이 요구하는 조건의 차이를 비교하는 것이 중요합니다.');
+  if (comparison?.type === 'relationship') reasonParts.push('나와 상대를 나눠 읽었기 때문에 감정 자체보다 마음·행동·기대가 서로 어디에서 어긋나는지 보는 것이 핵심입니다.');
+  const actions = buildAdvice(validated, glance);
+  return {
+    answer: glance.conclusion,
+    reason: reasonParts.join(' '),
+    keyCards,
+    caution: glance.caution,
+    actions,
+    oneLine: `${topicDefinition(validated.topic)?.label || '이번 리딩'}에서는 ${glance.action.replace(/오늘 바로.*$/, '지금 할 수 있는 한 가지부터 확인해 보는 것이 좋습니다.')}`
+  };
+}
+
+function buildOverall(validated, glance, comparison) {
+  const spreadLabel = spreadDefinition(validated.spreadId)?.label || `${validated.cards.length}장 리딩`;
+  const question = validated.question ? `질문 “${validated.question}”을 기준으로 보면, ` : '';
+  const compareText = comparison?.type === 'choice' ? ` ${comparison.verdict}` : comparison?.type === 'relationship' ? ` ${comparison.bridge}` : '';
+  return `${spreadLabel}입니다. ${question}${glance.conclusion} ${glance.positive} ${glance.caution}${compareText}`.replace(/\s+/g, ' ').trim();
+}
+
+function buildSummary(validated, glance) {
+  const spreadLabel = spreadDefinition(validated.spreadId)?.label || `${validated.cards.length}장 리딩`;
+  return `${spreadLabel}의 한 줄 정리입니다. ${glance.action} 결과를 정답으로 고정하기보다 실제 상황을 확인하는 다음 기준으로 활용해 보세요.`;
 }
 
 function generateLocalReading(validated) {
-  const topicLabel = DATA.topics[validated.topic].label;
-  const spreadLabel = DATA.spreads[validated.spreadId].label;
   const seed = stableHash([
-    validated.question,
-    validated.topic,
-    validated.spreadId,
+    validated.question, validated.topic, validated.spreadId,
     ...validated.cards.map(({ card, orientation, position }) => `${card.id}:${orientation}:${position}`)
   ].join('|'));
-
+  const cards = validated.cards.map((item, index) => ({
+    id: item.card.id,
+    name: item.card.nameKo,
+    orientation: item.orientation,
+    position: item.position,
+    reading: buildCardReading(item, validated.topic, index, seed)
+  }));
+  const glance = buildGlance(validated, seed);
+  const comparison = buildComparison(validated);
+  const detail = buildDetail(validated, glance, cards, comparison);
+  const topicLabel = topicDefinition(validated.topic)?.label || '타로';
+  const spreadLabel = spreadDefinition(validated.spreadId)?.label || `${validated.cards.length}장 리딩`;
   return {
+    engine: 'topic-structured-v3',
     title: `${topicLabel} · ${spreadLabel}`,
-    overall: buildOverall(validated, seed),
-    cards: validated.cards.map((item, index) => ({
-      id: item.card.id,
-      position: item.position,
-      reading: buildCardReading(item, validated.topic, index, seed)
-    })),
-    advice: buildAdvice(validated, seed),
-    summary: buildSummary(validated, seed)
+    glance,
+    comparison,
+    overall: buildOverall(validated, glance, comparison),
+    cards,
+    advice: detail.actions,
+    detail,
+    summary: buildSummary(validated, glance)
   };
 }
 
 function createHandler() {
   return async function tarotReadingHandler(req, res) {
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'method_not_allowed' });
-    }
-
+    if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
     let validated;
+    try { validated = validateReadingRequest(req.body); }
+    catch (error) { return res.status(error.statusCode || 400).json({ error: error.message || 'invalid_request' }); }
     try {
-      validated = validateReadingRequest(req.body);
-    } catch (error) {
-      return res.status(error.statusCode || 400).json({ error: 'invalid_request' });
-    }
-
-    try {
-      const reading = generateLocalReading(validated);
-      return res.status(200).json({
-        reading,
-        model: LOCAL_MODEL,
-        provider: LOCAL_PROVIDER
-      });
+      return res.status(200).json({ reading: generateLocalReading(validated), model: LOCAL_MODEL, provider: LOCAL_PROVIDER });
     } catch (_) {
       return res.status(500).json({ error: 'local_reading_failed' });
     }
@@ -273,5 +373,6 @@ module.exports = handler;
 module.exports.createHandler = createHandler;
 module.exports.validateReadingRequest = validateReadingRequest;
 module.exports.generateLocalReading = generateLocalReading;
+module.exports.buildCardReading = buildCardReading;
 module.exports.LOCAL_MODEL = LOCAL_MODEL;
 module.exports.LOCAL_PROVIDER = LOCAL_PROVIDER;
