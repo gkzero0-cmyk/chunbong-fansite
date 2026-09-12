@@ -29,7 +29,6 @@ function spreadDefinition(spreadId) {
 function spreadAllowedForTopic(topic, spreadId) {
   if (CONFIG.topics[topic]) {
     if (CONFIG.isSpreadAllowed(topic, spreadId)) return true;
-    // Keep the original public API backward-compatible for the old built-in topics.
     if (DATA.topics[topic] && LEGACY_SPREADS.has(spreadId)) return true;
     return false;
   }
@@ -221,12 +220,13 @@ function buildComparison(validated) {
   if (type === 'relationship') {
     const rightLabel = validated.topic === 'crew' ? '상대·크루' : '상대';
     const mine = validated.cards.filter(item => /^나\s*·/.test(item.position));
-    const other = validated.cards.filter(item => new RegExp(`^${rightLabel.replace('·', '·')}\\s*·`).test(item.position) || /^상대\s*·/.test(item.position));
+    const other = validated.cards.filter(item => /^상대\s*·/.test(item.position) || /^상대·크루\s*·/.test(item.position));
+    if (!mine.length || !other.length) return null;
     const bridge = firstMatching(validated.cards, /관계|협업|핵심|앞으로/, validated.cards.length - 1);
     return {
       type: 'relationship', leftLabel: '나', rightLabel,
-      leftSummary: summarizeGroup(mine.length ? mine : validated.cards.slice(0, Math.ceil(validated.cards.length / 2)), '나'),
-      rightSummary: summarizeGroup(other.length ? other : validated.cards.slice(Math.ceil(validated.cards.length / 2)), rightLabel),
+      leftSummary: summarizeGroup(mine, '나'),
+      rightSummary: summarizeGroup(other, rightLabel),
       bridge: `${bridge.position}의 ${cardLabel(bridge)}이 두 쪽을 연결하는 핵심입니다. 누가 맞는지를 가르기보다 마음과 행동의 차이가 어디에서 생기는지 확인해 보세요.`
     };
   }
@@ -285,9 +285,10 @@ function buildDetail(validated, glance, readings, comparison) {
 }
 
 function buildOverall(validated, glance, comparison) {
+  const spreadLabel = spreadDefinition(validated.spreadId)?.label || `${validated.cards.length}장 리딩`;
   const question = validated.question ? `질문 “${validated.question}”을 기준으로 보면, ` : '';
   const compareText = comparison?.type === 'choice' ? ` ${comparison.verdict}` : comparison?.type === 'relationship' ? ` ${comparison.bridge}` : '';
-  return `${question}${glance.conclusion} ${glance.positive} ${glance.caution}${compareText}`.replace(/\s+/g, ' ').trim();
+  return `${spreadLabel}입니다. ${question}${glance.conclusion} ${glance.positive} ${glance.caution}${compareText}`.replace(/\s+/g, ' ').trim();
 }
 
 function buildSummary(validated, glance) {
