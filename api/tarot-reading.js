@@ -155,7 +155,6 @@ function buildConclusion(validated, seed) {
   const final = firstMatching(cards, /최종|결과|앞으로|미래|흐름/, cards.length - 1);
   const core = firstMatching(cards, /핵심|현재/, Math.min(1, cards.length - 1));
   const topic = topicDefinition(validated.topic)?.label || '이번 질문';
-  const questionLead = validated.question ? `“${validated.question}”에 대해 카드 흐름을 먼저 한마디로 정리하면, ` : '';
   const direction = final.orientation === 'upright'
     ? `${final.card.nameKo}의 흐름처럼 움직일 여지가 살아 있습니다.`
     : `${final.card.nameKo}이 보여주는 막힘을 먼저 정리해야 다음 흐름이 편해집니다.`;
@@ -164,7 +163,7 @@ function buildConclusion(validated, seed) {
     `지금은 결과를 서두르기보다 ${core.card.nameKo}이 가리키는 핵심부터 정리하는 편이 좋습니다.`,
     `${core.card.nameKo}의 메시지를 기준으로 우선순위를 하나 정하면 판단이 훨씬 쉬워집니다.`
   ], seed);
-  return `${questionLead}${topic}에서는 ${direction} ${bridge}`;
+  return `${topic}에서는 ${direction} ${bridge}`;
 }
 
 function buildPositive(validated) {
@@ -209,12 +208,15 @@ function buildComparison(validated) {
   if (type === 'choice') {
     const a = validated.cards.filter(item => /^A\s*·/.test(item.position));
     const b = validated.cards.filter(item => /^B\s*·/.test(item.position));
-    const final = firstMatching(validated.cards, /최종 방향|더 맞는 방향|조언/, validated.cards.length - 1);
+    const guidance = validated.cards.find(item => /^(조언|지금 필요한 조언|최종 방향|현재 나에게 더 맞는 방향)$/.test(item.position));
+    const verdict = guidance
+      ? `${guidance.position}의 ${cardLabel(guidance)}을 기준으로 보면 어느 쪽이 무조건 정답이라기보다 지금 감당하기 쉬운 조건과 우선순위를 먼저 고르는 것이 핵심입니다.`
+      : 'A와 B를 같은 기준으로 비교했습니다. 두 선택의 장점과 부담을 나란히 보고, 실제로 감당 가능한 조건과 지금의 우선순위가 어느 쪽에 더 가까운지 확인해 보세요.';
     return {
       type: 'choice', leftLabel: 'A', rightLabel: 'B',
       leftSummary: summarizeGroup(a, 'A'),
       rightSummary: summarizeGroup(b, 'B'),
-      verdict: `${a.length && b.length ? 'A와 B는 장단점의 결이 다릅니다. ' : ''}${final.position}의 ${cardLabel(final)}을 기준으로 보면 어느 쪽이 무조건 정답이라기보다 지금 감당하기 쉬운 조건과 우선순위를 먼저 고르는 것이 핵심입니다.`
+      verdict
     };
   }
   if (type === 'relationship') {
@@ -222,12 +224,15 @@ function buildComparison(validated) {
     const mine = validated.cards.filter(item => /^나\s*·/.test(item.position));
     const other = validated.cards.filter(item => /^상대\s*·/.test(item.position) || /^상대·크루\s*·/.test(item.position));
     if (!mine.length || !other.length) return null;
-    const bridge = firstMatching(validated.cards, /관계|협업|핵심|앞으로/, validated.cards.length - 1);
+    const bridgeCard = validated.cards.find(item => /^(관계의 핵심|관계의 진짜 핵심|관계 조언|협업 성공의 핵심|협업 핵심|앞으로의 관계|앞으로의 연애 흐름|최종 결과|말하지 않는 핵심|관계를 풀어가는 핵심)$/.test(item.position));
+    const bridge = bridgeCard
+      ? `${bridgeCard.position}의 ${cardLabel(bridgeCard)}이 두 쪽을 연결하는 핵심입니다. 누가 맞는지를 가르기보다 마음과 행동의 차이가 어디에서 생기는지 확인해 보세요.`
+      : `나와 ${rightLabel}의 마음·행동·기대를 같은 기준으로 비교했습니다. 어느 한쪽을 관계의 결론으로 두기보다 서로의 차이가 어디에서 생기는지 확인해 보세요.`;
     return {
       type: 'relationship', leftLabel: '나', rightLabel,
       leftSummary: summarizeGroup(mine, '나'),
       rightSummary: summarizeGroup(other, rightLabel),
-      bridge: `${bridge.position}의 ${cardLabel(bridge)}이 두 쪽을 연결하는 핵심입니다. 누가 맞는지를 가르기보다 마음과 행동의 차이가 어디에서 생기는지 확인해 보세요.`
+      bridge
     };
   }
   return null;
