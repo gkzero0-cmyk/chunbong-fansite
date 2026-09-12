@@ -185,7 +185,7 @@ jobs:
             const browser = await chromium.launch({ headless: true });
             const page = await browser.newPage({ viewport: { width: 1280, height: 1000 }, deviceScaleFactor: 2 });
             await page.goto('https://chunbong-fansite.vercel.app/tarot.html', { waitUntil: 'networkidle' });
-            await page.locator('input[name="count"][value="3"]').check();
+            await page.locator('input[name="spread"][value="threeFlow"]').check();
             await page.locator('input[name="selection-mode"][value="cards"]').check();
 
             const constraints = await page.locator('#tarot-number-inputs input').evaluateAll(inputs =>
