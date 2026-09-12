@@ -184,7 +184,7 @@ function buildChoiceConclusion(cards) {
   if (preference.side) {
     const winningFocus = preference.side === 'A' ? aFocus : bFocus;
     const otherFocus = preference.side === 'A' ? bFocus : aFocus;
-    return cleanSentence(`지금 카드만 보면 ${preference.side} 쪽이 더 안정적으로 보입니다. ${preference.side}의 ${winningFocus.position.replace(/^[AB]\s*·\s*/, '')}에 나온 ${cardLabel(winningFocus)}는 ${compactMeaning(winningFocus, 58)} 반대쪽의 ${cardLabel(otherFocus)}보다 지금 감당하기 쉬운 선택에 가깝습니다.`);
+    return cleanSentence(`지금 카드만 보면 A와 B 중 ${preference.side} 쪽이 더 안정적으로 보입니다. ${preference.side}의 ${winningFocus.position.replace(/^[AB]\s*·\s*/, '')}에 나온 ${cardLabel(winningFocus)}는 ${compactMeaning(winningFocus, 58)} 반대쪽의 ${cardLabel(otherFocus)}보다 지금 감당하기 쉬운 선택에 가깝습니다.`);
   }
   return cleanSentence(`지금 카드만 보면 A와 B의 차이가 아주 크지는 않습니다. A의 ${cardLabel(aFocus)}와 B의 ${cardLabel(bFocus)}가 서로 다른 장단점을 보여주므로, 더 빨리 얻는 것보다 내가 실제로 감당할 수 있는 부담이 어느 쪽인지 보는 게 중요합니다.`);
 }
@@ -212,10 +212,10 @@ function buildRelationshipConclusion(validated) {
   const mineScore = relationshipScore(mine);
   const otherScore = relationshipScore(other);
   if (mineScore > otherScore) {
-    return cleanSentence(`지금은 내 쪽 마음이나 의지가 더 앞서 있고, ${rightLabel}는 조금 더 조심스럽게 거리를 보는 모습입니다. 나는 ${cardLabel(mineFocus)}, ${rightLabel}는 ${cardLabel(otherFocus)}가 잡혀서 서로의 속도 차이를 먼저 맞추는 게 중요합니다.`);
+    return cleanSentence(`지금은 나와 ${rightLabel}를 비교하면, 내 쪽 마음이나 의지가 더 앞서 있고 ${rightLabel}는 조금 더 조심스럽게 거리를 보는 모습입니다. 나는 ${cardLabel(mineFocus)}, ${rightLabel}는 ${cardLabel(otherFocus)}가 잡혀서 서로의 속도 차이를 먼저 맞추는 게 중요합니다.`);
   }
   if (otherScore > mineScore) {
-    return cleanSentence(`지금은 ${rightLabel} 쪽이 조금 더 열려 있고, 내 쪽에서 생각이 많거나 조심스러운 모습입니다. 나는 ${cardLabel(mineFocus)}, ${rightLabel}는 ${cardLabel(otherFocus)}가 잡혀서 내 마음을 먼저 정리하면 관계가 훨씬 선명해집니다.`);
+    return cleanSentence(`지금은 나와 ${rightLabel}를 비교하면, ${rightLabel} 쪽이 조금 더 열려 있고 내 쪽에서 생각이 많거나 조심스러운 모습입니다. 나는 ${cardLabel(mineFocus)}, ${rightLabel}는 ${cardLabel(otherFocus)}가 잡혀서 내 마음을 먼저 정리하면 관계가 훨씬 선명해집니다.`);
   }
   return cleanSentence(`지금은 나와 ${rightLabel}의 온도 차이가 아주 크지는 않지만 표현 방식이 다릅니다. 나는 ${cardLabel(mineFocus)}, ${rightLabel}는 ${cardLabel(otherFocus)}가 잡혀서 말보다 실제 행동을 비교해 보는 게 좋습니다.`);
 }
