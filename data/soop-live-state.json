@@ -3723,12 +3723,23 @@
         "categoryName": "버추얼",
         "followerCount": 30092,
         "fanclubCount": 7635
+      },
+      {
+        "capturedAt": "2026-09-12T15:19:18.562Z",
+        "live": true,
+        "startedAt": "2026-09-12T08:48:56.000Z",
+        "title": "마린이 유치원 w. 마룽, 진사애, 아야네 세나",
+        "viewerCount": 50,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30093,
+        "fanclubCount": 7635
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-12T15:07:25.691Z",
-    "followerCount": 30092,
+    "capturedAt": "2026-09-12T15:19:18.562Z",
+    "followerCount": 30093,
     "fanclubCount": 7635
   }
 }
