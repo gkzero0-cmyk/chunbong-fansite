@@ -22,8 +22,9 @@ assert.ok(workflow.includes('assertGameStageFitsViewport'), 'production smoke mu
 assert.ok(workflow.includes('fl_preserve_transparency'), 'production readiness must require the transparent high-resolution reaction sprite');
 assert.ok(workflow.includes('document.documentElement.scrollWidth'), 'production smoke must verify horizontal overflow');
 assert.ok(workflow.includes('page.viewportSize()'), 'production smoke must compare layout dimensions against the Playwright viewport');
-assert.ok(workflow.includes("width: 1280, height: 740"), 'production smoke must cover short desktop');
-assert.ok(workflow.includes("width: 900, height: 800"), 'production smoke must cover compact desktop');
-assert.ok(workflow.includes("width: 390, height: 844") && workflow.includes("width: 360, height: 800"), 'production smoke must cover both mobile sizes');
+for (const [width, height] of [[1280,740],[900,800],[390,844],[360,800]]) {
+  const viewport = new RegExp(`width\\s*:\\s*${width}\\s*,\\s*height\\s*:\\s*${height}`);
+  assert.match(workflow, viewport, `production smoke must cover ${width}x${height}`);
+}
 
 console.log('chuntris responsive quality regression passed');
