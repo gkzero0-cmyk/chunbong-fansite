@@ -302,7 +302,7 @@
       const moved = Math.max(0, landing - this.state.active.y);
       this.state.active = { ...this.state.active, y: landing };
       this.state.score += moved * 2;
-      this.state.lastAction = 'hardDrop';
+      if (moved > 0) this.state.lastAction = 'hardDrop';
       this.lockActive(nowMs);
       return moved;
     }
