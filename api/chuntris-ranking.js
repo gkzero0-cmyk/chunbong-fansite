@@ -20,10 +20,17 @@ function sendJson(res, statusCode, payload) {
   return res;
 }
 
+function redisEnv() {
+  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL || '';
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN || '';
+  return { url, token };
+}
+
 async function redisCommand(command, ...args) {
-  const base = process.env.UPSTASH_REDIS_REST_URL.replace(/\/$/, '');
+  const env = redisEnv();
+  const base = env.url.replace(/\/$/, '');
   const path = [command, ...args].map(value => encodeURIComponent(String(value))).join('/');
-  const response = await fetch(`${base}/${path}`, { headers: { Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}` } });
+  const response = await fetch(`${base}/${path}`, { headers: { Authorization: `Bearer ${env.token}` } });
   if (!response.ok) throw new Error(`redis ${response.status}`);
   const payload = await response.json();
   if (payload.error) throw new Error(payload.error);
@@ -31,7 +38,8 @@ async function redisCommand(command, ...args) {
 }
 
 function hasRedisEnv() {
-  return Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
+  const env = redisEnv();
+  return Boolean(env.url && env.token);
 }
 
 function parseMode(value) {
