@@ -1,0 +1,120 @@
+name: Chuntris production smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'chuntris.html'
+      - 'chuntris.css'
+      - 'chuntris-engine.js'
+      - 'chuntris-audio.js'
+      - 'chuntris.js'
+      - 'assets/chuntris/**'
+      - '.github/workflows/chuntris-production-smoke.yml'
+  workflow_dispatch:
+
+jobs:
+  production-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Wait for production deployment
+        run: |
+          set -euo pipefail
+          BASE='https://chunbong-fansite.vercel.app'
+          for attempt in $(seq 1 60); do
+            echo "Production readiness attempt ${attempt}/60"
+            if \
+              curl -fsS "$BASE/chuntris.html" -o /tmp/chuntris.html && \
+              curl -fsS "$BASE/chuntris.css" -o /dev/null && \
+              curl -fsS "$BASE/chuntris-engine.js" -o /dev/null && \
+              curl -fsS "$BASE/chuntris-audio.js" -o /dev/null && \
+              curl -fsS "$BASE/chuntris.js" -o /dev/null && \
+              curl -fsS "$BASE/assets/chuntris/reactions.webp" -o /dev/null && \
+              grep -q '춘트리스' /tmp/chuntris.html && \
+              grep -q 'data-chuntris-mode="classic"' /tmp/chuntris.html && \
+              grep -q 'data-chuntris-mode="sprint40"' /tmp/chuntris.html && \
+              grep -q 'chuntris.js' /tmp/chuntris.html; then
+              echo 'Chuntris production deployment is ready.'
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'Chuntris production deployment did not become ready in time.' >&2
+          exit 1
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Run desktop and mobile browser smoke
+        run: |
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const { chromium } = require('playwright');
+          const URL = 'https://chunbong-fansite.vercel.app/chuntris.html';
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            try {
+              const desktop = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+              const desktopErrors = [];
+              desktop.on('pageerror', error => desktopErrors.push(error.message));
+              await desktop.goto(URL, { waitUntil: 'domcontentloaded' });
+              await desktop.waitForFunction(() => Boolean(window.ChuntrisApp?.getGame?.()));
+              assert.equal(await desktop.locator('#chuntris-board').count(), 1);
+
+              await desktop.locator('[data-chuntris-mode="classic"]').click();
+              await desktop.locator('#chuntris-start').click();
+              await desktop.keyboard.press('ArrowLeft');
+              await desktop.keyboard.press('KeyX');
+              await desktop.keyboard.press('Space');
+              await desktop.waitForTimeout(120);
+              const classic = await desktop.evaluate(() => ({
+                status: document.querySelector('#chuntris-game')?.dataset.gameStatus,
+                mode: document.querySelector('#chuntris-game')?.dataset.mode,
+                score: Number((document.querySelector('#chuntris-score')?.textContent || '0').replace(/[^0-9]/g, '')),
+                app: Boolean(window.ChuntrisApp?.getGame?.()),
+                reaction: getComputedStyle(document.querySelector('#chuntris-reaction')).backgroundImage
+              }));
+              assert.equal(classic.status, 'playing');
+              assert.equal(classic.mode, 'classic');
+              assert.ok(classic.score >= 0);
+              assert.equal(classic.app, true);
+              assert.match(classic.reaction, /assets\/chuntris\/reactions\.webp/);
+
+              await desktop.locator('#chuntris-pause').click();
+              assert.equal(await desktop.locator('#chuntris-game').getAttribute('data-game-status'), 'paused');
+              await desktop.locator('[data-chuntris-mode="sprint40"]').click();
+              await desktop.locator('#chuntris-start').click();
+              assert.equal(await desktop.locator('#chuntris-game').getAttribute('data-mode'), 'sprint40');
+              assert.equal(await desktop.locator('#chuntris-game').getAttribute('data-game-status'), 'playing');
+              assert.deepEqual(desktopErrors, [], `Desktop page errors: ${desktopErrors.join(' | ')}`);
+
+              const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+              const mobileErrors = [];
+              mobile.on('pageerror', error => mobileErrors.push(error.message));
+              await mobile.goto(URL, { waitUntil: 'domcontentloaded' });
+              await mobile.waitForFunction(() => Boolean(window.ChuntrisApp?.getGame?.()));
+              await mobile.locator('[data-chuntris-mode="classic"]').click();
+              await mobile.locator('#chuntris-start').click();
+              const controls = mobile.locator('#chuntris-mobile-controls');
+              assert.equal(await controls.isVisible(), true);
+              await mobile.locator('[data-chuntris-action="left"]').click();
+              await mobile.locator('[data-chuntris-action="hard-drop"]').click();
+              await mobile.waitForTimeout(80);
+              assert.equal(await mobile.locator('#chuntris-game').getAttribute('data-game-status'), 'playing');
+              assert.deepEqual(mobileErrors, [], `Mobile page errors: ${mobileErrors.join(' | ')}`);
+
+              console.log('Chuntris production Chromium smoke passed');
+            } finally {
+              await browser.close();
+            }
+          })().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE

@@ -1,0 +1,449 @@
+(function (root, factory) {
+  const api = factory();
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  root.ChuntrisEngine = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+
+  const BOARD_WIDTH = 10;
+  const VISIBLE_ROWS = 20;
+  const HIDDEN_ROWS = 2;
+  const BOARD_ROWS = VISIBLE_ROWS + HIDDEN_ROWS;
+  const PIECE_TYPES = Object.freeze(['I', 'O', 'T', 'S', 'Z', 'J', 'L']);
+  const LOCK_DELAY_MS = 500;
+
+  const SHAPES = Object.freeze({
+    I: [
+      [[0,1],[1,1],[2,1],[3,1]],
+      [[2,0],[2,1],[2,2],[2,3]],
+      [[0,2],[1,2],[2,2],[3,2]],
+      [[1,0],[1,1],[1,2],[1,3]]
+    ],
+    O: [
+      [[1,0],[2,0],[1,1],[2,1]],
+      [[1,0],[2,0],[1,1],[2,1]],
+      [[1,0],[2,0],[1,1],[2,1]],
+      [[1,0],[2,0],[1,1],[2,1]]
+    ],
+    T: [
+      [[1,0],[0,1],[1,1],[2,1]],
+      [[1,0],[1,1],[2,1],[1,2]],
+      [[0,1],[1,1],[2,1],[1,2]],
+      [[1,0],[0,1],[1,1],[1,2]]
+    ],
+    S: [
+      [[1,0],[2,0],[0,1],[1,1]],
+      [[1,0],[1,1],[2,1],[2,2]],
+      [[1,1],[2,1],[0,2],[1,2]],
+      [[0,0],[0,1],[1,1],[1,2]]
+    ],
+    Z: [
+      [[0,0],[1,0],[1,1],[2,1]],
+      [[2,0],[1,1],[2,1],[1,2]],
+      [[0,1],[1,1],[1,2],[2,2]],
+      [[1,0],[0,1],[1,1],[0,2]]
+    ],
+    J: [
+      [[0,0],[0,1],[1,1],[2,1]],
+      [[1,0],[2,0],[1,1],[1,2]],
+      [[0,1],[1,1],[2,1],[2,2]],
+      [[1,0],[1,1],[0,2],[1,2]]
+    ],
+    L: [
+      [[2,0],[0,1],[1,1],[2,1]],
+      [[1,0],[1,1],[1,2],[2,2]],
+      [[0,1],[1,1],[2,1],[0,2]],
+      [[0,0],[1,0],[1,1],[1,2]]
+    ]
+  });
+
+  const JLSTZ_KICKS = Object.freeze({
+    '0>1': [[0,0],[-1,0],[-1,-1],[0,2],[-1,2]],
+    '1>0': [[0,0],[1,0],[1,1],[0,-2],[1,-2]],
+    '1>2': [[0,0],[1,0],[1,1],[0,-2],[1,-2]],
+    '2>1': [[0,0],[-1,0],[-1,-1],[0,2],[-1,2]],
+    '2>3': [[0,0],[1,0],[1,-1],[0,2],[1,2]],
+    '3>2': [[0,0],[-1,0],[-1,1],[0,-2],[-1,-2]],
+    '3>0': [[0,0],[-1,0],[-1,1],[0,-2],[-1,-2]],
+    '0>3': [[0,0],[1,0],[1,-1],[0,2],[1,2]]
+  });
+
+  const I_KICKS = Object.freeze({
+    '0>1': [[0,0],[-2,0],[1,0],[-2,1],[1,-2]],
+    '1>0': [[0,0],[2,0],[-1,0],[2,-1],[-1,2]],
+    '1>2': [[0,0],[-1,0],[2,0],[-1,-2],[2,1]],
+    '2>1': [[0,0],[1,0],[-2,0],[1,2],[-2,-1]],
+    '2>3': [[0,0],[2,0],[-1,0],[2,-1],[-1,2]],
+    '3>2': [[0,0],[-2,0],[1,0],[-2,1],[1,-2]],
+    '3>0': [[0,0],[1,0],[-2,0],[1,2],[-2,-1]],
+    '0>3': [[0,0],[-1,0],[2,0],[-1,-2],[2,1]]
+  });
+
+  function createEmptyBoard() {
+    return Array.from({ length: BOARD_ROWS }, () => Array(BOARD_WIDTH).fill(null));
+  }
+
+  function cloneBoard(board) {
+    return board.map(row => row.slice());
+  }
+
+  function createSevenBag(random = Math.random) {
+    const bag = PIECE_TYPES.slice();
+    for (let index = bag.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(random() * (index + 1));
+      [bag[index], bag[swapIndex]] = [bag[swapIndex], bag[index]];
+    }
+    return bag;
+  }
+
+  function cellsFor(piece) {
+    if (!piece || !SHAPES[piece.type]) return [];
+    const shape = SHAPES[piece.type][((piece.rotation || 0) % 4 + 4) % 4];
+    return shape.map(([x, y]) => [piece.x + x, piece.y + y]);
+  }
+
+  function collides(board, piece) {
+    for (const [x, y] of cellsFor(piece)) {
+      if (x < 0 || x >= BOARD_WIDTH || y >= BOARD_ROWS) return true;
+      if (y >= 0 && board[y] && board[y][x]) return true;
+    }
+    return false;
+  }
+
+  function ghostY(board, piece) {
+    if (!piece) return 0;
+    let y = piece.y;
+    while (!collides(board, { ...piece, y: y + 1 })) y += 1;
+    return y;
+  }
+
+  function gravityMs(level, mode = 'classic') {
+    if (mode === 'sprint40') return 1000;
+    const safeLevel = Math.max(1, Number(level) || 1);
+    return Math.max(80, Math.round(1000 * Math.pow(0.85, safeLevel - 1)));
+  }
+
+  function clearCompletedLines(board) {
+    const kept = [];
+    const clearedRows = [];
+    for (let y = 0; y < BOARD_ROWS; y += 1) {
+      if (board[y].every(Boolean)) clearedRows.push(y);
+      else kept.push(board[y].slice());
+    }
+    while (kept.length < BOARD_ROWS) kept.unshift(Array(BOARD_WIDTH).fill(null));
+    return { board: kept, lines: clearedRows.length, clearedRows };
+  }
+
+  function scoreClear({ lines = 0, tSpin = false, level = 1, combo = -1, backToBack = false } = {}) {
+    const safeLevel = Math.max(1, Number(level) || 1);
+    const count = Math.max(0, Math.min(4, Number(lines) || 0));
+    let base = 0;
+    if (tSpin) base = [400, 800, 1200, 1600][count] || 0;
+    else base = [0, 100, 300, 500, 800][count] || 0;
+
+    const eligible = count === 4 || (tSpin && count > 0);
+    const b2bApplied = eligible && Boolean(backToBack);
+    if (b2bApplied) base = Math.floor(base * 1.5);
+
+    const nextCombo = count > 0 ? (Number(combo) || 0) + 1 : -1;
+    const comboBonus = count > 0 && nextCombo > 0 ? 50 * nextCombo * safeLevel : 0;
+    const points = base * safeLevel + comboBonus;
+
+    let nextBackToBack = Boolean(backToBack);
+    if (eligible) nextBackToBack = true;
+    else if (count > 0) nextBackToBack = false;
+
+    return { points, nextCombo, nextBackToBack, b2bApplied, eligible };
+  }
+
+  function spawnPiece(type) {
+    return { type, rotation: 0, x: 3, y: 0 };
+  }
+
+  function occupiedOrOutside(board, x, y) {
+    if (x < 0 || x >= BOARD_WIDTH || y < 0 || y >= BOARD_ROWS) return true;
+    return Boolean(board[y][x]);
+  }
+
+  class ChuntrisGame {
+    constructor({ mode = 'classic', random = Math.random } = {}) {
+      this.random = typeof random === 'function' ? random : Math.random;
+      this.state = {
+        board: createEmptyBoard(), active: null, hold: null, next: [], canHold: true,
+        score: 0, lines: 0, level: 1, combo: -1, backToBack: false,
+        mode: mode === 'sprint40' ? 'sprint40' : 'classic', elapsedMs: 0,
+        status: 'idle', startedAt: 0, pausedAt: null, pausedDurationMs: 0,
+        lastAdvanceAt: 0, lastGravityAt: 0, groundedAt: null,
+        lastAction: null, lastClear: null
+      };
+      this.ensureQueue(7);
+      this.spawnNext();
+      this.state.status = 'idle';
+    }
+
+    ensureQueue(minimum = 5) {
+      while (this.state.next.length < minimum) this.state.next.push(...createSevenBag(this.random));
+    }
+
+    spawnNext() {
+      this.ensureQueue(6);
+      const type = this.state.next.shift();
+      this.ensureQueue(5);
+      const piece = spawnPiece(type);
+      this.state.active = piece;
+      this.state.groundedAt = null;
+      this.state.lastAction = 'spawn';
+      if (collides(this.state.board, piece)) {
+        this.state.status = 'gameover';
+        return false;
+      }
+      return true;
+    }
+
+    reset(mode = this.state.mode) {
+      const nextMode = mode === 'sprint40' ? 'sprint40' : 'classic';
+      this.state = {
+        board: createEmptyBoard(), active: null, hold: null, next: [], canHold: true,
+        score: 0, lines: 0, level: 1, combo: -1, backToBack: false,
+        mode: nextMode, elapsedMs: 0, status: 'idle', startedAt: 0,
+        pausedAt: null, pausedDurationMs: 0, lastAdvanceAt: 0, lastGravityAt: 0,
+        groundedAt: null, lastAction: null, lastClear: null
+      };
+      this.ensureQueue(7);
+      this.spawnNext();
+      this.state.status = 'idle';
+      return this.getSnapshot();
+    }
+
+    start(nowMs = Date.now()) {
+      if (this.state.status === 'gameover' || this.state.status === 'completed') this.reset(this.state.mode);
+      this.state.status = 'playing';
+      this.state.startedAt = nowMs;
+      this.state.elapsedMs = 0;
+      this.state.pausedDurationMs = 0;
+      this.state.lastAdvanceAt = nowMs;
+      this.state.lastGravityAt = nowMs;
+      this.state.pausedAt = null;
+      if (!this.state.active || collides(this.state.board, this.state.active)) this.spawnNext();
+      return this.getSnapshot();
+    }
+
+    setMode(mode) { return this.reset(mode); }
+
+    pause(nowMs = Date.now()) {
+      if (this.state.status !== 'playing') return false;
+      this.updateElapsed(nowMs);
+      this.state.status = 'paused';
+      this.state.pausedAt = nowMs;
+      return true;
+    }
+
+    resume(nowMs = Date.now()) {
+      if (this.state.status !== 'paused') return false;
+      if (this.state.pausedAt != null) this.state.pausedDurationMs += Math.max(0, nowMs - this.state.pausedAt);
+      this.state.pausedAt = null;
+      this.state.status = 'playing';
+      this.state.lastAdvanceAt = nowMs;
+      this.state.lastGravityAt = nowMs;
+      if (this.state.groundedAt != null) this.state.groundedAt = nowMs;
+      return true;
+    }
+
+    togglePause(nowMs = Date.now()) {
+      return this.state.status === 'paused' ? this.resume(nowMs) : this.pause(nowMs);
+    }
+
+    updateElapsed(nowMs) {
+      if (this.state.status === 'idle') return;
+      const end = this.state.pausedAt != null ? this.state.pausedAt : nowMs;
+      this.state.elapsedMs = Math.max(0, end - this.state.startedAt - this.state.pausedDurationMs);
+    }
+
+    getSnapshot() {
+      return {
+        ...this.state,
+        board: cloneBoard(this.state.board),
+        active: this.state.active ? { ...this.state.active } : null,
+        next: this.state.next.slice(0, 5),
+        hold: this.state.hold
+      };
+    }
+
+    isPlaying() { return this.state.status === 'playing'; }
+
+    moveHorizontal(direction) {
+      if (!this.isPlaying() || !this.state.active) return false;
+      const dx = direction < 0 ? -1 : 1;
+      const candidate = { ...this.state.active, x: this.state.active.x + dx };
+      if (collides(this.state.board, candidate)) return false;
+      this.state.active = candidate;
+      this.state.lastAction = 'move';
+      this.refreshGrounded(Date.now());
+      return true;
+    }
+
+    softDrop() {
+      if (!this.isPlaying() || !this.state.active) return false;
+      const candidate = { ...this.state.active, y: this.state.active.y + 1 };
+      if (collides(this.state.board, candidate)) {
+        if (this.state.groundedAt == null) this.state.groundedAt = Date.now();
+        return false;
+      }
+      this.state.active = candidate;
+      this.state.score += 1;
+      this.state.lastAction = 'softDrop';
+      this.refreshGrounded(Date.now());
+      return true;
+    }
+
+    hardDrop(nowMs = Date.now()) {
+      if (!this.isPlaying() || !this.state.active) return 0;
+      const landing = ghostY(this.state.board, this.state.active);
+      const moved = Math.max(0, landing - this.state.active.y);
+      this.state.active = { ...this.state.active, y: landing };
+      this.state.score += moved * 2;
+      if (moved > 0) this.state.lastAction = 'hardDrop';
+      this.lockActive(nowMs);
+      return moved;
+    }
+
+    rotate(direction = 1) {
+      if (!this.isPlaying() || !this.state.active) return false;
+      const from = this.state.active.rotation;
+      const to = (from + (direction < 0 ? 3 : 1)) % 4;
+      if (this.state.active.type === 'O') {
+        this.state.active = { ...this.state.active, rotation: to };
+        this.state.lastAction = 'rotate';
+        this.refreshGrounded(Date.now());
+        return true;
+      }
+      const table = this.state.active.type === 'I' ? I_KICKS : JLSTZ_KICKS;
+      const kicks = table[`${from}>${to}`] || [[0,0]];
+      for (const [dx, dy] of kicks) {
+        const candidate = {
+          ...this.state.active, rotation: to,
+          x: this.state.active.x + dx, y: this.state.active.y + dy
+        };
+        if (!collides(this.state.board, candidate)) {
+          this.state.active = candidate;
+          this.state.lastAction = 'rotate';
+          this.refreshGrounded(Date.now());
+          return true;
+        }
+      }
+      return false;
+    }
+
+    holdPiece() {
+      if (!this.isPlaying() || !this.state.active || !this.state.canHold) return false;
+      const current = this.state.active.type;
+      if (this.state.hold) {
+        const swap = this.state.hold;
+        this.state.hold = current;
+        this.state.active = spawnPiece(swap);
+        if (collides(this.state.board, this.state.active)) this.state.status = 'gameover';
+      } else {
+        this.state.hold = current;
+        this.spawnNext();
+      }
+      this.state.canHold = false;
+      this.state.groundedAt = null;
+      this.state.lastAction = 'hold';
+      return true;
+    }
+
+    refreshGrounded(nowMs) {
+      if (!this.state.active) return;
+      const below = { ...this.state.active, y: this.state.active.y + 1 };
+      if (collides(this.state.board, below)) {
+        if (this.state.groundedAt == null) this.state.groundedAt = nowMs;
+      } else {
+        this.state.groundedAt = null;
+      }
+    }
+
+    detectTSpin(piece) {
+      if (!piece || piece.type !== 'T' || this.state.lastAction !== 'rotate') return false;
+      const cx = piece.x + 1;
+      const cy = piece.y + 1;
+      const corners = [[cx-1,cy-1],[cx+1,cy-1],[cx-1,cy+1],[cx+1,cy+1]];
+      return corners.filter(([x,y]) => occupiedOrOutside(this.state.board, x, y)).length >= 3;
+    }
+
+    lockActive(nowMs = Date.now()) {
+      if (!this.state.active || this.state.status !== 'playing') return false;
+      const piece = { ...this.state.active };
+      const tSpin = this.detectTSpin(piece);
+      for (const [x, y] of cellsFor(piece)) {
+        if (y >= 0 && y < BOARD_ROWS && x >= 0 && x < BOARD_WIDTH) this.state.board[y][x] = piece.type;
+      }
+      const cleared = clearCompletedLines(this.state.board);
+      this.state.board = cleared.board;
+      this.applyClearEvent({ lines: cleared.lines, tSpin }, nowMs);
+      if (this.state.status === 'completed') return true;
+      this.state.canHold = true;
+      this.state.groundedAt = null;
+      const spawned = this.spawnNext();
+      if (!spawned) this.updateElapsed(nowMs);
+      return true;
+    }
+
+    applyClearEvent({ lines = 0, tSpin = false } = {}, nowMs = Date.now()) {
+      const result = scoreClear({
+        lines, tSpin, level: this.state.level,
+        combo: this.state.combo, backToBack: this.state.backToBack
+      });
+      this.state.score += result.points;
+      this.state.combo = result.nextCombo;
+      this.state.backToBack = result.nextBackToBack;
+      this.state.lines += Math.max(0, Number(lines) || 0);
+      this.state.level = this.state.mode === 'classic' ? Math.floor(this.state.lines / 10) + 1 : 1;
+      this.state.lastClear = {
+        lines: Math.max(0, Number(lines) || 0), tSpin: Boolean(tSpin),
+        points: result.points, combo: this.state.combo,
+        backToBack: result.b2bApplied, at: nowMs
+      };
+      if (this.state.mode === 'sprint40' && this.state.lines >= 40) {
+        this.state.lines = 40;
+        this.updateElapsed(nowMs);
+        this.state.status = 'completed';
+      } else {
+        this.updateElapsed(nowMs);
+      }
+      return result;
+    }
+
+    advance(nowMs = Date.now()) {
+      if (!this.isPlaying()) return this.getSnapshot();
+      this.updateElapsed(nowMs);
+      const interval = gravityMs(this.state.level, this.state.mode);
+      if (this.state.lastGravityAt == null) this.state.lastGravityAt = nowMs;
+
+      let safety = 0;
+      while (nowMs - this.state.lastGravityAt >= interval && safety < 24 && this.state.status === 'playing') {
+        safety += 1;
+        this.state.lastGravityAt += interval;
+        const candidate = { ...this.state.active, y: this.state.active.y + 1 };
+        if (!collides(this.state.board, candidate)) {
+          this.state.active = candidate;
+          this.state.lastAction = 'gravity';
+          this.state.groundedAt = null;
+        } else {
+          if (this.state.groundedAt == null) this.state.groundedAt = this.state.lastGravityAt;
+          break;
+        }
+      }
+
+      this.refreshGrounded(nowMs);
+      if (this.state.groundedAt != null && nowMs - this.state.groundedAt >= LOCK_DELAY_MS) this.lockActive(nowMs);
+      this.state.lastAdvanceAt = nowMs;
+      return this.getSnapshot();
+    }
+  }
+
+  return {
+    BOARD_WIDTH, VISIBLE_ROWS, HIDDEN_ROWS, BOARD_ROWS, LOCK_DELAY_MS,
+    PIECE_TYPES, SHAPES, createSevenBag, createEmptyBoard, cellsFor,
+    collides, ghostY, gravityMs, clearCompletedLines, scoreClear, ChuntrisGame
+  };
+});
