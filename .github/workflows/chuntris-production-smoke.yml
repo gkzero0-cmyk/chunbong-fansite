@@ -72,13 +72,28 @@ jobs:
           }
 
           async function assertBoardFitsViewport(page, label) {
-            await page.locator('#chuntris-game').evaluate(el => el.scrollIntoView({ block: 'start', inline: 'nearest' }));
-            await page.waitForTimeout(80);
-            const viewportHeight = await page.evaluate(() => window.innerHeight);
-            const boardBox = await page.locator('#chuntris-board').boundingBox();
-            assert.ok(boardBox, `${label} board missing`);
-            assert.ok(boardBox.y >= -1, `${label} board starts above viewport: ${boardBox.y}`);
-            assert.ok(boardBox.y + boardBox.height <= viewportHeight + 1, `${label} board vertically clipped: ${boardBox.y + boardBox.height} > ${viewportHeight}`);
+            const geometry = await page.evaluate(() => {
+              const header = document.querySelector('.site-header');
+              const game = document.querySelector('#chuntris-game');
+              const board = document.querySelector('#chuntris-board');
+              if (!game || !board) return null;
+              const gameRect = game.getBoundingClientRect();
+              const boardRect = board.getBoundingClientRect();
+              return {
+                viewportHeight: window.innerHeight,
+                headerHeight: header?.getBoundingClientRect().height || 0,
+                boardOffsetInsideGame: boardRect.top - gameRect.top,
+                boardHeight: boardRect.height,
+                boardWidth: boardRect.width
+              };
+            });
+            assert.ok(geometry, `${label} board geometry missing`);
+            const visibleBottom = geometry.headerHeight + geometry.boardOffsetInsideGame + geometry.boardHeight;
+            assert.ok(
+              visibleBottom <= geometry.viewportHeight + 1,
+              `${label} board vertically clipped when game is aligned below sticky header: ${visibleBottom} > ${geometry.viewportHeight} (header=${geometry.headerHeight}, offset=${geometry.boardOffsetInsideGame}, board=${geometry.boardHeight})`
+            );
+            assert.ok(geometry.boardWidth > 0 && geometry.boardHeight > 0, `${label} board must have positive dimensions`);
           }
 
           async function openReadyPage(browser, options, label) {
