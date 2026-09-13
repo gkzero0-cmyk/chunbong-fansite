@@ -63,7 +63,7 @@ jobs:
 
           async function assertNoHorizontalOverflow(page, label) {
             const documentWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-            const viewportWidth = await page.evaluate(() => window.innerWidth);
+            const viewportWidth = page.viewportSize()?.width || 0;
             const gameBox = await page.locator('#chuntris-game').boundingBox();
             assert.ok(documentWidth <= viewportWidth + 1, `${label} document overflow: ${documentWidth} > ${viewportWidth}`);
             assert.ok(gameBox, `${label} game frame missing`);
@@ -72,28 +72,24 @@ jobs:
           }
 
           async function assertBoardFitsViewport(page, label) {
-            const geometry = await page.evaluate(() => {
-              const header = document.querySelector('.site-header');
-              const game = document.querySelector('#chuntris-game');
-              const board = document.querySelector('#chuntris-board');
-              if (!game || !board) return null;
-              const gameRect = game.getBoundingClientRect();
-              const boardRect = board.getBoundingClientRect();
-              return {
-                viewportHeight: window.innerHeight,
-                headerHeight: header?.getBoundingClientRect().height || 0,
-                boardOffsetInsideGame: boardRect.top - gameRect.top,
-                boardHeight: boardRect.height,
-                boardWidth: boardRect.width
-              };
-            });
-            assert.ok(geometry, `${label} board geometry missing`);
-            const visibleBottom = geometry.headerHeight + geometry.boardOffsetInsideGame + geometry.boardHeight;
+            const viewport = page.viewportSize();
+            const [headerBox, gameBox, boardBox] = await Promise.all([
+              page.locator('.site-header').boundingBox(),
+              page.locator('#chuntris-game').boundingBox(),
+              page.locator('#chuntris-board').boundingBox()
+            ]);
+            assert.ok(viewport, `${label} viewport missing`);
+            assert.ok(gameBox, `${label} game frame missing`);
+            assert.ok(boardBox, `${label} board missing`);
+            const headerHeight = headerBox?.height || 0;
+            const boardOffsetInsideGame = boardBox.y - gameBox.y;
+            const visibleBottom = headerHeight + boardOffsetInsideGame + boardBox.height;
+            console.log(`${label}: viewport=${viewport.height}, header=${headerHeight}, offset=${boardOffsetInsideGame}, board=${boardBox.width}x${boardBox.height}, visibleBottom=${visibleBottom}`);
             assert.ok(
-              visibleBottom <= geometry.viewportHeight + 1,
-              `${label} board vertically clipped when game is aligned below sticky header: ${visibleBottom} > ${geometry.viewportHeight} (header=${geometry.headerHeight}, offset=${geometry.boardOffsetInsideGame}, board=${geometry.boardHeight})`
+              visibleBottom <= viewport.height + 1,
+              `${label} board vertically clipped when game is aligned below sticky header: ${visibleBottom} > ${viewport.height} (header=${headerHeight}, offset=${boardOffsetInsideGame}, board=${boardBox.height})`
             );
-            assert.ok(geometry.boardWidth > 0 && geometry.boardHeight > 0, `${label} board must have positive dimensions`);
+            assert.ok(boardBox.width > 0 && boardBox.height > 0, `${label} board must have positive dimensions`);
           }
 
           async function openReadyPage(browser, options, label) {
