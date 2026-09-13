@@ -1,0 +1,93 @@
+name: Chuntris preview layout smoke
+
+on:
+  pull_request:
+    paths:
+      - 'chuntris.html'
+      - 'chuntris.css'
+      - 'chuntris-engine.js'
+      - 'chuntris-audio.js'
+      - 'chuntris.js'
+      - 'assets/chuntris/**'
+      - '.github/workflows/chuntris-preview-layout-smoke.yml'
+
+jobs:
+  browser-layout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local static site
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/chuntris-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4173/chuntris.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/chuntris-http.log
+          exit 1
+      - name: Verify viewport fit and transparent HD reaction source
+        run: |
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const { chromium } = require('playwright');
+          const URL = 'http://127.0.0.1:4173/chuntris.html';
+
+          async function verify(browser, options, label) {
+            const page = await browser.newPage(options);
+            const errors = [];
+            page.on('pageerror', error => errors.push(error.message));
+            await page.goto(URL, { waitUntil: 'domcontentloaded' });
+            await page.waitForFunction(() => Boolean(window.ChuntrisApp?.getGame?.()));
+            const viewport = page.viewportSize();
+            const documentWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+            const [headerBox, gameBox, layoutBox, boardBox, leftBox, rightBox] = await Promise.all([
+              page.locator('.site-header').boundingBox(),
+              page.locator('#chuntris-game').boundingBox(),
+              page.locator('.chuntris-layout').boundingBox(),
+              page.locator('#chuntris-board').boundingBox(),
+              page.locator('.chuntris-left-panel').boundingBox(),
+              page.locator('.chuntris-right-panel').boundingBox()
+            ]);
+            assert.ok(viewport && gameBox && layoutBox && boardBox, `${label} core layout missing`);
+            assert.ok(documentWidth <= viewport.width + 1, `${label} horizontal overflow: ${documentWidth} > ${viewport.width}`);
+            assert.ok(gameBox.x >= -1 && gameBox.x + gameBox.width <= viewport.width + 1, `${label} game frame outside viewport`);
+            const desktopRails = viewport.width > 820;
+            const fitBox = desktopRails ? layoutBox : boardBox;
+            const visibleBottom = (headerBox?.height || 0) + (fitBox.y - gameBox.y) + fitBox.height;
+            assert.ok(visibleBottom <= viewport.height + 1, `${label} stage clipped: ${visibleBottom} > ${viewport.height}`);
+            if (desktopRails) {
+              assert.ok(leftBox && rightBox, `${label} rails missing`);
+              const bottom = layoutBox.y + layoutBox.height;
+              for (const [name, box] of [['left', leftBox], ['right', rightBox], ['board', boardBox]]) {
+                assert.ok(box.y >= layoutBox.y - 1, `${label} ${name} starts above stage`);
+                assert.ok(box.y + box.height <= bottom + 1, `${label} ${name} exceeds stage`);
+              }
+            }
+            const reaction = await page.locator('#chuntris-reaction').evaluate(el => getComputedStyle(el).backgroundImage);
+            assert.match(reaction, /fl_preserve_transparency/, `${label} reaction must use alpha-preserving HD sprite`);
+            assert.deepEqual(errors, [], `${label} page errors: ${errors.join(' | ')}`);
+            console.log(`${label} passed: stage=${layoutBox.width}x${layoutBox.height}, board=${boardBox.width}x${boardBox.height}`);
+            await page.close();
+          }
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            try {
+              await verify(browser, { viewport: { width: 1280, height: 900 } }, 'Desktop 1280x900');
+              await verify(browser, { viewport: { width: 1280, height: 740 } }, 'Desktop 1280x740');
+              await verify(browser, { viewport: { width: 900, height: 800 } }, 'Desktop 900x800');
+              await verify(browser, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true }, 'Mobile 390x844');
+              await verify(browser, { viewport: { width: 360, height: 800 }, isMobile: true, hasTouch: true }, 'Mobile 360x800');
+            } finally {
+              await browser.close();
+            }
+          })().catch(error => { console.error(error); process.exit(1); });
+          NODE
