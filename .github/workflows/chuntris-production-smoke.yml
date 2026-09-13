@@ -26,7 +26,7 @@ jobs:
         run: |
           set -euo pipefail
           BASE='https://chunbong-fansite.vercel.app'
-          ENHANCED_REACTION='https://res.cloudinary.com/lyppgyei/image/upload/c_scale,w_1120/e_sharpen:100/f_webp/q_auto:best/v1789314631/chuntris-reactions-source.webp'
+          ENHANCED_REACTION='https://res.cloudinary.com/lyppgyei/image/upload/e_gen_restore/c_scale,w_1120/f_webp/q_auto:best/v1789314631/chuntris-reactions-source.webp'
           for attempt in $(seq 1 60); do
             echo "Production readiness attempt ${attempt}/60"
             if \
@@ -41,7 +41,8 @@ jobs:
               grep -q 'data-chuntris-mode="classic"' /tmp/chuntris.html && \
               grep -q 'data-chuntris-mode="sprint40"' /tmp/chuntris.html && \
               grep -q 'chuntris.js' /tmp/chuntris.html && \
-              grep -q 'chuntris-reactions-source.webp' /tmp/chuntris.css; then
+              grep -q 'e_gen_restore/c_scale,w_1120/f_webp/q_auto:best' /tmp/chuntris.css && \
+              grep -q '100dvh' /tmp/chuntris.css; then
               echo 'Chuntris production deployment is ready.'
               exit 0
             fi
@@ -70,6 +71,16 @@ jobs:
             assert.ok(gameBox.x + gameBox.width <= viewportWidth + 1, `${label} game frame ends outside viewport: ${gameBox.x + gameBox.width} > ${viewportWidth}`);
           }
 
+          async function assertBoardFitsViewport(page, label) {
+            await page.locator('#chuntris-game').evaluate(el => el.scrollIntoView({ block: 'start', inline: 'nearest' }));
+            await page.waitForTimeout(80);
+            const viewportHeight = await page.evaluate(() => window.innerHeight);
+            const boardBox = await page.locator('#chuntris-board').boundingBox();
+            assert.ok(boardBox, `${label} board missing`);
+            assert.ok(boardBox.y >= -1, `${label} board starts above viewport: ${boardBox.y}`);
+            assert.ok(boardBox.y + boardBox.height <= viewportHeight + 1, `${label} board vertically clipped: ${boardBox.y + boardBox.height} > ${viewportHeight}`);
+          }
+
           async function openReadyPage(browser, options, label) {
             const page = await browser.newPage(options);
             const errors = [];
@@ -87,8 +98,11 @@ jobs:
               const { page: desktop, errors: desktopErrors } = await openReadyPage(
                 browser,
                 { viewport: { width: 1280, height: 900 } },
-                'Desktop 1280'
+                'Desktop 1280x900'
               );
+              await assertBoardFitsViewport(desktop, 'Desktop 1280x900');
+              const reactionImage = await desktop.locator('#chuntris-reaction').evaluate(el => getComputedStyle(el).backgroundImage);
+              assert.match(reactionImage, /e_gen_restore/, 'Desktop reaction sprite must use generative-restored asset');
 
               await desktop.locator('[data-chuntris-mode="classic"]').click();
               await desktop.locator('#chuntris-start').click();
@@ -100,7 +114,8 @@ jobs:
               assert.equal(await desktop.locator('#chuntris-game').getAttribute('data-mode'), 'classic');
               const score = Number((await desktop.locator('#chuntris-score').textContent() || '0').replace(/[^0-9]/g, ''));
               assert.ok(score >= 0);
-              await assertNoHorizontalOverflow(desktop, 'Desktop 1280 playing');
+              await assertNoHorizontalOverflow(desktop, 'Desktop 1280x900 playing');
+              await assertBoardFitsViewport(desktop, 'Desktop 1280x900 playing');
 
               await desktop.locator('#chuntris-pause').click();
               assert.equal(await desktop.locator('#chuntris-game').getAttribute('data-game-status'), 'paused');
@@ -110,18 +125,28 @@ jobs:
               assert.equal(await desktop.locator('#chuntris-game').getAttribute('data-game-status'), 'playing');
               assert.deepEqual(desktopErrors, [], `Desktop page errors: ${desktopErrors.join(' | ')}`);
 
+              const { page: shortDesktop, errors: shortDesktopErrors } = await openReadyPage(
+                browser,
+                { viewport: { width: 1280, height: 740 } },
+                'Short desktop 1280x740'
+              );
+              await assertBoardFitsViewport(shortDesktop, 'Short desktop 1280x740');
+              assert.deepEqual(shortDesktopErrors, [], `Short desktop page errors: ${shortDesktopErrors.join(' | ')}`);
+
               const { page: compact, errors: compactErrors } = await openReadyPage(
                 browser,
                 { viewport: { width: 900, height: 800 } },
-                'Compact desktop 900'
+                'Compact desktop 900x800'
               );
+              await assertBoardFitsViewport(compact, 'Compact desktop 900x800');
               assert.deepEqual(compactErrors, [], `Compact desktop page errors: ${compactErrors.join(' | ')}`);
 
               const { page: mobile, errors: mobileErrors } = await openReadyPage(
                 browser,
                 { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
-                'Mobile 390'
+                'Mobile 390x844'
               );
+              await assertBoardFitsViewport(mobile, 'Mobile 390x844');
               await mobile.locator('[data-chuntris-mode="classic"]').click();
               await mobile.locator('#chuntris-start').click();
               const controls = mobile.locator('#chuntris-mobile-controls');
@@ -130,14 +155,16 @@ jobs:
               await mobile.locator('[data-chuntris-action="hard-drop"]').click();
               await mobile.waitForTimeout(80);
               assert.equal(await mobile.locator('#chuntris-game').getAttribute('data-game-status'), 'playing');
-              await assertNoHorizontalOverflow(mobile, 'Mobile 390 playing');
+              await assertNoHorizontalOverflow(mobile, 'Mobile 390x844 playing');
+              await assertBoardFitsViewport(mobile, 'Mobile 390x844 playing');
               assert.deepEqual(mobileErrors, [], `Mobile page errors: ${mobileErrors.join(' | ')}`);
 
               const { page: narrowMobile, errors: narrowErrors } = await openReadyPage(
                 browser,
                 { viewport: { width: 360, height: 800 }, isMobile: true, hasTouch: true },
-                'Mobile 360'
+                'Mobile 360x800'
               );
+              await assertBoardFitsViewport(narrowMobile, 'Mobile 360x800');
               assert.equal(await narrowMobile.locator('#chuntris-mobile-controls').isVisible(), true);
               assert.deepEqual(narrowErrors, [], `Narrow mobile page errors: ${narrowErrors.join(' | ')}`);
 
