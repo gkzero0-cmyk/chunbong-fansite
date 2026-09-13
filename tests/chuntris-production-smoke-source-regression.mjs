@@ -9,14 +9,24 @@ for (const token of [
   'chuntris.html',
   'chuntris-engine.js',
   'chuntris-audio.js',
+  'chuntris-ranking-core.js',
   'chuntris.js',
   'assets/chuntris/**',
   'assets/chuntris/reactions.webp',
   'playwright@1.55.0',
   'chunbong-fansite.vercel.app/chuntris.html',
+  '/api/chuntris-ranking?mode=classic',
+  '#chuntris-nickname',
+  '.chuntris-ranking-rail',
+  '.chuntris-help-rail',
   'data-chuntris-mode',
   'chuntris-start',
-  'chuntris-mobile-controls'
+  'chuntris-mobile-controls',
+  'width: 1280, height: 900',
+  'width: 1280, height: 740',
+  'width: 900, height: 800',
+  'width: 390, height: 844',
+  'width: 360, height: 800'
 ]) {
   assert.ok(yml.includes(token), `production smoke must include ${token}`);
 }
