@@ -11,13 +11,26 @@
     <section id="chuntris-game" class="chuntris-game reveal" data-game-status="idle" data-mode="classic" aria-label="춘트리스 게임">
       <div class="chuntris-toolbar">
         <div class="chuntris-modes" role="group" aria-label="게임 모드"><button type="button" class="is-active" data-chuntris-mode="classic" aria-pressed="true">클래식 무한</button><button type="button" data-chuntris-mode="sprint40" aria-pressed="false">40줄 타임어택</button></div>
+        <label class="chuntris-nickname-label" for="chuntris-nickname"><span>닉네임</span><input id="chuntris-nickname" maxlength="16" autocomplete="nickname" placeholder="2~16자"></label>
         <div class="chuntris-actions"><button id="chuntris-start" class="btn btn-primary" type="button">게임 시작</button><button id="chuntris-pause" class="btn btn-ghost" type="button" disabled>일시정지</button><button id="chuntris-sound" class="chuntris-sound" type="button" aria-pressed="true">효과음 ON</button><label class="chuntris-volume-label" for="chuntris-volume">음량 <input id="chuntris-volume" type="range" min="0" max="100" step="1" value="70"></label></div>
       </div>
       <p id="chuntris-status" class="chuntris-status" aria-live="polite">모드를 고르고 게임 시작을 눌러 주세요.</p>
       <div class="chuntris-layout">
-        <aside class="chuntris-side chuntris-left-panel"><section class="chuntris-panel"><h2>HOLD</h2><canvas id="chuntris-hold" width="160" height="120" aria-label="보관 중인 블록"></canvas></section><section class="chuntris-help"><h2>KEYS</h2><p><kbd>←</kbd><kbd>→</kbd> 이동 · <kbd>↓</kbd> 내리기</p><p><kbd>Z</kbd>/<kbd>X</kbd> 회전 · <kbd>Space</kbd> 하드드롭</p><p><kbd>C</kbd> Hold · <kbd>P</kbd> Pause</p></section></aside>
+        <aside id="chuntris-ranking" class="chuntris-ranking-rail" aria-label="춘트리스 전체 랭킹">
+          <div class="chuntris-ranking-head"><div><span class="eyebrow">GLOBAL</span><h2>전체 랭킹</h2></div><div class="chuntris-ranking-tabs" role="group" aria-label="전체 랭킹 모드"><button type="button" class="is-active" data-chuntris-ranking-mode="classic" aria-pressed="true">클래식</button><button type="button" data-chuntris-ranking-mode="sprint40" aria-pressed="false">40줄</button></div></div>
+          <p id="chuntris-ranking-status" class="chuntris-ranking-status" aria-live="polite">랭킹 불러오는 중…</p>
+          <ol id="chuntris-ranking-list" class="chuntris-ranking-list"></ol>
+        </aside>
+        <aside class="chuntris-side chuntris-left-panel">
+          <section class="chuntris-panel chuntris-hold-panel"><h2>HOLD</h2><canvas id="chuntris-hold" width="160" height="120" aria-label="보관 중인 블록"></canvas></section>
+          <section class="chuntris-stats" aria-label="현재 플레이어 기록"><div><span>SCORE</span><strong id="chuntris-score">0</strong></div><div><span>LEVEL</span><strong id="chuntris-level">1</strong></div><div><span>LINES</span><strong id="chuntris-lines">0</strong></div><div><span>TIME</span><strong id="chuntris-time">00:00.000</strong></div><div class="is-wide"><span>BEST</span><strong id="chuntris-best">0</strong></div></section>
+        </aside>
         <div class="chuntris-board-wrap"><canvas id="chuntris-board" width="320" height="640" aria-label="춘트리스 10×20 게임 보드"></canvas><div class="chuntris-board-overlay" id="chuntris-overlay" hidden><strong id="chuntris-overlay-title">PAUSED</strong><span id="chuntris-overlay-copy">게임이 잠시 멈췄어요.</span></div></div>
-        <aside class="chuntris-side chuntris-right-panel"><section class="chuntris-panel"><h2>NEXT</h2><canvas id="chuntris-next" width="180" height="300" aria-label="다음 블록 5개"></canvas></section><section class="chuntris-stats" aria-label="게임 기록"><div><span>SCORE</span><strong id="chuntris-score">0</strong></div><div><span>LEVEL</span><strong id="chuntris-level">1</strong></div><div><span>LINES</span><strong id="chuntris-lines">0</strong></div><div><span>TIME</span><strong id="chuntris-time">00:00.000</strong></div><div class="is-wide"><span>BEST</span><strong id="chuntris-best">0</strong></div></section><figure class="chuntris-reaction-card"><div id="chuntris-reaction" class="chuntris-reaction" role="img" aria-label="춘봉 기본 표정"></div><figcaption id="chuntris-reaction-caption">준비됐봉!</figcaption></figure></aside>
+        <aside class="chuntris-side chuntris-right-panel">
+          <section class="chuntris-panel chuntris-next-panel"><h2>NEXT</h2><canvas id="chuntris-next" width="180" height="300" aria-label="다음 블록 5개"></canvas></section>
+          <figure class="chuntris-reaction-card"><div id="chuntris-reaction" class="chuntris-reaction" role="img" aria-label="춘봉 기본 표정"></div><figcaption id="chuntris-reaction-caption">준비됐봉!</figcaption></figure>
+        </aside>
+        <aside class="chuntris-help-rail" aria-label="키보드 조작법"><span class="eyebrow">CONTROLS</span><h2>KEYS</h2><p><kbd>←</kbd><kbd>→</kbd> 이동 · <kbd>↓</kbd> 내리기</p><p><kbd>Z</kbd>/<kbd>X</kbd> 회전 · <kbd>Space</kbd> 하드드롭</p><p><kbd>C</kbd> Hold · <kbd>P</kbd> Pause</p></aside>
       </div>
       <div id="chuntris-mobile-controls" class="chuntris-mobile-controls" aria-label="모바일 게임 조작"><button type="button" data-chuntris-action="left" aria-label="왼쪽 이동">←</button><button type="button" data-chuntris-action="soft-drop" aria-label="아래로 이동">↓</button><button type="button" data-chuntris-action="right" aria-label="오른쪽 이동">→</button><button type="button" data-chuntris-action="rotate-ccw" aria-label="반시계 회전">↺</button><button type="button" data-chuntris-action="rotate-cw" aria-label="시계 회전">↻</button><button type="button" data-chuntris-action="hold" aria-label="블록 보관">HOLD</button><button type="button" data-chuntris-action="hard-drop" aria-label="하드 드롭">DROP</button></div>
     </section>
@@ -25,4 +38,4 @@
 </main>
 <footer><div class="footer-brand"><span class="brand-mark">CB</span><div><strong>CHUNBONG FAN HUB</strong><p>비공식 팬사이트 · 공식 채널의 콘텐츠를 팬사이트 안에서 더 편하게 만나보세요.</p></div></div><div class="footer-links"><a href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer">SOOP ↗</a><a href="https://cafe.naver.com/chunbongtv" target="_blank" rel="noreferrer">NAVER CAFE ↗</a><a href="https://www.youtube.com/@%EC%B6%98%EB%B4%89TV" target="_blank" rel="noreferrer">YOUTUBE ↗</a></div><p class="copyright">© 2026 CHUNBONG FAN HUB · Unofficial fan project</p></footer>
 <button class="to-top" type="button" aria-label="맨 위로 이동">↑</button>
-<script src="content.js"></script><script src="page.js"></script><script src="chuntris-engine.js"></script><script src="chuntris-audio.js"></script><script src="chuntris.js"></script></body></html>
+<script src="content.js"></script><script src="page.js"></script><script src="chuntris-engine.js"></script><script src="chuntris-audio.js"></script><script src="chuntris-ranking-core.js"></script><script src="chuntris.js"></script></body></html>
