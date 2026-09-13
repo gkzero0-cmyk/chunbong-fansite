@@ -58,15 +58,15 @@
 
 ### 공통 보드
 
-- 10열 × 20행 visible board
-- 스폰을 위한 hidden rows를 엔진 내부에 추가할 수 있다.
+- visible board는 10열 × 20행이다.
+- 엔진 내부 board는 상단 스폰 여유를 위해 2개의 hidden row를 포함한 10열 × 22행으로 관리한다.
 - 블록 종류는 I, O, T, S, Z, J, L 7종이다.
 
 ### 랜덤 방식
 
 - **7-bag**을 사용한다.
 - 매 bag마다 7종 블록이 정확히 한 번씩 들어간다.
-- 현재 queue는 최소 Next 5개를 항상 표시할 수 있게 유지한다.
+- queue는 항상 최소 5개의 다음 블록을 보장한다.
 
 ### 이동과 회전
 
@@ -77,16 +77,17 @@
 - 반시계방향 회전
 - Hold
 - Ghost piece
-- SRS 계열 wall kick
-- 바닥 접촉 후 약 500ms lock delay
+- 표준 SRS kick table에 따른 wall kick
+- 바닥 접촉 후 500ms lock delay
 
-입력 반복은 키를 길게 눌렀을 때 자연스럽게 작동하도록 DAS/ARR 스타일 반복을 제공하되, 첫 버전에서는 설정 UI까지 노출하지 않는다.
+키보드와 모바일 long press 반복은 초기 지연 DAS 150ms, 반복 간격 ARR 40ms를 사용한다. 첫 버전에서는 사용자가 이 값을 변경하는 설정 UI는 제공하지 않는다.
 
 ### Hold
 
 - 한 블록이 필드에 고정되기 전까지 Hold는 한 번만 사용할 수 있다.
 - Hold 슬롯이 비어 있으면 현재 블록을 저장하고 queue의 다음 블록을 가져온다.
 - Hold 슬롯에 블록이 있으면 현재 블록과 교환한다.
+- 새 블록이 필드에 고정된 뒤에만 `canHold`가 다시 활성화된다.
 
 ### 게임오버
 
@@ -105,19 +106,27 @@
 - Soft Drop: 실제 내려간 1칸당 +1
 - Hard Drop: 실제 내려간 1칸당 +2
 
-### 추가 점수
+### T-Spin, Combo, Back-to-Back
 
-- 연속 라인 삭제에는 combo 보너스를 준다.
-- Tetris 및 T-Spin 계열을 연속 성공하면 Back-to-Back 보너스를 적용한다.
-- T-Spin은 마지막 성공한 동작이 T 회전인지와 회전 중심 주변 점유 상태를 이용해 판정한다.
+T-Spin은 마지막 성공 동작이 T 블록 회전이고, 고정 시 T 회전 중심 주변 4개 corner 중 3개 이상이 벽 또는 고정 셀인 경우로 판정한다. 첫 버전에서는 Mini T-Spin을 별도 분류하지 않는다.
 
-세부 bonus 수치는 구현 계획 단계에서 테스트 케이스와 함께 고정하되, 기본 라인 점수 체계와의 일관성을 유지한다.
+T-Spin 기본 점수:
 
-### 레벨
+- T-Spin 0 line: 400 × level
+- T-Spin Single: 800 × level
+- T-Spin Double: 1200 × level
+- T-Spin Triple: 1600 × level
 
-- 10줄 제거할 때마다 레벨 +1
-- 레벨이 증가할수록 gravity interval을 낮춘다.
-- 지나치게 플레이 불가능한 수준으로 내려가지 않도록 최소 gravity interval을 둔다.
+Combo는 연속해서 라인을 지운 고정 횟수로 계산한다. 첫 라인 삭제는 combo 0이며, 두 번째 연속 삭제부터 `50 × combo × level` 보너스를 더한다. 라인을 지우지 못한 블록이 한 번 고정되면 combo는 -1로 초기화한다.
+
+Back-to-Back 대상은 Tetris 또는 1줄 이상을 지운 T-Spin이다. 직전 Back-to-Back 대상 이후 일반 Single/Double/Triple이 끼지 않고 다시 대상 clear가 나오면 해당 clear의 기본 점수를 1.5배 적용한다. 0-line T-Spin은 Back-to-Back을 끊지 않지만 보너스 대상은 아니다.
+
+### 레벨과 gravity
+
+- 시작 level은 1이다.
+- 누적 10줄을 제거할 때마다 level +1 한다.
+- 자동 낙하 간격은 `max(80, 1000 × 0.85^(level - 1))` ms로 계산한다.
+- lock delay는 level과 관계없이 500ms를 유지한다.
 
 ### 저장
 
@@ -129,9 +138,10 @@
 
 - 시작 시점부터 elapsed time을 측정한다.
 - UI에 `현재 삭제 줄 / 40`, `남은 줄`, `현재 기록`, `최고 기록`을 표시한다.
-- 총 40줄을 제거한 순간 게임을 즉시 완료 상태로 전환하고 타이머를 멈춘다.
+- 총 40줄을 제거한 순간 게임을 즉시 `completed` 상태로 전환하고 타이머를 멈춘다.
 - 완료 후 결과 카드에 기록과 기존 최고기록 대비 차이를 표시한다.
 - 게임오버가 발생하면 기록은 저장하지 않는다.
+- 타임어택에서는 level을 1로 고정하고 gravity interval을 1000ms로 유지한다. 사용자의 기록 경쟁은 자동 속도 증가가 아니라 직접 입력과 Hard Drop 능력을 중심으로 한다.
 
 저장 key:
 
@@ -159,12 +169,12 @@
 - 반복적인 막힘/회전 실패 상태: 물음표 표정
 - Game Over: X눈
 - 40줄 완료: 하트/별눈 축하 표정
-- Pause 또는 장시간 입력 없음: Zzz 표정
+- Pause 또는 10초 이상 입력 없음: Zzz 표정
 - 개인 최고기록 갱신: 돈눈 또는 반짝이 표정
 
-일시적인 리액션은 약 0.8~1.5초 후 기본 상태로 돌아간다. 위험 상태와 게임오버/완료 상태는 일시 리액션보다 우선한다.
+일시적인 normal clear 리액션은 800ms, special clear/combo 리액션은 1200ms 유지한다. 위험 상태와 게임오버/완료 상태는 일시 리액션보다 우선한다.
 
-모든 20개 이미지를 반드시 서로 다른 조건에 억지로 배정하지 않는다. 비슷한 이미지들은 랜덤 variation으로 활용해 반복감을 줄인다.
+모든 20개 이미지를 반드시 서로 다른 조건에 억지로 배정하지 않는다. 비슷한 이미지들은 동일 상태의 랜덤 variation으로 활용해 반복감을 줄인다.
 
 ## 9. 입력 방식
 
@@ -205,6 +215,8 @@ Canvas는 devicePixelRatio를 반영해 고해상도 화면에서도 블록이 �
 3. Ghost piece
 4. 현재 active piece
 5. line clear flash 또는 완료 효과
+
+라인 삭제 flash는 120ms 이내로 끝내고, `prefers-reduced-motion`에서는 flash 대신 짧은 opacity 변화만 사용한다.
 
 블록 컬러는 표준 7종의 구분성을 유지하면서 팬사이트의 오렌지/브라운 계열 UI와 충돌하지 않게 조정한다. 색상만으로 블록을 구별해야 하는 상황을 줄이기 위해 border/highlight를 함께 사용한다.
 
@@ -266,7 +278,7 @@ UI 레이어는 엔진 상태를 읽어 Canvas와 패널을 렌더하고 사용�
 - 주요 버튼에는 명확한 `aria-label`을 넣는다.
 - `prefers-reduced-motion` 사용자는 과도한 flash/scale 효과를 줄인다.
 - 키보드만으로 모드 선택, 시작, 일시정지, 재시작이 가능해야 한다.
-- 모바일 터치 버튼은 충분한 hit area를 가진다.
+- 모바일 터치 버튼은 최소 44×44 CSS px의 hit area를 가진다.
 
 ## 15. 테스트 전략
 
@@ -281,9 +293,11 @@ UI 레이어는 엔진 상태를 읽어 Canvas와 패널을 렌더하고 사용�
 - Hold 1회 제한과 다음 블록 고정 후 재활성화
 - Ghost landing 위치
 - Hard Drop 거리와 점수
-- 클래식 점수 계산
-- 10줄 단위 레벨 상승
-- combo/back-to-back 상태 변화
+- 클래식 Single/Double/Triple/Tetris 점수
+- T-Spin 0/1/2/3 line 점수
+- combo 증가/초기화와 보너스
+- Back-to-Back 시작/유지/종료
+- 10줄 단위 level 상승과 gravity 계산
 - 40번째 줄 제거 시 completed 상태
 - 게임오버 후 타임어택 기록 미저장
 - localStorage best score/time 갱신 조건
@@ -341,7 +355,7 @@ Vercel 운영 페이지에서 브라우저 자동화로 다음을 확인한다.
 - 팬사이트에서 `chuntris.html`로 직접 플레이 가능
 - 클래식 무한모드 정상 동작
 - 40줄 타임어택 정상 동작
-- 7-bag, Hold, Next 5, Ghost, Hard Drop, SRS 계열 회전 지원
+- 7-bag, Hold, Next 5, Ghost, Hard Drop, 표준 SRS 회전 지원
 - PC 키보드와 모바일 터치 모두 지원
 - 첨부 춘봉 이미지가 게임 상태에 따라 리액션으로 표시
 - 클래식 최고점과 40줄 최고기록 로컬 저장
