@@ -38,7 +38,11 @@ const crossOrigin=await invoke({method:'POST',headers:{origin:'https://evil.exam
 const sameOrigin=await invoke({method:'POST',headers:{origin:'https://chunbong-fansite.vercel.app'},body:{mode:'classic',nickname:'동일출처',score:10,lines:1,level:1,timeMs:10}}); assert.equal(sameOrigin.statusCode,200);
 const unsupportedMethod=await invoke({method:'DELETE',query:{mode:'classic'}}); assert.equal(unsupportedMethod.statusCode,405); assert.equal(unsupportedMethod.headers.allow,'GET, POST');
 
-const savedUrl=process.env.UPSTASH_REDIS_REST_URL; const savedToken=process.env.UPSTASH_REDIS_REST_TOKEN; delete process.env.UPSTASH_REDIS_REST_URL; delete process.env.UPSTASH_REDIS_REST_TOKEN;
+const savedUrl=process.env.UPSTASH_REDIS_REST_URL; const savedToken=process.env.UPSTASH_REDIS_REST_TOKEN;
+delete process.env.UPSTASH_REDIS_REST_URL; delete process.env.UPSTASH_REDIS_REST_TOKEN;
+process.env.KV_REST_API_URL='https://example.upstash.test'; process.env.KV_REST_API_TOKEN='kv-test-token';
+const kvFallback=await invoke({method:'GET',query:{mode:'classic'}}); assert.equal(kvFallback.statusCode,200); assert.equal(kvFallback.body.mode,'classic');
+delete process.env.KV_REST_API_URL; delete process.env.KV_REST_API_TOKEN;
 const missingEnv=await invoke({method:'GET',query:{mode:'classic'}}); assert.equal(missingEnv.statusCode,503); assert.deepEqual(missingEnv.body,{error:'ranking_unavailable'});
 process.env.UPSTASH_REDIS_REST_URL=savedUrl; process.env.UPSTASH_REDIS_REST_TOKEN=savedToken;
 
