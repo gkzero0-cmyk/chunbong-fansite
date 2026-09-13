@@ -21,14 +21,14 @@ for (const token of [
   '.chuntris-help-rail',
   'data-chuntris-mode',
   'chuntris-start',
-  'chuntris-mobile-controls',
-  'width: 1280, height: 900',
-  'width: 1280, height: 740',
-  'width: 900, height: 800',
-  'width: 390, height: 844',
-  'width: 360, height: 800'
+  'chuntris-mobile-controls'
 ]) {
   assert.ok(yml.includes(token), `production smoke must include ${token}`);
+}
+
+for (const [width, height] of [[1280,900],[1280,740],[900,800],[390,844],[360,800]]) {
+  const viewport = new RegExp(`width\\s*:\\s*${width}\\s*,\\s*height\\s*:\\s*${height}`);
+  assert.match(yml, viewport, `production smoke must cover ${width}x${height}`);
 }
 
 console.log('chuntris production smoke source regression passed');
