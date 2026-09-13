@@ -26,19 +26,22 @@ jobs:
         run: |
           set -euo pipefail
           BASE='https://chunbong-fansite.vercel.app'
+          ENHANCED_REACTION='https://res.cloudinary.com/lyppgyei/image/upload/c_scale,w_1120/e_sharpen:100/f_webp/q_auto:best/v1789314631/chuntris-reactions-source.webp'
           for attempt in $(seq 1 60); do
             echo "Production readiness attempt ${attempt}/60"
             if \
               curl -fsS "$BASE/chuntris.html" -o /tmp/chuntris.html && \
-              curl -fsS "$BASE/chuntris.css" -o /dev/null && \
+              curl -fsS "$BASE/chuntris.css" -o /tmp/chuntris.css && \
               curl -fsS "$BASE/chuntris-engine.js" -o /dev/null && \
               curl -fsS "$BASE/chuntris-audio.js" -o /dev/null && \
               curl -fsS "$BASE/chuntris.js" -o /dev/null && \
               curl -fsS "$BASE/assets/chuntris/reactions.webp" -o /dev/null && \
+              curl -fsS "$ENHANCED_REACTION" -o /dev/null && \
               grep -q '춘트리스' /tmp/chuntris.html && \
               grep -q 'data-chuntris-mode="classic"' /tmp/chuntris.html && \
               grep -q 'data-chuntris-mode="sprint40"' /tmp/chuntris.html && \
-              grep -q 'chuntris.js' /tmp/chuntris.html; then
+              grep -q 'chuntris.js' /tmp/chuntris.html && \
+              grep -q 'chuntris-reactions-source.webp' /tmp/chuntris.css; then
               echo 'Chuntris production deployment is ready.'
               exit 0
             fi
@@ -57,15 +60,35 @@ jobs:
           const { chromium } = require('playwright');
           const URL = 'https://chunbong-fansite.vercel.app/chuntris.html';
 
+          async function assertNoHorizontalOverflow(page, label) {
+            const documentWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+            const viewportWidth = await page.evaluate(() => window.innerWidth);
+            const gameBox = await page.locator('#chuntris-game').boundingBox();
+            assert.ok(documentWidth <= viewportWidth + 1, `${label} document overflow: ${documentWidth} > ${viewportWidth}`);
+            assert.ok(gameBox, `${label} game frame missing`);
+            assert.ok(gameBox.x >= -1, `${label} game frame starts outside viewport: ${gameBox.x}`);
+            assert.ok(gameBox.x + gameBox.width <= viewportWidth + 1, `${label} game frame ends outside viewport: ${gameBox.x + gameBox.width} > ${viewportWidth}`);
+          }
+
+          async function openReadyPage(browser, options, label) {
+            const page = await browser.newPage(options);
+            const errors = [];
+            page.on('pageerror', error => errors.push(error.message));
+            await page.goto(URL, { waitUntil: 'domcontentloaded' });
+            await page.waitForFunction(() => Boolean(window.ChuntrisApp?.getGame?.()));
+            assert.equal(await page.locator('#chuntris-board').count(), 1);
+            await assertNoHorizontalOverflow(page, label);
+            return { page, errors };
+          }
+
           (async () => {
             const browser = await chromium.launch({ headless: true });
             try {
-              const desktop = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-              const desktopErrors = [];
-              desktop.on('pageerror', error => desktopErrors.push(error.message));
-              await desktop.goto(URL, { waitUntil: 'domcontentloaded' });
-              await desktop.waitForFunction(() => Boolean(window.ChuntrisApp?.getGame?.()));
-              assert.equal(await desktop.locator('#chuntris-board').count(), 1);
+              const { page: desktop, errors: desktopErrors } = await openReadyPage(
+                browser,
+                { viewport: { width: 1280, height: 900 } },
+                'Desktop 1280'
+              );
 
               await desktop.locator('[data-chuntris-mode="classic"]').click();
               await desktop.locator('#chuntris-start').click();
@@ -73,18 +96,11 @@ jobs:
               await desktop.keyboard.press('KeyX');
               await desktop.keyboard.press('Space');
               await desktop.waitForTimeout(120);
-              const classic = await desktop.evaluate(() => ({
-                status: document.querySelector('#chuntris-game')?.dataset.gameStatus,
-                mode: document.querySelector('#chuntris-game')?.dataset.mode,
-                score: Number((document.querySelector('#chuntris-score')?.textContent || '0').replace(/[^0-9]/g, '')),
-                app: Boolean(window.ChuntrisApp?.getGame?.()),
-                reaction: getComputedStyle(document.querySelector('#chuntris-reaction')).backgroundImage
-              }));
-              assert.equal(classic.status, 'playing');
-              assert.equal(classic.mode, 'classic');
-              assert.ok(classic.score >= 0);
-              assert.equal(classic.app, true);
-              assert.match(classic.reaction, /assets\/chuntris\/reactions\.webp/);
+              assert.equal(await desktop.locator('#chuntris-game').getAttribute('data-game-status'), 'playing');
+              assert.equal(await desktop.locator('#chuntris-game').getAttribute('data-mode'), 'classic');
+              const score = Number((await desktop.locator('#chuntris-score').textContent() || '0').replace(/[^0-9]/g, ''));
+              assert.ok(score >= 0);
+              await assertNoHorizontalOverflow(desktop, 'Desktop 1280 playing');
 
               await desktop.locator('#chuntris-pause').click();
               assert.equal(await desktop.locator('#chuntris-game').getAttribute('data-game-status'), 'paused');
@@ -94,11 +110,18 @@ jobs:
               assert.equal(await desktop.locator('#chuntris-game').getAttribute('data-game-status'), 'playing');
               assert.deepEqual(desktopErrors, [], `Desktop page errors: ${desktopErrors.join(' | ')}`);
 
-              const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
-              const mobileErrors = [];
-              mobile.on('pageerror', error => mobileErrors.push(error.message));
-              await mobile.goto(URL, { waitUntil: 'domcontentloaded' });
-              await mobile.waitForFunction(() => Boolean(window.ChuntrisApp?.getGame?.()));
+              const { page: compact, errors: compactErrors } = await openReadyPage(
+                browser,
+                { viewport: { width: 900, height: 800 } },
+                'Compact desktop 900'
+              );
+              assert.deepEqual(compactErrors, [], `Compact desktop page errors: ${compactErrors.join(' | ')}`);
+
+              const { page: mobile, errors: mobileErrors } = await openReadyPage(
+                browser,
+                { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
+                'Mobile 390'
+              );
               await mobile.locator('[data-chuntris-mode="classic"]').click();
               await mobile.locator('#chuntris-start').click();
               const controls = mobile.locator('#chuntris-mobile-controls');
@@ -107,7 +130,16 @@ jobs:
               await mobile.locator('[data-chuntris-action="hard-drop"]').click();
               await mobile.waitForTimeout(80);
               assert.equal(await mobile.locator('#chuntris-game').getAttribute('data-game-status'), 'playing');
+              await assertNoHorizontalOverflow(mobile, 'Mobile 390 playing');
               assert.deepEqual(mobileErrors, [], `Mobile page errors: ${mobileErrors.join(' | ')}`);
+
+              const { page: narrowMobile, errors: narrowErrors } = await openReadyPage(
+                browser,
+                { viewport: { width: 360, height: 800 }, isMobile: true, hasTouch: true },
+                'Mobile 360'
+              );
+              assert.equal(await narrowMobile.locator('#chuntris-mobile-controls').isVisible(), true);
+              assert.deepEqual(narrowErrors, [], `Narrow mobile page errors: ${narrowErrors.join(' | ')}`);
 
               console.log('Chuntris production Chromium smoke passed');
             } finally {
