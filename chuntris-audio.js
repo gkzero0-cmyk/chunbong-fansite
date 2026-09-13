@@ -16,7 +16,8 @@
   function write(key, value) { try { localStorage.setItem(key, String(value)); } catch {} }
 
   let enabled = read(ENABLED_KEY, 'true') !== 'false';
-  let volume = Math.min(1, Math.max(0, Number(read(VOLUME_KEY, '0.7')) || 0.7));
+  const storedVolume = Number(read(VOLUME_KEY, '0.7'));
+  let volume = Math.min(1, Math.max(0, Number.isFinite(storedVolume) ? storedVolume : 0.7));
 
   function AudioContextCtor() { return root.AudioContext || root.webkitAudioContext; }
 
