@@ -1,37 +1,37 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-12T06:26:13.092Z",
+  "capturedAt": "2026-09-13T06:31:00.881Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 30084,
-    "fanclubCount": 7635,
-    "subscriberCount": 46,
+    "followerCount": 30139,
+    "fanclubCount": 7634,
+    "subscriberCount": 45,
     "supporterCount": 23,
     "averageViewers": 48,
     "maxViewers": 106,
-    "airtimeMinutes": 6414,
-    "viewershipHours": 5157,
-    "cumulativeUpCount": 79987,
-    "totalAirtimeMinutes": 621625,
-    "monthlyStarCount": 72062,
-    "starsPerHour": 674,
-    "monthlySupporterCount": 115,
-    "monthlyChatCount": 24151,
+    "airtimeMinutes": 7133,
+    "viewershipHours": 5653,
+    "cumulativeUpCount": 80027,
+    "totalAirtimeMinutes": 622342,
+    "monthlyStarCount": 72842,
+    "starsPerHour": 613,
+    "monthlySupporterCount": 119,
+    "monthlyChatCount": 25271,
     "monthlyMuteCount": 4,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-09-12T02:30:38",
+    "latestBroadcastDate": "2026-09-12T17:48:56",
     "categories": [
       {
         "name": "버추얼",
-        "minutes": 7286,
-        "streamCount": 17,
-        "sharePercent": 31.3
+        "minutes": 8004,
+        "streamCount": 19,
+        "sharePercent": 34.3
       },
       {
         "name": "마인크래프트",
-        "minutes": 6830,
-        "streamCount": 13,
-        "sharePercent": 29.3
+        "minutes": 6506,
+        "streamCount": 11,
+        "sharePercent": 27.9
       },
       {
         "name": "오버워치",
@@ -41,9 +41,9 @@
       },
       {
         "name": "PUBG: 배틀그라운드",
-        "minutes": 2533,
-        "streamCount": 8,
-        "sharePercent": 10.9
+        "minutes": 2152,
+        "streamCount": 7,
+        "sharePercent": 9.2
       },
       {
         "name": "아르마 3",
@@ -11483,6 +11483,74 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/297056595"
+    },
+    {
+      "id": "trackify-297067881",
+      "broadcastId": "297067881",
+      "date": "2026-09-12",
+      "startedAt": "2026-09-12T17:48:40+09:00",
+      "endedAt": "2026-09-12T17:50:02+09:00",
+      "durationMinutes": 1,
+      "averageViewers": 0,
+      "maxViewers": 1,
+      "viewerSampleCount": 1,
+      "uniqueViewers": null,
+      "starCount": null,
+      "supporterCount": null,
+      "chatCount": null,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "마린이 엔더런 w. 마룽, 진사애, 아야네 세나",
+      "categories": [
+        {
+          "id": "810000",
+          "name": "버추얼",
+          "minutes": 1,
+          "sampleCount": 1,
+          "averageViewers": 0,
+          "maxViewers": 1
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297067881"
+    },
+    {
+      "id": "trackify-297067891",
+      "broadcastId": "297067891",
+      "date": "2026-09-12",
+      "startedAt": "2026-09-12T17:48:56+09:00",
+      "endedAt": "2026-09-13T05:45:54+09:00",
+      "durationMinutes": 717,
+      "averageViewers": 41,
+      "maxViewers": 57,
+      "viewerSampleCount": 143,
+      "uniqueViewers": null,
+      "starCount": 780,
+      "supporterCount": 5,
+      "chatCount": 1120,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "그냥서버 작업 전 잔잔 총 소통 방송",
+      "categories": [
+        {
+          "id": "00810000",
+          "name": "버추얼",
+          "minutes": 717,
+          "sampleCount": 143,
+          "averageViewers": 41,
+          "maxViewers": 57
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297067891"
     }
   ]
 }
