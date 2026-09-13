@@ -1,0 +1,50 @@
+name: Promote Chuntris preview
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/chuntris-promote-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PREVIEW_URL: https://chunbong-fansite-git-fix-chuntris-short-des-7bb22f-gkzero0-9465.vercel.app
+      VERCEL_SCOPE: gkzero0-9465
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - name: Require Vercel token
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${VERCEL_TOKEN:-}" ]]; then
+            echo 'VERCEL_TOKEN repository secret is not configured.' >&2
+            exit 2
+          fi
+      - name: Promote validated Chuntris preview to production
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes vercel@latest promote "$PREVIEW_URL" --yes --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
+      - name: Verify production received the short-desktop fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://chunbong-fansite.vercel.app'
+          for attempt in $(seq 1 20); do
+            curl -fsSL -H 'cache-control: no-cache' "$BASE/chuntris.css?_promote_check=$(date +%s)" -o /tmp/chuntris.css || true
+            if grep -Fq 'clamp(150px,calc((100dvh - 360px)/2),280px)' /tmp/chuntris.css && \
+               grep -Fq 'e_gen_restore/c_scale,w_1120/f_webp/q_auto:best' /tmp/chuntris.css; then
+              echo 'Promoted Chuntris CSS is live in production.'
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'Production did not receive the promoted Chuntris CSS in time.' >&2
+          exit 1
