@@ -57,7 +57,6 @@
     ]
   });
 
-  // SRS offsets converted for screen coordinates where +y points down.
   const JLSTZ_KICKS = Object.freeze({
     '0>1': [[0,0],[-1,0],[-1,-1],[0,2],[-1,2]],
     '1>0': [[0,0],[1,0],[1,1],[0,-2],[1,-2]],
@@ -139,11 +138,8 @@
     const safeLevel = Math.max(1, Number(level) || 1);
     const count = Math.max(0, Math.min(4, Number(lines) || 0));
     let base = 0;
-    if (tSpin) {
-      base = [400, 800, 1200, 1600][count] || 0;
-    } else {
-      base = [0, 100, 300, 500, 800][count] || 0;
-    }
+    if (tSpin) base = [400, 800, 1200, 1600][count] || 0;
+    else base = [0, 100, 300, 500, 800][count] || 0;
 
     const eligible = count === 4 || (tSpin && count > 0);
     const b2bApplied = eligible && Boolean(backToBack);
@@ -173,27 +169,12 @@
     constructor({ mode = 'classic', random = Math.random } = {}) {
       this.random = typeof random === 'function' ? random : Math.random;
       this.state = {
-        board: createEmptyBoard(),
-        active: null,
-        hold: null,
-        next: [],
-        canHold: true,
-        score: 0,
-        lines: 0,
-        level: 1,
-        combo: -1,
-        backToBack: false,
-        mode: mode === 'sprint40' ? 'sprint40' : 'classic',
-        elapsedMs: 0,
-        status: 'idle',
-        startedAt: 0,
-        pausedAt: null,
-        pausedDurationMs: 0,
-        lastAdvanceAt: 0,
-        lastGravityAt: 0,
-        groundedAt: null,
-        lastAction: null,
-        lastClear: null
+        board: createEmptyBoard(), active: null, hold: null, next: [], canHold: true,
+        score: 0, lines: 0, level: 1, combo: -1, backToBack: false,
+        mode: mode === 'sprint40' ? 'sprint40' : 'classic', elapsedMs: 0,
+        status: 'idle', startedAt: 0, pausedAt: null, pausedDurationMs: 0,
+        lastAdvanceAt: 0, lastGravityAt: 0, groundedAt: null,
+        lastAction: null, lastClear: null
       };
       this.ensureQueue(7);
       this.spawnNext();
@@ -201,9 +182,7 @@
     }
 
     ensureQueue(minimum = 5) {
-      while (this.state.next.length < minimum) {
-        this.state.next.push(...createSevenBag(this.random));
-      }
+      while (this.state.next.length < minimum) this.state.next.push(...createSevenBag(this.random));
     }
 
     spawnNext() {
@@ -249,9 +228,7 @@
       return this.getSnapshot();
     }
 
-    setMode(mode) {
-      return this.reset(mode);
-    }
+    setMode(mode) { return this.reset(mode); }
 
     pause(nowMs = Date.now()) {
       if (this.state.status !== 'playing') return false;
@@ -277,7 +254,7 @@
     }
 
     updateElapsed(nowMs) {
-      if (!this.state.startedAt || this.state.status === 'idle') return;
+      if (this.state.status === 'idle') return;
       const end = this.state.pausedAt != null ? this.state.pausedAt : nowMs;
       this.state.elapsedMs = Math.max(0, end - this.state.startedAt - this.state.pausedDurationMs);
     }
@@ -292,9 +269,7 @@
       };
     }
 
-    isPlaying() {
-      return this.state.status === 'playing';
-    }
+    isPlaying() { return this.state.status === 'playing'; }
 
     moveHorizontal(direction) {
       if (!this.isPlaying() || !this.state.active) return false;
@@ -345,7 +320,10 @@
       const table = this.state.active.type === 'I' ? I_KICKS : JLSTZ_KICKS;
       const kicks = table[`${from}>${to}`] || [[0,0]];
       for (const [dx, dy] of kicks) {
-        const candidate = { ...this.state.active, rotation: to, x: this.state.active.x + dx, y: this.state.active.y + dy };
+        const candidate = {
+          ...this.state.active, rotation: to,
+          x: this.state.active.x + dx, y: this.state.active.y + dy
+        };
         if (!collides(this.state.board, candidate)) {
           this.state.active = candidate;
           this.state.lastAction = 'rotate';
@@ -412,11 +390,8 @@
 
     applyClearEvent({ lines = 0, tSpin = false } = {}, nowMs = Date.now()) {
       const result = scoreClear({
-        lines,
-        tSpin,
-        level: this.state.level,
-        combo: this.state.combo,
-        backToBack: this.state.backToBack
+        lines, tSpin, level: this.state.level,
+        combo: this.state.combo, backToBack: this.state.backToBack
       });
       this.state.score += result.points;
       this.state.combo = result.nextCombo;
@@ -424,12 +399,9 @@
       this.state.lines += Math.max(0, Number(lines) || 0);
       this.state.level = this.state.mode === 'classic' ? Math.floor(this.state.lines / 10) + 1 : 1;
       this.state.lastClear = {
-        lines: Math.max(0, Number(lines) || 0),
-        tSpin: Boolean(tSpin),
-        points: result.points,
-        combo: this.state.combo,
-        backToBack: result.b2bApplied,
-        at: nowMs
+        lines: Math.max(0, Number(lines) || 0), tSpin: Boolean(tSpin),
+        points: result.points, combo: this.state.combo,
+        backToBack: result.b2bApplied, at: nowMs
       };
       if (this.state.mode === 'sprint40' && this.state.lines >= 40) {
         this.state.lines = 40;
@@ -445,7 +417,7 @@
       if (!this.isPlaying()) return this.getSnapshot();
       this.updateElapsed(nowMs);
       const interval = gravityMs(this.state.level, this.state.mode);
-      if (!this.state.lastGravityAt) this.state.lastGravityAt = nowMs;
+      if (this.state.lastGravityAt == null) this.state.lastGravityAt = nowMs;
 
       let safety = 0;
       while (nowMs - this.state.lastGravityAt >= interval && safety < 24 && this.state.status === 'playing') {
@@ -463,30 +435,15 @@
       }
 
       this.refreshGrounded(nowMs);
-      if (this.state.groundedAt != null && nowMs - this.state.groundedAt >= LOCK_DELAY_MS) {
-        this.lockActive(nowMs);
-      }
+      if (this.state.groundedAt != null && nowMs - this.state.groundedAt >= LOCK_DELAY_MS) this.lockActive(nowMs);
       this.state.lastAdvanceAt = nowMs;
       return this.getSnapshot();
     }
   }
 
   return {
-    BOARD_WIDTH,
-    VISIBLE_ROWS,
-    HIDDEN_ROWS,
-    BOARD_ROWS,
-    LOCK_DELAY_MS,
-    PIECE_TYPES,
-    SHAPES,
-    createSevenBag,
-    createEmptyBoard,
-    cellsFor,
-    collides,
-    ghostY,
-    gravityMs,
-    clearCompletedLines,
-    scoreClear,
-    ChuntrisGame
+    BOARD_WIDTH, VISIBLE_ROWS, HIDDEN_ROWS, BOARD_ROWS, LOCK_DELAY_MS,
+    PIECE_TYPES, SHAPES, createSevenBag, createEmptyBoard, cellsFor,
+    collides, ghostY, gravityMs, clearCompletedLines, scoreClear, ChuntrisGame
   };
 });
