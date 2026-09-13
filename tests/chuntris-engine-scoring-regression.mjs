@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { scoreClear, gravityMs, ChuntrisGame } = require('../chuntris-engine.js');
+const { scoreClear, gravityMs, createEmptyBoard, ChuntrisGame } = require('../chuntris-engine.js');
 
 assert.equal(scoreClear({ lines: 1, tSpin: false, level: 2, combo: -1, backToBack: false }).points, 200);
 assert.equal(scoreClear({ lines: 4, tSpin: false, level: 1, combo: -1, backToBack: false }).points, 800);
@@ -22,5 +22,18 @@ sprint.applyClearEvent({ lines: 1, tSpin: false }, 12345);
 assert.equal(sprint.getSnapshot().status, 'completed');
 assert.equal(sprint.getSnapshot().lines, 40);
 assert.equal(sprint.getSnapshot().elapsedMs, 12245);
+
+const tSpinDrop = new ChuntrisGame({ mode: 'classic', random: () => 0.2 });
+tSpinDrop.start(0);
+tSpinDrop.state.board = createEmptyBoard();
+tSpinDrop.state.active = { type: 'T', rotation: 0, x: 3, y: 19 };
+tSpinDrop.state.board[19][3] = 'J';
+tSpinDrop.state.board[19][5] = 'J';
+tSpinDrop.state.board[21][3] = 'J';
+tSpinDrop.state.lastAction = 'rotate';
+assert.equal(tSpinDrop.hardDrop(100), 0, 'landed T piece should lock without moving');
+const tSpinState = tSpinDrop.getSnapshot();
+assert.equal(tSpinState.lastClear?.tSpin, true, 'hard drop must preserve a qualifying final rotation for T-Spin detection');
+assert.equal(tSpinState.score, 400, 'zero-line T-Spin should award its base score');
 
 console.log('chuntris scoring regression passed');
