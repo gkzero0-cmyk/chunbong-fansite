@@ -13,9 +13,7 @@ function setHeader(res, name, value) {
 
 function sendJson(res, statusCode, payload) {
   setHeader(res, 'Content-Type', 'application/json; charset=utf-8');
-  if (typeof res.status === 'function' && typeof res.json === 'function') {
-    return res.status(statusCode).json(payload);
-  }
+  if (typeof res.status === 'function' && typeof res.json === 'function') return res.status(statusCode).json(payload);
   res.statusCode = statusCode;
   if (typeof res.end === 'function') return res.end(JSON.stringify(payload));
   res.body = payload;
@@ -25,9 +23,7 @@ function sendJson(res, statusCode, payload) {
 async function redisCommand(command, ...args) {
   const base = process.env.UPSTASH_REDIS_REST_URL.replace(/\/$/, '');
   const path = [command, ...args].map(value => encodeURIComponent(String(value))).join('/');
-  const response = await fetch(`${base}/${path}`, {
-    headers: { Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}` }
-  });
+  const response = await fetch(`${base}/${path}`, { headers: { Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}` } });
   if (!response.ok) throw new Error(`redis ${response.status}`);
   const payload = await response.json();
   if (payload.error) throw new Error(payload.error);
@@ -61,22 +57,33 @@ function parseMap(raw) {
 }
 
 function publicEntry(record, rank) {
-  const entry = {
-    rank,
-    nickname: record.displayName,
-    score: record.score,
-    lines: record.lines,
-    achievedAt: record.achievedAt
-  };
+  const entry = { rank, nickname: record.displayName, score: record.score, lines: record.lines, achievedAt: record.achievedAt };
   if (record.mode === 'classic') entry.level = record.level;
   if (record.mode === 'sprint40') entry.timeMs = record.timeMs;
   return entry;
 }
 
 function topEntries(mode, map) {
-  return Core.sortRecords(mode, Object.values(map))
-    .slice(0, 10)
-    .map((record, index) => publicEntry(record, index + 1));
+  return Core.sortRecords(mode, Object.values(map)).slice(0, 10).map((record, index) => publicEntry(record, index + 1));
+}
+
+function header(req, name) {
+  const headers = req?.headers || {};
+  return headers[name] ?? headers[name.toLowerCase()] ?? headers[name.toUpperCase()] ?? '';
+}
+
+function requestHost(req) {
+  return String(header(req, 'x-forwarded-host') || header(req, 'host') || '').split(',')[0].trim().toLowerCase();
+}
+
+function isAllowedOrigin(req) {
+  const origin = String(header(req, 'origin') || '').trim();
+  if (!origin) return true;
+  try {
+    return new URL(origin).host.toLowerCase() === requestHost(req);
+  } catch {
+    return false;
+  }
 }
 
 module.exports = async function handler(req, res) {
@@ -86,9 +93,7 @@ module.exports = async function handler(req, res) {
     return sendJson(res, 405, { error: 'method_not_allowed' });
   }
 
-  if (!hasRedisEnv()) {
-    return sendJson(res, 503, { error: 'ranking_unavailable' });
-  }
+  if (!hasRedisEnv()) return sendJson(res, 503, { error: 'ranking_unavailable' });
 
   try {
     if (method === 'GET') {
@@ -100,6 +105,10 @@ module.exports = async function handler(req, res) {
     }
 
     setHeader(res, 'Cache-Control', 'no-store');
+    const contentType = String(header(req, 'content-type')).toLowerCase();
+    if (!contentType.includes('application/json')) return sendJson(res, 415, { error: 'json_required' });
+    if (!isAllowedOrigin(req)) return sendJson(res, 403, { error: 'origin_not_allowed' });
+
     const body = parseBody(req?.body);
     if (!body) return sendJson(res, 400, { error: 'invalid_record' });
     const validation = Core.validateRecord(body);
