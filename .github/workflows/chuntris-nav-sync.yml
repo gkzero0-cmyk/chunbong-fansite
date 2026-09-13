@@ -1,0 +1,51 @@
+name: Sync Chuntris navigation
+
+on:
+  push:
+    branches: [design/chuntris]
+    paths:
+      - '.github/workflows/chuntris-nav-sync.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  sync-nav:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: design/chuntris
+      - name: Add Chuntris to main navigation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          pages = ['index','schedule','notice','vod','clips','fanart','tarot','youtube','data','history']
+          old = '<a data-nav="tarot" href="tarot.html">TAROT</a><a data-nav="youtube" href="youtube.html">유튜브</a>'
+          new = '<a data-nav="tarot" href="tarot.html">TAROT</a><a data-nav="chuntris" href="chuntris.html">춘트리스</a><a data-nav="youtube" href="youtube.html">유튜브</a>'
+
+          for name in pages:
+              path = Path(f'{name}.html')
+              text = path.read_text(encoding='utf-8')
+              if new in text:
+                  continue
+              if text.count(old) != 1:
+                  raise SystemExit(f'{path}: expected exactly one navigation insertion point, found {text.count(old)}')
+              path.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          for name in pages + ['chuntris']:
+              text = Path(f'{name}.html').read_text(encoding='utf-8')
+              if 'data-nav="chuntris" href="chuntris.html">춘트리스</a>' not in text:
+                  raise SystemExit(f'{name}.html: Chuntris navigation link missing after update')
+          PY
+      - name: Commit navigation update
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html schedule.html notice.html vod.html clips.html fanart.html tarot.html youtube.html data.html history.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'feat: link Chuntris across fan site navigation'
+          git push origin HEAD:design/chuntris
