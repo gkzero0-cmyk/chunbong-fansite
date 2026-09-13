@@ -13,7 +13,7 @@ assert.ok(css.includes('--chuntris-board-size:clamp(') && css.includes('100dvh')
 assert.ok(css.includes('@media(min-width:821px) and (max-height:820px)'), 'short desktop viewports need a compact height-aware layout');
 assert.ok(css.includes('e_gen_restore/c_scale,w_1120/f_webp/q_auto:best'), 'reaction sprite must use the generative-restored high-resolution asset');
 assert.ok(workflow.includes('document.documentElement.scrollWidth'), 'production smoke must verify horizontal overflow');
-assert.ok(workflow.includes('window.innerWidth'), 'production smoke must compare document width against the viewport');
+assert.ok(workflow.includes('page.viewportSize()'), 'production smoke must compare document/layout dimensions against the Playwright viewport');
 assert.ok(workflow.includes('assertBoardFitsViewport'), 'production smoke must verify the game board is not vertically clipped');
 assert.ok(workflow.includes("width: 1280, height: 740"), 'production smoke must cover the short desktop viewport that reproduced the issue');
 
