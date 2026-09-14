@@ -4592,12 +4592,23 @@
         "categoryName": "버추얼",
         "followerCount": 30305,
         "fanclubCount": 7634
+      },
+      {
+        "capturedAt": "2026-09-14T19:13:40.885Z",
+        "live": true,
+        "startedAt": "2026-09-14T09:52:20.000Z",
+        "title": "그냥서버 신청자 살펴보기",
+        "viewerCount": 104,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30304,
+        "fanclubCount": 7639
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-14T19:00:06.562Z",
-    "followerCount": 30305,
-    "fanclubCount": 7634
+    "capturedAt": "2026-09-14T19:13:40.885Z",
+    "followerCount": 30304,
+    "fanclubCount": 7639
   }
 }
