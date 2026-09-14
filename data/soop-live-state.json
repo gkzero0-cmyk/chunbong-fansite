@@ -4262,11 +4262,22 @@
         "categoryName": "버추얼",
         "followerCount": 30146,
         "fanclubCount": 7635
+      },
+      {
+        "capturedAt": "2026-09-14T12:45:56.063Z",
+        "live": true,
+        "startedAt": "2026-09-14T09:52:20.000Z",
+        "title": "8시 춘타클",
+        "viewerCount": 56,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30146,
+        "fanclubCount": 7635
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-14T12:28:57.720Z",
+    "capturedAt": "2026-09-14T12:45:56.063Z",
     "followerCount": 30146,
     "fanclubCount": 7635
   }
