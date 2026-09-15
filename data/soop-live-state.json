@@ -4,7 +4,7 @@
     "active": true,
     "sessionId": "2026-09-06T06:59:44.000Z",
     "startedAt": "2026-09-06T06:59:44.000Z",
-    "title": "3시 학치원 이후 그냥서버 신청자 알아보기",
+    "title": "그냥서버 신청자 알아보기",
     "samples": [
       {
         "capturedAt": "2026-09-06T07:02:51.052Z",
@@ -4922,12 +4922,23 @@
         "categoryName": "버추얼",
         "followerCount": 30381,
         "fanclubCount": 7639
+      },
+      {
+        "capturedAt": "2026-09-15T09:28:38.507Z",
+        "live": true,
+        "startedAt": "2026-09-15T05:44:30.000Z",
+        "title": "그냥서버 신청자 알아보기",
+        "viewerCount": 52,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30379,
+        "fanclubCount": 7639
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-15T09:09:59.218Z",
-    "followerCount": 30381,
+    "capturedAt": "2026-09-15T09:28:38.507Z",
+    "followerCount": 30379,
     "fanclubCount": 7639
   }
 }
