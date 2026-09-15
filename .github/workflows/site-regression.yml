@@ -26,13 +26,15 @@ jobs:
           node --check data-enhancements.js
           node --check chuntris-engine.js
           node --check chuntris-audio.js
+          node --check chuntris-ranking-core.js
           node --check chuntris.js
+          node --check api/_shared.js
+          node --check api/chuntris-ranking.js
           node --check lib/chunbong-data.js
           node --check lib/soop-analytics.js
           node --check lib/soop-analytics-base.js
           node --check lib/soop-live-state.js
           node --check lib/soop-follower-history.js
-          node --check api/_shared.js
           node --check scripts/collect-soop-telemetry.mjs
           node --check scripts/apply-soop-session.mjs
           node --check scripts/update-chunbong-data.mjs
