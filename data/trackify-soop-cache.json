@@ -1,55 +1,55 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-15T06:30:09.033Z",
+  "capturedAt": "2026-09-16T06:29:01.105Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 30271,
+    "followerCount": 30393,
     "fanclubCount": 7639,
-    "subscriberCount": 45,
+    "subscriberCount": 48,
     "supporterCount": 23,
-    "averageViewers": 51,
-    "maxViewers": 152,
-    "airtimeMinutes": 7887,
-    "viewershipHours": 6743,
-    "cumulativeUpCount": 80084,
-    "totalAirtimeMinutes": 622650,
-    "monthlyStarCount": 78804,
-    "starsPerHour": 599,
-    "monthlySupporterCount": 158,
-    "monthlyChatCount": 30443,
+    "averageViewers": 57,
+    "maxViewers": 153,
+    "airtimeMinutes": 8907,
+    "viewershipHours": 8400,
+    "cumulativeUpCount": 80214,
+    "totalAirtimeMinutes": 623059,
+    "monthlyStarCount": 82510,
+    "starsPerHour": 556,
+    "monthlySupporterCount": 183,
+    "monthlyChatCount": 36541,
     "monthlyMuteCount": 5,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-09-14T18:52:20",
+    "latestBroadcastDate": "2026-09-15T14:44:30",
     "categories": [
       {
         "name": "버추얼",
-        "minutes": 7677,
+        "minutes": 8383,
         "streamCount": 19,
-        "sharePercent": 34.6
+        "sharePercent": 36.6
       },
       {
         "name": "마인크래프트",
         "minutes": 6506,
         "streamCount": 11,
-        "sharePercent": 29.3
+        "sharePercent": 28.4
       },
       {
         "name": "오버워치",
         "minutes": 6114,
         "streamCount": 12,
-        "sharePercent": 27.6
+        "sharePercent": 26.7
       },
       {
         "name": "PUBG: 배틀그라운드",
         "minutes": 1508,
         "streamCount": 6,
-        "sharePercent": 6.8
+        "sharePercent": 6.6
       },
       {
         "name": "아르마 3",
         "minutes": 376,
         "streamCount": 2,
-        "sharePercent": 1.7
+        "sharePercent": 1.6
       }
     ]
   },
@@ -11579,6 +11579,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/297117251"
+    },
+    {
+      "id": "trackify-297134887",
+      "broadcastId": "297134887",
+      "date": "2026-09-15",
+      "startedAt": "2026-09-15T14:44:30+09:00",
+      "endedAt": "2026-09-16T08:22:21+09:00",
+      "durationMinutes": 1058,
+      "averageViewers": 95,
+      "maxViewers": 153,
+      "viewerSampleCount": 212,
+      "uniqueViewers": null,
+      "starCount": 3706,
+      "supporterCount": 29,
+      "chatCount": 6136,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "그냥서버 신청자 살펴보기",
+      "categories": [
+        {
+          "id": "00810000",
+          "name": "버추얼",
+          "minutes": 1058,
+          "sampleCount": 212,
+          "averageViewers": 95,
+          "maxViewers": 153
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297134887"
     }
   ]
 }
