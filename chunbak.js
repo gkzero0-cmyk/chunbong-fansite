@@ -10,6 +10,7 @@
   const DROP_Y = 60;
   const DROP_COOLDOWN_MS = 260;
   const BEST_KEY = 'chunbak:best:v1';
+  const NICKNAME_KEY = 'chunbak:nickname:v1';
 
   const root = document.getElementById('chunbak-game');
   const canvas = document.getElementById('chunbak-canvas');
@@ -22,6 +23,8 @@
   const scoreNode = document.getElementById('chunbak-score');
   const bestNode = document.getElementById('chunbak-best');
   const maxLevelNode = document.getElementById('chunbak-max-level');
+  const rankingStatus = document.getElementById('chunbak-ranking-status');
+  const rankingList = document.getElementById('chunbak-ranking-list');
   const nextNode = document.getElementById('chunbak-next');
   const stageLegend = document.getElementById('chunbak-stage-legend');
   const overlay = document.getElementById('chunbak-overlay');
@@ -157,12 +160,69 @@
     }
   }
 
+  function renderRanking(entries = []) {
+    const fragment = document.createDocumentFragment();
+    for (const entry of entries.slice(0, 10)) {
+      const item = document.createElement('li');
+      const rank = document.createElement('span');
+      const name = document.createElement('strong');
+      const record = document.createElement('span');
+      rank.textContent = String(entry.rank ?? fragment.childNodes.length + 1);
+      name.textContent = String(entry.nickname ?? '-');
+      record.textContent = `${Number(entry.score) || 0} · Lv.${Number(entry.maxLevel) || 1}`;
+      item.append(rank, name, record);
+      fragment.appendChild(item);
+    }
+    rankingList.replaceChildren(fragment);
+  }
+
+  async function loadRanking() {
+    rankingStatus.textContent = '랭킹 불러오는 중…';
+    try {
+      const response = await fetch(`${RANKING_ENDPOINT}&mode=classic`, { headers:{ accept:'application/json' } });
+      if (!response.ok) throw new Error(`ranking ${response.status}`);
+      const payload = await response.json();
+      renderRanking(Array.isArray(payload.entries) ? payload.entries : []);
+      rankingStatus.textContent = payload.entries?.length ? '전체 최고 기록' : '아직 등록된 기록이 없습니다.';
+    } catch (_) {
+      rankingStatus.textContent = '랭킹을 불러올 수 없습니다';
+    }
+  }
+
+  function currentNickname() {
+    const validation = RankingCore?.validateNickname(nicknameInput.value);
+    return validation?.ok ? validation : null;
+  }
+
+  async function submitRanking() {
+    const nickname = currentNickname();
+    if (!nickname) {
+      rankingStatus.textContent = '닉네임은 한글/영문/숫자 기준 2~16자로 입력해 주세요.';
+      return;
+    }
+    try { localStorage.setItem(NICKNAME_KEY, nickname.displayName); } catch (_) {}
+    try {
+      const response = await fetch(RANKING_ENDPOINT, {
+        method:'POST',
+        headers:{ 'content-type':'application/json', accept:'application/json' },
+        body:JSON.stringify({ mode:'classic', nickname:nickname.displayName, score, maxLevel })
+      });
+      if (!response.ok) throw new Error(`ranking ${response.status}`);
+      const payload = await response.json();
+      renderRanking(Array.isArray(payload.entries) ? payload.entries : []);
+      rankingStatus.textContent = payload.updated ? '새 최고 기록이 저장되었습니다.' : '기존 최고 기록이 유지되었습니다.';
+    } catch (_) {
+      rankingStatus.textContent = '점수는 저장되지 않았지만 게임은 계속 플레이할 수 있습니다.';
+    }
+  }
+
   function setGameOver() {
     if (!playing) return;
     playing = false;
     try { localStorage.setItem(BEST_KEY, String(best)); } catch (_) {}
     overlay.hidden = false;
     updateHud();
+    void submitRanking();
   }
 
   function evaluateDanger(nowMs) {
@@ -264,7 +324,11 @@
     dropCurrent();
   });
 
-  startButton.addEventListener('click', () => resetGame({ autoStart: true }));
+  startButton.addEventListener('click', () => {
+    const nickname = currentNickname();
+    if (nickname) { try { localStorage.setItem(NICKNAME_KEY, nickname.displayName); } catch (_) {} }
+    resetGame({ autoStart: true });
+  });
   restartButton.addEventListener('click', () => resetGame({ autoStart: true }));
   overlayRestart?.addEventListener('click', () => resetGame({ autoStart: true }));
 
@@ -287,9 +351,18 @@
     }
   }
 
+  try { nicknameInput.value = localStorage.getItem(NICKNAME_KEY) || ''; } catch (_) {}
+  nicknameInput.addEventListener('change', () => {
+    const nickname = currentNickname();
+    if (nickname) {
+      nicknameInput.value = nickname.displayName;
+      try { localStorage.setItem(NICKNAME_KEY, nickname.displayName); } catch (_) {}
+    }
+  });
   bestNode.textContent = String(best);
   resetGame({ autoStart: false });
   preloadImages();
+  void loadRanking();
   if (!frameId) frameId = requestAnimationFrame(tick);
 
   globalThis.ChunbakGame = Object.freeze({ createPiece, dropCurrent, handleCollisionPairs, resetGame });
