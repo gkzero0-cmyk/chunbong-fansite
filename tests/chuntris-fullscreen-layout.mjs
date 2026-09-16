@@ -25,7 +25,7 @@ assert.doesNotMatch(
 );
 assert.match(
   css,
-  /@media\(min-width:1181px\) and \(max-height:820px\)\)\{[^]*?--chuntris-stage-height:clamp\(560px,/,
+  /@media\(min-width:1181px\) and \(max-height:820px\)\{[^]*?--chuntris-stage-height:clamp\(560px,/,
   'short wide screens should keep a larger central game stage'
 );
 
