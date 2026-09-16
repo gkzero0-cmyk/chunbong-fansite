@@ -1,0 +1,44 @@
+name: Chuntris nav state bootstrap
+
+on:
+  push:
+    branches: [feat/chunbak-minigame-20260917]
+    paths:
+      - '.github/workflows/chuntris-nav-state-bootstrap.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/chunbak-minigame-20260917
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Activate minigames nav on Chuntris page
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import fs from 'node:fs';
+          const path = 'chuntris.html';
+          let html = fs.readFileSync(path, 'utf8');
+          const before = '<body data-page="chuntris">';
+          const after = '<body data-page="minigames">';
+          if (!html.includes(before) && !html.includes(after)) throw new Error('Chuntris body data-page marker missing');
+          html = html.replace(before, after);
+          fs.writeFileSync(path, html);
+          EOF_NODE
+          node tests/chuntris-navigation-regression.mjs
+          node tests/minigames-navigation-regression.mjs
+      - name: Commit nav state
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add chuntris.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'fix: activate minigames nav on Chuntris page'
+          git push origin HEAD:feat/chunbak-minigame-20260917
