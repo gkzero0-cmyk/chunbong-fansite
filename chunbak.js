@@ -80,6 +80,7 @@
       frictionStatic: 0.35,
       density: 0.0017
     });
+    body.plugin ||= {};
     body.plugin.chunbak = { stage, merging: false };
     Matter.World.add(world, body);
     return body;
@@ -148,7 +149,8 @@
       const y = (a.position.y + b.position.y) / 2;
       const vx = (a.velocity.x + b.velocity.x) / 2;
       const vy = Math.min(2.5, (a.velocity.y + b.velocity.y) / 2);
-      Matter.World.remove(world, [a, b]);
+      Matter.World.remove(world, a);
+      Matter.World.remove(world, b);
       const merged = createPiece(resultStage, x, y);
       Matter.Body.setVelocity(merged, { x: vx, y: vy });
       combo = Core.nextCombo(lastMergeAt, nowMs, combo);
