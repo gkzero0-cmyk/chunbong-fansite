@@ -5791,11 +5791,22 @@
         "categoryName": "버추얼",
         "followerCount": 30404,
         "fanclubCount": 7666
+      },
+      {
+        "capturedAt": "2026-09-16T10:37:13.940Z",
+        "live": true,
+        "startedAt": "2026-09-16T09:55:40.000Z",
+        "title": "8시 사자컴퍼니 첫 회의 (그냥서버, RPG 서버)",
+        "viewerCount": 53,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30404,
+        "fanclubCount": 7666
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-16T10:24:59.050Z",
+    "capturedAt": "2026-09-16T10:37:13.940Z",
     "followerCount": 30404,
     "fanclubCount": 7666
   }
