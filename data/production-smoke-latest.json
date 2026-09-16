@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-13T02:21:46.647Z",
+  "checkedAt": "2026-09-16T16:57:50.667Z",
   "baseUrl": "https://chunbong-fansite.vercel.app",
   "endpoints": {
     "dataJs": {
@@ -16,11 +16,11 @@
     },
     "dataHtml": {
       "status": 200,
-      "bytes": 10109
+      "bytes": 10169
     },
     "apiData": {
       "status": 200,
-      "bytes": 218343
+      "bytes": 222191
     }
   },
   "staticChecks": {
@@ -62,7 +62,7 @@
     "fallback": false,
     "currentFallback": false,
     "reason": null,
-    "capturedAt": "2026-09-13T02:21:44.873Z",
+    "capturedAt": "2026-09-16T16:57:48.487Z",
     "errors": [],
     "errorCount": 0,
     "sourceSummaryCleared": true,
@@ -70,49 +70,49 @@
     "legacySessionCount": 0,
     "trackifyHistorySessionCount": 12,
     "arrayCounts": {
-      "daily": 296,
+      "daily": 299,
       "monthlyStats": 14,
-      "calendar": 296,
+      "calendar": 299,
       "categories": 19,
       "recentSessions": 30
     },
     "trackify": {
       "sourcePresent": true,
       "fields": {
-        "subscriberCount": 46,
-        "supporterCount": 23,
+        "subscriberCount": 50,
+        "supporterCount": 24,
         "monthUniqueViewers": null,
-        "viewershipHours": 5653,
+        "viewershipHours": 8928,
         "cumulativeUsers": null,
-        "cumulativeUpCount": 79987,
-        "monthlyStarCount": 72842,
-        "starsPerHour": 613,
-        "monthlySupporterCount": 119,
-        "monthlyChatCount": 25271,
+        "cumulativeUpCount": 80324,
+        "monthlyStarCount": 82710,
+        "starsPerHour": 532,
+        "monthlySupporterCount": 185,
+        "monthlyChatCount": 37909,
         "monthlyKickCount": null,
-        "monthlyMuteCount": 4,
+        "monthlyMuteCount": 6,
         "stationOpenedAt": "2022-09-29T14:58:14",
-        "latestBroadcastDate": "2026-09-12T17:48:56",
+        "latestBroadcastDate": "2026-09-15T14:44:30",
         "categoryRankings": []
       },
       "categoryCount": 0,
-      "categoryDistributionCount": 6,
+      "categoryDistributionCount": 5,
       "excludedDonorRankingPresent": false
     },
     "youtube": {
-      "subscriberCount": 2690,
-      "viewCount": 6862307,
-      "videoCount": 208,
+      "subscriberCount": 2700,
+      "viewCount": 6938953,
+      "videoCount": 211,
       "snapshotFallback": false,
-      "monthlyUploadCount": 0,
+      "monthlyUploadCount": 10,
       "recentVideoCount": 12,
       "recentShortCount": 12,
       "newestVideoDate": "1개월 전",
-      "newestShortDate": null,
+      "newestShortDate": "2026-09-16T09:00:15+00:00",
       "engagement": {
         "source": "https://www.youtube.com/@%EC%B6%98%EB%B4%89TV",
-        "capturedAt": "2026-09-12T06:26:55.933Z",
-        "engagementItemCount": 207,
+        "capturedAt": "2026-09-16T06:29:09.915Z",
+        "engagementItemCount": 209,
         "engagementRankingCounts": {
           "allTime": {
             "views": 5,
