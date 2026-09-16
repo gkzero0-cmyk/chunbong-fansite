@@ -6132,11 +6132,22 @@
         "categoryName": "버추얼",
         "followerCount": 30377,
         "fanclubCount": 7666
+      },
+      {
+        "capturedAt": "2026-09-16T16:54:10.418Z",
+        "live": true,
+        "startedAt": "2026-09-16T09:55:40.000Z",
+        "title": "그냥서버 오픈 전",
+        "viewerCount": 67,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30377,
+        "fanclubCount": 7666
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-16T16:43:14.656Z",
+    "capturedAt": "2026-09-16T16:54:10.418Z",
     "followerCount": 30377,
     "fanclubCount": 7666
   }
