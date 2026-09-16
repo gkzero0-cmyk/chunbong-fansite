@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const css=fs.readFileSync(new URL('../chunbak.css',import.meta.url),'utf8');
+assert.ok(css.includes('grid-template-columns'));
+assert.ok(css.includes('@media (max-width:900px)')||css.includes('@media (max-width: 900px)'));
+assert.ok(css.includes('min(100%,420px)')||css.includes('min(100%, 420px)'));
+assert.equal(css.includes('overflow-x:hidden'),false);
+assert.ok(css.includes('touch-action:none')||css.includes('touch-action: none'));
+assert.ok(css.includes('@media (max-width:520px)')||css.includes('@media (max-width: 520px)'));
+assert.ok(css.includes('padding-inline:12px')||css.includes('padding-inline: 12px'));
+assert.ok(css.includes('.chunbak-left,.chunbak-right{display:contents}')||css.includes('.chunbak-left, .chunbak-right{display: contents}'), 'mobile rails must flatten so game appears before ranking/legend');
+console.log('chunbak responsive regression passed');
