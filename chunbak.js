@@ -344,10 +344,12 @@
         img.src = meta.image;
       })));
       startButton.disabled = false;
+      restartButton.disabled = false;
       buildLegend();
       renderNext();
     } catch (_) {
       startButton.disabled = true;
+      restartButton.disabled = true;
       const status = document.getElementById('chunbak-ranking-status');
       if (status) status.textContent = '캐릭터 이미지를 불러오지 못했습니다.';
     }
