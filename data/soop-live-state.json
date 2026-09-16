@@ -4,7 +4,7 @@
     "active": true,
     "sessionId": "2026-09-06T06:59:44.000Z",
     "startedAt": "2026-09-06T06:59:44.000Z",
-    "title": "8시 사자컴퍼니 첫 회의 (그냥서버, RPG 서버)",
+    "title": "그냥서버 운영자 모집합니다",
     "samples": [
       {
         "capturedAt": "2026-09-06T07:02:51.052Z",
@@ -5923,11 +5923,22 @@
         "categoryName": "버추얼",
         "followerCount": 30396,
         "fanclubCount": 7666
+      },
+      {
+        "capturedAt": "2026-09-16T13:02:58.959Z",
+        "live": true,
+        "startedAt": "2026-09-16T09:55:40.000Z",
+        "title": "그냥서버 운영자 모집합니다",
+        "viewerCount": 65,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30396,
+        "fanclubCount": 7666
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-16T12:54:05.218Z",
+    "capturedAt": "2026-09-16T13:02:58.959Z",
     "followerCount": 30396,
     "fanclubCount": 7666
   }
