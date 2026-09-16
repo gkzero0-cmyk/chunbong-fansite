@@ -9,7 +9,8 @@ on:
       - 'chuntris-audio.js'
       - 'chuntris-ranking-core.js'
       - 'chuntris.js'
-      - 'api/chuntris-ranking.js'
+      - 'api/content.js'
+      - 'lib/chuntris-ranking-api.js'
       - 'assets/chuntris/**'
       - '.github/workflows/chuntris-preview-layout-smoke.yml'
 
