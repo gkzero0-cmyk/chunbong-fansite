@@ -42,7 +42,7 @@
   let lastDropAt = 0;
   let lastMergeAt = null;
   let combo = 0;
-  let dangerStartedAt = null;
+  let dangerStartedAtById = {};
   let frameId = null;
   let lastFrameAt = performance.now();
 
@@ -228,10 +228,12 @@
   }
 
   function evaluateDanger(nowMs) {
-    if (!playing) { dangerStartedAt = null; return; }
-    const aboveLine = dynamicPieces().some(body => body.bounds.min.y < DANGER_Y);
-    const danger = Core.updateDangerState({ startedAt: dangerStartedAt, aboveLine, nowMs, thresholdMs: 2000 });
-    dangerStartedAt = danger.startedAt;
+    if (!playing) { dangerStartedAtById = {}; return; }
+    const aboveIds = dynamicPieces()
+      .filter(body => body.bounds.min.y < DANGER_Y)
+      .map(body => body.id);
+    const danger = Core.updateDangerTracker(dangerStartedAtById, aboveIds, nowMs, 2000);
+    dangerStartedAtById = danger.startedAtById;
     if (danger.gameOver) setGameOver();
   }
 
@@ -296,7 +298,7 @@
     maxLevel = 1;
     combo = 0;
     lastMergeAt = null;
-    dangerStartedAt = null;
+    dangerStartedAtById = {};
     lastDropAt = 0;
     pointerX = WIDTH / 2;
     overlay.hidden = true;
