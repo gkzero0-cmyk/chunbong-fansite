@@ -6264,11 +6264,22 @@
         "categoryName": "버추얼",
         "followerCount": 30375,
         "fanclubCount": 7666
+      },
+      {
+        "capturedAt": "2026-09-16T19:03:49.636Z",
+        "live": true,
+        "startedAt": "2026-09-16T09:55:40.000Z",
+        "title": "그냥서버 개발 방송",
+        "viewerCount": 65,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30375,
+        "fanclubCount": 7666
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-16T18:55:41.111Z",
+    "capturedAt": "2026-09-16T19:03:49.636Z",
     "followerCount": 30375,
     "fanclubCount": 7666
   }
