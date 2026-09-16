@@ -5,7 +5,7 @@ const root = new URL('../', import.meta.url);
 const read = (name) => fs.readFileSync(new URL(name, root), 'utf8');
 
 const corePages = ['index.html', 'schedule.html', 'notice.html', 'vod.html', 'clips.html', 'fanart.html'];
-const pages = [...corePages, 'youtube.html', 'tarot.html'];
+const pages = [...corePages, 'youtube.html', 'tarot.html', 'minigames.html', 'chunbak.html'];
 for (const page of pages) {
   assert.ok(fs.existsSync(new URL(page, root)), `${page} should exist`);
   const html = read(page);
@@ -24,6 +24,12 @@ assert.ok(index.includes('춘봉 팬사이트'), 'home should identify the fan s
 assert.ok(index.includes('assets/chunbong-main.webp') || index.includes('data:image/webp;base64,'), 'home should use the uploaded character');
 assert.ok(index.includes('07 / TAROT'), 'home should expose the TAROT portal card');
 assert.ok(index.includes('타로 보기'), 'home should name the TAROT portal card');
+
+const minigames = read('minigames.html');
+assert.ok(minigames.includes('href="chuntris.html"'), 'minigames should link to Chuntris');
+assert.ok(minigames.includes('href="chunbak.html"'), 'minigames should link to Chunbak');
+const chunbak = read('chunbak.html');
+assert.ok(chunbak.includes('id="chunbak-game"'), 'Chunbak page should include the game shell');
 
 const schedule = read('schedule.html');
 assert.ok(schedule.includes('id="schedule-grid"'), 'schedule page should render schedule in-site');
