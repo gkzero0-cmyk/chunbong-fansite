@@ -10,7 +10,8 @@ on:
       - 'chuntris-audio.js'
       - 'chuntris-ranking-core.js'
       - 'chuntris.js'
-      - 'api/chuntris-ranking.js'
+      - 'api/content.js'
+      - 'lib/chuntris-ranking-api.js'
       - 'assets/chuntris/**'
       - '.github/workflows/chuntris-production-smoke.yml'
   workflow_dispatch:
@@ -41,7 +42,7 @@ jobs:
               curl -fsS "$BASE/chuntris.js?_smoke=$stamp" -o /dev/null && \
               curl -fsS "$BASE/assets/chuntris/reactions.webp" -o /dev/null && \
               curl -fsS "$ENHANCED_REACTION" -o /dev/null && \
-              curl -fsS -H 'cache-control: no-cache' "$BASE/api/chuntris-ranking?mode=classic&_smoke=$stamp" -o /tmp/chuntris-ranking.json && \
+              curl -fsS -H 'cache-control: no-cache' "$BASE/api/content?type=chuntris-ranking&mode=classic&_smoke=$stamp" -o /tmp/chuntris-ranking.json && \
               grep -q '춘트리스' /tmp/chuntris.html && \
               grep -q 'id="chuntris-nickname"' /tmp/chuntris.html && \
               grep -q 'id="chuntris-ranking"' /tmp/chuntris.html && \
@@ -70,6 +71,7 @@ jobs:
           const assert = require('node:assert/strict');
           const { chromium } = require('playwright');
           const URL = 'https://chunbong-fansite.vercel.app/chuntris.html';
+          const RANKING_URL = 'https://chunbong-fansite.vercel.app/api/content?type=chuntris-ranking';
 
           async function assertNoHorizontalOverflow(page, label) {
             const documentWidth = await page.evaluate(() => document.documentElement.scrollWidth);
@@ -171,11 +173,18 @@ jobs:
               assert.equal(await narrow.locator('#chuntris-mobile-controls').isVisible(), true);
               assert.deepEqual(narrowErrors, [], `Narrow mobile page errors: ${narrowErrors.join(' | ')}`);
 
-              const rankingResponse = await desktop.request.get('https://chunbong-fansite.vercel.app/api/chuntris-ranking?mode=classic');
+              const rankingResponse = await desktop.request.get(`${RANKING_URL}&mode=classic`);
               assert.equal(rankingResponse.ok(), true, `ranking GET failed: ${rankingResponse.status()}`);
               const rankingPayload = await rankingResponse.json();
               assert.equal(rankingPayload.mode, 'classic');
               assert.ok(Array.isArray(rankingPayload.entries));
+
+              const invalidResponse = await desktop.request.post(RANKING_URL, {
+                headers:{ 'content-type':'application/json', origin:'https://chunbong-fansite.vercel.app' },
+                data:{ mode:'classic', nickname:'x', score:1, lines:1, level:1, timeMs:1 }
+              });
+              assert.equal(invalidResponse.status(), 400, 'invalid smoke nickname must be rejected');
+              assert.equal((await invalidResponse.json()).error, 'invalid_nickname');
 
               console.log('Chuntris production Chromium smoke passed');
             } finally {
