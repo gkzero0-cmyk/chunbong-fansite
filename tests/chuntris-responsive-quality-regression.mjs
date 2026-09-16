@@ -20,14 +20,15 @@ assert.ok(css.includes('touch-action:pan-y pinch-zoom'), 'game surface must allo
 assert.ok(css.includes('--chuntris-stage-height:'), 'desktop playfield must size from one viewport-aware stage height');
 
 assert.ok(html.includes('<link rel="stylesheet" href="chuntris-fullscreen.css">'), 'fullscreen override must load after base Chuntris CSS');
-assert.ok(fullscreenCss.includes('--chuntris-ranking-width:240px'), 'wide desktop ranking rail must be capped near 240px');
-assert.ok(fullscreenCss.includes('--chuntris-help-width:220px'), 'wide desktop keyboard help rail must be capped near 220px');
-assert.match(fullscreenCss,/grid-template-columns:minmax\(200px,var\(--chuntris-ranking-width\)\) minmax\(145px,160px\) minmax\(280px,calc\(var\(--chuntris-stage-height\)\/2\)\) minmax\(175px,190px\) minmax\(190px,var\(--chuntris-help-width\)\)/,'wide desktop must trade rail width for the game board');
-assert.match(fullscreenCss,/--chuntris-stage-height:clamp\(560px,calc\(100dvh - 180px\),700px\)/,'wide desktop must reserve more height for a larger board');
-assert.match(fullscreenCss,/@media\(min-width:1181px\) and \(max-height:820px\)\{[^}]*--chuntris-stage-height:clamp\(520px,calc\(100dvh - 130px\),640px\)/,'short wide desktop must still enlarge the board');
+assert.ok(fullscreenCss.includes('--chuntris-ranking-width:190px'), 'wide desktop ranking rail must be capped at 190px');
+assert.ok(fullscreenCss.includes('--chuntris-help-width:180px'), 'wide desktop keyboard help rail must be capped at 180px');
+assert.match(fullscreenCss,/grid-template-columns:minmax\(170px,var\(--chuntris-ranking-width\)\) minmax\(145px,160px\) minmax\(300px,calc\(var\(--chuntris-stage-height\)\/2\)\) minmax\(175px,190px\) minmax\(160px,var\(--chuntris-help-width\)\)/,'wide desktop must trade rail width for the game board');
+assert.match(fullscreenCss,/--chuntris-stage-height:clamp\(620px,calc\(100dvh - 150px\),760px\)/,'wide desktop must reserve more height for a larger board');
+assert.match(fullscreenCss,/@media\(min-width:1181px\) and \(max-height:820px\)\{[^}]*--chuntris-stage-height:clamp\(560px,calc\(100dvh - 100px\),680px\)/,'short wide desktop must still enlarge the board');
 
 assert.ok(fullscreenCss.includes('e_background_removal'), 'reaction sprite delivery must remove the source white background');
 assert.ok(fullscreenCss.includes('fl_preserve_transparency'), 'reaction sprite must preserve alpha after background removal');
+assert.equal(fullscreenCss.includes('e_background_removal/e_gen_restore'), false, 'reaction sprite must not restore a white matte after background removal');
 assert.equal(fullscreenCss.includes('assets/chuntris/reactions.webp'), false, 'white-background local reaction sprite must not be used as a visual fallback');
 assert.equal(css.includes('v1789314631/chuntris-reactions-source.webp'), false, 'old white-background enhanced sprite must not remain');
 assert.ok(workflow.includes('assertGameStageFitsViewport'), 'production smoke must verify the whole playable stage, not only the board');
