@@ -114,3 +114,14 @@ window.CHUNBONG_CONTENT = {
   script.dataset.fanartGalleryRuntime = 'true';
   document.body.appendChild(script);
 })();
+
+(() => {
+  const nav = document.getElementById('main-nav');
+  const chuntrisLink = nav?.querySelector('[data-nav="chuntris"]');
+  if (chuntrisLink) {
+    chuntrisLink.dataset.nav = 'minigames';
+    chuntrisLink.href = 'minigames.html';
+    chuntrisLink.textContent = '미니게임';
+  }
+  if (document.body.dataset.page === 'chuntris') document.body.dataset.page = 'minigames';
+})();
