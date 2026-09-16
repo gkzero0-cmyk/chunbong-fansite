@@ -9,6 +9,7 @@ const fetchYoutube = require('./youtube');
 const fetchSchedule = require('./schedule');
 const fetchCatchDetail = require('./catch-detail');
 const fetchChunbongData = require('../lib/chunbong-data');
+const handleChuntrisRanking = require('../lib/chuntris-ranking-api');
 const youtubeEngagementCache = require('../data/youtube-engagement-cache.json');
 const soopMetricHistory = require('../data/soop-follower-history.json');
 const { buildEngagementRankings } = require('../lib/youtube-engagement');
@@ -238,6 +239,7 @@ function compactDataPayload(payload, options = {}) {
 // Vercel entry point for multiplexed content requests.
 async function handler(req,res) {
   const type=req.query?.type;
+  if(type==='chuntris-ranking') return handleChuntrisRanking(req,res);
   const forceDataRefresh=type==='data'&&String(req.query?.refresh||'')==='1';
   res.setHeader('Cache-Control',forceDataRefresh?'no-store, max-age=0':'s-maxage=180, stale-while-revalidate=600');
   try {
@@ -245,7 +247,7 @@ async function handler(req,res) {
     if(type==='notice'){const items=await fetchNotice();return res.status(200).json({items,source:type,fallback:!items.length});}
     if(type==='notice-detail'){const id=String(req.query?.id||'');const item=id==='203015477'?await fetchScheduleDetail(id):await fetchNoticeDetail(id);return res.status(200).json({item,source:type,fallback:!item?.content&&!item?.html&&!item?.images?.length});}
     if(type==='clips'){const groups=await fetchClips();return res.status(200).json({items:groups.items,groups:{catch:groups.catch,clip:groups.clip},source:type,fallback:!groups.items.length});}
-    if(type==='fanart'){const items=await fetchFanart();return res.status(200).json({items,source:type,fallback:!items.length});}
+    if(type==='fanart'){const items=await fetchFanart();return res.status(200).json({items,source:type,fallback:!item?.images?.length});}
     if(type==='fanart-detail'){const id=String(req.query?.id||'');const item=await fetchFanartDetail(id);return res.status(200).json({item,source:type,fallback:!item?.images?.length});}
     if(type==='youtube'){const groups=await fetchYoutube();return res.status(200).json({items:groups.items,groups:{videos:groups.videos,shorts:groups.shorts},source:type,fallback:!groups.items.length});}
     if(type==='schedule'){const items=await fetchSchedule();return res.status(200).json({items,source:type,fallback:!items.length});}
