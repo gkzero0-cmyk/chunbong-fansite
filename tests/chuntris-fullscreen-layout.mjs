@@ -15,18 +15,23 @@ assert.match(
 );
 assert.match(
   css,
-  /e_background_removal\/c_scale,w_1120\/fl_preserve_transparency\/f_webp\/q_auto:best\/v1789322498\/chuntris-reactions-source\.webp/,
-  'reaction sprite should use Cloudinary background removal without a restore pass that can reintroduce a matte'
+  /#chuntris-time\{[^}]*font-size:[^;}]+;[^}]*white-space:nowrap[^}]*text-overflow:clip/,
+  'TIME must render its complete mm:ss.mmm value without ellipsis'
+);
+assert.match(
+  css,
+  /e_gen_restore\/e_background_removal\/c_scale,w_1680\/fl_preserve_transparency\/f_png\/q_auto:best\/v1789322498\/chuntris-reactions-source\.png/,
+  'reaction sprite should restore detail before background removal and ship as a larger transparent PNG'
 );
 assert.doesNotMatch(
   css,
   /e_background_removal\/e_gen_restore/,
-  'background-removed reaction sprite must not run generative restore afterward'
+  'background removal must stay after the detail restoration pass so restore cannot reintroduce a matte'
 );
 assert.match(
   css,
-  /@media\(min-width:1181px\) and \(max-height:820px\)\{[^]*?--chuntris-stage-height:clamp\(560px,/,
-  'short wide screens should keep a larger central game stage'
+  /@media\(min-width:1181px\) and \(max-height:820px\)\{[^]*?--chuntris-stage-height:clamp\([^,]+,calc\(100dvh - 170px\),/,
+  'short wide screens must reserve enough vertical room for toolbar and status so the stage is not clipped'
 );
 
 console.log('Chuntris fullscreen layout contract passed');
