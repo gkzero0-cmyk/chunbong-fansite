@@ -16,7 +16,7 @@ global.fetch = async url => {
   return { ok:false, status:400, json:async()=>({ error:'unsupported' }) };
 };
 
-const handler = require('../api/chuntris-ranking.js');
+const handler = require('../lib/chuntris-ranking-api.js');
 
 function makeRes(){return{statusCode:200,headers:{},body:null,setHeader(name,value){this.headers[String(name).toLowerCase()]=value;},status(code){this.statusCode=code;return this;},json(payload){this.body=payload;return this;},end(payload){if(payload){try{this.body=JSON.parse(payload);}catch{this.body=payload;}}return this;}};}
 async function invoke({method='GET',query={},body=undefined,headers={}}={}){
