@@ -28,8 +28,12 @@ jobs:
           node --check chuntris-audio.js
           node --check chuntris-ranking-core.js
           node --check chuntris.js
+          node --check chunbak-game-core.js
+          node --check chunbak-ranking-core.js
           node --check api/_shared.js
+          node --check api/content.js
           node --check lib/chuntris-ranking-api.js
+          node --check lib/chunbak-ranking-api.js
           node --check lib/chunbong-data.js
           node --check lib/soop-analytics.js
           node --check lib/soop-analytics-base.js
