@@ -22,17 +22,22 @@ assert.ok(css.includes('--chuntris-stage-height:'), 'desktop playfield must size
 assert.ok(html.includes('<link rel="stylesheet" href="chuntris-fullscreen.css">'), 'fullscreen override must load after base Chuntris CSS');
 assert.ok(fullscreenCss.includes('--chuntris-ranking-width:190px'), 'wide desktop ranking rail must be capped at 190px');
 assert.ok(fullscreenCss.includes('--chuntris-help-width:180px'), 'wide desktop keyboard help rail must be capped at 180px');
-assert.match(fullscreenCss,/grid-template-columns:minmax\(170px,var\(--chuntris-ranking-width\)\) minmax\(145px,160px\) minmax\(300px,calc\(var\(--chuntris-stage-height\)\/2\)\) minmax\(175px,190px\) minmax\(160px,var\(--chuntris-help-width\)\)/,'wide desktop must trade rail width for the game board');
-assert.match(fullscreenCss,/--chuntris-stage-height:clamp\(620px,calc\(100dvh - 150px\),760px\)/,'wide desktop must reserve more height for a larger board');
-assert.match(fullscreenCss,/@media\(min-width:1181px\) and \(max-height:820px\)\{[^}]*--chuntris-stage-height:clamp\(560px,calc\(100dvh - 100px\),680px\)/,'short wide desktop must still enlarge the board');
+assert.match(fullscreenCss,/grid-template-columns:minmax\(170px,var\(--chuntris-ranking-width\)\) minmax\(175px,190px\) minmax\(300px,calc\(var\(--chuntris-stage-height\)\/2\)\) minmax\(175px,190px\) minmax\(160px,var\(--chuntris-help-width\)\)/,'wide desktop must reserve enough width for an unclipped TIME value without stealing the board');
+assert.match(fullscreenCss,/--chuntris-stage-height:clamp\(620px,calc\(100dvh - 150px\),760px\)/,'tall wide desktop should keep a large board');
+assert.match(fullscreenCss,/@media\(min-width:1181px\) and \(max-height:820px\)\{[^}]*--chuntris-stage-height:clamp\(420px,calc\(100dvh - 170px\),600px\)/,'short wide desktop must reserve room for toolbar/status instead of clipping the bottom');
+assert.match(fullscreenCss,/#chuntris-time\{[^}]*white-space:nowrap[^}]*text-overflow:clip/,'TIME should not use ellipsis');
 
-assert.ok(fullscreenCss.includes('e_background_removal'), 'reaction sprite delivery must remove the source white background');
-assert.ok(fullscreenCss.includes('fl_preserve_transparency'), 'reaction sprite must preserve alpha after background removal');
+assert.ok(fullscreenCss.includes('e_gen_restore/e_background_removal'), 'reaction sprite must restore source detail before removing its white background');
+assert.ok(fullscreenCss.includes('c_scale,w_1680'), 'reaction sprite must use a larger high-resolution derived asset');
+assert.ok(fullscreenCss.includes('fl_preserve_transparency/f_png'), 'reaction sprite must preserve alpha in PNG output');
 assert.equal(fullscreenCss.includes('e_background_removal/e_gen_restore'), false, 'reaction sprite must not restore a white matte after background removal');
 assert.equal(fullscreenCss.includes('assets/chuntris/reactions.webp'), false, 'white-background local reaction sprite must not be used as a visual fallback');
 assert.equal(css.includes('v1789314631/chuntris-reactions-source.webp'), false, 'old white-background enhanced sprite must not remain');
-assert.ok(workflow.includes('assertGameStageFitsViewport'), 'production smoke must verify the whole playable stage, not only the board');
-assert.ok(workflow.includes('fl_preserve_transparency'), 'production readiness must require the transparent high-resolution reaction sprite');
+assert.ok(workflow.includes('chuntris-fullscreen.css'), 'production smoke must fetch the fullscreen override actually used by the page');
+assert.ok(workflow.includes('assertGameStageFitsViewport'), 'production smoke must verify the whole playable stage');
+assert.ok(workflow.includes('layoutBox.y + layoutBox.height'), 'production smoke must verify the stage bottom stays inside the viewport');
+assert.ok(workflow.includes('99:59.999'), 'production smoke must verify a full TIME value does not clip');
+assert.ok(workflow.includes('e_gen_restore/e_background_removal/c_scale,w_1680'), 'production smoke must require the high-resolution transparent reaction sprite');
 assert.ok(workflow.includes('document.documentElement.scrollWidth'), 'production smoke must verify horizontal overflow');
 assert.ok(workflow.includes('page.viewportSize()'), 'production smoke must compare layout dimensions against the Playwright viewport');
 for (const [width, height] of [[1280,740],[900,800],[390,844],[360,800]]) {
