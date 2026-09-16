@@ -5956,11 +5956,22 @@
         "categoryName": "버추얼",
         "followerCount": 30391,
         "fanclubCount": 7666
+      },
+      {
+        "capturedAt": "2026-09-16T13:47:11.320Z",
+        "live": true,
+        "startedAt": "2026-09-16T09:55:40.000Z",
+        "title": "그냥서버 운영자 모집합니다",
+        "viewerCount": 100,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30391,
+        "fanclubCount": 7666
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-16T13:33:33.640Z",
+    "capturedAt": "2026-09-16T13:47:11.320Z",
     "followerCount": 30391,
     "fanclubCount": 7666
   }
