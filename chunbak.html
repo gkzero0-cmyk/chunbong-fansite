@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#ff6b18">
+  <meta name="description" content="춘봉 캐릭터를 합쳐 11단계까지 키우는 춘박게임">
+  <title>춘박게임 | 춘봉 팬사이트</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="chunbak.css">
+</head>
+<body data-page="minigames">
+<div class="noise" aria-hidden="true"></div>
+<header class="site-header">
+  <a class="brand" href="index.html" aria-label="춘봉 팬사이트 홈"><span class="brand-mark">CB</span><span class="brand-copy"><strong>CHUNBONG</strong><small>FAN HUB</small></span></a>
+  <button class="nav-toggle" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="main-nav"><span></span><span></span><span></span></button>
+  <nav class="main-nav" id="main-nav" aria-label="주요 메뉴"><a data-nav="home" href="index.html">HOME</a><a data-nav="schedule" href="schedule.html">방송 일정</a><a data-nav="notice" href="notice.html">공지</a><a data-nav="vod" href="vod.html">다시보기</a><a data-nav="clips" href="clips.html">핫클립</a><a data-nav="fanart" href="fanart.html">팬아트</a><a data-nav="tarot" href="tarot.html">TAROT</a><a data-nav="minigames" href="minigames.html">미니게임</a><a data-nav="youtube" href="youtube.html">유튜브</a><a data-nav="history" href="history.html">방송 이력</a><a data-nav="data" href="data.html">춘봉 데이터</a></nav>
+  <a class="header-live" href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer">SOOP ↗</a>
+</header>
+<main class="chunbak-page">
+  <section class="page-hero chunbak-hero"><div class="page-shell reveal"><p class="kicker">MERGE PUZZLE</p><h1>춘박게임</h1><p>같은 단계의 춘봉을 합쳐 최종 11단계까지 키워보세요.</p></div></section>
+  <section class="content-section"><div class="page-shell">
+    <section id="chunbak-game" class="chunbak-game reveal" data-game-status="idle" aria-label="춘박게임">
+      <div class="chunbak-toolbar">
+        <label for="chunbak-nickname"><span>닉네임</span><input id="chunbak-nickname" maxlength="16" autocomplete="nickname" placeholder="2~16자"></label>
+        <div class="chunbak-actions"><button id="chunbak-start" class="btn btn-primary" type="button" disabled>게임 시작</button><button id="chunbak-restart" class="btn btn-ghost" type="button" disabled>다시 시작</button></div>
+      </div>
+      <div class="chunbak-layout">
+        <aside class="chunbak-rail chunbak-left" aria-label="기록과 전체 랭킹">
+          <div class="chunbak-stats"><div><span>SCORE</span><strong id="chunbak-score">0</strong></div><div><span>BEST</span><strong id="chunbak-best">0</strong></div><div><span>MAX</span><strong id="chunbak-max-level">1</strong></div></div>
+          <section class="chunbak-ranking"><div class="chunbak-panel-head"><span class="eyebrow">GLOBAL</span><h2>TOP 10</h2></div><p id="chunbak-ranking-status" class="chunbak-ranking-status" aria-live="polite">랭킹 불러오는 중…</p><ol id="chunbak-ranking-list" class="chunbak-ranking-list"></ol></section>
+        </aside>
+        <div class="chunbak-center">
+          <div id="chunbak-stage" class="chunbak-stage" aria-label="춘박게임 통">
+            <canvas id="chunbak-canvas" width="420" height="680"></canvas>
+            <div id="chunbak-danger-line" class="chunbak-danger-line" aria-hidden="true"><span>DANGER</span></div>
+            <div id="chunbak-overlay" class="chunbak-overlay" hidden><strong>GAME OVER</strong><span>다시 시작해서 더 높은 단계에 도전해 보세요.</span><button type="button" data-chunbak-overlay-restart>다시 시작</button></div>
+          </div>
+        </div>
+        <aside class="chunbak-rail chunbak-right">
+          <section class="chunbak-next-card"><span class="eyebrow">NEXT</span><div id="chunbak-next" class="chunbak-next" aria-live="polite"><span>?</span></div></section>
+          <section><span class="eyebrow">EVOLUTION</span><h2>1 → 11</h2><div id="chunbak-stage-legend" class="chunbak-stage-legend" aria-label="춘박게임 단계표"></div></section>
+          <section class="chunbak-help"><span class="eyebrow">CONTROLS</span><h2>조작법</h2><p>PC: 마우스로 위치 이동 후 클릭</p><p>모바일: 원하는 위치를 터치해 드롭</p><p>위험선 위에 약 2초 머물면 게임오버입니다.</p></section>
+        </aside>
+      </div>
+    </section>
+  </div></section>
+</main>
+<footer><div class="footer-brand"><span class="brand-mark">CB</span><div><strong>CHUNBONG FAN HUB</strong><p>비공식 팬사이트 · 공식 채널의 콘텐츠를 팬사이트 안에서 더 편하게 만나보세요.</p></div></div><div class="footer-links"><a href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer">SOOP ↗</a><a href="https://cafe.naver.com/chunbongtv" target="_blank" rel="noreferrer">NAVER CAFE ↗</a></div><p class="copyright">© 2026 CHUNBONG FAN HUB · Unofficial fan project</p></footer>
+<button class="to-top" type="button" aria-label="맨 위로 이동">↑</button>
+<script src="content.js"></script><script src="page.js"></script>
+<script src="assets/vendor/matter-0.20.0.min.js"></script>
+<script src="chunbak-game-core.js"></script><script src="chunbak-ranking-core.js"></script><script src="chunbak.js"></script>
+</body></html>

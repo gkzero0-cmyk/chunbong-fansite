@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const js=fs.readFileSync(new URL('../chunbak.js',import.meta.url),'utf8');
+assert.ok(js.includes('async function loadRanking'));
+assert.ok(js.includes('async function submitRanking'));
+assert.ok(js.includes("fetch(`${RANKING_ENDPOINT}&mode=classic`"));
+assert.ok(js.includes('chunbak:nickname:v1'));
+assert.ok(js.includes('랭킹을 불러올 수 없습니다'));
+assert.ok(js.includes('점수는 저장되지 않았지만 게임은 계속 플레이할 수 있습니다.'));
+console.log('chunbak ranking ui regression passed');
