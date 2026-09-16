@@ -4,10 +4,9 @@
   const RADII = [0,22,27,33,40,48,57,67,78,90,103,118];
   const MERGE_SCORES = Object.freeze({2:20,3:40,4:80,5:140,6:220,7:340,8:520,9:760,10:1080,11:1500});
   const SPAWN_WEIGHTS = Object.freeze([0.35,0.27,0.18,0.12,0.08]);
-  const BASE = 'https://res.cloudinary.com/lyppgyei/image/upload/chunbak';
   const STAGES = Object.freeze(Array.from({length:MAX_STAGE}, (_, index) => {
     const id = index + 1;
-    return Object.freeze({ id, radius:RADII[id], image:`${BASE}/stage-${String(id).padStart(2,'0')}.webp` });
+    return Object.freeze({ id, radius:RADII[id], image:`assets/chunbak/${id}.png` });
   }));
 
   function pickSpawnStage(random = Math.random) {
