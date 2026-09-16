@@ -10,7 +10,7 @@
   const CLASSIC_BEST_KEY = 'chuntris.bestScore.classic.v1';
   const SPRINT_BEST_KEY = 'chuntris.bestTime.sprint40.v1';
   const NICKNAME_KEY = 'chuntris.nickname.v1';
-  const RANKING_ENDPOINT = '/api/chuntris-ranking';
+  const RANKING_ENDPOINT = '/api/content?type=chuntris-ranking';
   const REACTION_SPRITE = 'assets/chuntris/reactions.webp';
   const REACTION_MAP = Object.freeze({
     idle: 0, gameover: 1, dizzy: 2, cryA: 3, cryB: 4,
@@ -135,7 +135,7 @@
       return;
     }
     try {
-      const response = await fetch(`${RANKING_ENDPOINT}?mode=${encodeURIComponent(rankingMode)}`, { headers: { accept:'application/json' } });
+      const response = await fetch(`${RANKING_ENDPOINT}&mode=${encodeURIComponent(rankingMode)}`, { headers: { accept:'application/json' } });
       if (!response.ok) throw new Error(`ranking ${response.status}`);
       const payload = await response.json();
       if (requestId !== rankingRequestId) return;
