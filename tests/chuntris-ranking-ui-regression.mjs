@@ -22,7 +22,7 @@ assert.ok(html.indexOf('chuntris-ranking-core.js') < html.indexOf('chuntris.js')
 
 for (const token of [
   "const NICKNAME_KEY = 'chuntris.nickname.v1'",
-  "const RANKING_ENDPOINT = '/api/chuntris-ranking'",
+  "const RANKING_ENDPOINT = '/api/content?type=chuntris-ranking'",
   'ChuntrisRankingCore',
   'loadRanking',
   'submitRanking',
