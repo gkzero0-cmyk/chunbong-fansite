@@ -5,7 +5,7 @@ const html = fs.readFileSync(new URL('../chuntris.html', import.meta.url), 'utf8
 const css = fs.readFileSync(new URL('../chuntris.css', import.meta.url), 'utf8');
 
 assert.ok(html.includes('<title>춘트리스 | 춘봉 팬사이트</title>'));
-assert.ok(html.includes('data-page="chuntris"'));
+assert.ok(html.includes('data-page="minigames"'));
 for (const id of ['chuntris-game','chuntris-board','chuntris-hold','chuntris-next','chuntris-score','chuntris-level','chuntris-lines','chuntris-time','chuntris-best','chuntris-reaction','chuntris-status','chuntris-start','chuntris-pause','chuntris-sound','chuntris-volume','chuntris-mobile-controls','chuntris-nickname','chuntris-ranking','chuntris-ranking-status','chuntris-ranking-list']) {
   assert.ok(html.includes(`id="${id}"`), id);
 }
