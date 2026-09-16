@@ -1,0 +1,84 @@
+name: Chunbak production smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'chunbak.html'
+      - 'chunbak.css'
+      - 'chunbak.js'
+      - 'chunbak-game-core.js'
+      - 'chunbak-ranking-core.js'
+      - 'assets/chunbak/**'
+      - 'api/content.js'
+      - 'lib/chunbak-ranking-api.js'
+      - 'minigames.html'
+      - '.github/workflows/chunbak-production-smoke.yml'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Wait for production pages and verify HTTP/API
+        env:
+          BASE_URL: https://chunbong-fansite.vercel.app
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 20); do
+            if curl -fsS "$BASE_URL/minigames.html" >/dev/null && curl -fsS "$BASE_URL/chunbak.html" >/dev/null; then
+              break
+            fi
+            test "$attempt" != "20"
+            sleep 15
+          done
+          # Explicit endpoint contract includes assets/chunbak/11.png.
+          for n in $(seq 1 11); do curl -fsS "$BASE_URL/assets/chunbak/$n.png" >/dev/null; done
+          curl -fsS "$BASE_URL/api/content?type=chunbak-ranking&mode=classic" >/tmp/chunbak-ranking.json
+          status=$(curl -sS -o /tmp/chunbak-invalid.json -w '%{http_code}' \
+            -H 'content-type: application/json' \
+            -H "origin: $BASE_URL" \
+            -X POST \
+            --data '{"mode":"classic","nickname":"x","score":1,"maxLevel":1}' \
+            "$BASE_URL/api/content?type=chunbak-ranking")
+          test "$status" = "400"
+      - name: Browser smoke
+        env:
+          BASE_URL: https://chunbong-fansite.vercel.app
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import { chromium } from 'playwright';
+          import assert from 'node:assert/strict';
+          const browser = await chromium.launch({headless:true});
+          for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
+            const page = await browser.newPage({viewport});
+            await page.goto(`${process.env.BASE_URL}/minigames.html`, {waitUntil:'networkidle'});
+            assert.ok(await page.locator('a[href="chuntris.html"]').count());
+            assert.ok(await page.locator('a[href="chunbak.html"]').count());
+            assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1));
+            await page.goto(`${process.env.BASE_URL}/chunbak.html`, {waitUntil:'networkidle'});
+            assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1));
+            const canvas = page.locator('#chunbak-canvas');
+            await canvas.waitFor({state:'visible'});
+            const box = await canvas.boundingBox();
+            assert.ok(box && box.x >= -1 && box.x + box.width <= viewport.width + 1);
+            await page.locator('#chunbak-nickname').fill('SmokeUser');
+            await page.locator('#chunbak-start').click();
+            await canvas.dispatchEvent('pointerdown', {clientX:(box?.x || 0)+(box?.width || 1)/2, clientY:(box?.y || 0)+40, pointerId:1, pointerType:'mouse'});
+            await page.waitForTimeout(350);
+            assert.notEqual(await page.locator('#chunbak-game').getAttribute('data-game-status'), 'idle');
+            await page.locator('#chunbak-restart').click();
+            assert.equal((await page.locator('#chunbak-score').textContent())?.trim(), '0');
+            await page.close();
+          }
+          await browser.close();
+          EOF_NODE
