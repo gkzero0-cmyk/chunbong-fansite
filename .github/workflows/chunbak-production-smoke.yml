@@ -71,11 +71,18 @@ jobs:
             await canvas.waitFor({state:'visible'});
             const box = await canvas.boundingBox();
             assert.ok(box && box.x >= -1 && box.x + box.width <= viewport.width + 1);
+            await page.waitForFunction(() => !document.querySelector('#chunbak-start')?.disabled);
             await page.locator('#chunbak-nickname').fill('SmokeUser');
             await page.locator('#chunbak-start').click();
             await canvas.dispatchEvent('pointerdown', {clientX:(box?.x || 0)+(box?.width || 1)/2, clientY:(box?.y || 0)+40, pointerId:1, pointerType:'mouse'});
             await page.waitForTimeout(350);
             assert.notEqual(await page.locator('#chunbak-game').getAttribute('data-game-status'), 'idle');
+            await page.evaluate(() => {
+              ChunbakGame.createPiece(1, 190, 520);
+              ChunbakGame.createPiece(1, 215, 520);
+            });
+            await page.waitForFunction(() => Number(document.querySelector('#chunbak-score')?.textContent || 0) > 0);
+            assert.ok(Number(await page.locator('#chunbak-score').textContent()) > 0);
             await page.locator('#chunbak-restart').click();
             assert.equal((await page.locator('#chunbak-score').textContent())?.trim(), '0');
             await page.close();
