@@ -70,7 +70,7 @@ jobs:
           node <<'NODE'
           const assert = require('node:assert/strict');
           const { chromium } = require('playwright');
-          const URL = 'https://chunbong-fansite.vercel.app/chuntris.html';
+          const GAME_URL = 'https://chunbong-fansite.vercel.app/chuntris.html';
           const RANKING_URL = 'https://chunbong-fansite.vercel.app/api/content?type=chuntris-ranking';
 
           async function assertNoHorizontalOverflow(page, label) {
@@ -122,7 +122,7 @@ jobs:
             const page = await browser.newPage(options);
             const errors = [];
             page.on('pageerror', error => errors.push(error.message));
-            await page.goto(`${URL}?_smoke=${Date.now()}`, { waitUntil:'domcontentloaded' });
+            await page.goto(`${GAME_URL}?_smoke=${Date.now()}`, { waitUntil:'domcontentloaded' });
             await page.waitForFunction(() => Boolean(window.ChuntrisApp?.getGame?.()));
             await page.locator('#chuntris-nickname').fill('SmokeTester');
             assert.equal(await page.locator('#chuntris-board').count(), 1);
