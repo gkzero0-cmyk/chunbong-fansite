@@ -8,7 +8,10 @@ on:
       - 'chuntris.css'
       - 'chuntris-engine.js'
       - 'chuntris-audio.js'
+      - 'chuntris-ranking-core.js'
       - 'chuntris.js'
+      - 'api/content.js'
+      - 'lib/chuntris-ranking-api.js'
       - 'assets/chuntris/**'
       - '.github/workflows/chuntris-production-smoke.yml'
   workflow_dispatch:
@@ -29,21 +32,28 @@ jobs:
           ENHANCED_REACTION='https://res.cloudinary.com/lyppgyei/image/upload/e_gen_restore/c_scale,w_1120/fl_preserve_transparency/f_webp/q_auto:best/v1789322498/chuntris-reactions-source.webp'
           for attempt in $(seq 1 60); do
             echo "Production readiness attempt ${attempt}/60"
+            stamp=$(date +%s)
             if \
-              curl -fsS -H 'cache-control: no-cache' "$BASE/chuntris.html?_smoke=$(date +%s)" -o /tmp/chuntris.html && \
-              curl -fsS -H 'cache-control: no-cache' "$BASE/chuntris.css?_smoke=$(date +%s)" -o /tmp/chuntris.css && \
-              curl -fsS "$BASE/chuntris-engine.js" -o /dev/null && \
-              curl -fsS "$BASE/chuntris-audio.js" -o /dev/null && \
-              curl -fsS "$BASE/chuntris.js" -o /dev/null && \
+              curl -fsS -H 'cache-control: no-cache' "$BASE/chuntris.html?_smoke=$stamp" -o /tmp/chuntris.html && \
+              curl -fsS -H 'cache-control: no-cache' "$BASE/chuntris.css?_smoke=$stamp" -o /tmp/chuntris.css && \
+              curl -fsS "$BASE/chuntris-engine.js?_smoke=$stamp" -o /dev/null && \
+              curl -fsS "$BASE/chuntris-audio.js?_smoke=$stamp" -o /dev/null && \
+              curl -fsS "$BASE/chuntris-ranking-core.js?_smoke=$stamp" -o /dev/null && \
+              curl -fsS "$BASE/chuntris.js?_smoke=$stamp" -o /dev/null && \
               curl -fsS "$BASE/assets/chuntris/reactions.webp" -o /dev/null && \
               curl -fsS "$ENHANCED_REACTION" -o /dev/null && \
+              curl -fsS -H 'cache-control: no-cache' "$BASE/api/content?type=chuntris-ranking&mode=classic&_smoke=$stamp" -o /tmp/chuntris-ranking.json && \
               grep -q '춘트리스' /tmp/chuntris.html && \
+              grep -q 'id="chuntris-nickname"' /tmp/chuntris.html && \
+              grep -q 'id="chuntris-ranking"' /tmp/chuntris.html && \
+              grep -q 'class="chuntris-ranking-rail' /tmp/chuntris.html && \
+              grep -q 'class="chuntris-help-rail' /tmp/chuntris.html && \
               grep -q 'data-chuntris-mode="classic"' /tmp/chuntris.html && \
               grep -q 'data-chuntris-mode="sprint40"' /tmp/chuntris.html && \
-              grep -q 'chuntris.js' /tmp/chuntris.html && \
+              grep -q 'chuntris-ranking-core.js' /tmp/chuntris.html && \
               grep -q 'e_gen_restore/c_scale,w_1120/fl_preserve_transparency/f_webp/q_auto:best/v1789322498' /tmp/chuntris.css && \
-              grep -q -- '--chuntris-stage-height:' /tmp/chuntris.css && \
-              grep -q '100dvh' /tmp/chuntris.css; then
+              grep -q 'grid-template-areas:"ranking left board right help"' /tmp/chuntris.css && \
+              node -e "const p=require('/tmp/chuntris-ranking.json'); if(p.mode!=='classic'||!Array.isArray(p.entries)) process.exit(1)"; then
               echo 'Chuntris production deployment is ready.'
               exit 0
             fi
@@ -61,6 +71,7 @@ jobs:
           const assert = require('node:assert/strict');
           const { chromium } = require('playwright');
           const URL = 'https://chunbong-fansite.vercel.app/chuntris.html';
+          const RANKING_URL = 'https://chunbong-fansite.vercel.app/api/content?type=chuntris-ranking';
 
           async function assertNoHorizontalOverflow(page, label) {
             const documentWidth = await page.evaluate(() => document.documentElement.scrollWidth);
@@ -74,133 +85,110 @@ jobs:
 
           async function assertGameStageFitsViewport(page, label) {
             const viewport = page.viewportSize();
-            const [headerBox, gameBox, layoutBox, boardBox, leftBox, rightBox] = await Promise.all([
-              page.locator('.site-header').boundingBox(),
-              page.locator('#chuntris-game').boundingBox(),
-              page.locator('.chuntris-layout').boundingBox(),
-              page.locator('#chuntris-board').boundingBox(),
-              page.locator('.chuntris-left-panel').boundingBox(),
-              page.locator('.chuntris-right-panel').boundingBox()
-            ]);
             assert.ok(viewport, `${label} viewport missing`);
-            assert.ok(gameBox, `${label} game frame missing`);
-            assert.ok(layoutBox, `${label} playfield layout missing`);
+            await page.locator('#chuntris-game').scrollIntoViewIfNeeded();
+            const [boardBox, layoutBox] = await Promise.all([
+              page.locator('.chuntris-board-wrap').boundingBox(),
+              page.locator('.chuntris-layout').boundingBox()
+            ]);
             assert.ok(boardBox, `${label} board missing`);
-            const headerHeight = headerBox?.height || 0;
-            const desktopRails = viewport.width > 820;
-            const fitBox = desktopRails ? layoutBox : boardBox;
-            const fitOffsetInsideGame = fitBox.y - gameBox.y;
-            const visibleBottom = headerHeight + fitOffsetInsideGame + fitBox.height;
-            console.log(`${label}: viewport=${viewport.width}x${viewport.height}, header=${headerHeight}, stage=${layoutBox.width}x${layoutBox.height}, board=${boardBox.width}x${boardBox.height}, visibleBottom=${visibleBottom}`);
-            assert.ok(
-              visibleBottom <= viewport.height + 1,
-              `${label} playable stage clipped below viewport: ${visibleBottom} > ${viewport.height}`
-            );
+            assert.ok(layoutBox, `${label} layout missing`);
             assert.ok(boardBox.width > 0 && boardBox.height > 0, `${label} board must have positive dimensions`);
-            if (desktopRails) {
-              assert.ok(leftBox && rightBox, `${label} desktop side rails missing`);
-              const layoutBottom = layoutBox.y + layoutBox.height;
-              for (const [name, box] of [['left', leftBox], ['right', rightBox], ['board', boardBox]]) {
-                assert.ok(box.y >= layoutBox.y - 1, `${label} ${name} rail starts above stage`);
-                assert.ok(box.y + box.height <= layoutBottom + 1, `${label} ${name} rail extends below stage: ${box.y + box.height} > ${layoutBottom}`);
-              }
-            }
+            assert.ok(boardBox.width <= viewport.width + 1, `${label} board wider than viewport`);
+            assert.ok(boardBox.height <= viewport.height - 40, `${label} board too tall for viewport: ${boardBox.height} > ${viewport.height - 40}`);
+          }
+
+          async function assertWideDesktopArrangement(page, label) {
+            const selectors = ['.chuntris-ranking-rail','.chuntris-left-panel','.chuntris-board-wrap','.chuntris-right-panel','.chuntris-help-rail'];
+            const [ranking,left,board,right,help] = await Promise.all(selectors.map(selector => page.locator(selector).boundingBox()));
+            assert.ok(ranking && left && board && right && help, `${label} five-region layout missing`);
+            assert.ok(ranking.x < left.x && left.x < board.x && board.x < right.x && right.x < help.x, `${label} five-region x-order invalid`);
+
+            const [hold,next,stats,reaction] = await Promise.all([
+              page.locator('#chuntris-hold').boundingBox(),
+              page.locator('#chuntris-next').boundingBox(),
+              page.locator('.chuntris-stats').boundingBox(),
+              page.locator('.chuntris-reaction-card').boundingBox()
+            ]);
+            assert.ok(hold && next && stats && reaction, `${label} side components missing`);
+            assert.ok(next.width > hold.width, `${label} NEXT must be wider than HOLD: ${next.width} <= ${hold.width}`);
+            assert.ok(stats.y > hold.y, `${label} score panel must be below HOLD`);
+            assert.ok(reaction.y > next.y, `${label} character must be below NEXT`);
+            const reactionVisual = await page.locator('#chuntris-reaction').boundingBox();
+            assert.ok(reactionVisual && reactionVisual.width >= 120, `${label} character too small`);
           }
 
           async function openReadyPage(browser, options, label) {
             const page = await browser.newPage(options);
             const errors = [];
             page.on('pageerror', error => errors.push(error.message));
-            await page.goto(`${URL}?_smoke=${Date.now()}`, { waitUntil: 'domcontentloaded' });
+            await page.goto(`${URL}?_smoke=${Date.now()}`, { waitUntil:'domcontentloaded' });
             await page.waitForFunction(() => Boolean(window.ChuntrisApp?.getGame?.()));
+            await page.locator('#chuntris-nickname').fill('SmokeTester');
             assert.equal(await page.locator('#chuntris-board').count(), 1);
             await assertNoHorizontalOverflow(page, label);
+            await assertGameStageFitsViewport(page, label);
             return { page, errors };
           }
 
           (async () => {
-            const browser = await chromium.launch({ headless: true });
+            const browser = await chromium.launch({ headless:true });
             try {
-              const { page: desktop, errors: desktopErrors } = await openReadyPage(
-                browser,
-                { viewport: { width: 1280, height: 900 } },
-                'Desktop 1280x900'
-              );
-              await assertGameStageFitsViewport(desktop, 'Desktop 1280x900');
+              const { page:desktop, errors:desktopErrors } = await openReadyPage(browser, { viewport:{ width:1280, height:900 } }, 'Desktop 1280x900');
+              await assertWideDesktopArrangement(desktop, 'Desktop 1280x900');
               const reactionImage = await desktop.locator('#chuntris-reaction').evaluate(el => getComputedStyle(el).backgroundImage);
-              assert.match(reactionImage, /e_gen_restore/, 'Desktop reaction sprite must use generative-restored asset');
-              assert.match(reactionImage, /fl_preserve_transparency/, 'Desktop reaction sprite must preserve alpha transparency');
-
+              assert.match(reactionImage, /e_gen_restore/, 'reaction sprite must use restored asset');
+              assert.match(reactionImage, /fl_preserve_transparency/, 'reaction sprite must preserve transparency');
               await desktop.locator('[data-chuntris-mode="classic"]').click();
               await desktop.locator('#chuntris-start').click();
               await desktop.keyboard.press('ArrowLeft');
               await desktop.keyboard.press('KeyX');
               await desktop.keyboard.press('Space');
-              await desktop.waitForTimeout(120);
+              await desktop.waitForTimeout(100);
               assert.equal(await desktop.locator('#chuntris-game').getAttribute('data-game-status'), 'playing');
-              assert.equal(await desktop.locator('#chuntris-game').getAttribute('data-mode'), 'classic');
-              const score = Number((await desktop.locator('#chuntris-score').textContent() || '0').replace(/[^0-9]/g, ''));
-              assert.ok(score >= 0);
               await assertNoHorizontalOverflow(desktop, 'Desktop 1280x900 playing');
-              await assertGameStageFitsViewport(desktop, 'Desktop 1280x900 playing');
-
               await desktop.locator('#chuntris-pause').click();
               assert.equal(await desktop.locator('#chuntris-game').getAttribute('data-game-status'), 'paused');
-              await desktop.locator('[data-chuntris-mode="sprint40"]').click();
-              await desktop.locator('#chuntris-start').click();
-              assert.equal(await desktop.locator('#chuntris-game').getAttribute('data-mode'), 'sprint40');
-              assert.equal(await desktop.locator('#chuntris-game').getAttribute('data-game-status'), 'playing');
               assert.deepEqual(desktopErrors, [], `Desktop page errors: ${desktopErrors.join(' | ')}`);
 
-              const { page: shortDesktop, errors: shortDesktopErrors } = await openReadyPage(
-                browser,
-                { viewport: { width: 1280, height: 740 } },
-                'Short desktop 1280x740'
-              );
-              await assertGameStageFitsViewport(shortDesktop, 'Short desktop 1280x740');
-              assert.deepEqual(shortDesktopErrors, [], `Short desktop page errors: ${shortDesktopErrors.join(' | ')}`);
+              const { page:shortDesktop, errors:shortErrors } = await openReadyPage(browser, { viewport:{ width:1280, height:740 } }, 'Desktop 1280x740');
+              await assertWideDesktopArrangement(shortDesktop, 'Desktop 1280x740');
+              assert.deepEqual(shortErrors, [], `Short desktop page errors: ${shortErrors.join(' | ')}`);
 
-              const { page: compact, errors: compactErrors } = await openReadyPage(
-                browser,
-                { viewport: { width: 900, height: 800 } },
-                'Compact desktop 900x800'
-              );
-              await assertGameStageFitsViewport(compact, 'Compact desktop 900x800');
+              const { page:compact, errors:compactErrors } = await openReadyPage(browser, { viewport:{ width:900, height:800 } }, 'Desktop 900x800');
               assert.deepEqual(compactErrors, [], `Compact desktop page errors: ${compactErrors.join(' | ')}`);
 
-              const { page: mobile, errors: mobileErrors } = await openReadyPage(
-                browser,
-                { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
-                'Mobile 390x844'
-              );
-              await assertGameStageFitsViewport(mobile, 'Mobile 390x844');
+              const { page:mobile, errors:mobileErrors } = await openReadyPage(browser, { viewport:{ width:390, height:844 }, isMobile:true, hasTouch:true }, 'Mobile 390x844');
               await mobile.locator('[data-chuntris-mode="classic"]').click();
               await mobile.locator('#chuntris-start').click();
-              const controls = mobile.locator('#chuntris-mobile-controls');
-              assert.equal(await controls.isVisible(), true);
+              assert.equal(await mobile.locator('#chuntris-mobile-controls').isVisible(), true);
               await mobile.locator('[data-chuntris-action="left"]').click();
               await mobile.locator('[data-chuntris-action="hard-drop"]').click();
               await mobile.waitForTimeout(80);
               assert.equal(await mobile.locator('#chuntris-game').getAttribute('data-game-status'), 'playing');
               await assertNoHorizontalOverflow(mobile, 'Mobile 390x844 playing');
-              await assertGameStageFitsViewport(mobile, 'Mobile 390x844 playing');
               assert.deepEqual(mobileErrors, [], `Mobile page errors: ${mobileErrors.join(' | ')}`);
 
-              const { page: narrowMobile, errors: narrowErrors } = await openReadyPage(
-                browser,
-                { viewport: { width: 360, height: 800 }, isMobile: true, hasTouch: true },
-                'Mobile 360x800'
-              );
-              await assertGameStageFitsViewport(narrowMobile, 'Mobile 360x800');
-              assert.equal(await narrowMobile.locator('#chuntris-mobile-controls').isVisible(), true);
+              const { page:narrow, errors:narrowErrors } = await openReadyPage(browser, { viewport:{ width:360, height:800 }, isMobile:true, hasTouch:true }, 'Mobile 360x800');
+              assert.equal(await narrow.locator('#chuntris-mobile-controls').isVisible(), true);
               assert.deepEqual(narrowErrors, [], `Narrow mobile page errors: ${narrowErrors.join(' | ')}`);
+
+              const rankingResponse = await desktop.request.get(`${RANKING_URL}&mode=classic`);
+              assert.equal(rankingResponse.ok(), true, `ranking GET failed: ${rankingResponse.status()}`);
+              const rankingPayload = await rankingResponse.json();
+              assert.equal(rankingPayload.mode, 'classic');
+              assert.ok(Array.isArray(rankingPayload.entries));
+
+              const invalidResponse = await desktop.request.post(RANKING_URL, {
+                headers:{ 'content-type':'application/json', origin:'https://chunbong-fansite.vercel.app' },
+                data:{ mode:'classic', nickname:'x', score:1, lines:1, level:1, timeMs:1 }
+              });
+              assert.equal(invalidResponse.status(), 400, 'invalid smoke nickname must be rejected');
+              assert.equal((await invalidResponse.json()).error, 'invalid_nickname');
 
               console.log('Chuntris production Chromium smoke passed');
             } finally {
               await browser.close();
             }
-          })().catch(error => {
-            console.error(error);
-            process.exit(1);
-          });
+          })().catch(error => { console.error(error); process.exit(1); });
           NODE

@@ -4,10 +4,13 @@
   const Engine = root.ChuntrisEngine;
   if (!Engine || typeof document === 'undefined') return;
 
+  const RankingCore = root.ChuntrisRankingCore;
   const DAS_MS = 150;
   const ARR_MS = 40;
   const CLASSIC_BEST_KEY = 'chuntris.bestScore.classic.v1';
   const SPRINT_BEST_KEY = 'chuntris.bestTime.sprint40.v1';
+  const NICKNAME_KEY = 'chuntris.nickname.v1';
+  const RANKING_ENDPOINT = '/api/content?type=chuntris-ranking';
   const REACTION_SPRITE = 'assets/chuntris/reactions.webp';
   const REACTION_MAP = Object.freeze({
     idle: 0, gameover: 1, dizzy: 2, cryA: 3, cryB: 4,
@@ -39,11 +42,17 @@
     start: document.getElementById('chuntris-start'), pause: document.getElementById('chuntris-pause'),
     sound: document.getElementById('chuntris-sound'), volume: document.getElementById('chuntris-volume'),
     overlay: document.getElementById('chuntris-overlay'), overlayTitle: document.getElementById('chuntris-overlay-title'),
-    overlayCopy: document.getElementById('chuntris-overlay-copy'), mobile: document.getElementById('chuntris-mobile-controls')
+    overlayCopy: document.getElementById('chuntris-overlay-copy'), mobile: document.getElementById('chuntris-mobile-controls'),
+    nickname: document.getElementById('chuntris-nickname'), rankingStatus: document.getElementById('chuntris-ranking-status'),
+    rankingList: document.getElementById('chuntris-ranking-list')
   };
   if (!els.game || !els.board) return;
 
+  const rankingButtons = [...document.querySelectorAll('[data-chuntris-ranking-mode]')];
   let mode = 'classic';
+  let rankingMode = 'classic';
+  let rankingRequestId = 0;
+  let lastSubmittedTerminal = '';
   let game = new Engine.ChuntrisGame({ mode });
   let rafId = 0;
   let lastStatus = 'idle';
@@ -65,6 +74,7 @@
   }
 
   function formatTime(ms) {
+    if (RankingCore?.formatTime) return RankingCore.formatTime(ms);
     const safe = Math.max(0, Math.floor(Number(ms) || 0));
     const minutes = Math.floor(safe / 60000);
     const seconds = Math.floor((safe % 60000) / 1000);
@@ -74,6 +84,88 @@
 
   function currentBest() {
     return mode === 'classic' ? numberFromStorage(CLASSIC_BEST_KEY, 0) : numberFromStorage(SPRINT_BEST_KEY, 0);
+  }
+
+  function currentNickname() {
+    const result = RankingCore?.validateNickname(els.nickname?.value || '');
+    return result?.ok ? result : null;
+  }
+
+  function syncRankingButtons() {
+    rankingButtons.forEach(button => {
+      const active = button.dataset.chuntrisRankingMode === rankingMode;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
+  }
+
+  function renderRanking(entries) {
+    if (!els.rankingList) return;
+    const current = currentNickname();
+    els.rankingList.replaceChildren();
+    entries.slice(0, 10).forEach((entry, index) => {
+      const item = document.createElement('li');
+      const rank = document.createElement('span');
+      const nickname = document.createElement('span');
+      const metric = document.createElement('strong');
+      rank.className = 'rank'; nickname.className = 'nickname'; metric.className = 'metric';
+      rank.textContent = String(entry.rank || index + 1);
+      nickname.textContent = String(entry.nickname || '익명');
+      metric.textContent = rankingMode === 'sprint40'
+        ? formatTime(Number(entry.timeMs) || 0)
+        : Number(entry.score || 0).toLocaleString('ko-KR');
+      if (current && RankingCore?.normalizeNickname(entry.nickname).toLocaleLowerCase('ko-KR') === current.key) {
+        item.classList.add('is-current-player');
+      }
+      item.append(rank, nickname, metric);
+      els.rankingList.append(item);
+    });
+    if (els.rankingStatus) {
+      els.rankingStatus.textContent = entries.length ? `TOP ${Math.min(entries.length, 10)} · 최고 기록 기준` : '아직 등록된 기록이 없어요.';
+    }
+  }
+
+  async function loadRanking(nextMode = mode) {
+    rankingMode = nextMode === 'sprint40' ? 'sprint40' : 'classic';
+    syncRankingButtons();
+    const requestId = ++rankingRequestId;
+    if (els.rankingStatus) els.rankingStatus.textContent = '랭킹 불러오는 중…';
+    if (typeof fetch !== 'function') {
+      if (els.rankingStatus) els.rankingStatus.textContent = '랭킹 연결을 사용할 수 없어요. 게임은 계속할 수 있어요.';
+      return;
+    }
+    try {
+      const response = await fetch(`${RANKING_ENDPOINT}&mode=${encodeURIComponent(rankingMode)}`, { headers: { accept:'application/json' } });
+      if (!response.ok) throw new Error(`ranking ${response.status}`);
+      const payload = await response.json();
+      if (requestId !== rankingRequestId) return;
+      renderRanking(Array.isArray(payload.entries) ? payload.entries : []);
+    } catch {
+      if (requestId === rankingRequestId && els.rankingStatus) {
+        els.rankingStatus.textContent = '랭킹을 불러오지 못했어요. 게임은 계속할 수 있어요.';
+      }
+    }
+  }
+
+  async function submitRanking(state) {
+    const nickname = currentNickname();
+    if (!nickname || typeof fetch !== 'function') return;
+    const key = `${mode}:${state.status}:${state.elapsedMs}:${state.score}:${state.lines}`;
+    if (key === lastSubmittedTerminal) return;
+    lastSubmittedTerminal = key;
+    try {
+      const response = await fetch(RANKING_ENDPOINT, {
+        method:'POST',
+        headers:{ 'content-type':'application/json', accept:'application/json' },
+        body:JSON.stringify({ mode, nickname:nickname.displayName, score:state.score, lines:state.lines, level:state.level, timeMs:state.elapsedMs })
+      });
+      if (!response.ok) throw new Error(`ranking ${response.status}`);
+      const payload = await response.json();
+      if (payload.mode === rankingMode && Array.isArray(payload.entries)) renderRanking(payload.entries);
+      else void loadRanking(rankingMode);
+    } catch {
+      if (els.rankingStatus) els.rankingStatus.textContent = '기록 저장에 실패했어요. 게임 기록은 기기 안에 유지돼요.';
+    }
   }
 
   function setReaction(name) {
@@ -207,7 +299,8 @@
 
   function render() {
     const state=game.getSnapshot();
-    updateRecords(state,lastStatus); observeEvents(state);
+    const previousStatus=lastStatus;
+    updateRecords(state,previousStatus); observeEvents(state);
     drawBoard(state); drawMini(els.hold,state.hold? [state.hold]:[],1); drawMini(els.next,state.next,5);
     els.score.textContent=state.score.toLocaleString('ko-KR'); els.level.textContent=state.level;
     els.lines.textContent=mode==='sprint40'?`${state.lines} / 40`:state.lines; els.time.textContent=formatTime(state.elapsedMs);
@@ -218,16 +311,20 @@
     const showOverlay=['paused','gameover','completed'].includes(state.status); els.overlay.hidden=!showOverlay;
     if(showOverlay){els.overlayTitle.textContent=state.status==='paused'?'PAUSED':state.status==='completed'?'40 LINES!':'GAME OVER';els.overlayCopy.textContent=statusMessage(state);}
     setReaction(chooseReaction(state));
-    if(lastStatus!==state.status && root.ChuntrisAudio){if(state.status==='gameover')root.ChuntrisAudio.play('gameover');if(state.status==='completed')root.ChuntrisAudio.play('complete');}
+    if(previousStatus!==state.status && root.ChuntrisAudio){if(state.status==='gameover')root.ChuntrisAudio.play('gameover');if(state.status==='completed')root.ChuntrisAudio.play('complete');}
+    if(previousStatus!==state.status && ((mode==='classic'&&state.status==='gameover')||(mode==='sprint40'&&state.status==='completed'))) void submitRanking(state);
     lastStatus=state.status;
     return state;
   }
 
   function start() {
+    const nickname=currentNickname();
+    if(!nickname){els.status.textContent='닉네임은 한글/영문/숫자/공백/_/- 조합으로 2~16자 입력해 주세요.';els.nickname?.focus();return false;}
+    storageSet(NICKNAME_KEY,nickname.displayName);
     if(root.ChuntrisAudio) root.ChuntrisAudio.resume();
     if(['playing','paused','gameover','completed'].includes(game.getSnapshot().status)) game.reset(mode);
-    game.start(Date.now()); lastStatus='idle'; lastLevel=1; lastClearAt=null; lastInputAt=Date.now(); transientReaction=null;
-    render(); ensureLoop();
+    game.start(Date.now()); lastStatus='idle'; lastLevel=1; lastClearAt=null; lastInputAt=Date.now(); transientReaction=null; lastSubmittedTerminal='';
+    render(); ensureLoop(); return true;
   }
 
   function pause() {
@@ -239,7 +336,7 @@
   function setMode(nextMode) {
     mode=nextMode==='sprint40'?'sprint40':'classic'; game=new Engine.ChuntrisGame({mode});
     document.querySelectorAll('[data-chuntris-mode]').forEach(button=>{const active=button.dataset.chuntrisMode===mode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
-    lastStatus='idle';lastLevel=1;lastClearAt=null;transientReaction=null;render();
+    lastStatus='idle';lastLevel=1;lastClearAt=null;transientReaction=null;lastSubmittedTerminal='';render();void loadRanking(mode);
   }
 
   function act(action) {
@@ -281,7 +378,9 @@
   });
 
   document.querySelectorAll('[data-chuntris-mode]').forEach(button=>button.addEventListener('click',()=>setMode(button.dataset.chuntrisMode)));
+  rankingButtons.forEach(button=>button.addEventListener('click',()=>void loadRanking(button.dataset.chuntrisRankingMode)));
   els.start.addEventListener('click',start); els.pause.addEventListener('click',pause);
+  els.nickname?.addEventListener('change',()=>{const nickname=currentNickname();if(nickname)storageSet(NICKNAME_KEY,nickname.displayName);renderRanking([...els.rankingList?.children||[]].length?[]:[]);void loadRanking(rankingMode);});
   if(els.sound&&root.ChuntrisAudio){const settings=root.ChuntrisAudio.getSettings();els.sound.setAttribute('aria-pressed',String(settings.enabled));els.sound.textContent=settings.enabled?'효과음 ON':'효과음 OFF';els.volume.value=String(Math.round(settings.volume*100));els.sound.addEventListener('click',()=>{const next=els.sound.getAttribute('aria-pressed')!=='true';root.ChuntrisAudio.setEnabled(next);els.sound.setAttribute('aria-pressed',String(next));els.sound.textContent=next?'효과음 ON':'효과음 OFF';root.ChuntrisAudio.resume();});els.volume.addEventListener('input',()=>root.ChuntrisAudio.setVolume(Number(els.volume.value)/100));}
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&game.getSnapshot().status==='playing')game.pause(Date.now());render();});
   root.addEventListener('resize',render); root.addEventListener('orientationchange',()=>setTimeout(render,80));
@@ -289,6 +388,7 @@
   function frame(){if(game.getSnapshot().status==='playing')game.advance(Date.now());render();rafId=root.requestAnimationFrame(frame);}
   function ensureLoop(){if(!rafId)rafId=root.requestAnimationFrame(frame);}
 
-  root.ChuntrisApp={start,pause,setMode,render,getGame:()=>game};
-  setReaction('idle'); render(); ensureLoop();
+  if(els.nickname) els.nickname.value=storageGet(NICKNAME_KEY,'');
+  root.ChuntrisApp={start,pause,setMode,render,loadRanking,getNickname:()=>els.nickname?.value||'',getGame:()=>game};
+  setReaction('idle'); render(); ensureLoop(); void loadRanking(mode);
 })(typeof globalThis !== 'undefined' ? globalThis : window);

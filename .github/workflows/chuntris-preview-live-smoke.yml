@@ -1,0 +1,134 @@
+name: Chuntris preview live smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'chuntris.html'
+      - 'chuntris.css'
+      - 'chuntris-ranking-core.js'
+      - 'chuntris.js'
+      - 'api/content.js'
+      - 'lib/chuntris-ranking-api.js'
+      - '.github/workflows/chuntris-preview-live-smoke.yml'
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  live-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Resolve and wait for current Vercel Preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            echo "Preview discovery attempt ${attempt}/60"
+            comments=$(curl -fsS \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'Accept: application/vnd.github+json' \
+              "https://api.github.com/repos/$REPO/issues/$PR_NUMBER/comments?per_page=100")
+            preview=$(printf '%s' "$comments" | node -e '
+              let s=""; process.stdin.on("data",d=>s+=d).on("end",()=>{
+                const rows=JSON.parse(s).filter(x=>x.user?.login==="vercel[bot]");
+                for(const row of rows.reverse()){
+                  const m=String(row.body||"").match(/\[Preview\]\((https:\/\/[^)]+)\)/);
+                  if(m){process.stdout.write(m[1]);return;}
+                }
+              });')
+            if [ -n "$preview" ]; then
+              stamp=$(date +%s)
+              if curl -fsS -H 'cache-control: no-cache' "$preview/chuntris.js?_smoke=$stamp" -o /tmp/chuntris-preview.js && \
+                 grep -q "/api/content?type=chuntris-ranking" /tmp/chuntris-preview.js && \
+                 curl -fsS -H 'cache-control: no-cache' "$preview/api/content?type=chuntris-ranking&mode=classic&_smoke=$stamp" -o /tmp/chuntris-preview-ranking.json && \
+                 node -e "const p=require('/tmp/chuntris-preview-ranking.json');if(p.mode!=='classic'||!Array.isArray(p.entries))process.exit(1)"; then
+                echo "PREVIEW_BASE=$preview" >> "$GITHUB_ENV"
+                echo "Preview ready: $preview"
+                exit 0
+              fi
+            fi
+            sleep 5
+          done
+          echo 'Current Vercel Preview did not become API-ready.' >&2
+          exit 1
+      - name: Verify ranking API validation without leaderboard pollution
+        run: |
+          set -euo pipefail
+          host=${PREVIEW_BASE#https://}
+          status=$(curl -sS -o /tmp/chuntris-invalid.json -w '%{http_code}' \
+            -X POST \
+            -H 'content-type: application/json' \
+            -H "origin: https://$host" \
+            --data '{"mode":"classic","nickname":"x","score":1,"lines":1,"level":1,"timeMs":1}' \
+            "$PREVIEW_BASE/api/content?type=chuntris-ranking")
+          test "$status" = '400'
+          node -e "const p=require('/tmp/chuntris-invalid.json');if(p.error!=='invalid_nickname')process.exit(1)"
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Verify live preview layout
+        run: |
+          node <<'NODE'
+          const assert=require('node:assert/strict');
+          const { chromium }=require('playwright');
+          const BASE=process.env.PREVIEW_BASE;
+
+          async function verify(browser, options, label) {
+            const page=await browser.newPage(options);
+            const errors=[];
+            page.on('pageerror',error=>errors.push(error.message));
+            await page.goto(`${BASE}/chuntris.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
+            await page.waitForFunction(()=>Boolean(window.ChuntrisApp?.getGame?.()));
+            const viewport=page.viewportSize();
+            const documentWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
+            const board=await page.locator('.chuntris-board-wrap').boundingBox();
+            assert.ok(viewport&&board,`${label} board missing`);
+            assert.ok(documentWidth<=viewport.width+1,`${label} horizontal overflow`);
+            assert.ok(board.width>0&&board.height>0,`${label} board invalid`);
+            assert.ok(board.height<=viewport.height-40,`${label} board too tall`);
+
+            if(viewport.width>1180){
+              const selectors=['.chuntris-ranking-rail','.chuntris-left-panel','.chuntris-board-wrap','.chuntris-right-panel','.chuntris-help-rail'];
+              const [ranking,left,center,right,help]=await Promise.all(selectors.map(s=>page.locator(s).boundingBox()));
+              assert.ok(ranking&&left&&center&&right&&help,`${label} five-region layout missing`);
+              assert.ok(ranking.x<left.x&&left.x<center.x&&center.x<right.x&&right.x<help.x,`${label} five-region order invalid`);
+              const [hold,next,stats,reaction]=await Promise.all([
+                page.locator('#chuntris-hold').boundingBox(),page.locator('#chuntris-next').boundingBox(),
+                page.locator('.chuntris-stats').boundingBox(),page.locator('#chuntris-reaction').boundingBox()
+              ]);
+              assert.ok(hold&&next&&stats&&reaction,`${label} side content missing`);
+              assert.ok(next.width>hold.width,`${label} NEXT not larger than HOLD`);
+              assert.ok(stats.y>hold.y,`${label} score not below HOLD`);
+              assert.ok(reaction.y>next.y&&reaction.width>=120,`${label} reaction placement/size invalid`);
+            }
+
+            await page.locator('#chuntris-nickname').fill('PreviewCheck');
+            await page.locator('#chuntris-start').click();
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-game-status'),'playing');
+            assert.deepEqual(errors,[],`${label} page errors: ${errors.join(' | ')}`);
+            await page.close();
+          }
+
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            try{
+              await verify(browser,{viewport:{width:1280,height:900}},'1280x900');
+              await verify(browser,{viewport:{width:1280,height:740}},'1280x740');
+              await verify(browser,{viewport:{width:900,height:800}},'900x800');
+              await verify(browser,{viewport:{width:390,height:844},isMobile:true,hasTouch:true},'390x844');
+              await verify(browser,{viewport:{width:360,height:800},isMobile:true,hasTouch:true},'360x800');
+            } finally { await browser.close(); }
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE

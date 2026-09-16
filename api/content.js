@@ -9,6 +9,7 @@ const fetchYoutube = require('./youtube');
 const fetchSchedule = require('./schedule');
 const fetchCatchDetail = require('./catch-detail');
 const fetchChunbongData = require('../lib/chunbong-data');
+const handleChuntrisRanking = require('../lib/chuntris-ranking-api');
 const youtubeEngagementCache = require('../data/youtube-engagement-cache.json');
 const soopMetricHistory = require('../data/soop-follower-history.json');
 const { buildEngagementRankings } = require('../lib/youtube-engagement');
@@ -238,6 +239,7 @@ function compactDataPayload(payload, options = {}) {
 // Vercel entry point for multiplexed content requests.
 async function handler(req,res) {
   const type=req.query?.type;
+  if(type==='chuntris-ranking') return handleChuntrisRanking(req,res);
   const forceDataRefresh=type==='data'&&String(req.query?.refresh||'')==='1';
   res.setHeader('Cache-Control',forceDataRefresh?'no-store, max-age=0':'s-maxage=180, stale-while-revalidate=600');
   try {
