@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const Core = require('../chunbak-game-core.js');
+
+assert.equal(Core.STAGES.length,11);
+assert.equal(Core.MAX_STAGE,11);
+assert.equal(Core.mergeResult(1,1),2);
+assert.equal(Core.mergeResult(10,10),11);
+assert.equal(Core.mergeResult(11,11),null);
+assert.equal(Core.mergeResult(2,3),null);
+assert.deepEqual(Core.scoreMerge(2,1),{base:20,bonus:10,total:30});
+assert.deepEqual(Core.scoreMerge(11,20),{base:1500,bonus:100,total:1600});
+assert.equal(Core.nextCombo(1000,2000,2),3);
+assert.equal(Core.nextCombo(1000,2300,2),1);
+const rolls=[0,.349,.35,.619,.62,.799,.80,.919,.92,.999];
+assert.deepEqual(rolls.map(v=>Core.pickSpawnStage(()=>v)),[1,1,2,2,3,3,4,4,5,5]);
+assert.deepEqual(Core.updateDangerState({startedAt:null,aboveLine:true,nowMs:1000,thresholdMs:2000}),{startedAt:1000,gameOver:false});
+assert.deepEqual(Core.updateDangerState({startedAt:1000,aboveLine:true,nowMs:3000,thresholdMs:2000}),{startedAt:1000,gameOver:true});
+assert.deepEqual(Core.updateDangerState({startedAt:1000,aboveLine:false,nowMs:1500,thresholdMs:2000}),{startedAt:null,gameOver:false});
+
+console.log('chunbak game core regression passed');
