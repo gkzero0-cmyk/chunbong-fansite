@@ -22,7 +22,7 @@ assert.ok(css.includes('--chuntris-stage-height:'), 'desktop playfield must size
 assert.ok(html.includes('<link rel="stylesheet" href="chuntris-fullscreen.css">'), 'fullscreen override must load after base Chuntris CSS');
 assert.ok(fullscreenCss.includes('--chuntris-ranking-width:190px'), 'wide desktop ranking rail must be capped at 190px');
 assert.ok(fullscreenCss.includes('--chuntris-help-width:180px'), 'wide desktop keyboard help rail must be capped at 180px');
-assert.match(fullscreenCss,/grid-template-columns:minmax\(170px,var\(--chuntris-ranking-width\)\) minmax\(175px,190px\) minmax\(300px,calc\(var\(--chuntris-stage-height\)\/2\)\) minmax\(175px,190px\) minmax\(160px,var\(--chuntris-help-width\)\)/,'wide desktop must reserve enough width for an unclipped TIME value without stealing the board');
+assert.match(fullscreenCss,/grid-template-columns:minmax\(170px,var\(--chuntris-ranking-width\)\) minmax\(185px,200px\) minmax\(300px,calc\(var\(--chuntris-stage-height\)\/2\)\) minmax\(175px,190px\) minmax\(160px,var\(--chuntris-help-width\)\)/,'wide desktop must reserve enough width for an unclipped TIME value without stealing the board');
 assert.match(fullscreenCss,/--chuntris-stage-height:clamp\(620px,calc\(100dvh - 150px\),760px\)/,'tall wide desktop should keep a large board');
 assert.match(fullscreenCss,/@media\(min-width:1181px\) and \(max-height:820px\)\{[^}]*--chuntris-stage-height:clamp\(420px,calc\(100dvh - 170px\),600px\)/,'short wide desktop must reserve room for toolbar/status instead of clipping the bottom');
 assert.match(fullscreenCss,/#chuntris-time\{[^}]*white-space:nowrap[^}]*text-overflow:clip/,'TIME should not use ellipsis');
