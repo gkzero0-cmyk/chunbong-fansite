@@ -5,9 +5,6 @@ on:
     branches:
       - feat/chuntris-immersive-ui-20260917
 
-permissions:
-  contents: write
-
 jobs:
   regression:
     runs-on: ubuntu-latest
@@ -29,44 +26,3 @@ jobs:
           node tests/chuntris-modal-pause-regression.mjs
           node tests/chuntris-audio-effects-regression.mjs
           node tests/chuntris-effects-regression.mjs
-
-  apply-positional-effects:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: feat/chuntris-immersive-ui-20260917
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - name: Detect whether effect patch is needed
-        id: guard
-        run: |
-          if grep -Fq 'positional-impact-effects-v1' chuntris-immersive.css; then
-            echo 'needed=false' >> "$GITHUB_OUTPUT"
-          else
-            echo 'needed=true' >> "$GITHUB_OUTPUT"
-          fi
-      - name: Apply positional effect patch
-        if: steps.guard.outputs.needed == 'true'
-        run: python scripts/apply-chuntris-impact-effects.py
-      - name: Verify targeted regressions
-        if: steps.guard.outputs.needed == 'true'
-        run: |
-          node --check chuntris-engine.js
-          node --check chuntris.js
-          node tests/chuntris-effects-regression.mjs
-          node tests/chuntris-audio-effects-regression.mjs
-      - name: Commit focused implementation
-        if: steps.guard.outputs.needed == 'true'
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add chuntris.html chuntris-engine.js chuntris.js chuntris-immersive.css
-          git diff --cached --check
-          git commit -m 'feat: add positional Chuntris impact effects'
-          git push origin HEAD:feat/chuntris-immersive-ui-20260917
-      - name: Report existing implementation
-        if: steps.guard.outputs.needed == 'false'
-        run: echo 'Positional Chuntris effects are already applied.'
