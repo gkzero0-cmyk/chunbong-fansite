@@ -77,6 +77,8 @@ jobs:
             assert.ok(gameBox.x >= -1 && gameBox.x + gameBox.width <= viewport.width + 1, `${label} game frame outside viewport`);
             assert.ok(boardBox.width > 0 && boardBox.height > 0, `${label} board has invalid size`);
             assert.ok(boardBox.width <= viewport.width + 1, `${label} board wider than viewport`);
+            assert.ok(boardBox.y >= -1, `${label} board starts above viewport: ${boardBox.y}`);
+            assert.ok(boardBox.y + boardBox.height <= viewport.height + 1, `${label} board bottom clipped: ${boardBox.y + boardBox.height} > ${viewport.height}`);
 
             for (const id of ['#chuntris-utility-ranking','#chuntris-utility-sound','#chuntris-utility-controls','#chuntris-pause']) {
               assert.ok(await page.locator(id).isVisible(), `${label} utility missing: ${id}`);
@@ -90,7 +92,7 @@ jobs:
               ]);
               assert.ok(left && board && right, `${label} three-region layout missing`);
               assert.ok(left.x < board.x && board.x < right.x, `${label} three-region order invalid`);
-              assert.ok(board.width >= 280, `${label} enlarged board unexpectedly narrow: ${board.width}`);
+              assert.ok(board.width >= 240, `${label} enlarged board unexpectedly narrow: ${board.width}`);
               const [hold,next,stats,reaction] = await Promise.all([
                 page.locator('#chuntris-hold').boundingBox(),
                 page.locator('#chuntris-next').boundingBox(),
@@ -137,6 +139,7 @@ jobs:
             const browser = await chromium.launch({ headless:true });
             try {
               await verify(browser, { viewport:{ width:1440, height:900 } }, 'Desktop 1440x900');
+              await verify(browser, { viewport:{ width:1557, height:665 } }, 'Short desktop 1557x665');
               await verify(browser, { viewport:{ width:1024, height:768 } }, 'Tablet 1024x768');
               await verify(browser, { viewport:{ width:390, height:844 }, isMobile:true, hasTouch:true }, 'Mobile 390x844');
             } finally {
