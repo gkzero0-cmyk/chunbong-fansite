@@ -22,8 +22,8 @@
   <section class="content-section"><div class="page-shell">
     <section id="chunbak-game" class="chunbak-game reveal" data-game-status="idle" aria-label="춘박게임">
       <div class="chunbak-toolbar">
-        <label for="chunbak-nickname"><span>닉네임</span><input id="chunbak-nickname" maxlength="16" autocomplete="nickname" placeholder="2~16자"></label>
-        <div class="chunbak-actions"><button id="chunbak-start" class="btn btn-primary" type="button" disabled>게임 시작</button><button id="chunbak-restart" class="btn btn-ghost" type="button" disabled>다시 시작</button></div>
+        <label class="chunbak-nickname-label" for="chunbak-nickname"><span>닉네임</span><input id="chunbak-nickname" maxlength="16" autocomplete="nickname" placeholder="2~16자"></label>
+        <div class="chunbak-actions"><button id="chunbak-start" class="btn btn-primary" type="button" disabled>게임 시작</button><button id="chunbak-restart" class="btn btn-ghost" type="button" disabled>다시 시작</button><button id="chunbak-sound" class="chunbak-sound" type="button" aria-pressed="true">효과음 ON</button><label class="chunbak-volume-label" for="chunbak-volume">음량 <input id="chunbak-volume" type="range" min="0" max="100" step="1" value="70"></label></div>
       </div>
       <div class="chunbak-layout">
         <aside class="chunbak-rail chunbak-left" aria-label="기록과 전체 랭킹">
@@ -50,5 +50,5 @@
 <button class="to-top" type="button" aria-label="맨 위로 이동">↑</button>
 <script src="content.js"></script><script src="page.js"></script>
 <script src="assets/vendor/matter-0.20.0.min.js"></script>
-<script src="chunbak-game-core.js"></script><script src="chunbak-ranking-core.js"></script><script src="chunbak.js"></script>
+<script src="chunbak-game-core.js"></script><script src="chunbak-ranking-core.js"></script><script src="chunbak-audio.js"></script><script src="chunbak.js"></script>
 </body></html>
