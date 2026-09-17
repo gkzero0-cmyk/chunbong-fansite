@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const app = fs.readFileSync(new URL('../chuntris.js', import.meta.url), 'utf8');
+const css = fs.readFileSync(new URL('../chuntris-immersive.css', import.meta.url), 'utf8');
+for (const marker of ['showHardDropEffect','showClearEffect']) assert.ok(app.includes(marker), marker);
+for (const [lines,label] of [[1,'SINGLE'],[2,'DOUBLE'],[3,'TRIPLE'],[4,'QUAD']]) assert.ok(app.includes(`${lines}:'${label}'`) || app.includes(`${lines}: '${label}'`), `${lines} -> ${label}`);
+assert.ok(css.includes('.chuntris-harddrop-fx.is-active'));
+assert.ok(css.includes('.chuntris-clear-label.is-visible'));
+assert.ok(css.includes('prefers-reduced-motion'));
+console.log('chuntris effects regression passed');
