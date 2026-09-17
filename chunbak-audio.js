@@ -66,26 +66,47 @@
     if (!enabled || !supported.has(name) || !context) return;
     switch (name) {
       case 'start':
-        tone(330, 0.06, 'triangle', 0.07);
-        tone(495, 0.08, 'triangle', 0.08, 0.05);
+        tone(392, 0.06, 'sine', 0.065);
+        tone(523, 0.08, 'triangle', 0.075, 0.045);
+        tone(659, 0.10, 'sine', 0.06, 0.10);
         break;
       case 'drop':
-        tone(145, 0.055, 'square', 0.055);
+        tone(196, 0.055, 'sine', 0.05);
+        tone(147, 0.05, 'triangle', 0.035, 0.025);
         break;
       case 'merge':
-        tone(360, 0.07, 'triangle', 0.08);
-        tone(520, 0.09, 'sine', 0.075, 0.045);
+        playMerge(4, 1);
         break;
       case 'highmerge':
-        tone(440, 0.08, 'triangle', 0.09);
-        tone(660, 0.1, 'triangle', 0.1, 0.055);
-        tone(880, 0.14, 'sine', 0.1, 0.12);
+        playMerge(9, 1);
         break;
       case 'gameover':
-        tone(260, 0.12, 'sawtooth', 0.075);
-        tone(185, 0.16, 'sawtooth', 0.07, 0.1);
-        tone(115, 0.2, 'sawtooth', 0.06, 0.22);
+        tone(294, 0.12, 'triangle', 0.055);
+        tone(247, 0.15, 'sine', 0.05, 0.10);
+        tone(196, 0.20, 'sine', 0.045, 0.22);
         break;
+    }
+  }
+
+  function playMerge(stage, combo = 1) {
+    if (!enabled || !context) return;
+    const safeStage = Math.min(11, Math.max(2, Math.trunc(Number(stage) || 2)));
+    const safeCombo = Math.max(1, Math.trunc(Number(combo) || 1));
+    const base = 300 + safeStage * 28 + Math.min(safeCombo - 1, 5) * 12;
+    if (safeStage <= 4) {
+      tone(base, 0.055, 'sine', 0.07);
+      tone(base * 1.5, 0.07, 'triangle', 0.05, 0.025);
+    } else if (safeStage <= 7) {
+      tone(base, 0.06, 'triangle', 0.075);
+      tone(base * 1.25, 0.075, 'sine', 0.065, 0.035);
+    } else if (safeStage <= 10) {
+      tone(base, 0.065, 'triangle', 0.08);
+      tone(base * 1.25, 0.08, 'triangle', 0.075, 0.035);
+      tone(base * 1.5, 0.11, 'sine', 0.07, 0.075);
+    } else {
+      tone(660, 0.08, 'triangle', 0.09);
+      tone(880, 0.10, 'triangle', 0.085, 0.05);
+      tone(1100, 0.14, 'sine', 0.08, 0.11);
     }
   }
 
@@ -106,5 +127,5 @@
     return { enabled, volume };
   }
 
-  root.ChunbakAudio = { resume, play, setEnabled, setVolume, getSettings };
+  root.ChunbakAudio = { resume, play, playMerge, setEnabled, setVolume, getSettings };
 })(typeof globalThis !== 'undefined' ? globalThis : window);

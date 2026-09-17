@@ -1,4 +1,4 @@
-name: Chunbak postgame preview smoke
+name: Chunbak immersive postgame preview smoke
 
 on:
   pull_request:
@@ -37,7 +37,7 @@ jobs:
           done
           cat /tmp/chunbak-http.log
           exit 1
-      - name: Verify postgame registration flow
+      - name: Verify immersive play and postgame registration flow
         run: |
           node <<'NODE'
           const assert=require('node:assert/strict');
@@ -49,34 +49,52 @@ jobs:
             const errors=[];
             page.on('pageerror',error=>errors.push(error.message));
             await page.goto(URL,{waitUntil:'domcontentloaded'});
-            await page.waitForFunction(()=>Boolean(window.ChunbakGame));
-            await page.waitForFunction(()=>Boolean(window.ChunbakPostgameRanking));
+            await page.waitForFunction(()=>Boolean(window.ChunbakGame&&window.ChunbakPostgameRanking));
             await page.waitForFunction(()=>!document.querySelector('#chunbak-start')?.disabled);
             const viewport=page.viewportSize();
             assert.ok(viewport,`${label} viewport missing`);
             assert.equal(await page.locator('#chunbak-nickname').count(),0,`${label} pre-game nickname must be absent`);
-            assert.ok(await page.locator('#chunbak-ranking-register').count(),`${label} register button missing`);
-            assert.equal(await page.locator('#chunbak-ranking-submit-panel').isVisible(),false,`${label} submit panel must start hidden`);
+            assert.ok(await page.locator('#chunbak-start-view').isVisible(),`${label} start view missing`);
+            assert.equal(await page.locator('#chunbak-play-view').isVisible(),false,`${label} play view must start hidden`);
             assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),`${label} horizontal overflow`);
+
+            await page.locator('[data-chunbak-open="ranking"]').first().click();
+            assert.ok(await page.locator('[data-chunbak-panel="ranking"]').isVisible(),`${label} start ranking modal missing`);
+            await page.locator('#chunbak-modal-close').click();
 
             await page.locator('#chunbak-start').click();
             await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing');
+            assert.ok(await page.locator('#chunbak-play-view').isVisible(),`${label} play view missing`);
             const canvas=page.locator('#chunbak-canvas');
             const box=await canvas.boundingBox();
             assert.ok(box&&box.x>=-1&&box.x+box.width<=viewport.width+1,`${label} canvas clipped`);
 
-            await page.evaluate(()=>{
-              ChunbakGame.createPiece(1,190,520);
-              ChunbakGame.createPiece(1,215,520);
-            });
+            await page.evaluate(()=>{ChunbakGame.createPiece(1,190,520);ChunbakGame.createPiece(1,215,520);});
             await page.waitForFunction(()=>Number(document.querySelector('#chunbak-score')?.textContent||0)>0);
+            assert.ok(await page.locator('#chunbak-fx-layer').evaluate(el=>el.childElementCount>0),`${label} merge effect missing`);
+            await page.evaluate(()=>ChunbakGame.showCombo(2,210,420));
+            assert.equal((await page.locator('#chunbak-combo').textContent())?.trim(),'COMBO x2',`${label} combo label missing`);
 
-            await page.evaluate(()=>{
-              const overlay=document.querySelector('#chunbak-overlay');
-              const root=document.querySelector('#chunbak-game');
-              overlay.hidden=false;
-              root.dataset.gameStatus='gameover';
-            });
+            await page.locator('[data-chunbak-open="ranking"]').last().click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='paused');
+            assert.ok(await page.locator('[data-chunbak-panel="ranking"]').isVisible(),`${label} playing ranking modal missing`);
+            await page.locator('#chunbak-modal-close').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing');
+
+            const scoreBefore=(await page.locator('#chunbak-score').textContent())?.trim();
+            const nextBefore=await page.locator('#chunbak-next img').getAttribute('src');
+            await page.locator('#chunbak-pause').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='paused');
+            assert.ok(await page.locator('[data-chunbak-panel="pause"]').isVisible(),`${label} pause panel missing`);
+            await page.waitForTimeout(180);
+            assert.equal((await page.locator('#chunbak-score').textContent())?.trim(),scoreBefore,`${label} paused score changed`);
+            assert.equal(await page.locator('#chunbak-next img').getAttribute('src'),nextBefore,`${label} paused next stage changed`);
+            await page.locator('[data-chunbak-action="resume"]').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing');
+
+            await page.evaluate(()=>ChunbakGame.setGameOver());
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='gameover');
+            assert.ok(await page.locator('#chunbak-overlay').isVisible(),`${label} gameover overlay missing`);
             await page.locator('#chunbak-ranking-register').click();
             assert.ok(await page.locator('#chunbak-ranking-submit-panel').isVisible(),`${label} submit panel did not open`);
             await page.locator('#chunbak-ranking-nickname').fill('x');
