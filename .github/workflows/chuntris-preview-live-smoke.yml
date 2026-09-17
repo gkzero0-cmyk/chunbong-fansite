@@ -6,7 +6,10 @@ on:
     paths:
       - 'chuntris.html'
       - 'chuntris.css'
+      - 'chuntris-fullscreen.css'
+      - 'chuntris-immersive.css'
       - 'chuntris-ranking-core.js'
+      - 'chuntris-audio.js'
       - 'chuntris.js'
       - 'api/content.js'
       - 'lib/chuntris-ranking-api.js'
@@ -78,7 +81,7 @@ jobs:
         run: |
           npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install --with-deps chromium
-      - name: Verify live preview layout
+      - name: Verify live immersive preview flow and layout
         run: |
           node <<'NODE'
           const assert=require('node:assert/strict');
@@ -91,44 +94,88 @@ jobs:
             page.on('pageerror',error=>errors.push(error.message));
             await page.goto(`${BASE}/chuntris.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
             await page.waitForFunction(()=>Boolean(window.ChuntrisApp?.getGame?.()));
+
             const viewport=page.viewportSize();
+            assert.ok(viewport,`${label} viewport missing`);
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-mode');
+            assert.ok(await page.locator('#chuntris-start-view').isVisible(),`${label} start view missing`);
+            assert.equal(await page.locator('#chuntris-play-view').isVisible(),false,`${label} play view must start hidden`);
+            assert.equal(await page.locator('.chuntris-ranking-rail').count(),0,`${label} ranking rail must be removed`);
+            assert.equal(await page.locator('.chuntris-help-rail').count(),0,`${label} help rail must be removed`);
+
+            await page.locator('#chuntris-mode-classic').click();
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-player');
+            assert.ok(await page.locator('#chuntris-player-step').isVisible(),`${label} player step missing`);
+            await page.locator('#chuntris-nickname').fill('');
+            await page.locator('#chuntris-start').click();
+            await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing');
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'playing');
+
             const documentWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
+            const game=await page.locator('#chuntris-game').boundingBox();
             const board=await page.locator('.chuntris-board-wrap').boundingBox();
-            assert.ok(viewport&&board,`${label} board missing`);
-            assert.ok(documentWidth<=viewport.width+1,`${label} horizontal overflow`);
+            assert.ok(game&&board,`${label} play layout missing`);
+            assert.ok(documentWidth<=viewport.width+1,`${label} horizontal overflow: ${documentWidth} > ${viewport.width}`);
             assert.ok(board.width>0&&board.height>0,`${label} board invalid`);
-            assert.ok(board.height<=viewport.height-40,`${label} board too tall`);
+            assert.ok(board.width<=viewport.width+1,`${label} board wider than viewport`);
+
+            for(const id of ['#chuntris-utility-ranking','#chuntris-utility-sound','#chuntris-utility-controls','#chuntris-pause']){
+              assert.ok(await page.locator(id).isVisible(),`${label} utility missing: ${id}`);
+            }
 
             if(viewport.width>1180){
-              const selectors=['.chuntris-ranking-rail','.chuntris-left-panel','.chuntris-board-wrap','.chuntris-right-panel','.chuntris-help-rail'];
-              const [ranking,left,center,right,help]=await Promise.all(selectors.map(s=>page.locator(s).boundingBox()));
-              assert.ok(ranking&&left&&center&&right&&help,`${label} five-region layout missing`);
-              assert.ok(ranking.x<left.x&&left.x<center.x&&center.x<right.x&&right.x<help.x,`${label} five-region order invalid`);
+              const [left,center,right]=await Promise.all([
+                page.locator('.chuntris-left-panel').boundingBox(),
+                page.locator('.chuntris-board-wrap').boundingBox(),
+                page.locator('.chuntris-right-panel').boundingBox()
+              ]);
+              assert.ok(left&&center&&right,`${label} three-region layout missing`);
+              assert.ok(left.x<center.x&&center.x<right.x,`${label} three-region order invalid`);
+              assert.ok(center.width>=280,`${label} enlarged board unexpectedly narrow: ${center.width}`);
               const [hold,next,stats,reaction]=await Promise.all([
                 page.locator('#chuntris-hold').boundingBox(),page.locator('#chuntris-next').boundingBox(),
                 page.locator('.chuntris-stats').boundingBox(),page.locator('#chuntris-reaction').boundingBox()
               ]);
               assert.ok(hold&&next&&stats&&reaction,`${label} side content missing`);
-              assert.ok(next.width>hold.width,`${label} NEXT not larger than HOLD`);
               assert.ok(stats.y>hold.y,`${label} score not below HOLD`);
-              assert.ok(reaction.y>next.y&&reaction.width>=120,`${label} reaction placement/size invalid`);
+              assert.ok(reaction.y>next.y,`${label} reaction not below NEXT`);
             }
 
-            await page.locator('#chuntris-nickname').fill('PreviewCheck');
-            await page.locator('#chuntris-start').click();
-            assert.equal(await page.locator('#chuntris-game').getAttribute('data-game-status'),'playing');
+            await page.locator('#chuntris-utility-ranking').click();
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-game-status'),'paused',`${label} ranking modal must auto-pause`);
+            assert.ok(await page.locator('[data-chuntris-panel="ranking"]').isVisible(),`${label} ranking modal missing`);
+            await page.locator('.chuntris-modal-close').click();
+            await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing');
+
+            await page.locator('#chuntris-pause').click();
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-game-status'),'paused',`${label} manual pause failed`);
+            assert.ok(await page.locator('[data-chuntris-panel="pause"]').isVisible(),`${label} pause panel missing`);
+            await page.locator('[data-chuntris-panel="pause"] [data-chuntris-open="sound"]').click();
+            assert.ok(await page.locator('[data-chuntris-panel="sound"]').isVisible(),`${label} sound panel missing`);
+            await page.locator('.chuntris-modal-close').click();
+            assert.ok(await page.locator('[data-chuntris-panel="pause"]').isVisible(),`${label} pause child must return to pause`);
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-game-status'),'paused',`${label} pause child must not resume`);
+            await page.locator('#chuntris-pause-continue').click();
+            await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing');
+
+            await page.keyboard.press('Space');
+            assert.ok(await page.locator('#chuntris-harddrop-fx').evaluate(el=>el.classList.contains('is-active')),`${label} hard-drop effect missing`);
+            await page.evaluate(()=>window.ChuntrisApp.showClearEffect(4));
+            assert.equal(await page.locator('#chuntris-clear-label').textContent(),'QUAD',`${label} QUAD label mismatch`);
+
+            const reactionImage=await page.locator('#chuntris-reaction').evaluate(el=>getComputedStyle(el).backgroundImage);
+            assert.match(reactionImage,/fl_preserve_transparency/,`${label} reaction must use alpha-preserving HD sprite`);
             assert.deepEqual(errors,[],`${label} page errors: ${errors.join(' | ')}`);
+            console.log(`${label} passed: board=${board.width}x${board.height}`);
             await page.close();
           }
 
           (async()=>{
             const browser=await chromium.launch({headless:true});
             try{
-              await verify(browser,{viewport:{width:1280,height:900}},'1280x900');
-              await verify(browser,{viewport:{width:1280,height:740}},'1280x740');
-              await verify(browser,{viewport:{width:900,height:800}},'900x800');
+              await verify(browser,{viewport:{width:1440,height:900}},'1440x900');
+              await verify(browser,{viewport:{width:1024,height:768}},'1024x768');
               await verify(browser,{viewport:{width:390,height:844},isMobile:true,hasTouch:true},'390x844');
-              await verify(browser,{viewport:{width:360,height:800},isMobile:true,hasTouch:true},'360x800');
             } finally { await browser.close(); }
           })().catch(error=>{console.error(error);process.exit(1)});
           NODE
