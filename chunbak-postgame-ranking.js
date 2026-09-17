@@ -13,6 +13,8 @@
   const submitStatus = document.getElementById('chunbak-ranking-submit-status');
   const rankingStatus = document.getElementById('chunbak-ranking-status');
   const rankingList = document.getElementById('chunbak-ranking-list');
+  const rankingModalStatus = document.getElementById('chunbak-ranking-modal-status');
+  const rankingModalList = document.getElementById('chunbak-ranking-modal-list');
   const scoreNode = document.getElementById('chunbak-score');
   const maxLevelNode = document.getElementById('chunbak-max-level');
   if (!root || !registerButton || !panel || !nicknameInput || !submitButton || !cancelButton) return;
@@ -44,8 +46,8 @@
     return root.dataset.gameStatus === 'gameover';
   }
 
-  function renderRanking(entries = []) {
-    if (!rankingList) return;
+  function renderRankingList(target, entries = []) {
+    if (!target) return;
     const fragment = document.createDocumentFragment();
     entries.slice(0, 10).forEach((entry, index) => {
       const item = document.createElement('li');
@@ -58,11 +60,21 @@
       item.append(rank, name, metric);
       fragment.appendChild(item);
     });
-    rankingList.replaceChildren(fragment);
+    target.replaceChildren(fragment);
+  }
+
+  function renderRanking(entries = []) {
+    renderRankingList(rankingList, entries);
+    renderRankingList(rankingModalList, entries);
   }
 
   function setStatus(message) {
     if (submitStatus) submitStatus.textContent = message;
+  }
+
+  function setRankingStatus(message) {
+    if (rankingStatus) rankingStatus.textContent = message;
+    if (rankingModalStatus) rankingModalStatus.textContent = message;
   }
 
   function resetTerminalRegistration() {
@@ -134,7 +146,7 @@
       renderRanking(Array.isArray(payload.entries) ? payload.entries : []);
       const message = payload.updated ? '전체 랭킹에 기록을 등록했습니다.' : '기존 최고 기록이 유지되었습니다.';
       setStatus(message);
-      if (rankingStatus) rankingStatus.textContent = message;
+      setRankingStatus(message);
       registerButton.textContent = '등록 완료 ✓';
       registerButton.disabled = true;
       return true;
