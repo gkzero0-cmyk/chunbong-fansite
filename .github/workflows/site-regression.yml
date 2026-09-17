@@ -30,6 +30,7 @@ jobs:
           node --check chuntris.js
           node --check chunbak-game-core.js
           node --check chunbak-ranking-core.js
+          node --check chunbak-audio.js
           node --check chunbak.js
           node --check api/_shared.js
           node --check api/content.js
