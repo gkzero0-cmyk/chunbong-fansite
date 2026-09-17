@@ -1,0 +1,1 @@
+1557x665 and 1557x661 are the regression viewport targets from the reported production screenshots.
