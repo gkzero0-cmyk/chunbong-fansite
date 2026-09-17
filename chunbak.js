@@ -22,6 +22,7 @@
   const playView = document.getElementById('chunbak-play-view');
   const startButton = document.getElementById('chunbak-start');
   const restartButton = document.getElementById('chunbak-restart');
+  const pauseButton = document.getElementById('chunbak-pause');
   const soundButton = document.getElementById('chunbak-sound');
   const volumeInput = document.getElementById('chunbak-volume');
   const nicknameInput = document.getElementById('chunbak-nickname');
@@ -30,10 +31,16 @@
   const maxLevelNode = document.getElementById('chunbak-max-level');
   const rankingStatus = document.getElementById('chunbak-ranking-status');
   const rankingList = document.getElementById('chunbak-ranking-list');
+  const rankingModalStatus = document.getElementById('chunbak-ranking-modal-status');
+  const rankingModalList = document.getElementById('chunbak-ranking-modal-list');
   const nextNode = document.getElementById('chunbak-next');
   const stageLegend = document.getElementById('chunbak-stage-legend');
   const overlay = document.getElementById('chunbak-overlay');
   const overlayRestart = overlay?.querySelector('[data-chunbak-overlay-restart]');
+  const modal = document.getElementById('chunbak-modal');
+  const modalTitle = document.getElementById('chunbak-modal-title');
+  const modalClose = document.getElementById('chunbak-modal-close');
+  const modalPanels = [...document.querySelectorAll('[data-chunbak-panel]')];
 
   const images = new Map();
   let engine = null;
@@ -51,6 +58,10 @@
   let dangerStartedAtById = {};
   let frameId = null;
   let lastFrameAt = performance.now();
+  let rankingEntries = [];
+  let activePanel = null;
+  let modalReturnPanel = null;
+  let lastFocusedElement = null;
 
   function safeReadBest() {
     try { return Math.max(0, Number(localStorage.getItem(BEST_KEY)) || 0); }
@@ -78,9 +89,11 @@
 
   function syncAudioControls() {
     const settings = Audio.getSettings();
-    soundButton.textContent = settings.enabled ? '효과음 ON' : '효과음 OFF';
-    soundButton.setAttribute('aria-pressed', String(settings.enabled));
-    volumeInput.value = String(Math.round(settings.volume * 100));
+    if (soundButton) {
+      soundButton.textContent = settings.enabled ? '효과음 ON' : '효과음 OFF';
+      soundButton.setAttribute('aria-pressed', String(settings.enabled));
+    }
+    if (volumeInput) volumeInput.value = String(Math.round(settings.volume * 100));
   }
 
   function updateHud() {
@@ -88,6 +101,31 @@
     bestNode.textContent = String(best);
     maxLevelNode.textContent = String(maxLevel);
     root.dataset.gameStatus = gameState;
+  }
+
+  function showModalPanel(panelName, { returnPanel = null } = {}) {
+    if (!modal || !modalTitle) return;
+    activePanel = panelName;
+    modalReturnPanel = returnPanel;
+    lastFocusedElement ||= document.activeElement;
+    modal.hidden = false;
+    document.body.classList.add('chunbak-modal-open');
+    for (const panel of modalPanels) panel.hidden = panel.dataset.chunbakPanel !== panelName;
+    modalTitle.textContent = ({ ranking:'전체 랭킹', sound:'소리 설정', controls:'조작법', pause:'일시정지' })[panelName] || '춘박게임';
+    modal.querySelectorAll('[data-chunbak-action="back-to-pause"]').forEach(button => {
+      button.hidden = returnPanel !== 'pause';
+    });
+    modalClose?.focus();
+  }
+
+  function hideModalShell() {
+    if (!modal) return;
+    modal.hidden = true;
+    activePanel = null;
+    modalReturnPanel = null;
+    document.body.classList.remove('chunbak-modal-open');
+    lastFocusedElement?.focus?.();
+    lastFocusedElement = null;
   }
 
   function dynamicPieces() {
@@ -196,7 +234,8 @@
     }
   }
 
-  function renderRanking(entries = []) {
+  function renderRankingList(target, entries) {
+    if (!target) return;
     const fragment = document.createDocumentFragment();
     for (const entry of entries.slice(0, 10)) {
       const item = document.createElement('li');
@@ -209,19 +248,30 @@
       item.append(rank, name, record);
       fragment.appendChild(item);
     }
-    rankingList.replaceChildren(fragment);
+    target.replaceChildren(fragment);
+  }
+
+  function renderRankings() {
+    renderRankingList(rankingList, rankingEntries);
+    renderRankingList(rankingModalList, rankingEntries);
+  }
+
+  function setRankingStatus(text) {
+    if (rankingStatus) rankingStatus.textContent = text;
+    if (rankingModalStatus) rankingModalStatus.textContent = text;
   }
 
   async function loadRanking() {
-    rankingStatus.textContent = '랭킹 불러오는 중…';
+    setRankingStatus('랭킹 불러오는 중…');
     try {
       const response = await fetch(`${RANKING_ENDPOINT}&mode=classic`, { headers:{ accept:'application/json' } });
       if (!response.ok) throw new Error(`ranking ${response.status}`);
       const payload = await response.json();
-      renderRanking(Array.isArray(payload.entries) ? payload.entries : []);
-      rankingStatus.textContent = payload.entries?.length ? '전체 최고 기록' : '아직 등록된 기록이 없습니다.';
+      rankingEntries = Array.isArray(payload.entries) ? payload.entries : [];
+      renderRankings();
+      setRankingStatus(rankingEntries.length ? '전체 최고 기록' : '아직 등록된 기록이 없습니다.');
     } catch (_) {
-      rankingStatus.textContent = '랭킹을 불러올 수 없습니다';
+      setRankingStatus('랭킹을 불러올 수 없습니다');
     }
   }
 
@@ -235,11 +285,11 @@
   async function submitRanking() {
     const nicknameState = getNicknameState();
     if (nicknameState.kind === 'anonymous') {
-      rankingStatus.textContent = '로컬 최고 기록만 저장되었습니다.';
+      setRankingStatus('로컬 최고 기록만 저장되었습니다.');
       return;
     }
     if (nicknameState.kind === 'invalid') {
-      rankingStatus.textContent = '전체 랭킹은 2~16자 닉네임을 입력한 기록만 등록됩니다.';
+      setRankingStatus('전체 랭킹은 2~16자 닉네임을 입력한 기록만 등록됩니다.');
       return;
     }
     try { localStorage.setItem(NICKNAME_KEY, nicknameState.displayName); } catch (_) {}
@@ -251,10 +301,11 @@
       });
       if (!response.ok) throw new Error(`ranking ${response.status}`);
       const payload = await response.json();
-      renderRanking(Array.isArray(payload.entries) ? payload.entries : []);
-      rankingStatus.textContent = payload.updated ? '새 최고 기록이 저장되었습니다.' : '기존 최고 기록이 유지되었습니다.';
+      rankingEntries = Array.isArray(payload.entries) ? payload.entries : rankingEntries;
+      renderRankings();
+      setRankingStatus(payload.updated ? '새 최고 기록이 저장되었습니다.' : '기존 최고 기록이 유지되었습니다.');
     } catch (_) {
-      rankingStatus.textContent = '점수는 저장되지 않았지만 게임은 계속 플레이할 수 있습니다.';
+      setRankingStatus('점수는 저장되지 않았지만 게임은 계속 플레이할 수 있습니다.');
     }
   }
 
@@ -384,14 +435,20 @@
     }
     startGameWithSound();
   });
-  restartButton.addEventListener('click', startGameWithSound);
+  restartButton?.addEventListener('click', startGameWithSound);
   overlayRestart?.addEventListener('click', startGameWithSound);
-  soundButton.addEventListener('click', () => {
+  pauseButton?.addEventListener('click', () => showModalPanel('pause'));
+  document.querySelectorAll('[data-chunbak-open]').forEach(button => {
+    button.addEventListener('click', () => showModalPanel(button.dataset.chunbakOpen));
+  });
+  modalClose?.addEventListener('click', hideModalShell);
+  modal?.querySelector('[data-chunbak-close]')?.addEventListener('click', hideModalShell);
+  soundButton?.addEventListener('click', () => {
     void Audio.resume();
     Audio.setEnabled(!Audio.getSettings().enabled);
     syncAudioControls();
   });
-  volumeInput.addEventListener('input', () => {
+  volumeInput?.addEventListener('input', () => {
     Audio.setVolume(Number(volumeInput.value) / 100);
     syncAudioControls();
   });
@@ -406,14 +463,13 @@
         img.src = meta.image;
       })));
       startButton.disabled = false;
-      restartButton.disabled = false;
+      if (restartButton) restartButton.disabled = false;
       buildLegend();
       renderNext();
     } catch (_) {
       startButton.disabled = true;
-      restartButton.disabled = true;
-      const status = document.getElementById('chunbak-ranking-status');
-      if (status) status.textContent = '캐릭터 이미지를 불러오지 못했습니다.';
+      if (restartButton) restartButton.disabled = true;
+      setRankingStatus('캐릭터 이미지를 불러오지 못했습니다.');
     }
   }
 
