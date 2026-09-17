@@ -1,0 +1,65 @@
+name: Chunbak audio nav bootstrap
+
+on:
+  push:
+    branches: ['feat/chunbak-audio-nav-order-20260917']
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/chunbak-audio-nav-order-20260917
+      - name: Reorder navigation and home cards
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          pages = [
+              'index.html','schedule.html','notice.html','vod.html','clips.html','fanart.html',
+              'youtube.html','tarot.html','minigames.html','chuntris.html','chunbak.html','history.html','data.html'
+          ]
+          fanart = '<a data-nav="fanart" href="fanart.html">팬아트</a>'
+          youtube = '<a data-nav="youtube" href="youtube.html">유튜브</a>'
+          tarot = '<a data-nav="tarot" href="tarot.html">TAROT</a>'
+          minigames = '<a data-nav="minigames" href="minigames.html">미니게임</a>'
+          old_order = fanart + tarot + minigames + youtube
+          new_order = fanart + youtube + tarot + minigames
+
+          for name in pages:
+              path = Path(name)
+              text = path.read_text(encoding='utf-8')
+              if old_order not in text:
+                  raise SystemExit(f'{name}: expected old nav order not found')
+              path.write_text(text.replace(old_order, new_order, 1), encoding='utf-8')
+
+          index = Path('index.html')
+          text = index.read_text(encoding='utf-8')
+          old_cards = '<a class="portal-card reveal" href="data.html"><small>08 / DATA</small><strong>춘봉 데이터</strong><p>SOOP 방송 활동과 춘봉TV 공개 지표를 한눈에 확인합니다.</p><b>→</b></a><a class="portal-card reveal" href="history.html"><small>09 / HISTORY</small><strong>춘봉 방송 이력</strong><p>SOOP 공식 게시글에 정리된 방송 이력을 자동 동기화해 확인합니다.</p><b>→</b></a><a class="portal-card reveal" href="minigames.html"><small>10 / MINIGAMES</small><strong>미니게임</strong><p>춘트리스와 춘박게임을 한곳에서 즐깁니다.</p><b>→</b></a>'
+          new_cards = '<a class="portal-card reveal" href="minigames.html"><small>08 / MINIGAMES</small><strong>미니게임</strong><p>춘트리스와 춘박게임을 한곳에서 즐깁니다.</p><b>→</b></a><a class="portal-card reveal" href="history.html"><small>09 / HISTORY</small><strong>춘봉 방송 이력</strong><p>SOOP 공식 게시글에 정리된 방송 이력을 자동 동기화해 확인합니다.</p><b>→</b></a><a class="portal-card reveal" href="data.html"><small>10 / DATA</small><strong>춘봉 데이터</strong><p>SOOP 방송 활동과 춘봉TV 공개 지표를 한눈에 확인합니다.</p><b>→</b></a>'
+          if old_cards not in text:
+              raise SystemExit('index.html: expected old portal card order not found')
+          index.write_text(text.replace(old_cards, new_cards, 1), encoding='utf-8')
+
+          workflow = Path('.github/workflows/site-regression.yml')
+          text = workflow.read_text(encoding='utf-8')
+          marker = '          node --check chunbak-ranking-core.js\n'
+          check = '          node --check chunbak-audio.js\n'
+          if check not in text:
+              if marker not in text:
+                  raise SystemExit('site-regression: insertion marker missing')
+              text = text.replace(marker, marker + check, 1)
+              workflow.write_text(text, encoding='utf-8')
+
+          Path('.github/workflows/chunbak-audio-nav-bootstrap.yml').unlink()
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "feat: reorder minigames cards and navigation"
+          git push origin HEAD:feat/chunbak-audio-nav-order-20260917
