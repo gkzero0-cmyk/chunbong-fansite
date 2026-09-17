@@ -6352,11 +6352,22 @@
         "categoryName": "버추얼",
         "followerCount": 30343,
         "fanclubCount": 7669
+      },
+      {
+        "capturedAt": "2026-09-17T16:50:50.666Z",
+        "live": true,
+        "startedAt": "2026-09-17T16:39:09.000Z",
+        "title": "포맷 후 테스트 방송",
+        "viewerCount": 24,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30343,
+        "fanclubCount": 7669
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-17T16:40:33.737Z",
+    "capturedAt": "2026-09-17T16:50:50.666Z",
     "followerCount": 30343,
     "fanclubCount": 7669
   }
