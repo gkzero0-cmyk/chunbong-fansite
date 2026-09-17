@@ -5,6 +5,7 @@ assert.ok(css.includes('grid-template-columns'));
 assert.ok(css.includes('minmax(0,460px)')||css.includes('minmax(0, 460px)'), 'desktop center column should allow the larger board');
 assert.ok(css.includes('min(100%,460px)')||css.includes('min(100%, 460px)'), 'desktop board should expand to 460px');
 assert.ok(css.includes('@media (max-width:900px)')||css.includes('@media (max-width: 900px)'));
+assert.ok(css.includes('.chunbak-layout,.chunbak-layout-immersive{display:flex;flex-direction:column;width:100%')||css.includes('.chunbak-layout, .chunbak-layout-immersive{display:flex;flex-direction:column;width:100%'), 'mobile immersive layout must switch from intrinsic grid sizing to a full-width flex stack');
 assert.ok(css.includes('min(calc(100vw - 28px),460px)')||css.includes('min(calc(100vw - 28px), 460px)'), 'mobile board should stay within viewport');
 assert.equal(css.includes('overflow-x:hidden'),false);
 assert.ok(css.includes('touch-action:none')||css.includes('touch-action: none'));
