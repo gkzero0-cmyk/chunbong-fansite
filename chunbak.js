@@ -62,6 +62,8 @@
   let activePanel = null;
   let modalReturnPanel = null;
   let lastFocusedElement = null;
+  let pausedAt = null;
+  let resumeAfterUtility = false;
 
   function safeReadBest() {
     try { return Math.max(0, Number(localStorage.getItem(BEST_KEY)) || 0); }
@@ -126,6 +128,56 @@
     document.body.classList.remove('chunbak-modal-open');
     lastFocusedElement?.focus?.();
     lastFocusedElement = null;
+  }
+
+  function pauseGame(reason = 'manual') {
+    if (gameState !== 'playing') return false;
+    pausedAt = performance.now();
+    gameState = 'paused';
+    playing = false;
+    root.dataset.gameStatus = 'paused';
+    root.dataset.pauseReason = reason;
+    return true;
+  }
+
+  function resumeGame() {
+    if (gameState !== 'paused') return false;
+    const now = performance.now();
+    const pauseDuration = pausedAt == null ? 0 : Math.max(0, now - pausedAt);
+    if (Number.isFinite(lastMergeAt)) lastMergeAt = lastMergeAt + pauseDuration;
+    dangerStartedAtById = Object.fromEntries(
+      Object.entries(dangerStartedAtById).map(([id, startedAt]) => [id, startedAt + pauseDuration])
+    );
+    pausedAt = null;
+    lastFrameAt = performance.now();
+    gameState = 'playing';
+    playing = true;
+    root.dataset.gameStatus = 'playing';
+    delete root.dataset.pauseReason;
+    return true;
+  }
+
+  function openUtilityModal(panelName) {
+    resumeAfterUtility = gameState === 'playing';
+    if (resumeAfterUtility) pauseGame('utility');
+    showModalPanel(panelName);
+  }
+
+  function openPauseMenu() {
+    resumeAfterUtility = false;
+    if (gameState === 'playing') pauseGame('manual');
+    if (gameState === 'paused') showModalPanel('pause');
+  }
+
+  function closeUtilityModal() {
+    if (modalReturnPanel === 'pause') {
+      showModalPanel('pause');
+      return;
+    }
+    const shouldResume = resumeAfterUtility;
+    resumeAfterUtility = false;
+    hideModalShell();
+    if (shouldResume && gameState === 'paused') resumeGame();
   }
 
   function dynamicPieces() {
@@ -312,6 +364,8 @@
   function setGameOver() {
     if (!playing) return;
     playing = false;
+    pausedAt = null;
+    resumeAfterUtility = false;
     setView('gameover');
     Audio.play('gameover');
     try { localStorage.setItem(BEST_KEY, String(best)); } catch (_) {}
@@ -321,7 +375,11 @@
   }
 
   function evaluateDanger(nowMs) {
-    if (!playing) { dangerStartedAtById = {}; return; }
+    if (gameState === 'paused') return;
+    if (gameState !== 'playing') {
+      dangerStartedAtById = {};
+      return;
+    }
     const aboveIds = dynamicPieces()
       .filter(body => body.bounds.min.y < DANGER_Y)
       .map(body => body.id);
@@ -394,6 +452,8 @@
     dangerStartedAtById = {};
     lastDropAt = 0;
     pointerX = WIDTH / 2;
+    pausedAt = null;
+    resumeAfterUtility = false;
     overlay.hidden = true;
     initWorld();
     nextStage = Core.pickSpawnStage(Math.random);
@@ -433,16 +493,70 @@
     if (nicknameState.kind === 'valid') {
       try { localStorage.setItem(NICKNAME_KEY, nicknameState.displayName); } catch (_) {}
     }
+    hideModalShell();
     startGameWithSound();
   });
   restartButton?.addEventListener('click', startGameWithSound);
   overlayRestart?.addEventListener('click', startGameWithSound);
-  pauseButton?.addEventListener('click', () => showModalPanel('pause'));
+  pauseButton?.addEventListener('click', openPauseMenu);
   document.querySelectorAll('[data-chunbak-open]').forEach(button => {
-    button.addEventListener('click', () => showModalPanel(button.dataset.chunbakOpen));
+    button.addEventListener('click', () => openUtilityModal(button.dataset.chunbakOpen));
   });
-  modalClose?.addEventListener('click', hideModalShell);
-  modal?.querySelector('[data-chunbak-close]')?.addEventListener('click', hideModalShell);
+  modalClose?.addEventListener('click', () => {
+    if (activePanel === 'pause') {
+      hideModalShell();
+      resumeGame();
+      return;
+    }
+    closeUtilityModal();
+  });
+  modal?.querySelector('[data-chunbak-close]')?.addEventListener('click', () => {
+    if (activePanel === 'pause') {
+      hideModalShell();
+      resumeGame();
+      return;
+    }
+    closeUtilityModal();
+  });
+  modal?.querySelectorAll('[data-chunbak-action]').forEach(button => {
+    button.addEventListener('click', () => {
+      const action = button.dataset.chunbakAction;
+      if (action === 'resume') {
+        resumeAfterUtility = false;
+        hideModalShell();
+        resumeGame();
+      } else if (action === 'new-game') {
+        resumeAfterUtility = false;
+        hideModalShell();
+        resetGame({ autoStart:true });
+        setView('playing');
+      } else if (action === 'pause-sound') {
+        showModalPanel('sound', { returnPanel:'pause' });
+      } else if (action === 'pause-controls') {
+        showModalPanel('controls', { returnPanel:'pause' });
+      } else if (action === 'back-to-pause') {
+        showModalPanel('pause');
+      }
+    });
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      if (modal && !modal.hidden) {
+        event.preventDefault();
+        if (modalReturnPanel === 'pause' && (activePanel === 'sound' || activePanel === 'controls')) {
+          showModalPanel('pause');
+        } else if (activePanel === 'pause') {
+          hideModalShell();
+          resumeGame();
+        } else {
+          closeUtilityModal();
+        }
+      } else if (gameState === 'playing') {
+        event.preventDefault();
+        openPauseMenu();
+      }
+    }
+  });
   soundButton?.addEventListener('click', () => {
     void Audio.resume();
     Audio.setEnabled(!Audio.getSettings().enabled);
@@ -488,5 +602,13 @@
   void loadRanking();
   if (!frameId) frameId = requestAnimationFrame(tick);
 
-  globalThis.ChunbakGame = Object.freeze({ createPiece, dropCurrent, handleCollisionPairs, resetGame });
+  globalThis.ChunbakGame = Object.freeze({
+    createPiece,
+    dropCurrent,
+    handleCollisionPairs,
+    resetGame,
+    pauseGame,
+    resumeGame,
+    getDebugState: () => ({ gameState, score, combo, maxLevel, currentStage, nextStage })
+  });
 })();
