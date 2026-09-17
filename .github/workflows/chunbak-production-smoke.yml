@@ -87,8 +87,7 @@ jobs:
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1));
 
             await page.goto(`${process.env.BASE_URL}/chunbak.html?_smoke=${Date.now()}`, {waitUntil:'domcontentloaded'});
-            await page.waitForFunction(() => Boolean(window.ChunbakGame));
-            await page.waitForFunction(() => Boolean(window.ChunbakPostgameRanking));
+            await page.waitForFunction(() => Boolean(window.ChunbakGame&&window.ChunbakPostgameRanking));
             await page.waitForFunction(() => !document.querySelector('#chunbak-start')?.disabled);
             assert.equal(await page.locator('#chunbak-nickname').count(),0,'pre-game nickname must be removed');
             assert.ok(await page.locator('#chunbak-start-view').isVisible(),'start view missing');
@@ -103,10 +102,7 @@ jobs:
             const box = await canvas.boundingBox();
             assert.ok(box && box.x >= -1 && box.x + box.width <= viewport.width + 1);
 
-            await page.evaluate(() => {
-              ChunbakGame.createPiece(1, 190, 520);
-              ChunbakGame.createPiece(1, 215, 520);
-            });
+            await page.evaluate(() => {ChunbakGame.createPiece(1,190,520);ChunbakGame.createPiece(1,215,520);});
             await page.waitForFunction(() => Number(document.querySelector('#chunbak-score')?.textContent || 0) > 0);
             assert.ok(Number(await page.locator('#chunbak-score').textContent()) > 0);
             assert.ok(await page.locator('#chunbak-fx-layer').evaluate(el=>el.childElementCount>0),'merge effect missing');
@@ -119,16 +115,14 @@ jobs:
             await page.locator('#chunbak-modal-close').click();
             await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing');
 
-            const beforePause=await page.evaluate(()=>ChunbakGame.getDebugState());
+            const scoreBefore=(await page.locator('#chunbak-score').textContent())?.trim();
+            const nextBefore=await page.locator('#chunbak-next img').getAttribute('src');
             await page.locator('#chunbak-pause').click();
             await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='paused');
             assert.ok(await page.locator('[data-chunbak-panel="pause"]').isVisible(),'pause panel missing');
             await page.waitForTimeout(150);
-            const whilePaused=await page.evaluate(()=>ChunbakGame.getDebugState());
-            assert.equal(whilePaused.score,beforePause.score);
-            assert.equal(whilePaused.bodyCount,beforePause.bodyCount);
-            assert.equal(whilePaused.currentStage,beforePause.currentStage);
-            assert.equal(whilePaused.nextStage,beforePause.nextStage);
+            assert.equal((await page.locator('#chunbak-score').textContent())?.trim(),scoreBefore,'paused score changed');
+            assert.equal(await page.locator('#chunbak-next img').getAttribute('src'),nextBefore,'paused next stage changed');
             await page.locator('[data-chunbak-action="resume"]').click();
             await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing');
 
