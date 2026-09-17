@@ -12,6 +12,7 @@ on:
       - 'chunbak-postgame-ranking.js'
       - 'chunbak-game-core.js'
       - 'chunbak-ranking-core.js'
+      - 'chunbak-audio.js'
       - 'assets/chunbak/**'
       - 'api/content.js'
       - 'lib/chunbak-ranking-api.js'
@@ -31,7 +32,7 @@ jobs:
         run: |
           npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install --with-deps chromium
-      - name: Wait for postgame-ranking production pages and verify HTTP/API
+      - name: Wait for immersive postgame production pages and verify HTTP/API
         env:
           BASE_URL: https://chunbong-fansite.vercel.app
         run: |
@@ -39,10 +40,18 @@ jobs:
           for attempt in $(seq 1 40); do
             stamp=$(date +%s)
             if curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chunbak.html?_smoke=$stamp" -o /tmp/chunbak.html && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chunbak.js?_smoke=$stamp" -o /tmp/chunbak.js && \
                curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chunbak-postgame-ranking.js?_smoke=$stamp" -o /tmp/chunbak-postgame-ranking.js && \
+               grep -q 'id="chunbak-start-view"' /tmp/chunbak.html && \
+               grep -q 'id="chunbak-play-view"' /tmp/chunbak.html && \
+               grep -q 'id="chunbak-pause"' /tmp/chunbak.html && \
+               grep -q 'id="chunbak-fx-layer"' /tmp/chunbak.html && \
+               grep -q 'id="chunbak-combo"' /tmp/chunbak.html && \
                grep -q 'id="chunbak-ranking-register"' /tmp/chunbak.html && \
                grep -q 'id="chunbak-ranking-nickname"' /tmp/chunbak.html && \
                ! grep -q 'id="chunbak-nickname"' /tmp/chunbak.html && \
+               grep -q 'function pauseGame' /tmp/chunbak.js && \
+               grep -q 'function showMergeEffect' /tmp/chunbak.js && \
                grep -q 'submitTerminalRanking' /tmp/chunbak-postgame-ranking.js; then
               break
             fi
@@ -50,7 +59,6 @@ jobs:
             sleep 15
           done
           curl -fsS "$BASE_URL/minigames.html" >/dev/null
-          # Explicit endpoint contract includes assets/chunbak/11.png.
           for n in $(seq 1 11); do curl -fsS "$BASE_URL/assets/chunbak/$n.png" >/dev/null; done
           curl -fsS "$BASE_URL/api/content?type=chunbak-ranking&mode=classic" >/tmp/chunbak-ranking.json
           status=$(curl -sS -o /tmp/chunbak-invalid.json -w '%{http_code}' \
@@ -60,6 +68,7 @@ jobs:
             --data '{"mode":"classic","nickname":"x","score":1,"maxLevel":1}' \
             "$BASE_URL/api/content?type=chunbak-ranking")
           test "$status" = "400"
+          node -e "const p=require('/tmp/chunbak-ranking.json');if(p.mode!=='classic'||!Array.isArray(p.entries))process.exit(1)"
       - name: Browser smoke
         env:
           BASE_URL: https://chunbong-fansite.vercel.app
@@ -76,41 +85,64 @@ jobs:
             assert.ok(await page.locator('a[href="chuntris.html"]').count());
             assert.ok(await page.locator('a[href="chunbak.html"]').count());
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1));
+
             await page.goto(`${process.env.BASE_URL}/chunbak.html?_smoke=${Date.now()}`, {waitUntil:'domcontentloaded'});
             await page.waitForFunction(() => Boolean(window.ChunbakGame));
             await page.waitForFunction(() => Boolean(window.ChunbakPostgameRanking));
+            await page.waitForFunction(() => !document.querySelector('#chunbak-start')?.disabled);
             assert.equal(await page.locator('#chunbak-nickname').count(),0,'pre-game nickname must be removed');
+            assert.ok(await page.locator('#chunbak-start-view').isVisible(),'start view missing');
+            assert.equal(await page.locator('#chunbak-play-view').isVisible(),false,'play view must start hidden');
             assert.ok(await page.locator('#chunbak-ranking-register').count(),'postgame ranking register missing');
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1));
+
+            await page.locator('#chunbak-start').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing');
+            assert.ok(await page.locator('#chunbak-play-view').isVisible(),'play view missing');
             const canvas = page.locator('#chunbak-canvas');
-            await canvas.waitFor({state:'visible'});
             const box = await canvas.boundingBox();
             assert.ok(box && box.x >= -1 && box.x + box.width <= viewport.width + 1);
-            await page.waitForFunction(() => !document.querySelector('#chunbak-start')?.disabled);
-            await page.locator('#chunbak-start').click();
-            await canvas.dispatchEvent('pointerdown', {clientX:(box?.x || 0)+(box?.width || 1)/2, clientY:(box?.y || 0)+40, pointerId:1, pointerType:'mouse'});
-            await page.waitForTimeout(350);
-            assert.notEqual(await page.locator('#chunbak-game').getAttribute('data-game-status'), 'idle');
+
             await page.evaluate(() => {
               ChunbakGame.createPiece(1, 190, 520);
               ChunbakGame.createPiece(1, 215, 520);
             });
             await page.waitForFunction(() => Number(document.querySelector('#chunbak-score')?.textContent || 0) > 0);
             assert.ok(Number(await page.locator('#chunbak-score').textContent()) > 0);
+            assert.ok(await page.locator('#chunbak-fx-layer').evaluate(el=>el.childElementCount>0),'merge effect missing');
+            await page.evaluate(()=>ChunbakGame.showCombo(2,210,420));
+            assert.equal((await page.locator('#chunbak-combo').textContent())?.trim(),'COMBO x2');
 
-            await page.evaluate(() => {
-              const root=document.querySelector('#chunbak-game');
-              const overlay=document.querySelector('#chunbak-overlay');
-              overlay.hidden=false;
-              root.dataset.gameStatus='gameover';
-            });
+            await page.locator('[data-chunbak-open="ranking"]').last().click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='paused');
+            assert.ok(await page.locator('[data-chunbak-panel="ranking"]').isVisible(),'ranking utility modal missing');
+            await page.locator('#chunbak-modal-close').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing');
+
+            const beforePause=await page.evaluate(()=>ChunbakGame.getDebugState());
+            await page.locator('#chunbak-pause').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='paused');
+            assert.ok(await page.locator('[data-chunbak-panel="pause"]').isVisible(),'pause panel missing');
+            await page.waitForTimeout(150);
+            const whilePaused=await page.evaluate(()=>ChunbakGame.getDebugState());
+            assert.equal(whilePaused.score,beforePause.score);
+            assert.equal(whilePaused.bodyCount,beforePause.bodyCount);
+            assert.equal(whilePaused.currentStage,beforePause.currentStage);
+            assert.equal(whilePaused.nextStage,beforePause.nextStage);
+            await page.locator('[data-chunbak-action="resume"]').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing');
+
+            await page.evaluate(()=>ChunbakGame.setGameOver());
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='gameover');
             await page.locator('#chunbak-ranking-register').click();
             assert.ok(await page.locator('#chunbak-ranking-submit-panel').isVisible(),'postgame nickname panel missing');
             await page.locator('#chunbak-ranking-nickname').fill('x');
             await page.locator('#chunbak-ranking-submit').click();
             await page.waitForFunction(()=>document.querySelector('#chunbak-ranking-submit-status')?.textContent.includes('2~16자'));
+            await page.locator('#chunbak-ranking-cancel').click();
 
             await page.locator('[data-chunbak-overlay-restart]').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing');
             assert.equal((await page.locator('#chunbak-score').textContent())?.trim(), '0');
             assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
             await page.close();
