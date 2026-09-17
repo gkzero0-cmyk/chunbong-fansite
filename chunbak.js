@@ -279,8 +279,7 @@
       lastMergeAt = nowMs;
       score += Core.scoreMerge(resultStage, combo).total;
       maxLevel = Math.max(maxLevel, resultStage);
-      if (resultStage >= 8) Audio.play('highmerge');
-      else Audio.play('merge');
+      Audio.playMerge(resultStage, combo);
       if (score > best) best = score;
       updateHud();
     }
