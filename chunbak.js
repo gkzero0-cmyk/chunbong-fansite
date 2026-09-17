@@ -205,7 +205,7 @@
   }
 
   function currentNickname() {
-    const validation = RankingCore?.validateNickname(nicknameInput.value);
+    const validation = RankingCore?.validateNickname(nicknameInput?.value || '');
     return validation?.ok ? validation : null;
   }
 
@@ -238,7 +238,6 @@
     try { localStorage.setItem(BEST_KEY, String(best)); } catch (_) {}
     overlay.hidden = false;
     updateHud();
-    void submitRanking();
   }
 
   function evaluateDanger(nowMs) {
@@ -348,11 +347,7 @@
     dropCurrent();
   });
 
-  startButton.addEventListener('click', () => {
-    const nickname = currentNickname();
-    if (nickname) { try { localStorage.setItem(NICKNAME_KEY, nickname.displayName); } catch (_) {} }
-    startGameWithSound();
-  });
+  startButton.addEventListener('click', startGameWithSound);
   restartButton.addEventListener('click', startGameWithSound);
   overlayRestart?.addEventListener('click', startGameWithSound);
   soundButton.addEventListener('click', () => {
@@ -386,14 +381,16 @@
     }
   }
 
-  try { nicknameInput.value = localStorage.getItem(NICKNAME_KEY) || ''; } catch (_) {}
-  nicknameInput.addEventListener('change', () => {
-    const nickname = currentNickname();
-    if (nickname) {
-      nicknameInput.value = nickname.displayName;
-      try { localStorage.setItem(NICKNAME_KEY, nickname.displayName); } catch (_) {}
-    }
-  });
+  if (nicknameInput) {
+    try { nicknameInput.value = localStorage.getItem(NICKNAME_KEY) || ''; } catch (_) {}
+    nicknameInput.addEventListener('change', () => {
+      const nickname = currentNickname();
+      if (nickname) {
+        nicknameInput.value = nickname.displayName;
+        try { localStorage.setItem(NICKNAME_KEY, nickname.displayName); } catch (_) {}
+      }
+    });
+  }
   bestNode.textContent = String(best);
   syncAudioControls();
   resetGame({ autoStart: false });

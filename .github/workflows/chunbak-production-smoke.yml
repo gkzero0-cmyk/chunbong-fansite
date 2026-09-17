@@ -7,7 +7,9 @@ on:
     paths:
       - 'chunbak.html'
       - 'chunbak.css'
+      - 'chunbak-postgame-ranking.css'
       - 'chunbak.js'
+      - 'chunbak-postgame-ranking.js'
       - 'chunbak-game-core.js'
       - 'chunbak-ranking-core.js'
       - 'assets/chunbak/**'
@@ -27,20 +29,27 @@ jobs:
           node-version: '24'
       - name: Install Playwright
         run: |
-          npm install --no-save playwright@1.55.0
+          npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install --with-deps chromium
-      - name: Wait for production pages and verify HTTP/API
+      - name: Wait for postgame-ranking production pages and verify HTTP/API
         env:
           BASE_URL: https://chunbong-fansite.vercel.app
         run: |
           set -euo pipefail
-          for attempt in $(seq 1 20); do
-            if curl -fsS "$BASE_URL/minigames.html" >/dev/null && curl -fsS "$BASE_URL/chunbak.html" >/dev/null; then
+          for attempt in $(seq 1 40); do
+            stamp=$(date +%s)
+            if curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chunbak.html?_smoke=$stamp" -o /tmp/chunbak.html && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chunbak-postgame-ranking.js?_smoke=$stamp" -o /tmp/chunbak-postgame-ranking.js && \
+               grep -q 'id="chunbak-ranking-register"' /tmp/chunbak.html && \
+               grep -q 'id="chunbak-ranking-nickname"' /tmp/chunbak.html && \
+               ! grep -q 'id="chunbak-nickname"' /tmp/chunbak.html && \
+               grep -q 'submitTerminalRanking' /tmp/chunbak-postgame-ranking.js; then
               break
             fi
-            test "$attempt" != "20"
+            test "$attempt" != "40"
             sleep 15
           done
+          curl -fsS "$BASE_URL/minigames.html" >/dev/null
           # Explicit endpoint contract includes assets/chunbak/11.png.
           for n in $(seq 1 11); do curl -fsS "$BASE_URL/assets/chunbak/$n.png" >/dev/null; done
           curl -fsS "$BASE_URL/api/content?type=chunbak-ranking&mode=classic" >/tmp/chunbak-ranking.json
@@ -60,19 +69,24 @@ jobs:
           import assert from 'node:assert/strict';
           const browser = await chromium.launch({headless:true});
           for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
-            const page = await browser.newPage({viewport});
-            await page.goto(`${process.env.BASE_URL}/minigames.html`, {waitUntil:'networkidle'});
+            const page = await browser.newPage({viewport,isMobile:viewport.width<=390,hasTouch:viewport.width<=390});
+            const errors=[];
+            page.on('pageerror',error=>errors.push(error.message));
+            await page.goto(`${process.env.BASE_URL}/minigames.html?_smoke=${Date.now()}`, {waitUntil:'domcontentloaded'});
             assert.ok(await page.locator('a[href="chuntris.html"]').count());
             assert.ok(await page.locator('a[href="chunbak.html"]').count());
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1));
-            await page.goto(`${process.env.BASE_URL}/chunbak.html`, {waitUntil:'networkidle'});
+            await page.goto(`${process.env.BASE_URL}/chunbak.html?_smoke=${Date.now()}`, {waitUntil:'domcontentloaded'});
+            await page.waitForFunction(() => Boolean(window.ChunbakGame));
+            await page.waitForFunction(() => Boolean(window.ChunbakPostgameRanking));
+            assert.equal(await page.locator('#chunbak-nickname').count(),0,'pre-game nickname must be removed');
+            assert.ok(await page.locator('#chunbak-ranking-register').count(),'postgame ranking register missing');
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1));
             const canvas = page.locator('#chunbak-canvas');
             await canvas.waitFor({state:'visible'});
             const box = await canvas.boundingBox();
             assert.ok(box && box.x >= -1 && box.x + box.width <= viewport.width + 1);
             await page.waitForFunction(() => !document.querySelector('#chunbak-start')?.disabled);
-            await page.locator('#chunbak-nickname').fill('SmokeUser');
             await page.locator('#chunbak-start').click();
             await canvas.dispatchEvent('pointerdown', {clientX:(box?.x || 0)+(box?.width || 1)/2, clientY:(box?.y || 0)+40, pointerId:1, pointerType:'mouse'});
             await page.waitForTimeout(350);
@@ -83,8 +97,22 @@ jobs:
             });
             await page.waitForFunction(() => Number(document.querySelector('#chunbak-score')?.textContent || 0) > 0);
             assert.ok(Number(await page.locator('#chunbak-score').textContent()) > 0);
-            await page.locator('#chunbak-restart').click();
+
+            await page.evaluate(() => {
+              const root=document.querySelector('#chunbak-game');
+              const overlay=document.querySelector('#chunbak-overlay');
+              overlay.hidden=false;
+              root.dataset.gameStatus='gameover';
+            });
+            await page.locator('#chunbak-ranking-register').click();
+            assert.ok(await page.locator('#chunbak-ranking-submit-panel').isVisible(),'postgame nickname panel missing');
+            await page.locator('#chunbak-ranking-nickname').fill('x');
+            await page.locator('#chunbak-ranking-submit').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-ranking-submit-status')?.textContent.includes('2~16자'));
+
+            await page.locator('[data-chunbak-overlay-restart]').click();
             assert.equal((await page.locator('#chunbak-score').textContent())?.trim(), '0');
+            assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
             await page.close();
           }
           await browser.close();
