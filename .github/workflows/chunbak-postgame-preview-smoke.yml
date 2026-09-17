@@ -1,0 +1,102 @@
+name: Chunbak postgame preview smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'chunbak.html'
+      - 'chunbak.css'
+      - 'chunbak-postgame-ranking.css'
+      - 'chunbak.js'
+      - 'chunbak-postgame-ranking.js'
+      - 'chunbak-game-core.js'
+      - 'chunbak-ranking-core.js'
+      - 'chunbak-audio.js'
+      - 'assets/chunbak/**'
+      - '.github/workflows/chunbak-postgame-preview-smoke.yml'
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local static site
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/chunbak-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4173/chunbak.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/chunbak-http.log
+          exit 1
+      - name: Verify postgame registration flow
+        run: |
+          node <<'NODE'
+          const assert=require('node:assert/strict');
+          const {chromium}=require('playwright');
+          const URL='http://127.0.0.1:4173/chunbak.html';
+
+          async function verify(browser,options,label){
+            const page=await browser.newPage(options);
+            const errors=[];
+            page.on('pageerror',error=>errors.push(error.message));
+            await page.goto(URL,{waitUntil:'domcontentloaded'});
+            await page.waitForFunction(()=>Boolean(window.ChunbakGame));
+            await page.waitForFunction(()=>Boolean(window.ChunbakPostgameRanking));
+            await page.waitForFunction(()=>!document.querySelector('#chunbak-start')?.disabled);
+            const viewport=page.viewportSize();
+            assert.ok(viewport,`${label} viewport missing`);
+            assert.equal(await page.locator('#chunbak-nickname').count(),0,`${label} pre-game nickname must be absent`);
+            assert.ok(await page.locator('#chunbak-ranking-register').count(),`${label} register button missing`);
+            assert.equal(await page.locator('#chunbak-ranking-submit-panel').isVisible(),false,`${label} submit panel must start hidden`);
+            assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),`${label} horizontal overflow`);
+
+            await page.locator('#chunbak-start').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing');
+            const canvas=page.locator('#chunbak-canvas');
+            const box=await canvas.boundingBox();
+            assert.ok(box&&box.x>=-1&&box.x+box.width<=viewport.width+1,`${label} canvas clipped`);
+
+            await page.evaluate(()=>{
+              ChunbakGame.createPiece(1,190,520);
+              ChunbakGame.createPiece(1,215,520);
+            });
+            await page.waitForFunction(()=>Number(document.querySelector('#chunbak-score')?.textContent||0)>0);
+
+            await page.evaluate(()=>{
+              const overlay=document.querySelector('#chunbak-overlay');
+              const root=document.querySelector('#chunbak-game');
+              overlay.hidden=false;
+              root.dataset.gameStatus='gameover';
+            });
+            await page.locator('#chunbak-ranking-register').click();
+            assert.ok(await page.locator('#chunbak-ranking-submit-panel').isVisible(),`${label} submit panel did not open`);
+            await page.locator('#chunbak-ranking-nickname').fill('x');
+            await page.locator('#chunbak-ranking-submit').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-ranking-submit-status')?.textContent.includes('2~16자'));
+            await page.locator('#chunbak-ranking-cancel').click();
+            assert.equal(await page.locator('#chunbak-ranking-submit-panel').isVisible(),false,`${label} cancel did not close panel`);
+
+            await page.locator('[data-chunbak-overlay-restart]').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing');
+            assert.equal((await page.locator('#chunbak-score').textContent())?.trim(),'0',`${label} restart did not reset score`);
+            assert.deepEqual(errors,[],`${label} page errors: ${errors.join(' | ')}`);
+            await page.close();
+          }
+
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            try{
+              await verify(browser,{viewport:{width:1440,height:900}},'1440x900');
+              await verify(browser,{viewport:{width:390,height:844},isMobile:true,hasTouch:true},'390x844');
+            }finally{await browser.close();}
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
