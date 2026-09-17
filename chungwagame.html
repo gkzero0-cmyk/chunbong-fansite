@@ -7,6 +7,7 @@
   <meta name="description" content="숫자의 합이 10이 되도록 춘과를 드래그해서 없애는 춘과게임">
   <title>춘과게임 | 춘봉 팬사이트</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="preload" as="image" href="assets/chungwagame/numbers.webp" type="image/webp">
   <style>
     :root{--cg-ink:#4d2b1b;--cg-green:#95c900;--cg-lime:#d7ff58;--cg-soft:#f1ffc9;--cg-cream:#fffdf0;--cg-orange:#ff7d22;--cg-shadow:0 16px 36px rgba(75,67,20,.14)}
     .chungwagame-page{background:radial-gradient(circle at 15% 8%,rgba(218,255,107,.72),transparent 24%),radial-gradient(circle at 84% 14%,rgba(255,243,151,.72),transparent 25%),linear-gradient(180deg,#fbffe8 0%,#eefdc2 58%,#e8f6b9 100%);min-height:calc(100vh - 80px);color:var(--cg-ink)}
@@ -48,8 +49,8 @@
     .cg-board-wrap{position:relative;border-radius:20px;overflow:hidden;touch-action:none;user-select:none;background:linear-gradient(rgba(255,255,255,.88),rgba(255,255,255,.88)),repeating-linear-gradient(0deg,transparent 0 44px,rgba(105,130,26,.035) 44px 45px),repeating-linear-gradient(90deg,transparent 0 44px,rgba(105,130,26,.035) 44px 45px);border:2px solid rgba(111,97,48,.11)}
     .cg-board{display:grid;grid-template-columns:repeat(17,minmax(0,1fr));grid-template-rows:repeat(10,minmax(0,1fr));aspect-ratio:17/10;padding:7px;gap:1px;position:relative;z-index:1}
     .cg-fruit{position:relative;display:grid;place-items:center;min-width:0;min-height:0;transition:transform .08s ease,filter .08s ease,opacity .24s ease;pointer-events:none}
-    .cg-fruit-shape{width:88%;height:88%;border-radius:48% 52% 50% 48%;display:grid;place-items:center;background:radial-gradient(circle at 33% 28%,#efff9c 0 12%,#caef43 13% 40%,#9dc719 72%,#7ca710 100%);border:2px solid rgba(97,128,5,.55);box-shadow:inset -4px -5px 0 rgba(82,116,0,.12),0 3px 3px rgba(88,62,25,.14);font-size:clamp(10px,1.8vw,23px);font-weight:1000;color:#fff;text-shadow:0 1px 2px rgba(66,70,17,.72)}
-    .cg-fruit-shape:before{content:"";position:absolute;width:24%;height:18%;top:3%;left:55%;border-radius:90% 10% 90% 10%;background:#589415;transform:rotate(24deg)}
+    .cg-fruit-shape{width:94%;height:94%;background-image:url('assets/chungwagame/numbers.webp');background-repeat:no-repeat;background-size:300% 300%;filter:drop-shadow(0 2px 1px rgba(88,62,25,.16))}
+    .cg-fruit-shape[data-value="1"]{background-position:0% 0%}.cg-fruit-shape[data-value="2"]{background-position:50% 0%}.cg-fruit-shape[data-value="3"]{background-position:100% 0%}.cg-fruit-shape[data-value="4"]{background-position:0% 50%}.cg-fruit-shape[data-value="5"]{background-position:50% 50%}.cg-fruit-shape[data-value="6"]{background-position:100% 50%}.cg-fruit-shape[data-value="7"]{background-position:0% 100%}.cg-fruit-shape[data-value="8"]{background-position:50% 100%}.cg-fruit-shape[data-value="9"]{background-position:100% 100%}
     .cg-fruit.selected{transform:scale(.91);filter:brightness(1.05) saturate(1.15)}
     .cg-fruit.selected:after{content:"";position:absolute;inset:7%;border:2px solid rgba(255,140,29,.86);border-radius:28%;box-shadow:0 0 0 3px rgba(255,237,76,.26),0 0 18px rgba(255,191,50,.55)}
     .cg-fruit.good{animation:cgFruitPop .34s cubic-bezier(.22,.9,.28,1.3) forwards}.cg-fruit.empty{opacity:0;transform:scale(.35)}
@@ -138,7 +139,7 @@
   function randomValue(){var r=Math.random();if(r<.12)return 1;if(r<.25)return 2;if(r<.39)return 3;if(r<.54)return 4;if(r<.70)return 5;if(r<.82)return 6;if(r<.90)return 7;if(r<.96)return 8;return 9}
   function createBoard(){board=Array.from({length:ROWS*COLS},function(_,index){return{index:index,row:Math.floor(index/COLS),col:index%COLS,value:randomValue(),removed:false,el:null}});ensureMove()}
   function ensureMove(){if(findHint())return;board[0].value=4;board[1].value=6}
-  function renderBoard(){e.board.innerHTML="";var frag=document.createDocumentFragment();board.forEach(function(cell){var div=document.createElement("div");div.className="cg-fruit"+(cell.removed?" empty":"");div.dataset.index=String(cell.index);div.setAttribute("role","gridcell");div.setAttribute("aria-label",cell.removed?"빈 칸":"숫자 "+cell.value);if(!cell.removed){var shape=document.createElement("div");shape.className="cg-fruit-shape";shape.textContent=String(cell.value);div.appendChild(shape)}cell.el=div;frag.appendChild(div)});e.board.appendChild(frag)}
+  function renderBoard(){e.board.innerHTML="";var frag=document.createDocumentFragment();board.forEach(function(cell){var div=document.createElement("div");div.className="cg-fruit"+(cell.removed?" empty":"");div.dataset.index=String(cell.index);div.setAttribute("role","gridcell");div.setAttribute("aria-label",cell.removed?"빈 칸":"숫자 "+cell.value);if(!cell.removed){var shape=document.createElement("div");shape.className="cg-fruit-shape";shape.dataset.value=String(cell.value);div.appendChild(shape)}cell.el=div;frag.appendChild(div)});e.board.appendChild(frag)}
   function updateHud(){e.score.textContent=String(score);e.best.textContent=String(best);e.timer.textContent=formatTime(remaining)}
   function formatTime(sec){var m=Math.floor(sec/60),s=sec%60;return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0")}
   function setMessage(t){e.message.textContent=t}
