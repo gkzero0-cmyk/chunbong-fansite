@@ -1,0 +1,103 @@
+name: Chungwagame production smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'chungwagame.html'
+      - 'assets/chungwagame/**'
+      - 'minigames.html'
+      - '.github/workflows/chungwagame-production-smoke.yml'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Wait for current Chungwagame production deployment
+        env:
+          BASE_URL: https://chunbong-fansite.vercel.app
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            stamp=$(date +%s)
+            if curl -fsS -H 'cache-control: no-cache' "$BASE_URL/minigames.html?_smoke=$stamp" -o /tmp/minigames.html && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chungwagame.html?_smoke=$stamp" -o /tmp/chungwagame.html && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/assets/chungwagame/numbers.webp?_smoke=$stamp" -o /tmp/numbers.webp && \
+               grep -q 'href="chungwagame.html"' /tmp/minigames.html && \
+               grep -q 'id="cg-start"' /tmp/chungwagame.html && \
+               grep -q 'assets/chungwagame/numbers.webp' /tmp/chungwagame.html && \
+               grep -q 'GAME_SECONDS=120' /tmp/chungwagame.html && \
+               test -s /tmp/numbers.webp; then
+              file /tmp/numbers.webp | grep -qi webp
+              echo 'Current Chungwagame production is ready.'
+              exit 0
+            fi
+            test "$attempt" != "60"
+            sleep 5
+          done
+          echo 'Current Chungwagame production deployment did not become ready in time.' >&2
+          exit 1
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Verify production flow and responsive layout
+        env:
+          BASE_URL: https://chunbong-fansite.vercel.app
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import { chromium } from 'playwright';
+          import assert from 'node:assert/strict';
+
+          const browser=await chromium.launch({headless:true});
+          try {
+            for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
+              const mobile=viewport.width<=390;
+              const page=await browser.newPage({viewport,isMobile:mobile,hasTouch:mobile});
+              const errors=[];
+              page.on('pageerror',error=>errors.push(error.message));
+
+              await page.goto(`${process.env.BASE_URL}/minigames.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
+              assert.ok(await page.locator('a[href="chungwagame.html"]').count(),'Chungwagame card missing');
+              assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'minigames horizontal overflow');
+
+              await page.goto(`${process.env.BASE_URL}/chungwagame.html?_smoke=${Date.now()}`,{waitUntil:'networkidle'});
+              assert.ok(await page.locator('#cg-start').isVisible(),'start button missing');
+              await page.locator('#cg-start').click();
+              await page.waitForFunction(()=>document.querySelectorAll('.cg-fruit-shape').length===170);
+              assert.equal(await page.locator('.cg-fruit-shape').count(),170,'board must render 170 fruits');
+              const bg=await page.locator('.cg-fruit-shape').first().evaluate(el=>getComputedStyle(el).backgroundImage);
+              assert.match(bg,/assets\/chungwagame\/numbers\.webp/,'number sprite not rendered');
+              assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'game horizontal overflow');
+
+              await page.locator('#cg-pause').click();
+              assert.ok(await page.locator('#cg-pause-overlay').isVisible(),'pause overlay missing');
+              const pausedTime=(await page.locator('#cg-timer').textContent())?.trim();
+              await page.waitForTimeout(1100);
+              assert.equal((await page.locator('#cg-timer').textContent())?.trim(),pausedTime,'timer changed while paused');
+              await page.locator('#cg-resume').click();
+
+              await page.locator('#cg-hint-btn').click();
+              assert.ok(await page.locator('#cg-hint').evaluate(el=>getComputedStyle(el).display!=='none'),'hint did not display');
+              await page.locator('#cg-shuffle').click();
+              await page.locator('#cg-sound').click();
+              assert.equal(await page.locator('#cg-sound').getAttribute('aria-pressed'),'false','sound toggle failed');
+              await page.locator('#cg-restart').click();
+              assert.equal((await page.locator('#cg-score').textContent())?.trim(),'0','restart did not reset score');
+              assert.equal((await page.locator('#cg-timer').textContent())?.trim(),'02:00','restart did not reset timer');
+
+              assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
+              await page.close();
+            }
+          } finally {
+            await browser.close();
+          }
+          EOF_NODE
