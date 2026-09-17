@@ -53,18 +53,20 @@ jobs:
             if [ -n "$preview" ]; then
               stamp=$(date +%s)
               if curl -fsS -H 'cache-control: no-cache' "$preview/chunbak.js?_smoke=$stamp" -o /tmp/chunbak-preview.js && \
+                 curl -fsS -H 'cache-control: no-cache' "$preview/chunbak.css?_smoke=$stamp" -o /tmp/chunbak-preview.css && \
                  grep -q "/api/content?type=chunbak-ranking" /tmp/chunbak-preview.js && \
                  grep -q "showMergeEffect" /tmp/chunbak-preview.js && \
+                 grep -q '.chunbak-layout,.chunbak-layout-immersive{display:flex;flex-direction:column;width:100%' /tmp/chunbak-preview.css && \
                  curl -fsS -H 'cache-control: no-cache' "$preview/api/content?type=chunbak-ranking&mode=classic&_smoke=$stamp" -o /tmp/chunbak-preview-ranking.json && \
                  node -e "const p=require('/tmp/chunbak-preview-ranking.json');if(p.mode!=='classic'||!Array.isArray(p.entries))process.exit(1)"; then
                 echo "PREVIEW_BASE=$preview" >> "$GITHUB_ENV"
-                echo "Preview ready: $preview"
+                echo "Preview ready with current mobile layout: $preview"
                 exit 0
               fi
             fi
             sleep 5
           done
-          echo 'Current Vercel Preview did not become API-ready.' >&2
+          echo 'Current Vercel Preview did not become ready with the latest Chunbak CSS/API.' >&2
           exit 1
       - name: Verify ranking API validation without leaderboard pollution
         run: |
