@@ -3,7 +3,7 @@
 
   const ENABLED_KEY = 'chuntris.sound.enabled.v1';
   const VOLUME_KEY = 'chuntris.sound.volume.v1';
-  const supported = new Set(['move','rotate','lock','line','tetris','levelup','gameover','complete']);
+  const supported = new Set(['move','rotate','lock','line','tetris','levelup','gameover','complete','harddrop','single','double','triple','quad']);
   let context = null;
   let master = null;
 
@@ -63,6 +63,32 @@
       case 'lock': tone(120, .07, 'square', .07); break;
       case 'line': tone(520, .09, 'triangle', .11); tone(700, .1, 'triangle', .08, .055); break;
       case 'tetris': tone(440, .09, 'square', .11); tone(660, .1, 'triangle', .1, .07); tone(880, .13, 'sine', .09, .14); break;
+      case 'harddrop':
+        tone(92, .09, 'square', .11);
+        tone(170, .045, 'triangle', .08, .018);
+        tone(520, .035, 'square', .035, .035);
+        break;
+      case 'single':
+        tone(520, .085, 'triangle', .10);
+        tone(690, .095, 'triangle', .07, .05);
+        break;
+      case 'double':
+        tone(520, .075, 'triangle', .09);
+        tone(660, .085, 'triangle', .09, .045);
+        tone(820, .11, 'sine', .07, .095);
+        break;
+      case 'triple':
+        tone(500, .075, 'square', .08);
+        tone(650, .085, 'triangle', .09, .04);
+        tone(820, .10, 'triangle', .09, .09);
+        tone(980, .13, 'sine', .07, .145);
+        break;
+      case 'quad':
+        tone(440, .08, 'square', .10);
+        tone(620, .09, 'triangle', .11, .05);
+        tone(820, .11, 'triangle', .10, .105);
+        tone(1040, .16, 'sine', .10, .17);
+        break;
       case 'levelup': tone(440, .08, 'triangle', .09); tone(550, .08, 'triangle', .09, .07); tone(740, .12, 'triangle', .1, .14); break;
       case 'gameover': tone(260, .12, 'sawtooth', .08); tone(190, .16, 'sawtooth', .08, .1); tone(120, .2, 'sawtooth', .07, .22); break;
       case 'complete': tone(523, .1, 'triangle', .1); tone(659, .1, 'triangle', .1, .08); tone(784, .16, 'triangle', .12, .16); break;
