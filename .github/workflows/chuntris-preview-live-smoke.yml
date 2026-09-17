@@ -8,9 +8,11 @@ on:
       - 'chuntris.css'
       - 'chuntris-fullscreen.css'
       - 'chuntris-immersive.css'
+      - 'chuntris-vcompany-ui.css'
       - 'chuntris-ranking-core.js'
       - 'chuntris-audio.js'
       - 'chuntris.js'
+      - 'chuntris-postgame-ranking.js'
       - 'api/content.js'
       - 'lib/chuntris-ranking-api.js'
       - '.github/workflows/chuntris-preview-live-smoke.yml'
@@ -52,18 +54,21 @@ jobs:
               });')
             if [ -n "$preview" ]; then
               stamp=$(date +%s)
-              if curl -fsS -H 'cache-control: no-cache' "$preview/chuntris.js?_smoke=$stamp" -o /tmp/chuntris-preview.js && \
-                 grep -q "/api/content?type=chuntris-ranking" /tmp/chuntris-preview.js && \
+              if curl -fsS -H 'cache-control: no-cache' "$preview/chuntris.html?_smoke=$stamp" -o /tmp/chuntris-preview.html && \
+                 curl -fsS -H 'cache-control: no-cache' "$preview/chuntris-postgame-ranking.js?_smoke=$stamp" -o /tmp/chuntris-postgame-ranking.js && \
+                 grep -q 'id="chuntris-ranking-register"' /tmp/chuntris-preview.html && \
+                 ! grep -q 'id="chuntris-nickname"' /tmp/chuntris-preview.html && \
+                 grep -q 'submitTerminalRanking' /tmp/chuntris-postgame-ranking.js && \
                  curl -fsS -H 'cache-control: no-cache' "$preview/api/content?type=chuntris-ranking&mode=classic&_smoke=$stamp" -o /tmp/chuntris-preview-ranking.json && \
                  node -e "const p=require('/tmp/chuntris-preview-ranking.json');if(p.mode!=='classic'||!Array.isArray(p.entries))process.exit(1)"; then
                 echo "PREVIEW_BASE=$preview" >> "$GITHUB_ENV"
-                echo "Preview ready: $preview"
+                echo "Preview ready with postgame ranking flow: $preview"
                 exit 0
               fi
             fi
             sleep 5
           done
-          echo 'Current Vercel Preview did not become API-ready.' >&2
+          echo 'Current Vercel Preview did not become ready with the postgame ranking flow.' >&2
           exit 1
       - name: Verify ranking API validation without leaderboard pollution
         run: |
@@ -94,19 +99,21 @@ jobs:
             page.on('pageerror',error=>errors.push(error.message));
             await page.goto(`${BASE}/chuntris.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
             await page.waitForFunction(()=>Boolean(window.ChuntrisApp?.getGame?.()));
+            await page.waitForFunction(()=>Boolean(window.ChuntrisPostgameRanking));
 
             const viewport=page.viewportSize();
             assert.ok(viewport,`${label} viewport missing`);
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-mode');
             assert.ok(await page.locator('#chuntris-start-view').isVisible(),`${label} start view missing`);
             assert.equal(await page.locator('#chuntris-play-view').isVisible(),false,`${label} play view must start hidden`);
+            assert.equal(await page.locator('#chuntris-nickname').count(),0,`${label} pre-game nickname must be removed`);
+            assert.ok(await page.locator('#chuntris-ranking-register').count(),`${label} postgame ranking button missing`);
             assert.equal(await page.locator('.chuntris-ranking-rail').count(),0,`${label} ranking rail must be removed`);
             assert.equal(await page.locator('.chuntris-help-rail').count(),0,`${label} help rail must be removed`);
 
             await page.locator('#chuntris-mode-classic').click();
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-player');
             assert.ok(await page.locator('#chuntris-player-step').isVisible(),`${label} player step missing`);
-            await page.locator('#chuntris-nickname').fill('');
             await page.locator('#chuntris-start').click();
             await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing');
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'playing');
