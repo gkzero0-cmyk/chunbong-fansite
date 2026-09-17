@@ -1,0 +1,18 @@
+name: Chuntris immersive feature CI
+
+on:
+  push:
+    branches: ['feat/chuntris-immersive-ui-20260917']
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run immersive Chuntris regressions
+        run: |
+          node tests/chuntris-immersive-ui-regression.mjs
+          node tests/chuntris-ui-regression.mjs
