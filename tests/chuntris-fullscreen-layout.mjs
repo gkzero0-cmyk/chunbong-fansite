@@ -30,8 +30,8 @@ assert.doesNotMatch(
 );
 assert.match(
   css,
-  /@media\(min-width:1181px\) and \(max-height:820px\)\{[^]*?--chuntris-stage-height:clamp\([^,]+,calc\(100dvh - 170px\),/,
-  'short wide screens must reserve enough vertical room for toolbar and status so the stage is not clipped'
+  /@media\(min-width:1181px\) and \(max-height:820px\)\{[^]*?--chuntris-stage-height:clamp\(420px,calc\(100dvh - 90px\),600px\)!important/,
+  'short wide screens must reserve enough vertical room and keep that stage height from being overwritten later in the cascade'
 );
 
 console.log('Chuntris fullscreen layout contract passed');
