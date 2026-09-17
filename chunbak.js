@@ -37,6 +37,8 @@
   const stageLegend = document.getElementById('chunbak-stage-legend');
   const overlay = document.getElementById('chunbak-overlay');
   const overlayRestart = overlay?.querySelector('[data-chunbak-overlay-restart]');
+  const fxLayer = document.getElementById('chunbak-fx-layer');
+  const comboNode = document.getElementById('chunbak-combo');
   const modal = document.getElementById('chunbak-modal');
   const modalTitle = document.getElementById('chunbak-modal-title');
   const modalClose = document.getElementById('chunbak-modal-close');
@@ -180,6 +182,76 @@
     if (shouldResume && gameState === 'paused') resumeGame();
   }
 
+  function effectTier(stage) {
+    if (stage <= 4) return 'low';
+    if (stage <= 7) return 'mid';
+    if (stage <= 10) return 'high';
+    return 'final';
+  }
+
+  function removeTransient(node) {
+    if (!node) return;
+    const remove = () => node.remove();
+    node.addEventListener('animationend', remove, { once:true });
+    setTimeout(remove, 1400);
+  }
+
+  function showMergeEffect({ x, y, stage, combo: mergeCombo = 1 }) {
+    if (!fxLayer) return;
+    const tier = effectTier(stage);
+    const left = `${(x / WIDTH) * 100}%`;
+    const top = `${(y / HEIGHT) * 100}%`;
+    const particleCounts = { low:4, mid:7, high:10, final:14 };
+    const symbols = ['✦', '★', '♥'];
+
+    const ring = document.createElement('span');
+    ring.className = `chunbak-merge-ring tier-${tier}`;
+    ring.style.setProperty('--fx-x', left);
+    ring.style.setProperty('--fx-y', top);
+    fxLayer.appendChild(ring);
+    removeTransient(ring);
+
+    for (let i = 0; i < particleCounts[tier]; i += 1) {
+      const angle = (Math.PI * 2 * i) / particleCounts[tier] + Math.random() * 0.22;
+      const distance = 36 + Math.random() * (tier === 'final' ? 68 : 46);
+      const particle = document.createElement('span');
+      particle.className = `chunbak-particle tier-${tier}`;
+      particle.textContent = symbols[(i + stage + mergeCombo) % symbols.length];
+      particle.style.setProperty('--fx-x', left);
+      particle.style.setProperty('--fx-y', top);
+      particle.style.setProperty('--particle-x', `${Math.cos(angle) * distance}px`);
+      particle.style.setProperty('--particle-y', `${Math.sin(angle) * distance}px`);
+      particle.style.setProperty('--particle-delay', `${(i % 4) * 18}ms`);
+      particle.style.setProperty('--particle-size', `${14 + Math.min(stage, 11) + (i % 3) * 2}px`);
+      particle.style.setProperty('--particle-rotate', `${70 + (i * 37) % 180}deg`);
+      fxLayer.appendChild(particle);
+      removeTransient(particle);
+    }
+
+    if (tier === 'final') {
+      const crown = document.createElement('span');
+      crown.className = 'chunbak-particle tier-final chunbak-final-crown';
+      crown.textContent = '♛';
+      crown.style.setProperty('--fx-x', left);
+      crown.style.setProperty('--fx-y', top);
+      crown.style.setProperty('--particle-x', '0px');
+      crown.style.setProperty('--particle-y', '-76px');
+      crown.style.setProperty('--particle-rotate', '0deg');
+      fxLayer.appendChild(crown);
+      removeTransient(crown);
+    }
+  }
+
+  function showCombo(combo, x, y) {
+    if (!comboNode || combo < 2) return;
+    comboNode.textContent = `COMBO x${combo}`;
+    comboNode.style.setProperty('--combo-x', `${(x / WIDTH) * 100}%`);
+    comboNode.style.setProperty('--combo-y', `${(y / HEIGHT) * 100}%`);
+    comboNode.classList.remove('is-visible');
+    void comboNode.offsetWidth;
+    comboNode.classList.add('is-visible');
+  }
+
   function dynamicPieces() {
     return Matter.Composite.allBodies(world).filter(body => body.plugin?.chunbak && !body.isStatic);
   }
@@ -280,6 +352,8 @@
       score += Core.scoreMerge(resultStage, combo).total;
       maxLevel = Math.max(maxLevel, resultStage);
       Audio.playMerge(resultStage, combo);
+      showMergeEffect({ x, y, stage:resultStage, combo });
+      showCombo(combo, x, y);
       if (score > best) best = score;
       updateHud();
     }
@@ -454,6 +528,11 @@
     pausedAt = null;
     resumeAfterUtility = false;
     overlay.hidden = true;
+    fxLayer?.replaceChildren();
+    if (comboNode) {
+      comboNode.textContent = '';
+      comboNode.classList.remove('is-visible');
+    }
     initWorld();
     nextStage = Core.pickSpawnStage(Math.random);
     chooseUpcoming();
@@ -565,6 +644,7 @@
     Audio.setVolume(Number(volumeInput.value) / 100);
     syncAudioControls();
   });
+  comboNode?.addEventListener('animationend', () => comboNode.classList.remove('is-visible'));
 
   async function preloadImages() {
     try {
@@ -608,6 +688,8 @@
     resetGame,
     pauseGame,
     resumeGame,
+    showMergeEffect,
+    showCombo,
     getDebugState: () => ({ gameState, score, combo, maxLevel, currentStage, nextStage })
   });
 })();
