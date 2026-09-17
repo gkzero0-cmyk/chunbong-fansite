@@ -8,12 +8,14 @@ on:
       - 'chunbak.html'
       - 'chunbak.css'
       - 'chunbak.js'
+      - 'chunbak-audio.js'
       - 'chunbak-game-core.js'
       - 'chunbak-ranking-core.js'
       - 'assets/chunbak/**'
       - 'api/content.js'
       - 'lib/chunbak-ranking-api.js'
       - 'minigames.html'
+      - 'tests/chunbak-*.mjs'
       - '.github/workflows/chunbak-production-smoke.yml'
 
 jobs:
@@ -27,23 +29,37 @@ jobs:
           node-version: '24'
       - name: Install Playwright
         run: |
-          npm install --no-save playwright@1.55.0
+          npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install --with-deps chromium
-      - name: Wait for production pages and verify HTTP/API
+      - name: Wait for immersive production and verify HTTP/API
         env:
           BASE_URL: https://chunbong-fansite.vercel.app
         run: |
           set -euo pipefail
-          for attempt in $(seq 1 20); do
-            if curl -fsS "$BASE_URL/minigames.html" >/dev/null && curl -fsS "$BASE_URL/chunbak.html" >/dev/null; then
+          for attempt in $(seq 1 40); do
+            stamp=$(date +%s)
+            echo "Production readiness attempt ${attempt}/40"
+            if curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chunbak.html?_smoke=$stamp" -o /tmp/chunbak.html && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chunbak.js?_smoke=$stamp" -o /tmp/chunbak.js && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chunbak-audio.js?_smoke=$stamp" -o /tmp/chunbak-audio.js && \
+               grep -q 'id="chunbak-start-view"' /tmp/chunbak.html && \
+               grep -q 'id="chunbak-play-view"' /tmp/chunbak.html && \
+               grep -q 'data-chunbak-open="ranking"' /tmp/chunbak.html && \
+               grep -q 'id="chunbak-modal-close"' /tmp/chunbak.html && \
+               grep -q 'id="chunbak-fx-layer"' /tmp/chunbak.html && \
+               grep -q 'getDebugState' /tmp/chunbak.js && \
+               grep -q 'Audio.playMerge(resultStage, combo)' /tmp/chunbak.js && \
+               grep -q 'playMerge' /tmp/chunbak-audio.js; then
+              echo 'Immersive Chunbak production is ready.'
               break
             fi
-            test "$attempt" != "20"
+            test "$attempt" != "40"
             sleep 15
           done
-          # Explicit endpoint contract includes assets/chunbak/11.png.
+          curl -fsS "$BASE_URL/minigames.html" >/dev/null
           for n in $(seq 1 11); do curl -fsS "$BASE_URL/assets/chunbak/$n.png" >/dev/null; done
           curl -fsS "$BASE_URL/api/content?type=chunbak-ranking&mode=classic" >/tmp/chunbak-ranking.json
+          node -e "const p=require('/tmp/chunbak-ranking.json');if(p.mode!=='classic'||!Array.isArray(p.entries))process.exit(1)"
           status=$(curl -sS -o /tmp/chunbak-invalid.json -w '%{http_code}' \
             -H 'content-type: application/json' \
             -H "origin: $BASE_URL" \
@@ -51,41 +67,86 @@ jobs:
             --data '{"mode":"classic","nickname":"x","score":1,"maxLevel":1}' \
             "$BASE_URL/api/content?type=chunbak-ranking")
           test "$status" = "400"
-      - name: Browser smoke
+          node -e "const p=require('/tmp/chunbak-invalid.json');if(p.error!=='invalid_nickname')process.exit(1)"
+      - name: Browser immersive smoke
         env:
           BASE_URL: https://chunbong-fansite.vercel.app
         run: |
           node --input-type=module <<'EOF_NODE'
           import { chromium } from 'playwright';
           import assert from 'node:assert/strict';
+
           const browser = await chromium.launch({headless:true});
-          for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
-            const page = await browser.newPage({viewport});
-            await page.goto(`${process.env.BASE_URL}/minigames.html`, {waitUntil:'networkidle'});
-            assert.ok(await page.locator('a[href="chuntris.html"]').count());
-            assert.ok(await page.locator('a[href="chunbak.html"]').count());
-            assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1));
-            await page.goto(`${process.env.BASE_URL}/chunbak.html`, {waitUntil:'networkidle'});
-            assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1));
-            const canvas = page.locator('#chunbak-canvas');
-            await canvas.waitFor({state:'visible'});
-            const box = await canvas.boundingBox();
-            assert.ok(box && box.x >= -1 && box.x + box.width <= viewport.width + 1);
-            await page.waitForFunction(() => !document.querySelector('#chunbak-start')?.disabled);
-            await page.locator('#chunbak-nickname').fill('SmokeUser');
-            await page.locator('#chunbak-start').click();
-            await canvas.dispatchEvent('pointerdown', {clientX:(box?.x || 0)+(box?.width || 1)/2, clientY:(box?.y || 0)+40, pointerId:1, pointerType:'mouse'});
-            await page.waitForTimeout(350);
-            assert.notEqual(await page.locator('#chunbak-game').getAttribute('data-game-status'), 'idle');
-            await page.evaluate(() => {
-              ChunbakGame.createPiece(1, 190, 520);
-              ChunbakGame.createPiece(1, 215, 520);
-            });
-            await page.waitForFunction(() => Number(document.querySelector('#chunbak-score')?.textContent || 0) > 0);
-            assert.ok(Number(await page.locator('#chunbak-score').textContent()) > 0);
-            await page.locator('#chunbak-restart').click();
-            assert.equal((await page.locator('#chunbak-score').textContent())?.trim(), '0');
-            await page.close();
+          const viewports = [
+            {width:1440,height:900},
+            {width:1024,height:768},
+            {width:390,height:844}
+          ];
+
+          try {
+            for (const viewport of viewports) {
+              const label=`${viewport.width}x${viewport.height}`;
+              const page = await browser.newPage({viewport,isMobile:viewport.width<=390,hasTouch:viewport.width<=390});
+              const errors=[];
+              page.on('pageerror',error=>errors.push(error.message));
+
+              await page.goto(`${process.env.BASE_URL}/minigames.html?_smoke=${Date.now()}`, {waitUntil:'domcontentloaded'});
+              assert.ok(await page.locator('a[href="chuntris.html"]').count(),`${label} Chuntris link missing`);
+              assert.ok(await page.locator('a[href="chunbak.html"]').count(),`${label} Chunbak link missing`);
+              assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),`${label} minigames overflow`);
+
+              await page.goto(`${process.env.BASE_URL}/chunbak.html?_smoke=${Date.now()}`, {waitUntil:'domcontentloaded'});
+              await page.waitForFunction(() => Boolean(window.ChunbakGame));
+              await page.waitForFunction(() => !document.querySelector('#chunbak-start')?.disabled);
+              assert.ok(await page.locator('#chunbak-start-view').isVisible(),`${label} start view missing`);
+              assert.equal(await page.locator('#chunbak-play-view').isVisible(),false,`${label} play view must start hidden`);
+
+              await page.locator('#chunbak-nickname').fill('');
+              await page.locator('#chunbak-start').click();
+              await page.waitForFunction(() => ChunbakGame.getDebugState().gameState === 'playing');
+              assert.equal(await page.locator('#chunbak-start-view').isVisible(),false,`${label} start view still visible`);
+              assert.ok(await page.locator('#chunbak-play-view').isVisible(),`${label} play view missing`);
+              assert.ok(await page.locator('#chunbak-ranking-list').count(),`${label} persistent TOP 10 missing`);
+              assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),`${label} horizontal overflow`);
+
+              const stage = await page.locator('#chunbak-stage').boundingBox();
+              assert.ok(stage && stage.x >= -1 && stage.x + stage.width <= viewport.width + 1,`${label} stage clipped`);
+
+              await page.locator('#chunbak-play-view [data-chunbak-open="ranking"]').click();
+              assert.equal(await page.evaluate(() => ChunbakGame.getDebugState().gameState),'paused',`${label} ranking modal must pause`);
+              assert.ok(await page.locator('[data-chunbak-panel="ranking"]').isVisible(),`${label} ranking panel missing`);
+              await page.locator('#chunbak-modal-close').click();
+              await page.waitForFunction(() => ChunbakGame.getDebugState().gameState === 'playing');
+
+              await page.keyboard.press('Escape');
+              assert.equal(await page.evaluate(() => ChunbakGame.getDebugState().gameState),'paused',`${label} ESC pause failed`);
+              await page.locator('[data-chunbak-action="pause-sound"]').click();
+              assert.ok(await page.locator('[data-chunbak-panel="sound"]').isVisible(),`${label} pause sound panel missing`);
+              await page.locator('[data-chunbak-action="back-to-pause"]').click();
+              assert.ok(await page.locator('[data-chunbak-panel="pause"]').isVisible(),`${label} back-to-pause failed`);
+              assert.equal(await page.evaluate(() => ChunbakGame.getDebugState().gameState),'paused',`${label} pause child resumed unexpectedly`);
+              await page.locator('[data-chunbak-action="resume"]').click();
+              await page.waitForFunction(() => ChunbakGame.getDebugState().gameState === 'playing');
+
+              await page.evaluate(() => {
+                ChunbakGame.createPiece(1, 190, 520);
+                ChunbakGame.createPiece(1, 215, 520);
+              });
+              await page.waitForFunction(() => Number(document.querySelector('#chunbak-score')?.textContent || 0) > 0);
+              assert.ok(Number(await page.locator('#chunbak-score').textContent()) > 0,`${label} merge score missing`);
+              assert.ok(await page.locator('#chunbak-fx-layer').count(),`${label} FX layer missing`);
+              assert.ok(await page.locator('#chunbak-combo').count(),`${label} combo layer missing`);
+
+              await page.keyboard.press('Escape');
+              assert.equal(await page.evaluate(() => ChunbakGame.getDebugState().gameState),'paused',`${label} second pause failed`);
+              await page.locator('[data-chunbak-action="new-game"]').click();
+              await page.waitForFunction(() => ChunbakGame.getDebugState().gameState === 'playing');
+              assert.equal((await page.locator('#chunbak-score').textContent())?.trim(),'0',`${label} new game did not reset score`);
+              assert.deepEqual(errors,[],`${label} page errors: ${errors.join(' | ')}`);
+              console.log(`${label} immersive smoke passed; stage=${stage.width}x${stage.height}`);
+              await page.close();
+            }
+          } finally {
+            await browser.close();
           }
-          await browser.close();
           EOF_NODE
