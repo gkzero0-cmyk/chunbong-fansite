@@ -3,7 +3,7 @@
 
   const ENABLED_KEY = 'chuntris.sound.enabled.v1';
   const VOLUME_KEY = 'chuntris.sound.volume.v1';
-  const supported = new Set(['move','rotate','lock','levelup','gameover','complete','harddrop','single','double','triple','quad']);
+  const supported = new Set(['move','rotate','lock','line','tetris','levelup','gameover','complete','harddrop','single','double','triple','quad']);
   let context = null;
   let master = null;
 
@@ -61,6 +61,8 @@
       case 'move': tone(210, .045, 'square', .05); break;
       case 'rotate': tone(330, .055, 'triangle', .07); tone(440, .04, 'triangle', .04, .025); break;
       case 'lock': tone(120, .07, 'square', .07); break;
+      case 'line': tone(520, .09, 'triangle', .11); tone(700, .1, 'triangle', .08, .055); break;
+      case 'tetris': tone(440, .09, 'square', .11); tone(660, .1, 'triangle', .1, .07); tone(880, .13, 'sine', .09, .14); break;
       case 'harddrop':
         tone(92, .09, 'square', .11);
         tone(170, .045, 'triangle', .08, .018);
