@@ -183,12 +183,14 @@ The game engine's scoring and line-clear rules remain unchanged. Presentation re
 
 ### Clear labels
 
-Exactly these labels are shown for ordinary 1–4 line clears:
+Every 1–4 line clear uses the line count as the authoritative display label, regardless of T-Spin state or combo state:
 
 - 1 line: **SINGLE**
 - 2 lines: **DOUBLE**
 - 3 lines: **TRIPLE**
 - 4 lines: **QUAD**
+
+T-Spin/combo information may continue to influence scoring or other secondary feedback, but it must not replace these requested line-count labels.
 
 The label appears centered over the playfield for roughly 0.7–1.0 seconds and does not block input after the underlying engine is ready for the next piece.
 
@@ -333,7 +335,7 @@ Add tests that fail before implementation for:
 - pause modal actions,
 - modal-triggered pause/resume bookkeeping,
 - `harddrop`, `single`, `double`, `triple`, `quad` audio event support,
-- exact SINGLE / DOUBLE / TRIPLE / QUAD mapping,
+- exact SINGLE / DOUBLE / TRIPLE / QUAD mapping for every 1/2/3/4-line clear regardless of T-Spin/combo state,
 - reduced-motion fallback declarations.
 
 ### Runtime tests
@@ -350,7 +352,7 @@ Verify:
 - Continue from pause preserves board/piece/HOLD/NEXT/score/lines/time state.
 - New game resets only after confirmation.
 - Hard drop dispatches one hard-drop presentation/audio event.
-- 1/2/3/4-line clears produce the exact label and one matching clear sound without duplicate generic line/tetris sound.
+- Every 1/2/3/4-line clear produces the exact line-count label and one matching clear sound without duplicate generic line/tetris sound, including T-Spin/combo cases.
 
 ### Visual / responsive smoke
 
@@ -416,7 +418,7 @@ The feature is ready to merge only when all of the following are true:
 6. Manual pause offers Continue, New Game, Sound Settings, and Key Controls.
 7. Continue restores the exact current game rather than resetting it.
 8. Hard drop has dedicated visual feedback and a dedicated sound.
-9. Line clears display exact SINGLE / DOUBLE / TRIPLE / QUAD labels for 1/2/3/4 lines.
+9. Every 1/2/3/4-line clear displays exact SINGLE / DOUBLE / TRIPLE / QUAD labels based on line count, including T-Spin/combo clears.
 10. Each line-clear count has distinct presentation and sound without duplicate generic clear audio.
 11. 40-line Time Attack still ends at 40 total cleared lines and records the finish time.
 12. Desktop/tablet/mobile regression and smoke checks pass.
