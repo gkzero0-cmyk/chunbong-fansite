@@ -1,0 +1,152 @@
+name: Chunbak postgame preview live smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'chunbak.html'
+      - 'chunbak.css'
+      - 'chunbak-postgame-ranking.css'
+      - 'chunbak.js'
+      - 'chunbak-postgame-ranking.js'
+      - 'chunbak-game-core.js'
+      - 'chunbak-ranking-core.js'
+      - 'chunbak-audio.js'
+      - 'assets/chunbak/**'
+      - 'api/content.js'
+      - 'lib/chunbak-ranking-api.js'
+      - '.github/workflows/chunbak-postgame-preview-live-smoke.yml'
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  live-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Resolve and wait for current Vercel Preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            echo "Preview discovery attempt ${attempt}/60"
+            comments=$(curl -fsS \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'Accept: application/vnd.github+json' \
+              "https://api.github.com/repos/$REPO/issues/$PR_NUMBER/comments?per_page=100")
+            preview=$(printf '%s' "$comments" | node -e '
+              let s=""; process.stdin.on("data",d=>s+=d).on("end",()=>{
+                const rows=JSON.parse(s).filter(x=>x.user?.login==="vercel[bot]");
+                for(const row of rows.reverse()){
+                  const m=String(row.body||"").match(/\[Preview\]\((https:\/\/[^)]+)\)/);
+                  if(m){process.stdout.write(m[1]);return;}
+                }
+              });')
+            if [ -n "$preview" ]; then
+              stamp=$(date +%s)
+              if curl -fsS -H 'cache-control: no-cache' "$preview/chunbak.html?_smoke=$stamp" -o /tmp/chunbak-preview.html && \
+                 curl -fsS -H 'cache-control: no-cache' "$preview/chunbak-postgame-ranking.js?_smoke=$stamp" -o /tmp/chunbak-postgame-ranking.js && \
+                 grep -q 'id="chunbak-ranking-register"' /tmp/chunbak-preview.html && \
+                 grep -q 'id="chunbak-ranking-nickname"' /tmp/chunbak-preview.html && \
+                 ! grep -q 'id="chunbak-nickname"' /tmp/chunbak-preview.html && \
+                 grep -q 'submitTerminalRanking' /tmp/chunbak-postgame-ranking.js && \
+                 curl -fsS -H 'cache-control: no-cache' "$preview/api/content?type=chunbak-ranking&mode=classic&_smoke=$stamp" -o /tmp/chunbak-preview-ranking.json && \
+                 node -e "const p=require('/tmp/chunbak-preview-ranking.json');if(p.mode!=='classic'||!Array.isArray(p.entries))process.exit(1)"; then
+                echo "PREVIEW_BASE=$preview" >> "$GITHUB_ENV"
+                echo "Preview ready with postgame ranking flow: $preview"
+                exit 0
+              fi
+            fi
+            sleep 5
+          done
+          echo 'Current Vercel Preview did not become ready with the postgame ranking flow.' >&2
+          exit 1
+      - name: Verify ranking API validation without leaderboard pollution
+        run: |
+          set -euo pipefail
+          host=${PREVIEW_BASE#https://}
+          status=$(curl -sS -o /tmp/chunbak-invalid.json -w '%{http_code}' \
+            -X POST \
+            -H 'content-type: application/json' \
+            -H "origin: https://$host" \
+            --data '{"mode":"classic","nickname":"x","score":1,"maxLevel":1}' \
+            "$PREVIEW_BASE/api/content?type=chunbak-ranking")
+          test "$status" = '400'
+          node -e "const p=require('/tmp/chunbak-invalid.json');if(p.error!=='invalid_nickname')process.exit(1)"
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Verify live postgame ranking flow
+        run: |
+          node <<'NODE'
+          const assert=require('node:assert/strict');
+          const {chromium}=require('playwright');
+          const BASE=process.env.PREVIEW_BASE;
+
+          async function verify(browser,options,label){
+            const page=await browser.newPage(options);
+            const errors=[];
+            page.on('pageerror',error=>errors.push(error.message));
+            await page.goto(`${BASE}/chunbak.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
+            await page.waitForFunction(()=>Boolean(window.ChunbakGame));
+            await page.waitForFunction(()=>Boolean(window.ChunbakPostgameRanking));
+            await page.waitForFunction(()=>!document.querySelector('#chunbak-start')?.disabled);
+            const viewport=page.viewportSize();
+            assert.ok(viewport,`${label} viewport missing`);
+            assert.equal(await page.locator('#chunbak-nickname').count(),0,`${label} pre-game nickname must be absent`);
+            assert.ok(await page.locator('#chunbak-ranking-register').count(),`${label} ranking register missing`);
+            assert.equal(await page.locator('#chunbak-ranking-submit-panel').isVisible(),false,`${label} submit panel must start hidden`);
+            assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),`${label} horizontal overflow`);
+
+            await page.locator('#chunbak-start').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing');
+            const canvas=page.locator('#chunbak-canvas');
+            const box=await canvas.boundingBox();
+            assert.ok(box&&box.x>=-1&&box.x+box.width<=viewport.width+1,`${label} canvas clipped`);
+
+            await page.evaluate(()=>{
+              ChunbakGame.createPiece(1,190,520);
+              ChunbakGame.createPiece(1,215,520);
+            });
+            await page.waitForFunction(()=>Number(document.querySelector('#chunbak-score')?.textContent||0)>0);
+
+            await page.evaluate(()=>{
+              const overlay=document.querySelector('#chunbak-overlay');
+              const root=document.querySelector('#chunbak-game');
+              overlay.hidden=false;
+              root.dataset.gameStatus='gameover';
+            });
+            await page.locator('#chunbak-ranking-register').click();
+            assert.ok(await page.locator('#chunbak-ranking-submit-panel').isVisible(),`${label} submit panel missing`);
+            await page.locator('#chunbak-ranking-nickname').fill('x');
+            await page.locator('#chunbak-ranking-submit').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-ranking-submit-status')?.textContent.includes('2~16자'));
+            await page.locator('#chunbak-ranking-cancel').click();
+            assert.equal(await page.locator('#chunbak-ranking-submit-panel').isVisible(),false,`${label} cancel did not close submit panel`);
+
+            await page.locator('[data-chunbak-overlay-restart]').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing');
+            assert.equal((await page.locator('#chunbak-score').textContent())?.trim(),'0',`${label} restart did not reset score`);
+            assert.deepEqual(errors,[],`${label} page errors: ${errors.join(' | ')}`);
+            await page.close();
+          }
+
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            try{
+              await verify(browser,{viewport:{width:1440,height:900}},'1440x900');
+              await verify(browser,{viewport:{width:390,height:844},isMobile:true,hasTouch:true},'390x844');
+            }finally{await browser.close();}
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
