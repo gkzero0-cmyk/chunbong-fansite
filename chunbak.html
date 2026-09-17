@@ -14,7 +14,7 @@
 <header class="site-header">
   <a class="brand" href="index.html" aria-label="춘봉 팬사이트 홈"><span class="brand-mark">CB</span><span class="brand-copy"><strong>CHUNBONG</strong><small>FAN HUB</small></span></a>
   <button class="nav-toggle" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="main-nav"><span></span><span></span><span></span></button>
-  <nav class="main-nav" id="main-nav" aria-label="주요 메뉴"><a data-nav="home" href="index.html">HOME</a><a data-nav="schedule" href="schedule.html">방송 일정</a><a data-nav="notice" href="notice.html">공지</a><a data-nav="vod" href="vod.html">다시보기</a><a data-nav="clips" href="clips.html">핫클립</a><a data-nav="fanart" href="fanart.html">팬아트</a><a data-nav="tarot" href="tarot.html">TAROT</a><a data-nav="minigames" href="minigames.html">미니게임</a><a data-nav="youtube" href="youtube.html">유튜브</a><a data-nav="history" href="history.html">방송 이력</a><a data-nav="data" href="data.html">춘봉 데이터</a></nav>
+  <nav class="main-nav" id="main-nav" aria-label="주요 메뉴"><a data-nav="home" href="index.html">HOME</a><a data-nav="schedule" href="schedule.html">방송 일정</a><a data-nav="notice" href="notice.html">공지</a><a data-nav="vod" href="vod.html">다시보기</a><a data-nav="clips" href="clips.html">핫클립</a><a data-nav="fanart" href="fanart.html">팬아트</a><a data-nav="youtube" href="youtube.html">유튜브</a><a data-nav="tarot" href="tarot.html">TAROT</a><a data-nav="minigames" href="minigames.html">미니게임</a><a data-nav="history" href="history.html">방송 이력</a><a data-nav="data" href="data.html">춘봉 데이터</a></nav>
   <a class="header-live" href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer">SOOP ↗</a>
 </header>
 <main class="chunbak-page">
@@ -22,8 +22,8 @@
   <section class="content-section"><div class="page-shell">
     <section id="chunbak-game" class="chunbak-game reveal" data-game-status="idle" aria-label="춘박게임">
       <div class="chunbak-toolbar">
-        <label for="chunbak-nickname"><span>닉네임</span><input id="chunbak-nickname" maxlength="16" autocomplete="nickname" placeholder="2~16자"></label>
-        <div class="chunbak-actions"><button id="chunbak-start" class="btn btn-primary" type="button" disabled>게임 시작</button><button id="chunbak-restart" class="btn btn-ghost" type="button" disabled>다시 시작</button></div>
+        <label class="chunbak-nickname-label" for="chunbak-nickname"><span>닉네임</span><input id="chunbak-nickname" maxlength="16" autocomplete="nickname" placeholder="2~16자"></label>
+        <div class="chunbak-actions"><button id="chunbak-start" class="btn btn-primary" type="button" disabled>게임 시작</button><button id="chunbak-restart" class="btn btn-ghost" type="button" disabled>다시 시작</button><button id="chunbak-sound" class="chunbak-sound" type="button" aria-pressed="true">효과음 ON</button><label class="chunbak-volume-label" for="chunbak-volume">음량 <input id="chunbak-volume" type="range" min="0" max="100" step="1" value="70"></label></div>
       </div>
       <div class="chunbak-layout">
         <aside class="chunbak-rail chunbak-left" aria-label="기록과 전체 랭킹">
@@ -50,5 +50,5 @@
 <button class="to-top" type="button" aria-label="맨 위로 이동">↑</button>
 <script src="content.js"></script><script src="page.js"></script>
 <script src="assets/vendor/matter-0.20.0.min.js"></script>
-<script src="chunbak-game-core.js"></script><script src="chunbak-ranking-core.js"></script><script src="chunbak.js"></script>
+<script src="chunbak-game-core.js"></script><script src="chunbak-ranking-core.js"></script><script src="chunbak-audio.js"></script><script src="chunbak.js"></script>
 </body></html>

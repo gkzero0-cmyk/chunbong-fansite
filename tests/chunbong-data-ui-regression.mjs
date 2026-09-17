@@ -43,7 +43,7 @@ for (const pageName of pageNames) {
 }
 
 const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-assert.ok(indexHtml.includes('08 / DATA'), 'home portal should include DATA card');
+assert.ok(indexHtml.includes('10 / DATA'), 'home portal should include DATA card as item 10');
 assert.ok(indexHtml.includes('href="data.html"'), 'home portal should link to data page');
 
 const dataJs = fs.readFileSync(path.join(root, 'data.js'), 'utf8');

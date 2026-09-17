@@ -3,6 +3,7 @@
 
   const Core = globalThis.ChunbakGameCore;
   const RankingCore = globalThis.ChunbakRankingCore;
+  const Audio = globalThis.ChunbakAudio;
   const RANKING_ENDPOINT = '/api/content?type=chunbak-ranking';
   const WIDTH = 420;
   const HEIGHT = 680;
@@ -14,11 +15,13 @@
 
   const root = document.getElementById('chunbak-game');
   const canvas = document.getElementById('chunbak-canvas');
-  if (!root || !canvas || !Core || !globalThis.Matter) return;
+  if (!root || !canvas || !Core || !Audio || !globalThis.Matter) return;
 
   const ctx = canvas.getContext('2d');
   const startButton = document.getElementById('chunbak-start');
   const restartButton = document.getElementById('chunbak-restart');
+  const soundButton = document.getElementById('chunbak-sound');
+  const volumeInput = document.getElementById('chunbak-volume');
   const nicknameInput = document.getElementById('chunbak-nickname');
   const scoreNode = document.getElementById('chunbak-score');
   const bestNode = document.getElementById('chunbak-best');
@@ -51,6 +54,13 @@
     catch (_) { return 0; }
   }
   let best = safeReadBest();
+
+  function syncAudioControls() {
+    const settings = Audio.getSettings();
+    soundButton.textContent = settings.enabled ? '효과음 ON' : '효과음 OFF';
+    soundButton.setAttribute('aria-pressed', String(settings.enabled));
+    volumeInput.value = String(Math.round(settings.volume * 100));
+  }
 
   function updateHud() {
     scoreNode.textContent = String(score);
@@ -125,6 +135,7 @@
     const radius = Core.STAGES[currentStage - 1].radius;
     const x = Math.min(WIDTH - radius, Math.max(radius, pointerX));
     createPiece(currentStage, x, DROP_Y + radius);
+    Audio.play('drop');
     maxLevel = Math.max(maxLevel, currentStage);
     lastDropAt = now;
     currentStage = nextStage;
@@ -157,6 +168,8 @@
       lastMergeAt = nowMs;
       score += Core.scoreMerge(resultStage, combo).total;
       maxLevel = Math.max(maxLevel, resultStage);
+      if (resultStage >= 8) Audio.play('highmerge');
+      else Audio.play('merge');
       if (score > best) best = score;
       updateHud();
     }
@@ -221,6 +234,7 @@
   function setGameOver() {
     if (!playing) return;
     playing = false;
+    Audio.play('gameover');
     try { localStorage.setItem(BEST_KEY, String(best)); } catch (_) {}
     overlay.hidden = false;
     updateHud();
@@ -309,6 +323,12 @@
     updateHud();
   }
 
+  function startGameWithSound() {
+    void Audio.resume();
+    Audio.play('start');
+    resetGame({ autoStart: true });
+  }
+
   function pointerToStageX(event) {
     const rect = canvas.getBoundingClientRect();
     const scale = WIDTH / Math.max(1, rect.width);
@@ -331,10 +351,19 @@
   startButton.addEventListener('click', () => {
     const nickname = currentNickname();
     if (nickname) { try { localStorage.setItem(NICKNAME_KEY, nickname.displayName); } catch (_) {} }
-    resetGame({ autoStart: true });
+    startGameWithSound();
   });
-  restartButton.addEventListener('click', () => resetGame({ autoStart: true }));
-  overlayRestart?.addEventListener('click', () => resetGame({ autoStart: true }));
+  restartButton.addEventListener('click', startGameWithSound);
+  overlayRestart?.addEventListener('click', startGameWithSound);
+  soundButton.addEventListener('click', () => {
+    void Audio.resume();
+    Audio.setEnabled(!Audio.getSettings().enabled);
+    syncAudioControls();
+  });
+  volumeInput.addEventListener('input', () => {
+    Audio.setVolume(Number(volumeInput.value) / 100);
+    syncAudioControls();
+  });
 
   async function preloadImages() {
     try {
@@ -366,6 +395,7 @@
     }
   });
   bestNode.textContent = String(best);
+  syncAudioControls();
   resetGame({ autoStart: false });
   preloadImages();
   void loadRanking();
