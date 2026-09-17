@@ -10,28 +10,39 @@ for (const token of [
   'chuntris-engine.js',
   'chuntris-audio.js',
   'chuntris-ranking-core.js',
+  'chuntris-immersive.css',
   'chuntris.js',
   'api/content.js',
   'lib/chuntris-ranking-api.js',
   'assets/chuntris/**',
-  'assets/chuntris/reactions.webp',
   'playwright@1.55.0',
-  'chunbong-fansite.vercel.app/chuntris.html',
+  'https://chunbong-fansite.vercel.app',
   '/api/content?type=chuntris-ranking&mode=classic',
-  '#chuntris-nickname',
+  '#chuntris-start-view',
+  '#chuntris-play-view',
   '.chuntris-ranking-rail',
   '.chuntris-help-rail',
-  'data-chuntris-mode',
-  'chuntris-start',
-  'chuntris-mobile-controls',
+  '#chuntris-mode-classic',
+  '#chuntris-utility-ranking',
+  '#chuntris-harddrop-fx',
+  '#chuntris-line-fx .chuntris-line-flash',
+  'positional-impact-effects-v1',
+  'CLEAR_SOUNDS',
   'invalid_nickname'
 ]) {
   assert.ok(yml.includes(token), `production smoke must include ${token}`);
 }
 
-for (const [width, height] of [[1280,900],[1280,740],[900,800],[390,844],[360,800]]) {
+for (const [width, height] of [[1440,900],[1024,768],[390,844]]) {
   const viewport = new RegExp(`width\\s*:\\s*${width}\\s*,\\s*height\\s*:\\s*${height}`);
   assert.match(yml, viewport, `production smoke must cover ${width}x${height}`);
+}
+
+for (const stale of [
+  'grid-template-areas:"ranking left board right help"',
+  'assertWideDesktopArrangement'
+]) {
+  assert.equal(yml.includes(stale), false, `production smoke must not depend on legacy layout token: ${stale}`);
 }
 
 console.log('chuntris production smoke source regression passed');
