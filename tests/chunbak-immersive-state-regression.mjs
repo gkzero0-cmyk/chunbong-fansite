@@ -9,7 +9,19 @@ for (const token of [
   'id="chunbak-play-view"',
   'id="chunbak-nickname"',
   'id="chunbak-start"',
-  '닉네임 (선택)'
+  '닉네임 (선택)',
+  'id="chunbak-ranking-list"',
+  'id="chunbak-ranking-modal-list"',
+  'id="chunbak-modal"',
+  'id="chunbak-modal-title"',
+  'id="chunbak-modal-close"',
+  'id="chunbak-sound"',
+  'id="chunbak-volume"',
+  'id="chunbak-pause"',
+  'data-chunbak-open="ranking"',
+  'data-chunbak-open="sound"',
+  'data-chunbak-open="controls"',
+  'data-chunbak-panel="pause"'
 ]) assert.ok(html.includes(token), `missing ${token}`);
 
 for (const token of [
@@ -17,7 +29,11 @@ for (const token of [
   'function setView(',
   "kind: 'anonymous'",
   "kind: 'valid'",
-  "kind: 'invalid'"
+  "kind: 'invalid'",
+  'let rankingEntries = []',
+  'function renderRankings(',
+  'function showModalPanel(',
+  'function hideModalShell('
 ]) assert.ok(js.includes(token), `missing ${token}`);
 
 console.log('chunbak immersive state regression passed');
