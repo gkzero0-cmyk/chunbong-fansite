@@ -2,7 +2,6 @@
   'use strict';
 
   const Core = globalThis.ChunbakGameCore;
-  const RankingCore = globalThis.ChunbakRankingCore;
   const Audio = globalThis.ChunbakAudio;
   const RANKING_ENDPOINT = '/api/content?type=chunbak-ranking';
   const WIDTH = 420;
@@ -11,31 +10,41 @@
   const DROP_Y = 60;
   const DROP_COOLDOWN_MS = 260;
   const BEST_KEY = 'chunbak:best:v1';
-  const NICKNAME_KEY = 'chunbak:nickname:v1';
 
   const root = document.getElementById('chunbak-game');
   const canvas = document.getElementById('chunbak-canvas');
   if (!root || !canvas || !Core || !Audio || !globalThis.Matter) return;
 
   const ctx = canvas.getContext('2d');
+  const startView = document.getElementById('chunbak-start-view');
+  const playView = document.getElementById('chunbak-play-view');
   const startButton = document.getElementById('chunbak-start');
   const restartButton = document.getElementById('chunbak-restart');
+  const pauseButton = document.getElementById('chunbak-pause');
   const soundButton = document.getElementById('chunbak-sound');
   const volumeInput = document.getElementById('chunbak-volume');
-  const nicknameInput = document.getElementById('chunbak-nickname');
   const scoreNode = document.getElementById('chunbak-score');
   const bestNode = document.getElementById('chunbak-best');
   const maxLevelNode = document.getElementById('chunbak-max-level');
   const rankingStatus = document.getElementById('chunbak-ranking-status');
   const rankingList = document.getElementById('chunbak-ranking-list');
+  const rankingModalStatus = document.getElementById('chunbak-ranking-modal-status');
+  const rankingModalList = document.getElementById('chunbak-ranking-modal-list');
   const nextNode = document.getElementById('chunbak-next');
   const stageLegend = document.getElementById('chunbak-stage-legend');
   const overlay = document.getElementById('chunbak-overlay');
   const overlayRestart = overlay?.querySelector('[data-chunbak-overlay-restart]');
+  const fxLayer = document.getElementById('chunbak-fx-layer');
+  const comboNode = document.getElementById('chunbak-combo');
+  const modal = document.getElementById('chunbak-modal');
+  const modalTitle = document.getElementById('chunbak-modal-title');
+  const modalClose = document.getElementById('chunbak-modal-close');
+  const modalPanels = [...document.querySelectorAll('[data-chunbak-panel]')];
 
   const images = new Map();
   let engine = null;
   let world = null;
+  let gameState = 'start';
   let playing = false;
   let score = 0;
   let maxLevel = 1;
@@ -48,6 +57,12 @@
   let dangerStartedAtById = {};
   let frameId = null;
   let lastFrameAt = performance.now();
+  let rankingEntries = [];
+  let activePanel = null;
+  let modalReturnPanel = null;
+  let lastFocusedElement = null;
+  let pausedAt = null;
+  let resumeAfterUtility = false;
 
   function safeReadBest() {
     try { return Math.max(0, Number(localStorage.getItem(BEST_KEY)) || 0); }
@@ -55,18 +70,172 @@
   }
   let best = safeReadBest();
 
+  function setView(state) {
+    gameState = state;
+    if (startView) startView.hidden = state !== 'start';
+    if (playView) playView.hidden = state === 'start';
+    root.dataset.gameStatus = state;
+  }
+
   function syncAudioControls() {
     const settings = Audio.getSettings();
-    soundButton.textContent = settings.enabled ? '효과음 ON' : '효과음 OFF';
-    soundButton.setAttribute('aria-pressed', String(settings.enabled));
-    volumeInput.value = String(Math.round(settings.volume * 100));
+    if (soundButton) {
+      soundButton.textContent = settings.enabled ? '효과음 ON' : '효과음 OFF';
+      soundButton.setAttribute('aria-pressed', String(settings.enabled));
+    }
+    if (volumeInput) volumeInput.value = String(Math.round(settings.volume * 100));
   }
 
   function updateHud() {
     scoreNode.textContent = String(score);
     bestNode.textContent = String(best);
     maxLevelNode.textContent = String(maxLevel);
-    root.dataset.gameStatus = playing ? 'playing' : (overlay && !overlay.hidden ? 'gameover' : 'idle');
+    root.dataset.gameStatus = gameState;
+  }
+
+  function showModalPanel(panelName, { returnPanel = null } = {}) {
+    if (!modal || !modalTitle) return;
+    activePanel = panelName;
+    modalReturnPanel = returnPanel;
+    lastFocusedElement ||= document.activeElement;
+    modal.hidden = false;
+    document.body.classList.add('chunbak-modal-open');
+    for (const panel of modalPanels) panel.hidden = panel.dataset.chunbakPanel !== panelName;
+    modalTitle.textContent = ({ ranking:'전체 랭킹', sound:'소리 설정', controls:'조작법', pause:'일시정지' })[panelName] || '춘박게임';
+    modal.querySelectorAll('[data-chunbak-action="back-to-pause"]').forEach(button => {
+      button.hidden = returnPanel !== 'pause';
+    });
+    modalClose?.focus();
+  }
+
+  function hideModalShell() {
+    if (!modal) return;
+    modal.hidden = true;
+    activePanel = null;
+    modalReturnPanel = null;
+    document.body.classList.remove('chunbak-modal-open');
+    lastFocusedElement?.focus?.();
+    lastFocusedElement = null;
+  }
+
+  function pauseGame(reason = 'manual') {
+    if (gameState !== 'playing') return false;
+    pausedAt = performance.now();
+    gameState = 'paused';
+    playing = false;
+    root.dataset.gameStatus = 'paused';
+    root.dataset.pauseReason = reason;
+    return true;
+  }
+
+  function resumeGame() {
+    if (gameState !== 'paused') return false;
+    const now = performance.now();
+    const pauseDuration = pausedAt == null ? 0 : Math.max(0, now - pausedAt);
+    if (Number.isFinite(lastMergeAt)) lastMergeAt += pauseDuration;
+    dangerStartedAtById = Object.fromEntries(
+      Object.entries(dangerStartedAtById).map(([id, startedAt]) => [id, startedAt + pauseDuration])
+    );
+    pausedAt = null;
+    lastFrameAt = performance.now();
+    gameState = 'playing';
+    playing = true;
+    root.dataset.gameStatus = 'playing';
+    delete root.dataset.pauseReason;
+    return true;
+  }
+
+  function openUtilityModal(panelName) {
+    resumeAfterUtility = gameState === 'playing';
+    if (resumeAfterUtility) pauseGame('utility');
+    showModalPanel(panelName);
+  }
+
+  function openPauseMenu() {
+    resumeAfterUtility = false;
+    if (gameState === 'playing') pauseGame('manual');
+    if (gameState === 'paused') showModalPanel('pause');
+  }
+
+  function closeUtilityModal() {
+    if (modalReturnPanel === 'pause') {
+      showModalPanel('pause');
+      return;
+    }
+    const shouldResume = resumeAfterUtility;
+    resumeAfterUtility = false;
+    hideModalShell();
+    if (shouldResume && gameState === 'paused') resumeGame();
+  }
+
+  function effectTier(stage) {
+    if (stage <= 4) return 'low';
+    if (stage <= 7) return 'mid';
+    if (stage <= 10) return 'high';
+    return 'final';
+  }
+
+  function removeTransient(node) {
+    if (!node) return;
+    const remove = () => node.remove();
+    node.addEventListener('animationend', remove, { once:true });
+    setTimeout(remove, 1400);
+  }
+
+  function showMergeEffect({ x, y, stage, combo: mergeCombo = 1 }) {
+    if (!fxLayer) return;
+    const tier = effectTier(stage);
+    const left = `${(x / WIDTH) * 100}%`;
+    const top = `${(y / HEIGHT) * 100}%`;
+    const particleCounts = { low:4, mid:7, high:10, final:14 };
+    const symbols = ['✦', '★', '♥'];
+
+    const ring = document.createElement('span');
+    ring.className = `chunbak-merge-ring tier-${tier}`;
+    ring.style.setProperty('--fx-x', left);
+    ring.style.setProperty('--fx-y', top);
+    fxLayer.appendChild(ring);
+    removeTransient(ring);
+
+    for (let i = 0; i < particleCounts[tier]; i += 1) {
+      const angle = (Math.PI * 2 * i) / particleCounts[tier] + Math.random() * 0.22;
+      const distance = 36 + Math.random() * (tier === 'final' ? 68 : 46);
+      const particle = document.createElement('span');
+      particle.className = `chunbak-particle tier-${tier}`;
+      particle.textContent = symbols[(i + stage + mergeCombo) % symbols.length];
+      particle.style.setProperty('--fx-x', left);
+      particle.style.setProperty('--fx-y', top);
+      particle.style.setProperty('--particle-x', `${Math.cos(angle) * distance}px`);
+      particle.style.setProperty('--particle-y', `${Math.sin(angle) * distance}px`);
+      particle.style.setProperty('--particle-delay', `${(i % 4) * 18}ms`);
+      particle.style.setProperty('--particle-size', `${14 + Math.min(stage, 11) + (i % 3) * 2}px`);
+      particle.style.setProperty('--particle-rotate', `${70 + (i * 37) % 180}deg`);
+      fxLayer.appendChild(particle);
+      removeTransient(particle);
+    }
+
+    if (tier === 'final') {
+      const crown = document.createElement('span');
+      crown.className = 'chunbak-particle tier-final chunbak-final-crown';
+      crown.textContent = '♛';
+      crown.style.setProperty('--fx-x', left);
+      crown.style.setProperty('--fx-y', top);
+      crown.style.setProperty('--particle-x', '0px');
+      crown.style.setProperty('--particle-y', '-76px');
+      crown.style.setProperty('--particle-rotate', '0deg');
+      fxLayer.appendChild(crown);
+      removeTransient(crown);
+    }
+  }
+
+  function showCombo(comboValue, x, y) {
+    if (!comboNode || comboValue < 2) return;
+    comboNode.textContent = `COMBO x${comboValue}`;
+    comboNode.style.setProperty('--combo-x', `${(x / WIDTH) * 100}%`);
+    comboNode.style.setProperty('--combo-y', `${(y / HEIGHT) * 100}%`);
+    comboNode.classList.remove('is-visible');
+    void comboNode.offsetWidth;
+    comboNode.classList.add('is-visible');
   }
 
   function dynamicPieces() {
@@ -168,14 +337,17 @@
       lastMergeAt = nowMs;
       score += Core.scoreMerge(resultStage, combo).total;
       maxLevel = Math.max(maxLevel, resultStage);
-      if (resultStage >= 8) Audio.play('highmerge');
-      else Audio.play('merge');
+      if (typeof Audio.playMerge === 'function') Audio.playMerge(resultStage, combo);
+      else Audio.play(resultStage >= 8 ? 'highmerge' : 'merge');
+      showMergeEffect({ x, y, stage:resultStage, combo });
+      showCombo(combo, x, y);
       if (score > best) best = score;
       updateHud();
     }
   }
 
-  function renderRanking(entries = []) {
+  function renderRankingList(target, entries) {
+    if (!target) return;
     const fragment = document.createDocumentFragment();
     for (const entry of entries.slice(0, 10)) {
       const item = document.createElement('li');
@@ -188,52 +360,39 @@
       item.append(rank, name, record);
       fragment.appendChild(item);
     }
-    rankingList.replaceChildren(fragment);
+    target.replaceChildren(fragment);
+  }
+
+  function renderRankings() {
+    renderRankingList(rankingList, rankingEntries);
+    renderRankingList(rankingModalList, rankingEntries);
+  }
+
+  function setRankingStatus(text) {
+    if (rankingStatus) rankingStatus.textContent = text;
+    if (rankingModalStatus) rankingModalStatus.textContent = text;
   }
 
   async function loadRanking() {
-    rankingStatus.textContent = '랭킹 불러오는 중…';
+    setRankingStatus('랭킹 불러오는 중…');
     try {
       const response = await fetch(`${RANKING_ENDPOINT}&mode=classic`, { headers:{ accept:'application/json' } });
       if (!response.ok) throw new Error(`ranking ${response.status}`);
       const payload = await response.json();
-      renderRanking(Array.isArray(payload.entries) ? payload.entries : []);
-      rankingStatus.textContent = payload.entries?.length ? '전체 최고 기록' : '아직 등록된 기록이 없습니다.';
+      rankingEntries = Array.isArray(payload.entries) ? payload.entries : [];
+      renderRankings();
+      setRankingStatus(rankingEntries.length ? '전체 최고 기록' : '아직 등록된 기록이 없습니다.');
     } catch (_) {
-      rankingStatus.textContent = '랭킹을 불러올 수 없습니다';
-    }
-  }
-
-  function currentNickname() {
-    const validation = RankingCore?.validateNickname(nicknameInput?.value || '');
-    return validation?.ok ? validation : null;
-  }
-
-  async function submitRanking() {
-    const nickname = currentNickname();
-    if (!nickname) {
-      rankingStatus.textContent = '닉네임은 한글/영문/숫자 기준 2~16자로 입력해 주세요.';
-      return;
-    }
-    try { localStorage.setItem(NICKNAME_KEY, nickname.displayName); } catch (_) {}
-    try {
-      const response = await fetch(RANKING_ENDPOINT, {
-        method:'POST',
-        headers:{ 'content-type':'application/json', accept:'application/json' },
-        body:JSON.stringify({ mode:'classic', nickname:nickname.displayName, score, maxLevel })
-      });
-      if (!response.ok) throw new Error(`ranking ${response.status}`);
-      const payload = await response.json();
-      renderRanking(Array.isArray(payload.entries) ? payload.entries : []);
-      rankingStatus.textContent = payload.updated ? '새 최고 기록이 저장되었습니다.' : '기존 최고 기록이 유지되었습니다.';
-    } catch (_) {
-      rankingStatus.textContent = '점수는 저장되지 않았지만 게임은 계속 플레이할 수 있습니다.';
+      setRankingStatus('랭킹을 불러올 수 없습니다');
     }
   }
 
   function setGameOver() {
     if (!playing) return;
     playing = false;
+    pausedAt = null;
+    resumeAfterUtility = false;
+    setView('gameover');
     Audio.play('gameover');
     try { localStorage.setItem(BEST_KEY, String(best)); } catch (_) {}
     overlay.hidden = false;
@@ -241,7 +400,11 @@
   }
 
   function evaluateDanger(nowMs) {
-    if (!playing) { dangerStartedAtById = {}; return; }
+    if (gameState === 'paused') return;
+    if (gameState !== 'playing') {
+      dangerStartedAtById = {};
+      return;
+    }
     const aboveIds = dynamicPieces()
       .filter(body => body.bounds.min.y < DANGER_Y)
       .map(body => body.id);
@@ -314,11 +477,19 @@
     dangerStartedAtById = {};
     lastDropAt = 0;
     pointerX = WIDTH / 2;
+    pausedAt = null;
+    resumeAfterUtility = false;
     overlay.hidden = true;
+    fxLayer?.replaceChildren();
+    if (comboNode) {
+      comboNode.textContent = '';
+      comboNode.classList.remove('is-visible');
+    }
     initWorld();
     nextStage = Core.pickSpawnStage(Math.random);
     chooseUpcoming();
     playing = autoStart;
+    setView(autoStart ? 'playing' : 'start');
     updateHud();
   }
 
@@ -347,18 +518,79 @@
     dropCurrent();
   });
 
-  startButton.addEventListener('click', startGameWithSound);
-  restartButton.addEventListener('click', startGameWithSound);
+  startButton.addEventListener('click', () => {
+    hideModalShell();
+    startGameWithSound();
+  });
+  restartButton?.addEventListener('click', startGameWithSound);
   overlayRestart?.addEventListener('click', startGameWithSound);
-  soundButton.addEventListener('click', () => {
+  pauseButton?.addEventListener('click', openPauseMenu);
+  document.querySelectorAll('[data-chunbak-open]').forEach(button => {
+    button.addEventListener('click', () => openUtilityModal(button.dataset.chunbakOpen));
+  });
+  modalClose?.addEventListener('click', () => {
+    if (activePanel === 'pause') {
+      hideModalShell();
+      resumeGame();
+      return;
+    }
+    closeUtilityModal();
+  });
+  modal?.querySelector('[data-chunbak-close]')?.addEventListener('click', () => {
+    if (activePanel === 'pause') {
+      hideModalShell();
+      resumeGame();
+      return;
+    }
+    closeUtilityModal();
+  });
+  modal?.querySelectorAll('[data-chunbak-action]').forEach(button => {
+    button.addEventListener('click', () => {
+      const action = button.dataset.chunbakAction;
+      if (action === 'resume') {
+        resumeAfterUtility = false;
+        hideModalShell();
+        resumeGame();
+      } else if (action === 'new-game') {
+        resumeAfterUtility = false;
+        hideModalShell();
+        resetGame({ autoStart:true });
+      } else if (action === 'pause-sound') {
+        showModalPanel('sound', { returnPanel:'pause' });
+      } else if (action === 'pause-controls') {
+        showModalPanel('controls', { returnPanel:'pause' });
+      } else if (action === 'back-to-pause') {
+        showModalPanel('pause');
+      }
+    });
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    if (modal && !modal.hidden) {
+      event.preventDefault();
+      if (modalReturnPanel === 'pause' && (activePanel === 'sound' || activePanel === 'controls')) {
+        showModalPanel('pause');
+      } else if (activePanel === 'pause') {
+        hideModalShell();
+        resumeGame();
+      } else {
+        closeUtilityModal();
+      }
+    } else if (gameState === 'playing') {
+      event.preventDefault();
+      openPauseMenu();
+    }
+  });
+  soundButton?.addEventListener('click', () => {
     void Audio.resume();
     Audio.setEnabled(!Audio.getSettings().enabled);
     syncAudioControls();
   });
-  volumeInput.addEventListener('input', () => {
+  volumeInput?.addEventListener('input', () => {
     Audio.setVolume(Number(volumeInput.value) / 100);
     syncAudioControls();
   });
+  comboNode?.addEventListener('animationend', () => comboNode.classList.remove('is-visible'));
 
   async function preloadImages() {
     try {
@@ -370,27 +602,16 @@
         img.src = meta.image;
       })));
       startButton.disabled = false;
-      restartButton.disabled = false;
+      if (restartButton) restartButton.disabled = false;
       buildLegend();
       renderNext();
     } catch (_) {
       startButton.disabled = true;
-      restartButton.disabled = true;
-      const status = document.getElementById('chunbak-ranking-status');
-      if (status) status.textContent = '캐릭터 이미지를 불러오지 못했습니다.';
+      if (restartButton) restartButton.disabled = true;
+      setRankingStatus('캐릭터 이미지를 불러오지 못했습니다.');
     }
   }
 
-  if (nicknameInput) {
-    try { nicknameInput.value = localStorage.getItem(NICKNAME_KEY) || ''; } catch (_) {}
-    nicknameInput.addEventListener('change', () => {
-      const nickname = currentNickname();
-      if (nickname) {
-        nicknameInput.value = nickname.displayName;
-        try { localStorage.setItem(NICKNAME_KEY, nickname.displayName); } catch (_) {}
-      }
-    });
-  }
   bestNode.textContent = String(best);
   syncAudioControls();
   resetGame({ autoStart: false });
@@ -398,5 +619,25 @@
   void loadRanking();
   if (!frameId) frameId = requestAnimationFrame(tick);
 
-  globalThis.ChunbakGame = Object.freeze({ createPiece, dropCurrent, handleCollisionPairs, resetGame });
+  globalThis.ChunbakGame = Object.freeze({
+    createPiece,
+    dropCurrent,
+    handleCollisionPairs,
+    resetGame,
+    pauseGame,
+    resumeGame,
+    setGameOver,
+    showMergeEffect,
+    showCombo,
+    getDebugState: () => ({
+      gameState,
+      playing,
+      score,
+      combo,
+      maxLevel,
+      currentStage,
+      nextStage,
+      bodyCount: dynamicPieces().length
+    })
+  });
 })();
