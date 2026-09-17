@@ -1,49 +1,49 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-16T06:29:01.105Z",
+  "capturedAt": "2026-09-17T06:29:20.026Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 30393,
-    "fanclubCount": 7639,
-    "subscriberCount": 48,
-    "supporterCount": 23,
-    "averageViewers": 57,
+    "followerCount": 30364,
+    "fanclubCount": 7669,
+    "subscriberCount": 49,
+    "supporterCount": 24,
+    "averageViewers": 58,
     "maxViewers": 153,
-    "airtimeMinutes": 8907,
-    "viewershipHours": 8400,
-    "cumulativeUpCount": 80214,
-    "totalAirtimeMinutes": 623059,
-    "monthlyStarCount": 82510,
-    "starsPerHour": 556,
-    "monthlySupporterCount": 183,
-    "monthlyChatCount": 36541,
-    "monthlyMuteCount": 5,
+    "airtimeMinutes": 9520,
+    "viewershipHours": 9146,
+    "cumulativeUpCount": 80398,
+    "totalAirtimeMinutes": 624729,
+    "monthlyStarCount": 82769,
+    "starsPerHour": 522,
+    "monthlySupporterCount": 186,
+    "monthlyChatCount": 38241,
+    "monthlyMuteCount": 6,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-09-15T14:44:30",
+    "latestBroadcastDate": "2026-09-16T18:55:40",
     "categories": [
       {
         "name": "버추얼",
-        "minutes": 8383,
-        "streamCount": 19,
-        "sharePercent": 36.6
+        "minutes": 8996,
+        "streamCount": 20,
+        "sharePercent": 38.3
       },
       {
         "name": "마인크래프트",
         "minutes": 6506,
         "streamCount": 11,
-        "sharePercent": 28.4
+        "sharePercent": 27.7
       },
       {
         "name": "오버워치",
         "minutes": 6114,
         "streamCount": 12,
-        "sharePercent": 26.7
+        "sharePercent": 26
       },
       {
         "name": "PUBG: 배틀그라운드",
         "minutes": 1508,
         "streamCount": 6,
-        "sharePercent": 6.6
+        "sharePercent": 6.4
       },
       {
         "name": "아르마 3",
@@ -11613,6 +11613,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/297134887"
+    },
+    {
+      "id": "trackify-297163907",
+      "broadcastId": "297163907",
+      "date": "2026-09-16",
+      "startedAt": "2026-09-16T18:55:40+09:00",
+      "endedAt": "2026-09-17T05:08:00+09:00",
+      "durationMinutes": 612,
+      "averageViewers": 73,
+      "maxViewers": 105,
+      "viewerSampleCount": 122,
+      "uniqueViewers": null,
+      "starCount": 259,
+      "supporterCount": 4,
+      "chatCount": 1700,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "그냥서버 개발 방송",
+      "categories": [
+        {
+          "id": "00810000",
+          "name": "버추얼",
+          "minutes": 612,
+          "sampleCount": 122,
+          "averageViewers": 73,
+          "maxViewers": 105
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297163907"
     }
   ]
 }
