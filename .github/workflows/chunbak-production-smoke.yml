@@ -122,7 +122,7 @@ jobs:
               assert.equal(await page.evaluate(() => ChunbakGame.getDebugState().gameState),'paused',`${label} ESC pause failed`);
               await page.locator('[data-chunbak-action="pause-sound"]').click();
               assert.ok(await page.locator('[data-chunbak-panel="sound"]').isVisible(),`${label} pause sound panel missing`);
-              await page.locator('[data-chunbak-action="back-to-pause"]').click();
+              await page.locator('[data-chunbak-panel="sound"] [data-chunbak-action="back-to-pause"]').click();
               assert.ok(await page.locator('[data-chunbak-panel="pause"]').isVisible(),`${label} back-to-pause failed`);
               assert.equal(await page.evaluate(() => ChunbakGame.getDebugState().gameState),'paused',`${label} pause child resumed unexpectedly`);
               await page.locator('[data-chunbak-action="resume"]').click();
