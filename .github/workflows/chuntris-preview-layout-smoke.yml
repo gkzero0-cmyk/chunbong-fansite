@@ -7,10 +7,12 @@ on:
       - 'chuntris.css'
       - 'chuntris-fullscreen.css'
       - 'chuntris-immersive.css'
+      - 'chuntris-vcompany-ui.css'
       - 'chuntris-engine.js'
       - 'chuntris-audio.js'
       - 'chuntris-ranking-core.js'
       - 'chuntris.js'
+      - 'chuntris-postgame-ranking.js'
       - 'api/content.js'
       - 'lib/chuntris-ranking-api.js'
       - 'assets/chuntris/**'
@@ -51,19 +53,20 @@ jobs:
             page.on('pageerror', error => errors.push(error.message));
             await page.goto(URL, { waitUntil:'domcontentloaded' });
             await page.waitForFunction(() => Boolean(window.ChuntrisApp?.getGame?.()));
+            await page.waitForFunction(() => Boolean(window.ChuntrisPostgameRanking));
 
             const viewport = page.viewportSize();
             assert.ok(viewport, `${label} viewport missing`);
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'), 'start-mode');
             assert.ok(await page.locator('#chuntris-start-view').isVisible(), `${label} start view missing`);
             assert.equal(await page.locator('#chuntris-play-view').isVisible(), false, `${label} play view must start hidden`);
+            assert.equal(await page.locator('#chuntris-nickname').count(), 0, `${label} pre-game nickname input must be removed`);
             assert.equal(await page.locator('.chuntris-ranking-rail').count(), 0, `${label} ranking rail must be removed`);
             assert.equal(await page.locator('.chuntris-help-rail').count(), 0, `${label} help rail must be removed`);
 
             await page.locator('#chuntris-mode-classic').click();
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'), 'start-player');
             assert.ok(await page.locator('#chuntris-player-step').isVisible(), `${label} player step missing`);
-            await page.locator('#chuntris-nickname').fill('');
             await page.locator('#chuntris-start').click();
             await page.waitForFunction(() => document.querySelector('#chuntris-game')?.dataset.gameStatus === 'playing');
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'), 'playing');
