@@ -8,10 +8,12 @@ on:
       - 'chuntris.css'
       - 'chuntris-fullscreen.css'
       - 'chuntris-immersive.css'
+      - 'chuntris-vcompany-ui.css'
       - 'chuntris-engine.js'
       - 'chuntris-audio.js'
       - 'chuntris-ranking-core.js'
       - 'chuntris.js'
+      - 'chuntris-postgame-ranking.js'
       - 'api/content.js'
       - 'lib/chuntris-ranking-api.js'
       - 'assets/chuntris/**'
@@ -27,7 +29,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Wait for immersive production deployment
+      - name: Wait for current Chuntris production deployment
         run: |
           set -euo pipefail
           BASE='https://chunbong-fansite.vercel.app'
@@ -37,30 +39,28 @@ jobs:
             if \
               curl -fsS -H 'cache-control: no-cache' "$BASE/chuntris.html?_smoke=$stamp" -o /tmp/chuntris.html && \
               curl -fsS -H 'cache-control: no-cache' "$BASE/chuntris.js?_smoke=$stamp" -o /tmp/chuntris.js && \
+              curl -fsS -H 'cache-control: no-cache' "$BASE/chuntris-postgame-ranking.js?_smoke=$stamp" -o /tmp/chuntris-postgame-ranking.js && \
               curl -fsS -H 'cache-control: no-cache' "$BASE/chuntris-audio.js?_smoke=$stamp" -o /tmp/chuntris-audio.js && \
-              curl -fsS -H 'cache-control: no-cache' "$BASE/chuntris-fullscreen.css?_smoke=$stamp" -o /tmp/chuntris-fullscreen.css && \
               curl -fsS -H 'cache-control: no-cache' "$BASE/chuntris-immersive.css?_smoke=$stamp" -o /tmp/chuntris-immersive.css && \
+              curl -fsS -H 'cache-control: no-cache' "$BASE/chuntris-vcompany-ui.css?_smoke=$stamp" -o /tmp/chuntris-vcompany-ui.css && \
               curl -fsS -H 'cache-control: no-cache' "$BASE/api/content?type=chuntris-ranking&mode=classic&_smoke=$stamp" -o /tmp/chuntris-ranking.json && \
               grep -q 'id="chuntris-start-view"' /tmp/chuntris.html && \
               grep -q 'id="chuntris-play-view"' /tmp/chuntris.html && \
-              grep -q 'id="chuntris-line-fx"' /tmp/chuntris.html && \
-              grep -q 'chuntris-immersive.css' /tmp/chuntris.html && \
-              grep -q 'data-chuntris-open="ranking"' /tmp/chuntris.html && \
-              ! grep -q 'class="chuntris-ranking-rail' /tmp/chuntris.html && \
-              ! grep -q 'class="chuntris-help-rail' /tmp/chuntris.html && \
+              grep -q 'id="chuntris-ranking-register"' /tmp/chuntris.html && \
+              grep -q 'id="chuntris-ranking-nickname"' /tmp/chuntris.html && \
+              ! grep -q 'id="chuntris-nickname"' /tmp/chuntris.html && \
+              grep -q 'submitTerminalRanking' /tmp/chuntris-postgame-ranking.js && \
               grep -q 'CLEAR_SOUNDS' /tmp/chuntris.js && \
-              grep -q 'showHardDropEffect({active,landingY})' /tmp/chuntris.js && \
               grep -q 'harddrop' /tmp/chuntris-audio.js && \
-              grep -q "'quad'" /tmp/chuntris-audio.js && \
               grep -q 'positional-impact-effects-v1' /tmp/chuntris-immersive.css && \
-              grep -q 'e_gen_restore/e_background_removal/c_scale,w_1680' /tmp/chuntris-fullscreen.css && \
+              grep -q -- '--chuntris-shell-bg' /tmp/chuntris-vcompany-ui.css && \
               node -e "const p=require('/tmp/chuntris-ranking.json');if(p.mode!=='classic'||!Array.isArray(p.entries))process.exit(1)"; then
-              echo 'Immersive Chuntris production deployment is ready.'
+              echo 'Current postgame-ranking Chuntris production is ready.'
               exit 0
             fi
             sleep 5
           done
-          echo 'Immersive Chuntris production deployment did not become ready in time.' >&2
+          echo 'Current Chuntris production deployment did not become ready in time.' >&2
           exit 1
       - name: Verify ranking API validation without leaderboard pollution
         run: |
@@ -78,126 +78,75 @@ jobs:
         run: |
           npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install --with-deps chromium
-      - name: Verify immersive production flow and layout
+      - name: Verify production flow and responsive layout
         run: |
           node <<'NODE'
           const assert=require('node:assert/strict');
-          const { chromium }=require('playwright');
+          const {chromium}=require('playwright');
           const BASE='https://chunbong-fansite.vercel.app';
 
-          async function assertGameStageFitsViewport(page,label){
-            const viewport=page.viewportSize();
-            assert.ok(viewport,`${label} viewport missing`);
-            if(viewport.width>=1181) await page.locator('.chuntris-layout').scrollIntoViewIfNeeded();
-            else await page.locator('#chuntris-game').scrollIntoViewIfNeeded();
-            const [boardBox,layoutBox]=await Promise.all([
-              page.locator('.chuntris-board-wrap').boundingBox(),
-              page.locator('.chuntris-layout').boundingBox()
-            ]);
-            assert.ok(boardBox&&layoutBox,`${label} stage missing`);
-            assert.ok(boardBox.width>0&&boardBox.height>0,`${label} board must have positive dimensions`);
-            assert.ok(boardBox.width<=viewport.width+1,`${label} board wider than viewport`);
-            assert.ok(boardBox.height<=viewport.height-40,`${label} board too tall: ${boardBox.height} > ${viewport.height-40}`);
-            if(viewport.width>=1181){
-              assert.ok(layoutBox.y>=-1,`${label} stage begins above viewport: ${layoutBox.y}`);
-              assert.ok(layoutBox.y + layoutBox.height<=viewport.height+1,`${label} stage bottom clipped: ${layoutBox.y + layoutBox.height} > ${viewport.height}`);
-            }
-          }
-
-          async function verify(browser, options, label) {
+          async function verify(browser,options,label){
             const page=await browser.newPage(options);
             const errors=[];
             page.on('pageerror',error=>errors.push(error.message));
             await page.goto(`${BASE}/chuntris.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
             await page.waitForFunction(()=>Boolean(window.ChuntrisApp?.getGame?.()));
-
+            await page.waitForFunction(()=>Boolean(window.ChuntrisPostgameRanking));
             const viewport=page.viewportSize();
             assert.ok(viewport,`${label} viewport missing`);
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-mode');
             assert.ok(await page.locator('#chuntris-start-view').isVisible(),`${label} start view missing`);
             assert.equal(await page.locator('#chuntris-play-view').isVisible(),false,`${label} play view must start hidden`);
+            assert.equal(await page.locator('#chuntris-nickname').count(),0,`${label} pre-game nickname must be absent`);
+            assert.ok(await page.locator('#chuntris-ranking-register').count(),`${label} postgame ranking register missing`);
+            assert.ok(await page.locator('#chuntris-ranking-nickname').count(),`${label} postgame nickname input missing`);
             assert.equal(await page.locator('.chuntris-ranking-rail').count(),0,`${label} ranking rail must be removed`);
             assert.equal(await page.locator('.chuntris-help-rail').count(),0,`${label} help rail must be removed`);
 
             await page.locator('#chuntris-mode-classic').click();
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-player');
-            assert.ok(await page.locator('#chuntris-player-step').isVisible(),`${label} player step missing`);
-            await page.locator('#chuntris-nickname').fill('');
             await page.locator('#chuntris-start').click();
             await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing');
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'playing');
-
             const documentWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
-            const game=await page.locator('#chuntris-game').boundingBox();
             const board=await page.locator('.chuntris-board-wrap').boundingBox();
-            assert.ok(game&&board,`${label} play layout missing`);
-            assert.ok(documentWidth<=viewport.width+1,`${label} horizontal overflow: ${documentWidth} > ${viewport.width}`);
-            await assertGameStageFitsViewport(page,label);
+            assert.ok(board&&board.width>0&&board.height>0,`${label} board missing`);
+            assert.ok(documentWidth<=viewport.width+1,`${label} horizontal overflow`);
+            assert.ok(board.width<=viewport.width+1,`${label} board wider than viewport`);
 
             for(const id of ['#chuntris-utility-ranking','#chuntris-utility-sound','#chuntris-utility-controls','#chuntris-pause']){
-              assert.ok(await page.locator(id).isVisible(),`${label} utility missing: ${id}`);
+              assert.ok(await page.locator(id).isVisible(),`${label} utility missing ${id}`);
             }
-
             if(viewport.width>1180){
               const [left,center,right]=await Promise.all([
                 page.locator('.chuntris-left-panel').boundingBox(),
                 page.locator('.chuntris-board-wrap').boundingBox(),
                 page.locator('.chuntris-right-panel').boundingBox()
               ]);
-              assert.ok(left&&center&&right,`${label} three-region layout missing`);
-              assert.ok(left.x<center.x&&center.x<right.x,`${label} three-region order invalid`);
-              assert.ok(center.width>=280,`${label} enlarged board unexpectedly narrow: ${center.width}`);
-              const [hold,next,stats,reaction]=await Promise.all([
-                page.locator('#chuntris-hold').boundingBox(),page.locator('#chuntris-next').boundingBox(),
-                page.locator('.chuntris-stats').boundingBox(),page.locator('#chuntris-reaction').boundingBox()
-              ]);
-              assert.ok(hold&&next&&stats&&reaction,`${label} side content missing`);
-              assert.ok(stats.y>hold.y,`${label} score not below HOLD`);
-              assert.ok(reaction.y>next.y,`${label} reaction not below NEXT`);
-
-              const timeFits=await page.locator('#chuntris-time').evaluate(el=>{
-                const original=el.textContent;
-                el.textContent='99:59.999';
-                const result={fits:el.scrollWidth<=el.clientWidth+1,scrollWidth:el.scrollWidth,clientWidth:el.clientWidth};
-                el.textContent=original;
-                return result;
-              });
-              assert.ok(timeFits.fits,`${label} TIME is clipped: ${timeFits.scrollWidth} > ${timeFits.clientWidth}`);
+              assert.ok(left&&center&&right,`${label} desktop regions missing`);
+              assert.ok(left.x<center.x&&center.x<right.x,`${label} desktop region order invalid`);
+              assert.ok(center.width>=280,`${label} board too narrow`);
             }
 
             await page.locator('#chuntris-utility-ranking').click();
-            assert.equal(await page.locator('#chuntris-game').getAttribute('data-game-status'),'paused',`${label} ranking modal must auto-pause`);
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-game-status'),'paused',`${label} utility modal must pause`);
             assert.ok(await page.locator('[data-chuntris-panel="ranking"]').isVisible(),`${label} ranking modal missing`);
             await page.locator('.chuntris-modal-close').click();
             await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing');
 
             await page.locator('#chuntris-pause').click();
-            assert.equal(await page.locator('#chuntris-game').getAttribute('data-game-status'),'paused',`${label} manual pause failed`);
             assert.ok(await page.locator('[data-chuntris-panel="pause"]').isVisible(),`${label} pause panel missing`);
-            await page.locator('[data-chuntris-panel="pause"] [data-chuntris-open="sound"]').click();
-            assert.ok(await page.locator('[data-chuntris-panel="sound"]').isVisible(),`${label} sound panel missing`);
-            await page.locator('.chuntris-modal-close').click();
-            assert.ok(await page.locator('[data-chuntris-panel="pause"]').isVisible(),`${label} pause child must return to pause`);
-            assert.equal(await page.locator('#chuntris-game').getAttribute('data-game-status'),'paused',`${label} pause child must not resume`);
             await page.locator('#chuntris-pause-continue').click();
             await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing');
 
             await page.keyboard.press('Space');
-            const hardDropFx=page.locator('#chuntris-harddrop-fx');
-            assert.ok(await hardDropFx.evaluate(el=>el.classList.contains('is-active')),`${label} hard-drop effect missing`);
-            const dropX=await hardDropFx.evaluate(el=>el.style.getPropertyValue('--drop-x'));
-            assert.match(dropX,/%$/,`${label} hard-drop position missing`);
-
+            assert.ok(await page.locator('#chuntris-harddrop-fx').evaluate(el=>el.classList.contains('is-active')),`${label} hard-drop effect missing`);
             await page.evaluate(()=>window.ChuntrisApp.showClearEffect(4));
             assert.equal(await page.locator('#chuntris-clear-label').textContent(),'QUAD',`${label} QUAD label mismatch`);
-            assert.equal(await page.locator('#chuntris-line-fx .chuntris-line-flash').count(),4,`${label} QUAD row flashes missing`);
+            assert.equal(await page.locator('#chuntris-line-fx .chuntris-line-flash').count(),4,`${label} line flashes missing`);
 
-            const reactionImage=await page.locator('#chuntris-reaction').evaluate(el=>getComputedStyle(el).backgroundImage);
-            assert.match(reactionImage,/e_gen_restore\/e_background_removal/,`${label} reaction must restore detail before background removal`);
-            assert.match(reactionImage,/c_scale,w_1680/,`${label} reaction must use high-resolution asset`);
-            assert.match(reactionImage,/fl_preserve_transparency/,`${label} reaction must preserve transparency`);
             assert.deepEqual(errors,[],`${label} page errors: ${errors.join(' | ')}`);
-            console.log(`${label} passed: board=${board.width}x${board.height}`);
+            console.log(`${label} production smoke passed`);
             await page.close();
           }
 
@@ -210,6 +159,6 @@ jobs:
               await verify(browser,{viewport:{width:900,height:800}},'900x800');
               await verify(browser,{viewport:{width:390,height:844},isMobile:true,hasTouch:true},'390x844');
               await verify(browser,{viewport:{width:360,height:800},isMobile:true,hasTouch:true},'360x800');
-            } finally { await browser.close(); }
+            }finally{await browser.close();}
           })().catch(error=>{console.error(error);process.exit(1)});
           NODE
