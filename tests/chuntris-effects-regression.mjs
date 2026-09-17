@@ -13,7 +13,8 @@ for (const [lines,label] of [[1,'SINGLE'],[2,'DOUBLE'],[3,'TRIPLE'],[4,'QUAD']])
 
 assert.ok(html.includes('id="chuntris-harddrop-fx"'), 'hard-drop effect layer missing');
 assert.ok(html.includes('id="chuntris-line-fx"'), 'line-clear positional effect layer missing');
-assert.ok(engine.includes('clearedRows'), 'engine snapshot must expose cleared row positions for presentation');
+assert.ok(engine.includes('clearedRows: cleared.clearedRows'), 'lock event must pass actual cleared row positions');
+assert.ok(engine.includes('clearedRows: Array.isArray(clearedRows)'), 'lastClear snapshot must retain cleared row positions');
 assert.ok(app.includes('Engine.ghostY'), 'hard-drop presentation must capture actual landing position');
 for (const marker of ["setProperty('--drop-x'", "setProperty('--drop-start'", "setProperty('--drop-end'"]) {
   assert.ok(app.includes(marker), marker);
