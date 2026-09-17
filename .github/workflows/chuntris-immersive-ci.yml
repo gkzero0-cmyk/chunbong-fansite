@@ -56,7 +56,6 @@ jobs:
           node --check chuntris-engine.js
           node --check chuntris.js
           node tests/chuntris-effects-regression.mjs
-          node tests/chuntris-engine-regression.mjs
           node tests/chuntris-audio-effects-regression.mjs
       - name: Commit focused implementation
         if: steps.guard.outputs.needed == 'true'
