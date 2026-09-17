@@ -7,4 +7,8 @@ assert.ok(js.includes("fetch(`${RANKING_ENDPOINT}&mode=classic`"));
 assert.ok(js.includes('chunbak:nickname:v1'));
 assert.ok(js.includes('랭킹을 불러올 수 없습니다'));
 assert.ok(js.includes('점수는 저장되지 않았지만 게임은 계속 플레이할 수 있습니다.'));
+assert.ok(js.includes("nicknameState.kind === 'anonymous'"));
+assert.ok(js.includes('로컬 최고 기록만 저장되었습니다.'));
+assert.ok(js.includes("nicknameState.kind === 'invalid'"));
+assert.ok(js.includes('전체 랭킹은 2~16자 닉네임을 입력한 기록만 등록됩니다.'));
 console.log('chunbak ranking ui regression passed');
