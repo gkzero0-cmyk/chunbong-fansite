@@ -49,7 +49,8 @@
     modalTitle:document.getElementById('chuntris-modal-title'), modalBody:document.getElementById('chuntris-modal-body'),
     pauseContinue:document.getElementById('chuntris-pause-continue'), pauseNew:document.getElementById('chuntris-pause-new'),
     newConfirm:document.getElementById('chuntris-new-confirm'), newCancel:document.getElementById('chuntris-new-cancel'),
-    clearLabel:document.getElementById('chuntris-clear-label'), hardDropFx:document.getElementById('chuntris-harddrop-fx')
+    clearLabel:document.getElementById('chuntris-clear-label'), hardDropFx:document.getElementById('chuntris-harddrop-fx'),
+    lineFx:document.getElementById('chuntris-line-fx')
   };
   if (!els.game || !els.board) return;
 
@@ -158,15 +159,56 @@
   function updateRecords(state,previousStatus){if(state.status==='gameover'&&previousStatus!=='gameover'&&mode==='classic'){const old=currentBest();if(state.score>old){storageSet(CLASSIC_BEST_KEY,state.score);bestFlashUntil=Date.now()+1800;}}if(state.status==='completed'&&previousStatus!=='completed'&&mode==='sprint40'){const old=currentBest();if(!old||state.elapsedMs<old){storageSet(SPRINT_BEST_KEY,state.elapsedMs);bestFlashUntil=Date.now()+1800;}}}
 
   function restartAnimation(element,className){if(!element)return;element.classList.remove(className);void element.offsetWidth;element.classList.add(className);}
-  function showHardDropEffect(){
-    if(els.hardDropFx){restartAnimation(els.hardDropFx,'is-active');clearTimeout(hardDropTimer);hardDropTimer=setTimeout(()=>els.hardDropFx?.classList.remove('is-active'),260);}
+  function showHardDropEffect(detail={}){
+    const active=detail.active||null;
+    const landingY=Number.isFinite(detail.landingY)?detail.landingY:(active?.y??0);
+    const startCells=active?Engine.cellsFor(active):[];
+    const landingCells=active?Engine.cellsFor({...active,y:landingY}):[];
+    const xCells=landingCells.length?landingCells:startCells;
+    const xPct=xCells.length?(xCells.reduce((sum,[x])=>sum+x+.5,0)/xCells.length/Engine.BOARD_WIDTH)*100:50;
+    const startRows=startCells.filter(([,y])=>y>=Engine.HIDDEN_ROWS).map(([,y])=>y-Engine.HIDDEN_ROWS);
+    const endRows=landingCells.filter(([,y])=>y>=Engine.HIDDEN_ROWS).map(([,y])=>y-Engine.HIDDEN_ROWS);
+    const startPct=startRows.length?(Math.min(...startRows)/Engine.VISIBLE_ROWS)*100:0;
+    const endPct=endRows.length?((Math.max(...endRows)+1)/Engine.VISIBLE_ROWS)*100:95;
+    if(els.hardDropFx){
+      els.hardDropFx.style.setProperty('--drop-x',`${Math.max(2,Math.min(98,xPct))}%`);
+      els.hardDropFx.style.setProperty('--drop-start',`${Math.max(0,Math.min(95,startPct))}%`);
+      els.hardDropFx.style.setProperty('--drop-end',`${Math.max(5,Math.min(100,endPct))}%`);
+      restartAnimation(els.hardDropFx,'is-active');
+      clearTimeout(hardDropTimer);
+      hardDropTimer=setTimeout(()=>els.hardDropFx?.classList.remove('is-active'),260);
+    }
     if(els.boardWrap){restartAnimation(els.boardWrap,'is-impact');setTimeout(()=>els.boardWrap?.classList.remove('is-impact'),220);}
   }
-  function showClearEffect(lines){
-    const label=CLEAR_LABELS[lines];if(!label||!els.clearLabel)return;els.clearLabel.textContent=label;els.clearLabel.className=`chuntris-clear-label is-${label.toLowerCase()}`;restartAnimation(els.clearLabel,'is-visible');clearTimeout(clearTimer);clearTimer=setTimeout(()=>{if(els.clearLabel){els.clearLabel.classList.remove('is-visible');els.clearLabel.textContent='';}},950);
+  function showClearEffect(lines,clearDetail={}){
+    const label=CLEAR_LABELS[lines];
+    if(!label||!els.clearLabel)return;
+    els.clearLabel.textContent=label;
+    els.clearLabel.className=`chuntris-clear-label is-${label.toLowerCase()}`;
+    restartAnimation(els.clearLabel,'is-visible');
+    if(els.lineFx){
+      els.lineFx.replaceChildren();
+      const rows=Array.isArray(clearDetail.clearedRows)?clearDetail.clearedRows:[];
+      const visibleRows=rows.filter(row=>Number.isInteger(row)&&row>=Engine.HIDDEN_ROWS&&row<Engine.BOARD_ROWS);
+      const count=Math.max(0,Math.min(4,Number(lines)||0));
+      const effectRows=visibleRows.length?visibleRows:Array.from({length:count},(_,index)=>Engine.BOARD_ROWS-1-index);
+      effectRows.forEach(row=>{
+        const visualRow=row-Engine.HIDDEN_ROWS;
+        if(visualRow<0||visualRow>=Engine.VISIBLE_ROWS)return;
+        const flash=document.createElement('span');
+        flash.className=`chuntris-line-flash is-${label.toLowerCase()}`;
+        flash.style.top=`${(visualRow/Engine.VISIBLE_ROWS)*100}%`;
+        els.lineFx.append(flash);
+      });
+    }
+    clearTimeout(clearTimer);
+    clearTimer=setTimeout(()=>{
+      if(els.clearLabel){els.clearLabel.classList.remove('is-visible');els.clearLabel.textContent='';}
+      els.lineFx?.replaceChildren();
+    },950);
   }
   function observeEvents(state){
-    if(state.lastClear&&state.lastClear.at!==lastClearAt){lastClearAt=state.lastClear.at;const clear=state.lastClear;if(clear.lines>0){showClearEffect(clear.lines);const clearSound=CLEAR_SOUNDS[clear.lines];if(clearSound&&root.ChuntrisAudio)root.ChuntrisAudio.play(clearSound);let name='smile',duration=850;if(clear.lines===2){name='sparkle';duration=950;}else if(clear.lines===3){name='love';duration=1150;}else if(clear.lines>=4){name='money';duration=1300;}transientReaction={name,until:Date.now()+duration};}}
+    if(state.lastClear&&state.lastClear.at!==lastClearAt){lastClearAt=state.lastClear.at;const clear=state.lastClear;if(clear.lines>0){showClearEffect(clear.lines,clear);const clearSound=CLEAR_SOUNDS[clear.lines];if(clearSound&&root.ChuntrisAudio)root.ChuntrisAudio.play(clearSound);let name='smile',duration=850;if(clear.lines===2){name='sparkle';duration=950;}else if(clear.lines===3){name='love';duration=1150;}else if(clear.lines>=4){name='money';duration=1300;}transientReaction={name,until:Date.now()+duration};}}
     if(state.level!==lastLevel&&state.level>lastLevel&&root.ChuntrisAudio)root.ChuntrisAudio.play('levelup');lastLevel=state.level;
   }
 
@@ -221,7 +263,7 @@
     else if(action==='rotate-cw'){changed=game.rotate(1);if(changed&&root.ChuntrisAudio)root.ChuntrisAudio.play('rotate');}
     else if(action==='rotate-ccw'){changed=game.rotate(-1);if(changed&&root.ChuntrisAudio)root.ChuntrisAudio.play('rotate');}
     else if(action==='hold'){changed=game.holdPiece();if(changed&&root.ChuntrisAudio)root.ChuntrisAudio.play('rotate');}
-    else if(action==='hard-drop'){game.hardDrop(Date.now());changed=true;showHardDropEffect();if(root.ChuntrisAudio)root.ChuntrisAudio.play('harddrop');}
+    else if(action==='hard-drop'){const before=game.getSnapshot();const active=before.active?{...before.active}:null;const landingY=active?Engine.ghostY(before.board,active):null;game.hardDrop(Date.now());changed=true;showHardDropEffect({active,landingY});if(root.ChuntrisAudio)root.ChuntrisAudio.play('harddrop');}
     if(changed)render();return changed;
   }
 

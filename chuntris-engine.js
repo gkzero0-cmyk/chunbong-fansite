@@ -379,7 +379,7 @@
       }
       const cleared = clearCompletedLines(this.state.board);
       this.state.board = cleared.board;
-      this.applyClearEvent({ lines: cleared.lines, tSpin }, nowMs);
+      this.applyClearEvent({ lines: cleared.lines, tSpin, clearedRows: cleared.clearedRows }, nowMs);
       if (this.state.status === 'completed') return true;
       this.state.canHold = true;
       this.state.groundedAt = null;
@@ -388,7 +388,7 @@
       return true;
     }
 
-    applyClearEvent({ lines = 0, tSpin = false } = {}, nowMs = Date.now()) {
+    applyClearEvent({ lines = 0, tSpin = false, clearedRows = [] } = {}, nowMs = Date.now()) {
       const result = scoreClear({
         lines, tSpin, level: this.state.level,
         combo: this.state.combo, backToBack: this.state.backToBack
@@ -401,7 +401,8 @@
       this.state.lastClear = {
         lines: Math.max(0, Number(lines) || 0), tSpin: Boolean(tSpin),
         points: result.points, combo: this.state.combo,
-        backToBack: result.b2bApplied, at: nowMs
+        backToBack: result.b2bApplied, at: nowMs,
+        clearedRows: Array.isArray(clearedRows) ? clearedRows.filter(row => Number.isInteger(row) && row >= 0 && row < BOARD_ROWS).slice(0, 4) : []
       };
       if (this.state.mode === 'sprint40' && this.state.lines >= 40) {
         this.state.lines = 40;
