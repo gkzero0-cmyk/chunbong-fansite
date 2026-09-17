@@ -100,7 +100,7 @@ jobs:
             assert.ok(boardBox.height<=viewport.height-40,`${label} board too tall: ${boardBox.height} > ${viewport.height-40}`);
             if(viewport.width>=1181){
               assert.ok(layoutBox.y>=-1,`${label} stage begins above viewport: ${layoutBox.y}`);
-              assert.ok(layoutBox.y+layoutBox.height<=viewport.height+1,`${label} stage bottom clipped: ${layoutBox.y+layoutBox.height} > ${viewport.height}`);
+              assert.ok(layoutBox.y + layoutBox.height<=viewport.height+1,`${label} stage bottom clipped: ${layoutBox.y + layoutBox.height} > ${viewport.height}`);
             }
           }
 
