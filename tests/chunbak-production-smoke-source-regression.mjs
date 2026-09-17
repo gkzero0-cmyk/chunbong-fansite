@@ -15,7 +15,8 @@ for(const token of [
   '390',
   'playwright',
   'ChunbakGame.createPiece(1',
-  'invalid_nickname'
+  'invalid_nickname',
+  '[data-chunbak-panel="sound"] [data-chunbak-action="back-to-pause"]'
 ]) assert.ok(yml.includes(token), `missing ${token}`);
 
 console.log('chunbak production smoke source regression passed');
