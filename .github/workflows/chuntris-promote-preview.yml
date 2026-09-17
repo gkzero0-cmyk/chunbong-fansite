@@ -1,4 +1,4 @@
-name: Promote Chuntris preview
+name: Promote validated Chunbak preview
 
 on:
   push:
@@ -15,7 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      PREVIEW_URL: https://chunbong-fansite-git-fix-chuntris-short-des-7bb22f-gkzero0-9465.vercel.app
+      PREVIEW_URL: https://chunbong-fansite-git-feat-chunbak-audio-nav-dd4c7d-gkzero0-9465.vercel.app
+      PROD_URL: https://chunbong-fansite.vercel.app
       VERCEL_SCOPE: gkzero0-9465
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
     steps:
@@ -27,24 +28,68 @@ jobs:
             echo 'VERCEL_TOKEN repository secret is not configured.' >&2
             exit 2
           fi
-      - name: Promote validated Chuntris preview to production
+
+      - name: Verify validated preview markers
+        shell: bash
+        run: |
+          set -euo pipefail
+          stamp=$(date +%s)
+          curl -fsSL -H 'cache-control: no-cache' "$PREVIEW_URL/index.html?_promote_source=$stamp" -o /tmp/index.html
+          curl -fsSL -H 'cache-control: no-cache' "$PREVIEW_URL/chunbak.html?_promote_source=$stamp" -o /tmp/chunbak.html
+          curl -fsSL -H 'cache-control: no-cache' "$PREVIEW_URL/chunbak-audio.js?_promote_source=$stamp" -o /tmp/chunbak-audio.js
+          grep -Fq '08 / MINIGAMES' /tmp/index.html
+          grep -Fq '10 / DATA' /tmp/index.html
+          grep -Fq 'id="chunbak-sound"' /tmp/chunbak.html
+          grep -Fq 'id="chunbak-volume"' /tmp/chunbak.html
+          grep -Fq 'chunbak-audio.js' /tmp/chunbak.html
+          grep -Fq 'chunbak.sound.enabled.v1' /tmp/chunbak-audio.js
+          grep -Fq 'chunbak.sound.volume.v1' /tmp/chunbak-audio.js
+          python - <<'PY'
+          from pathlib import Path
+          index = Path('/tmp/index.html').read_text()
+          nav_start = index.index('<nav class="main-nav"')
+          nav = index[nav_start:index.index('</nav>', nav_start)]
+          labels = ['>팬아트</a>', '>유튜브</a>', '>TAROT</a>', '>미니게임</a>']
+          positions = [nav.index(label) for label in labels]
+          assert positions == sorted(positions), positions
+          print('validated preview markers are present')
+          PY
+
+      - name: Promote validated preview to production
         shell: bash
         run: |
           set -euo pipefail
           npx --yes vercel@latest promote "$PREVIEW_URL" --yes --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
-      - name: Verify production received the short-desktop fix
+
+      - name: Verify production received Chunbak audio and navigation changes
         shell: bash
         run: |
           set -euo pipefail
-          BASE='https://chunbong-fansite.vercel.app'
-          for attempt in $(seq 1 20); do
-            curl -fsSL -H 'cache-control: no-cache' "$BASE/chuntris.css?_promote_check=$(date +%s)" -o /tmp/chuntris.css || true
-            if grep -Fq 'clamp(150px,calc((100dvh - 360px)/2),280px)' /tmp/chuntris.css && \
-               grep -Fq 'e_gen_restore/c_scale,w_1120/f_webp/q_auto:best' /tmp/chuntris.css; then
-              echo 'Promoted Chuntris CSS is live in production.'
-              exit 0
+          for attempt in $(seq 1 30); do
+            stamp=$(date +%s)
+            if curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/index.html?_promote_check=$stamp" -o /tmp/prod-index.html && \
+               curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/chunbak.html?_promote_check=$stamp" -o /tmp/prod-chunbak.html && \
+               curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/chunbak-audio.js?_promote_check=$stamp" -o /tmp/prod-chunbak-audio.js; then
+              if grep -Fq '08 / MINIGAMES' /tmp/prod-index.html && \
+                 grep -Fq '10 / DATA' /tmp/prod-index.html && \
+                 grep -Fq 'id="chunbak-sound"' /tmp/prod-chunbak.html && \
+                 grep -Fq 'id="chunbak-volume"' /tmp/prod-chunbak.html && \
+                 grep -Fq 'chunbak.sound.enabled.v1' /tmp/prod-chunbak-audio.js && \
+                 grep -Fq 'chunbak.sound.volume.v1' /tmp/prod-chunbak-audio.js; then
+                python - <<'PY'
+          from pathlib import Path
+          index = Path('/tmp/prod-index.html').read_text()
+          nav_start = index.index('<nav class="main-nav"')
+          nav = index[nav_start:index.index('</nav>', nav_start)]
+          labels = ['>팬아트</a>', '>유튜브</a>', '>TAROT</a>', '>미니게임</a>']
+          positions = [nav.index(label) for label in labels]
+          assert positions == sorted(positions), positions
+          print('production contains requested Chunbak audio and navigation changes')
+          PY
+                exit 0
+              fi
             fi
             sleep 5
           done
-          echo 'Production did not receive the promoted Chuntris CSS in time.' >&2
+          echo 'Production did not receive the promoted Chunbak changes in time.' >&2
           exit 1
