@@ -18,6 +18,8 @@
   if (!root || !canvas || !Core || !Audio || !globalThis.Matter) return;
 
   const ctx = canvas.getContext('2d');
+  const startView = document.getElementById('chunbak-start-view');
+  const playView = document.getElementById('chunbak-play-view');
   const startButton = document.getElementById('chunbak-start');
   const restartButton = document.getElementById('chunbak-restart');
   const soundButton = document.getElementById('chunbak-sound');
@@ -36,6 +38,7 @@
   const images = new Map();
   let engine = null;
   let world = null;
+  let gameState = 'start';
   let playing = false;
   let score = 0;
   let maxLevel = 1;
@@ -55,6 +58,24 @@
   }
   let best = safeReadBest();
 
+  function setView(state) {
+    gameState = state;
+    if (startView) startView.hidden = state !== 'start';
+    if (playView) playView.hidden = state === 'start';
+    root.dataset.gameStatus = state;
+  }
+
+  function getNicknameState() {
+    const raw = RankingCore?.normalizeNickname
+      ? RankingCore.normalizeNickname(nicknameInput.value)
+      : String(nicknameInput.value || '').trim();
+    if (!raw) return { kind: 'anonymous' };
+    const validation = RankingCore?.validateNickname(raw);
+    return validation?.ok
+      ? { kind: 'valid', displayName: validation.displayName }
+      : { kind: 'invalid' };
+  }
+
   function syncAudioControls() {
     const settings = Audio.getSettings();
     soundButton.textContent = settings.enabled ? '효과음 ON' : '효과음 OFF';
@@ -66,7 +87,7 @@
     scoreNode.textContent = String(score);
     bestNode.textContent = String(best);
     maxLevelNode.textContent = String(maxLevel);
-    root.dataset.gameStatus = playing ? 'playing' : (overlay && !overlay.hidden ? 'gameover' : 'idle');
+    root.dataset.gameStatus = gameState;
   }
 
   function dynamicPieces() {
@@ -205,22 +226,28 @@
   }
 
   function currentNickname() {
-    const validation = RankingCore?.validateNickname(nicknameInput.value);
-    return validation?.ok ? validation : null;
+    const nicknameState = getNicknameState();
+    return nicknameState.kind === 'valid'
+      ? { ok: true, displayName: nicknameState.displayName }
+      : null;
   }
 
   async function submitRanking() {
-    const nickname = currentNickname();
-    if (!nickname) {
-      rankingStatus.textContent = '닉네임은 한글/영문/숫자 기준 2~16자로 입력해 주세요.';
+    const nicknameState = getNicknameState();
+    if (nicknameState.kind === 'anonymous') {
+      rankingStatus.textContent = '로컬 최고 기록만 저장되었습니다.';
       return;
     }
-    try { localStorage.setItem(NICKNAME_KEY, nickname.displayName); } catch (_) {}
+    if (nicknameState.kind === 'invalid') {
+      rankingStatus.textContent = '전체 랭킹은 2~16자 닉네임을 입력한 기록만 등록됩니다.';
+      return;
+    }
+    try { localStorage.setItem(NICKNAME_KEY, nicknameState.displayName); } catch (_) {}
     try {
       const response = await fetch(RANKING_ENDPOINT, {
         method:'POST',
         headers:{ 'content-type':'application/json', accept:'application/json' },
-        body:JSON.stringify({ mode:'classic', nickname:nickname.displayName, score, maxLevel })
+        body:JSON.stringify({ mode:'classic', nickname:nicknameState.displayName, score, maxLevel })
       });
       if (!response.ok) throw new Error(`ranking ${response.status}`);
       const payload = await response.json();
@@ -234,6 +261,7 @@
   function setGameOver() {
     if (!playing) return;
     playing = false;
+    setView('gameover');
     Audio.play('gameover');
     try { localStorage.setItem(BEST_KEY, String(best)); } catch (_) {}
     overlay.hidden = false;
@@ -320,6 +348,7 @@
     nextStage = Core.pickSpawnStage(Math.random);
     chooseUpcoming();
     playing = autoStart;
+    setView(autoStart ? 'playing' : 'start');
     updateHud();
   }
 
@@ -349,8 +378,10 @@
   });
 
   startButton.addEventListener('click', () => {
-    const nickname = currentNickname();
-    if (nickname) { try { localStorage.setItem(NICKNAME_KEY, nickname.displayName); } catch (_) {} }
+    const nicknameState = getNicknameState();
+    if (nicknameState.kind === 'valid') {
+      try { localStorage.setItem(NICKNAME_KEY, nicknameState.displayName); } catch (_) {}
+    }
     startGameWithSound();
   });
   restartButton.addEventListener('click', startGameWithSound);
@@ -388,10 +419,10 @@
 
   try { nicknameInput.value = localStorage.getItem(NICKNAME_KEY) || ''; } catch (_) {}
   nicknameInput.addEventListener('change', () => {
-    const nickname = currentNickname();
-    if (nickname) {
-      nicknameInput.value = nickname.displayName;
-      try { localStorage.setItem(NICKNAME_KEY, nickname.displayName); } catch (_) {}
+    const nicknameState = getNicknameState();
+    if (nicknameState.kind === 'valid') {
+      nicknameInput.value = nicknameState.displayName;
+      try { localStorage.setItem(NICKNAME_KEY, nicknameState.displayName); } catch (_) {}
     }
   });
   bestNode.textContent = String(best);
