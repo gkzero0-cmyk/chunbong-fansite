@@ -289,9 +289,9 @@
       return ((t^(t>>>14))>>>0)/4294967296;
     };
   }
-  function startMultiplayer(seed){
+  function startMultiplayer(seed,multiplayerMode='sprint40'){
     cancelCountdown();
-    mode='sprint40';
+    mode=multiplayerMode==='classic'?'classic':multiplayerMode==='hard'?'hard':'sprint40';
     game=new Engine.ChuntrisGame({mode,random:seededRandom(seed)});
     modeButtons.forEach(button=>{const active=button.dataset.chuntrisMode===mode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
     startViewportY=typeof root.scrollY==='number'?root.scrollY:0;
