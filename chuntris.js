@@ -309,14 +309,24 @@
   function render(){
     const state=game.getSnapshot(),previousStatus=lastStatus;updateRecords(state,previousStatus);observeEvents(state);
     if(!els.playView?.hidden){drawBoard(state);drawMini(els.hold,state.hold?[state.hold]:[],1);drawMini(els.next,state.next,5);}
-    if(els.score)els.score.textContent=state.score.toLocaleString('ko-KR');if(els.level)els.level.textContent=state.level;if(els.lines)els.lines.textContent=mode==='sprint40'?`${state.lines} / 40`:state.lines;if(els.time)els.time.textContent=formatTime(state.elapsedMs);
-    const best=currentBest();if(els.best)els.best.textContent=mode==='sprint40'?(best?formatTime(best):'--:--.---'):Number(best).toLocaleString('ko-KR');if(els.status)els.status.textContent=statusMessage(state);els.game.dataset.gameStatus=state.status;els.game.dataset.mode=mode;
+    if(els.score)els.score.textContent=state.score.toLocaleString('ko-KR');
+    if(els.level)els.level.textContent=state.level;
+    if(els.lines)els.lines.textContent=mode==='sprint40'?`${state.lines} / 40`:state.lines;
+    if(els.time)els.time.textContent=mode==='score180'?formatTime(Math.max(0,Engine.SCORE_ATTACK_MS-state.elapsedMs)):formatTime(state.elapsedMs);
+    const best=currentBest();
+    if(els.best)els.best.textContent=mode==='sprint40'?(best?formatTime(best):'--:--.---'):Number(best).toLocaleString('ko-KR');
+    if(els.status)els.status.textContent=statusMessage(state);
+    els.game.dataset.gameStatus=state.status;els.game.dataset.mode=mode;els.game.dataset.difficulty=difficulty;
+    els.boardWrap?.classList.toggle('is-extreme',difficulty==='extreme');
+    els.boardWrap?.classList.toggle('is-gimmick-blink',state.gimmick?.kind==='blink'&&Number(state.gimmick?.until)>Date.now());
+    els.boardWrap?.classList.toggle('is-gimmick-phantom',state.gimmick?.kind==='phantom'&&Number(state.gimmick?.until)>Date.now());
     if(els.pause)els.pause.disabled=!(state.status==='playing'||state.status==='paused');
     const terminal=state.status==='gameover'||state.status==='completed';if(terminal&&uiState!=='terminal')setViewState('terminal');
-    if(els.overlay){els.overlay.hidden=!terminal;if(terminal){els.overlayTitle.textContent=state.status==='completed'?'40 LINES!':'GAME OVER';els.overlayCopy.textContent=statusMessage(state);}}
+    if(els.overlay){els.overlay.hidden=!terminal;if(terminal){els.overlayTitle.textContent=state.status==='completed'?(mode==='sprint40'?'40 LINES!':mode==='score180'?'3 MIN SCORE!':'COMPLETE!'):'GAME OVER';els.overlayCopy.textContent=statusMessage(state);}}
     setReaction(chooseReaction(state));
     if(previousStatus!==state.status&&root.ChuntrisAudio){if(state.status==='gameover')root.ChuntrisAudio.play('gameover');if(state.status==='completed')root.ChuntrisAudio.play('complete');}
-    if(previousStatus!==state.status&&(((mode==='classic'||mode==='hard')&&state.status==='gameover')||(mode==='sprint40'&&state.status==='completed')))void submitRanking(state);
+    const shouldSubmit=(mode==='classic'&&state.status==='gameover')||(mode==='sprint40'&&state.status==='completed')||(mode==='score180'&&(state.status==='completed'||state.status==='gameover'));
+    if(previousStatus!==state.status&&shouldSubmit)void submitRanking(state);
     lastStatus=state.status;return state;
   }
 
@@ -338,11 +348,13 @@
     const state=game.getSnapshot();if(state.status==='playing')game.pause(Date.now());else if(state.status!=='paused')return false;modalAutoPaused=false;modalReturnToPause=false;setViewState('paused');showModalPanel('pause');render();return true;
   }
   function continueGame(){if(game.getSnapshot().status==='paused')game.resume(Date.now());closeModalShell();setViewState('playing');lastInputAt=Date.now();render();ensureLoop();return true;}
-  function returnToStartForNewGame(){cancelCountdown();game.reset(mode);lastStatus='idle';lastLevel=1;lastClearAt=null;transientReaction=null;lastSubmittedTerminal='';closeModalShell(false);setViewState('start-player');render();return true;}
+  function returnToStartForNewGame(){cancelCountdown();game.reset(mode,difficulty);lastStatus='idle';lastLevel=1;lastClearAt=null;lastGimmickSlot=0;transientReaction=null;lastSubmittedTerminal='';closeModalShell(false);setViewState('start-difficulty');render();return true;}
 
   function setStartControlsDisabled(disabled){
     if(els.start)els.start.disabled=Boolean(disabled);
     modeButtons.forEach(button=>{button.disabled=Boolean(disabled);});
+    difficultyButtons.forEach(button=>{button.disabled=Boolean(disabled);});
+    if(els.backMode)els.backMode.disabled=Boolean(disabled);
     els.startView?.querySelectorAll('.chuntris-start-utils button').forEach(button=>{button.disabled=Boolean(disabled);});
   }
   function cancelCountdown(){
@@ -364,7 +376,7 @@
     root.setTimeout?.(restore,260);
   }
   function beginGame(){
-    game.start(Date.now());lastStatus='idle';lastLevel=1;lastClearAt=null;lastInputAt=Date.now();transientReaction=null;lastSubmittedTerminal='';
+    game.start(Date.now());lastStatus='idle';lastLevel=1;lastClearAt=null;lastGimmickSlot=0;lastInputAt=Date.now();transientReaction=null;lastSubmittedTerminal='';
     if(els.countdown){els.countdown.hidden=true;els.countdown.classList.remove('is-start');}
     setStartControlsDisabled(false);closeModalShell(false);setViewState('playing');render();restoreStartViewport();ensureLoop();return true;
   }
@@ -378,13 +390,15 @@
       return ((t^(t>>>14))>>>0)/4294967296;
     };
   }
-  function startMultiplayer(seed,multiplayerMode='sprint40'){
+  function startMultiplayer(seed,multiplayerMode='sprint40',multiplayerDifficulty='normal'){
     cancelCountdown();
-    mode=multiplayerMode==='classic'?'classic':multiplayerMode==='hard'?'hard':'sprint40';
-    game=new Engine.ChuntrisGame({mode,random:seededRandom(seed)});
+    mode=multiplayerMode==='sprint40'?'sprint40':multiplayerMode==='score180'?'score180':'classic';
+    difficulty=multiplayerDifficulty==='extreme'?'extreme':multiplayerDifficulty==='hard'?'hard':'normal';
+    game=new Engine.ChuntrisGame({mode,difficulty,random:seededRandom(seed)});
     modeButtons.forEach(button=>{const active=button.dataset.chuntrisMode===mode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
+    difficultyButtons.forEach(button=>{const active=button.dataset.chuntrisDifficulty===difficulty;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
     startViewportY=typeof root.scrollY==='number'?root.scrollY:0;
-    lastStatus='idle';lastLevel=1;lastClearAt=null;lastInputAt=Date.now();transientReaction=null;lastSubmittedTerminal='';
+    lastStatus='idle';lastLevel=1;lastClearAt=null;lastGimmickSlot=0;lastInputAt=Date.now();transientReaction=null;lastSubmittedTerminal='';
     game.start(Date.now());
     if(els.countdown){els.countdown.hidden=true;els.countdown.classList.remove('is-start');}
     setStartControlsDisabled(false);closeModalShell(false);setViewState('playing');render();restoreStartViewport();ensureLoop();
@@ -396,7 +410,7 @@
     if(nickname===false){if(els.status)els.status.textContent='닉네임 형식을 확인해 주세요. 비워두면 로컬 기록으로 바로 플레이할 수 있어요.';els.nickname?.focus();return false;}
     if(nickname)storageSet(NICKNAME_KEY,nickname.displayName);
     if(root.ChuntrisAudio)root.ChuntrisAudio.resume();
-    if(['playing','paused','gameover','completed'].includes(game.getSnapshot().status))game.reset(mode);
+    if(['playing','paused','gameover','completed'].includes(game.getSnapshot().status))game.reset(mode,difficulty);
     cancelCountdown();
     startViewportY=typeof root.scrollY==='number'?root.scrollY:0;
     els.start?.blur?.();
@@ -419,7 +433,22 @@
     advance();
     return true;
   }
-  function setMode(nextMode){cancelCountdown();mode=nextMode==='sprint40'?'sprint40':nextMode==='hard'?'hard':'classic';game=new Engine.ChuntrisGame({mode});modeButtons.forEach(button=>{const active=button.dataset.chuntrisMode===mode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});lastStatus='idle';lastLevel=1;lastClearAt=null;transientReaction=null;lastSubmittedTerminal='';setViewState('start-player');render();void loadRanking(mode);}
+  function setMode(nextMode){
+    cancelCountdown();mode=nextMode==='sprint40'?'sprint40':nextMode==='score180'?'score180':'classic';difficulty='normal';
+    game=new Engine.ChuntrisGame({mode,difficulty});
+    modeButtons.forEach(button=>{const active=button.dataset.chuntrisMode===mode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
+    difficultyButtons.forEach(button=>{const active=button.dataset.chuntrisDifficulty===difficulty;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
+    lastStatus='idle';lastLevel=1;lastClearAt=null;lastGimmickSlot=0;transientReaction=null;lastSubmittedTerminal='';
+    setViewState('start-difficulty');render();void loadRanking(mode,difficulty);
+  }
+  function setDifficulty(nextDifficulty){
+    cancelCountdown();difficulty=nextDifficulty==='extreme'?'extreme':nextDifficulty==='hard'?'hard':'normal';
+    game=new Engine.ChuntrisGame({mode,difficulty});
+    difficultyButtons.forEach(button=>{const active=button.dataset.chuntrisDifficulty===difficulty;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
+    lastStatus='idle';lastLevel=1;lastClearAt=null;lastGimmickSlot=0;transientReaction=null;lastSubmittedTerminal='';
+    setViewState('start-difficulty');render();void loadRanking(mode,difficulty);
+  }
+  function backToModeSelection(){cancelCountdown();setViewState('start-mode');render();}
   function pause(){const state=game.getSnapshot();if(state.status==='playing')return openPauseMenu();if(state.status==='paused')return continueGame();return false;}
 
   function act(action){
@@ -455,7 +484,10 @@
 
   els.mobile?.querySelectorAll('[data-chuntris-action]').forEach(button=>{const action=button.dataset.chuntrisAction,repeatable=['left','right','soft-drop'].includes(action),key=`pointer:${action}`;button.addEventListener('pointerdown',event=>{event.preventDefault();button.setPointerCapture?.(event.pointerId);if(repeatable)startRepeat(key,action);else act(action);});for(const type of ['pointerup','pointercancel','pointerleave'])button.addEventListener(type,()=>stopRepeat(key));});
   modeButtons.forEach(button=>button.addEventListener('click',()=>setMode(button.dataset.chuntrisMode)));
-  rankingButtons.forEach(button=>button.addEventListener('click',()=>void loadRanking(button.dataset.chuntrisRankingMode)));
+  difficultyButtons.forEach(button=>button.addEventListener('click',()=>setDifficulty(button.dataset.chuntrisDifficulty)));
+  els.backMode?.addEventListener('click',backToModeSelection);
+  rankingButtons.forEach(button=>button.addEventListener('click',()=>void loadRanking(button.dataset.chuntrisRankingMode,rankingDifficulty)));
+  rankingDifficultyButtons.forEach(button=>button.addEventListener('click',()=>void loadRanking(rankingMode,button.dataset.chuntrisRankingDifficulty)));
   document.querySelectorAll('[data-chuntris-open]').forEach(button=>button.addEventListener('click',event=>openUtilityModal(button.dataset.chuntrisOpen,event.currentTarget)));
   document.querySelectorAll('[data-chuntris-modal-close]').forEach(button=>button.addEventListener('click',()=>{if(['ranking','sound','controls'].includes(activeModal))closeUtilityModal();else if(activeModal==='pause')continueGame();else closeModalShell();}));
   els.start?.addEventListener('click',start);els.pause?.addEventListener('click',openPauseMenu);els.pauseContinue?.addEventListener('click',continueGame);els.pauseNew?.addEventListener('click',()=>showModalPanel('new-game-confirm'));els.newConfirm?.addEventListener('click',returnToStartForNewGame);els.newCancel?.addEventListener('click',()=>showModalPanel('pause'));
@@ -468,6 +500,6 @@
   function ensureLoop(){if(!rafId)rafId=root.requestAnimationFrame(frame);}
 
   if(els.nickname)els.nickname.value=storageGet(NICKNAME_KEY,'');
-  root.ChuntrisApp={start,startMultiplayer,pause,setMode,render,loadRanking,getNickname:()=>els.nickname?.value||'',getGame:()=>game,getUiState:()=>uiState,setViewState,openUtilityModal,closeUtilityModal,openPauseMenu,continueGame,returnToStartForNewGame,showHardDropEffect,showClearEffect};
-  setReaction('idle');setViewState('start-mode');render();ensureLoop();void loadRanking(mode);
+  root.ChuntrisApp={start,startMultiplayer,pause,setMode,setDifficulty,render,loadRanking,getNickname:()=>els.nickname?.value||'',getGame:()=>game,getUiState:()=>uiState,setViewState,openUtilityModal,closeUtilityModal,openPauseMenu,continueGame,returnToStartForNewGame,showHardDropEffect,showClearEffect};
+  setReaction('idle');setViewState('start-mode');render();ensureLoop();void loadRanking(mode,difficulty);
 })(typeof globalThis!=='undefined'?globalThis:window);
