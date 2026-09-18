@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-18T16:31:37.299Z",
+  "checkedAt": "2026-09-18T17:48:31.200Z",
   "baseUrl": "https://chunbong-fansite.vercel.app",
   "endpoints": {
     "dataJs": {
@@ -20,7 +20,7 @@
     },
     "apiData": {
       "status": 200,
-      "bytes": 221093
+      "bytes": 224250
     }
   },
   "staticChecks": {
@@ -62,7 +62,7 @@
     "fallback": false,
     "currentFallback": false,
     "reason": null,
-    "capturedAt": "2026-09-18T16:31:35.010Z",
+    "capturedAt": "2026-09-18T17:48:28.313Z",
     "errors": [],
     "errorCount": 0,
     "sourceSummaryCleared": true,
@@ -82,13 +82,13 @@
         "subscriberCount": 49,
         "supporterCount": 24,
         "monthUniqueViewers": null,
-        "viewershipHours": 9309,
+        "viewershipHours": 9330,
         "cumulativeUsers": null,
         "cumulativeUpCount": 80437,
         "monthlyStarCount": 83546,
-        "starsPerHour": 511,
+        "starsPerHour": 509,
         "monthlySupporterCount": 192,
-        "monthlyChatCount": 39274,
+        "monthlyChatCount": 39779,
         "monthlyKickCount": null,
         "monthlyMuteCount": 6,
         "stationOpenedAt": "2022-09-29T14:58:14",
@@ -104,11 +104,11 @@
       "viewCount": 6958084,
       "videoCount": 213,
       "snapshotFallback": false,
-      "monthlyUploadCount": 0,
+      "monthlyUploadCount": 12,
       "recentVideoCount": 12,
-      "recentShortCount": 0,
+      "recentShortCount": 12,
       "newestVideoDate": "1개월 전",
-      "newestShortDate": null,
+      "newestShortDate": "2026-09-18T09:00:28+00:00",
       "engagement": {
         "source": "https://www.youtube.com/@%EC%B6%98%EB%B4%89TV",
         "capturedAt": "2026-09-18T06:28:11.993Z",
