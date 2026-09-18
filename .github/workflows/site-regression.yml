@@ -28,6 +28,8 @@ jobs:
           node --check chuntris-audio.js
           node --check chuntris-ranking-core.js
           node --check chuntris.js
+          node --check minigame-multiplayer.js
+          node --check chuntris-multiplayer.js
           node --check chunbak-game-core.js
           node --check chunbak-ranking-core.js
           node --check chunbak-audio.js
@@ -46,6 +48,7 @@ jobs:
           node --check changelog.js
           node --check changelog-data.js
           node --check lib/chuntris-ranking-api.js
+          node --check lib/minigame-multiplayer-api.js
           node --check lib/chunbak-ranking-api.js
           node --check lib/chungwagame-ranking-api.js
           node --check lib/chunbong-data.js

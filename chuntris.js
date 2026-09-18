@@ -279,6 +279,28 @@
     if(els.countdown){els.countdown.hidden=true;els.countdown.classList.remove('is-start');}
     setStartControlsDisabled(false);closeModalShell(false);setViewState('playing');render();restoreStartViewport();ensureLoop();return true;
   }
+  function seededRandom(seed){
+    let value=(Number(seed)||0)>>>0;
+    return function(){
+      value=(value+0x6D2B79F5)>>>0;
+      let t=value;
+      t=Math.imul(t^(t>>>15),t|1);
+      t^=t+Math.imul(t^(t>>>7),t|61);
+      return ((t^(t>>>14))>>>0)/4294967296;
+    };
+  }
+  function startMultiplayer(seed){
+    cancelCountdown();
+    mode='sprint40';
+    game=new Engine.ChuntrisGame({mode,random:seededRandom(seed)});
+    modeButtons.forEach(button=>{const active=button.dataset.chuntrisMode===mode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
+    startViewportY=typeof root.scrollY==='number'?root.scrollY:0;
+    lastStatus='idle';lastLevel=1;lastClearAt=null;lastInputAt=Date.now();transientReaction=null;lastSubmittedTerminal='';
+    game.start(Date.now());
+    if(els.countdown){els.countdown.hidden=true;els.countdown.classList.remove('is-start');}
+    setStartControlsDisabled(false);closeModalShell(false);setViewState('playing');render();restoreStartViewport();ensureLoop();
+    return true;
+  }
   function start(){
     if(uiState==='countdown')return false;
     const nickname=currentNickname();
@@ -357,6 +379,6 @@
   function ensureLoop(){if(!rafId)rafId=root.requestAnimationFrame(frame);}
 
   if(els.nickname)els.nickname.value=storageGet(NICKNAME_KEY,'');
-  root.ChuntrisApp={start,pause,setMode,render,loadRanking,getNickname:()=>els.nickname?.value||'',getGame:()=>game,getUiState:()=>uiState,setViewState,openUtilityModal,closeUtilityModal,openPauseMenu,continueGame,returnToStartForNewGame,showHardDropEffect,showClearEffect};
+  root.ChuntrisApp={start,startMultiplayer,pause,setMode,render,loadRanking,getNickname:()=>els.nickname?.value||'',getGame:()=>game,getUiState:()=>uiState,setViewState,openUtilityModal,closeUtilityModal,openPauseMenu,continueGame,returnToStartForNewGame,showHardDropEffect,showClearEffect};
   setReaction('idle');setViewState('start-mode');render();ensureLoop();void loadRanking(mode);
 })(typeof globalThis!=='undefined'?globalThis:window);
