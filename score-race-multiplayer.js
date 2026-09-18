@@ -48,6 +48,28 @@
         if(state.status==='playing')root.ChungwagameApp.pauseGame(false);
       },
       metric(player){return `${Number(player.score)||0}점 · 제거 ${Number(player.lines)||0}`;}
+    },
+    chuncortile:{
+      label:'춘컬타일',
+      sessionKey:'chuncortile.multiplayer.session.v1',
+      nicknameKey:'chuncortile.multiplayer.nickname',
+      ready(){
+        const app=root.ChuncortileApp;
+        return app&&typeof app.startGame==='function'&&typeof app.getSnapshot==='function';
+      },
+      start(seed){
+        root.ChuncortileApp.startGame({seed,random:root.MinigameMultiplayer.seededRandom(seed)});
+      },
+      snapshot(){
+        const state=root.ChuncortileApp.getSnapshot();
+        const cleared=Math.max(0,200-(Number(state.remaining)||0));
+        return {score:Number(state.score)||0,secondary:cleared,terminal:state.status==='gameover'};
+      },
+      stop(){
+        const state=root.ChuncortileApp.getSnapshot();
+        if(state.status==='playing')root.ChuncortileApp.pauseGame(false);
+      },
+      metric(player){return `${Number(player.score)||0}점 · 제거 ${Number(player.lines)||0}`;}
     }
   };
   const config=configs[game];
@@ -90,7 +112,7 @@
   const hud=document.createElement('div');
   hud.className='mp-hud mp-score-hud';hud.hidden=true;
   hud.innerHTML='<div><span>ME</span><strong data-mp-hud-me>-</strong></div><div class="mp-race-clock"><span>TIME</span><strong data-mp-hud-time>02:00</strong></div><div><span>RIVAL</span><strong data-mp-hud-rival>-</strong></div>';
-  const hudHost=game==='chunbak'?document.querySelector('#chunbak-stage'):document.querySelector('#cg-board-wrap');
+  const hudHost=game==='chunbak'?document.querySelector('#chunbak-stage'):game==='chuncortile'?document.querySelector('#ct-board-wrap'):document.querySelector('#cg-board-wrap');
   hudHost?.append(hud);
 
   const $=selector=>shell.querySelector(selector);
