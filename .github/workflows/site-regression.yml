@@ -30,6 +30,7 @@ jobs:
           node --check chuntris.js
           node --check minigame-multiplayer.js
           node --check chuntris-multiplayer.js
+          node --check score-race-multiplayer.js
           node --check chunbak-game-core.js
           node --check chunbak-ranking-core.js
           node --check chunbak-audio.js
