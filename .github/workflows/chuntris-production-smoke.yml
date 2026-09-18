@@ -120,6 +120,7 @@ jobs:
             await page.goto(`${BASE}/chuntris.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
             await page.waitForFunction(()=>Boolean(window.ChuntrisApp?.getGame?.()));
             await page.waitForFunction(()=>Boolean(window.ChuntrisPostgameRanking));
+            await page.waitForFunction(()=>getComputedStyle(document.querySelector('#chuntris-game')).transform==='none');
             const viewport=page.viewportSize();
             assert.ok(viewport,`${label} viewport missing`);
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-mode');
