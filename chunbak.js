@@ -74,6 +74,7 @@
   let lastFocusedElement = null;
   let pausedAt = null;
   let resumeAfterUtility = false;
+  let spawnRandom = Math.random;
 
   function safeReadBest() {
     try { return Math.max(0, Number(localStorage.getItem(BEST_KEY)) || 0); }
@@ -285,8 +286,8 @@
   }
 
   function chooseUpcoming() {
-    currentStage = nextStage || Core.pickSpawnStage(Math.random);
-    nextStage = Core.pickSpawnStage(Math.random);
+    currentStage = nextStage || Core.pickSpawnStage(spawnRandom);
+    nextStage = Core.pickSpawnStage(spawnRandom);
     const radius = Core.STAGES[currentStage - 1].radius;
     pointerX = Math.min(WIDTH - radius, Math.max(radius, pointerX));
     renderNext();
@@ -491,7 +492,8 @@
     Matter.Events.on(engine, 'collisionStart', event => handleCollisionPairs(event.pairs, performance.now()));
   }
 
-  function resetGame({ autoStart = true } = {}) {
+  function resetGame({ autoStart = true, random = Math.random } = {}) {
+    spawnRandom = typeof random === 'function' ? random : Math.random;
     score = 0;
     maxLevel = 1;
     combo = 0;
