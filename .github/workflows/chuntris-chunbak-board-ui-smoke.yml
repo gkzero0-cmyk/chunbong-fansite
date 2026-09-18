@@ -222,7 +222,7 @@ jobs:
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-difficulty','Chuntris did not enter difficulty selection');
             assert.ok(await page.locator('#chuntris-difficulty-step').isVisible(),'difficulty step missing');
             assert.ok(await page.locator('[data-chuntris-difficulty="normal"]').isVisible(),'normal difficulty missing');
-            assert.equal(await page.locator('#chuntris-start').isVisible(),false,'start button must stay hidden before difficulty is chosen');
+            assert.ok(await page.locator('#chuntris-start').isVisible(),'start button must be visible with the default normal difficulty');
             assert.ok((await startCard.evaluate(el=>el.scrollHeight<=el.clientHeight+1)),'Chuntris difficulty step overflows board-sized card');
 
             await page.locator('[data-chuntris-difficulty="normal"]').click();
