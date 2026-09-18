@@ -127,6 +127,7 @@ jobs:
             await page.goto(`${process.env.BASE_URL}/chunbak.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
             await page.waitForFunction(()=>Boolean(window.ChunbakGame));
             await page.waitForFunction(()=>!document.querySelector('#chunbak-start')?.disabled);
+            await page.waitForFunction(()=>getComputedStyle(document.querySelector('#chunbak-game')).transform==='none');
 
             const startCard=page.locator('.chunbak-start-card');
             assert.ok(await startCard.isVisible(),'Chunbak start card missing');
