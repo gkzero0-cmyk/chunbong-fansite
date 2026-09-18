@@ -43,3 +43,32 @@
 @media(max-width:760px){.home-dday-strip{height:48px}.home-dday-trigger{width:100%;padding:0 14px;gap:8px}.home-dday-kicker,.home-dday-more{display:none}.home-dday-metric{font-size:11px}.home-dday-metric strong{font-size:14px}.home-dday-slash{font-size:11px}.home-dday-dialog-card{padding:18px}.home-dday-detail-grid{grid-template-columns:1fr}.home-dday-detail-grid article{min-height:155px}.home-dday-dialog-card>header h2{font-size:23px}.hero{min-height:auto}}
 @media(max-width:380px){.home-dday-trigger{gap:5px}.home-dday-metric{gap:4px;font-size:10px}.home-dday-metric strong{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.home-dday-dialog[open]{animation:none}}
+
+/* Desktop hover submenu for the shared Minigames navigation item. */
+@media(min-width:761px){
+  .nav-minigames{position:relative;display:flex;align-items:center;flex:0 0 auto;height:100%}
+  .nav-minigames>a[data-nav="minigames"]{display:inline-flex;align-items:center;height:100%}
+  .nav-minigames-submenu{
+    position:absolute;z-index:140;top:calc(100% - 5px);left:50%;width:176px;padding:8px;
+    display:grid;gap:4px;opacity:0;visibility:hidden;pointer-events:none;
+    transform:translate(-50%,8px);border:1px solid #303030;border-radius:16px;
+    background:#0f0f10eF;box-shadow:0 18px 48px rgba(0,0,0,.55);backdrop-filter:blur(16px);
+    transition:opacity .16s ease,transform .16s ease,visibility .16s ease
+  }
+  .nav-minigames:hover .nav-minigames-submenu,.nav-minigames:focus-within .nav-minigames-submenu{
+    opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,0)
+  }
+  .main-nav .nav-minigames-submenu a{
+    width:100%;display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;
+    padding:10px 11px!important;border-radius:10px;font-size:12px!important;line-height:1.15;
+    color:#d8d3ce;background:transparent;white-space:nowrap
+  }
+  .main-nav .nav-minigames-submenu a:hover,.main-nav .nav-minigames-submenu a:focus-visible{
+    color:#fff;background:#ff6b1818
+  }
+  .nav-minigames-submenu small{font-size:8px;letter-spacing:.12em;color:#7e7873;font-weight:900}
+}
+@media(max-width:760px){
+  .nav-minigames{display:contents}
+  .nav-minigames-submenu{display:none!important}
+}

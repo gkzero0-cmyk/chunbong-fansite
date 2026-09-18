@@ -58,6 +58,37 @@ window.CHUNBONG_CONTENT = {
 })();
 
 (() => {
+  const nav = document.getElementById('main-nav');
+  const link = nav?.querySelector('[data-nav="minigames"]');
+  if (!nav || !link || link.closest('.nav-minigames')) return;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'nav-minigames';
+  link.parentNode.insertBefore(wrapper, link);
+  wrapper.appendChild(link);
+  link.setAttribute('aria-haspopup', 'true');
+  link.setAttribute('aria-expanded', 'false');
+
+  const submenu = document.createElement('div');
+  submenu.className = 'nav-minigames-submenu';
+  submenu.setAttribute('role', 'menu');
+  submenu.setAttribute('aria-label', '미니게임 바로가기');
+  submenu.innerHTML =
+    '<a role="menuitem" href="chuntris.html"><span>춘트리스</span><small>TETRIS</small></a>' +
+    '<a role="menuitem" href="chunbak.html"><span>춘박게임</span><small>MERGE</small></a>' +
+    '<a role="menuitem" href="chungwagame.html"><span>춘과게임</span><small>SUM 10</small></a>';
+  wrapper.appendChild(submenu);
+
+  const setExpanded = value => link.setAttribute('aria-expanded', String(value));
+  wrapper.addEventListener('mouseenter', () => setExpanded(true));
+  wrapper.addEventListener('mouseleave', () => setExpanded(false));
+  wrapper.addEventListener('focusin', () => setExpanded(true));
+  wrapper.addEventListener('focusout', event => {
+    if (!wrapper.contains(event.relatedTarget)) setExpanded(false);
+  });
+})();
+
+(() => {
   const STORAGE_KEY = 'chunbong-theme';
   const root = document.documentElement;
   const header = document.querySelector('.site-header');

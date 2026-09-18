@@ -9,6 +9,7 @@ const dataSource=fs.readFileSync(new URL('../changelog-data.js',import.meta.url)
 const content=fs.readFileSync(new URL('../content.js',import.meta.url),'utf8');
 const activity=fs.readFileSync(new URL('../activity-center.js',import.meta.url),'utf8');
 const theme=fs.readFileSync(new URL('../theme.css',import.meta.url),'utf8');
+const styles=fs.readFileSync(new URL('../styles.css',import.meta.url),'utf8');
 
 assert.doesNotThrow(()=>new Function(js),'changelog runtime must remain valid JavaScript');
 assert.doesNotThrow(()=>new Function(dataSource),'changelog data must remain valid JavaScript');
@@ -42,5 +43,10 @@ assert.match(theme,/\.changelog-button\{[^}]*width:42px/,'changelog control shou
 assert.match(theme,/\.changelog-button span\{display:none\}/,'changelog label should always be hidden');
 assert.match(theme,/@media\(min-width:761px\) and \(max-width:1500px\)/,'desktop header compact breakpoint missing');
 assert.match(theme,/\.site-header \.main-nav a\{[^}]*white-space:nowrap/,'desktop navigation labels must stay on one line');
+assert.match(content,/nav-minigames-submenu/,'shared header must create a minigames submenu');
+for(const href of ['chuntris.html','chunbak.html','chungwagame.html']) assert.match(content,new RegExp('href="'+href.replace('.','\\.')+'"'),'minigames submenu link missing: '+href);
+assert.match(styles,/\.nav-minigames:hover \.nav-minigames-submenu/,'desktop minigames submenu must open on hover');
+assert.match(styles,/\.nav-minigames:focus-within \.nav-minigames-submenu/,'minigames submenu must support keyboard focus');
+assert.match(styles,/@media\(max-width:760px\)[\s\S]*?\.nav-minigames-submenu\{display:none!important\}/,'mobile hamburger menu must keep the hover submenu hidden');
 
 console.log('changelog regression passed');

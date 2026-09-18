@@ -10,7 +10,9 @@ assert.match(html,/assets\/chungwagame\/mascot-header\.webp/,'header mascot imag
 assert.match(html,/assets\/chungwagame\/mascot-ten\.webp/,'instruction 10 mascot image missing');
 assert.match(css,/assets\/chungwagame\/numbers\.webp/,'number sprite missing');
 assert.match(css,/saturate\(\.82\)/,'eye-comfort sprite saturation guard missing');
-assert.match(css,/#f7f7f2/,'eye-comfort page background missing');
+assert.match(css,/#080a08/,'dark comfort page background missing');
+assert.match(css,/background-size:5\.8823529% 100%,100% 10%/,'faint board grid lines missing');
+assert.match(css,/#1a1d18/,'comfortable dark board surface missing');
 assert.match(css,/grid-template-columns:150px minmax\(0,760px\) 104px/,'compact desktop layout missing');
 assert.match(css,/max-height:calc\(100svh - 205px\)/,'short viewport board guard missing');
 assert.match(html,/id="cg-time-fill"/,'time gauge missing');

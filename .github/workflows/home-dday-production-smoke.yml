@@ -95,12 +95,12 @@ jobs:
 
               await page.locator('#home-dday-trigger').click();
               assert.ok(await page.locator('#home-dday-dialog').evaluate(el=>el.open),'D-day dialog did not open');
-              for(const [title,href] of [
-                ['2020년','https://namu.wiki/w/2020%EB%85%84'],
-                ['7월 3일','https://namu.wiki/w/7%EC%9B%94%203%EC%9D%BC'],
-                ['2023년','https://namu.wiki/w/2023%EB%85%84'],
-                ['11월 30일','https://namu.wiki/w/11%EC%9B%94%2030%EC%9D%BC']
-              ]) assert.equal(await page.locator(`a[title="${title}"]`).getAttribute('href'),href);
+              assert.equal(await page.locator('.home-dday-date a').count(),0,'broadcast dates must not contain wiki links');
+              assert.deepEqual(
+                (await page.locator('.home-dday-date').allTextContents()).map(value=>value.trim()),
+                ['2020년 7월 3일','2023년 11월 30일'],
+                'broadcast date text mismatch'
+              );
               await page.locator('[data-home-dday-close]').click();
 
               const homeWiki=page.locator('.status-card-link');
