@@ -96,19 +96,21 @@ jobs:
               const seen=await page.evaluate(()=>JSON.parse(localStorage.getItem('chunbong-activity-seen-v1')||'{}'));
               assert.ok(Array.isArray(seen.ids)&&seen.ids.length>0,'seen activity IDs were not persisted');
 
-              await page.goto(`${process.env.BASE_URL}/changelog.html?_smoke=${Date.now()}`,{waitUntil:'networkidle'});
-              await page.waitForSelector('.changelog-day');
-              assert.equal(await page.locator('.changelog-day').first().getAttribute('data-changelog-date'),'2026-09-18','production changelog latest date is not first');
-              assert.equal(await page.locator('.changelog-button').getAttribute('aria-current'),'page','production changelog button is not active');
-
               if(viewport.width<=390){
                 const panel=await page.locator('.activity-panel').boundingBox();
                 const bell=await page.locator('.activity-bell').boundingBox();
                 const header=await page.locator('.site-header').evaluate(el=>({scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}));
+                const panelHost=await page.locator('.activity-panel').evaluate(el=>el.parentElement?.tagName);
+                assert.equal(panelHost,'BODY','mobile activity panel must be hosted by body while open');
                 assert.ok(panel&&panel.x>=0&&panel.x+panel.width<=viewport.width&&panel.y>=0&&panel.y+panel.height<=viewport.height,'mobile panel clips viewport');
                 assert.ok(bell&&bell.x>=0&&bell.x+bell.width<=viewport.width,'mobile bell clips viewport');
                 assert.ok(header.scrollWidth<=header.clientWidth+1,'activity controls overflow mobile header');
               }
+
+              await page.goto(`${process.env.BASE_URL}/changelog.html?_smoke=${Date.now()}`,{waitUntil:'networkidle'});
+              await page.waitForSelector('.changelog-day');
+              assert.equal(await page.locator('.changelog-day').first().getAttribute('data-changelog-date'),'2026-09-18','production changelog latest date is not first');
+              assert.equal(await page.locator('.changelog-button').getAttribute('aria-current'),'page','production changelog button is not active');
 
               assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
               await context.close();
