@@ -267,6 +267,7 @@
 
     reset(mode = this.state.mode, difficulty = this.state.difficulty) {
       const config = resolveConfig(mode, difficulty);
+      this.gimmickSeed = Math.floor(this.random() * 0x100000000) >>> 0;
       this.state = {
         board: createEmptyBoard(), active: null, hold: null, next: [], canHold: true,
         score: 0, lines: 0, level: 1, combo: -1, backToBack: false,
