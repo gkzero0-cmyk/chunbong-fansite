@@ -1,0 +1,126 @@
+name: Home D-day production smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'home-dday.js'
+      - 'styles.css'
+      - 'tarot.html'
+      - 'tarot-hero-banner.css'
+      - '.github/workflows/home-dday-production-smoke.yml'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Wait for current home D-day production
+        env:
+          BASE_URL: https://chunbong-fansite.vercel.app
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            stamp=$(date +%s)
+            if curl -fsS -H 'cache-control: no-cache' "$BASE_URL/index.html?_smoke=$stamp" -o /tmp/index.html && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/home-dday.js?_smoke=$stamp" -o /tmp/home-dday.js && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/tarot.html?_smoke=$stamp" -o /tmp/tarot.html && \
+               grep -q 'id="home-dday-trigger"' /tmp/index.html && \
+               grep -q 'home-dday.js' /tmp/index.html && \
+               grep -q 'https://namu.wiki/w/%EC%B6%98%EB%B4%89' /tmp/index.html && \
+               grep -q 'Asia/Seoul' /tmp/home-dday.js && \
+               grep -q 'tarot-hero-banner-link' /tmp/tarot.html && \
+               grep -q '%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%A8%B8%20%ED%83%80%EB%A1%9C%EC%83%81%EB%8B%B4%20%EB%AA%A9%EB%A1%9D' /tmp/tarot.html; then
+              echo 'Current home D-day production is ready.'
+              break
+            fi
+            test "$attempt" != "60"
+            sleep 5
+          done
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Verify production D-day dialog and wiki links
+        env:
+          BASE_URL: https://chunbong-fansite.vercel.app
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import { chromium } from 'playwright';
+          import assert from 'node:assert/strict';
+
+          const browser=await chromium.launch({headless:true});
+          try{
+            for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
+              const page=await browser.newPage({viewport,isMobile:viewport.width<=390,hasTouch:viewport.width<=390});
+              const errors=[];
+              page.on('pageerror',error=>errors.push(error.message));
+
+              await page.goto(`${process.env.BASE_URL}/index.html?_smoke=${Date.now()}`,{waitUntil:'networkidle'});
+              await page.waitForFunction(()=>Boolean(window.HomeBroadcastDday));
+
+              const values=await page.evaluate(()=>{
+                const api=window.HomeBroadcastDday;
+                const current=api.calculate(api.kstParts());
+                return {
+                  displayed:{
+                    first:document.querySelector('#home-dday-first')?.textContent?.trim(),
+                    soop:document.querySelector('#home-dday-soop')?.textContent?.trim(),
+                    firstYears:document.querySelector('#home-dday-first-years')?.textContent?.trim(),
+                    soopYears:document.querySelector('#home-dday-soop-years')?.textContent?.trim()
+                  },
+                  expected:{
+                    first:`D+${current.first.days}`,
+                    soop:`D+${current.soop.days}`,
+                    firstYears:`${current.first.years}년차`,
+                    soopYears:`${current.soop.years}년차`
+                  }
+                };
+              });
+              assert.deepEqual(values.displayed,values.expected,'production D-day values mismatch');
+
+              const header=await page.locator('.site-header').boundingBox();
+              const strip=await page.locator('.home-dday-strip').boundingBox();
+              assert.ok(header&&strip,'header or D-day strip missing');
+              assert.ok(Math.abs(strip.y-(header.y+header.height))<=2,'D-day strip not directly below menu');
+
+              await page.locator('#home-dday-trigger').click();
+              assert.ok(await page.locator('#home-dday-dialog').evaluate(el=>el.open),'D-day dialog did not open');
+              for(const [title,href] of [
+                ['2020년','https://namu.wiki/w/2020%EB%85%84'],
+                ['7월 3일','https://namu.wiki/w/7%EC%9B%94%203%EC%9D%BC'],
+                ['2023년','https://namu.wiki/w/2023%EB%85%84'],
+                ['11월 30일','https://namu.wiki/w/11%EC%9B%94%2030%EC%9D%BC']
+              ]) assert.equal(await page.locator(`a[title="${title}"]`).getAttribute('href'),href);
+              await page.locator('[data-home-dday-close]').click();
+
+              const homeWiki=page.locator('.status-card-link');
+              assert.equal(await homeWiki.getAttribute('href'),'https://namu.wiki/w/%EC%B6%98%EB%B4%89');
+              assert.equal(await homeWiki.getAttribute('target'),'_blank');
+              assert.ok(await homeWiki.isVisible(),'home wiki card missing');
+              assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'home horizontal overflow');
+
+              await page.goto(`${process.env.BASE_URL}/tarot.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
+              const tarotLink=page.locator('.tarot-hero-banner-link');
+              assert.equal(await tarotLink.getAttribute('href'),'https://namu.wiki/w/%EC%B6%98%EB%B4%89/%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%A8%B8%20%ED%83%80%EB%A1%9C%EC%83%81%EB%8B%B4%20%EB%AA%A9%EB%A1%9D');
+              assert.equal(await tarotLink.getAttribute('target'),'_blank');
+              assert.ok(await tarotLink.isVisible(),'tarot hero wiki link missing');
+              assert.ok(await page.locator('.tarot-hero-banner').isVisible(),'tarot hero image missing');
+              assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'tarot horizontal overflow');
+
+              assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
+              await page.close();
+            }
+          }finally{
+            await browser.close();
+          }
+          EOF_NODE
