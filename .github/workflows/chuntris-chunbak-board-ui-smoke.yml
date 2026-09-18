@@ -49,7 +49,9 @@ jobs:
             {width:1440,height:900},
             {width:1280,height:720},
             {width:1024,height:768},
-            {width:390,height:844}
+            {width:900,height:800},
+            {width:390,height:844},
+            {width:360,height:800}
           ];
 
           function insideViewport(box,viewport,label){
@@ -67,6 +69,7 @@ jobs:
             page.on('pageerror',error=>errors.push(error.message));
             await page.goto(`${process.env.BASE_URL}/chuntris.html?_smoke=${Date.now()}`,{waitUntil:'networkidle'});
             await page.waitForFunction(()=>Boolean(window.ChuntrisApp));
+            await page.waitForFunction(()=>getComputedStyle(document.querySelector('#chuntris-game')).transform==='none');
             const startCard=page.locator('.chuntris-start-card');
             assert.ok(await startCard.isVisible(),'Chuntris start card missing');
             const startBox=await startCard.boundingBox();
@@ -80,6 +83,7 @@ jobs:
             }
             assert.ok((await startCard.evaluate(el=>el.scrollHeight<=el.clientHeight+1)),'Chuntris start UI overflows board-sized card');
 
+            const startScrollY=await page.evaluate(()=>window.scrollY);
             await page.locator('#chuntris-mode-classic').click();
             await page.locator('#chuntris-start').click();
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'countdown','Chuntris did not enter countdown state');
@@ -91,6 +95,9 @@ jobs:
             await page.waitForFunction(()=>document.querySelector('#chuntris-countdown-value')?.textContent?.trim()==='1',{timeout:1800});
             await page.waitForFunction(()=>window.ChuntrisApp.getGame().getSnapshot().status==='playing',{timeout:2500});
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'playing','play view did not start after countdown');
+            await page.waitForTimeout(120);
+            const playScrollY=await page.evaluate(()=>window.scrollY);
+            assert.ok(Math.abs(playScrollY-startScrollY)<=1,`Chuntris transition changed scrollY: ${startScrollY} -> ${playScrollY}`);
 
             const boardBox=await page.locator('.chuntris-board-wrap').boundingBox();
             insideViewport(boardBox,viewport,'Chuntris play board');
@@ -142,8 +149,12 @@ jobs:
             }
             assert.ok((await startCard.evaluate(el=>el.scrollHeight<=el.clientHeight+1)),'Chunbak start UI overflows board-sized card');
 
+            const startScrollY=await page.evaluate(()=>window.scrollY);
             await page.locator('#chunbak-start').click();
             await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing');
+            await page.waitForTimeout(120);
+            const playScrollY=await page.evaluate(()=>window.scrollY);
+            assert.ok(Math.abs(playScrollY-startScrollY)<=1,`Chunbak transition changed scrollY: ${startScrollY} -> ${playScrollY}`);
             const stageBox=await page.locator('#chunbak-stage').boundingBox();
             insideViewport(stageBox,viewport,'Chunbak play stage');
             assert.ok(Math.abs(startBox.width-stageBox.width)<=3,`Chunbak start/play widths differ: ${startBox.width} vs ${stageBox.width}`);
