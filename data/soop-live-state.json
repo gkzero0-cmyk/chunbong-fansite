@@ -6572,11 +6572,22 @@
         "categoryName": "버추얼",
         "followerCount": 30299,
         "fanclubCount": 7670
+      },
+      {
+        "capturedAt": "2026-09-18T13:31:23.697Z",
+        "live": true,
+        "startedAt": "2026-09-18T10:08:20.000Z",
+        "title": "그냥서버:적자생존 궁금한거 물어보세요 (작업방송)",
+        "viewerCount": 41,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30299,
+        "fanclubCount": 7670
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-18T13:20:07.553Z",
+    "capturedAt": "2026-09-18T13:31:23.697Z",
     "followerCount": 30299,
     "fanclubCount": 7670
   }
