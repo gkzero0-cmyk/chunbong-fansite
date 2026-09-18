@@ -175,3 +175,60 @@
 .cg-ranking-list li{background:#E2DFD7;border:1px solid #CCC7BD}.cg-ranking-list li>span:first-child{color:#899F50}.cg-ranking-list li>span:last-child{color:#746D63}
 .cg-score-pop{color:#F28D35;text-shadow:0 2px 0 #E7E5DF,0 4px 12px rgba(70,60,45,.15)}
 .cg-combo{color:#F28D35;text-shadow:0 2px 0 #E7E5DF,0 5px 16px rgba(70,60,45,.16)}
+
+/* Final Chungwagame contrast: dark shell, soft off-white playfield. */
+.chungwagame-page{
+  color:#e9e6dd;
+  background:
+    radial-gradient(circle at 14% 4%,rgba(118,139,73,.12),transparent 30%),
+    radial-gradient(circle at 88% 6%,rgba(121,72,42,.16),transparent 28%),
+    linear-gradient(180deg,#080a08 0%,#0c0f0b 100%);
+}
+.chungwagame-navline{color:#9f998b}
+.chungwagame-brand-mark{background:#171a15;border-color:#30352a;box-shadow:0 8px 24px rgba(0,0,0,.28)}
+.chungwagame-brand h1{color:#f0ede5}
+.chungwagame-brand p{color:#aaa493}.chungwagame-brand p strong{color:#b8c982}
+.cg-stat{background:#151814;border-color:#2b3027;box-shadow:0 8px 20px rgba(0,0,0,.2)}
+.cg-stat span{color:#9d9789}.cg-stat strong{color:#f0ede5}.cg-timer strong{color:#e77c6d}
+.cg-time-track{background:#1a1f17;box-shadow:inset 0 1px 3px rgba(0,0,0,.42)}
+.cg-card,.cg-utility,.cg-modal-card{
+  background:#131612;border-color:#292e26;box-shadow:0 12px 30px rgba(0,0,0,.22);color:#e8e4dc
+}
+.cg-speech{background:linear-gradient(180deg,#1c2119,#181d16);color:#d8d4ca}.cg-speech b{color:#b7c982}
+.cg-howto h2{color:#eeeae1}.cg-howto ol{color:#aaa496}.cg-howto b{color:#b5c77c}
+.cg-utility{color:#ddd8ce}.cg-utility small{color:#908a7e}.cg-utility:hover{background:#1c201a}.cg-utility.danger:hover{background:#261a17}
+.cg-shortcuts{color:#8f897d}
+.cg-board-card{background:#10130f;border-color:#292e26;box-shadow:0 12px 30px rgba(0,0,0,.22);color:#e8e4dc}
+.cg-selection{background:#1a1f18;border-color:#2a3026}
+.cg-selection span{color:#a9a294}.cg-selection strong{color:#b6c981}.cg-selection em{color:#777f70}
+.cg-message{color:#a9a294}
+.cg-board-wrap{
+  background:
+    linear-gradient(to right,rgba(82,76,67,.075) 1px,transparent 1px),
+    linear-gradient(to bottom,rgba(82,76,67,.075) 1px,transparent 1px),
+    linear-gradient(180deg,#DDDAD2 0%,#D6D2C9 100%);
+  background-size:5.8823529% 100%,100% 10%,100% 100%;
+  border-color:#B9B4A9;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.34);
+}
+.cg-fruit-shape::after{
+  color:#F2421B;
+  -webkit-text-stroke:.35px #F2421B;
+  text-shadow:0 1px 0 rgba(96,39,20,.12);
+}
+.cg-fruit.selected:after{border-color:#F2421B;box-shadow:0 0 0 1px rgba(255,255,255,.45) inset,0 0 10px rgba(242,66,27,.25)}
+.cg-drag{border-color:#F2421B;background:rgba(242,66,27,.07)}
+.cg-score-pop{color:#F2421B;text-shadow:0 2px 0 #E7E5DF,0 4px 12px rgba(70,60,45,.15)}
+.cg-combo{color:#F2421B;text-shadow:0 2px 0 #E7E5DF,0 5px 16px rgba(70,60,45,.16)}
+.cg-overlay{background:rgba(7,9,7,.76);backdrop-filter:blur(6px)}
+.cg-overlay-inner{background:#151815;border-color:#30352c;box-shadow:0 20px 55px rgba(0,0,0,.46);color:#eeeae2}
+.cg-overlay-inner h2 em,.cg-kicker{color:#b2c67a}.cg-overlay-inner p{color:#aaa294}
+.cg-primary{background:linear-gradient(135deg,#879e5b,#687e48);box-shadow:0 7px 16px rgba(0,0,0,.24)}
+.cg-secondary{background:#252a22;color:#ddd8cf}.cg-plain{color:#c9c3b8;background:#191c18;border-color:#353a31}
+.cg-return-minigames{color:#c9c3b8;background:#1b1f1a;border-color:#363b32}.cg-return-minigames:hover{background:#252a22;color:#fff}
+.cg-ranking-submit-panel{border-top-color:#32372e}.cg-ranking-submit-panel input{background:#0f120e;color:#eeeae2;border-color:#343a30}
+.cg-ranking-submit-panel button:first-child{background:#7f9655}
+.cg-modal-backdrop{background:rgba(0,0,0,.66)}
+.cg-modal-card header button{background:#20241e;color:#ddd8cf}
+.cg-ranking-status{color:#9c9588}
+.cg-ranking-list li{background:#191d17;border-color:#282d25}.cg-ranking-list li>span:first-child{color:#a9bb76}.cg-ranking-list li>span:last-child{color:#a29b8e}
