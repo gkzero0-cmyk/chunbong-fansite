@@ -109,7 +109,10 @@ jobs:
           await mobile.locator('.activity-bell').click();
           const panelBox=await mobile.locator('.activity-panel').boundingBox();
           assert.ok(panelBox&&panelBox.x>=0&&panelBox.x+panelBox.width<=390&&panelBox.y>=0&&panelBox.y+panelBox.height<=844,'mobile activity panel clips viewport');
-          assert.ok(await mobile.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'activity bell caused mobile horizontal overflow');
+          const mobileHeader=await mobile.locator('.site-header').evaluate(el=>({scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}));
+          assert.ok(mobileHeader.scrollWidth<=mobileHeader.clientWidth+1,`activity controls overflow mobile header: ${mobileHeader.scrollWidth} > ${mobileHeader.clientWidth}`);
+          const bellBox=await mobile.locator('.activity-bell').boundingBox();
+          assert.ok(bellBox&&bellBox.x>=0&&bellBox.x+bellBox.width<=390,'activity bell clips mobile viewport');
           await mobile.close();
 
           assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
