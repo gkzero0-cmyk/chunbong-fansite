@@ -103,7 +103,9 @@ jobs:
             assert.equal(await page.locator('#cg-nickname').count(),0,'pregame nickname must not exist');
             assert.ok(await page.locator('.chungwagame-brand-mark img').evaluate(img=>img.complete&&img.naturalWidth>=img.clientWidth&&img.naturalHeight>=img.clientHeight),'header mascot is being upscaled');
             assert.ok(await page.locator('.cg-ten-mascot').evaluate(img=>img.complete&&img.naturalWidth>=img.clientWidth&&img.naturalHeight>=img.clientHeight),'10 mascot is being upscaled');
-            assert.ok((await imageWidth(page,`${BASE}/assets/chungwagame/numbers.webp`))>=216,'number sprite resolution regressed');
+            assert.ok((await imageWidth(page,`${BASE}/assets/chungwagame/numbers.webp`))>=120,'number sprite resolution regressed');
+            const fruitBox=await page.locator('.cg-fruit-shape').first().boundingBox();
+            if(fruitBox) assert.ok(fruitBox.width<=40.5&&fruitBox.height<=40.5,'number sprite tile is being upscaled');
             assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'horizontal overflow');
 
             if(viewport.width>=900){
