@@ -34,6 +34,12 @@ jobs:
           node --check chunbak.js
           node --check api/_shared.js
           node --check api/content.js
+          node --check lib/activity-feed.js
+          node --check api/fanart.js
+          node --check api/activity.js
+          node --check activity-center.js
+          node --check page.js
+          node --check content.js
           node --check lib/chuntris-ranking-api.js
           node --check lib/chunbak-ranking-api.js
           node --check lib/chunbong-data.js
