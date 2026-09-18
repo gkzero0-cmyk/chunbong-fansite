@@ -114,3 +114,26 @@ window.CHUNBONG_CONTENT = {
   script.dataset.fanartGalleryRuntime = 'true';
   document.body.appendChild(script);
 })();
+
+
+(() => {
+  const header = document.querySelector('.site-header');
+  if (!header) return;
+  header.querySelectorAll('.header-live[href*="sooplive.com"]').forEach(node => node.remove());
+
+  if (!document.querySelector('link[data-activity-center-styles]')) {
+    const stylesheet = document.createElement('link');
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = 'activity-center.css';
+    stylesheet.dataset.activityCenterStyles = 'true';
+    document.head.appendChild(stylesheet);
+  }
+
+  if (!document.querySelector('script[data-activity-center-runtime]')) {
+    const script = document.createElement('script');
+    script.src = 'activity-center.js';
+    script.defer = true;
+    script.dataset.activityCenterRuntime = 'true';
+    document.body.appendChild(script);
+  }
+})();
