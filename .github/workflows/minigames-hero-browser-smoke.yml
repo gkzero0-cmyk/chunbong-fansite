@@ -1,0 +1,78 @@
+name: Minigames hero browser smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'minigames.html'
+      - 'minigames.css'
+      - 'assets/minigames/**'
+      - 'tests/minigames-hero-regression.mjs'
+      - '.github/workflows/minigames-hero-browser-smoke.yml'
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local site
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/minigames-hero-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:4173/minigames.html >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/minigames-hero-http.log
+          exit 1
+      - name: Verify desktop and mobile hero placement
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import { chromium } from 'playwright';
+          import assert from 'node:assert/strict';
+
+          const browser=await chromium.launch({headless:true});
+          try{
+            for(const viewport of [{width:1440,height:900},{width:1024,height:768},{width:390,height:844}]){
+              const mobile=viewport.width<=760;
+              const page=await browser.newPage({viewport,isMobile:viewport.width<=390,hasTouch:viewport.width<=390});
+              const errors=[];
+              page.on('pageerror',error=>errors.push(error.message));
+              await page.goto(process.env.BASE_URL+'/minigames.html?_hero='+Date.now(),{waitUntil:'networkidle'});
+              const copy=page.locator('.minigames-hero-copy');
+              const art=page.locator('.minigames-hero-art');
+              const image=art.locator('img');
+
+              assert.ok(await copy.isVisible(),'hero copy missing');
+              assert.ok(await art.isVisible(),'hero artwork missing');
+              const natural=await image.evaluate(img=>({width:img.naturalWidth,height:img.naturalHeight,complete:img.complete}));
+              assert.ok(natural.complete&&natural.width>0&&natural.height>0,'hero image failed to load');
+
+              const [copyBox,artBox]=await Promise.all([copy.boundingBox(),art.boundingBox()]);
+              assert.ok(copyBox&&artBox,'hero boxes missing');
+              assert.ok(artBox.x>=-1&&artBox.x+artBox.width<=viewport.width+1,'hero artwork clips horizontally');
+
+              if(mobile){
+                assert.ok(artBox.y>=copyBox.y+copyBox.height-2,'mobile artwork should stack below copy');
+              }else{
+                assert.ok(artBox.x>copyBox.x+copyBox.width,'desktop artwork must sit to the right of copy');
+                assert.ok(Math.abs((artBox.width/artBox.height)-(760/428))<0.04,'hero artwork ratio changed');
+              }
+
+              assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'minigames page horizontal overflow');
+              assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
+              await page.close();
+            }
+          }finally{
+            await browser.close();
+          }
+          EOF_NODE
