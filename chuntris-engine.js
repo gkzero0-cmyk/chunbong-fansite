@@ -118,19 +118,45 @@
   }
 
   function normalizeMode(mode) {
-    return mode === 'sprint40' || mode === 'hard' ? mode : 'classic';
+    return mode === 'sprint40' ? 'sprint40' : 'classic';
   }
 
-  function gravityMs(level, mode = 'classic') {
+  function normalizeDifficulty(difficulty) {
+    return difficulty === 'hard' || difficulty === 'extreme' ? difficulty : 'normal';
+  }
+
+  function resolveConfig(mode = 'classic', difficulty = null) {
+    const legacyHard = mode === 'hard' && difficulty == null;
+    return {
+      mode: normalizeMode(mode),
+      difficulty: normalizeDifficulty(legacyHard ? 'hard' : difficulty)
+    };
+  }
+
+  function gravityMs(level, mode = 'classic', difficulty = 'normal') {
     const safeMode = normalizeMode(mode);
-    if (safeMode === 'sprint40') return 1000;
+    const safeDifficulty = normalizeDifficulty(difficulty);
     const safeLevel = Math.max(1, Number(level) || 1);
-    if (safeMode === 'hard') return Math.max(45, Math.round(420 * Math.pow(0.80, safeLevel - 1)));
+    if (safeDifficulty === 'extreme') return Math.max(18, Math.round(220 * Math.pow(0.72, safeLevel - 1)));
+    if (safeDifficulty === 'hard') return Math.max(45, Math.round(420 * Math.pow(0.80, safeLevel - 1)));
+    if (safeMode === 'sprint40') return 1000;
     return Math.max(80, Math.round(1000 * Math.pow(0.85, safeLevel - 1)));
   }
 
-  function lockDelayMs(mode = 'classic') {
-    return normalizeMode(mode) === 'hard' ? 300 : LOCK_DELAY_MS;
+  function lockDelayMs(difficulty = 'normal') {
+    const safeDifficulty = normalizeDifficulty(difficulty);
+    if (safeDifficulty === 'extreme') return 140;
+    if (safeDifficulty === 'hard') return 300;
+    return LOCK_DELAY_MS;
+  }
+
+  function levelForLines(lines = 0, mode = 'classic', difficulty = 'normal') {
+    const safeLines = Math.max(0, Number(lines) || 0);
+    const safeDifficulty = normalizeDifficulty(difficulty);
+    if (safeDifficulty === 'extreme') return Math.floor(safeLines / 4) + 1;
+    if (safeDifficulty === 'hard') return Math.floor(safeLines / 6) + 1;
+    if (normalizeMode(mode) === 'sprint40') return 1;
+    return Math.floor(safeLines / 10) + 1;
   }
 
   function clearCompletedLines(board) {
@@ -176,12 +202,13 @@
   }
 
   class ChuntrisGame {
-    constructor({ mode = 'classic', random = Math.random } = {}) {
+    constructor({ mode = 'classic', difficulty = null, random = Math.random } = {}) {
       this.random = typeof random === 'function' ? random : Math.random;
+      const config = resolveConfig(mode, difficulty);
       this.state = {
         board: createEmptyBoard(), active: null, hold: null, next: [], canHold: true,
         score: 0, lines: 0, level: 1, combo: -1, backToBack: false,
-        mode: normalizeMode(mode), elapsedMs: 0,
+        mode: config.mode, difficulty: config.difficulty, elapsedMs: 0,
         status: 'idle', startedAt: 0, pausedAt: null, pausedDurationMs: 0,
         lastAdvanceAt: 0, lastGravityAt: 0, groundedAt: null,
         lastAction: null, lastClear: null
@@ -210,12 +237,12 @@
       return true;
     }
 
-    reset(mode = this.state.mode) {
-      const nextMode = normalizeMode(mode);
+    reset(mode = this.state.mode, difficulty = this.state.difficulty) {
+      const config = resolveConfig(mode, difficulty);
       this.state = {
         board: createEmptyBoard(), active: null, hold: null, next: [], canHold: true,
         score: 0, lines: 0, level: 1, combo: -1, backToBack: false,
-        mode: nextMode, elapsedMs: 0, status: 'idle', startedAt: 0,
+        mode: config.mode, difficulty: config.difficulty, elapsedMs: 0, status: 'idle', startedAt: 0,
         pausedAt: null, pausedDurationMs: 0, lastAdvanceAt: 0, lastGravityAt: 0,
         groundedAt: null, lastAction: null, lastClear: null
       };
@@ -226,7 +253,7 @@
     }
 
     start(nowMs = Date.now()) {
-      if (this.state.status === 'gameover' || this.state.status === 'completed') this.reset(this.state.mode);
+      if (this.state.status === 'gameover' || this.state.status === 'completed') this.reset(this.state.mode, this.state.difficulty);
       this.state.status = 'playing';
       this.state.startedAt = nowMs;
       this.state.elapsedMs = 0;
@@ -238,7 +265,9 @@
       return this.getSnapshot();
     }
 
-    setMode(mode) { return this.reset(mode); }
+    setMode(mode) { return this.reset(mode, this.state.difficulty); }
+
+    setDifficulty(difficulty) { return this.reset(this.state.mode, difficulty); }
 
     pause(nowMs = Date.now()) {
       if (this.state.status !== 'playing') return false;
@@ -407,11 +436,7 @@
       this.state.combo = result.nextCombo;
       this.state.backToBack = result.nextBackToBack;
       this.state.lines += Math.max(0, Number(lines) || 0);
-      this.state.level = this.state.mode === 'classic'
-        ? Math.floor(this.state.lines / 10) + 1
-        : this.state.mode === 'hard'
-          ? Math.floor(this.state.lines / 6) + 1
-          : 1;
+      this.state.level = levelForLines(this.state.lines, this.state.mode, this.state.difficulty);
       this.state.lastClear = {
         lines: Math.max(0, Number(lines) || 0), tSpin: Boolean(tSpin),
         points: result.points, combo: this.state.combo,
@@ -431,7 +456,7 @@
     advance(nowMs = Date.now()) {
       if (!this.isPlaying()) return this.getSnapshot();
       this.updateElapsed(nowMs);
-      const interval = gravityMs(this.state.level, this.state.mode);
+      const interval = gravityMs(this.state.level, this.state.mode, this.state.difficulty);
       if (this.state.lastGravityAt == null) this.state.lastGravityAt = nowMs;
 
       let safety = 0;
@@ -450,7 +475,7 @@
       }
 
       this.refreshGrounded(nowMs);
-      if (this.state.groundedAt != null && nowMs - this.state.groundedAt >= lockDelayMs(this.state.mode)) this.lockActive(nowMs);
+      if (this.state.groundedAt != null && nowMs - this.state.groundedAt >= lockDelayMs(this.state.difficulty)) this.lockActive(nowMs);
       this.state.lastAdvanceAt = nowMs;
       return this.getSnapshot();
     }
@@ -459,6 +484,6 @@
   return {
     BOARD_WIDTH, VISIBLE_ROWS, HIDDEN_ROWS, BOARD_ROWS, LOCK_DELAY_MS,
     PIECE_TYPES, SHAPES, createSevenBag, createEmptyBoard, cellsFor,
-    collides, ghostY, normalizeMode, gravityMs, lockDelayMs, clearCompletedLines, scoreClear, ChuntrisGame
+    collides, ghostY, normalizeMode, normalizeDifficulty, resolveConfig, gravityMs, lockDelayMs, levelForLines, clearCompletedLines, scoreClear, ChuntrisGame
   };
 });
