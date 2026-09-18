@@ -20,7 +20,7 @@ assert.match(ctJs,/countdownTimer=setTimeout\(advance,700\)/,'Chuntris countdown
 assert.match(ctJs,/getUiState:\(\)=>uiState/,'Chuntris countdown state must be inspectable for smoke tests');
 
 assert.match(cbHtml,/chunbak-board-start-ui\.css/,'Chunbak board UI override must load last');
-assert.match(cbCss,/width:min\(420px,46svh,calc\(100vw - 28px\)\)/,'Chunbak start/stage must be viewport-height-aware');
+assert.match(cbCss,/width:min\(420px,44svh,calc\(100vw - 28px\)\)/,'Chunbak start/stage must be viewport-height-aware');
 assert.match(cbCss,/aspect-ratio:420\/680/,'Chunbak start screen must match gameplay stage ratio');
 assert.match(cbCss,/\.chunbak-page \.content-section\{padding:4px 0 28px\}/,'Chunbak game must be raised by compacting content spacing');
 assert.match(cbCss,/\.chunbak-start-utils\{display:grid;grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/,'Chunbak board-sized menu must retain ranking/sound/controls');
