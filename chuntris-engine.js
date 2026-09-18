@@ -11,6 +11,8 @@
   const BOARD_ROWS = VISIBLE_ROWS + HIDDEN_ROWS;
   const PIECE_TYPES = Object.freeze(['I', 'O', 'T', 'S', 'Z', 'J', 'L']);
   const LOCK_DELAY_MS = 500;
+  const SCORE_ATTACK_MS = 180000;
+  const EXTREME_GIMMICK_INTERVAL_MS = 9000;
 
   const SHAPES = Object.freeze({
     I: [
@@ -118,7 +120,7 @@
   }
 
   function normalizeMode(mode) {
-    return mode === 'sprint40' ? 'sprint40' : 'classic';
+    return mode === 'sprint40' || mode === 'score180' ? mode : 'classic';
   }
 
   function normalizeDifficulty(difficulty) {
@@ -157,6 +159,30 @@
     if (safeDifficulty === 'hard') return Math.floor(safeLines / 6) + 1;
     if (normalizeMode(mode) === 'sprint40') return 1;
     return Math.floor(safeLines / 10) + 1;
+  }
+
+  function extremeGimmickForSlot(slot) {
+    const kinds = ['blink', 'phantom', 'garbage'];
+    return kinds[(Math.max(1, Number(slot) || 1) - 1) % kinds.length];
+  }
+
+  function deterministicHoles(seed, slot, count, width = BOARD_WIDTH) {
+    let value = ((Number(seed) || 0) ^ Math.imul(Math.max(1, Number(slot) || 1), 0x9E3779B1)) >>> 0;
+    const holes = [];
+    while (holes.length < Math.max(1, Math.min(width - 1, count))) {
+      value = (Math.imul(value ^ (value >>> 16), 0x45d9f3b) + 0x27100001) >>> 0;
+      const col = value % width;
+      if (!holes.includes(col)) holes.push(col);
+    }
+    return holes.sort((a, b) => a - b);
+  }
+
+  function injectGarbageRow(board, holes = [4]) {
+    const topOccupied = board[0].some(Boolean);
+    const next = board.slice(1).map(row => row.slice());
+    const holeSet = new Set(holes);
+    next.push(Array.from({ length: BOARD_WIDTH }, (_, x) => holeSet.has(x) ? null : 'G'));
+    return { board: next, toppedOut: topOccupied };
   }
 
   function clearCompletedLines(board) {
@@ -204,6 +230,7 @@
   class ChuntrisGame {
     constructor({ mode = 'classic', difficulty = null, random = Math.random } = {}) {
       this.random = typeof random === 'function' ? random : Math.random;
+      this.gimmickSeed = Math.floor(this.random() * 0x100000000) >>> 0;
       const config = resolveConfig(mode, difficulty);
       this.state = {
         board: createEmptyBoard(), active: null, hold: null, next: [], canHold: true,
@@ -211,7 +238,8 @@
         mode: config.mode, difficulty: config.difficulty, elapsedMs: 0,
         status: 'idle', startedAt: 0, pausedAt: null, pausedDurationMs: 0,
         lastAdvanceAt: 0, lastGravityAt: 0, groundedAt: null,
-        lastAction: null, lastClear: null
+        lastAction: null, lastClear: null,
+        gimmickSlot: 0, gimmick: null, lastGimmick: null
       };
       this.ensureQueue(7);
       this.spawnNext();
@@ -244,7 +272,8 @@
         score: 0, lines: 0, level: 1, combo: -1, backToBack: false,
         mode: config.mode, difficulty: config.difficulty, elapsedMs: 0, status: 'idle', startedAt: 0,
         pausedAt: null, pausedDurationMs: 0, lastAdvanceAt: 0, lastGravityAt: 0,
-        groundedAt: null, lastAction: null, lastClear: null
+        groundedAt: null, lastAction: null, lastClear: null,
+        gimmickSlot: 0, gimmick: null, lastGimmick: null
       };
       this.ensureQueue(7);
       this.spawnNext();
@@ -453,9 +482,53 @@
       return result;
     }
 
+    updateExtremeGimmick(nowMs = Date.now()) {
+      if (this.state.difficulty !== 'extreme' || this.state.status !== 'playing') {
+        this.state.gimmick = null;
+        return null;
+      }
+      const slot = Math.floor(this.state.elapsedMs / EXTREME_GIMMICK_INTERVAL_MS);
+      if (slot <= 0 || slot <= this.state.gimmickSlot) {
+        if (this.state.gimmick && Number(this.state.gimmick.until) <= nowMs) this.state.gimmick = null;
+        return this.state.gimmick;
+      }
+
+      this.state.gimmickSlot = slot;
+      const kind = extremeGimmickForSlot(slot);
+      const event = { kind, slot, at: nowMs, until: nowMs };
+
+      if (kind === 'blink') {
+        event.until = nowMs + 1900;
+      } else if (kind === 'phantom') {
+        event.until = nowMs + 1350;
+      } else if (kind === 'garbage') {
+        const holeCount = this.state.level >= 7 ? 1 : 2;
+        const holes = deterministicHoles(this.gimmickSeed, slot, holeCount);
+        const injected = injectGarbageRow(this.state.board, holes);
+        this.state.board = injected.board;
+        event.holes = holes;
+        event.until = nowMs + 1100;
+        if (injected.toppedOut || (this.state.active && collides(this.state.board, this.state.active))) {
+          this.state.status = 'gameover';
+          this.updateElapsed(nowMs);
+        }
+      }
+
+      this.state.gimmick = event;
+      this.state.lastGimmick = { ...event };
+      return event;
+    }
+
     advance(nowMs = Date.now()) {
       if (!this.isPlaying()) return this.getSnapshot();
       this.updateElapsed(nowMs);
+      if (this.state.mode === 'score180' && this.state.elapsedMs >= SCORE_ATTACK_MS) {
+        this.state.elapsedMs = SCORE_ATTACK_MS;
+        this.state.status = 'completed';
+        return this.getSnapshot();
+      }
+      this.updateExtremeGimmick(nowMs);
+      if (this.state.status !== 'playing') return this.getSnapshot();
       const interval = gravityMs(this.state.level, this.state.mode, this.state.difficulty);
       if (this.state.lastGravityAt == null) this.state.lastGravityAt = nowMs;
 
@@ -482,8 +555,8 @@
   }
 
   return {
-    BOARD_WIDTH, VISIBLE_ROWS, HIDDEN_ROWS, BOARD_ROWS, LOCK_DELAY_MS,
+    BOARD_WIDTH, VISIBLE_ROWS, HIDDEN_ROWS, BOARD_ROWS, LOCK_DELAY_MS, SCORE_ATTACK_MS, EXTREME_GIMMICK_INTERVAL_MS,
     PIECE_TYPES, SHAPES, createSevenBag, createEmptyBoard, cellsFor,
-    collides, ghostY, normalizeMode, normalizeDifficulty, resolveConfig, gravityMs, lockDelayMs, levelForLines, clearCompletedLines, scoreClear, ChuntrisGame
+    collides, ghostY, normalizeMode, normalizeDifficulty, resolveConfig, gravityMs, lockDelayMs, levelForLines, extremeGimmickForSlot, deterministicHoles, injectGarbageRow, clearCompletedLines, scoreClear, ChuntrisGame
   };
 });
