@@ -1,0 +1,128 @@
+name: Chuntris multiplayer preview smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'chuntris.html'
+      - 'chuntris.js'
+      - 'chuntris-multiplayer.js'
+      - 'minigame-multiplayer.js'
+      - 'minigame-multiplayer.css'
+      - 'api/content.js'
+      - 'lib/minigame-multiplayer-api.js'
+      - '.github/workflows/chuntris-multiplayer-preview-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  multiplayer-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Resolve current Vercel Preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            comments=$(curl -fsS               -H "Authorization: Bearer $GH_TOKEN"               -H 'Accept: application/vnd.github+json'               "https://api.github.com/repos/$REPO/issues/$PR_NUMBER/comments?per_page=100")
+            preview=$(printf '%s' "$comments" | node -e '
+              let s=""; process.stdin.on("data",d=>s+=d).on("end",()=>{
+                const rows=JSON.parse(s).filter(x=>x.user?.login==="vercel[bot]");
+                for(const row of rows.reverse()){
+                  const m=String(row.body||"").match(/\[Preview\]\((https:\/\/[^)]+)\)/);
+                  if(m){process.stdout.write(m[1]);return;}
+                }
+              });')
+            if [ -n "$preview" ]; then
+              stamp=$(date +%s)
+              if curl -fsS "$preview/chuntris.html?_mp=$stamp" -o /tmp/chuntris.html &&                  curl -fsS "$preview/chuntris-multiplayer.js?_mp=$stamp" -o /tmp/chuntris-multiplayer.js &&                  grep -q 'data-chuntris-multiplayer' /tmp/chuntris.html &&                  grep -q 'SPRINT 40' /tmp/chuntris-multiplayer.js; then
+                echo "PREVIEW_BASE=$preview" >> "$GITHUB_ENV"
+                echo "Multiplayer preview ready: $preview"
+                exit 0
+              fi
+            fi
+            sleep 5
+          done
+          echo 'Current multiplayer preview did not become ready.' >&2
+          exit 1
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Verify two-player room, synchronized start and finish
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import assert from 'node:assert/strict';
+          import { chromium } from 'playwright';
+
+          const browser=await chromium.launch({headless:true});
+          const base=process.env.PREVIEW_BASE;
+          const contextA=await browser.newContext({viewport:{width:1280,height:800}});
+          const contextB=await browser.newContext({viewport:{width:1280,height:800}});
+          const a=await contextA.newPage();
+          const b=await contextB.newPage();
+          const errors=[];
+          a.on('pageerror',error=>errors.push('A: '+error.message));
+          b.on('pageerror',error=>errors.push('B: '+error.message));
+
+          try{
+            await a.goto(base+'/chuntris.html?_mpa='+Date.now(),{waitUntil:'domcontentloaded'});
+            await a.waitForFunction(()=>Boolean(window.ChuntrisApp?.startMultiplayer&&window.MinigameMultiplayer));
+            await a.locator('[data-chuntris-multiplayer]').click();
+            await a.locator('[data-mp-nickname]').fill('멀티춘봉A');
+            await a.locator('[data-mp-create]').click();
+            await a.waitForFunction(()=>document.querySelector('[data-mp-room-code]')?.textContent?.trim().length===6);
+            const code=(await a.locator('[data-mp-room-code]').textContent()).trim();
+            assert.match(code,/^[A-Z2-9]{6}$/);
+
+            await b.goto(base+'/chuntris.html?room='+code+'&_mpb='+Date.now(),{waitUntil:'domcontentloaded'});
+            await b.waitForFunction(()=>Boolean(window.ChuntrisApp?.startMultiplayer&&window.MinigameMultiplayer));
+            await b.locator('[data-mp-nickname]').fill('멀티춘봉B');
+            await b.locator('[data-mp-join]').click();
+
+            await a.waitForFunction(()=>document.querySelectorAll('.mp-player:not(.is-empty)').length===2);
+            await b.waitForFunction(()=>document.querySelectorAll('.mp-player:not(.is-empty)').length===2);
+            assert.equal(await a.locator('.mp-player:not(.is-empty)').count(),2);
+            assert.equal(await b.locator('.mp-player:not(.is-empty)').count(),2);
+
+            await a.locator('[data-mp-ready]').click();
+            await b.locator('[data-mp-ready]').click();
+
+            await Promise.all([
+              a.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing',{timeout:10000}),
+              b.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing',{timeout:10000})
+            ]);
+            assert.equal(await a.locator('#chuntris-game').getAttribute('data-mode'),'sprint40');
+            assert.equal(await b.locator('#chuntris-game').getAttribute('data-mode'),'sprint40');
+
+            const stateA=await a.evaluate(()=>window.ChuntrisApp.getGame().getSnapshot());
+            const stateB=await b.evaluate(()=>window.ChuntrisApp.getGame().getSnapshot());
+            assert.deepEqual(stateA.next,stateB.next,'same room seed must create the same piece queue');
+
+            await a.evaluate(()=>window.ChuntrisApp.getGame().applyClearEvent({lines:40},Date.now()));
+            await a.waitForFunction(()=>document.querySelector('.mp-result')&&!document.querySelector('.mp-result').hidden,{timeout:7000});
+            await b.waitForFunction(()=>document.querySelector('.mp-result')&&!document.querySelector('.mp-result').hidden,{timeout:7000});
+            assert.match(await a.locator('.mp-result').innerText(),/승리/);
+            assert.match(await b.locator('.mp-result').innerText(),/상대 승리|경기 종료/);
+            assert.deepEqual(errors,[]);
+          } finally {
+            await contextA.close();
+            await contextB.close();
+            await browser.close();
+          }
+          EOF_NODE
