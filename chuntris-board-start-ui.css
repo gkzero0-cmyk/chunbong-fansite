@@ -6,7 +6,7 @@
 .chuntris-page .chuntris-hero .minigame-back-link{position:static;min-height:32px;margin:0;padding:0 12px;border-color:rgba(255,107,24,.28);background:#101010;color:#d8d0c9;font-size:.72rem}
 .chuntris-page .content-section{padding:4px 0 28px}
 .chuntris-page .content-section>.page-shell{width:min(98%,1480px)}
-.chuntris-game{--chuntris-stage-height:min(680px,72svh)!important;--chuntris-board-width:min(340px,36svh,calc(100vw - 28px));--chuntris-toolbar-height:56px;--chuntris-board-gap:6px;padding:8px;border-color:rgba(255,107,24,.2);border-radius:20px;background:radial-gradient(circle at 12% 0%,rgba(255,107,24,.09),transparent 30%),linear-gradient(180deg,#0b0b0b,#080808);box-shadow:0 22px 60px rgba(0,0,0,.28)}
+.chuntris-game{overflow-anchor:none;--chuntris-stage-height:min(680px,72svh)!important;--chuntris-board-width:min(340px,36svh,calc(100vw - 28px));--chuntris-toolbar-height:56px;--chuntris-board-gap:6px;padding:8px;border-color:rgba(255,107,24,.2);border-radius:20px;background:radial-gradient(circle at 12% 0%,rgba(255,107,24,.09),transparent 30%),linear-gradient(180deg,#0b0b0b,#080808);box-shadow:0 22px 60px rgba(0,0,0,.28)}
 .chuntris-play-top{height:var(--chuntris-toolbar-height);min-height:var(--chuntris-toolbar-height);margin-bottom:var(--chuntris-board-gap);padding:6px 9px;border-color:rgba(255,107,24,.18);border-radius:12px;background:linear-gradient(180deg,#111,#0b0b0b)}
 .chuntris-play-top .chuntris-status{color:#c7beb7}
 .chuntris-layout.chuntris-layout-immersive{gap:10px;height:var(--chuntris-stage-height)}
