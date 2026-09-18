@@ -1,0 +1,85 @@
+name: Minigames hero production smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'minigames.html'
+      - 'minigames.css'
+      - 'assets/minigames-hero.svg'
+      - '.github/workflows/minigames-hero-production-smoke.yml'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Wait for current minigames hero production
+        env:
+          BASE_URL: https://chunbong-fansite.vercel.app
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            stamp=$(date +%s)
+            if curl -fsS -H 'cache-control: no-cache' "$BASE_URL/minigames.html?_smoke=$stamp" -o /tmp/minigames.html && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/minigames.css?_smoke=$stamp" -o /tmp/minigames.css && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/assets/minigames-hero.svg?_smoke=$stamp" -o /tmp/minigames-hero.svg && \
+               grep -q 'minigames-hero-layout' /tmp/minigames.html && \
+               grep -q 'assets/minigames-hero.svg' /tmp/minigames.html && \
+               grep -q 'minigames-hero-art' /tmp/minigames.css && \
+               grep -q 'data:image/webp;base64' /tmp/minigames-hero.svg; then
+              echo 'Current minigames hero production is ready.'
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'Timed out waiting for current minigames hero production.'
+          exit 1
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Verify production hero artwork
+        env:
+          BASE_URL: https://chunbong-fansite.vercel.app
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import { chromium } from 'playwright';
+          import assert from 'node:assert/strict';
+
+          const browser=await chromium.launch({headless:true});
+          try{
+            const desktop=await browser.newPage({viewport:{width:1440,height:900}});
+            await desktop.goto(process.env.BASE_URL+'/minigames.html?_hero_smoke='+Date.now(),{waitUntil:'networkidle'});
+            const copy=await desktop.locator('.minigames-hero-copy').boundingBox();
+            const art=await desktop.locator('.minigames-hero-art').boundingBox();
+            const image=desktop.locator('.minigames-hero-art img');
+            assert.ok(copy&&art,'desktop hero regions missing');
+            assert.ok(copy.x+copy.width<art.x,'hero artwork is not to the right of copy');
+            assert.ok(art.width>=420,'desktop hero artwork is too small');
+            assert.ok(Math.abs(art.width/art.height-(16/9))<0.03,'hero artwork lost 16:9 ratio');
+            assert.equal(await image.evaluate(el=>el.complete&&el.naturalWidth>0),true,'hero artwork failed to load');
+            assert.ok(art.x>=0&&art.x+art.width<=1440&&art.y>=0&&art.y+art.height<=900,'desktop hero clips viewport');
+            await desktop.close();
+
+            const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+            await mobile.goto(process.env.BASE_URL+'/minigames.html?_hero_mobile='+Date.now(),{waitUntil:'networkidle'});
+            const mobileCopy=await mobile.locator('.minigames-hero-copy').boundingBox();
+            const mobileArt=await mobile.locator('.minigames-hero-art').boundingBox();
+            assert.ok(mobileCopy&&mobileArt,'mobile hero regions missing');
+            assert.ok(mobileArt.y>mobileCopy.y+mobileCopy.height-2,'mobile hero artwork must stack below copy');
+            assert.ok(mobileArt.x>=0&&mobileArt.x+mobileArt.width<=390,'mobile hero artwork clips horizontally');
+            assert.ok(await mobile.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'minigames page has horizontal overflow');
+            await mobile.close();
+          } finally {
+            await browser.close();
+          }
+          EOF_NODE
