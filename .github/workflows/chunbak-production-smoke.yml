@@ -51,6 +51,7 @@ jobs:
                grep -q 'id="chunbak-combo"' /tmp/chunbak.html && \
                grep -q 'id="chunbak-ranking-register"' /tmp/chunbak.html && \
                grep -q 'id="chunbak-ranking-nickname"' /tmp/chunbak.html && \
+               grep -q 'chunbak-return-link' /tmp/chunbak.html && \
                ! grep -q 'id="chunbak-nickname"' /tmp/chunbak.html && \
                grep -q 'function pauseGame' /tmp/chunbak.js && \
                grep -q 'function showMergeEffect' /tmp/chunbak.js && \
@@ -115,6 +116,7 @@ jobs:
             assert.ok(box && box.x >= -1 && box.x + box.width <= viewport.width + 1);
             assert.ok(stageBox&&stageBox.y>=-1&&stageBox.y+stageBox.height<=viewport.height+1,`play stage bottom clipped: ${stageBox?.y+stageBox?.height} > ${viewport.height}`);
             assert.ok(Math.abs(startCardBox.width-stageBox.width)<=3,`start/play stage widths differ: ${startCardBox.width} vs ${stageBox.width}`);
+            assert.ok(Math.abs(startCardBox.y-stageBox.y)<=2,`start/play stage top positions differ: ${startCardBox.y} vs ${stageBox.y}`);
             assert.ok(Math.abs(stageBox.height/stageBox.width-(680/420))<0.04,'play stage ratio mismatch');
 
             await page.evaluate(() => {ChunbakGame.createPiece(1,190,520);ChunbakGame.createPiece(1,215,520);});
@@ -135,6 +137,9 @@ jobs:
             await page.locator('#chunbak-pause').click();
             await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='paused');
             assert.ok(await page.locator('[data-chunbak-panel="pause"]').isVisible(),'pause panel missing');
+            const pauseReturn=page.locator('[data-chunbak-panel="pause"] .chunbak-return-link');
+            assert.ok(await pauseReturn.isVisible(),'pause minigames return link missing');
+            assert.equal(await pauseReturn.getAttribute('href'),'minigames.html');
             await page.waitForTimeout(150);
             assert.equal((await page.locator('#chunbak-score').textContent())?.trim(),scoreBefore,'paused score changed');
             assert.equal(await page.locator('#chunbak-next img').getAttribute('src'),nextBefore,'paused next stage changed');
@@ -143,6 +148,9 @@ jobs:
 
             await page.evaluate(()=>ChunbakGame.setGameOver());
             await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='gameover');
+            const terminalReturn=page.locator('#chunbak-overlay .chunbak-return-link');
+            assert.ok(await terminalReturn.isVisible(),'game-over minigames return link missing');
+            assert.equal(await terminalReturn.getAttribute('href'),'minigames.html');
             await page.locator('#chunbak-ranking-register').click();
             assert.ok(await page.locator('#chunbak-ranking-submit-panel').isVisible(),'postgame nickname panel missing');
             await page.locator('#chunbak-ranking-nickname').fill('x');
