@@ -48,7 +48,7 @@ jobs:
               });')
             if [ -n "$preview" ]; then
               stamp=$(date +%s)
-              if curl -fsS "$preview/chuntris.html?_mp=$stamp" -o /tmp/chuntris.html &&                  curl -fsS "$preview/chuntris-multiplayer.js?_mp=$stamp" -o /tmp/chuntris-multiplayer.js &&                  grep -q 'data-chuntris-multiplayer' /tmp/chuntris.html &&                  grep -q 'data-mp-chuntris-mode="classic"' /tmp/chuntris-multiplayer.js && grep -q 'data-mp-chuntris-mode="sprint40"' /tmp/chuntris-multiplayer.js && grep -q 'data-mp-chuntris-mode="hard"' /tmp/chuntris-multiplayer.js; then
+              if curl -fsS "$preview/chuntris.html?_mp=$stamp" -o /tmp/chuntris.html &&                  curl -fsS "$preview/chuntris-multiplayer.js?_mp=$stamp" -o /tmp/chuntris-multiplayer.js &&                  grep -q 'data-chuntris-multiplayer' /tmp/chuntris.html &&                  grep -q 'data-mp-chuntris-mode="classic"' /tmp/chuntris-multiplayer.js && grep -q 'data-mp-chuntris-mode="sprint40"' /tmp/chuntris-multiplayer.js && grep -q 'data-mp-chuntris-mode="hard"' /tmp/chuntris-multiplayer.js && grep -Fq 'client.create(normalizeName(),selectedMode)' /tmp/chuntris-multiplayer.js && grep -Fq 'App.startMultiplayer?.(room.seed,room.mode)' /tmp/chuntris-multiplayer.js; then
                 echo "PREVIEW_BASE=$preview" >> "$GITHUB_ENV"
                 echo "Multiplayer preview ready: $preview"
                 exit 0
