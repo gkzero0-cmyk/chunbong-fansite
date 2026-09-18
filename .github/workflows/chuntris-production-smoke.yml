@@ -157,6 +157,7 @@ jobs:
             assert.ok(Math.abs(playScrollY-startScrollY)<=1,`${label} transition changed scrollY: ${startScrollY} -> ${playScrollY}`);
             const documentWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
             assert.ok(documentWidth<=viewport.width+1,`${label} horizontal overflow`);
+            const playBoardBoxBeforeFit=await page.locator('.chuntris-board-wrap').boundingBox();
             await assertGameStageFitsViewport(page,label);
             const playBoardBox=await page.locator('.chuntris-board-wrap').boundingBox();
             const layoutDiag=await page.evaluate(()=>({
@@ -172,7 +173,7 @@ jobs:
             console.log(label,'layout diagnostic',{startCardBox,playBoardBox,startScrollY,playScrollY,layoutDiag});
             assert.ok(playBoardBox&&playBoardBox.y+playBoardBox.height<=viewport.height+1,`${label} play board bottom clipped: ${playBoardBox?.y+playBoardBox?.height} > ${viewport.height}`);
             assert.ok(Math.abs(startCardBox.width-playBoardBox.width)<=3,`${label} start/play board widths differ`);
-            assert.ok(Math.abs(startCardBox.y-playBoardBox.y)<=2,`${label} start/play board top positions differ: ${startCardBox.y} vs ${playBoardBox.y}`);
+            assert.ok(playBoardBoxBeforeFit&&Math.abs(startCardBox.y-playBoardBoxBeforeFit.y)<=2,`${label} start/play board top positions differ before fit scroll: ${startCardBox.y} vs ${playBoardBoxBeforeFit?.y}`);
 
             for(const id of ['#chuntris-utility-ranking','#chuntris-utility-sound','#chuntris-utility-controls','#chuntris-pause']){
               assert.ok(await page.locator(id).isVisible(),`${label} utility missing ${id}`);
