@@ -104,10 +104,19 @@ jobs:
           await page.waitForFunction(()=>document.querySelector('#youtube-player-title')?.textContent==='오늘의 쇼츠');
           assert.equal(await page.locator('[data-youtube-kind="shorts"]').getAttribute('aria-selected'),'true','YouTube deep link did not select Shorts tab');
 
+          await page.goto(process.env.BASE_URL+'/changelog.html',{waitUntil:'networkidle'});
+          await page.waitForSelector('.changelog-day');
+          assert.equal(await page.locator('.changelog-button').getAttribute('aria-current'),'page','changelog header button should be active on changelog page');
+          assert.equal(await page.locator('.changelog-day').first().getAttribute('data-changelog-date'),'2026-09-18','latest changelog date must render first');
+          assert.ok(await page.locator('[data-changelog-date="2026-09-16"]').getByText('춘박게임 랭킹 기능 추가').count(),'requested ranking changelog entry missing');
+          assert.ok(await page.locator('[data-changelog-date="2026-09-13"]').getByText('춘박게임 추가',{exact:true}).count(),'requested Chunbak changelog entry missing');
+
           const mobile=await context.newPage();
           await mobile.setViewportSize({width:390,height:844});
           await mobile.route('**/api/content?type=activity',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:activityItems})}));
           await mobile.goto(process.env.BASE_URL+'/index.html?_mobile='+Date.now(),{waitUntil:'networkidle'});
+          assert.ok(await mobile.locator('.changelog-button').isVisible(),'mobile changelog gear missing');
+          assert.equal(await mobile.locator('.changelog-button span').isVisible(),false,'mobile changelog text should collapse to icon only');
           await mobile.locator('.activity-bell').click();
           const panelBox=await mobile.locator('.activity-panel').boundingBox();
           assert.ok(panelBox&&panelBox.x>=0&&panelBox.x+panelBox.width<=390&&panelBox.y>=0&&panelBox.y+panelBox.height<=844,'mobile activity panel clips viewport');
