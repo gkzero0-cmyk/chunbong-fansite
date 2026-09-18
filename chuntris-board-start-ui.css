@@ -1,4 +1,5 @@
 /* Board-sized start UI + viewport fit for Chuntris */
+html,.chuntris-page{overflow-anchor:none}
 .chuntris-page .chuntris-hero{padding:4px 0;border-bottom:1px solid rgba(255,255,255,.08);background:#090909}
 .chuntris-page .chuntris-hero:before{display:none}
 .chuntris-page .chuntris-hero .page-shell{min-height:34px;max-width:1480px;display:flex;align-items:center;justify-content:flex-end}
