@@ -226,10 +226,10 @@ jobs:
             assert.ok((await startCard.evaluate(el=>el.scrollHeight<=el.clientHeight+1)),'Chuntris difficulty step overflows board-sized card');
 
             await page.locator('[data-chuntris-difficulty="normal"]').click();
-            assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-player','Chuntris did not enter final start step');
-            assert.ok(await page.locator('#chuntris-player-step').isVisible(),'final start step missing');
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-difficulty','Chuntris must remain in the difficulty step until start');
+            assert.ok(await page.locator('#chuntris-player-step').isVisible(),'start action missing in difficulty step');
             assert.ok(await page.locator('#chuntris-start').isVisible(),'start button missing after difficulty selection');
-            assert.ok((await startCard.evaluate(el=>el.scrollHeight<=el.clientHeight+1)),'Chuntris final start step overflows board-sized card');
+            assert.ok((await startCard.evaluate(el=>el.scrollHeight<=el.clientHeight+1)),'Chuntris difficulty/start step overflows board-sized card');
 
             await page.locator('#chuntris-start').click();
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'countdown','Chuntris did not enter countdown state');
