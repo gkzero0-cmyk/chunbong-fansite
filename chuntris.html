@@ -44,6 +44,7 @@
               <div class="chuntris-mode-cards" role="group" aria-label="게임 모드">
                 <button id="chuntris-mode-classic" type="button" data-chuntris-mode="classic" aria-pressed="false"><span class="chuntris-mode-index">01 / CLASSIC</span><strong>클래식 무한</strong><span>오래 버티며 최고 점수에 도전</span></button>
                 <button id="chuntris-mode-sprint40" type="button" data-chuntris-mode="sprint40" aria-pressed="false"><span class="chuntris-mode-index">02 / SPRINT 40</span><strong>40줄 타임어택</strong><span>40줄을 가장 빠르게 지우면 종료</span></button>
+                <button id="chuntris-mode-score180" type="button" data-chuntris-mode="score180" aria-pressed="false"><span class="chuntris-mode-index">03 / SCORE 180</span><strong>3분 점수전</strong><span>3분 동안 최대한 높은 점수를 획득</span></button>
               </div>
             </div>
             <div id="chuntris-difficulty-step" class="chuntris-difficulty-step" hidden>
@@ -84,6 +85,7 @@
             <div class="chuntris-board-wrap">
               <canvas id="chuntris-board" width="320" height="640" aria-label="춘트리스 10×20 게임 보드"></canvas>
               <div id="chuntris-harddrop-fx" class="chuntris-harddrop-fx" aria-hidden="true"></div>
+              <div id="chuntris-gimmick-alert" class="chuntris-gimmick-alert" aria-live="polite" aria-atomic="true"></div>
               <div id="chuntris-line-fx" class="chuntris-line-fx" aria-hidden="true"></div>
               <div id="chuntris-clear-label" class="chuntris-clear-label" aria-live="polite"></div>
               <div class="chuntris-board-overlay" id="chuntris-overlay" hidden>
