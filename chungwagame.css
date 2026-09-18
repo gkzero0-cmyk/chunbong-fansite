@@ -91,3 +91,87 @@
 .cg-ranking-list li{background:#191d17;border:1px solid #282d25}.cg-ranking-list li>span:first-child{color:#a9bb76}.cg-ranking-list li>span:last-child{color:#a29b8e}
 .cg-score-pop{color:#a9bd74;text-shadow:0 2px 0 #151814,0 4px 12px rgba(0,0,0,.35)}
 .cg-combo{color:#d28e59;text-shadow:0 2px 0 #151814,0 5px 16px rgba(0,0,0,.38)}
+
+/* Soft off-white board + exact orange number overlay. */
+.chungwagame-page{
+  color:#4b443c;
+  background:
+    radial-gradient(circle at 14% 4%,rgba(171,166,145,.16),transparent 31%),
+    radial-gradient(circle at 88% 6%,rgba(185,167,144,.14),transparent 29%),
+    linear-gradient(180deg,#E7E5DF 0%,#DEDBD3 100%);
+}
+.chungwagame-navline{color:#746d63}
+.chungwagame-brand-mark{background:#F0EEE8;border-color:#CAC6BC;box-shadow:0 8px 22px rgba(72,65,54,.1)}
+.chungwagame-brand h1{color:#413930}
+.chungwagame-brand p{color:#70685e}.chungwagame-brand p strong{color:#8b9f52}
+.cg-stat{background:#F2F0EA;border-color:#CCC8BE;box-shadow:0 8px 20px rgba(72,65,54,.08)}
+.cg-stat span{color:#777067}.cg-stat strong{color:#403931}.cg-timer strong{color:#C96855}
+.cg-time-track{background:#D1CEC5;box-shadow:inset 0 1px 2px rgba(70,64,55,.1)}
+.cg-card,.cg-board-card,.cg-utility,.cg-modal-card{
+  background:#ECE9E2;border-color:#C7C2B7;box-shadow:0 10px 26px rgba(65,59,50,.09);color:#494239
+}
+.cg-speech{background:linear-gradient(180deg,#E4E7D7,#DDE1CF);color:#4E483F}.cg-speech b{color:#879D4E}
+.cg-howto h2{color:#433C34}.cg-howto ol{color:#6E675E}.cg-howto b{color:#899F50}
+.cg-selection{background:#E0DED7;border:1px solid #CAC6BC}
+.cg-selection span{color:#6D665D}.cg-selection strong{color:#899F50}.cg-selection em{color:#90897F}
+.cg-message{color:#70695F}
+.cg-board-card{background:#E5E2DA}
+.cg-board-wrap{
+  background:
+    linear-gradient(to right,rgba(82,76,67,.075) 1px,transparent 1px),
+    linear-gradient(to bottom,rgba(82,76,67,.075) 1px,transparent 1px),
+    linear-gradient(180deg,#DDDAD2 0%,#D6D2C9 100%);
+  background-size:5.8823529% 100%,100% 10%,100% 100%;
+  border-color:#BBB5AA;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.34);
+}
+.cg-fruit-shape{
+  position:relative;
+  filter:saturate(.86) brightness(.98) drop-shadow(0 1px 1px rgba(65,58,45,.18));
+}
+.cg-fruit-shape::before{
+  content:"";
+  position:absolute;
+  left:50%;top:50%;
+  width:28%;height:34%;
+  transform:translate(-50%,-50%);
+  border-radius:46%;
+  background:rgba(210,226,118,.96);
+  box-shadow:0 0 3px rgba(178,195,91,.28);
+}
+.cg-fruit-shape::after{
+  content:attr(data-value);
+  position:absolute;
+  left:50%;top:50%;
+  transform:translate(-50%,-54%);
+  color:#F28D35;
+  font-family:Arial Rounded MT Bold,Arial,sans-serif;
+  font-size:clamp(10px,1.18vw,15px);
+  font-weight:1000;
+  line-height:1;
+  letter-spacing:-.04em;
+  -webkit-text-stroke:.35px #F28D35;
+  text-shadow:0 1px 0 rgba(95,59,28,.12);
+  pointer-events:none;
+}
+.cg-fruit.selected{filter:brightness(1.02) saturate(.92)}
+.cg-fruit.selected:after{border-color:#F28D35;box-shadow:0 0 0 1px rgba(255,255,255,.45) inset,0 0 10px rgba(242,141,53,.24)}
+.cg-drag{border-color:#CF8A4B;background:rgba(242,141,53,.08)}
+.cg-drag.valid{border-color:#899F50;background:rgba(137,159,80,.12)}
+.cg-hint{border-color:#C47767;background:rgba(196,119,103,.07)}
+.cg-overlay{background:rgba(222,219,211,.78);backdrop-filter:blur(6px)}
+.cg-overlay-inner{background:#F0EEE8;border-color:#C9C4B9;box-shadow:0 18px 46px rgba(70,63,52,.17);color:#443D35}
+.cg-overlay-inner h2 em,.cg-kicker{color:#899F50}.cg-overlay-inner p{color:#746C62}
+.cg-primary{background:linear-gradient(135deg,#98AA61,#788D4A);box-shadow:0 6px 14px rgba(80,91,52,.16)}
+.cg-secondary{background:#DDDAD2;color:#544C43}.cg-plain{color:#5E564D;background:#E5E2DA;border-color:#C5C0B5}
+.cg-return-minigames{color:#5E564D;background:#E2DFD7;border-color:#C5C0B5}.cg-return-minigames:hover{background:#D7D3CA;color:#3D3731}
+.cg-ranking-submit-panel{border-top-color:#CBC6BC}.cg-ranking-submit-panel input{background:#F5F3EE;color:#403931;border-color:#C7C1B5}
+.cg-ranking-submit-panel button:first-child{background:#879B52}
+.cg-shortcuts{color:#7A7369}
+.cg-utility{color:#544D44}.cg-utility small{color:#888176}.cg-utility:hover{background:#E2DFD7}.cg-utility.danger:hover{background:#E7D9D3}
+.cg-modal-backdrop{background:rgba(50,45,39,.38)}
+.cg-modal-card header button{background:#DDDAD2;color:#554E45}
+.cg-ranking-status{color:#766F65}
+.cg-ranking-list li{background:#E2DFD7;border:1px solid #CCC7BD}.cg-ranking-list li>span:first-child{color:#899F50}.cg-ranking-list li>span:last-child{color:#746D63}
+.cg-score-pop{color:#F28D35;text-shadow:0 2px 0 #E7E5DF,0 4px 12px rgba(70,60,45,.15)}
+.cg-combo{color:#F28D35;text-shadow:0 2px 0 #E7E5DF,0 5px 16px rgba(70,60,45,.16)}
