@@ -10,6 +10,17 @@
   const DROP_Y = 60;
   const DROP_COOLDOWN_MS = 260;
   const BEST_KEY = 'chunbak:best:v1';
+  // Keep the visible artwork full-size, but shrink the circular collider so
+  // transparent PNG padding does not create large visual gaps between pieces.
+  const COLLISION_RADIUS_SCALE = 0.84;
+  const PHYSICS = Object.freeze({
+    gravityY: 1.18,
+    restitution: 0.025,
+    friction: 0.035,
+    frictionStatic: 0.06,
+    frictionAir: 0.004,
+    density: 0.0024
+  });
 
   const root = document.getElementById('chunbak-game');
   const canvas = document.getElementById('chunbak-canvas');
@@ -253,14 +264,22 @@
 
   function createPiece(stage, x, y) {
     const meta = Core.STAGES[stage - 1];
-    const body = Matter.Bodies.circle(x, y, meta.radius, {
-      restitution: 0.08,
-      friction: 0.12,
-      frictionStatic: 0.35,
-      density: 0.0017
+    const collisionRadius = Math.max(8, meta.radius * COLLISION_RADIUS_SCALE);
+    const body = Matter.Bodies.circle(x, y, collisionRadius, {
+      restitution: PHYSICS.restitution,
+      friction: PHYSICS.friction,
+      frictionStatic: PHYSICS.frictionStatic,
+      frictionAir: PHYSICS.frictionAir,
+      density: PHYSICS.density,
+      slop: 0.02
     });
     body.plugin ||= {};
-    body.plugin.chunbak = { stage, merging: false };
+    body.plugin.chunbak = {
+      stage,
+      merging: false,
+      renderRadius: meta.radius,
+      collisionRadius
+    };
     Matter.World.add(world, body);
     return body;
   }
@@ -463,7 +482,10 @@
   function initWorld() {
     if (engine) Matter.Engine.clear(engine);
     engine = Matter.Engine.create();
-    engine.gravity.y = 1.05;
+    engine.positionIterations = 10;
+    engine.velocityIterations = 8;
+    engine.constraintIterations = 4;
+    engine.gravity.y = PHYSICS.gravityY;
     world = engine.world;
     createBoundaries();
     Matter.Events.on(engine, 'collisionStart', event => handleCollisionPairs(event.pairs, performance.now()));
