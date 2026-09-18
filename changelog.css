@@ -5,3 +5,37 @@
 [data-theme="light"] .changelog-summary{background:#fff;border-color:#d8cec5;box-shadow:0 5px 18px #6c4a2a0d}[data-theme="light"] .changelog-day:not(:last-child):before{background:#ddd5ce}[data-theme="light"] .changelog-date time{color:#2b211a}[data-theme="light"] .changelog-card{background:linear-gradient(155deg,#fff,#f8f3ee);border-color:#ddd4cb;box-shadow:0 12px 28px #6c4a2a0d}[data-theme="light"] .changelog-card.is-commit{background:#fbf7f3;border-color:#e7ded6}[data-theme="light"] .changelog-card p{color:#756b63}[data-theme="light"] .changelog-index nav a:hover{background:#ff6b1809}[data-theme="light"] .changelog-index-home:hover{color:#2b211a}[data-theme="light"] .changelog-commit-meta code{background:#eee7e0;color:#675e57}
 @media(max-width:900px){.changelog-layout{grid-template-columns:180px minmax(0,1fr);gap:28px}.changelog-day{grid-template-columns:128px minmax(0,1fr);gap:27px}.changelog-day:not(:last-child):before{left:127px}.changelog-entries:before{left:-32px}}
 @media(max-width:760px){.changelog-hero{padding:58px 0 42px}.changelog-section{padding:42px 0 80px}.changelog-toolbar{align-items:flex-start;flex-direction:column}.changelog-layout{display:block}.changelog-index{position:sticky;z-index:8;top:66px;margin:0 -14px 24px;padding:8px 14px;border-top:1px solid #252525;border-bottom:1px solid #252525;background:#0b0b0ce8;backdrop-filter:blur(14px)}.changelog-index-inner{position:static;display:flex;align-items:center;gap:9px;max-height:none;overflow:visible;padding:0}.changelog-index-home,.changelog-index-inner>p{display:none}.changelog-index nav{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding:0 2px}.changelog-index nav::-webkit-scrollbar{display:none}.changelog-index nav a{flex:0 0 auto;min-height:36px;padding:6px 12px;border:1px solid #303033;border-radius:999px;background:#121214;font-size:12px}.changelog-index nav a:before,.changelog-index nav a small{display:none}.changelog-index nav a.active{border-color:#ff6b1866;background:#ff6b1815}.changelog-day{grid-template-columns:1fr;gap:12px;padding-bottom:30px;scroll-margin-top:118px}.changelog-day:not(:last-child):before{left:5px;top:47px;bottom:-4px}.changelog-date{position:static;text-align:left;padding-left:22px}.changelog-date time{font-size:12px}.changelog-entries{margin-left:22px}.changelog-entries:before{left:-22px;top:10px;width:9px;height:9px}.changelog-card{padding:17px}.changelog-card h3{font-size:16px}.changelog-card.is-commit h3{font-size:12px}[data-theme="light"] .changelog-index{background:#fffaf6e8;border-color:#e4dad2}}
+
+/* Large-display changelog scaling */
+@media(min-width:1600px) and (min-height:900px){
+  .changelog-shell{max-width:1500px}
+  .changelog-layout{grid-template-columns:260px minmax(0,1fr);gap:56px}
+  .changelog-index-inner{padding-right:16px}
+  .changelog-index-home{font-size:14px}
+  .changelog-index-inner>p{font-size:12px}
+  .changelog-index nav{gap:3px}
+  .changelog-index nav a{min-height:44px;padding:9px 12px 9px 17px;font-size:14px}
+  .changelog-index nav a small{min-width:28px;height:24px;font-size:11px}
+  .changelog-day{grid-template-columns:170px minmax(0,1fr);gap:40px}
+  .changelog-day:not(:last-child):before{left:169px}
+  .changelog-entries:before{left:-45px}
+  .changelog-date time{font-size:14px}
+  .changelog-date small{font-size:11px}
+  .changelog-card{padding:22px 23px 21px}
+  .changelog-card h3{font-size:19px}
+  .changelog-card p{font-size:14px}
+}
+@media(min-width:2400px) and (min-height:1300px){
+  .changelog-shell{max-width:1800px}
+  .changelog-layout{grid-template-columns:300px minmax(0,1fr);gap:66px}
+  .changelog-index-home{font-size:15px}
+  .changelog-index-inner>p{font-size:13px}
+  .changelog-index nav a{min-height:48px;padding:10px 14px 10px 19px;font-size:15px}
+  .changelog-index nav a small{min-width:30px;height:26px;font-size:11px}
+  .changelog-day{grid-template-columns:190px minmax(0,1fr);gap:46px}
+  .changelog-day:not(:last-child):before{left:189px}
+  .changelog-entries:before{left:-51px}
+  .changelog-date time{font-size:15px}
+  .changelog-card h3{font-size:20px}
+  .changelog-card p{font-size:15px}
+}
