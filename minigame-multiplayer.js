@@ -3,10 +3,16 @@
   const ENDPOINT='/api/content?type=minigame-multiplayer';
 
   function safeJson(response){return response.json().catch(()=>({error:'invalid_response'}));}
-  async function post(payload){
+  async function post(payload,attempt=0){
     const response=await fetch(ENDPOINT,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
     const data=await safeJson(response);
-    if(!response.ok){const error=new Error(data.error||'multiplayer_request_failed');error.code=data.error||'multiplayer_request_failed';error.status=response.status;throw error;}
+    if(!response.ok){
+      if(response.status===409&&data.error==='room_busy'&&attempt<4){
+        await new Promise(resolve=>setTimeout(resolve,60*(attempt+1)));
+        return post(payload,attempt+1);
+      }
+      const error=new Error(data.error||'multiplayer_request_failed');error.code=data.error||'multiplayer_request_failed';error.status=response.status;throw error;
+    }
     return data;
   }
   async function get(code,token=''){
