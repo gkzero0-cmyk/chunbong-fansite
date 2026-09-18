@@ -195,9 +195,9 @@ jobs:
             await page.waitForFunction(()=>window.ChungwagameApp?.getSnapshot?.().maxCombo>=2);
             assert.match((await page.locator('#cg-combo').textContent())||'',/COMBO x2|COMBO x[3-9]/,'combo feedback missing');
 
+            await page.locator('#cg-shuffle').click();
             await page.locator('#cg-hint-btn').click();
             assert.ok(await page.locator('#cg-hint').evaluate(el=>getComputedStyle(el).display!=='none'),'hint did not display');
-            await page.locator('#cg-shuffle').click();
             await page.locator('#cg-sound').click();
             assert.equal(await page.locator('#cg-sound').getAttribute('aria-pressed'),'false','sound toggle failed');
 
@@ -213,7 +213,6 @@ jobs:
             await page.locator('#cg-again').click();
             assert.equal((await page.locator('#cg-score').textContent())?.trim(),'0','restart did not reset score');
             assert.equal((await page.locator('#cg-timer').textContent())?.trim(),'02:00','restart did not reset timer');
-            assert.equal(window?.undefined,undefined);
             assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
             await page.close();
           }
