@@ -19,4 +19,4 @@ for f in tests/*.mjs; do node "$f"; done
 
 Vercel Git deployment enabled
 
-<!-- production-redeploy-marker: highres-ui-15cc61a2 -->
+<!-- production-redeploy-marker: sitewide-highres-e6887c1b -->
