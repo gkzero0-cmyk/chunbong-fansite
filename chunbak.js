@@ -328,7 +328,7 @@
     maxLevel = Math.max(maxLevel, currentStage);
     lastDropAt = now;
     currentStage = nextStage;
-    nextStage = Core.pickSpawnStage(Math.random);
+    nextStage = Core.pickSpawnStage(spawnRandom);
     renderNext();
     updateHud();
     return true;
@@ -510,7 +510,7 @@
       comboNode.classList.remove('is-visible');
     }
     initWorld();
-    nextStage = Core.pickSpawnStage(Math.random);
+    nextStage = Core.pickSpawnStage(spawnRandom);
     chooseUpcoming();
     playing = autoStart;
     setView(autoStart ? 'playing' : 'start');
