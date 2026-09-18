@@ -11,6 +11,7 @@ const fetchCatchDetail = require('./catch-detail');
 const fetchChunbongData = require('../lib/chunbong-data');
 const handleChuntrisRanking = require('../lib/chuntris-ranking-api');
 const handleChunbakRanking = require('../lib/chunbak-ranking-api');
+const handleChungwagameRanking = require('../lib/chungwagame-ranking-api');
 const youtubeEngagementCache = require('../data/youtube-engagement-cache.json');
 const soopMetricHistory = require('../data/soop-follower-history.json');
 const { buildEngagementRankings } = require('../lib/youtube-engagement');
@@ -242,6 +243,7 @@ async function handler(req,res) {
   const type=req.query?.type;
   if(type==='chuntris-ranking') return handleChuntrisRanking(req,res);
   if(type==='chunbak-ranking') return handleChunbakRanking(req,res);
+  if(type==='chungwagame-ranking') return handleChungwagameRanking(req,res);
   const forceDataRefresh=type==='data'&&String(req.query?.refresh||'')==='1';
   res.setHeader('Cache-Control',forceDataRefresh?'no-store, max-age=0':'s-maxage=180, stale-while-revalidate=600');
   try {
