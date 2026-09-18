@@ -1,5 +1,5 @@
 .chuntris-start-utils.has-multiplayer{grid-template-columns:repeat(4,minmax(0,1fr))}
-.chuntris-start-utils.has-multiplayer button{min-width:0;padding-inline:3px;font-size:.52rem}
+.chuntris-start-utils.has-multiplayer button{min-width:0;padding-inline:3px;font-size:.5rem;white-space:nowrap}\n.chuntris-start-utils.has-multiplayer .mp-open-button::after{display:none}
 .mp-open-button{position:relative}.mp-open-button::after{content:"BETA";margin-left:5px;font-size:7px;letter-spacing:.08em;color:#ff8b47;vertical-align:top}
 .mp-shell[hidden]{display:none!important}.mp-shell{position:fixed;z-index:300;inset:0;display:grid;place-items:center;padding:18px;background:rgba(0,0,0,.72);backdrop-filter:blur(7px)}
 .mp-card{width:min(520px,96vw);max-height:min(760px,92svh);overflow:auto;border:1px solid #353535;border-radius:22px;background:linear-gradient(155deg,#171717,#0e0e0e);box-shadow:0 28px 90px #000b;color:#f5f1ec;padding:22px}
