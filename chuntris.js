@@ -50,7 +50,8 @@
     pauseContinue:document.getElementById('chuntris-pause-continue'), pauseNew:document.getElementById('chuntris-pause-new'),
     newConfirm:document.getElementById('chuntris-new-confirm'), newCancel:document.getElementById('chuntris-new-cancel'),
     clearLabel:document.getElementById('chuntris-clear-label'), hardDropFx:document.getElementById('chuntris-harddrop-fx'),
-    lineFx:document.getElementById('chuntris-line-fx')
+    lineFx:document.getElementById('chuntris-line-fx'), countdown:document.getElementById('chuntris-countdown'),
+    countdownValue:document.getElementById('chuntris-countdown-value')
   };
   if (!els.game || !els.board) return;
 
@@ -77,6 +78,8 @@
   let modalTrigger = null;
   let clearTimer = 0;
   let hardDropTimer = 0;
+  let countdownTimer = 0;
+  let countdownToken = 0;
 
   function storageGet(key, fallback = null) { try { const value=localStorage.getItem(key); return value==null?fallback:value; } catch { return fallback; } }
   function storageSet(key, value) { try { localStorage.setItem(key,String(value)); } catch {} }
@@ -97,13 +100,13 @@
   }
 
   function setViewState(nextState){
-    const allowed=new Set(['start-mode','start-player','playing','paused','terminal']);
+    const allowed=new Set(['start-mode','start-player','countdown','playing','paused','terminal']);
     uiState=allowed.has(nextState)?nextState:'start-mode';
     els.game.dataset.uiState=uiState;
-    const start=uiState==='start-mode'||uiState==='start-player';
+    const start=uiState==='start-mode'||uiState==='start-player'||uiState==='countdown';
     if(els.startView) els.startView.hidden=!start;
     if(els.playView) els.playView.hidden=start;
-    if(els.playerStep) els.playerStep.hidden=uiState!=='start-player';
+    if(els.playerStep) els.playerStep.hidden=!start;
     if(start) closeModalShell(false);
   }
 
@@ -244,15 +247,53 @@
     const state=game.getSnapshot();if(state.status==='playing')game.pause(Date.now());else if(state.status!=='paused')return false;modalAutoPaused=false;modalReturnToPause=false;setViewState('paused');showModalPanel('pause');render();return true;
   }
   function continueGame(){if(game.getSnapshot().status==='paused')game.resume(Date.now());closeModalShell();setViewState('playing');lastInputAt=Date.now();render();ensureLoop();return true;}
-  function returnToStartForNewGame(){game.reset(mode);lastStatus='idle';lastLevel=1;lastClearAt=null;transientReaction=null;lastSubmittedTerminal='';closeModalShell(false);setViewState('start-player');render();return true;}
+  function returnToStartForNewGame(){cancelCountdown();game.reset(mode);lastStatus='idle';lastLevel=1;lastClearAt=null;transientReaction=null;lastSubmittedTerminal='';closeModalShell(false);setViewState('start-player');render();return true;}
 
+  function setStartControlsDisabled(disabled){
+    if(els.start)els.start.disabled=Boolean(disabled);
+    modeButtons.forEach(button=>{button.disabled=Boolean(disabled);});
+    els.startView?.querySelectorAll('.chuntris-start-utils button').forEach(button=>{button.disabled=Boolean(disabled);});
+  }
+  function cancelCountdown(){
+    countdownToken+=1;
+    if(countdownTimer){clearTimeout(countdownTimer);countdownTimer=0;}
+    if(els.countdown){els.countdown.hidden=true;els.countdown.classList.remove('is-start');}
+    if(els.countdownValue)els.countdownValue.textContent='3';
+    setStartControlsDisabled(false);
+  }
+  function beginGame(){
+    game.start(Date.now());lastStatus='idle';lastLevel=1;lastClearAt=null;lastInputAt=Date.now();transientReaction=null;lastSubmittedTerminal='';
+    if(els.countdown){els.countdown.hidden=true;els.countdown.classList.remove('is-start');}
+    setStartControlsDisabled(false);closeModalShell(false);setViewState('playing');render();ensureLoop();return true;
+  }
   function start(){
+    if(uiState==='countdown')return false;
     const nickname=currentNickname();
     if(nickname===false){if(els.status)els.status.textContent='닉네임 형식을 확인해 주세요. 비워두면 로컬 기록으로 바로 플레이할 수 있어요.';els.nickname?.focus();return false;}
-    if(nickname)storageSet(NICKNAME_KEY,nickname.displayName);if(root.ChuntrisAudio)root.ChuntrisAudio.resume();if(['playing','paused','gameover','completed'].includes(game.getSnapshot().status))game.reset(mode);
-    game.start(Date.now());lastStatus='idle';lastLevel=1;lastClearAt=null;lastInputAt=Date.now();transientReaction=null;lastSubmittedTerminal='';closeModalShell(false);setViewState('playing');render();ensureLoop();return true;
+    if(nickname)storageSet(NICKNAME_KEY,nickname.displayName);
+    if(root.ChuntrisAudio)root.ChuntrisAudio.resume();
+    if(['playing','paused','gameover','completed'].includes(game.getSnapshot().status))game.reset(mode);
+    cancelCountdown();
+    const token=++countdownToken;
+    setViewState('countdown');setStartControlsDisabled(true);render();
+    if(!els.countdown||!els.countdownValue)return beginGame();
+    els.countdown.hidden=false;
+    const frames=['3','2','1','START!'];
+    let index=0;
+    const advance=()=>{
+      if(token!==countdownToken)return;
+      const value=frames[index];
+      els.countdownValue.textContent=value;
+      els.countdown.classList.toggle('is-start',value==='START!');
+      if(root.ChuntrisAudio&&value!=='START!')root.ChuntrisAudio.play?.('move');
+      index+=1;
+      if(index<frames.length){countdownTimer=setTimeout(advance,700);return;}
+      countdownTimer=setTimeout(()=>{if(token===countdownToken)beginGame();},420);
+    };
+    advance();
+    return true;
   }
-  function setMode(nextMode){mode=nextMode==='sprint40'?'sprint40':'classic';game=new Engine.ChuntrisGame({mode});modeButtons.forEach(button=>{const active=button.dataset.chuntrisMode===mode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});lastStatus='idle';lastLevel=1;lastClearAt=null;transientReaction=null;lastSubmittedTerminal='';setViewState('start-player');render();void loadRanking(mode);}
+  function setMode(nextMode){cancelCountdown();mode=nextMode==='sprint40'?'sprint40':'classic';game=new Engine.ChuntrisGame({mode});modeButtons.forEach(button=>{const active=button.dataset.chuntrisMode===mode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});lastStatus='idle';lastLevel=1;lastClearAt=null;transientReaction=null;lastSubmittedTerminal='';setViewState('start-player');render();void loadRanking(mode);}
   function pause(){const state=game.getSnapshot();if(state.status==='playing')return openPauseMenu();if(state.status==='paused')return continueGame();return false;}
 
   function act(action){
@@ -301,6 +342,6 @@
   function ensureLoop(){if(!rafId)rafId=root.requestAnimationFrame(frame);}
 
   if(els.nickname)els.nickname.value=storageGet(NICKNAME_KEY,'');
-  root.ChuntrisApp={start,pause,setMode,render,loadRanking,getNickname:()=>els.nickname?.value||'',getGame:()=>game,setViewState,openUtilityModal,closeUtilityModal,openPauseMenu,continueGame,returnToStartForNewGame,showHardDropEffect,showClearEffect};
+  root.ChuntrisApp={start,pause,setMode,render,loadRanking,getNickname:()=>els.nickname?.value||'',getGame:()=>game,getUiState:()=>uiState,setViewState,openUtilityModal,closeUtilityModal,openPauseMenu,continueGame,returnToStartForNewGame,showHardDropEffect,showClearEffect};
   setReaction('idle');setViewState('start-mode');render();ensureLoop();void loadRanking(mode);
 })(typeof globalThis!=='undefined'?globalThis:window);
