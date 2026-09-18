@@ -185,7 +185,7 @@ jobs:
             await page.waitForFunction(()=>Number(document.querySelector('#cg-score')?.textContent||0)>0);
             assert.ok(await page.locator('#cg-fx-layer').evaluate(el=>el.childElementCount>0),'sum-10 burst effect missing');
 
-            await page.waitForTimeout(380);
+            await page.waitForFunction(()=>!document.querySelector('.cg-fruit.good'));
             rect=await findTenRect(page);
             if(!rect){
               await page.locator('#cg-shuffle').click();
