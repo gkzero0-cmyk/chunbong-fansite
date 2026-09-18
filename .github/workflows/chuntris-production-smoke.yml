@@ -199,7 +199,8 @@ jobs:
             assert.ok(await page.locator('#chuntris-harddrop-fx').evaluate(el=>el.classList.contains('is-active')),`${label} hard-drop effect missing`);
             await page.evaluate(()=>window.ChuntrisApp.showClearEffect(4));
             assert.equal(await page.locator('#chuntris-clear-label').textContent(),'QUAD',`${label} QUAD label mismatch`);
-            await page.evaluate(()=>{const overlay=document.querySelector('#chuntris-overlay');if(overlay)overlay.hidden=false;});
+            await page.evaluate(()=>{const game=window.ChuntrisApp.getGame();game.state.status='gameover';window.ChuntrisApp.render();});
+            await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='gameover');
             const terminalReturn=page.locator('#chuntris-overlay .chuntris-return-link');
             assert.ok(await terminalReturn.isVisible(),`${label} game-over minigames return link missing`);
             assert.equal(await terminalReturn.getAttribute('href'),'minigames.html');
