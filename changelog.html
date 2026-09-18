@@ -10,16 +10,17 @@
     <div class="page-shell changelog-hero-inner reveal">
       <p class="kicker">CHUNBONG FAN HUB</p>
       <h1>업데이트 일지</h1>
-      <p>춘봉 팬사이트에 새로 추가되거나 개선된 기능을 날짜별로 정리합니다. 가장 최근 업데이트가 위에 표시됩니다.</p>
-      <div class="changelog-summary"><span id="changelog-latest">LATEST</span><strong id="changelog-count">0개의 업데이트</strong></div>
+      <p>팬사이트가 만들어진 첫날부터 현재까지의 기능·디자인·수정 기록을 날짜별로 보관합니다. 최신 업데이트가 항상 가장 위에 표시됩니다.</p>
+      <div class="changelog-summary"><span id="changelog-latest">LATEST</span><strong id="changelog-count">기록 불러오는 중</strong></div>
     </div>
   </section>
   <section class="changelog-section">
-    <div class="page-shell">
+    <div class="page-shell changelog-shell">
       <div class="changelog-toolbar reveal">
         <div>
           <p class="kicker">CHANGELOG</p>
           <h2>무엇이 바뀌었나요?</h2>
+          <p class="changelog-sync-status" id="changelog-sync-status">저장된 업데이트와 개발 기록을 불러오는 중입니다.</p>
         </div>
         <div class="changelog-legend" aria-label="업데이트 종류">
           <span><i data-kind="new"></i>새 기능</span>
@@ -27,7 +28,16 @@
           <span><i data-kind="fixed"></i>수정</span>
         </div>
       </div>
-      <div class="changelog-timeline" id="changelog-timeline" aria-live="polite"></div>
+      <div class="changelog-layout">
+        <aside class="changelog-index" aria-label="날짜별 업데이트 목차">
+          <div class="changelog-index-inner">
+            <a class="changelog-index-home" href="index.html">← 홈으로</a>
+            <p>날짜별 목차</p>
+            <nav id="changelog-index-list" aria-label="업데이트 날짜"></nav>
+          </div>
+        </aside>
+        <div class="changelog-timeline" id="changelog-timeline" aria-live="polite"></div>
+      </div>
     </div>
   </section>
 </main>

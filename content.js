@@ -158,9 +158,43 @@ window.CHUNBONG_CONTENT = {
   link.setAttribute('aria-label', '업데이트 일지');
   link.title = '업데이트 일지';
   if (document.body.dataset.page === 'changelog') link.setAttribute('aria-current', 'page');
-  link.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"></path><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.5-2-3.4-2.4 1a8 8 0 0 0-1.7-1L15 3.5h-4L10.7 6A8 8 0 0 0 9 7L6.6 6.1l-2 3.4 2 1.5a7.6 7.6 0 0 0 0 2l-2 1.5 2 3.4L9 17a8 8 0 0 0 1.7 1l.3 2.5h4l.3-2.5a8 8 0 0 0 1.7-1l2.4.9 2-3.4-2-1.5Z"></path></svg><span>업데이트 일지</span>';
+  link.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"></path><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.5-2-3.4-2.4 1a8 8 0 0 0-1.7-1L15 3.5h-4L10.7 6A8 8 0 0 0 9 7L6.6 6.1l-2 3.4 2 1.5a7.6 7.6 0 0 0 0 2l-2 1.5 2 3.4L9 17a8 8 0 0 0 1.7 1l.3 2.5h4l.3-2.5a8 8 0 0 0 1.7-1l2.4.9 2-3.4-2-1.5Z"></path></svg><span>업데이트 일지</span><i class="changelog-unread-dot" hidden aria-hidden="true"></i>';
   if (themeToggle) themeToggle.insertAdjacentElement('afterend', link);
   else header.insertBefore(link, navToggle || null);
+
+  const CHANGELOG_SEEN_KEY = 'chunbong-changelog-seen-v2';
+  const unreadDot = link.querySelector('.changelog-unread-dot');
+  const setUnread = unread => {
+    if (unreadDot) unreadDot.hidden = !unread;
+    link.classList.toggle('has-unread', Boolean(unread));
+    link.setAttribute('aria-label', unread ? '업데이트 일지 · 새 업데이트 있음' : '업데이트 일지');
+    link.title = unread ? '업데이트 일지 · 새 업데이트 있음' : '업데이트 일지';
+  };
+  const markSeen = key => {
+    if (!key) return;
+    try { localStorage.setItem(CHANGELOG_SEEN_KEY, String(key)); } catch (_) {}
+    setUnread(false);
+  };
+
+  document.addEventListener('chunbong:changelog-ready', event => {
+    markSeen(event.detail?.latestKey || '');
+  });
+
+  (async () => {
+    try {
+      const response = await fetch('/api/content?type=changelog-history&summary=1', { headers:{ accept:'application/json' } });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      const payload = await response.json();
+      const latestKey = payload.latest?.sha || payload.latest?.shortSha || '';
+      if (!latestKey) return setUnread(false);
+      if (document.body.dataset.page === 'changelog') return markSeen(latestKey);
+      let seen = '';
+      try { seen = localStorage.getItem(CHANGELOG_SEEN_KEY) || ''; } catch (_) {}
+      setUnread(seen !== latestKey);
+    } catch (_) {
+      setUnread(false);
+    }
+  })();
 })();
 
 

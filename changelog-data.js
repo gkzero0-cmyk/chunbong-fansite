@@ -1,5 +1,16 @@
 window.CHUNBONG_CHANGELOG = [
   {
+    date: '2026-09-19',
+    items: [
+      { type: 'new', title: '미니게임 1:1 멀티플레이 베타', description: '춘트리스, 춘박게임, 춘과게임에 방 코드 기반 2인 멀티플레이를 추가했습니다.' },
+      { type: 'new', title: '춘트리스 멀티 3모드 지원', description: '방장이 클래식, 40줄 레이스, 하드 중 하나를 선택하면 참가자에게 같은 모드와 같은 블록 순서가 적용됩니다.' },
+      { type: 'improved', title: '춘박·춘과 공정한 점수 대결', description: '두 플레이어가 같은 랜덤 시드에서 시작하고 120초 종료 후 최종 점수로 승패를 판정하도록 구성했습니다.' },
+      { type: 'improved', title: '춘과게임 화면 색상 개선', description: '전체 화면은 다크 테마로 유지하고 퍼즐 보드만 눈부심이 적은 오프화이트로 조정했으며 숫자는 #F2421B로 변경했습니다.' },
+      { type: 'fixed', title: '미니게임 대표 이미지 로딩 보강', description: '미니게임 페이지 오른쪽 대표 이미지를 안정적인 루트 경로로 옮기고 WebP 실패 시 SVG로 자동 전환하도록 보강했습니다.' },
+      { type: 'new', title: '업데이트 일지 전체 기록·날짜 목차', description: '팬사이트 첫날부터 실제 개발 기록을 자동으로 불러오고, 최신 날짜를 위에 정렬하며 날짜별 목차와 새 업데이트 표시를 추가했습니다.' }
+    ]
+  },
+  {
     date: '2026-09-18',
     items: [
       { type: 'new', title: '업데이트 일지 추가', description: '팬사이트에 추가·변경된 기능을 날짜별로 확인할 수 있는 업데이트 일지 페이지를 추가했습니다.' },
@@ -43,6 +54,12 @@ window.CHUNBONG_CHANGELOG = [
     date: '2026-09-02',
     items: [
       { type: 'improved', title: '방송 일정 자동 갱신 개선', description: 'Notion 일정 데이터를 최신 상태로 다시 불러오도록 방송 일정 동기화 방식을 개선했습니다.' }
+    ]
+  },
+  {
+    date: '2026-08-30',
+    items: [
+      { type: 'new', title: '춘봉 팬사이트 프로젝트 시작', description: '춘봉 팬사이트 저장소를 만들고 팬 허브의 첫 구조를 시작했습니다.' }
     ]
   }
 ];

@@ -42,6 +42,7 @@ jobs:
           node --check api/content.js
           node --check lib/activity-feed.js
           node --check lib/activity.js
+          node --check lib/changelog-history-api.js
           node --check api/fanart.js
           node --check activity-center.js
           node --check page.js

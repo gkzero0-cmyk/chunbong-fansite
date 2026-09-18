@@ -1,0 +1,104 @@
+name: Changelog browser smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'changelog.html'
+      - 'changelog.css'
+      - 'changelog.js'
+      - 'changelog-data.js'
+      - 'content.js'
+      - 'theme.css'
+      - 'lib/changelog-history-api.js'
+      - 'api/content.js'
+      - '.github/workflows/changelog-browser-smoke.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'changelog.html'
+      - 'changelog.css'
+      - 'changelog.js'
+      - 'changelog-data.js'
+      - 'content.js'
+      - 'theme.css'
+      - 'lib/changelog-history-api.js'
+      - 'api/content.js'
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local site
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/changelog-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4173/changelog.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/changelog-http.log
+          exit 1
+      - name: Verify index ordering and unread gear
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import assert from 'node:assert/strict';
+          import { chromium } from 'playwright';
+
+          const browser=await chromium.launch({headless:true});
+          const context=await browser.newContext({viewport:{width:1280,height:800}});
+          const page=await context.newPage();
+          const latestSha='1234567890abcdef';
+          const archive={
+            siteStartedAt:'2026-08-30',
+            latest:{sha:latestSha,shortSha:'1234567',date:'2026-09-20',title:'자동 최신 업데이트',type:'new'},
+            groups:[
+              {date:'2026-09-20',items:[{sha:latestSha,shortSha:'1234567',date:'2026-09-20',title:'자동 최신 업데이트',type:'new',url:'#'}]},
+              {date:'2026-08-30',items:[{sha:'initial000',shortSha:'initial',date:'2026-08-30',title:'춘봉 팬사이트 프로젝트 시작',type:'new',url:'#'}]}
+            ]
+          };
+
+          await page.route('**/api/content?type=changelog-history**',async route=>{
+            const url=new URL(route.request().url());
+            const body=url.searchParams.get('summary')==='1'
+              ? {siteStartedAt:'2026-08-30',latest:archive.latest}
+              : archive;
+            await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(body)});
+          });
+
+          await page.goto(process.env.BASE_URL+'/index.html?_changelog='+Date.now(),{waitUntil:'domcontentloaded'});
+          await page.waitForFunction(()=>document.querySelector('.changelog-button'));
+          await page.waitForFunction(()=>document.querySelector('.changelog-unread-dot')?.hidden===false);
+          assert.match(await page.locator('.changelog-button').getAttribute('aria-label'),/새 업데이트 있음/);
+
+          await page.goto(process.env.BASE_URL+'/changelog.html?_changelog='+Date.now(),{waitUntil:'domcontentloaded'});
+          await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-20');
+          assert.equal(await page.locator('.changelog-day').first().getAttribute('data-changelog-date'),'2026-09-20');
+          assert.equal(await page.locator('.changelog-day').last().getAttribute('data-changelog-date'),'2026-08-30');
+          assert.ok(await page.locator('#changelog-index-list a[data-changelog-index-date="2026-09-20"]').isVisible());
+          assert.ok(await page.locator('#changelog-index-list a[data-changelog-index-date="2026-08-30"]').isVisible());
+          assert.equal(await page.evaluate(()=>localStorage.getItem('chunbong-changelog-seen-v2')),latestSha);
+
+          await page.goto(process.env.BASE_URL+'/index.html?_changelog_seen='+Date.now(),{waitUntil:'domcontentloaded'});
+          await page.waitForFunction(()=>document.querySelector('.changelog-button'));
+          await page.waitForTimeout(150);
+          assert.equal(await page.locator('.changelog-unread-dot').isHidden(),true,'red dot must clear after changelog was viewed');
+
+          await page.setViewportSize({width:390,height:844});
+          await page.goto(process.env.BASE_URL+'/changelog.html?_mobile='+Date.now(),{waitUntil:'domcontentloaded'});
+          await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-20');
+          assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),true,'mobile changelog must not overflow horizontally');
+          assert.ok(await page.locator('#changelog-index-list').isVisible(),'mobile date index missing');
+
+          await browser.close();
+          EOF_NODE
