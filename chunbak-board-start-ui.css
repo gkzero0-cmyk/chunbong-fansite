@@ -8,7 +8,7 @@
 .chunbak-page .content-section>.page-shell{width:min(98%,1180px)}
 .chunbak-game{--chunbak-toolbar-height:58px;--chunbak-board-gap:14px;gap:8px}
 .chunbak-play-view{gap:var(--chunbak-board-gap)}
-.chunbak-play-top{height:var(--chunbak-toolbar-height);min-height:var(--chunbak-toolbar-height);margin-inline:auto;padding:5px 8px;border:1px solid rgba(255,107,24,.16);border-radius:12px;background:linear-gradient(180deg,#111,#0b0b0b)}
+.chunbak-play-top{position:relative;z-index:12;height:var(--chunbak-toolbar-height);min-height:var(--chunbak-toolbar-height);margin-inline:auto;padding:5px 8px;border:1px solid rgba(255,107,24,.16);border-radius:12px;background:linear-gradient(180deg,#111,#0b0b0b)}
 .chunbak-play-status .eyebrow{color:#ff8a36}
 .chunbak-layout,.chunbak-layout-immersive{grid-template-columns:minmax(190px,260px) minmax(0,420px) minmax(190px,260px);gap:12px}
 .chunbak-stage{width:min(420px,44svh,calc(100vw - 28px));max-width:100%;height:auto;aspect-ratio:420/680;border:2px solid rgba(255,107,24,.48);border-radius:18px;background:radial-gradient(circle at 50% 0%,rgba(255,107,24,.12),transparent 28%),linear-gradient(180deg,#160e0a,#090706);box-shadow:0 0 0 1px rgba(255,139,67,.06),0 22px 55px rgba(0,0,0,.38)}
@@ -67,3 +67,5 @@
 .chunbak-return-link{display:flex;align-items:center;justify-content:center;text-decoration:none}
 .chunbak-pause-actions .chunbak-return-link{grid-column:1/-1;width:100%;min-height:48px}
 .chunbak-terminal-actions .chunbak-return-link{flex-basis:100%;width:100%}
+
+.chunbak-utility-cluster{position:relative;z-index:13}
