@@ -12,6 +12,7 @@ assert.match(ctHtml,/id="chuntris-countdown"/,'Chuntris countdown layer missing'
 assert.match(ctHtml,/id="chuntris-countdown-value"/,'Chuntris countdown value missing');
 assert.match(ctCss,/aspect-ratio:1\/2/,'Chuntris start/board must retain 10x20 ratio');
 assert.match(ctCss,/--chuntris-board-width:min\(340px,36svh,calc\(100vw - 28px\)\)/,'Chuntris board must be viewport-height-aware');
+assert.match(ctCss,/overflow-anchor:none/,'Chuntris game shell must disable browser scroll anchoring during start/play swap');
 assert.match(ctCss,/--chuntris-toolbar-height:56px/,'Chuntris must reserve the exact play toolbar height before the start card');
 assert.match(ctCss,/padding:calc\(var\(--chuntris-toolbar-height\) \+ var\(--chuntris-board-gap\)\) 0 0/,'Chuntris start card must align vertically with the live board');
 assert.equal((ctHtml.match(/chuntris-return-link/g)||[]).length,2,'Chuntris must expose minigames return links in pause and game-over UI');
@@ -25,6 +26,7 @@ assert.match(ctJs,/getUiState:\(\)=>uiState/,'Chuntris countdown state must be i
 
 assert.match(cbHtml,/chunbak-board-start-ui\.css/,'Chunbak board UI override must load last');
 assert.match(cbCss,/width:min\(420px,44svh,calc\(100vw - 28px\)\)/,'Chunbak start/stage must be viewport-height-aware');
+assert.match(cbCss,/overflow-anchor:none/,'Chunbak game shell must disable browser scroll anchoring during start/play swap');
 assert.match(cbCss,/--chunbak-toolbar-height:58px/,'Chunbak must reserve the exact play toolbar height before the start card');
 assert.match(cbCss,/padding-top:calc\(var\(--chunbak-toolbar-height\) \+ var\(--chunbak-board-gap\)\)/,'Chunbak start card must align vertically with the live stage');
 assert.equal((cbHtml.match(/chunbak-return-link/g)||[]).length,2,'Chunbak must expose minigames return links in pause and game-over UI');
