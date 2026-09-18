@@ -8,7 +8,12 @@ on:
       - 'chuntris.js'
       - 'chuntris-board-start-ui.css'
       - 'chunbak.html'
+      - 'chunbak.js'
       - 'chunbak.css'
+      - 'chungwagame.html'
+      - 'chungwagame.js'
+      - 'minigame-multiplayer.js'
+      - 'score-race-multiplayer.js'
       - 'chunbak-board-start-ui.css'
       - '.github/workflows/chuntris-chunbak-board-ui-smoke.yml'
 
@@ -103,6 +108,64 @@ jobs:
               assert.equal(await page.locator('#chuntris-game').getAttribute('data-mode'),mode,'engine mode mismatch');
               await page.close();
             }
+          }finally{
+            await browser.close();
+          }
+          EOF_NODE
+      - name: Verify seeded Chunbak and Chungwagame starts
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import { chromium } from 'playwright';
+          import assert from 'node:assert/strict';
+
+          const browser=await chromium.launch({headless:true});
+          try{
+            const seed=246813579;
+
+            const bakA=await browser.newPage({viewport:{width:900,height:800}});
+            const bakB=await browser.newPage({viewport:{width:900,height:800}});
+            await Promise.all([
+              bakA.goto(process.env.BASE_URL+'/chunbak.html?_seed=a',{waitUntil:'domcontentloaded'}),
+              bakB.goto(process.env.BASE_URL+'/chunbak.html?_seed=b',{waitUntil:'domcontentloaded'})
+            ]);
+            await Promise.all([
+              bakA.waitForFunction(()=>Boolean(window.ChunbakGame&&window.MinigameMultiplayer)),
+              bakB.waitForFunction(()=>Boolean(window.ChunbakGame&&window.MinigameMultiplayer))
+            ]);
+            const bakStateA=await bakA.evaluate(seed=>{
+              window.ChunbakGame.resetGame({autoStart:false,random:window.MinigameMultiplayer.seededRandom(seed)});
+              return window.ChunbakGame.getDebugState();
+            },seed);
+            const bakStateB=await bakB.evaluate(seed=>{
+              window.ChunbakGame.resetGame({autoStart:false,random:window.MinigameMultiplayer.seededRandom(seed)});
+              return window.ChunbakGame.getDebugState();
+            },seed);
+            assert.equal(bakStateA.currentStage,bakStateB.currentStage,'Chunbak seeded current stage mismatch');
+            assert.equal(bakStateA.nextStage,bakStateB.nextStage,'Chunbak seeded next stage mismatch');
+            await bakA.close();await bakB.close();
+
+            const gwaA=await browser.newPage({viewport:{width:1100,height:800}});
+            const gwaB=await browser.newPage({viewport:{width:1100,height:800}});
+            await Promise.all([
+              gwaA.goto(process.env.BASE_URL+'/chungwagame.html?_seed=a',{waitUntil:'domcontentloaded'}),
+              gwaB.goto(process.env.BASE_URL+'/chungwagame.html?_seed=b',{waitUntil:'domcontentloaded'})
+            ]);
+            await Promise.all([
+              gwaA.waitForFunction(()=>Boolean(window.ChungwagameApp&&window.MinigameMultiplayer)),
+              gwaB.waitForFunction(()=>Boolean(window.ChungwagameApp&&window.MinigameMultiplayer))
+            ]);
+            const valuesA=await gwaA.evaluate(seed=>{
+              window.ChungwagameApp.startGame({random:window.MinigameMultiplayer.seededRandom(seed)});
+              return [...document.querySelectorAll('.cg-fruit-shape')].slice(0,60).map(node=>node.dataset.value);
+            },seed);
+            const valuesB=await gwaB.evaluate(seed=>{
+              window.ChungwagameApp.startGame({random:window.MinigameMultiplayer.seededRandom(seed)});
+              return [...document.querySelectorAll('.cg-fruit-shape')].slice(0,60).map(node=>node.dataset.value);
+            },seed);
+            assert.deepEqual(valuesA,valuesB,'Chungwagame seeded board mismatch');
+            await gwaA.close();await gwaB.close();
           }finally{
             await browser.close();
           }
