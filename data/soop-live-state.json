@@ -6495,11 +6495,22 @@
         "categoryName": "버추얼",
         "followerCount": 30303,
         "fanclubCount": 7670
+      },
+      {
+        "capturedAt": "2026-09-18T11:59:33.184Z",
+        "live": true,
+        "startedAt": "2026-09-18T10:08:20.000Z",
+        "title": "노마이크 작업방송",
+        "viewerCount": 32,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30303,
+        "fanclubCount": 7670
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-18T11:52:46.320Z",
+    "capturedAt": "2026-09-18T11:59:33.184Z",
     "followerCount": 30303,
     "fanclubCount": 7670
   }
