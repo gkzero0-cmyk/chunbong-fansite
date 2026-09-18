@@ -9,6 +9,10 @@ on:
       - 'page.js'
       - 'activity-center.js'
       - 'activity-center.css'
+      - 'changelog-data.js'
+      - 'changelog.js'
+      - 'changelog.css'
+      - 'changelog.html'
       - 'lib/activity.js'
       - 'api/content.js'
       - 'api/fanart.js'
@@ -74,7 +78,8 @@ jobs:
               assert.equal(await page.locator('.header-live[href*="sooplive.com"]').count(),0,'SOOP header shortcut still visible');
               assert.ok(await page.locator('.theme-toggle').isVisible(),'theme toggle missing');
               assert.ok(await page.locator('.activity-bell').isVisible(),'activity bell missing');
-              assert.equal(await page.locator('.theme-toggle').evaluate(el=>el.nextElementSibling?.classList.contains('activity-center')),true,'bell is not immediately right of theme toggle');
+              const headerOrder=await page.locator('.theme-toggle').evaluate(el=>({changelog:el.nextElementSibling?.classList.contains('changelog-button'),activity:el.nextElementSibling?.nextElementSibling?.classList.contains('activity-center')}));
+              assert.deepEqual(headerOrder,{changelog:true,activity:true},'header controls must be theme → changelog → activity bell');
 
               const response=await page.evaluate(async()=>{
                 const r=await fetch('/api/content?type=activity',{headers:{accept:'application/json'}});
@@ -90,6 +95,11 @@ jobs:
               assert.ok(await page.locator('.activity-item').count()>0,'activity panel has no items');
               const seen=await page.evaluate(()=>JSON.parse(localStorage.getItem('chunbong-activity-seen-v1')||'{}'));
               assert.ok(Array.isArray(seen.ids)&&seen.ids.length>0,'seen activity IDs were not persisted');
+
+              await page.goto(`${process.env.BASE_URL}/changelog.html?_smoke=${Date.now()}`,{waitUntil:'networkidle'});
+              await page.waitForSelector('.changelog-day');
+              assert.equal(await page.locator('.changelog-day').first().getAttribute('data-changelog-date'),'2026-09-18','production changelog latest date is not first');
+              assert.equal(await page.locator('.changelog-button').getAttribute('aria-current'),'page','production changelog button is not active');
 
               if(viewport.width<=390){
                 const panel=await page.locator('.activity-panel').boundingBox();
