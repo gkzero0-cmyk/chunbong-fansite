@@ -77,7 +77,7 @@
     if(els.modeDescription)els.modeDescription.textContent=modeMeta(mode).description;
   }
   function playerMetric(player,mode){if(!player)return '-';return mode==='sprint40'?`${player.lines}/40 · ${Math.round(player.timeMs/1000)}s`:`${Number(player.score)||0}점 · ${Number(player.lines)||0}줄`;}
-  function playerState(player,room){if(!player)return '';if(player.finished)return room.mode==='sprint40'&&player.status==='completed'?'40줄 완료':'GAME OVER';if(room.state==='playing')return playerMetric(player,room.mode);return player.ready?'READY':'WAIT';}
+  function playerState(player,room){if(!player)return '';if(room.state==='finished'&&player.id===room.winnerId)return room.mode==='sprint40'?'40줄 완료':'SURVIVED';if(player.finished)return room.mode==='sprint40'&&player.status==='completed'?'40줄 완료':'GAME OVER';if(room.state==='playing')return playerMetric(player,room.mode);return player.ready?'READY':'WAIT';}
   function message(text,error=false){els.status.textContent=text||'';els.status.classList.toggle('is-error',Boolean(error));}
   function normalizeName(){const value=els.nickname.value.trim();if(value.length<2||value.length>16)throw new Error('닉네임은 2~16자로 입력해 주세요.');localStorage.setItem('chuntris.multiplayer.nickname',value);return value;}
   function saveSession(){if(client.code&&client.token)localStorage.setItem(SESSION_KEY,JSON.stringify({code:client.code,token:client.token}));else localStorage.removeItem(SESSION_KEY);}
