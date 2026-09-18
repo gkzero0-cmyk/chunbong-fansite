@@ -502,7 +502,7 @@
       } else if (kind === 'phantom') {
         event.until = nowMs + 1350;
       } else if (kind === 'garbage') {
-        const holeCount = this.state.level >= 7 ? 1 : 2;
+        const holeCount = slot >= 6 ? 1 : 2;
         const holes = deterministicHoles(this.gimmickSeed, slot, holeCount);
         const injected = injectGarbageRow(this.state.board, holes);
         this.state.board = injected.board;
