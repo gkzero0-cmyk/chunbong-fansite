@@ -86,7 +86,7 @@ jobs:
             await a.locator('[data-chuntris-multiplayer]').click();
             await a.locator('[data-mp-nickname]').fill('멀티춘봉A');
             await a.locator('[data-mp-create]').click();
-            await a.waitForFunction(()=>document.querySelector('[data-mp-room-code]')?.textContent?.trim().length===6);
+            await a.waitForFunction(()=>/^[A-Z2-9]{6}$/.test(document.querySelector('[data-mp-room-code]')?.textContent?.trim()||''),{timeout:7000});
             const code=(await a.locator('[data-mp-room-code]').textContent()).trim();
             assert.match(code,/^[A-Z2-9]{6}$/);
 
