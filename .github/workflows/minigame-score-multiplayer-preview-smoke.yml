@@ -79,14 +79,21 @@ jobs:
             return page.evaluate(async ({storageKey,score,secondary})=>{
               const session=JSON.parse(localStorage.getItem(storageKey)||'null');
               if(!session?.code||!session?.token)throw new Error('multiplayer session missing');
-              const response=await fetch('/api/content?type=minigame-multiplayer',{
-                method:'POST',
-                headers:{'content-type':'application/json'},
-                body:JSON.stringify({action:'progress',code:session.code,token:session.token,score,lines:secondary,timeMs:120000,status:'completed'})
-              });
-              const payload=await response.json();
-              if(!response.ok)throw new Error(payload.error||'finish failed');
-              return payload;
+              for(let attempt=0;attempt<6;attempt+=1){
+                const response=await fetch('/api/content?type=minigame-multiplayer',{
+                  method:'POST',
+                  headers:{'content-type':'application/json'},
+                  body:JSON.stringify({action:'progress',code:session.code,token:session.token,score,lines:secondary,timeMs:120000,status:'completed'})
+                });
+                const payload=await response.json();
+                if(response.ok)return payload;
+                if(response.status===409&&payload.error==='room_busy'){
+                  await new Promise(resolve=>setTimeout(resolve,80*(attempt+1)));
+                  continue;
+                }
+                throw new Error(payload.error||'finish failed');
+              }
+              throw new Error('room_busy_after_retries');
             },{storageKey,score,secondary});
           }
 
