@@ -38,6 +38,11 @@
   .chunbak-play-top{width:min(100%,560px)}
   .chunbak-stage{width:min(420px,44svh,calc(100vw - 28px));max-width:100%}
   .chunbak-layout,.chunbak-layout-immersive{gap:10px}
+  .chunbak-center{order:1}
+  .chunbak-stats{order:2}
+  .chunbak-next-card{order:3}
+  .chunbak-ranking{order:4}
+  .chunbak-evolution{order:5}
 }
 @media(max-width:520px){
   .chunbak-page .page-shell{padding-inline:8px}
