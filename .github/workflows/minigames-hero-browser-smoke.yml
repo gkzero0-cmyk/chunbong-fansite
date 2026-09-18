@@ -6,7 +6,7 @@ on:
     paths:
       - 'minigames.html'
       - 'minigames.css'
-      - 'assets/minigames/minigames-hero.webp'
+      - 'assets/minigames-hero.webp'
       - 'tests/minigames-hero-regression.mjs'
       - '.github/workflows/minigames-hero-browser-smoke.yml'
 

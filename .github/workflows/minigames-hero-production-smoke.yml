@@ -7,7 +7,7 @@ on:
     paths:
       - 'minigames.html'
       - 'minigames.css'
-      - 'assets/minigames/minigames-hero.webp'
+      - 'assets/minigames-hero.webp'
       - '.github/workflows/minigames-hero-production-smoke.yml'
 
 jobs:
@@ -29,9 +29,9 @@ jobs:
             stamp=$(date +%s)
             if curl -fsS -H 'cache-control: no-cache' "$BASE_URL/minigames.html?_smoke=$stamp" -o /tmp/minigames.html && \
                curl -fsS -H 'cache-control: no-cache' "$BASE_URL/minigames.css?_smoke=$stamp" -o /tmp/minigames.css && \
-               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/assets/minigames/minigames-hero.webp?_smoke=$stamp" -o /tmp/minigames-hero.webp && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/assets/minigames-hero.webp?_smoke=$stamp" -o /tmp/minigames-hero.webp && \
                grep -q 'minigames-hero-layout' /tmp/minigames.html && \
-               grep -q 'assets/minigames/minigames-hero.webp' /tmp/minigames.html && \
+               grep -q 'assets/minigames-hero.webp' /tmp/minigames.html && \
                grep -q 'minigames-hero-art' /tmp/minigames.css && \
                test $(wc -c </tmp/minigames-hero.webp) -gt 12000; then
               echo 'Current minigames hero production is ready.'
