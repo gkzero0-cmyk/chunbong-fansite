@@ -58,7 +58,7 @@
         return app&&typeof app.startGame==='function'&&typeof app.getSnapshot==='function';
       },
       start(seed){
-        root.ChuncortileApp.startGame({seed,random:root.MinigameMultiplayer.seededRandom(seed)});
+        root.ChuncortileApp.startGame({seed,random:root.MinigameMultiplayer.seededRandom(seed),multiplayer:true});
       },
       snapshot(){
         const state=root.ChuncortileApp.getSnapshot();
