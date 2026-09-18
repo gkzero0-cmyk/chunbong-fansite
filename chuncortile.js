@@ -155,7 +155,12 @@
     const externalRandom=typeof options?.random==='function'?options.random:null;
     seed=Number.isFinite(Number(options?.seed))?(Number(options.seed)>>>0):((Date.now()^(Math.random()*0xffffffff))>>>0);
     board=Core.createBoard({random:externalRandom||Core.seededRandom(seed)});resetRoundState();
-    renderBoard();updateHud();setStatus('countdown');e.startOverlay.classList.add('hidden');setMessage('준비!');void runCountdown();
+    renderBoard();updateHud();e.startOverlay.classList.add('hidden');
+    if(options?.multiplayer){
+      e.countdown.classList.add('hidden');running=true;paused=false;remainingMs=Core.GAME_MS;endAt=performance.now()+remainingMs;
+      setStatus('playing');setMessage('멀티플레이 시작! 같은 춘봉 타일을 찾아보세요.');sound.start();tick();return;
+    }
+    setStatus('countdown');setMessage('준비!');void runCountdown();
   }
 
   async function runCountdown(){
