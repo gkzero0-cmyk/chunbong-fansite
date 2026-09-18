@@ -29,7 +29,7 @@
       get room(){return room;},
       restore(nextCode,nextToken){code=String(nextCode||'').toUpperCase();token=String(nextToken||'');},
       clear(){code='';token='';room=null;},
-      async create(nickname){const data=await post({action:'create',game,nickname});code=data.room.code;token=data.token;room=data.room;return data;},
+      async create(nickname,mode){const data=await post({action:'create',game,nickname,...(mode?{mode}:{})});code=data.room.code;token=data.token;room=data.room;return data;},
       async join(nextCode,nickname){const data=await post({action:'join',code:String(nextCode||'').toUpperCase(),nickname});code=data.room.code;token=data.token;room=data.room;return data;},
       async refresh(){const data=await get(code,token);room=data.room;return data;},
       async ready(value=true){const data=await post({action:'ready',code,token,ready:value});room=data.room;return data;},
