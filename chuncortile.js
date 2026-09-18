@@ -151,9 +151,10 @@
     e.pauseOverlay.classList.add('hidden');e.over.classList.add('hidden');e.rankingModal.hidden=true;e.comboPop.classList.remove('show','hot');e.fx.replaceChildren();
   }
 
-  function newBoard(){
-    seed=(Date.now()^(Math.random()*0xffffffff))>>>0;
-    board=Core.createBoard({random:Core.seededRandom(seed)});resetRoundState();
+  function newBoard(options={}){
+    const externalRandom=typeof options?.random==='function'?options.random:null;
+    seed=Number.isFinite(Number(options?.seed))?(Number(options.seed)>>>0):((Date.now()^(Math.random()*0xffffffff))>>>0);
+    board=Core.createBoard({random:externalRandom||Core.seededRandom(seed)});resetRoundState();
     renderBoard();updateHud();setStatus('countdown');e.startOverlay.classList.add('hidden');setMessage('준비!');void runCountdown();
   }
 
