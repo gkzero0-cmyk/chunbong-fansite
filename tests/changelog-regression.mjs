@@ -38,6 +38,9 @@ assert.match(content,/link\.href = 'changelog\.html'/);
 assert.match(content,/업데이트 일지/);
 assert.match(activity,/changelogButton/,'activity bell must position itself after changelog button');
 assert.match(theme,/\.changelog-button\{/);
-assert.match(theme,/\.changelog-button span\{display:none\}/,'mobile changelog control should collapse to icon only');
+assert.match(theme,/\.changelog-button\{[^}]*width:42px/,'changelog control should be icon-sized on desktop too');
+assert.match(theme,/\.changelog-button span\{display:none\}/,'changelog label should always be hidden');
+assert.match(theme,/@media\(min-width:761px\) and \(max-width:1500px\)/,'desktop header compact breakpoint missing');
+assert.match(theme,/\.site-header \.main-nav a\{[^}]*white-space:nowrap/,'desktop navigation labels must stay on one line');
 
 console.log('changelog regression passed');

@@ -9,10 +9,14 @@ const postgame=fs.readFileSync(new URL('../chungwagame-postgame-ranking.js',impo
 assert.match(html,/assets\/chungwagame\/mascot-header\.webp/,'header mascot image missing');
 assert.match(html,/assets\/chungwagame\/mascot-ten\.webp/,'instruction 10 mascot image missing');
 assert.match(css,/assets\/chungwagame\/numbers\.webp/,'number sprite missing');
+assert.match(css,/saturate\(\.82\)/,'eye-comfort sprite saturation guard missing');
+assert.match(css,/#f7f7f2/,'eye-comfort page background missing');
 assert.match(css,/grid-template-columns:150px minmax\(0,760px\) 104px/,'compact desktop layout missing');
 assert.match(css,/max-height:calc\(100svh - 205px\)/,'short viewport board guard missing');
 assert.match(html,/id="cg-time-fill"/,'time gauge missing');
 assert.match(html,/id="cg-pause-restart"/,'pause restart action missing');
+assert.match(html,/id="cg-pause-overlay"[\s\S]*?href="minigames\.html"[\s\S]*?미니게임으로 돌아가기/,'pause minigames return action missing');
+assert.match(html,/id="cg-over-overlay"[\s\S]*?href="minigames\.html"[\s\S]*?미니게임으로 돌아가기/,'gameover minigames return action missing');
 assert.match(html,/id="cg-ranking-register"/,'postgame ranking register missing');
 assert.match(html,/id="cg-ranking-modal"/,'ranking modal missing');
 assert.match(js,/COMBO_WINDOW=2400/,'combo window missing');

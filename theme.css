@@ -40,10 +40,19 @@
 @media(max-width:760px){.site-header{gap:8px}.theme-toggle{order:2}.header-live{order:3}.nav-toggle{order:4}}
 
 
-.changelog-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:40px;padding:0 12px;border:1px solid #343434;border-radius:999px;background:#121212;color:#f7f3ef;font-size:11px;font-weight:900;white-space:nowrap;transition:.2s}
+.changelog-button{display:inline-flex;align-items:center;justify-content:center;width:42px;height:40px;padding:0;border:1px solid #343434;border-radius:12px;background:#121212;color:#f7f3ef;font-size:11px;font-weight:900;white-space:nowrap;transition:.2s}.changelog-button span{display:none}
 .changelog-button:hover,.changelog-button[aria-current="page"]{border-color:#ff782f88;background:#17110e;transform:translateY(-1px)}
 .changelog-button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
 [data-theme="light"] .changelog-button{background:#fff;border-color:#d8cec5;color:#34271e;box-shadow:0 5px 18px #6c4a2a0d}
 [data-theme="light"] .changelog-button:hover,[data-theme="light"] .changelog-button[aria-current="page"]{background:#fff6ee;border-color:#ff762f70}
-@media(max-width:1050px){.changelog-button{width:42px;padding:0;border-radius:12px}.changelog-button span{display:none}}
+@media(max-width:1050px){.changelog-button{width:42px;padding:0;border-radius:12px}}
 @media(max-width:760px){.changelog-button{order:3}.activity-center{order:4}.header-live{order:5}.nav-toggle{order:6}}
+
+@media(min-width:761px) and (max-width:1500px){
+  .site-header{gap:10px;padding-left:12px;padding-right:12px}
+  .site-header .brand{margin-right:8px;flex:0 0 auto}
+  .site-header .main-nav{gap:1px;flex:1 1 auto;min-width:0;justify-content:center;flex-wrap:nowrap}
+  .site-header .main-nav a{flex:0 0 auto;padding:8px 6px;font-size:11px;white-space:nowrap}
+  .site-header .theme-toggle{min-width:78px;padding:0 10px;flex:0 0 auto}
+  .site-header .changelog-button,.site-header .activity-center{flex:0 0 auto}
+}
