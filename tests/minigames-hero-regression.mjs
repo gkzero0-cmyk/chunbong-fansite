@@ -3,7 +3,7 @@ import fs from 'node:fs';
 
 const html=fs.readFileSync(new URL('../minigames.html',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../minigames.css',import.meta.url),'utf8');
-const asset=fs.readFileSync(new URL('../assets/minigames-hero.svg',import.meta.url),'utf8');
+const assetPath=new URL('../assets/minigames/minigames-hero.webp',import.meta.url);\nconst assetStat=fs.statSync(assetPath);
 
 assert.match(html,/class="page-shell minigames-hero-layout reveal"/,'minigames hero must use a two-column layout shell');
 assert.match(html,/class="minigames-hero-copy"/);

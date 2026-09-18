@@ -47,9 +47,11 @@ jobs:
               curl -fsS -H 'cache-control: no-cache' "$BASE/chuntris-vcompany-ui.css?_smoke=$stamp" -o /tmp/chuntris-vcompany-ui.css && \
               curl -fsS -H 'cache-control: no-cache' "$BASE/chuntris-board-start-ui.css?_smoke=$stamp" -o /tmp/chuntris-board-start-ui.css && \
               curl -fsS -H 'cache-control: no-cache' "$BASE/api/content?type=chuntris-ranking&mode=classic&_smoke=$stamp" -o /tmp/chuntris-ranking.json && \
+              curl -fsS -H 'cache-control: no-cache' "$BASE/api/content?type=chuntris-ranking&mode=hard&_smoke=$stamp" -o /tmp/chuntris-hard-ranking.json && \
               grep -q 'id="chuntris-start-view"' /tmp/chuntris.html && \
               grep -q 'id="chuntris-play-view"' /tmp/chuntris.html && \
               grep -q 'id="chuntris-countdown"' /tmp/chuntris.html && \
+              grep -q 'data-chuntris-mode="hard"' /tmp/chuntris.html && \
               grep -q 'chuntris-return-link' /tmp/chuntris.html && \
               grep -q 'id="chuntris-ranking-register"' /tmp/chuntris.html && \
               grep -q 'id="chuntris-ranking-nickname"' /tmp/chuntris.html && \
@@ -64,7 +66,8 @@ jobs:
               grep -Fq -- '--chuntris-stage-height:min(680px,72svh)!important' /tmp/chuntris-board-start-ui.css && \
               grep -Fq -- '--chuntris-board-width:min(340px,36svh,calc(100vw - 28px))' /tmp/chuntris-board-start-ui.css && \
               grep -Fq 'overflow-anchor:none' /tmp/chuntris-board-start-ui.css && \
-              node -e "const p=require('/tmp/chuntris-ranking.json');if(p.mode!=='classic'||!Array.isArray(p.entries))process.exit(1)"; then
+              node -e "const p=require('/tmp/chuntris-ranking.json');if(p.mode!=='classic'||!Array.isArray(p.entries))process.exit(1)" && \
+              node -e "const p=require('/tmp/chuntris-hard-ranking.json');if(p.mode!=='hard'||!Array.isArray(p.entries))process.exit(1)"; then
               echo 'Current postgame-ranking Chuntris production is ready.'
               exit 0
             fi

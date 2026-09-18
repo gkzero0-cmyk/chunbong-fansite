@@ -13,6 +13,7 @@ for (const token of [
   'id="chuntris-ranking-list"',
   'data-chuntris-ranking-mode="classic"',
   'data-chuntris-ranking-mode="sprint40"',
+  'data-chuntris-ranking-mode="hard"',
   'chuntris-hold-panel',
   'chuntris-next-panel',
   'id="chuntris-ranking-nickname"'

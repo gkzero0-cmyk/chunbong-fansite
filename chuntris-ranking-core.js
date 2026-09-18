@@ -5,7 +5,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const MODES = new Set(['classic', 'sprint40']);
+  const MODES = new Set(['classic', 'sprint40', 'hard']);
   const NICKNAME_RE = /^[A-Za-z0-9가-힣ㄱ-ㅎㅏ-ㅣ _-]+$/u;
   const MAX_SCORE = 100000000;
   const MAX_LINES = 100000;
@@ -54,7 +54,7 @@
 
   function isBetterRecord(mode, candidate, current) {
     if (!current) return true;
-    if (mode === 'classic') {
+    if (mode !== 'sprint40') {
       if (candidate.score !== current.score) return candidate.score > current.score;
       if (candidate.lines !== current.lines) return candidate.lines > current.lines;
     } else {
@@ -66,7 +66,7 @@
 
   function sortRecords(mode, records) {
     return [...records].sort((a, b) => {
-      if (mode === 'classic') {
+      if (mode !== 'sprint40') {
         return (b.score - a.score) || (b.lines - a.lines) || String(a.achievedAt).localeCompare(String(b.achievedAt));
       }
       return (a.timeMs - b.timeMs) || (b.score - a.score) || String(a.achievedAt).localeCompare(String(b.achievedAt));

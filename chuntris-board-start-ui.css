@@ -19,8 +19,8 @@ html,.chuntris-page{overflow-anchor:none}
 .chuntris-start-card>.eyebrow{color:#ff8c3a;font-size:.62rem;letter-spacing:.17em}
 .chuntris-start-card h2{margin:.32em 0 .15em;font-size:clamp(1.45rem,4svh,2rem);line-height:1.02;letter-spacing:-.04em;color:#fff7f0}
 .chuntris-start-card>p{margin:0;color:#9d9188;font-size:.72rem;line-height:1.45}
-.chuntris-mode-cards{display:grid;grid-template-columns:1fr;gap:7px;margin:12px 0 8px}
-.chuntris-mode-cards button{min-height:76px;padding:10px 11px;border-radius:12px;border:1px solid rgba(255,255,255,.11);background:linear-gradient(180deg,#151515,#0d0d0d);box-shadow:none}
+.chuntris-mode-cards{display:grid;grid-template-columns:1fr;gap:6px;margin:9px 0 7px}
+.chuntris-mode-cards button{min-height:64px;padding:8px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.11);background:linear-gradient(180deg,#151515,#0d0d0d);box-shadow:none}
 .chuntris-mode-cards button:hover{transform:none;border-color:rgba(255,134,58,.45)}
 .chuntris-mode-cards button.is-active{border-color:#ff741f;background:linear-gradient(140deg,rgba(255,107,24,.2),#111 65%);box-shadow:inset 3px 0 0 #ff6b18}
 .chuntris-mode-index{margin-bottom:4px!important;color:#ff8a36!important;font-size:.56rem!important;letter-spacing:.12em!important}
@@ -78,3 +78,6 @@ html,.chuntris-page{overflow-anchor:none}
 .chuntris-return-link{display:flex;align-items:center;justify-content:center;text-decoration:none}
 .chuntris-pause-actions .chuntris-return-link{grid-column:1/-1;width:100%;min-height:46px}
 .chuntris-terminal-actions .chuntris-return-link{flex-basis:100%;width:100%}
+
+.chuntris-mode-cards button[data-chuntris-mode="hard"] .chuntris-mode-index{color:#ff6b5f!important}
+.chuntris-mode-cards button[data-chuntris-mode="hard"].is-active{border-color:#ff5448;background:linear-gradient(140deg,rgba(255,64,52,.18),#111 65%);box-shadow:inset 3px 0 0 #ff5448}

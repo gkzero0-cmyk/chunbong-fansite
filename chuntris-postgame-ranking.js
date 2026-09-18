@@ -104,7 +104,7 @@
         method: 'POST',
         headers: { 'content-type':'application/json', accept:'application/json' },
         body: JSON.stringify({
-          mode: gameRoot.dataset.mode === 'sprint40' ? 'sprint40' : 'classic',
+          mode: gameRoot.dataset.mode === 'sprint40' ? 'sprint40' : gameRoot.dataset.mode === 'hard' ? 'hard' : 'classic',
           nickname: nickname.displayName,
           score: state.score,
           lines: state.lines,
@@ -118,7 +118,7 @@
       registerButton.disabled = true;
       registerButton.textContent = '등록 완료 ✓';
       setStatus(`${nickname.displayName} 이름으로 랭킹 등록이 완료됐어요.`, 'success');
-      await App.loadRanking?.(gameRoot.dataset.mode === 'sprint40' ? 'sprint40' : 'classic');
+      await App.loadRanking?.(gameRoot.dataset.mode === 'sprint40' ? 'sprint40' : gameRoot.dataset.mode === 'hard' ? 'hard' : 'classic');
       return true;
     } catch {
       submitButton.disabled = false;

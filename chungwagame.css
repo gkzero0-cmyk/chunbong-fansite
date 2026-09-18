@@ -33,3 +33,5 @@
 .cg-plain{color:#62584f;border-color:rgba(91,78,62,.14)}
 .cg-utility:hover{background:#f3f4ed}
 .cg-burst{background:#cbd58b}.cg-burst:nth-child(3n){background:#d8b87d}.cg-burst:nth-child(3n+1){background:#9fb878}
+
+.chungwagame-game[data-game-status="paused"] .cg-time-fill{transition:none}

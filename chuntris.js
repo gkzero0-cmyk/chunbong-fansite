@@ -9,6 +9,7 @@
   const ARR_MS = 40;
   const CLASSIC_BEST_KEY = 'chuntris.bestScore.classic.v1';
   const SPRINT_BEST_KEY = 'chuntris.bestTime.sprint40.v1';
+  const HARD_BEST_KEY = 'chuntris.bestScore.hard.v1';
   const NICKNAME_KEY = 'chuntris.nickname.v1';
   const RANKING_ENDPOINT = '/api/content?type=chuntris-ranking';
   const REACTION_SPRITE = 'assets/chuntris/reactions.webp';
@@ -92,7 +93,7 @@
     const minutes=Math.floor(safe/60000),seconds=Math.floor((safe%60000)/1000),millis=safe%1000;
     return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}.${String(millis).padStart(3,'0')}`;
   }
-  function currentBest(){return mode==='classic'?numberFromStorage(CLASSIC_BEST_KEY,0):numberFromStorage(SPRINT_BEST_KEY,0);}
+  function currentBest(){if(mode==='sprint40')return numberFromStorage(SPRINT_BEST_KEY,0);return numberFromStorage(mode==='hard'?HARD_BEST_KEY:CLASSIC_BEST_KEY,0);}
   function currentNickname(){
     const raw=els.nickname?.value||'';
     if (!raw.trim()) return null;
@@ -126,7 +127,7 @@
     if(els.rankingStatus)els.rankingStatus.textContent=entries.length?`TOP ${Math.min(entries.length,10)} · 최고 기록 기준`:'아직 등록된 기록이 없어요.';
   }
   async function loadRanking(nextMode=mode){
-    rankingMode=nextMode==='sprint40'?'sprint40':'classic';syncRankingButtons();const requestId=++rankingRequestId;
+    rankingMode=nextMode==='sprint40'?'sprint40':nextMode==='hard'?'hard':'classic';syncRankingButtons();const requestId=++rankingRequestId;
     if(els.rankingStatus)els.rankingStatus.textContent='랭킹 불러오는 중…';
     if(typeof fetch!=='function'){if(els.rankingStatus)els.rankingStatus.textContent='랭킹 연결을 사용할 수 없어요. 게임은 계속할 수 있어요.';return;}
     try{const response=await fetch(`${RANKING_ENDPOINT}&mode=${encodeURIComponent(rankingMode)}`,{headers:{accept:'application/json'}});if(!response.ok)throw new Error(`ranking ${response.status}`);const payload=await response.json();if(requestId!==rankingRequestId)return;renderRanking(Array.isArray(payload.entries)?payload.entries:[]);}catch{if(requestId===rankingRequestId&&els.rankingStatus)els.rankingStatus.textContent='랭킹을 불러오지 못했어요. 게임은 계속할 수 있어요.';}
@@ -159,8 +160,8 @@
   }
   function drawMini(canvas,types,slots){if(!canvas)return;const {ctx,width,height}=prepareCanvas(canvas,canvas===els.next?(300/180):.75);ctx.clearRect(0,0,width,height);ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(0,0,width,height);const list=Array.isArray(types)?types:[types],slotH=height/slots;list.slice(0,slots).forEach((type,index)=>{if(!type||!Engine.SHAPES[type])return;const cells=Engine.SHAPES[type][0];const minX=Math.min(...cells.map(c=>c[0])),maxX=Math.max(...cells.map(c=>c[0])),minY=Math.min(...cells.map(c=>c[1])),maxY=Math.max(...cells.map(c=>c[1]));const size=Math.min(width/(maxX-minX+2),slotH/(maxY-minY+2)),ox=(width-(maxX-minX+1)*size)/2-minX*size,oy=index*slotH+(slotH-(maxY-minY+1)*size)/2-minY*size;cells.forEach(([x,y])=>{ctx.save();ctx.translate(ox,oy);drawCell(ctx,x,y,size,COLORS[type]||'#aaa');ctx.restore();});});}
 
-  function statusMessage(state){if(state.status==='idle')return mode==='classic'?'클래식 무한 · 오래 버티며 최고 점수에 도전하세요.':'40줄 타임어택 · 40줄을 가장 빠르게 지워 보세요.';if(state.status==='paused')return'일시정지 중';if(state.status==='gameover')return'GAME OVER · 새 게임으로 다시 도전하세요.';if(state.status==='completed')return`40줄 완주! 기록 ${formatTime(state.elapsedMs)}`;if(mode==='sprint40')return`${state.lines}/40줄 · ${Math.max(0,40-state.lines)}줄 남았어요.`;return`LEVEL ${state.level} · COMBO ${Math.max(0,state.combo)}`;}
-  function updateRecords(state,previousStatus){if(state.status==='gameover'&&previousStatus!=='gameover'&&mode==='classic'){const old=currentBest();if(state.score>old){storageSet(CLASSIC_BEST_KEY,state.score);bestFlashUntil=Date.now()+1800;}}if(state.status==='completed'&&previousStatus!=='completed'&&mode==='sprint40'){const old=currentBest();if(!old||state.elapsedMs<old){storageSet(SPRINT_BEST_KEY,state.elapsedMs);bestFlashUntil=Date.now()+1800;}}}
+  function statusMessage(state){if(state.status==='idle')return mode==='classic'?'클래식 무한 · 오래 버티며 최고 점수에 도전하세요.':mode==='hard'?'하드 무한 · 빠른 중력과 짧은 고정 시간에 도전하세요.':'40줄 타임어택 · 40줄을 가장 빠르게 지워 보세요.';if(state.status==='paused')return'일시정지 중';if(state.status==='gameover')return'GAME OVER · 새 게임으로 다시 도전하세요.';if(state.status==='completed')return`40줄 완주! 기록 ${formatTime(state.elapsedMs)}`;if(mode==='sprint40')return`${state.lines}/40줄 · ${Math.max(0,40-state.lines)}줄 남았어요.`;return`LEVEL ${state.level} · COMBO ${Math.max(0,state.combo)}`;}
+  function updateRecords(state,previousStatus){if(state.status==='gameover'&&previousStatus!=='gameover'&&(mode==='classic'||mode==='hard')){const old=currentBest();if(state.score>old){storageSet(mode==='hard'?HARD_BEST_KEY:CLASSIC_BEST_KEY,state.score);bestFlashUntil=Date.now()+1800;}}if(state.status==='completed'&&previousStatus!=='completed'&&mode==='sprint40'){const old=currentBest();if(!old||state.elapsedMs<old){storageSet(SPRINT_BEST_KEY,state.elapsedMs);bestFlashUntil=Date.now()+1800;}}}
 
   function restartAnimation(element,className){if(!element)return;element.classList.remove(className);void element.offsetWidth;element.classList.add(className);}
   function showHardDropEffect(detail={}){
@@ -220,13 +221,13 @@
     const state=game.getSnapshot(),previousStatus=lastStatus;updateRecords(state,previousStatus);observeEvents(state);
     if(!els.playView?.hidden){drawBoard(state);drawMini(els.hold,state.hold?[state.hold]:[],1);drawMini(els.next,state.next,5);}
     if(els.score)els.score.textContent=state.score.toLocaleString('ko-KR');if(els.level)els.level.textContent=state.level;if(els.lines)els.lines.textContent=mode==='sprint40'?`${state.lines} / 40`:state.lines;if(els.time)els.time.textContent=formatTime(state.elapsedMs);
-    const best=currentBest();if(els.best)els.best.textContent=mode==='classic'?Number(best).toLocaleString('ko-KR'):(best?formatTime(best):'--:--.---');if(els.status)els.status.textContent=statusMessage(state);els.game.dataset.gameStatus=state.status;els.game.dataset.mode=mode;
+    const best=currentBest();if(els.best)els.best.textContent=mode==='sprint40'?(best?formatTime(best):'--:--.---'):Number(best).toLocaleString('ko-KR');if(els.status)els.status.textContent=statusMessage(state);els.game.dataset.gameStatus=state.status;els.game.dataset.mode=mode;
     if(els.pause)els.pause.disabled=!(state.status==='playing'||state.status==='paused');
     const terminal=state.status==='gameover'||state.status==='completed';if(terminal&&uiState!=='terminal')setViewState('terminal');
     if(els.overlay){els.overlay.hidden=!terminal;if(terminal){els.overlayTitle.textContent=state.status==='completed'?'40 LINES!':'GAME OVER';els.overlayCopy.textContent=statusMessage(state);}}
     setReaction(chooseReaction(state));
     if(previousStatus!==state.status&&root.ChuntrisAudio){if(state.status==='gameover')root.ChuntrisAudio.play('gameover');if(state.status==='completed')root.ChuntrisAudio.play('complete');}
-    if(previousStatus!==state.status&&((mode==='classic'&&state.status==='gameover')||(mode==='sprint40'&&state.status==='completed')))void submitRanking(state);
+    if(previousStatus!==state.status&&(((mode==='classic'||mode==='hard')&&state.status==='gameover')||(mode==='sprint40'&&state.status==='completed')))void submitRanking(state);
     lastStatus=state.status;return state;
   }
 
@@ -307,7 +308,7 @@
     advance();
     return true;
   }
-  function setMode(nextMode){cancelCountdown();mode=nextMode==='sprint40'?'sprint40':'classic';game=new Engine.ChuntrisGame({mode});modeButtons.forEach(button=>{const active=button.dataset.chuntrisMode===mode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});lastStatus='idle';lastLevel=1;lastClearAt=null;transientReaction=null;lastSubmittedTerminal='';setViewState('start-player');render();void loadRanking(mode);}
+  function setMode(nextMode){cancelCountdown();mode=nextMode==='sprint40'?'sprint40':nextMode==='hard'?'hard':'classic';game=new Engine.ChuntrisGame({mode});modeButtons.forEach(button=>{const active=button.dataset.chuntrisMode===mode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});lastStatus='idle';lastLevel=1;lastClearAt=null;transientReaction=null;lastSubmittedTerminal='';setViewState('start-player');render();void loadRanking(mode);}
   function pause(){const state=game.getSnapshot();if(state.status==='playing')return openPauseMenu();if(state.status==='paused')return continueGame();return false;}
 
   function act(action){

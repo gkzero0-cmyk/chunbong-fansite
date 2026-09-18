@@ -117,10 +117,20 @@
     return y;
   }
 
+  function normalizeMode(mode) {
+    return mode === 'sprint40' || mode === 'hard' ? mode : 'classic';
+  }
+
   function gravityMs(level, mode = 'classic') {
-    if (mode === 'sprint40') return 1000;
+    const safeMode = normalizeMode(mode);
+    if (safeMode === 'sprint40') return 1000;
     const safeLevel = Math.max(1, Number(level) || 1);
+    if (safeMode === 'hard') return Math.max(45, Math.round(420 * Math.pow(0.80, safeLevel - 1)));
     return Math.max(80, Math.round(1000 * Math.pow(0.85, safeLevel - 1)));
+  }
+
+  function lockDelayMs(mode = 'classic') {
+    return normalizeMode(mode) === 'hard' ? 300 : LOCK_DELAY_MS;
   }
 
   function clearCompletedLines(board) {
@@ -171,7 +181,7 @@
       this.state = {
         board: createEmptyBoard(), active: null, hold: null, next: [], canHold: true,
         score: 0, lines: 0, level: 1, combo: -1, backToBack: false,
-        mode: mode === 'sprint40' ? 'sprint40' : 'classic', elapsedMs: 0,
+        mode: normalizeMode(mode), elapsedMs: 0,
         status: 'idle', startedAt: 0, pausedAt: null, pausedDurationMs: 0,
         lastAdvanceAt: 0, lastGravityAt: 0, groundedAt: null,
         lastAction: null, lastClear: null
@@ -201,7 +211,7 @@
     }
 
     reset(mode = this.state.mode) {
-      const nextMode = mode === 'sprint40' ? 'sprint40' : 'classic';
+      const nextMode = normalizeMode(mode);
       this.state = {
         board: createEmptyBoard(), active: null, hold: null, next: [], canHold: true,
         score: 0, lines: 0, level: 1, combo: -1, backToBack: false,
@@ -397,7 +407,11 @@
       this.state.combo = result.nextCombo;
       this.state.backToBack = result.nextBackToBack;
       this.state.lines += Math.max(0, Number(lines) || 0);
-      this.state.level = this.state.mode === 'classic' ? Math.floor(this.state.lines / 10) + 1 : 1;
+      this.state.level = this.state.mode === 'classic'
+        ? Math.floor(this.state.lines / 10) + 1
+        : this.state.mode === 'hard'
+          ? Math.floor(this.state.lines / 6) + 1
+          : 1;
       this.state.lastClear = {
         lines: Math.max(0, Number(lines) || 0), tSpin: Boolean(tSpin),
         points: result.points, combo: this.state.combo,
@@ -436,7 +450,7 @@
       }
 
       this.refreshGrounded(nowMs);
-      if (this.state.groundedAt != null && nowMs - this.state.groundedAt >= LOCK_DELAY_MS) this.lockActive(nowMs);
+      if (this.state.groundedAt != null && nowMs - this.state.groundedAt >= lockDelayMs(this.state.mode)) this.lockActive(nowMs);
       this.state.lastAdvanceAt = nowMs;
       return this.getSnapshot();
     }
@@ -445,6 +459,6 @@
   return {
     BOARD_WIDTH, VISIBLE_ROWS, HIDDEN_ROWS, BOARD_ROWS, LOCK_DELAY_MS,
     PIECE_TYPES, SHAPES, createSevenBag, createEmptyBoard, cellsFor,
-    collides, ghostY, gravityMs, clearCompletedLines, scoreClear, ChuntrisGame
+    collides, ghostY, normalizeMode, gravityMs, lockDelayMs, clearCompletedLines, scoreClear, ChuntrisGame
   };
 });

@@ -10,8 +10,8 @@ for (const id of ['chuntris-game','chuntris-board','chuntris-hold','chuntris-nex
   assert.ok(html.includes(`id="${id}"`), id);
 }
 assert.equal(html.includes('id="chuntris-nickname"'), false, 'pre-game nickname must be removed');
-for (const mode of ['classic','sprint40']) assert.ok(html.includes(`data-chuntris-mode="${mode}"`));
-for (const mode of ['classic','sprint40']) assert.ok(html.includes(`data-chuntris-ranking-mode="${mode}"`));
+for (const mode of ['classic','sprint40','hard']) assert.ok(html.includes(`data-chuntris-mode="${mode}"`));
+for (const mode of ['classic','sprint40','hard']) assert.ok(html.includes(`data-chuntris-ranking-mode="${mode}"`));
 for (const action of ['left','soft-drop','right','rotate-ccw','rotate-cw','hold','hard-drop']) assert.ok(html.includes(`data-chuntris-action="${action}"`));
 
 assert.ok(html.includes('id="chuntris-start-view"'));
