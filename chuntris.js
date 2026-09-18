@@ -10,6 +10,12 @@
   const CLASSIC_BEST_KEY = 'chuntris.bestScore.classic.v1';
   const SPRINT_BEST_KEY = 'chuntris.bestTime.sprint40.v1';
   const HARD_BEST_KEY = 'chuntris.bestScore.hard.v1';
+  const CLASSIC_EXTREME_BEST_KEY = 'chuntris.bestScore.classic.extreme.v1';
+  const SPRINT_HARD_BEST_KEY = 'chuntris.bestTime.sprint40.hard.v1';
+  const SPRINT_EXTREME_BEST_KEY = 'chuntris.bestTime.sprint40.extreme.v1';
+  const SCORE180_NORMAL_BEST_KEY = 'chuntris.bestScore.score180.normal.v1';
+  const SCORE180_HARD_BEST_KEY = 'chuntris.bestScore.score180.hard.v1';
+  const SCORE180_EXTREME_BEST_KEY = 'chuntris.bestScore.score180.extreme.v1';
   const NICKNAME_KEY = 'chuntris.nickname.v1';
   const RANKING_ENDPOINT = '/api/content?type=chuntris-ranking';
   const REACTION_SPRITE = 'assets/chuntris/reactions.webp';
@@ -31,11 +37,14 @@
     sleep:['춘봉 졸린 표정','잠깐 쉬는 중…'], love:['춘봉 하트눈 표정','완벽해! 최고야!'],
     angry:['춘봉 화난 표정','집중! 아직 안 끝났어!'], calm:['춘봉 평온한 표정','천천히, 정확하게!']
   });
-  const COLORS = Object.freeze({I:'#41d9ff',O:'#ffd73b',T:'#a86dff',S:'#55dc73',Z:'#ff5c67',J:'#5d82ff',L:'#ff9c3e'});
+  const COLORS = Object.freeze({I:'#41d9ff',O:'#ffd73b',T:'#a86dff',S:'#55dc73',Z:'#ff5c67',J:'#5d82ff',L:'#ff9c3e',G:'#656a74'});
 
   const els = {
     game:document.getElementById('chuntris-game'), startView:document.getElementById('chuntris-start-view'),
     playView:document.getElementById('chuntris-play-view'), playerStep:document.getElementById('chuntris-player-step'),
+    modeStep:document.getElementById('chuntris-mode-step'), difficultyStep:document.getElementById('chuntris-difficulty-step'),
+    startEyebrow:document.getElementById('chuntris-start-eyebrow'), startTitle:document.getElementById('chuntris-start-title'),
+    startCopy:document.getElementById('chuntris-start-copy'), backMode:document.getElementById('chuntris-back-mode'),
     board:document.getElementById('chuntris-board'), boardWrap:document.querySelector('.chuntris-board-wrap'),
     hold:document.getElementById('chuntris-hold'), next:document.getElementById('chuntris-next'),
     score:document.getElementById('chuntris-score'), level:document.getElementById('chuntris-level'),
@@ -51,20 +60,24 @@
     pauseContinue:document.getElementById('chuntris-pause-continue'), pauseNew:document.getElementById('chuntris-pause-new'),
     newConfirm:document.getElementById('chuntris-new-confirm'), newCancel:document.getElementById('chuntris-new-cancel'),
     clearLabel:document.getElementById('chuntris-clear-label'), hardDropFx:document.getElementById('chuntris-harddrop-fx'),
-    lineFx:document.getElementById('chuntris-line-fx'), countdown:document.getElementById('chuntris-countdown'),
-    countdownValue:document.getElementById('chuntris-countdown-value')
+    lineFx:document.getElementById('chuntris-line-fx'), gimmickAlert:document.getElementById('chuntris-gimmick-alert'),
+    countdown:document.getElementById('chuntris-countdown'), countdownValue:document.getElementById('chuntris-countdown-value')
   };
   if (!els.game || !els.board) return;
 
   const rankingButtons = [...document.querySelectorAll('[data-chuntris-ranking-mode]')];
+  const rankingDifficultyButtons = [...document.querySelectorAll('[data-chuntris-ranking-difficulty]')];
   const modalPanels = [...document.querySelectorAll('[data-chuntris-panel]')];
   const modeButtons = [...document.querySelectorAll('[data-chuntris-mode]')];
+  const difficultyButtons = [...document.querySelectorAll('[data-chuntris-difficulty]')];
   const repeats = new Map();
   let mode = 'classic';
+  let difficulty = 'normal';
   let rankingMode = 'classic';
+  let rankingDifficulty = 'normal';
   let rankingRequestId = 0;
   let lastSubmittedTerminal = '';
-  let game = new Engine.ChuntrisGame({mode});
+  let game = new Engine.ChuntrisGame({mode,difficulty});
   let rafId = 0;
   let lastStatus = 'idle';
   let lastLevel = 1;
@@ -82,6 +95,8 @@
   let countdownTimer = 0;
   let countdownToken = 0;
   let startViewportY = 0;
+  let lastGimmickSlot = 0;
+  let gimmickTimer = 0;
 
   function storageGet(key, fallback = null) { try { const value=localStorage.getItem(key); return value==null?fallback:value; } catch { return fallback; } }
   function storageSet(key, value) { try { localStorage.setItem(key,String(value)); } catch {} }
@@ -93,7 +108,22 @@
     const minutes=Math.floor(safe/60000),seconds=Math.floor((safe%60000)/1000),millis=safe%1000;
     return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}.${String(millis).padStart(3,'0')}`;
   }
-  function currentBest(){if(mode==='sprint40')return numberFromStorage(SPRINT_BEST_KEY,0);return numberFromStorage(mode==='hard'?HARD_BEST_KEY:CLASSIC_BEST_KEY,0);}
+  function bestStorageKey(nextMode=mode,nextDifficulty=difficulty){
+    const safeMode=nextMode==='sprint40'?'sprint40':nextMode==='score180'?'score180':'classic';
+    const safeDifficulty=nextDifficulty==='extreme'?'extreme':nextDifficulty==='hard'?'hard':'normal';
+    if(safeMode==='classic'&&safeDifficulty==='normal')return CLASSIC_BEST_KEY;
+    if(safeMode==='classic'&&safeDifficulty==='hard')return HARD_BEST_KEY;
+    if(safeMode==='classic'&&safeDifficulty==='extreme')return CLASSIC_EXTREME_BEST_KEY;
+    if(safeMode==='sprint40'&&safeDifficulty==='hard')return SPRINT_HARD_BEST_KEY;
+    if(safeMode==='sprint40'&&safeDifficulty==='extreme')return SPRINT_EXTREME_BEST_KEY;
+    if(safeMode==='sprint40')return SPRINT_BEST_KEY;
+    if(safeDifficulty==='hard')return SCORE180_HARD_BEST_KEY;
+    if(safeDifficulty==='extreme')return SCORE180_EXTREME_BEST_KEY;
+    return SCORE180_NORMAL_BEST_KEY;
+  }
+  function currentBest(){return numberFromStorage(bestStorageKey(),0);}
+  function difficultyLabel(value=difficulty){return value==='extreme'?'익스트림':value==='hard'?'하드':'노말';}
+  function modeLabel(value=mode){return value==='sprint40'?'40줄 타임어택':value==='score180'?'3분 점수전':'클래식 무한';}
   function currentNickname(){
     const raw=els.nickname?.value||'';
     if (!raw.trim()) return null;
@@ -102,17 +132,27 @@
   }
 
   function setViewState(nextState){
-    const allowed=new Set(['start-mode','start-player','countdown','playing','paused','terminal']);
+    const allowed=new Set(['start-mode','start-difficulty','countdown','playing','paused','terminal']);
     uiState=allowed.has(nextState)?nextState:'start-mode';
     els.game.dataset.uiState=uiState;
-    const start=uiState==='start-mode'||uiState==='start-player'||uiState==='countdown';
+    const start=uiState==='start-mode'||uiState==='start-difficulty'||uiState==='countdown';
     if(els.startView) els.startView.hidden=!start;
     if(els.playView) els.playView.hidden=start;
-    if(els.playerStep) els.playerStep.hidden=!start;
+    if(els.modeStep) els.modeStep.hidden=uiState!=='start-mode';
+    if(els.difficultyStep) els.difficultyStep.hidden=uiState!=='start-difficulty';
+    if(els.playerStep) els.playerStep.hidden=uiState!=='start-difficulty';
+    if(els.startEyebrow)els.startEyebrow.textContent=uiState==='start-difficulty'?'SELECT DIFFICULTY':'SELECT MODE';
+    if(els.startTitle)els.startTitle.textContent=uiState==='start-difficulty'?'난이도 선택':'게임 모드 선택';
+    if(els.startCopy)els.startCopy.textContent=uiState==='start-difficulty'
+      ?`${modeLabel()} · 플레이할 난이도를 골라 주세요.`
+      :'플레이할 모드를 먼저 골라 주세요.';
     if(start) closeModalShell(false);
   }
 
-  function syncRankingButtons(){rankingButtons.forEach(button=>{const active=button.dataset.chuntrisRankingMode===rankingMode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});}
+  function syncRankingButtons(){
+    rankingButtons.forEach(button=>{const active=button.dataset.chuntrisRankingMode===rankingMode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
+    rankingDifficultyButtons.forEach(button=>{const active=button.dataset.chuntrisRankingDifficulty===rankingDifficulty;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
+  }
   function renderRanking(entries){
     if(!els.rankingList)return;
     const current=currentNickname();
@@ -124,19 +164,21 @@
       if(current&&current!==false&&RankingCore?.normalizeNickname(entry.nickname).toLocaleLowerCase('ko-KR')===current.key)item.classList.add('is-current-player');
       item.append(rank,nickname,metric);els.rankingList.append(item);
     });
-    if(els.rankingStatus)els.rankingStatus.textContent=entries.length?`TOP ${Math.min(entries.length,10)} · 최고 기록 기준`:'아직 등록된 기록이 없어요.';
+    if(els.rankingStatus)els.rankingStatus.textContent=entries.length?`TOP ${Math.min(entries.length,10)} · ${difficultyLabel(rankingDifficulty)} · 최고 기록 기준`:`${difficultyLabel(rankingDifficulty)} 난이도에 아직 등록된 기록이 없어요.`;
   }
-  async function loadRanking(nextMode=mode){
-    rankingMode=nextMode==='sprint40'?'sprint40':nextMode==='hard'?'hard':'classic';syncRankingButtons();const requestId=++rankingRequestId;
+  async function loadRanking(nextMode=mode,nextDifficulty=difficulty){
+    rankingMode=nextMode==='sprint40'?'sprint40':nextMode==='score180'?'score180':'classic';
+    rankingDifficulty=nextDifficulty==='extreme'?'extreme':nextDifficulty==='hard'?'hard':'normal';
+    syncRankingButtons();const requestId=++rankingRequestId;
     if(els.rankingStatus)els.rankingStatus.textContent='랭킹 불러오는 중…';
     if(typeof fetch!=='function'){if(els.rankingStatus)els.rankingStatus.textContent='랭킹 연결을 사용할 수 없어요. 게임은 계속할 수 있어요.';return;}
-    try{const response=await fetch(`${RANKING_ENDPOINT}&mode=${encodeURIComponent(rankingMode)}`,{headers:{accept:'application/json'}});if(!response.ok)throw new Error(`ranking ${response.status}`);const payload=await response.json();if(requestId!==rankingRequestId)return;renderRanking(Array.isArray(payload.entries)?payload.entries:[]);}catch{if(requestId===rankingRequestId&&els.rankingStatus)els.rankingStatus.textContent='랭킹을 불러오지 못했어요. 게임은 계속할 수 있어요.';}
+    try{const response=await fetch(`${RANKING_ENDPOINT}&mode=${encodeURIComponent(rankingMode)}&difficulty=${encodeURIComponent(rankingDifficulty)}`,{headers:{accept:'application/json'}});if(!response.ok)throw new Error(`ranking ${response.status}`);const payload=await response.json();if(requestId!==rankingRequestId)return;renderRanking(Array.isArray(payload.entries)?payload.entries:[]);}catch{if(requestId===rankingRequestId&&els.rankingStatus)els.rankingStatus.textContent='랭킹을 불러오지 못했어요. 게임은 계속할 수 있어요.';}
   }
   async function submitRanking(state){
     const nickname=currentNickname();
     if (!nickname || typeof fetch !== 'function') return;
-    const key=`${mode}:${state.status}:${state.elapsedMs}:${state.score}:${state.lines}`;if(key===lastSubmittedTerminal)return;lastSubmittedTerminal=key;
-    try{const response=await fetch(RANKING_ENDPOINT,{method:'POST',headers:{'content-type':'application/json',accept:'application/json'},body:JSON.stringify({mode,nickname:nickname.displayName,score:state.score,lines:state.lines,level:state.level,timeMs:state.elapsedMs})});if(!response.ok)throw new Error(`ranking ${response.status}`);const payload=await response.json();if(payload.mode===rankingMode&&Array.isArray(payload.entries))renderRanking(payload.entries);else void loadRanking(rankingMode);}catch{if(els.rankingStatus)els.rankingStatus.textContent='기록 저장에 실패했어요. 게임 기록은 기기 안에 유지돼요.';}
+    const key=`${mode}:${difficulty}:${state.status}:${state.elapsedMs}:${state.score}:${state.lines}`;if(key===lastSubmittedTerminal)return;lastSubmittedTerminal=key;
+    try{const response=await fetch(RANKING_ENDPOINT,{method:'POST',headers:{'content-type':'application/json',accept:'application/json'},body:JSON.stringify({mode,difficulty,nickname:nickname.displayName,score:state.score,lines:state.lines,level:state.level,timeMs:state.elapsedMs})});if(!response.ok)throw new Error(`ranking ${response.status}`);const payload=await response.json();if(payload.mode===rankingMode&&payload.difficulty===rankingDifficulty&&Array.isArray(payload.entries))renderRanking(payload.entries);else void loadRanking(rankingMode,rankingDifficulty);}catch{if(els.rankingStatus)els.rankingStatus.textContent='기록 저장에 실패했어요. 게임 기록은 기기 안에 유지돼요.';}
   }
 
   function setReaction(name){
