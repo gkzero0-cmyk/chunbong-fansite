@@ -72,3 +72,91 @@
   .nav-minigames{display:contents}
   .nav-minigames-submenu{display:none!important}
 }
+
+/* High-resolution desktop scaling: 2026-09-19
+   Keep existing laptop/mobile layouts intact while using more of 1080p+ displays. */
+@media(min-width:1600px) and (min-height:900px){
+  :root{--max:1500px}
+  .site-header{height:84px;gap:30px}
+  .brand-mark{width:46px;height:46px;border-radius:15px}
+  .brand-copy strong{font-size:15px}
+  .brand-copy small{font-size:10px}
+  .main-nav{gap:7px}
+  .main-nav a{font-size:14px;padding:11px 12px}
+  .header-live{font-size:13px;padding:11px 17px}
+
+  .hero{grid-template-columns:1.03fr .97fr;gap:80px;min-height:calc(100svh - 132px);padding:64px 0 80px}
+  .hero-copy h1{font-size:clamp(72px,6.35vw,122px)}
+  .hero-description{font-size:19px;max-width:720px}
+  .hero-actions,.hero-tags{gap:11px}
+  .hero-actions .btn{padding:16px 23px;font-size:14px}
+  .hero-tags span,.hero-tags a{padding:8px 12px;font-size:12px}
+  .hero-art{min-height:690px}
+  .hero-art:before{width:540px;height:540px}
+  .hero-character{width:min(94%,680px);max-height:760px}
+  .status-card{padding:15px 18px}
+  .portal-section{padding-bottom:120px}
+
+  body[data-page="minigames"] .chuntris-page .content-section>.page-shell{
+    width:min(96%,1760px);
+    max-width:1760px
+  }
+  body[data-page="minigames"] .chuntris-game.chuntris-immersive{
+    --chuntris-stage-height:min(980px,76svh)!important;
+    --chuntris-board-width:min(490px,38svh,calc(var(--chuntris-stage-height)/2),calc(100vw - 56px));
+    --chuntris-toolbar-height:64px;
+    --chuntris-board-gap:10px;
+    padding:12px
+  }
+  body[data-page="minigames"] .chuntris-layout.chuntris-layout-immersive{
+    grid-template-columns:minmax(210px,255px) minmax(360px,calc(var(--chuntris-stage-height)/2)) minmax(210px,255px);
+    gap:16px
+  }
+  body[data-page="minigames"] .chuntris-play-top{padding:8px 12px}
+  body[data-page="minigames"] .chuntris-play-top .chuntris-status{font-size:1rem}
+  body[data-page="minigames"] .chuntris-utility-cluster button{width:46px;height:46px;font-size:1.05rem}
+  body[data-page="minigames"] .chuntris-panel,
+  body[data-page="minigames"] .chuntris-stats,
+  body[data-page="minigames"] .chuntris-reaction-card{padding:13px}
+  body[data-page="minigames"] .chuntris-panel h2{font-size:.84rem}
+  body[data-page="minigames"] .chuntris-stats span{font-size:.72rem}
+  body[data-page="minigames"] .chuntris-stats strong{font-size:1.05rem}
+  body[data-page="minigames"] .chuntris-reaction-card figcaption{font-size:.78rem}
+}
+
+@media(min-width:2400px) and (min-height:1300px){
+  :root{--max:1780px}
+  .site-header{height:92px}
+  .brand-mark{width:52px;height:52px}
+  .brand-copy strong{font-size:17px}
+  .brand-copy small{font-size:11px}
+  .main-nav a{font-size:15px;padding:12px 14px}
+  .header-live{font-size:14px;padding:12px 19px}
+  .hero{gap:100px;min-height:calc(100svh - 145px);padding:76px 0 92px}
+  .hero-copy h1{font-size:clamp(88px,5.8vw,146px)}
+  .hero-description{font-size:21px;max-width:820px}
+  .hero-art{min-height:820px}
+  .hero-art:before{width:650px;height:650px}
+  .hero-character{width:min(95%,820px);max-height:900px}
+
+  body[data-page="minigames"] .chuntris-page .content-section>.page-shell{
+    width:min(96%,2200px);
+    max-width:2200px
+  }
+  body[data-page="minigames"] .chuntris-game.chuntris-immersive{
+    --chuntris-stage-height:min(1280px,78svh)!important;
+    --chuntris-board-width:min(640px,39svh,calc(var(--chuntris-stage-height)/2),calc(100vw - 72px));
+    --chuntris-toolbar-height:72px;
+    --chuntris-board-gap:12px;
+    padding:14px
+  }
+  body[data-page="minigames"] .chuntris-layout.chuntris-layout-immersive{
+    grid-template-columns:minmax(250px,310px) minmax(470px,calc(var(--chuntris-stage-height)/2)) minmax(250px,310px);
+    gap:20px
+  }
+  body[data-page="minigames"] .chuntris-play-top .chuntris-status{font-size:1.08rem}
+  body[data-page="minigames"] .chuntris-utility-cluster button{width:52px;height:52px;font-size:1.15rem}
+  body[data-page="minigames"] .chuntris-panel h2{font-size:.92rem}
+  body[data-page="minigames"] .chuntris-stats strong{font-size:1.15rem}
+}
+
