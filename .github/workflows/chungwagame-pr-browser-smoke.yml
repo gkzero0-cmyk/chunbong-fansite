@@ -144,7 +144,7 @@ jobs:
             await page.waitForFunction(()=>Number(document.querySelector('#cg-score')?.textContent||0)>0);
             assert.ok(await page.locator('#cg-fx-layer').evaluate(el=>el.childElementCount>0),'success effect missing');
 
-            await page.waitForTimeout(350);
+            await page.waitForFunction(()=>!document.querySelector('.cg-fruit.good'));
             let second=await findTenRect(page);
             if(!second){
               await page.locator('#cg-shuffle').click();
