@@ -1,0 +1,177 @@
+name: Minigame score multiplayer preview smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'chunbak.html'
+      - 'chunbak.js'
+      - 'chungwagame.html'
+      - 'chungwagame.js'
+      - 'score-race-multiplayer.js'
+      - 'minigame-multiplayer.js'
+      - 'minigame-multiplayer.css'
+      - 'api/content.js'
+      - 'lib/minigame-multiplayer-api.js'
+      - '.github/workflows/minigame-score-multiplayer-preview-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  score-race-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Resolve current Vercel Preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            comments=$(curl -fsS               -H "Authorization: Bearer $GH_TOKEN"               -H 'Accept: application/vnd.github+json'               "https://api.github.com/repos/$REPO/issues/$PR_NUMBER/comments?per_page=100")
+            preview=$(printf '%s' "$comments" | node -e '
+              let s=""; process.stdin.on("data",d=>s+=d).on("end",()=>{
+                const rows=JSON.parse(s).filter(x=>x.user?.login==="vercel[bot]");
+                for(const row of rows.reverse()){
+                  const m=String(row.body||"").match(/\[Preview\]\((https:\/\/[^)]+)\)/);
+                  if(m){process.stdout.write(m[1]);return;}
+                }
+              });')
+            if [ -n "$preview" ]; then
+              stamp=$(date +%s)
+              if curl -fsS "$preview/chunbak.html?_mp=$stamp" -o /tmp/chunbak.html &&                  curl -fsS "$preview/chungwagame.html?_mp=$stamp" -o /tmp/chungwa.html &&                  curl -fsS "$preview/score-race-multiplayer.js?_mp=$stamp" -o /tmp/score-race.js &&                  grep -q 'data-score-multiplayer="chunbak"' /tmp/chunbak.html &&                  grep -q 'data-score-multiplayer="chungwagame"' /tmp/chungwa.html &&                  grep -q '120 SEC SCORE RACE' /tmp/score-race.js; then
+                echo "PREVIEW_BASE=$preview" >> "$GITHUB_ENV"
+                echo "Score-race preview ready: $preview"
+                exit 0
+              fi
+            fi
+            sleep 5
+          done
+          echo 'Current score-race preview did not become ready.' >&2
+          exit 1
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Verify Chunbak and Chungwagame two-player score races
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import assert from 'node:assert/strict';
+          import { chromium } from 'playwright';
+
+          const browser=await chromium.launch({headless:true});
+          const base=process.env.PREVIEW_BASE;
+
+          async function directFinish(page, storageKey, score, secondary) {
+            return page.evaluate(async ({storageKey,score,secondary})=>{
+              const session=JSON.parse(localStorage.getItem(storageKey)||'null');
+              if(!session?.code||!session?.token)throw new Error('multiplayer session missing');
+              const response=await fetch('/api/content?type=minigame-multiplayer',{
+                method:'POST',
+                headers:{'content-type':'application/json'},
+                body:JSON.stringify({action:'progress',code:session.code,token:session.token,score,lines:secondary,timeMs:120000,status:'completed'})
+              });
+              const payload=await response.json();
+              if(!response.ok)throw new Error(payload.error||'finish failed');
+              return payload;
+            },{storageKey,score,secondary});
+          }
+
+          async function createAndJoin(pageA,pageB,{path,button,nicknameKey}) {
+            await pageA.goto(base+path+'?_a='+Date.now(),{waitUntil:'domcontentloaded'});
+            await pageA.waitForFunction(()=>Boolean(window.MinigameMultiplayer));
+            await pageA.locator(button).click();
+            await pageA.locator('[data-mp-nickname]').fill('멀티A');
+            await pageA.locator('[data-mp-create]').click();
+            await pageA.waitForFunction(()=>/^[A-Z2-9]{6}$/.test(document.querySelector('[data-mp-room-code]')?.textContent?.trim()||''),{timeout:7000});
+            const code=(await pageA.locator('[data-mp-room-code]').textContent()).trim();
+
+            await pageB.goto(base+path+'?room='+code+'&_b='+Date.now(),{waitUntil:'domcontentloaded'});
+            await pageB.waitForFunction(()=>Boolean(window.MinigameMultiplayer));
+            await pageB.locator('[data-mp-nickname]').fill('멀티B');
+            await pageB.locator('[data-mp-join]').click();
+            await pageA.waitForFunction(()=>document.querySelectorAll('.mp-player:not(.is-empty)').length===2,{timeout:7000});
+            await pageB.waitForFunction(()=>document.querySelectorAll('.mp-player:not(.is-empty)').length===2,{timeout:7000});
+            await pageA.locator('[data-mp-ready]').click();
+            await pageB.locator('[data-mp-ready]').click();
+            return code;
+          }
+
+          async function verifyChunbak(){
+            const contextA=await browser.newContext({viewport:{width:1280,height:800}});
+            const contextB=await browser.newContext({viewport:{width:1280,height:800}});
+            const a=await contextA.newPage(),b=await contextB.newPage();
+            const errors=[];a.on('pageerror',e=>errors.push('A '+e.message));b.on('pageerror',e=>errors.push('B '+e.message));
+            try{
+              await createAndJoin(a,b,{path:'/chunbak.html',button:'[data-score-multiplayer="chunbak"]'});
+              await Promise.all([
+                a.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing',{timeout:10000}),
+                b.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing',{timeout:10000})
+              ]);
+              const stateA=await a.evaluate(()=>window.ChunbakGame.getDebugState());
+              const stateB=await b.evaluate(()=>window.ChunbakGame.getDebugState());
+              assert.equal(stateA.currentStage,stateB.currentStage,'Chunbak shared seed current piece mismatch');
+              assert.equal(stateA.nextStage,stateB.nextStage,'Chunbak shared seed next piece mismatch');
+
+              const first=await directFinish(a,'chunbak.multiplayer.session.v1',900,5);
+              assert.equal(first.room.state,'playing','score race must wait for rival');
+              const second=await directFinish(b,'chunbak.multiplayer.session.v1',1200,4);
+              assert.equal(second.room.state,'finished');
+              await Promise.all([
+                a.waitForFunction(()=>document.querySelector('.mp-result')&&!document.querySelector('.mp-result').hidden,{timeout:6000}),
+                b.waitForFunction(()=>document.querySelector('.mp-result')&&!document.querySelector('.mp-result').hidden,{timeout:6000})
+              ]);
+              assert.match(await a.locator('.mp-result').innerText(),/상대 승리/);
+              assert.match(await b.locator('.mp-result').innerText(),/승리/);
+              assert.deepEqual(errors,[]);
+            }finally{await contextA.close();await contextB.close();}
+          }
+
+          async function verifyChungwagame(){
+            const contextA=await browser.newContext({viewport:{width:1280,height:800}});
+            const contextB=await browser.newContext({viewport:{width:1280,height:800}});
+            const a=await contextA.newPage(),b=await contextB.newPage();
+            const errors=[];a.on('pageerror',e=>errors.push('A '+e.message));b.on('pageerror',e=>errors.push('B '+e.message));
+            try{
+              await createAndJoin(a,b,{path:'/chungwagame.html',button:'[data-score-multiplayer="chungwagame"]'});
+              await Promise.all([
+                a.waitForFunction(()=>document.querySelector('.chungwagame-game')?.dataset.gameStatus==='playing',{timeout:10000}),
+                b.waitForFunction(()=>document.querySelector('.chungwagame-game')?.dataset.gameStatus==='playing',{timeout:10000})
+              ]);
+              const valuesA=await a.locator('.cg-fruit-shape').evaluateAll(nodes=>nodes.slice(0,40).map(n=>n.dataset.value));
+              const valuesB=await b.locator('.cg-fruit-shape').evaluateAll(nodes=>nodes.slice(0,40).map(n=>n.dataset.value));
+              assert.deepEqual(valuesA,valuesB,'Chungwagame shared seed board mismatch');
+
+              await directFinish(a,'chungwagame.multiplayer.session.v1',75,20);
+              const second=await directFinish(b,'chungwagame.multiplayer.session.v1',60,30);
+              assert.equal(second.room.state,'finished');
+              await Promise.all([
+                a.waitForFunction(()=>document.querySelector('.mp-result')&&!document.querySelector('.mp-result').hidden,{timeout:6000}),
+                b.waitForFunction(()=>document.querySelector('.mp-result')&&!document.querySelector('.mp-result').hidden,{timeout:6000})
+              ]);
+              assert.match(await a.locator('.mp-result').innerText(),/승리/);
+              assert.match(await b.locator('.mp-result').innerText(),/상대 승리/);
+              assert.deepEqual(errors,[]);
+            }finally{await contextA.close();await contextB.close();}
+          }
+
+          try{
+            await verifyChunbak();
+            await verifyChungwagame();
+          }finally{
+            await browser.close();
+          }
+          EOF_NODE
