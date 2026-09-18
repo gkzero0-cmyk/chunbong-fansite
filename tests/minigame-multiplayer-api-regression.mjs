@@ -105,6 +105,23 @@ assert.equal(wrongMethod.statusCode,405);
 
 const createdBak=await invoke({body:{action:'create',game:'chunbak',nickname:'춘박이'}});
 assert.equal(createdBak.body.room.mode,'score120');
+const bakCode=createdBak.body.room.code;
+const bak1=createdBak.body.token;
+const joinedBak=await invoke({body:{action:'join',code:bakCode,nickname:'춘박둘'}});
+const bak2=joinedBak.body.token;
+await invoke({body:{action:'ready',code:bakCode,token:bak1,ready:true}});
+await invoke({body:{action:'ready',code:bakCode,token:bak2,ready:true}});
+const bakKey=`minigame:room:${bakCode}`;
+const bakRoom=JSON.parse(redis.get(bakKey));
+bakRoom.startAt=Date.now()-1;
+redis.set(bakKey,JSON.stringify(bakRoom));
+const bakFirstFinish=await invoke({body:{action:'progress',code:bakCode,token:bak1,score:1200,lines:7,timeMs:120000,status:'completed'}});
+assert.equal(bakFirstFinish.body.room.state,'playing','score race must wait for both players');
+assert.equal(bakFirstFinish.body.room.winnerId,null);
+const bakSecondFinish=await invoke({body:{action:'progress',code:bakCode,token:bak2,score:1500,lines:6,timeMs:120000,status:'completed'}});
+assert.equal(bakSecondFinish.body.room.state,'finished');
+assert.equal(bakSecondFinish.body.room.winnerId,'p2','higher final score must win a score race');
+
 const createdGwa=await invoke({body:{action:'create',game:'chungwagame',nickname:'춘과이'}});
 assert.equal(createdGwa.body.room.mode,'score120');
 
