@@ -31,8 +31,10 @@
     '</section>';
 
   const themeToggle = header.querySelector('.theme-toggle');
+  const changelogButton = header.querySelector('.changelog-button');
   const navToggle = header.querySelector('.nav-toggle');
-  if (themeToggle) themeToggle.insertAdjacentElement('afterend', wrapper);
+  if (changelogButton) changelogButton.insertAdjacentElement('afterend', wrapper);
+  else if (themeToggle) themeToggle.insertAdjacentElement('afterend', wrapper);
   else header.insertBefore(wrapper, navToggle || null);
 
   const button = wrapper.querySelector('.activity-bell');
