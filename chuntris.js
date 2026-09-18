@@ -80,6 +80,7 @@
   let hardDropTimer = 0;
   let countdownTimer = 0;
   let countdownToken = 0;
+  let startViewportY = 0;
 
   function storageGet(key, fallback = null) { try { const value=localStorage.getItem(key); return value==null?fallback:value; } catch { return fallback; } }
   function storageSet(key, value) { try { localStorage.setItem(key,String(value)); } catch {} }
@@ -261,10 +262,21 @@
     if(els.countdownValue)els.countdownValue.textContent='3';
     setStartControlsDisabled(false);
   }
+  function restoreStartViewport(){
+    if(typeof root.scrollTo!=='function')return;
+    const target=Math.max(0,Number(startViewportY)||0);
+    const restore=()=>root.scrollTo(0,target);
+    restore();
+    if(typeof root.requestAnimationFrame==='function'){
+      root.requestAnimationFrame(()=>{restore();root.requestAnimationFrame?.(restore);});
+    }
+    root.setTimeout?.(restore,120);
+    root.setTimeout?.(restore,260);
+  }
   function beginGame(){
     game.start(Date.now());lastStatus='idle';lastLevel=1;lastClearAt=null;lastInputAt=Date.now();transientReaction=null;lastSubmittedTerminal='';
     if(els.countdown){els.countdown.hidden=true;els.countdown.classList.remove('is-start');}
-    setStartControlsDisabled(false);closeModalShell(false);setViewState('playing');render();ensureLoop();return true;
+    setStartControlsDisabled(false);closeModalShell(false);setViewState('playing');render();restoreStartViewport();ensureLoop();return true;
   }
   function start(){
     if(uiState==='countdown')return false;
@@ -274,6 +286,8 @@
     if(root.ChuntrisAudio)root.ChuntrisAudio.resume();
     if(['playing','paused','gameover','completed'].includes(game.getSnapshot().status))game.reset(mode);
     cancelCountdown();
+    startViewportY=typeof root.scrollY==='number'?root.scrollY:0;
+    els.start?.blur?.();
     const token=++countdownToken;
     setViewState('countdown');setStartControlsDisabled(true);render();
     if(!els.countdown||!els.countdownValue)return beginGame();

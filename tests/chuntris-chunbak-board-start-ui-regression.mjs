@@ -11,6 +11,7 @@ assert.match(ctHtml,/chuntris-board-start-ui\.css/,'Chuntris board UI override m
 assert.match(ctHtml,/id="chuntris-countdown"/,'Chuntris countdown layer missing');
 assert.match(ctHtml,/id="chuntris-countdown-value"/,'Chuntris countdown value missing');
 assert.match(ctCss,/aspect-ratio:1\/2/,'Chuntris start/board must retain 10x20 ratio');
+assert.match(ctCss,/html,\.chuntris-page\{overflow-anchor:none\}/,'Chuntris page must disable page-level scroll anchoring');
 assert.match(ctCss,/--chuntris-board-width:min\(340px,36svh,calc\(100vw - 28px\)\)/,'Chuntris board must be viewport-height-aware');
 assert.match(ctCss,/--chuntris-toolbar-height:56px/,'Chuntris must reserve the exact play toolbar height before the start card');
 assert.match(ctCss,/padding:calc\(var\(--chuntris-toolbar-height\) \+ var\(--chuntris-board-gap\)\) 0 0/,'Chuntris start card must align vertically with the live board');
@@ -22,6 +23,8 @@ assert.match(ctJs,/const frames=\['3','2','1','START!'\]/,'Chuntris 3-2-1 countd
 assert.match(ctJs,/uiState==='countdown'/,'Chuntris countdown state missing');
 assert.match(ctJs,/countdownTimer=setTimeout\(advance,700\)/,'Chuntris countdown must delay engine start');
 assert.match(ctJs,/getUiState:\(\)=>uiState/,'Chuntris countdown state must be inspectable for smoke tests');
+assert.match(ctJs,/function restoreStartViewport\(\)/,'Chuntris must explicitly restore viewport after start/play swap');
+assert.match(ctJs,/startViewportY=typeof root\.scrollY==='number'\?root\.scrollY:0/,'Chuntris must capture scroll position before countdown');
 
 assert.match(cbHtml,/chunbak-board-start-ui\.css/,'Chunbak board UI override must load last');
 assert.match(cbCss,/width:min\(420px,44svh,calc\(100vw - 28px\)\)/,'Chunbak start/stage must be viewport-height-aware');
