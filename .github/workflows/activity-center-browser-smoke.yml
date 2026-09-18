@@ -107,8 +107,8 @@ jobs:
           await page.goto(process.env.BASE_URL+'/changelog.html',{waitUntil:'networkidle'});
           await page.waitForSelector('.changelog-day');
           assert.equal(await page.locator('.changelog-button').getAttribute('aria-current'),'page','changelog header button should be active on changelog page');
-          assert.equal(await page.locator('.changelog-day').first().getAttribute('data-changelog-date'),'2026-09-18','latest changelog date must render first');
-          assert.ok(await page.locator('[data-changelog-date="2026-09-18"]').getByText('춘트리스·춘박 랭킹 등록 방식 개선').count(),'actual ranking changelog entry missing');
+          assert.equal(await page.locator('.changelog-day').first().getAttribute('data-changelog-date'),'2026-09-19','latest changelog date must render first');
+          assert.ok(await page.locator('[data-changelog-date="2026-09-19"]').getByText('미니게임 1:1 멀티플레이 베타').count(),'actual latest multiplayer changelog entry missing');
           assert.ok(await page.locator('[data-changelog-date="2026-09-17"]').getByText('춘박게임 추가',{exact:true}).count(),'actual Chunbak changelog entry missing');
 
           const mobile=await context.newPage();
