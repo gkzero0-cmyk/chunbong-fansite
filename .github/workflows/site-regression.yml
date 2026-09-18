@@ -32,6 +32,9 @@ jobs:
           node --check chunbak-ranking-core.js
           node --check chunbak-audio.js
           node --check chunbak.js
+          node --check chungwagame-ranking-core.js
+          node --check chungwagame.js
+          node --check chungwagame-postgame-ranking.js
           node --check api/_shared.js
           node --check api/content.js
           node --check lib/activity-feed.js
@@ -44,6 +47,7 @@ jobs:
           node --check changelog-data.js
           node --check lib/chuntris-ranking-api.js
           node --check lib/chunbak-ranking-api.js
+          node --check lib/chungwagame-ranking-api.js
           node --check lib/chunbong-data.js
           node --check lib/soop-analytics.js
           node --check lib/soop-analytics-base.js

@@ -6,20 +6,27 @@ on:
     branches: [main]
     paths:
       - 'chungwagame.html'
+      - 'chungwagame.css'
+      - 'chungwagame.js'
+      - 'chungwagame-ranking-core.js'
+      - 'chungwagame-postgame-ranking.js'
       - 'assets/chungwagame/**'
+      - 'api/content.js'
+      - 'lib/chungwagame-ranking-api.js'
       - 'minigames.html'
       - '.github/workflows/chungwagame-production-smoke.yml'
 
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Wait for current Chungwagame production deployment
+
+      - name: Wait for current Chungwagame production and verify HTTP/API
         env:
           BASE_URL: https://chunbong-fansite.vercel.app
         run: |
@@ -28,28 +35,50 @@ jobs:
             stamp=$(date +%s)
             if curl -fsS -H 'cache-control: no-cache' "$BASE_URL/minigames.html?_smoke=$stamp" -o /tmp/minigames.html && \
                curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chungwagame.html?_smoke=$stamp" -o /tmp/chungwagame.html && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chungwagame.css?_smoke=$stamp" -o /tmp/chungwagame.css && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chungwagame.js?_smoke=$stamp" -o /tmp/chungwagame.js && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chungwagame-ranking-core.js?_smoke=$stamp" -o /tmp/chungwagame-ranking-core.js && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chungwagame-postgame-ranking.js?_smoke=$stamp" -o /tmp/chungwagame-postgame-ranking.js && \
                curl -fsS -H 'cache-control: no-cache' "$BASE_URL/assets/chungwagame/numbers.webp?_smoke=$stamp" -o /tmp/numbers.webp && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/assets/chungwagame/mascot-header.webp?_smoke=$stamp" -o /tmp/mascot-header.webp && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/assets/chungwagame/mascot-ten.webp?_smoke=$stamp" -o /tmp/mascot-ten.webp && \
                grep -q 'href="chungwagame.html"' /tmp/minigames.html && \
-               grep -q 'id="cg-start"' /tmp/chungwagame.html && \
-               grep -q 'assets/chungwagame/numbers.webp' /tmp/chungwagame.html && \
-               grep -q 'GAME_SECONDS=120' /tmp/chungwagame.html && \
-               test -s /tmp/numbers.webp; then
-              file /tmp/numbers.webp | grep -qi webp
-              echo 'Current Chungwagame production is ready.'
-              exit 0
+               grep -q 'id="cg-time-fill"' /tmp/chungwagame.html && \
+               grep -q 'id="cg-pause-restart"' /tmp/chungwagame.html && \
+               grep -q 'id="cg-ranking-register"' /tmp/chungwagame.html && \
+               grep -q 'assets/chungwagame/mascot-header.webp' /tmp/chungwagame.html && \
+               grep -q 'assets/chungwagame/mascot-ten.webp' /tmp/chungwagame.html && \
+               grep -q 'grid-template-columns:150px minmax(0,760px) 104px' /tmp/chungwagame.css && \
+               grep -q 'max-height:calc(100svh - 205px)' /tmp/chungwagame.css && \
+               grep -q 'COMBO_WINDOW=2400' /tmp/chungwagame.js && \
+               grep -q 'showSuccessEffect' /tmp/chungwagame.js && \
+               grep -q 'submitTerminalRanking' /tmp/chungwagame-postgame-ranking.js; then
+              curl -fsS "$BASE_URL/api/content?type=chungwagame-ranking&mode=classic&_smoke=$stamp" -o /tmp/chungwagame-ranking.json || true
+              if node -e "const p=require('/tmp/chungwagame-ranking.json');if(p.mode!=='classic'||!Array.isArray(p.entries))process.exit(1)" 2>/dev/null; then
+                file /tmp/numbers.webp /tmp/mascot-header.webp /tmp/mascot-ten.webp | grep -qi webp
+                echo 'Current compact/ranking Chungwagame production is ready.'
+                break
+              fi
             fi
             test "$attempt" != "60"
             sleep 5
           done
-          echo 'Current Chungwagame production deployment did not become ready in time.' >&2
-          exit 1
+
+          status=$(curl -sS -o /tmp/chungwagame-invalid.json -w '%{http_code}' \
+            -H 'content-type: application/json' \
+            -H "origin: $BASE_URL" \
+            -X POST \
+            --data '{"mode":"classic","nickname":"x","score":1,"maxCombo":1,"cleared":1}' \
+            "$BASE_URL/api/content?type=chungwagame-ranking")
+          test "$status" = "400"
+          node -e "const p=require('/tmp/chungwagame-invalid.json');if(p.error!=='invalid_nickname')process.exit(1)"
 
       - name: Install Playwright Chromium
         run: |
           npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install --with-deps chromium
 
-      - name: Verify production flow and responsive layout
+      - name: Verify production gameplay, effects, ranking and responsive fit
         env:
           BASE_URL: https://chunbong-fansite.vercel.app
         run: |
@@ -57,47 +86,142 @@ jobs:
           import { chromium } from 'playwright';
           import assert from 'node:assert/strict';
 
+          const BASE=process.env.BASE_URL;
           const browser=await chromium.launch({headless:true});
-          try {
-            for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
-              const mobile=viewport.width<=390;
-              const page=await browser.newPage({viewport,isMobile:mobile,hasTouch:mobile});
-              const errors=[];
-              page.on('pageerror',error=>errors.push(error.message));
 
-              await page.goto(`${process.env.BASE_URL}/minigames.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
-              assert.ok(await page.locator('a[href="chungwagame.html"]').count(),'Chungwagame card missing');
-              assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'minigames horizontal overflow');
+          async function findTenRect(page){
+            return page.evaluate(()=>{
+              const rows=10,cols=17;
+              const cells=Array.from(document.querySelectorAll('.cg-fruit')).map(el=>{
+                const shape=el.querySelector('.cg-fruit-shape');
+                return {value:shape?Number(shape.dataset.value):0,removed:!shape};
+              });
+              for(let r1=0;r1<rows;r1++) for(let c1=0;c1<cols;c1++){
+                if(cells[r1*cols+c1]?.removed) continue;
+                for(let r2=r1;r2<Math.min(rows,r1+5);r2++) for(let c2=c1;c2<Math.min(cols,c1+6);c2++){
+                  let sum=0,count=0;
+                  for(let r=r1;r<=r2;r++) for(let c=c1;c<=c2;c++){
+                    const cell=cells[r*cols+c];
+                    if(cell&&!cell.removed){sum+=cell.value;count++;}
+                  }
+                  if(count&&sum===10) return {r1,c1,r2,c2,start:r1*cols+c1,end:r2*cols+c2};
+                }
+              }
+              return null;
+            });
+          }
 
-              await page.goto(`${process.env.BASE_URL}/chungwagame.html?_smoke=${Date.now()}`,{waitUntil:'networkidle'});
-              assert.ok(await page.locator('#cg-start').isVisible(),'start button missing');
-              await page.locator('#cg-start').click();
-              await page.waitForFunction(()=>document.querySelectorAll('.cg-fruit-shape').length===170);
-              assert.equal(await page.locator('.cg-fruit-shape').count(),170,'board must render 170 fruits');
-              const bg=await page.locator('.cg-fruit-shape').first().evaluate(el=>getComputedStyle(el).backgroundImage);
-              assert.match(bg,/assets\/chungwagame\/numbers\.webp/,'number sprite not rendered');
-              assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'game horizontal overflow');
+          async function dragRect(page,rect){
+            assert.ok(rect,'no sum-10 rectangle found');
+            const a=await page.locator(`.cg-fruit[data-index="${rect.start}"]`).boundingBox();
+            const b=await page.locator(`.cg-fruit[data-index="${rect.end}"]`).boundingBox();
+            assert.ok(a&&b,'drag cells missing');
+            await page.mouse.move(a.x+a.width/2,a.y+a.height/2);
+            await page.mouse.down();
+            await page.mouse.move(b.x+b.width/2,b.y+b.height/2,{steps:5});
+            await page.mouse.up();
+          }
 
-              await page.locator('#cg-pause').click();
-              assert.ok(await page.locator('#cg-pause-overlay').isVisible(),'pause overlay missing');
-              const pausedTime=(await page.locator('#cg-timer').textContent())?.trim();
-              await page.waitForTimeout(1100);
-              assert.equal((await page.locator('#cg-timer').textContent())?.trim(),pausedTime,'timer changed while paused');
-              await page.locator('#cg-resume').click();
+          async function verify(viewport){
+            const mobile=viewport.width<=390;
+            const page=await browser.newPage({viewport,isMobile:mobile,hasTouch:mobile});
+            const errors=[];
+            page.on('pageerror',error=>errors.push(error.message));
 
-              await page.locator('#cg-hint-btn').click();
-              assert.ok(await page.locator('#cg-hint').evaluate(el=>getComputedStyle(el).display!=='none'),'hint did not display');
-              await page.locator('#cg-shuffle').click();
-              await page.locator('#cg-sound').click();
-              assert.equal(await page.locator('#cg-sound').getAttribute('aria-pressed'),'false','sound toggle failed');
-              await page.locator('#cg-restart').click();
-              assert.equal((await page.locator('#cg-score').textContent())?.trim(),'0','restart did not reset score');
-              assert.equal((await page.locator('#cg-timer').textContent())?.trim(),'02:00','restart did not reset timer');
+            await page.goto(`${BASE}/minigames.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
+            assert.ok(await page.locator('a[href="chungwagame.html"]').count(),'Chungwagame card missing');
+            assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'minigames horizontal overflow');
 
-              assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
-              await page.close();
+            await page.goto(`${BASE}/chungwagame.html?_smoke=${Date.now()}`,{waitUntil:'networkidle'});
+            await page.waitForFunction(()=>Boolean(window.ChungwagameApp&&window.ChungwagamePostgameRanking));
+            assert.equal(await page.locator('#cg-nickname').count(),0,'pregame nickname must not exist');
+            assert.ok(await page.locator('#cg-start').isVisible(),'start button missing');
+            for(const sel of ['.chungwagame-brand-mark img','.cg-ten-mascot']){
+              assert.ok(await page.locator(sel).evaluate(img=>img.complete&&img.naturalWidth>0),`image failed: ${sel}`);
             }
-          } finally {
+            assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'initial horizontal overflow');
+
+            if(viewport.width>=900){
+              await page.locator('.chungwagame-game').scrollIntoViewIfNeeded();
+              const layout=await page.locator('.chungwagame-layout').boundingBox();
+              assert.ok(layout,'layout missing');
+              assert.ok(layout.x>=-1&&layout.x+layout.width<=viewport.width+1,'desktop layout clips horizontally');
+              assert.ok(layout.y+layout.height<=viewport.height+3,`desktop bottom clipped: ${layout.y+layout.height} > ${viewport.height}`);
+            }
+
+            await page.locator('#cg-start').click();
+            await page.waitForFunction(()=>document.querySelectorAll('.cg-fruit-shape').length===170);
+            assert.equal(await page.locator('.cg-fruit-shape').count(),170,'board must render 170 fruits');
+            const bg=await page.locator('.cg-fruit-shape').first().evaluate(el=>getComputedStyle(el).backgroundImage);
+            assert.match(bg,/assets\/chungwagame\/numbers\.webp/,'number sprite not rendered');
+
+            const fillBefore=await page.locator('#cg-time-fill').evaluate(el=>getComputedStyle(el).transform);
+            const timeBefore=(await page.locator('#cg-timer').textContent())?.trim();
+            await page.waitForTimeout(1150);
+            const fillAfter=await page.locator('#cg-time-fill').evaluate(el=>getComputedStyle(el).transform);
+            const timeAfter=(await page.locator('#cg-timer').textContent())?.trim();
+            assert.notEqual(fillAfter,fillBefore,'time gauge did not shrink');
+            assert.notEqual(timeAfter,timeBefore,'timer did not advance');
+
+            await page.keyboard.press('Escape');
+            assert.ok(await page.locator('#cg-pause-overlay').isVisible(),'ESC pause overlay missing');
+            assert.ok(await page.locator('#cg-pause-restart').isVisible(),'pause restart action missing');
+            const pausedTime=(await page.locator('#cg-timer').textContent())?.trim();
+            const pausedFill=await page.locator('#cg-time-fill').evaluate(el=>getComputedStyle(el).transform);
+            await page.waitForTimeout(1050);
+            assert.equal((await page.locator('#cg-timer').textContent())?.trim(),pausedTime,'timer changed while paused');
+            assert.equal(await page.locator('#cg-time-fill').evaluate(el=>getComputedStyle(el).transform),pausedFill,'gauge changed while paused');
+            await page.keyboard.press('Escape');
+            await page.waitForFunction(()=>document.querySelector('#chungwagame')?.dataset.gameStatus==='playing');
+
+            await page.locator('#cg-ranking').click();
+            assert.ok(await page.locator('#cg-ranking-modal').isVisible(),'ranking modal missing');
+            assert.equal(await page.locator('#chungwagame').getAttribute('data-game-status'),'paused','ranking modal must pause gameplay');
+            await page.locator('#cg-ranking-close').click();
+            await page.waitForFunction(()=>document.querySelector('#chungwagame')?.dataset.gameStatus==='playing');
+
+            let rect=await findTenRect(page);
+            await dragRect(page,rect);
+            await page.waitForFunction(()=>Number(document.querySelector('#cg-score')?.textContent||0)>0);
+            assert.ok(await page.locator('#cg-fx-layer').evaluate(el=>el.childElementCount>0),'sum-10 burst effect missing');
+
+            await page.waitForFunction(()=>!document.querySelector('.cg-fruit.good'));
+            rect=await findTenRect(page);
+            if(!rect){
+              await page.locator('#cg-shuffle').click();
+              rect=await findTenRect(page);
+            }
+            await dragRect(page,rect);
+            await page.waitForFunction(()=>window.ChungwagameApp?.getSnapshot?.().maxCombo>=2);
+            assert.match((await page.locator('#cg-combo').textContent())||'',/COMBO x2|COMBO x[3-9]/,'combo feedback missing');
+
+            await page.locator('#cg-shuffle').click();
+            await page.locator('#cg-hint-btn').click();
+            assert.ok(await page.locator('#cg-hint').evaluate(el=>getComputedStyle(el).display!=='none'),'hint did not display');
+            await page.locator('#cg-sound').click();
+            assert.equal(await page.locator('#cg-sound').getAttribute('aria-pressed'),'false','sound toggle failed');
+
+            await page.evaluate(()=>window.ChungwagameApp.setGameOver());
+            await page.waitForFunction(()=>document.querySelector('#chungwagame')?.dataset.gameStatus==='gameover');
+            assert.ok(await page.locator('#cg-ranking-register').isVisible(),'postgame ranking register missing');
+            await page.locator('#cg-ranking-register').click();
+            assert.ok(await page.locator('#cg-ranking-submit-panel').isVisible(),'postgame nickname panel missing');
+            await page.locator('#cg-ranking-nickname').fill('x');
+            await page.locator('#cg-ranking-submit').click();
+            await page.waitForFunction(()=>document.querySelector('#cg-ranking-submit-status')?.textContent.includes('2~16자'));
+
+            await page.locator('#cg-again').click();
+            assert.equal((await page.locator('#cg-score').textContent())?.trim(),'0','restart did not reset score');
+            assert.equal((await page.locator('#cg-timer').textContent())?.trim(),'02:00','restart did not reset timer');
+            assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
+            await page.close();
+          }
+
+          try{
+            await verify({width:1440,height:900});
+            await verify({width:1280,height:720});
+            await verify({width:390,height:844});
+          }finally{
             await browser.close();
           }
           EOF_NODE

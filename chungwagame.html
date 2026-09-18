@@ -8,66 +8,8 @@
   <title>춘과게임 | 춘봉 팬사이트</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="preload" as="image" href="assets/chungwagame/numbers.webp" type="image/webp">
-  <style>
-    :root{--cg-ink:#4d2b1b;--cg-green:#95c900;--cg-lime:#d7ff58;--cg-soft:#f1ffc9;--cg-cream:#fffdf0;--cg-orange:#ff7d22;--cg-shadow:0 16px 36px rgba(75,67,20,.14)}
-    .chungwagame-page{background:radial-gradient(circle at 15% 8%,rgba(218,255,107,.72),transparent 24%),radial-gradient(circle at 84% 14%,rgba(255,243,151,.72),transparent 25%),linear-gradient(180deg,#fbffe8 0%,#eefdc2 58%,#e8f6b9 100%);min-height:calc(100vh - 80px);color:var(--cg-ink)}
-    .chungwagame-hero{padding-bottom:28px}
-    .chungwagame-hero .page-shell{position:relative}
-    .chungwagame-hero h1{letter-spacing:-.05em}
-    .chungwagame-shell{width:min(1540px,96vw);margin:0 auto;padding:0 0 34px}
-    .chungwagame-topbar{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:16px}
-    .chungwagame-brand{display:flex;align-items:center;gap:12px}
-    .chungwagame-brand-mark{width:58px;height:58px;display:grid;place-items:center;border-radius:18px;background:#fff;border:2px solid rgba(112,81,28,.12);box-shadow:var(--cg-shadow);font-size:31px}
-    .chungwagame-brand h2{margin:0;font-size:clamp(25px,2.2vw,40px);line-height:1;font-weight:1000;letter-spacing:-1.8px;color:#5b2d17}
-    .chungwagame-brand p{margin:7px 0 0;font-size:14px;color:#725542;font-weight:800}
-    .chungwagame-brand p strong{color:#7ea900;font-size:17px}
-    .chungwagame-stats{display:flex;gap:10px}
-    .cg-stat{min-width:108px;padding:9px 14px;border-radius:18px;background:rgba(255,255,255,.86);border:1px solid rgba(99,70,27,.1);box-shadow:0 8px 22px rgba(86,69,24,.08);display:grid;gap:1px;text-align:center}
-    .cg-stat span{font-size:11px;font-weight:900;color:#8f735e;letter-spacing:.5px}
-    .cg-stat strong{font-size:25px;line-height:1.15;color:#52301d;font-variant-numeric:tabular-nums}
-    .cg-stat.cg-timer strong{color:#eb6a49}
-    .chungwagame-layout{display:grid;grid-template-columns:190px minmax(660px,1fr) 138px;gap:14px;align-items:start}
-    .cg-side{display:grid;gap:12px}
-    .cg-card,.cg-utility,.cg-board-card{background:rgba(255,255,255,.88);border:1px solid rgba(98,71,35,.12);box-shadow:var(--cg-shadow)}
-    .cg-mascot{border-radius:26px;padding:18px 14px;text-align:center}
-    .cg-grape-mascot{width:126px;height:126px;margin:0 auto 10px;position:relative;filter:drop-shadow(0 9px 8px rgba(86,58,12,.15))}
-    .cg-grape-mascot i{position:absolute;width:42px;height:42px;border-radius:50%;background:linear-gradient(145deg,#dfff65,#9bc400);border:3px solid #789900;box-shadow:inset -5px -6px 0 rgba(92,135,0,.12)}
-    .cg-grape-mascot i:nth-child(1){left:42px;top:7px}.cg-grape-mascot i:nth-child(2){left:21px;top:34px}.cg-grape-mascot i:nth-child(3){left:63px;top:34px}.cg-grape-mascot i:nth-child(4){left:8px;top:66px}.cg-grape-mascot i:nth-child(5){left:42px;top:66px}.cg-grape-mascot i:nth-child(6){left:76px;top:66px}.cg-grape-mascot i:nth-child(7){left:42px;top:96px}
-    .cg-grape-mascot:before{content:"";position:absolute;width:20px;height:24px;left:58px;top:-8px;background:#639315;border-radius:90% 10% 90% 10%;transform:rotate(27deg)}
-    .cg-grape-mascot:after{content:"• ᴗ •";position:absolute;left:34px;top:49px;width:60px;font-weight:1000;font-size:17px;color:#4c351d;z-index:3;white-space:nowrap}
-    .cg-speech{padding:10px 9px;border-radius:14px;background:#f4ffc9;font-size:13px;font-weight:900;line-height:1.5}
-    .cg-speech b{font-size:20px;color:#83af00}
-    .cg-howto{border-radius:22px;padding:15px}
-    .cg-howto h3{font-size:15px;margin:0 0 10px;font-weight:1000}
-    .cg-howto ol{padding-left:19px;margin:0;display:grid;gap:8px;color:#715744;font-size:12px;font-weight:800;line-height:1.45}
-    .cg-howto b{color:#82ad00;font-size:15px}
-    .cg-board-card{border-radius:28px;padding:12px;overflow:hidden}
-    .cg-board-head{display:flex;justify-content:space-between;align-items:center;min-height:46px;padding:0 8px 8px}
-    .cg-selection{display:flex;align-items:baseline;gap:6px;padding:6px 12px;border-radius:14px;background:#f4f8ea}
-    .cg-selection span{font-size:11px;font-weight:900;color:#806b58}.cg-selection strong{font-size:24px;color:#87b500;line-height:1}.cg-selection em{font-style:normal;font-weight:900;color:#a89583}
-    .cg-message{font-size:12px;font-weight:900;color:#806d5e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-left:12px}
-    .cg-board-wrap{position:relative;border-radius:20px;overflow:hidden;touch-action:none;user-select:none;background:linear-gradient(rgba(255,255,255,.88),rgba(255,255,255,.88)),repeating-linear-gradient(0deg,transparent 0 44px,rgba(105,130,26,.035) 44px 45px),repeating-linear-gradient(90deg,transparent 0 44px,rgba(105,130,26,.035) 44px 45px);border:2px solid rgba(111,97,48,.11)}
-    .cg-board{display:grid;grid-template-columns:repeat(17,minmax(0,1fr));grid-template-rows:repeat(10,minmax(0,1fr));aspect-ratio:17/10;padding:7px;gap:1px;position:relative;z-index:1}
-    .cg-fruit{position:relative;display:grid;place-items:center;min-width:0;min-height:0;transition:transform .08s ease,filter .08s ease,opacity .24s ease;pointer-events:none}
-    .cg-fruit-shape{width:94%;height:94%;background-image:url('assets/chungwagame/numbers.webp');background-repeat:no-repeat;background-size:300% 300%;filter:drop-shadow(0 2px 1px rgba(88,62,25,.16))}
-    .cg-fruit-shape[data-value="1"]{background-position:0% 0%}.cg-fruit-shape[data-value="2"]{background-position:50% 0%}.cg-fruit-shape[data-value="3"]{background-position:100% 0%}.cg-fruit-shape[data-value="4"]{background-position:0% 50%}.cg-fruit-shape[data-value="5"]{background-position:50% 50%}.cg-fruit-shape[data-value="6"]{background-position:100% 50%}.cg-fruit-shape[data-value="7"]{background-position:0% 100%}.cg-fruit-shape[data-value="8"]{background-position:50% 100%}.cg-fruit-shape[data-value="9"]{background-position:100% 100%}
-    .cg-fruit.selected{transform:scale(.91);filter:brightness(1.05) saturate(1.15)}
-    .cg-fruit.selected:after{content:"";position:absolute;inset:7%;border:2px solid rgba(255,140,29,.86);border-radius:28%;box-shadow:0 0 0 3px rgba(255,237,76,.26),0 0 18px rgba(255,191,50,.55)}
-    .cg-fruit.good{animation:cgFruitPop .34s cubic-bezier(.22,.9,.28,1.3) forwards}.cg-fruit.empty{opacity:0;transform:scale(.35)}
-    @keyframes cgFruitPop{0%{transform:scale(.92)}45%{transform:scale(1.3) rotate(-4deg);filter:brightness(1.3)}100%{transform:scale(.18) rotate(7deg);opacity:0}}
-    .cg-drag,.cg-hint{position:absolute;display:none;pointer-events:none;z-index:4;border-radius:9px}.cg-drag{border:3px solid #ff9f1c;background:rgba(255,224,93,.16);box-shadow:0 0 0 2px rgba(255,255,255,.65) inset,0 5px 18px rgba(238,138,12,.18)}.cg-drag.valid{border-color:#8fc900;background:rgba(203,255,57,.18);box-shadow:0 0 0 2px rgba(255,255,255,.65) inset,0 0 20px rgba(143,201,0,.32)}.cg-hint{border:3px dashed #ff5f5f;background:rgba(255,112,112,.08);animation:cgHint .72s ease-in-out infinite alternate}@keyframes cgHint{to{box-shadow:0 0 0 6px rgba(255,95,95,.14)}}
-    .cg-combo{position:absolute;left:50%;top:48%;z-index:6;transform:translate(-50%,-50%) scale(.7);opacity:0;pointer-events:none;font-weight:1000;font-size:clamp(24px,4vw,52px);color:#ff7b29;text-shadow:0 3px 0 #fff,0 6px 18px rgba(74,42,11,.22)}.cg-combo.show{animation:cgCombo .64s ease-out}@keyframes cgCombo{0%{opacity:0;transform:translate(-50%,-40%) scale(.55)}35%{opacity:1;transform:translate(-50%,-55%) scale(1.08)}100%{opacity:0;transform:translate(-50%,-75%) scale(.96)}}
-    .cg-overlay{position:absolute;inset:0;z-index:8;display:grid;place-items:center;padding:18px;background:rgba(246,255,217,.68);backdrop-filter:blur(5px)}.cg-overlay.hidden{display:none}
-    .cg-overlay-inner{width:min(430px,90%);padding:26px;border-radius:26px;background:rgba(255,255,255,.94);border:1px solid rgba(96,76,31,.11);box-shadow:0 22px 55px rgba(74,63,27,.19);text-align:center}
-    .cg-overlay-inner h3{font-size:clamp(28px,4vw,46px);margin:4px 0 8px;font-weight:1000;letter-spacing:-1.8px;color:#58301c}.cg-overlay-inner h3 span{color:#8ebd00}.cg-overlay-inner p{margin:0 0 18px;color:#79604c;font-size:14px;font-weight:800}.cg-mini-logo{font-size:12px;font-weight:1000;color:#8ebd00;letter-spacing:2px}
-    .cg-primary{border:0;border-radius:16px;padding:13px 24px;background:linear-gradient(135deg,#b8df25,#84b000);color:#fff;font-weight:1000;font-size:15px;box-shadow:0 8px 18px rgba(126,167,0,.24);cursor:pointer}.cg-primary:hover{transform:translateY(-1px)}
-    .cg-utility{border-radius:20px;padding:12px 6px;display:grid;place-items:center;gap:2px;border:1px solid rgba(98,71,35,.12);cursor:pointer;color:#59402d}.cg-utility span{font-size:24px;height:29px}.cg-utility b{font-size:12px}.cg-utility small{font-size:9px;color:#998473;font-weight:800}.cg-utility:hover{transform:translateY(-1px);background:#fbfff0}.cg-utility.danger:hover{background:#fff3ee}
-    .cg-result-score{font-size:clamp(32px,5vw,56px);font-weight:1000;color:#ff7b29;margin:6px 0 8px}
-    .cg-shortcuts{margin-top:11px;text-align:center;font-size:11px;color:#806d5e;font-weight:800}
-    @media(max-width:1120px){.chungwagame-layout{grid-template-columns:minmax(0,1fr) 126px}.cg-side.cg-left{display:none}.chungwagame-shell{width:min(1000px,96vw)}}
-    @media(max-width:760px){.chungwagame-shell{width:98vw;padding-bottom:20px}.chungwagame-topbar{padding:0 6px}.chungwagame-brand p{display:none}.chungwagame-brand-mark{width:44px;height:44px;font-size:24px}.chungwagame-brand h2{font-size:25px}.cg-stat{min-width:72px;padding:7px}.cg-stat span{font-size:8px}.cg-stat strong{font-size:18px}.chungwagame-layout{grid-template-columns:1fr;gap:8px}.cg-side.cg-right{grid-template-columns:repeat(5,1fr);gap:6px;order:2}.cg-utility{border-radius:15px;padding:8px 3px}.cg-utility span{font-size:20px;height:23px}.cg-utility b{font-size:10px}.cg-utility small{display:none}.cg-board-card{border-radius:20px;padding:6px;order:1}.cg-board-head{min-height:40px;padding:0 5px 5px}.cg-message{font-size:10px}.cg-selection{padding:4px 8px}.cg-selection span{display:none}.cg-selection strong{font-size:20px}.cg-board{padding:3px;gap:0}.cg-fruit.selected:after{border-width:1px;box-shadow:none}.cg-drag{border-width:2px}}
-    @media(max-width:520px){.chungwagame-topbar{display:grid;grid-template-columns:1fr;gap:7px}.chungwagame-brand{justify-content:center}.chungwagame-stats{justify-content:center}.cg-stat{min-width:86px}.cg-overlay-inner{padding:16px}.cg-overlay-inner h3{font-size:28px}}
-  </style>
+  <link rel="preload" as="image" href="assets/chungwagame/mascot-header.webp" type="image/webp">
+  <link rel="stylesheet" href="chungwagame.css">
 </head>
 <body data-page="minigames">
 <div class="noise" aria-hidden="true"></div>
@@ -77,107 +19,65 @@
   <nav class="main-nav" id="main-nav" aria-label="주요 메뉴"><a data-nav="home" href="index.html">HOME</a><a data-nav="schedule" href="schedule.html">방송 일정</a><a data-nav="notice" href="notice.html">공지</a><a data-nav="vod" href="vod.html">다시보기</a><a data-nav="clips" href="clips.html">핫클립</a><a data-nav="fanart" href="fanart.html">팬아트</a><a data-nav="youtube" href="youtube.html">유튜브</a><a data-nav="tarot" href="tarot.html">TAROT</a><a data-nav="minigames" href="minigames.html">미니게임</a><a data-nav="history" href="history.html">방송 이력</a><a data-nav="data" href="data.html">춘봉 데이터</a></nav>
   <a class="header-live" href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer">SOOP ↗</a>
 </header>
-
 <main class="chungwagame-page">
-  <section class="page-hero chungwagame-hero"><div class="page-shell reveal"><a class="minigame-back-link" href="minigames.html" aria-label="미니게임 목록으로 돌아가기">← 미니게임으로 돌아가기</a><p class="kicker">SUM PUZZLE</p><h1>춘과게임</h1><p>숫자의 합이 10이 되도록 춘과를 드래그해서 팡팡 없애보세요.</p></div></section>
-  <section class="chungwagame-shell reveal" id="chungwagame" aria-label="춘과게임">
-    <div class="chungwagame-topbar">
-      <div class="chungwagame-brand"><div class="chungwagame-brand-mark">🍇</div><div><h2>춘과게임</h2><p>합이 <strong>10</strong>이 되면 춘과가 팡!</p></div></div>
-      <div class="chungwagame-stats">
-        <div class="cg-stat"><span>점수</span><strong id="cg-score">0</strong></div>
-        <div class="cg-stat"><span>BEST</span><strong id="cg-best">0</strong></div>
-        <div class="cg-stat cg-timer"><span>남은 시간</span><strong id="cg-timer">02:00</strong></div>
-      </div>
-    </div>
-
-    <div class="chungwagame-layout">
-      <aside class="cg-side cg-left">
-        <div class="cg-card cg-mascot"><div class="cg-grape-mascot" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="cg-speech">숫자를 드래그해서<br><b>10</b>을 만들어줘!</div></div>
-        <div class="cg-card cg-howto"><h3>게임 방법</h3><ol><li>마우스나 손가락으로 춘과를 드래그!</li><li>선택한 숫자의 합이 <b>10</b>이면 성공!</li><li>120초 동안 최대한 많이 없애기!</li></ol></div>
-      </aside>
-
-      <section class="cg-board-card">
-        <div class="cg-board-head"><div class="cg-selection" id="cg-selection-box"><span>선택 합계</span><strong id="cg-sum">0</strong><em>/ 10</em></div><div class="cg-message" id="cg-message">START를 누르면 시작해요!</div></div>
-        <div class="cg-board-wrap" id="cg-board-wrap">
-          <div id="cg-board" class="cg-board" role="grid" aria-label="숫자 춘과 게임판"></div>
-          <div id="cg-drag" class="cg-drag" aria-hidden="true"></div>
-          <div id="cg-hint" class="cg-hint" aria-hidden="true"></div>
-          <div id="cg-combo" class="cg-combo" aria-hidden="true"></div>
-          <div id="cg-start-overlay" class="cg-overlay"><div class="cg-overlay-inner"><div class="cg-mini-logo">CHUNGWA GAME</div><h3>합이 10이면 <span>팡!</span></h3><p>직사각형으로 여러 춘과를 한 번에 선택할 수 있어요.</p><button id="cg-start" class="cg-primary" type="button">START</button></div></div>
-          <div id="cg-pause-overlay" class="cg-overlay hidden"><div class="cg-overlay-inner"><div class="cg-mini-logo">PAUSE</div><h3>잠시 멈춤</h3><p>현재 점수와 남은 시간은 그대로 유지됩니다.</p><button id="cg-resume" class="cg-primary" type="button">계속하기</button></div></div>
-          <div id="cg-over-overlay" class="cg-overlay hidden"><div class="cg-overlay-inner"><div class="cg-mini-logo">TIME OVER!</div><div class="cg-result-score"><span id="cg-final">0</span>점</div><p id="cg-result-message">잘했어요!</p><button id="cg-again" class="cg-primary" type="button">한 판 더!</button></div></div>
+  <div class="chungwagame-shell">
+    <div class="chungwagame-navline"><a class="minigame-back-link" href="minigames.html">← 미니게임</a><span>SUM PUZZLE · 합계 10</span></div>
+    <section id="chungwagame" class="chungwagame-game" data-game-status="start" aria-label="춘과게임">
+      <div class="chungwagame-topbar">
+        <div class="chungwagame-brand">
+          <div class="chungwagame-brand-mark"><img src="assets/chungwagame/mascot-header.webp" alt="춘과 캐릭터" width="180" height="157"></div>
+          <div><h1>춘과게임</h1><p>합이 <strong>10</strong>이 되면 춘과가 팡!</p></div>
         </div>
-        <div class="cg-shortcuts">PC: 드래그 선택 · ESC: 일시정지/계속 · 모바일: 손가락 드래그</div>
-      </section>
-
-      <aside class="cg-side cg-right">
-        <button id="cg-hint-btn" class="cg-utility" type="button"><span>💡</span><b>힌트</b><small>10 조합 찾기</small></button>
-        <button id="cg-shuffle" class="cg-utility" type="button"><span>🔀</span><b>섞기</b><small>남은 춘과 재배치</small></button>
-        <button id="cg-pause" class="cg-utility" type="button"><span>⏸️</span><b>일시정지</b><small>ESC</small></button>
-        <button id="cg-sound" class="cg-utility" type="button" aria-pressed="true"><span id="cg-sound-icon">🔊</span><b>사운드</b><small id="cg-sound-label">ON</small></button>
-        <button id="cg-restart" class="cg-utility danger" type="button"><span>↻</span><b>다시 시작</b><small>새 게임</small></button>
-      </aside>
-    </div>
-  </section>
+        <div class="chungwagame-stats" aria-label="게임 기록">
+          <div class="cg-stat"><span>점수</span><strong id="cg-score">0</strong></div>
+          <div class="cg-stat"><span>BEST</span><strong id="cg-best">0</strong></div>
+          <div class="cg-stat cg-timer"><span>남은 시간</span><strong id="cg-timer">02:00</strong></div>
+        </div>
+      </div>
+      <div class="cg-time-track" aria-label="남은 시간 게이지"><div id="cg-time-fill" class="cg-time-fill"></div></div>
+      <div class="chungwagame-layout">
+        <aside class="cg-side cg-left">
+          <div class="cg-card cg-mascot-card">
+            <img class="cg-ten-mascot" src="assets/chungwagame/mascot-ten.webp" alt="숫자 10 춘과 캐릭터" width="110" height="96">
+            <div class="cg-speech">숫자를 드래그해서<br><b>10</b>을 만들어줘!</div>
+          </div>
+          <div class="cg-card cg-howto"><h2>게임 방법</h2><ol><li>춘과를 직사각형으로 드래그</li><li>선택 숫자의 합이 <b>10</b>이면 팡!</li><li>120초 동안 높은 점수에 도전</li></ol></div>
+        </aside>
+        <section class="cg-board-card" aria-label="게임 보드">
+          <div class="cg-board-head"><div class="cg-selection" id="cg-selection-box"><span>선택 합계</span><strong id="cg-sum">0</strong><em>/ 10</em></div><div class="cg-message" id="cg-message" aria-live="polite">START를 누르면 시작해요!</div></div>
+          <div class="cg-board-wrap" id="cg-board-wrap">
+            <div id="cg-board" class="cg-board" role="grid" aria-label="숫자 춘과 게임판"></div>
+            <div id="cg-drag" class="cg-drag" aria-hidden="true"></div>
+            <div id="cg-hint" class="cg-hint" aria-hidden="true"></div>
+            <div id="cg-fx-layer" class="cg-fx-layer" aria-hidden="true"></div>
+            <div id="cg-combo" class="cg-combo" aria-live="polite" aria-atomic="true"></div>
+            <div id="cg-start-overlay" class="cg-overlay"><div class="cg-overlay-inner cg-start-card"><span class="cg-kicker">CHUNGWA GAME</span><h2>합이 10이면 <em>팡!</em></h2><p>직사각형으로 춘과를 선택해 10을 만들어보세요.</p><button id="cg-start" class="cg-primary" type="button">게임 시작</button></div></div>
+            <div id="cg-pause-overlay" class="cg-overlay hidden"><div class="cg-overlay-inner"><span class="cg-kicker">PAUSE</span><h2>잠시 멈춤</h2><p>현재 점수와 남은 시간은 그대로 유지됩니다.</p><div class="cg-overlay-actions"><button id="cg-resume" class="cg-primary" type="button">계속하기</button><button id="cg-pause-restart" class="cg-secondary" type="button">다시 시작</button><button id="cg-pause-ranking" class="cg-plain" type="button">🏆 랭킹 보기</button></div></div></div>
+            <div id="cg-over-overlay" class="cg-overlay hidden"><div class="cg-overlay-inner cg-over-card"><span class="cg-kicker">TIME OVER!</span><div class="cg-result-score"><span id="cg-final">0</span>점</div><p id="cg-result-message">잘했어요!</p><p class="cg-result-sub">MAX COMBO <strong id="cg-final-combo">x1</strong> · 제거 <strong id="cg-final-cleared">0</strong>개</p><div class="cg-overlay-actions"><button id="cg-ranking-register" class="cg-primary" type="button">랭킹 등록</button><button id="cg-again" class="cg-secondary" type="button">한 판 더!</button></div><div id="cg-ranking-submit-panel" class="cg-ranking-submit-panel" hidden><label for="cg-ranking-nickname">닉네임 <input id="cg-ranking-nickname" maxlength="16" autocomplete="nickname" placeholder="2~16자"></label><div><button id="cg-ranking-submit" type="button">등록하기</button><button id="cg-ranking-cancel" type="button">취소</button></div><p id="cg-ranking-submit-status" aria-live="polite"></p></div></div></div>
+          </div>
+          <div class="cg-shortcuts">드래그 선택 · ESC 일시정지/계속 · 모바일 터치 드래그</div>
+        </section>
+        <aside class="cg-side cg-right" aria-label="게임 도구">
+          <button id="cg-ranking" class="cg-utility" type="button"><span>🏆</span><b>랭킹</b><small>TOP 10</small></button>
+          <button id="cg-hint-btn" class="cg-utility" type="button"><span>💡</span><b>힌트</b><small>10 찾기</small></button>
+          <button id="cg-shuffle" class="cg-utility" type="button"><span>🔀</span><b>섞기</b><small>재배치</small></button>
+          <button id="cg-pause" class="cg-utility" type="button"><span>⏸</span><b>일시정지</b><small>ESC</small></button>
+          <button id="cg-sound" class="cg-utility" type="button" aria-pressed="true"><span id="cg-sound-icon">🔊</span><b>사운드</b><small id="cg-sound-label">ON</small></button>
+          <button id="cg-restart" class="cg-utility danger" type="button"><span>↻</span><b>다시 시작</b><small>새 게임</small></button>
+        </aside>
+      </div>
+      <div id="cg-ranking-modal" class="cg-modal" role="dialog" aria-modal="true" aria-labelledby="cg-ranking-title" hidden>
+        <div class="cg-modal-backdrop" data-cg-ranking-close></div>
+        <section class="cg-modal-card"><header><div><span class="cg-kicker">GLOBAL</span><h2 id="cg-ranking-title">춘과게임 TOP 10</h2></div><button id="cg-ranking-close" type="button" aria-label="랭킹 닫기">×</button></header><p id="cg-ranking-status" class="cg-ranking-status" aria-live="polite">랭킹 불러오는 중…</p><ol id="cg-ranking-list" class="cg-ranking-list"></ol></section>
+      </div>
+    </section>
+  </div>
 </main>
-
 <footer><div class="footer-brand"><span class="brand-mark">CB</span><div><strong>CHUNBONG FAN HUB</strong><p>비공식 팬사이트 · 공식 채널의 콘텐츠를 팬사이트 안에서 더 편하게 만나보세요.</p></div></div><div class="footer-links"><a href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer">SOOP ↗</a><a href="https://cafe.naver.com/chunbongtv" target="_blank" rel="noreferrer">NAVER CAFE ↗</a></div><p class="copyright">© 2026 CHUNBONG FAN HUB · Unofficial fan project</p></footer>
 <button class="to-top" type="button" aria-label="맨 위로 이동">↑</button>
 <script src="content.js"></script><script src="page.js"></script>
-<script>
-(function(){
-  "use strict";
-  var ROWS=10,COLS=17,GAME_SECONDS=120,STORAGE_KEY="chungwagame-best-v1";
-  var e={
-    board:document.getElementById("cg-board"),wrap:document.getElementById("cg-board-wrap"),dragRect:document.getElementById("cg-drag"),hintRect:document.getElementById("cg-hint"),combo:document.getElementById("cg-combo"),
-    score:document.getElementById("cg-score"),best:document.getElementById("cg-best"),timer:document.getElementById("cg-timer"),sum:document.getElementById("cg-sum"),sumBox:document.getElementById("cg-selection-box"),message:document.getElementById("cg-message"),
-    startOverlay:document.getElementById("cg-start-overlay"),pauseOverlay:document.getElementById("cg-pause-overlay"),overOverlay:document.getElementById("cg-over-overlay"),start:document.getElementById("cg-start"),resume:document.getElementById("cg-resume"),again:document.getElementById("cg-again"),
-    hintBtn:document.getElementById("cg-hint-btn"),shuffle:document.getElementById("cg-shuffle"),pause:document.getElementById("cg-pause"),sound:document.getElementById("cg-sound"),soundIcon:document.getElementById("cg-sound-icon"),soundLabel:document.getElementById("cg-sound-label"),restart:document.getElementById("cg-restart"),final:document.getElementById("cg-final"),resultMessage:document.getElementById("cg-result-message")
-  };
-  var board=[],score=0,best=Number(localStorage.getItem(STORAGE_KEY)||0),remaining=GAME_SECONDS,running=false,paused=false,timerId=null,drag=null,soundOn=true,audioCtx=null,combo=0,lastClearAt=0,hintTimer=null;
-
-  function randomValue(){var r=Math.random();if(r<.12)return 1;if(r<.25)return 2;if(r<.39)return 3;if(r<.54)return 4;if(r<.70)return 5;if(r<.82)return 6;if(r<.90)return 7;if(r<.96)return 8;return 9}
-  function createBoard(){board=Array.from({length:ROWS*COLS},function(_,index){return{index:index,row:Math.floor(index/COLS),col:index%COLS,value:randomValue(),removed:false,el:null}});ensureMove()}
-  function ensureMove(){if(findHint())return;board[0].value=4;board[1].value=6}
-  function renderBoard(){e.board.innerHTML="";var frag=document.createDocumentFragment();board.forEach(function(cell){var div=document.createElement("div");div.className="cg-fruit"+(cell.removed?" empty":"");div.dataset.index=String(cell.index);div.setAttribute("role","gridcell");div.setAttribute("aria-label",cell.removed?"빈 칸":"숫자 "+cell.value);if(!cell.removed){var shape=document.createElement("div");shape.className="cg-fruit-shape";shape.dataset.value=String(cell.value);div.appendChild(shape)}cell.el=div;frag.appendChild(div)});e.board.appendChild(frag)}
-  function updateHud(){e.score.textContent=String(score);e.best.textContent=String(best);e.timer.textContent=formatTime(remaining)}
-  function formatTime(sec){var m=Math.floor(sec/60),s=sec%60;return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0")}
-  function setMessage(t){e.message.textContent=t}
-  function setSelectionSum(sum){e.sum.textContent=String(sum);e.sumBox.style.background=sum===10?"#eaffae":sum>10?"#fff0e9":"#f4f8ea";e.sum.style.color=sum===10?"#79a600":sum>10?"#ef6b49":"#87b500"}
-  function hideOverlays(){e.startOverlay.classList.add("hidden");e.pauseOverlay.classList.add("hidden");e.overOverlay.classList.add("hidden")}
-  function startGame(){stopTimer();createBoard();score=0;remaining=GAME_SECONDS;combo=0;lastClearAt=0;running=true;paused=false;renderBoard();updateHud();setSelectionSum(0);setMessage("숫자의 합이 10이 되도록 드래그하세요!");hideOverlays();clearHint();startTimer();playTone(540,.08,"sine",.045)}
-  function startTimer(){stopTimer();timerId=window.setInterval(function(){if(!running||paused)return;remaining-=1;updateHud();if(remaining<=10&&remaining>0)playTone(440+(10-remaining)*12,.045,"square",.018);if(remaining<=0)endGame()},1000)}
-  function stopTimer(){if(timerId)window.clearInterval(timerId);timerId=null}
-  function endGame(){running=false;paused=false;stopTimer();clearDrag();clearHint();if(score>best){best=score;localStorage.setItem(STORAGE_KEY,String(best))}updateHud();e.final.textContent=String(score);e.resultMessage.textContent=score>=80?"춘과 장인 인정! 🍇":score>=50?"엄청 잘했어요! 한 판 더?":score>=25?"좋아요! 감 잡았어요!":"다음 판은 더 많이 팡팡!";e.overOverlay.classList.remove("hidden");playFinish()}
-  function pauseGame(){if(!running||paused)return;paused=true;clearDrag();e.pauseOverlay.classList.remove("hidden");setMessage("게임이 잠시 멈췄어요.")}
-  function resumeGame(){if(!running||!paused)return;paused=false;e.pauseOverlay.classList.add("hidden");setMessage("다시 시작! 합이 10인 조합을 찾아보세요.")}
-  function getCellFromPoint(x,y){var r=e.board.getBoundingClientRect();if(x<r.left||x>r.right||y<r.top||y>r.bottom)return null;var px=Math.min(r.width-.01,Math.max(0,x-r.left)),py=Math.min(r.height-.01,Math.max(0,y-r.top));return{col:Math.min(COLS-1,Math.max(0,Math.floor(px/r.width*COLS))),row:Math.min(ROWS-1,Math.max(0,Math.floor(py/r.height*ROWS)))}}
-  function selectionBounds(a,b){return{r1:Math.min(a.row,b.row),r2:Math.max(a.row,b.row),c1:Math.min(a.col,b.col),c2:Math.max(a.col,b.col)}}
-  function cellsInBounds(b){var cells=[];for(var r=b.r1;r<=b.r2;r++)for(var c=b.c1;c<=b.c2;c++){var cell=board[r*COLS+c];if(!cell.removed)cells.push(cell)}return cells}
-  function drawRect(el,b){var br=e.board.getBoundingClientRect(),wr=e.wrap.getBoundingClientRect(),cw=br.width/COLS,ch=br.height/ROWS;Object.assign(el.style,{display:"block",left:(br.left-wr.left+b.c1*cw)+"px",top:(br.top-wr.top+b.r1*ch)+"px",width:((b.c2-b.c1+1)*cw)+"px",height:((b.r2-b.r1+1)*ch)+"px"})}
-  function updateDrag(x,y){if(!drag)return;var cell=getCellFromPoint(x,y);if(!cell)return;drag.end=cell;var b=selectionBounds(drag.start,drag.end);drag.bounds=b;var cells=cellsInBounds(b),selected=new Set(cells.map(function(c){return c.index})),sum=cells.reduce(function(t,c){return t+c.value},0);board.forEach(function(c){if(c.el)c.el.classList.toggle("selected",selected.has(c.index))});setSelectionSum(sum);drawRect(e.dragRect,b);e.dragRect.classList.toggle("valid",sum===10&&cells.length>0);setMessage(sum===10?"딱 10! 손을 놓으면 "+cells.length+"개가 사라져요.":sum>10?"합계 "+sum+" · 10을 넘었어요!":"합계 "+sum+" · "+(10-sum)+"만 더!")}
-  function finishDrag(){if(!drag)return;var b=drag.bounds||selectionBounds(drag.start,drag.start),cells=cellsInBounds(b),sum=cells.reduce(function(t,c){return t+c.value},0);if(sum===10&&cells.length)clearCells(cells);else{playTone(190,.05,"sine",.02);setMessage(sum?"합계 "+sum+" · 10이 아니에요.":"빈 칸이에요. 다른 곳을 골라보세요.")}clearDrag()}
-  function clearDrag(){drag=null;e.dragRect.style.display="none";e.dragRect.classList.remove("valid");board.forEach(function(c){if(c.el)c.el.classList.remove("selected")});setSelectionSum(0)}
-  function clearCells(cells){var now=Date.now();combo=now-lastClearAt<2200?combo+1:1;lastClearAt=now;cells.forEach(function(cell){cell.removed=true;if(cell.el)cell.el.classList.add("good")});var gain=cells.length;score+=gain;if(score>best)best=score;updateHud();setMessage(cells.length+"개 팡! +"+gain+"점");playClear(cells.length,combo);if(combo>=2)showCombo(combo);window.setTimeout(function(){cells.forEach(function(cell){if(cell.el){cell.el.classList.remove("good");cell.el.classList.add("empty");cell.el.innerHTML=""}});if(!findHint()&&board.some(function(c){return !c.removed}))setMessage("가능한 조합이 없어요. 섞기를 눌러보세요!")},330)}
-  function showCombo(n){e.combo.textContent="COMBO x"+n;e.combo.classList.remove("show");void e.combo.offsetWidth;e.combo.classList.add("show")}
-  function findHint(){for(var r1=0;r1<ROWS;r1++)for(var c1=0;c1<COLS;c1++){if(board[r1*COLS+c1].removed)continue;for(var r2=r1;r2<Math.min(ROWS,r1+4);r2++)for(var c2=c1;c2<Math.min(COLS,c1+5);c2++){var b={r1:r1,r2:r2,c1:c1,c2:c2},cells=cellsInBounds(b);if(cells.length&&cells.reduce(function(t,c){return t+c.value},0)===10)return b}}return null}
-  function showHint(){if(!running||paused)return;clearHint();var h=findHint();if(!h){setMessage("지금은 10 조합이 안 보여요. 한 번 섞어보세요!");playTone(180,.08,"sine",.02);return}drawRect(e.hintRect,h);setMessage("빨간 점선 안의 숫자를 확인해보세요!");playTone(720,.07,"sine",.035);hintTimer=window.setTimeout(clearHint,2200)}
-  function clearHint(){if(hintTimer)window.clearTimeout(hintTimer);hintTimer=null;e.hintRect.style.display="none"}
-  function shuffleBoard(){if(!running||paused)return;clearHint();var active=board.filter(function(c){return !c.removed}),values=active.map(function(c){return c.value});for(var i=values.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),tmp=values[i];values[i]=values[j];values[j]=tmp}active.forEach(function(c,i){c.value=values[i]});if(!findHint()&&active.length>=2){active[0].value=4;active[1].value=6}renderBoard();setMessage("남은 춘과를 섞었어요!");playTone(380,.06,"triangle",.025);window.setTimeout(function(){playTone(520,.06,"triangle",.025)},70)}
-  function pointerDown(ev){if(!running||paused)return;var cell=getCellFromPoint(ev.clientX,ev.clientY);if(!cell)return;ev.preventDefault();if(e.wrap.setPointerCapture)e.wrap.setPointerCapture(ev.pointerId);drag={start:cell,end:cell,bounds:selectionBounds(cell,cell)};updateDrag(ev.clientX,ev.clientY)}
-  function pointerMove(ev){if(!drag)return;ev.preventDefault();updateDrag(ev.clientX,ev.clientY)}
-  function pointerUp(ev){if(!drag)return;ev.preventDefault();finishDrag()}
-  function getAudio(){if(!soundOn)return null;var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;if(!audioCtx)audioCtx=new AC();if(audioCtx.state==="suspended")audioCtx.resume();return audioCtx}
-  function playTone(freq,duration,type,volume,delay){if(delay===void 0)delay=0;var ctx=getAudio();if(!ctx)return;var osc=ctx.createOscillator(),gain=ctx.createGain(),t=ctx.currentTime+delay;osc.type=type||"sine";osc.frequency.setValueAtTime(freq,t);gain.gain.setValueAtTime(.0001,t);gain.gain.exponentialRampToValueAtTime(volume||.03,t+.01);gain.gain.exponentialRampToValueAtTime(.0001,t+duration);osc.connect(gain);gain.connect(ctx.destination);osc.start(t);osc.stop(t+duration+.02)}
-  function playClear(count,cmb){playTone(540+count*20,.08,"sine",.035);playTone(720+Math.min(cmb,5)*35,.11,"triangle",.025,.06)}
-  function playFinish(){[392,494,587,784].forEach(function(f,i){playTone(f,.18,"sine",.025,i*.1)})}
-  function toggleSound(){soundOn=!soundOn;e.sound.setAttribute("aria-pressed",String(soundOn));e.soundIcon.textContent=soundOn?"🔊":"🔇";e.soundLabel.textContent=soundOn?"ON":"OFF";if(soundOn)playTone(620,.06,"sine",.03)}
-  function restart(){if(!running){startGame();return}startGame()}
-  function esc(ev){if(ev.key!=="Escape"||!running)return;if(paused)resumeGame();else pauseGame()}
-  e.start.addEventListener("click",startGame);e.again.addEventListener("click",startGame);e.resume.addEventListener("click",resumeGame);e.hintBtn.addEventListener("click",showHint);e.shuffle.addEventListener("click",shuffleBoard);e.pause.addEventListener("click",function(){paused?resumeGame():pauseGame()});e.sound.addEventListener("click",toggleSound);e.restart.addEventListener("click",restart);
-  e.wrap.addEventListener("pointerdown",pointerDown);e.wrap.addEventListener("pointermove",pointerMove);e.wrap.addEventListener("pointerup",pointerUp);e.wrap.addEventListener("pointercancel",function(){clearDrag()});document.addEventListener("keydown",esc);window.addEventListener("resize",function(){if(drag&&drag.bounds)drawRect(e.dragRect,drag.bounds)});
-  createBoard();renderBoard();updateHud();
-})();
-</script>
+<script src="chungwagame-ranking-core.js"></script>
+<script src="chungwagame.js"></script>
+<script src="chungwagame-postgame-ranking.js"></script>
 </body>
 </html>
