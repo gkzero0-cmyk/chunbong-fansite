@@ -10,6 +10,7 @@
   <link rel="preload" as="image" href="assets/chungwagame/numbers.webp" type="image/webp">
   <link rel="preload" as="image" href="assets/chungwagame/mascot-header.webp" type="image/webp">
   <link rel="stylesheet" href="chungwagame.css">
+  <link rel="stylesheet" href="minigame-multiplayer.css">
 </head>
 <body data-page="minigames">
 <div class="noise" aria-hidden="true"></div>
@@ -51,7 +52,7 @@
             <div id="cg-hint" class="cg-hint" aria-hidden="true"></div>
             <div id="cg-fx-layer" class="cg-fx-layer" aria-hidden="true"></div>
             <div id="cg-combo" class="cg-combo" aria-live="polite" aria-atomic="true"></div>
-            <div id="cg-start-overlay" class="cg-overlay"><div class="cg-overlay-inner cg-start-card"><span class="cg-kicker">CHUNGWA GAME</span><h2>합이 10이면 <em>팡!</em></h2><p>직사각형으로 춘과를 선택해 10을 만들어보세요.</p><button id="cg-start" class="cg-primary" type="button">게임 시작</button></div></div>
+            <div id="cg-start-overlay" class="cg-overlay"><div class="cg-overlay-inner cg-start-card"><span class="cg-kicker">CHUNGWA GAME</span><h2>합이 10이면 <em>팡!</em></h2><p>직사각형으로 춘과를 선택해 10을 만들어보세요.</p><button id="cg-start" class="cg-primary" type="button">게임 시작</button><button class="cg-secondary" data-score-multiplayer="chungwagame" type="button">👥 멀티플레이</button></div></div>
             <div id="cg-pause-overlay" class="cg-overlay hidden"><div class="cg-overlay-inner"><span class="cg-kicker">PAUSE</span><h2>잠시 멈춤</h2><p>현재 점수와 남은 시간은 그대로 유지됩니다.</p><div class="cg-overlay-actions"><button id="cg-resume" class="cg-primary" type="button">계속하기</button><button id="cg-pause-restart" class="cg-secondary" type="button">다시 시작</button><button id="cg-pause-ranking" class="cg-plain" type="button">🏆 랭킹 보기</button><a class="cg-plain cg-return-minigames" href="minigames.html">← 미니게임으로 돌아가기</a></div></div></div>
             <div id="cg-over-overlay" class="cg-overlay hidden"><div class="cg-overlay-inner cg-over-card"><span class="cg-kicker">TIME OVER!</span><div class="cg-result-score"><span id="cg-final">0</span>점</div><p id="cg-result-message">잘했어요!</p><p class="cg-result-sub">MAX COMBO <strong id="cg-final-combo">x1</strong> · 제거 <strong id="cg-final-cleared">0</strong>개</p><div class="cg-overlay-actions"><button id="cg-ranking-register" class="cg-primary" type="button">랭킹 등록</button><button id="cg-again" class="cg-secondary" type="button">한 판 더!</button><a class="cg-plain cg-return-minigames" href="minigames.html">← 미니게임으로 돌아가기</a></div><div id="cg-ranking-submit-panel" class="cg-ranking-submit-panel" hidden><label for="cg-ranking-nickname">닉네임 <input id="cg-ranking-nickname" maxlength="16" autocomplete="nickname" placeholder="2~16자"></label><div><button id="cg-ranking-submit" type="button">등록하기</button><button id="cg-ranking-cancel" type="button">취소</button></div><p id="cg-ranking-submit-status" aria-live="polite"></p></div></div></div>
           </div>
@@ -77,7 +78,9 @@
 <button class="to-top" type="button" aria-label="맨 위로 이동">↑</button>
 <script src="content.js"></script><script src="page.js"></script>
 <script src="chungwagame-ranking-core.js"></script>
+<script src="minigame-multiplayer.js"></script>
 <script src="chungwagame.js"></script>
 <script src="chungwagame-postgame-ranking.js"></script>
+<script src="score-race-multiplayer.js"></script>
 </body>
 </html>
