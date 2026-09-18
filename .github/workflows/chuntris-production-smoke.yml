@@ -9,6 +9,7 @@ on:
       - 'chuntris-fullscreen.css'
       - 'chuntris-immersive.css'
       - 'chuntris-vcompany-ui.css'
+      - 'chuntris-board-start-ui.css'
       - 'chuntris-engine.js'
       - 'chuntris-audio.js'
       - 'chuntris-ranking-core.js'
@@ -44,18 +45,23 @@ jobs:
               curl -fsS -H 'cache-control: no-cache' "$BASE/chuntris-fullscreen.css?_smoke=$stamp" -o /tmp/chuntris-fullscreen.css && \
               curl -fsS -H 'cache-control: no-cache' "$BASE/chuntris-immersive.css?_smoke=$stamp" -o /tmp/chuntris-immersive.css && \
               curl -fsS -H 'cache-control: no-cache' "$BASE/chuntris-vcompany-ui.css?_smoke=$stamp" -o /tmp/chuntris-vcompany-ui.css && \
+              curl -fsS -H 'cache-control: no-cache' "$BASE/chuntris-board-start-ui.css?_smoke=$stamp" -o /tmp/chuntris-board-start-ui.css && \
               curl -fsS -H 'cache-control: no-cache' "$BASE/api/content?type=chuntris-ranking&mode=classic&_smoke=$stamp" -o /tmp/chuntris-ranking.json && \
               grep -q 'id="chuntris-start-view"' /tmp/chuntris.html && \
               grep -q 'id="chuntris-play-view"' /tmp/chuntris.html && \
+              grep -q 'id="chuntris-countdown"' /tmp/chuntris.html && \
               grep -q 'id="chuntris-ranking-register"' /tmp/chuntris.html && \
               grep -q 'id="chuntris-ranking-nickname"' /tmp/chuntris.html && \
               ! grep -q 'id="chuntris-nickname"' /tmp/chuntris.html && \
               grep -q 'submitTerminalRanking' /tmp/chuntris-postgame-ranking.js && \
               grep -q 'CLEAR_SOUNDS' /tmp/chuntris.js && \
+              grep -Fq "const frames=['3','2','1','START!']" /tmp/chuntris.js && \
               grep -q 'harddrop' /tmp/chuntris-audio.js && \
               grep -q 'e_gen_restore/e_background_removal/c_scale,w_1680' /tmp/chuntris-fullscreen.css && \
               grep -q 'positional-impact-effects-v1' /tmp/chuntris-immersive.css && \
               grep -q -- '--chuntris-shell-bg' /tmp/chuntris-vcompany-ui.css && \
+              grep -Fq -- '--chuntris-stage-height:min(680px,72svh)!important' /tmp/chuntris-board-start-ui.css && \
+              grep -Fq -- '--chuntris-board-width:min(340px,36svh,calc(100vw - 28px))' /tmp/chuntris-board-start-ui.css && \
               node -e "const p=require('/tmp/chuntris-ranking.json');if(p.mode!=='classic'||!Array.isArray(p.entries))process.exit(1)"; then
               echo 'Current postgame-ranking Chuntris production is ready.'
               exit 0
@@ -124,14 +130,27 @@ jobs:
             assert.equal(await page.locator('.chuntris-ranking-rail').count(),0,`${label} ranking rail must be removed`);
             assert.equal(await page.locator('.chuntris-help-rail').count(),0,`${label} help rail must be removed`);
 
+            const startCardBox=await page.locator('.chuntris-start-card').boundingBox();
+            assert.ok(startCardBox,`${label} start card missing`);
+            assert.ok(startCardBox.y>=-1&&startCardBox.y+startCardBox.height<=viewport.height+1,`${label} start card bottom clipped: ${startCardBox.y+startCardBox.height} > ${viewport.height}`);
+            assert.ok(Math.abs(startCardBox.height/startCardBox.width-2)<0.04,`${label} start card ratio mismatch`);
             await page.locator('#chuntris-mode-classic').click();
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-player');
             await page.locator('#chuntris-start').click();
-            await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing');
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'countdown',`${label} countdown state missing`);
+            assert.ok(await page.locator('#chuntris-countdown').isVisible(),`${label} countdown layer missing`);
+            assert.equal((await page.locator('#chuntris-countdown-value').textContent())?.trim(),'3',`${label} countdown must start at 3`);
+            assert.notEqual(await page.evaluate(()=>window.ChuntrisApp.getGame().getSnapshot().status),'playing',`${label} engine started before countdown`);
+            await page.waitForFunction(()=>document.querySelector('#chuntris-countdown-value')?.textContent?.trim()==='2',{timeout:1800});
+            await page.waitForFunction(()=>document.querySelector('#chuntris-countdown-value')?.textContent?.trim()==='1',{timeout:1800});
+            await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing',{timeout:3000});
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'playing');
             const documentWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
             assert.ok(documentWidth<=viewport.width+1,`${label} horizontal overflow`);
             await assertGameStageFitsViewport(page,label);
+            const playBoardBox=await page.locator('.chuntris-board-wrap').boundingBox();
+            assert.ok(playBoardBox&&playBoardBox.y+playBoardBox.height<=viewport.height+1,`${label} play board bottom clipped: ${playBoardBox?.y+playBoardBox?.height} > ${viewport.height}`);
+            assert.ok(Math.abs(startCardBox.width-playBoardBox.width)<=3,`${label} start/play board widths differ`);
 
             for(const id of ['#chuntris-utility-ranking','#chuntris-utility-sound','#chuntris-utility-controls','#chuntris-pause']){
               assert.ok(await page.locator(id).isVisible(),`${label} utility missing ${id}`);

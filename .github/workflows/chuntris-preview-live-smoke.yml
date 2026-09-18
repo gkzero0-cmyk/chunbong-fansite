@@ -9,6 +9,7 @@ on:
       - 'chuntris-fullscreen.css'
       - 'chuntris-immersive.css'
       - 'chuntris-vcompany-ui.css'
+      - 'chuntris-board-start-ui.css'
       - 'chuntris-ranking-core.js'
       - 'chuntris-audio.js'
       - 'chuntris.js'
