@@ -1,55 +1,55 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-17T06:29:20.026Z",
+  "capturedAt": "2026-09-18T06:27:32.997Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 30364,
-    "fanclubCount": 7669,
-    "subscriberCount": 49,
+    "followerCount": 30340,
+    "fanclubCount": 7670,
+    "subscriberCount": 48,
     "supporterCount": 24,
     "averageViewers": 58,
     "maxViewers": 153,
-    "airtimeMinutes": 9520,
-    "viewershipHours": 9146,
-    "cumulativeUpCount": 80398,
-    "totalAirtimeMinutes": 624729,
-    "monthlyStarCount": 82769,
-    "starsPerHour": 522,
-    "monthlySupporterCount": 186,
-    "monthlyChatCount": 38241,
+    "airtimeMinutes": 9545,
+    "viewershipHours": 9155,
+    "cumulativeUpCount": 80414,
+    "totalAirtimeMinutes": 624755,
+    "monthlyStarCount": 82774,
+    "starsPerHour": 520,
+    "monthlySupporterCount": 187,
+    "monthlyChatCount": 38418,
     "monthlyMuteCount": 6,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-09-16T18:55:40",
+    "latestBroadcastDate": "2026-09-18T01:39:09",
     "categories": [
       {
         "name": "버추얼",
-        "minutes": 8996,
+        "minutes": 8534,
         "streamCount": 20,
-        "sharePercent": 38.3
+        "sharePercent": 37.8
       },
       {
         "name": "마인크래프트",
         "minutes": 6506,
         "streamCount": 11,
-        "sharePercent": 27.7
+        "sharePercent": 28.8
       },
       {
         "name": "오버워치",
         "minutes": 6114,
         "streamCount": 12,
-        "sharePercent": 26
+        "sharePercent": 27
       },
       {
         "name": "PUBG: 배틀그라운드",
-        "minutes": 1508,
-        "streamCount": 6,
-        "sharePercent": 6.4
+        "minutes": 1076,
+        "streamCount": 5,
+        "sharePercent": 4.8
       },
       {
         "name": "아르마 3",
         "minutes": 376,
         "streamCount": 2,
-        "sharePercent": 1.6
+        "sharePercent": 1.7
       }
     ]
   },
@@ -11647,6 +11647,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/297163907"
+    },
+    {
+      "id": "trackify-297201379",
+      "broadcastId": "297201379",
+      "date": "2026-09-18",
+      "startedAt": "2026-09-18T01:39:09+09:00",
+      "endedAt": "2026-09-18T02:04:19+09:00",
+      "durationMinutes": 25,
+      "averageViewers": 23,
+      "maxViewers": 29,
+      "viewerSampleCount": 5,
+      "uniqueViewers": null,
+      "starCount": 5,
+      "supporterCount": 1,
+      "chatCount": 177,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "포맷 후 테스트 방송",
+      "categories": [
+        {
+          "id": "00810000",
+          "name": "버추얼",
+          "minutes": 25,
+          "sampleCount": 5,
+          "averageViewers": 23,
+          "maxViewers": 29
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297201379"
     }
   ]
 }
