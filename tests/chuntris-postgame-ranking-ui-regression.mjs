@@ -23,9 +23,9 @@ assert.ok(legacyJs.includes("if (!nickname || typeof fetch !== 'function') retur
 assert.ok(postgameJs.includes('function openTerminalRankingRegistration()'), 'terminal ranking registration must be explicit');
 assert.ok(postgameJs.includes('async function submitTerminalRanking()'), 'terminal ranking submit handler must exist');
 assert.ok(postgameJs.includes('data-difficulty') || postgameJs.includes('dataset.difficulty'), 'terminal ranking must keep difficulty separate');
-assert.ok(postgameJs.includes("registerButton.addEventListener('click', openTerminalRankingRegistration)"), 'ranking registration button must be wired');
-assert.ok(postgameJs.includes("submitButton.addEventListener('click', () => void submitTerminalRanking())"), 'ranking submit button must be wired');
-assert.ok(postgameJs.includes("cancelButton.addEventListener('click', closeTerminalRankingRegistration)"), 'ranking cancel button must be wired');
+assert.match(postgameJs,/registerButton\.addEventListener\('click',\s*openTerminalRankingRegistration\)/,'ranking registration button must be wired');
+assert.match(postgameJs,/submitButton\.addEventListener\('click',\s*\(\)=>void submitTerminalRanking\(\)\)/,'ranking submit button must be wired');
+assert.match(postgameJs,/cancelButton\.addEventListener\('click',\s*closeTerminalRankingRegistration\)/,'ranking cancel button must be wired');
 assert.ok(postgameJs.includes("localStorage.setItem") || postgameJs.includes('storageSet(nicknameKey'), 'successful ranking registration must remember the chosen nickname');
 
 assert.ok(css.includes('--chuntris-shell-bg'), 'start/play UI must share a Chuntris shell surface token');
