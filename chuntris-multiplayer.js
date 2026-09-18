@@ -60,12 +60,24 @@
   const els={
     close:$('.mp-close'),intro:$('[data-mp-intro]'),room:$('[data-mp-room]'),nickname:$('[data-mp-nickname]'),
     create:$('[data-mp-create]'),showJoin:$('[data-mp-show-join]'),joinBox:$('[data-mp-join-box]'),code:$('[data-mp-code]'),
-    join:$('[data-mp-join]'),roomCode:$('[data-mp-room-code]'),copy:$('[data-mp-copy]'),players:$('[data-mp-players]'),
-    countdown:$('[data-mp-countdown]'),result:$('[data-mp-result]'),ready:$('[data-mp-ready]'),leave:$('[data-mp-leave]'),status:$('[data-mp-status]')
+    join:$('[data-mp-join]'),roomCode:$('[data-mp-room-code]'),roomMode:$('[data-mp-room-mode]'),roomRule:$('[data-mp-room-rule]'),copy:$('[data-mp-copy]'),players:$('[data-mp-players]'),
+    countdown:$('[data-mp-countdown]'),result:$('[data-mp-result]'),ready:$('[data-mp-ready]'),leave:$('[data-mp-leave]'),status:$('[data-mp-status]'),modeDescription:$('[data-mp-mode-description]')
   };
+  const modeButtons=[...shell.querySelectorAll('[data-mp-chuntris-mode]')];
   const storedName=localStorage.getItem('chuntris.multiplayer.nickname')||'';
   els.nickname.value=storedName;
 
+  function serverNow(){return Date.now()+clockOffset;}
+  function modeMeta(mode){return MODES[mode]||MODES.sprint40;}
+  function setSelectedMode(mode){
+    if(!MODES[mode])return;
+    selectedMode=mode;
+    localStorage.setItem(MODE_KEY,mode);
+    modeButtons.forEach(button=>{const active=button.dataset.mpChuntrisMode===mode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
+    if(els.modeDescription)els.modeDescription.textContent=modeMeta(mode).description;
+  }
+  function playerMetric(player,mode){if(!player)return '-';return mode==='sprint40'?`${player.lines}/40 · ${Math.round(player.timeMs/1000)}s`:`${Number(player.score)||0}점 · ${Number(player.lines)||0}줄`;}
+  function playerState(player,room){if(!player)return '';if(player.finished)return room.mode==='sprint40'&&player.status==='completed'?'40줄 완료':'GAME OVER';if(room.state==='playing')return playerMetric(player,room.mode);return player.ready?'READY':'WAIT';}
   function message(text,error=false){els.status.textContent=text||'';els.status.classList.toggle('is-error',Boolean(error));}
   function normalizeName(){const value=els.nickname.value.trim();if(value.length<2||value.length>16)throw new Error('닉네임은 2~16자로 입력해 주세요.');localStorage.setItem('chuntris.multiplayer.nickname',value);return value;}
   function saveSession(){if(client.code&&client.token)localStorage.setItem(SESSION_KEY,JSON.stringify({code:client.code,token:client.token}));else localStorage.removeItem(SESSION_KEY);}
