@@ -108,9 +108,11 @@ jobs:
             await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing');
 
             await page.evaluate(()=>{
-              const overlay=document.querySelector('#chuntris-overlay');
-              if(overlay) overlay.hidden=false;
+              const game=window.ChuntrisApp.getGame();
+              game.state.status='gameover';
+              window.ChuntrisApp.render();
             });
+            await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='gameover');
             const ctGameOverReturn=page.locator('#chuntris-overlay .chuntris-return-link');
             assert.ok(await ctGameOverReturn.isVisible(),'Chuntris game-over return-to-minigames link missing');
             assert.equal(await ctGameOverReturn.getAttribute('href'),'minigames.html');
