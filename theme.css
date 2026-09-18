@@ -36,7 +36,7 @@
 [data-theme="light"] .data-page button{border-color:#d8cec5}
 [data-theme="light"] .tarot-page :is(.tarot-setup,.tarot-stage,.tarot-summary,.tarot-ai-panel,.tarot-reading-card,.tarot-card-dialog-inner){background:#fff!important;border-color:#ded5cc!important;color:#201914!important}
 [data-theme="light"] .tarot-page :is(input,textarea){background:#fffaf6!important;color:#201914!important;border-color:#d8cec5!important}
-@media(max-width:1050px){.theme-toggle{min-width:42px;width:42px;padding:0}.theme-toggle-label{display:none}}
+@media(max-width:1050px){.theme-toggle{min-width:42px;width:42px;padding:0}}
 @media(max-width:760px){.site-header{gap:8px}.theme-toggle{order:2}.header-live{order:3}.nav-toggle{order:4}}
 
 
