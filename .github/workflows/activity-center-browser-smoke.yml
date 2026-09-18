@@ -8,7 +8,7 @@ on:
       - 'page.js'
       - 'activity-center.js'
       - 'activity-center.css'
-      - 'api/activity.js'
+      - 'lib/activity.js'
       - 'api/content.js'
       - 'api/fanart.js'
       - 'lib/activity-feed.js'
