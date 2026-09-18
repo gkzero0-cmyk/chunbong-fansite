@@ -66,8 +66,13 @@ jobs:
             assert.equal(await page.locator('.chuntris-help-rail').count(), 0, `${label} help rail must be removed`);
 
             await page.locator('#chuntris-mode-classic').click();
-            assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'), 'start-player');
-            assert.ok(await page.locator('#chuntris-player-step').isVisible(), `${label} player step missing`);
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'), 'start-difficulty');
+            assert.ok(await page.locator('#chuntris-difficulty-step').isVisible(), `${label} difficulty step missing`);
+            assert.ok(await page.locator('[data-chuntris-difficulty="normal"]').isVisible(), `${label} normal difficulty missing`);
+            assert.ok(await page.locator('[data-chuntris-difficulty="hard"]').isVisible(), `${label} hard difficulty missing`);
+            assert.ok(await page.locator('[data-chuntris-difficulty="extreme"]').isVisible(), `${label} extreme difficulty missing`);
+            await page.locator('[data-chuntris-difficulty="normal"]').click();
+            assert.ok(await page.locator('#chuntris-player-step').isVisible(), `${label} start action missing after difficulty selection`);
             await page.locator('#chuntris-start').click();
             await page.waitForFunction(() => document.querySelector('#chuntris-game')?.dataset.gameStatus === 'playing');
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'), 'playing');
