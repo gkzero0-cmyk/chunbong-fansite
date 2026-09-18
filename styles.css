@@ -176,16 +176,16 @@
   .cg-board-wrap{max-height:calc(100svh - 220px)!important}
   .cg-stat{min-width:100px!important;padding:9px 12px!important}
 
-  /* Chuncortile */
-  .ct-shell{width:min(1780px,calc(100% - 48px))!important;padding-top:26px!important}
+  /* Chuncortile: same footprint as Chungwagame */
+  .ct-shell{width:min(1360px,96vw)!important;padding-top:20px!important}
   .ct-layout{
-    grid-template-columns:250px minmax(0,1fr) 120px!important;
+    grid-template-columns:180px minmax(0,940px) 124px!important;
     gap:14px!important
   }
-  .ct-topbar{margin-bottom:14px!important}
-  .ct-brand-icon{width:60px!important;height:60px!important}
-  .ct-stat{min-width:104px!important;padding:10px 15px!important}
-  .ct-panel{padding:19px!important}
+  .ct-topbar{margin-bottom:10px!important}
+  .ct-brand-icon{width:58px!important;height:58px!important}
+  .ct-stat{min-width:100px!important;padding:9px 12px!important}
+  .ct-panel{padding:16px!important}
 }
 
 @media(min-width:2400px) and (min-height:1300px){
@@ -247,9 +247,9 @@
     gap:18px!important
   }
 
-  .ct-shell{width:min(2060px,calc(100% - 72px))!important}
+  .ct-shell{width:min(1580px,94vw)!important}
   .ct-layout{
-    grid-template-columns:290px minmax(0,1fr) 140px!important;
+    grid-template-columns:210px minmax(0,1080px) 140px!important;
     gap:18px!important
   }
 }
