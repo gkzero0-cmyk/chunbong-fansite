@@ -94,6 +94,7 @@ jobs:
             await page.goto(`${process.env.BASE_URL}/chunbak.html?_smoke=${Date.now()}`, {waitUntil:'domcontentloaded'});
             await page.waitForFunction(() => Boolean(window.ChunbakGame&&window.ChunbakPostgameRanking));
             await page.waitForFunction(() => !document.querySelector('#chunbak-start')?.disabled);
+            await page.waitForFunction(()=>getComputedStyle(document.querySelector('#chunbak-game')).transform==='none');
             assert.equal(await page.locator('#chunbak-nickname').count(),0,'pre-game nickname must be removed');
             assert.ok(await page.locator('#chunbak-start-view').isVisible(),'start view missing');
             assert.equal(await page.locator('#chunbak-play-view').isVisible(),false,'play view must start hidden');
