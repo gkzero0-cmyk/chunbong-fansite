@@ -156,6 +156,17 @@ jobs:
             assert.ok(documentWidth<=viewport.width+1,`${label} horizontal overflow`);
             await assertGameStageFitsViewport(page,label);
             const playBoardBox=await page.locator('.chuntris-board-wrap').boundingBox();
+            const layoutDiag=await page.evaluate(()=>({
+              scrollY:window.scrollY,
+              gameOverflowAnchor:getComputedStyle(document.querySelector('#chuntris-game')).overflowAnchor,
+              startViewDisplay:getComputedStyle(document.querySelector('#chuntris-start-view')).display,
+              playViewDisplay:getComputedStyle(document.querySelector('#chuntris-play-view')).display,
+              playGrid:getComputedStyle(document.querySelector('.chuntris-layout')).gridTemplateColumns,
+              boardWidth:getComputedStyle(document.querySelector('.chuntris-board-wrap')).width,
+              boardMaxWidth:getComputedStyle(document.querySelector('.chuntris-board-wrap')).maxWidth,
+              contentPaddingTop:getComputedStyle(document.querySelector('.chuntris-page .content-section')).paddingTop
+            }));
+            console.log(label,'layout diagnostic',{startCardBox,playBoardBox,startScrollY,playScrollY,layoutDiag});
             assert.ok(playBoardBox&&playBoardBox.y+playBoardBox.height<=viewport.height+1,`${label} play board bottom clipped: ${playBoardBox?.y+playBoardBox?.height} > ${viewport.height}`);
             assert.ok(Math.abs(startCardBox.width-playBoardBox.width)<=3,`${label} start/play board widths differ`);
             assert.ok(Math.abs(startCardBox.y-playBoardBox.y)<=2,`${label} start/play board top positions differ: ${startCardBox.y} vs ${playBoardBox.y}`);
