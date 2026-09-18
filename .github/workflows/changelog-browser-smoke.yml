@@ -25,6 +25,11 @@ on:
       - 'lib/changelog-history-api.js'
       - 'api/content.js'
 
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
 jobs:
   browser-smoke:
     runs-on: ubuntu-latest
@@ -102,3 +107,67 @@ jobs:
 
           await browser.close();
           EOF_NODE
+
+  preview-api:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Resolve current Vercel Preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 50); do
+            comments=$(curl -fsS -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' "https://api.github.com/repos/$REPO/issues/$PR_NUMBER/comments?per_page=100")
+            preview=$(printf '%s' "$comments" | node -e '
+              let s=""; process.stdin.on("data",d=>s+=d).on("end",()=>{
+                const rows=JSON.parse(s).filter(x=>x.user?.login==="vercel[bot]");
+                for(const row of rows.reverse()){
+                  const m=String(row.body||"").match(/\[Preview\]\((https:\/\/[^)]+)\)/);
+                  if(m){process.stdout.write(m[1]);return;}
+                }
+              });')
+            if [ -n "$preview" ]; then
+              echo "PREVIEW_BASE=$preview" >> "$GITHUB_ENV"
+              exit 0
+            fi
+            sleep 4
+          done
+          echo 'Unable to resolve Vercel Preview.' >&2
+          exit 1
+      - name: Verify real changelog history API
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 30); do
+            stamp=$(date +%s)
+            if curl -fsS "$PREVIEW_BASE/api/content?type=changelog-history&summary=1&_smoke=$stamp" -o /tmp/changelog-summary.json && \
+               curl -fsS "$PREVIEW_BASE/api/content?type=changelog-history&_smoke=$stamp" -o /tmp/changelog-history.json && \
+               node - <<'EOF_NODE'
+          const fs=require('fs');
+          const summary=JSON.parse(fs.readFileSync('/tmp/changelog-summary.json','utf8'));
+          const full=JSON.parse(fs.readFileSync('/tmp/changelog-history.json','utf8'));
+          if(summary.siteStartedAt!=='2026-08-30') process.exit(1);
+          if(!summary.latest?.sha || summary.latest.date<'2026-09-19') process.exit(1);
+          if(!Array.isArray(full.groups) || !full.groups.length) process.exit(1);
+          if(full.siteStartedAt!=='2026-08-30') process.exit(1);
+          const dates=full.groups.map(x=>x.date);
+          if(dates.some((date,index)=>index>0 && date>dates[index-1])) process.exit(1);
+          if(!dates.includes('2026-08-31') && !dates.includes('2026-08-30')) process.exit(1);
+          if((full.total||0)<50) process.exit(1);
+          EOF_NODE
+            then
+              echo 'Preview changelog history API verified.'
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'Changelog history API did not become ready.' >&2
+          cat /tmp/changelog-summary.json 2>/dev/null || true
+          exit 1
