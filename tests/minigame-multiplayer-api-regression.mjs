@@ -34,6 +34,34 @@ const badName=await invoke({body:{action:'create',game:'chuntris',nickname:'x'}}
 assert.equal(badName.statusCode,400);
 assert.equal(badName.body.error,'invalid_nickname');
 
+const invalidMode=await invoke({body:{action:'create',game:'chuntris',nickname:'춘봉모드',mode:'turbo'}});
+assert.equal(invalidMode.statusCode,400);
+assert.equal(invalidMode.body.error,'invalid_mode');
+
+const classicCreated=await invoke({body:{action:'create',game:'chuntris',nickname:'클래식1',mode:'classic'}});
+assert.equal(classicCreated.statusCode,201);
+assert.equal(classicCreated.body.room.mode,'classic');
+const classicCode=classicCreated.body.room.code;
+const classicP1=classicCreated.body.token;
+const classicJoined=await invoke({body:{action:'join',code:classicCode,nickname:'클래식2'}});
+const classicP2=classicJoined.body.token;
+await invoke({body:{action:'ready',code:classicCode,token:classicP1,ready:true}});
+await invoke({body:{action:'ready',code:classicCode,token:classicP2,ready:true}});
+const classicKey=`minigame:room:${classicCode}`;
+const classicRoom=JSON.parse(redis.get(classicKey));
+classicRoom.startAt=Date.now()-1;
+redis.set(classicKey,JSON.stringify(classicRoom));
+const classicLines=await invoke({body:{action:'progress',code:classicCode,token:classicP1,lines:55,score:25000,timeMs:70000,status:'playing'}});
+assert.equal(classicLines.body.room.state,'playing');
+assert.equal(classicLines.body.room.players.find(p=>p.id==='p1').lines,55,'classic lines must not clamp at 40');
+const classicLose=await invoke({body:{action:'progress',code:classicCode,token:classicP1,lines:61,score:30000,timeMs:80000,status:'gameover'}});
+assert.equal(classicLose.body.room.state,'finished');
+assert.equal(classicLose.body.room.winnerId,'p2','classic gameover should award the surviving rival');
+
+const hardCreated=await invoke({body:{action:'create',game:'chuntris',nickname:'하드1',mode:'hard'}});
+assert.equal(hardCreated.statusCode,201);
+assert.equal(hardCreated.body.room.mode,'hard');
+
 const created=await invoke({body:{action:'create',game:'chuntris',nickname:'춘봉1'}});
 assert.equal(created.statusCode,201);
 assert.match(created.body.room.code,/^[A-Z2-9]{6}$/);
