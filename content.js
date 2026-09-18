@@ -117,9 +117,7 @@ window.CHUNBONG_CONTENT = {
       button.setAttribute('aria-label', light ? '다크 모드로 전환' : '라이트 모드로 전환');
       button.title = light ? '다크 모드로 전환' : '라이트 모드로 전환';
       const icon = button.querySelector('.theme-toggle-icon');
-      const label = button.querySelector('.theme-toggle-label');
       if (icon) icon.textContent = light ? '🌙' : '☀';
-      if (label) label.textContent = light ? '다크' : '라이트';
     }
   };
 
@@ -128,7 +126,7 @@ window.CHUNBONG_CONTENT = {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'theme-toggle';
-  button.innerHTML = '<span class="theme-toggle-icon" aria-hidden="true"></span><span class="theme-toggle-label"></span>';
+  button.innerHTML = '<span class="theme-toggle-icon" aria-hidden="true"></span>';
   button.addEventListener('click', () => {
     const next = root.dataset.theme === 'light' ? 'dark' : 'light';
     try { localStorage.setItem(STORAGE_KEY, next); } catch (_) {}
