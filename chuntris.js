@@ -335,7 +335,7 @@
   function openUtilityModal(kind,trigger=null){
     if(!['ranking','sound','controls'].includes(kind))return;modalTrigger=trigger||document.activeElement;const state=game.getSnapshot();modalReturnToPause=activeModal==='pause'||uiState==='paused';modalAutoPaused=false;
     if (state.status === 'playing') { game.pause(Date.now()); modalAutoPaused = true; setViewState('paused'); }
-    showModalPanel(kind);if(kind==='ranking')void loadRanking(rankingMode);render();
+    showModalPanel(kind);if(kind==='ranking')void loadRanking(rankingMode,rankingDifficulty);render();
   }
   function closeUtilityModal(){
     if(!['ranking','sound','controls'].includes(activeModal)){closeModalShell();return;}
