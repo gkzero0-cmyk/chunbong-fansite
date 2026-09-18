@@ -11,7 +11,7 @@ assert.match(ctHtml,/chuntris-board-start-ui\.css/,'Chuntris board UI override m
 assert.match(ctHtml,/id="chuntris-countdown"/,'Chuntris countdown layer missing');
 assert.match(ctHtml,/id="chuntris-countdown-value"/,'Chuntris countdown value missing');
 assert.match(ctCss,/aspect-ratio:1\/2/,'Chuntris start/board must retain 10x20 ratio');
-assert.match(ctCss,/width:min\(345px,37svh,calc\(100vw - 28px\)\)/,'Chuntris board must be viewport-height-aware');
+assert.match(ctCss,/width:min\(340px,36svh,calc\(100vw - 28px\)\)/,'Chuntris board must be viewport-height-aware');
 assert.match(ctCss,/\.chuntris-page \.content-section\{padding:4px 0 28px\}/,'Chuntris game must be raised by compacting content spacing');
 assert.match(ctCss,/background:linear-gradient\(135deg,#ff6416,#ff9f31\)/,'Chuntris start action must use fan-site orange palette');
 assert.match(ctJs,/const frames=\['3','2','1','START!'\]/,'Chuntris 3-2-1 countdown sequence missing');
