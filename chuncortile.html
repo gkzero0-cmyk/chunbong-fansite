@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#ff6b18">
+  <meta name="description" content="빈 칸을 눌러 상하좌우의 같은 춘봉 타일을 지우는 춘컬타일">
+  <title>춘컬타일 | 춘봉 팬사이트</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="chuncortile.css">
+</head>
+<body data-page="minigames">
+<div class="noise" aria-hidden="true"></div>
+<header class="site-header">
+  <a class="brand" href="index.html" aria-label="춘봉 팬사이트 홈"><span class="brand-mark">CB</span><span class="brand-copy"><strong>CHUNBONG</strong><small>FAN HUB</small></span></a>
+  <button class="nav-toggle" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="main-nav"><span></span><span></span><span></span></button>
+  <nav class="main-nav" id="main-nav" aria-label="주요 메뉴"><a data-nav="home" href="index.html">HOME</a><a data-nav="schedule" href="schedule.html">방송 일정</a><a data-nav="notice" href="notice.html">공지</a><a data-nav="vod" href="vod.html">다시보기</a><a data-nav="clips" href="clips.html">핫클립</a><a data-nav="fanart" href="fanart.html">팬아트</a><a data-nav="youtube" href="youtube.html">유튜브</a><a data-nav="tarot" href="tarot.html">TAROT</a><a data-nav="minigames" href="minigames.html">미니게임</a><a data-nav="history" href="history.html">방송 이력</a><a data-nav="data" href="data.html">춘봉 데이터</a></nav>
+  <a class="header-live" href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer">SOOP ↗</a>
+</header>
+<main class="chuncortile-page">
+  <div class="ct-shell">
+    <div class="ct-navline"><a class="minigame-back-link" href="minigames.html">← 미니게임</a><span>COLOR TILE · 120 SEC</span></div>
+    <section id="chuncortile" class="ct-game" data-game-status="start" aria-label="춘컬타일">
+      <header class="ct-topbar">
+        <div class="ct-brand">
+          <div class="ct-brand-icon"><span class="ct-face ct-face-7" aria-hidden="true"></span></div>
+          <div><h1>춘컬타일</h1><p>빈 칸을 눌러 <strong>같은 춘봉 타일</strong>을 찾아 지워요!</p></div>
+        </div>
+        <div class="ct-stats" aria-label="게임 기록">
+          <div class="ct-stat"><span>점수</span><strong><b id="ct-score">0</b> / 200</strong></div>
+          <div class="ct-stat"><span>BEST</span><strong id="ct-best">0</strong></div>
+          <div class="ct-stat ct-timer"><span>남은 시간</span><strong id="ct-timer">02:00</strong></div>
+        </div>
+      </header>
+      <div class="ct-time-track" aria-label="남은 시간 게이지"><div id="ct-time-fill"></div></div>
+
+      <div class="ct-layout">
+        <aside class="ct-side ct-howto">
+          <div class="ct-panel">
+            <span class="ct-kicker">HOW TO PLAY</span>
+            <h2>게임 방법</h2>
+            <ol>
+              <li><b>빈 칸</b>을 클릭해요.</li>
+              <li>상·하·좌·우에서 처음 만나는 타일 중 같은 종류가 <b>2개 이상</b>이면 사라져요.</li>
+              <li>타일 1개당 <b>1점</b>, 120초 안에 200개 제거에 도전!</li>
+            </ol>
+          </div>
+          <div class="ct-panel ct-warning"><strong>⚠ 미스 페널티</strong><p>매치가 없는 빈 칸을 누르면 남은 시간이 <b>-10초</b>!</p></div>
+        </aside>
+
+        <section class="ct-board-card">
+          <div class="ct-board-head">
+            <div><span>남은 타일</span><strong id="ct-remaining">200</strong></div>
+            <p id="ct-message" aria-live="polite">START를 누르면 시작해요!</p>
+            <div><span>미스</span><strong id="ct-misses">0</strong></div>
+          </div>
+          <div class="ct-board-wrap" id="ct-board-wrap">
+            <div id="ct-board" class="ct-board" role="grid" aria-label="춘컬타일 게임판"></div>
+            <div id="ct-flash" class="ct-flash" aria-hidden="true"></div>
+            <div id="ct-start-overlay" class="ct-overlay">
+              <div class="ct-overlay-card">
+                <span class="ct-kicker">CHUN COLOR TILE</span>
+                <h2>같은 춘봉을 <em>쏙!</em></h2>
+                <p>빈 칸을 기준으로 상하좌우 첫 타일을 찾아 같은 타일 2개 이상을 지워보세요.</p>
+                <div class="ct-preview" aria-hidden="true">
+                  <span class="ct-mini type-0"><i class="ct-face ct-face-1"></i></span>
+                  <span class="ct-mini type-3"><i class="ct-face ct-face-4"></i></span>
+                  <span class="ct-mini type-6"><i class="ct-face ct-face-7"></i></span>
+                  <span class="ct-mini type-8"><i class="ct-face ct-face-9"></i></span>
+                </div>
+                <button id="ct-start" class="ct-primary" type="button">게임 시작</button>
+              </div>
+            </div>
+            <div id="ct-countdown" class="ct-overlay hidden"><strong>3</strong></div>
+            <div id="ct-over-overlay" class="ct-overlay hidden">
+              <div class="ct-overlay-card">
+                <span class="ct-kicker" id="ct-result-kicker">TIME OVER</span>
+                <div class="ct-result-score"><strong id="ct-final-score">0</strong><span>/ 200</span></div>
+                <h2 id="ct-result-title">잘했어요!</h2>
+                <p id="ct-result-text">다음 판에는 더 많이 지워봐요.</p>
+                <div class="ct-result-meta"><span>미스 <b id="ct-final-misses">0</b></span><span>남은 타일 <b id="ct-final-remaining">0</b></span></div>
+                <div class="ct-overlay-actions"><button id="ct-again" class="ct-primary" type="button">한 판 더!</button><a class="ct-secondary" href="minigames.html">← 미니게임으로</a></div>
+              </div>
+            </div>
+          </div>
+          <p class="ct-board-note">타일이 있는 칸이 아니라 <b>빈 칸</b>을 클릭하세요 · 틀리면 -10초</p>
+        </section>
+
+        <aside class="ct-side ct-tools" aria-label="게임 도구">
+          <button id="ct-hint" class="ct-tool" type="button"><span>💡</span><b>힌트</b><small>가능한 칸</small></button>
+          <button id="ct-sound" class="ct-tool" type="button" aria-pressed="true"><span id="ct-sound-icon">🔊</span><b>사운드</b><small id="ct-sound-label">ON</small></button>
+          <button id="ct-restart" class="ct-tool danger" type="button"><span>↻</span><b>다시 시작</b><small>새 보드</small></button>
+        </aside>
+      </div>
+    </section>
+  </div>
+</main>
+<footer><div class="footer-brand"><span class="brand-mark">CB</span><div><strong>CHUNBONG FAN HUB</strong><p>비공식 팬사이트 · 공식 채널의 콘텐츠를 팬사이트 안에서 더 편하게 만나보세요.</p></div></div><div class="footer-links"><a href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer">SOOP ↗</a><a href="https://cafe.naver.com/chunbongtv" target="_blank" rel="noreferrer">NAVER CAFE ↗</a></div><p class="copyright">© 2026 CHUNBONG FAN HUB · Unofficial fan project</p></footer>
+<button class="to-top" type="button" aria-label="맨 위로 이동">↑</button>
+<script src="content.js"></script><script src="page.js"></script>
+<script src="chuncortile-core.js"></script><script src="chuncortile.js"></script>
+</body>
+</html>

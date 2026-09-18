@@ -64,7 +64,7 @@ assert.match(theme,/\.changelog-button span\{display:none\}/,'changelog label sh
 assert.match(theme,/@media\(min-width:761px\) and \(max-width:1500px\)/,'desktop header compact breakpoint missing');
 assert.match(theme,/\.site-header \.main-nav a\{[^}]*white-space:nowrap/,'desktop navigation labels must stay on one line');
 assert.match(content,/nav-minigames-submenu/,'shared header must create a minigames submenu');
-for(const href of ['chuntris.html','chunbak.html','chungwagame.html']) assert.match(content,new RegExp('href="'+href.replace('.','\\.')+'"'),'minigames submenu link missing: '+href);
+for(const href of ['chuntris.html','chunbak.html','chungwagame.html','chuncortile.html']) assert.match(content,new RegExp('href="'+href.replace('.','\\.')+'"'),'minigames submenu link missing: '+href);
 assert.match(styles,/\.nav-minigames:hover \.nav-minigames-submenu/,'desktop minigames submenu must open on hover');
 assert.match(styles,/\.nav-minigames:focus-within \.nav-minigames-submenu/,'minigames submenu must support keyboard focus');
 assert.match(styles,/@media\(max-width:760px\)[\s\S]*?\.nav-minigames-submenu\{display:none!important\}/,'mobile hamburger menu must keep the hover submenu hidden');

@@ -1,0 +1,74 @@
+name: Chuncortile browser smoke
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'chuncortile.html'
+      - 'chuncortile.css'
+      - 'chuncortile.js'
+      - 'chuncortile-core.js'
+      - 'assets/chuncortile/tiles.png'
+      - 'minigames.html'
+      - 'content.js'
+      - '.github/workflows/chuncortile-browser-smoke.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'chuncortile.html'
+      - 'chuncortile.css'
+      - 'chuncortile.js'
+      - 'chuncortile-core.js'
+      - 'assets/chuncortile/tiles.png'
+      - 'minigames.html'
+      - 'content.js'
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local site
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/chuncortile-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:4173/chuncortile.html >/dev/null && exit 0
+            sleep 1
+          done
+          exit 1
+      - name: Verify gameplay and responsive layout
+        env: { BASE_URL: 'http://127.0.0.1:4173' }
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import assert from 'node:assert/strict';
+          import { chromium } from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          try{
+            for(const viewport of [{width:1280,height:800},{width:390,height:844}]){
+              const page=await browser.newPage({viewport});
+              const errors=[];page.on('pageerror',e=>errors.push(e.message));
+              await page.goto(process.env.BASE_URL+'/chuncortile.html?_smoke='+Date.now(),{waitUntil:'domcontentloaded'});
+              await page.waitForFunction(()=>Boolean(window.ChuncortileApp?.debugFindMove));
+              assert.equal(await page.locator('.ct-cell').count(),450);
+              assert.equal(await page.locator('.ct-cell.is-tile').count(),200);
+              assert.equal(await page.locator('.ct-face').count()>=200,true);
+              await page.locator('#ct-start').click();
+              await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='playing',{timeout:5000});
+              const move=await page.evaluate(()=>window.ChuncortileApp.debugFindMove());
+              assert.ok(move&&move.matches.length>=2);
+              const before=await page.evaluate(()=>window.ChuncortileApp.getSnapshot().score);
+              await page.locator('.ct-cell').nth(move.index).click();
+              await page.waitForFunction(before=>window.ChuncortileApp.getSnapshot().score>before,before);
+              const after=await page.evaluate(()=>window.ChuncortileApp.getSnapshot());
+              assert.ok(after.score>=2);
+              assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),true,'horizontal overflow');
+              assert.deepEqual(errors,[]);
+              await page.close();
+            }
+          }finally{await browser.close();}
+          EOF_NODE

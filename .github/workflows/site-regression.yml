@@ -38,6 +38,8 @@ jobs:
           node --check chungwagame-ranking-core.js
           node --check chungwagame.js
           node --check chungwagame-postgame-ranking.js
+          node --check chuncortile-core.js
+          node --check chuncortile.js
           node --check api/_shared.js
           node --check api/content.js
           node --check lib/activity-feed.js

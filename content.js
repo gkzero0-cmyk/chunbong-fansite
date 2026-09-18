@@ -76,7 +76,8 @@ window.CHUNBONG_CONTENT = {
   submenu.innerHTML =
     '<a role="menuitem" href="chuntris.html"><span>춘트리스</span><small>TETRIS</small></a>' +
     '<a role="menuitem" href="chunbak.html"><span>춘박게임</span><small>MERGE</small></a>' +
-    '<a role="menuitem" href="chungwagame.html"><span>춘과게임</span><small>SUM 10</small></a>';
+    '<a role="menuitem" href="chungwagame.html"><span>춘과게임</span><small>SUM 10</small></a>' +
+    '<a role="menuitem" href="chuncortile.html"><span>춘컬타일</span><small>COLOR</small></a>';
   wrapper.appendChild(submenu);
 
   const setExpanded = value => link.setAttribute('aria-expanded', String(value));
