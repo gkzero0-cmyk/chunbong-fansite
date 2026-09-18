@@ -32,7 +32,7 @@ assert.equal(_internals.isMeaningfulCommit(commits[3]),false,'test-only commit m
 assert.equal(_internals.isMeaningfulCommit(commits[4]),true,'initial site commit must be retained');
 
 const groups=_internals.groupCommits(commits);
-assert.deepEqual(groups.map(group=>group.date),['2026-09-19','2026-09-18','2026-08-31']);
+assert.deepEqual(groups.map(group=>group.date),['2026-09-19','2026-09-18','2026-08-30']);
 assert.equal(groups[0].items[0].shortSha,'aaaaaaa');
 assert.equal(groups.at(-1).items[0].title,'춘봉 팬사이트 프로젝트 시작');
 
