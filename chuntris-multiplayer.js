@@ -5,6 +5,12 @@
   if(!App)return;
   const client=root.MinigameMultiplayer.createClient('chuntris');
   const SESSION_KEY='chuntris.multiplayer.session.v1';
+  const MODE_KEY='chuntris.multiplayer.mode.v1';
+  const MODES=Object.freeze({
+    classic:{label:'클래식',description:'같은 블록 순서 · 먼저 GAME OVER 되면 패배'},
+    sprint40:{label:'40줄 레이스',description:'같은 블록 순서 · 40줄을 먼저 지우면 승리'},
+    hard:{label:'하드',description:'더 빠른 중력과 짧은 락딜레이 · 먼저 GAME OVER 되면 패배'}
+  });
   const openButton=document.querySelector('[data-chuntris-multiplayer]');
   if(!openButton)return;
 
@@ -14,22 +20,28 @@
   let lastRoom=null;
   let terminalSent='';
   let startTimer=0;
+  let clockOffset=0;
+  let selectedMode=localStorage.getItem(MODE_KEY);
+  if(!MODES[selectedMode])selectedMode='sprint40';
 
   const shell=document.createElement('div');
   shell.className='mp-shell';shell.hidden=true;
   shell.innerHTML=`
     <section class="mp-card" role="dialog" aria-modal="true" aria-labelledby="mp-title">
-      <header class="mp-head"><div><small>MULTIPLAYER · SPRINT 40</small><h2 id="mp-title">춘트리스 1:1 레이스</h2></div><button class="mp-close" type="button" aria-label="닫기">×</button></header>
+      <header class="mp-head"><div><small>MULTIPLAYER · 1 VS 1</small><h2 id="mp-title">춘트리스 1:1</h2></div><button class="mp-close" type="button" aria-label="닫기">×</button></header>
       <div class="mp-intro" data-mp-intro>
         <label class="mp-field"><span>닉네임</span><input data-mp-nickname maxlength="16" autocomplete="nickname" placeholder="2~16자"></label>
-        <div class="mp-actions"><button class="mp-btn mp-btn-primary" data-mp-create type="button">새 방 만들기</button><button class="mp-btn" data-mp-show-join type="button">방 코드로 입장</button></div>
+        <fieldset class="mp-mode-picker"><legend>새 방 모드</legend><button type="button" data-mp-chuntris-mode="classic" aria-pressed="false"><strong>클래식</strong><small>생존 대결</small></button><button type="button" data-mp-chuntris-mode="sprint40" aria-pressed="true"><strong>40줄</strong><small>스피드 레이스</small></button><button type="button" data-mp-chuntris-mode="hard" aria-pressed="false"><strong>하드</strong><small>고속 생존</small></button></fieldset>
+        <p class="mp-mode-description" data-mp-mode-description></p>
+        <div class="mp-actions"><button class="mp-btn mp-btn-primary" data-mp-create type="button">선택 모드로 방 만들기</button><button class="mp-btn" data-mp-show-join type="button">방 코드로 입장</button></div>
         <div data-mp-join-box hidden>
           <label class="mp-field"><span>6자리 방 코드</span><input class="mp-room-input" data-mp-code maxlength="6" placeholder="ABC234"></label>
-          <button class="mp-btn mp-btn-primary" data-mp-join type="button" style="width:100%;margin-top:8px">입장하기</button>
+          <p class="mp-join-note">입장 모드는 방장이 만든 방의 모드로 자동 적용됩니다.</p><button class="mp-btn mp-btn-primary" data-mp-join type="button" style="width:100%;margin-top:8px">입장하기</button>
         </div>
       </div>
       <div class="mp-room" data-mp-room hidden>
-        <div class="mp-codebox"><div><span>ROOM CODE</span><strong data-mp-room-code>------</strong></div><button class="mp-copy" data-mp-copy type="button">초대 링크 복사</button></div>
+        <div class="mp-codebox"><div><span>ROOM CODE · <b data-mp-room-mode>MODE</b></span><strong data-mp-room-code>------</strong></div><button class="mp-copy" data-mp-copy type="button">초대 링크 복사</button></div>
+        <p class="mp-room-rule" data-mp-room-rule></p>
         <div class="mp-players" data-mp-players></div>
         <div class="mp-countdown" data-mp-countdown hidden><span>동시에 시작합니다</span><strong>3</strong></div>
         <div class="mp-result" data-mp-result hidden></div>
