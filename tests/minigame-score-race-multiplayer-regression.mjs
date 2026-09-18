@@ -15,6 +15,7 @@ assert.match(bakHtml,/chunbak-start-utils has-multiplayer/,'Chunbak compact mult
 assert.match(bakJs,/let spawnRandom = Math\.random/,'Chunbak seeded gameplay RNG state missing');
 assert.match(bakJs,/resetGame\(\{ autoStart = true, random = Math\.random \}/,'Chunbak reset must accept an injected RNG');
 assert.match(bakJs,/Core\.pickSpawnStage\(spawnRandom\)/,'Chunbak spawn sequence must use injected RNG');
+assert.doesNotMatch(bakJs,/Core\.pickSpawnStage\(Math\.random\)/,'Chunbak must not bypass the seeded spawn RNG');
 
 assert.match(gwaHtml,/data-score-multiplayer="chungwagame"/,'Chungwagame multiplayer entry missing');
 assert.match(gwaHtml,/minigame-multiplayer\.js[\s\S]*chungwagame\.js[\s\S]*score-race-multiplayer\.js/,'Chungwagame multiplayer scripts are out of order');
