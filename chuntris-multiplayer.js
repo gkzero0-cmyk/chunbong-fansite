@@ -89,15 +89,18 @@
     lastRoom=room;
     els.intro.hidden=Boolean(room);
     els.room.hidden=!room;
-    if(!room)return;
+    if(!room){hud.hidden=true;return;}
+    clockOffset=Number(room.serverNow||Date.now())-Date.now();
+    const meta=modeMeta(room.mode);
     els.roomCode.textContent=room.code;
+    if(els.roomMode)els.roomMode.textContent=meta.label;
+    if(els.roomRule)els.roomRule.textContent=meta.description;
     const {me,rival}=currentPlayers(room);
     const cards=[me,rival].map((player,index)=>{
       if(!player)return '<div class="mp-player is-empty"><span>상대방 기다리는 중…</span></div>';
       const cls=['mp-player',player.id===room.selfId?'is-self':'',player.ready?'is-ready':'',player.finished?'is-finished':''].filter(Boolean).join(' ');
       const label=player.id===room.selfId?'나':'상대';
-      let state=player.finished?'FINISH':player.ready?'READY':room.state==='playing'?'PLAYING':'WAIT';
-      if(room.game==='chuntris'&&room.state==='playing')state=`${player.lines}/40줄 · ${Math.round(player.timeMs/1000)}초`;
+      const state=playerState(player,room);
       return `<div class="${cls}"><small>${label}</small><strong></strong><b>${state}</b></div>`;
     });
     els.players.innerHTML=cards.join('');
@@ -110,7 +113,7 @@
 
     if(room.state==='countdown'&&room.startAt){
       els.countdown.hidden=false;
-      const remain=Math.max(0,room.startAt-Date.now());
+      const remain=Math.max(0,room.startAt-serverNow());
       els.countdown.querySelector('strong').textContent=remain>3000?'3':remain>2000?'2':remain>1000?'1':'START!';
     }else els.countdown.hidden=true;
 
@@ -118,18 +121,20 @@
       els.result.hidden=false;
       const winner=room.players.find(p=>p.id===room.winnerId);
       const won=room.winnerId===room.selfId;
-      els.result.innerHTML=`<strong>${room.winnerId?(won?'승리! 🏆':'상대 승리'):'경기 종료'}</strong><span>${winner?winner.nickname+' · ':''}ROUND ${room.round}</span><div style="margin-top:10px"><button class="mp-btn mp-btn-primary" data-mp-rematch type="button">재대결 요청</button></div>`;
+      const scores=room.players.map(player=>`<em>${player.nickname} <b>${playerMetric(player,room.mode)}</b></em>`).join('');
+      els.result.innerHTML=`<strong>${room.winnerId?(won?'승리! 🏆':'상대 승리'):'경기 종료'}</strong><span>${meta.label} · ${winner?winner.nickname+' · ':''}ROUND ${room.round}</span><div class="mp-final-scores">${scores}</div><div style="margin-top:10px"><button class="mp-btn mp-btn-primary" data-mp-rematch type="button">재대결 요청</button></div>`;
       els.result.querySelector('[data-mp-rematch]')?.addEventListener('click',async()=>{try{await client.rematch();render(client.room);message('재대결을 기다리는 중…');}catch(error){message(errorMessage(error),true);}});
     }else els.result.hidden=true;
 
     if(room.state==='playing'||room.state==='finished'){
       hud.hidden=false;
-      hud.querySelector('[data-mp-hud-me]').textContent=me?`${me.lines}/40 · ${Math.round(me.timeMs/1000)}s`:'-';
-      hud.querySelector('[data-mp-hud-rival]').textContent=rival?`${rival.lines}/40 · ${Math.round(rival.timeMs/1000)}s`:'대기';
+      hud.querySelector('[data-mp-hud-me]').textContent=me?playerMetric(me,room.mode):'-';
+      hud.querySelector('[data-mp-hud-rival]').textContent=rival?playerMetric(rival,room.mode):'대기';
+      hud.querySelector('[data-mp-hud-mode]').textContent=room.mode==='sprint40'?'40L':room.mode==='hard'?'HARD':'CLASSIC';
     }else hud.hidden=true;
   }
   function errorMessage(error){
-    const map={room_not_found:'방을 찾을 수 없습니다.',room_full:'이미 2명이 참가한 방입니다.',room_started:'이미 시작된 방입니다.',invalid_nickname:'닉네임을 확인해 주세요.',multiplayer_unavailable:'멀티플레이 서버에 연결할 수 없습니다.'};
+    const map={room_not_found:'방을 찾을 수 없습니다.',room_full:'이미 2명이 참가한 방입니다.',room_started:'이미 시작된 방입니다.',invalid_nickname:'닉네임을 확인해 주세요.',invalid_mode:'지원하지 않는 모드입니다.',multiplayer_unavailable:'멀티플레이 서버에 연결할 수 없습니다.'};
     return map[error?.code]||error?.message||'잠시 후 다시 시도해 주세요.';
   }
   async function refresh(){
