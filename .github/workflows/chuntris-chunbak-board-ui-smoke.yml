@@ -1,0 +1,143 @@
+name: Chuntris Chunbak board UI browser smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'chuntris.html'
+      - 'chuntris.js'
+      - 'chuntris-board-start-ui.css'
+      - 'chunbak.html'
+      - 'chunbak.css'
+      - 'chunbak-board-start-ui.css'
+      - '.github/workflows/chuntris-chunbak-board-ui-smoke.yml'
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local site
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/board-ui-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4173/chuntris.html >/dev/null && curl -fsS http://127.0.0.1:4173/chunbak.html >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/board-ui-http.log
+          exit 1
+      - name: Verify board-sized starts countdown and viewport fit
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import { chromium } from 'playwright';
+          import assert from 'node:assert/strict';
+
+          const browser=await chromium.launch({headless:true});
+          const viewports=[
+            {width:1440,height:900},
+            {width:1280,height:720},
+            {width:1024,height:768},
+            {width:390,height:844}
+          ];
+
+          function insideViewport(box,viewport,label){
+            assert.ok(box,`${label} missing`);
+            assert.ok(box.x>=-1,`${label} clips left`);
+            assert.ok(box.x+box.width<=viewport.width+1,`${label} clips right: ${box.x+box.width} > ${viewport.width}`);
+            assert.ok(box.y>=-1,`${label} clips top`);
+            assert.ok(box.y+box.height<=viewport.height+2,`${label} clips bottom: ${box.y+box.height} > ${viewport.height}`);
+          }
+
+          async function verifyChuntris(viewport){
+            const mobile=viewport.width<=390;
+            const page=await browser.newPage({viewport,isMobile:mobile,hasTouch:mobile});
+            const errors=[];
+            page.on('pageerror',error=>errors.push(error.message));
+            await page.goto(`${process.env.BASE_URL}/chuntris.html?_smoke=${Date.now()}`,{waitUntil:'networkidle'});
+            await page.waitForFunction(()=>Boolean(window.ChuntrisApp));
+            const startCard=page.locator('.chuntris-start-card');
+            assert.ok(await startCard.isVisible(),'Chuntris start card missing');
+            const startBox=await startCard.boundingBox();
+            insideViewport(startBox,viewport,'Chuntris start card');
+            assert.ok(Math.abs((startBox.height/startBox.width)-2)<0.04,`Chuntris start card ratio mismatch: ${startBox.width}x${startBox.height}`);
+            assert.ok(await page.locator('#chuntris-mode-classic').isVisible(),'classic mode missing');
+            assert.ok(await page.locator('#chuntris-mode-sprint40').isVisible(),'sprint mode missing');
+            assert.ok(await page.locator('#chuntris-start').isVisible(),'start button must be visible with mode selection');
+            for(const selector of ['[data-chuntris-open="ranking"]','[data-chuntris-open="sound"]','[data-chuntris-open="controls"]']){
+              assert.ok(await page.locator(`.chuntris-start-utils ${selector}`).isVisible(),`start utility missing: ${selector}`);
+            }
+            assert.ok((await startCard.evaluate(el=>el.scrollHeight<=el.clientHeight+1)),'Chuntris start UI overflows board-sized card');
+
+            await page.locator('#chuntris-mode-classic').click();
+            await page.locator('#chuntris-start').click();
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'countdown','Chuntris did not enter countdown state');
+            assert.ok(await page.locator('#chuntris-countdown').isVisible(),'countdown layer missing');
+            assert.equal((await page.locator('#chuntris-countdown-value').textContent())?.trim(),'3','countdown must start at 3');
+            assert.notEqual(await page.evaluate(()=>window.ChuntrisApp.getGame().getSnapshot().status),'playing','engine started before countdown');
+
+            await page.waitForFunction(()=>document.querySelector('#chuntris-countdown-value')?.textContent?.trim()==='2',{timeout:1800});
+            await page.waitForFunction(()=>document.querySelector('#chuntris-countdown-value')?.textContent?.trim()==='1',{timeout:1800});
+            await page.waitForFunction(()=>window.ChuntrisApp.getGame().getSnapshot().status==='playing',{timeout:2500});
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'playing','play view did not start after countdown');
+
+            const boardBox=await page.locator('.chuntris-board-wrap').boundingBox();
+            insideViewport(boardBox,viewport,'Chuntris play board');
+            assert.ok(Math.abs(startBox.width-boardBox.width)<=3,`Chuntris start/play widths differ: ${startBox.width} vs ${boardBox.width}`);
+            assert.ok(Math.abs((boardBox.height/boardBox.width)-2)<0.04,'Chuntris board ratio changed');
+            assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'Chuntris horizontal overflow');
+            assert.deepEqual(errors,[],`Chuntris page errors: ${errors.join(' | ')}`);
+            await page.close();
+          }
+
+          async function verifyChunbak(viewport){
+            const mobile=viewport.width<=390;
+            const page=await browser.newPage({viewport,isMobile:mobile,hasTouch:mobile});
+            const errors=[];
+            page.on('pageerror',error=>errors.push(error.message));
+            await page.goto(`${process.env.BASE_URL}/chunbak.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
+            await page.waitForFunction(()=>Boolean(window.ChunbakGame));
+            await page.waitForFunction(()=>!document.querySelector('#chunbak-start')?.disabled);
+
+            const startCard=page.locator('.chunbak-start-card');
+            assert.ok(await startCard.isVisible(),'Chunbak start card missing');
+            const startBox=await startCard.boundingBox();
+            insideViewport(startBox,viewport,'Chunbak start card');
+            assert.ok(Math.abs((startBox.height/startBox.width)-(680/420))<0.04,`Chunbak start card ratio mismatch: ${startBox.width}x${startBox.height}`);
+            assert.ok(await page.locator('#chunbak-start').isVisible(),'Chunbak start button missing');
+            for(const selector of ['[data-chunbak-open="ranking"]','[data-chunbak-open="sound"]','[data-chunbak-open="controls"]']){
+              assert.ok(await page.locator(`.chunbak-start-utils ${selector}`).isVisible(),`Chunbak start utility missing: ${selector}`);
+            }
+            assert.ok((await startCard.evaluate(el=>el.scrollHeight<=el.clientHeight+1)),'Chunbak start UI overflows board-sized card');
+
+            await page.locator('#chunbak-start').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing');
+            const stageBox=await page.locator('#chunbak-stage').boundingBox();
+            insideViewport(stageBox,viewport,'Chunbak play stage');
+            assert.ok(Math.abs(startBox.width-stageBox.width)<=3,`Chunbak start/play widths differ: ${startBox.width} vs ${stageBox.width}`);
+            assert.ok(Math.abs((stageBox.height/stageBox.width)-(680/420))<0.04,'Chunbak play stage ratio changed');
+            assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'Chunbak horizontal overflow');
+            assert.deepEqual(errors,[],`Chunbak page errors: ${errors.join(' | ')}`);
+            await page.close();
+          }
+
+          try{
+            for(const viewport of viewports){
+              await verifyChuntris(viewport);
+              await verifyChunbak(viewport);
+            }
+          }finally{
+            await browser.close();
+          }
+          EOF_NODE
