@@ -500,7 +500,7 @@
         dialog.showModal();
       });
     });
-    $('[data-dialog-close]', dialog).forEach(button => button.addEventListener('click', () => dialog.close()));
+    $$('[data-dialog-close]', dialog).forEach(button => button.addEventListener('click', () => dialog.close()));
     dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
     if (requestedOpenId) {
       const targetIndex = items.findIndex(item => String(item?.id || '') === String(requestedOpenId));
