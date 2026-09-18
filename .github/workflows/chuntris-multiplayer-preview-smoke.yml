@@ -48,7 +48,7 @@ jobs:
               });')
             if [ -n "$preview" ]; then
               stamp=$(date +%s)
-              if curl -fsS "$preview/chuntris.html?_mp=$stamp" -o /tmp/chuntris.html &&                  curl -fsS "$preview/chuntris-multiplayer.js?_mp=$stamp" -o /tmp/chuntris-multiplayer.js &&                  grep -q 'data-chuntris-multiplayer' /tmp/chuntris.html &&                  grep -q 'SPRINT 40' /tmp/chuntris-multiplayer.js; then
+              if curl -fsS "$preview/chuntris.html?_mp=$stamp" -o /tmp/chuntris.html &&                  curl -fsS "$preview/chuntris-multiplayer.js?_mp=$stamp" -o /tmp/chuntris-multiplayer.js &&                  grep -q 'data-chuntris-multiplayer' /tmp/chuntris.html &&                  grep -q 'data-mp-chuntris-mode="classic"' /tmp/chuntris-multiplayer.js && grep -q 'data-mp-chuntris-mode="sprint40"' /tmp/chuntris-multiplayer.js && grep -q 'data-mp-chuntris-mode="hard"' /tmp/chuntris-multiplayer.js; then
                 echo "PREVIEW_BASE=$preview" >> "$GITHUB_ENV"
                 echo "Multiplayer preview ready: $preview"
                 exit 0
@@ -72,57 +72,81 @@ jobs:
 
           const browser=await chromium.launch({headless:true});
           const base=process.env.PREVIEW_BASE;
-          const contextA=await browser.newContext({viewport:{width:1280,height:800}});
-          const contextB=await browser.newContext({viewport:{width:1280,height:800}});
-          const a=await contextA.newPage();
-          const b=await contextB.newPage();
-          const errors=[];
-          a.on('pageerror',error=>errors.push('A: '+error.message));
-          b.on('pageerror',error=>errors.push('B: '+error.message));
+
+          async function verifyMode(mode){
+            const contextA=await browser.newContext({viewport:{width:1280,height:800}});
+            const contextB=await browser.newContext({viewport:{width:1280,height:800}});
+            const a=await contextA.newPage();
+            const b=await contextB.newPage();
+            const errors=[];
+            a.on('pageerror',error=>errors.push('A '+mode+': '+error.message));
+            b.on('pageerror',error=>errors.push('B '+mode+': '+error.message));
+
+            try{
+              await a.goto(base+'/chuntris.html?_mode='+mode+'&_a='+Date.now(),{waitUntil:'domcontentloaded'});
+              await a.waitForFunction(()=>Boolean(window.ChuntrisApp?.startMultiplayer&&window.MinigameMultiplayer));
+              await a.locator('[data-chuntris-multiplayer]').click();
+              await a.locator('[data-mp-nickname]').fill('멀티A'+mode);
+              await a.locator('[data-mp-chuntris-mode="'+mode+'"]').click();
+              assert.equal(await a.locator('[data-mp-chuntris-mode="'+mode+'"]').getAttribute('aria-pressed'),'true');
+              await a.locator('[data-mp-create]').click();
+              await a.waitForFunction(()=>/^[A-Z2-9]{6}$/.test(document.querySelector('[data-mp-room-code]')?.textContent?.trim()||''),{timeout:7000});
+              const code=(await a.locator('[data-mp-room-code]').textContent()).trim();
+
+              await b.goto(base+'/chuntris.html?room='+code+'&_mode='+mode+'&_b='+Date.now(),{waitUntil:'domcontentloaded'});
+              await b.waitForFunction(()=>Boolean(window.ChuntrisApp?.startMultiplayer&&window.MinigameMultiplayer));
+              await b.locator('[data-mp-nickname]').fill('멀티B'+mode);
+              await b.locator('[data-mp-join]').click();
+
+              await Promise.all([
+                a.waitForFunction(()=>document.querySelectorAll('.mp-player:not(.is-empty)').length===2,{timeout:7000}),
+                b.waitForFunction(()=>document.querySelectorAll('.mp-player:not(.is-empty)').length===2,{timeout:7000})
+              ]);
+              assert.match(await a.locator('[data-mp-room-mode]').innerText(),new RegExp(mode==='classic'?'클래식':mode==='hard'?'하드':'40줄'));
+
+              await a.locator('[data-mp-ready]').click();
+              await b.locator('[data-mp-ready]').click();
+
+              await Promise.all([
+                a.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing',{timeout:10000}),
+                b.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing',{timeout:10000})
+              ]);
+              assert.equal(await a.locator('#chuntris-game').getAttribute('data-mode'),mode);
+              assert.equal(await b.locator('#chuntris-game').getAttribute('data-mode'),mode);
+
+              const stateA=await a.evaluate(()=>window.ChuntrisApp.getGame().getSnapshot());
+              const stateB=await b.evaluate(()=>window.ChuntrisApp.getGame().getSnapshot());
+              assert.deepEqual(stateA.next,stateB.next,mode+' must use the same piece queue');
+
+              if(mode==='sprint40'){
+                await a.evaluate(()=>window.ChuntrisApp.getGame().applyClearEvent({lines:40},Date.now()));
+              }else{
+                await a.evaluate(()=>{window.ChuntrisApp.getGame().state.status='gameover';window.ChuntrisApp.render();});
+              }
+
+              await Promise.all([
+                a.waitForFunction(()=>document.querySelector('.mp-result')&&!document.querySelector('.mp-result').hidden,{timeout:7000}),
+                b.waitForFunction(()=>document.querySelector('.mp-result')&&!document.querySelector('.mp-result').hidden,{timeout:7000})
+              ]);
+              const resultA=await a.locator('.mp-result').innerText();
+              const resultB=await b.locator('.mp-result').innerText();
+              if(mode==='sprint40'){
+                assert.match(resultA,/승리/);
+                assert.match(resultB,/상대 승리|경기 종료/);
+              }else{
+                assert.match(resultA,/상대 승리/);
+                assert.match(resultB,/승리/);
+              }
+              assert.deepEqual(errors,[]);
+            }finally{
+              await contextA.close();
+              await contextB.close();
+            }
+          }
 
           try{
-            await a.goto(base+'/chuntris.html?_mpa='+Date.now(),{waitUntil:'domcontentloaded'});
-            await a.waitForFunction(()=>Boolean(window.ChuntrisApp?.startMultiplayer&&window.MinigameMultiplayer));
-            await a.locator('[data-chuntris-multiplayer]').click();
-            await a.locator('[data-mp-nickname]').fill('멀티춘봉A');
-            await a.locator('[data-mp-create]').click();
-            await a.waitForFunction(()=>/^[A-Z2-9]{6}$/.test(document.querySelector('[data-mp-room-code]')?.textContent?.trim()||''),{timeout:7000});
-            const code=(await a.locator('[data-mp-room-code]').textContent()).trim();
-            assert.match(code,/^[A-Z2-9]{6}$/);
-
-            await b.goto(base+'/chuntris.html?room='+code+'&_mpb='+Date.now(),{waitUntil:'domcontentloaded'});
-            await b.waitForFunction(()=>Boolean(window.ChuntrisApp?.startMultiplayer&&window.MinigameMultiplayer));
-            await b.locator('[data-mp-nickname]').fill('멀티춘봉B');
-            await b.locator('[data-mp-join]').click();
-
-            await a.waitForFunction(()=>document.querySelectorAll('.mp-player:not(.is-empty)').length===2);
-            await b.waitForFunction(()=>document.querySelectorAll('.mp-player:not(.is-empty)').length===2);
-            assert.equal(await a.locator('.mp-player:not(.is-empty)').count(),2);
-            assert.equal(await b.locator('.mp-player:not(.is-empty)').count(),2);
-
-            await a.locator('[data-mp-ready]').click();
-            await b.locator('[data-mp-ready]').click();
-
-            await Promise.all([
-              a.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing',{timeout:10000}),
-              b.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing',{timeout:10000})
-            ]);
-            assert.equal(await a.locator('#chuntris-game').getAttribute('data-mode'),'sprint40');
-            assert.equal(await b.locator('#chuntris-game').getAttribute('data-mode'),'sprint40');
-
-            const stateA=await a.evaluate(()=>window.ChuntrisApp.getGame().getSnapshot());
-            const stateB=await b.evaluate(()=>window.ChuntrisApp.getGame().getSnapshot());
-            assert.deepEqual(stateA.next,stateB.next,'same room seed must create the same piece queue');
-
-            await a.evaluate(()=>window.ChuntrisApp.getGame().applyClearEvent({lines:40},Date.now()));
-            await a.waitForFunction(()=>document.querySelector('.mp-result')&&!document.querySelector('.mp-result').hidden,{timeout:7000});
-            await b.waitForFunction(()=>document.querySelector('.mp-result')&&!document.querySelector('.mp-result').hidden,{timeout:7000});
-            assert.match(await a.locator('.mp-result').innerText(),/승리/);
-            assert.match(await b.locator('.mp-result').innerText(),/상대 승리|경기 종료/);
-            assert.deepEqual(errors,[]);
+            for(const mode of ['classic','sprint40','hard']) await verifyMode(mode);
           } finally {
-            await contextA.close();
-            await contextB.close();
             await browser.close();
           }
           EOF_NODE
