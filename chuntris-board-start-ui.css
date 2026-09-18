@@ -28,7 +28,7 @@ html,.chuntris-page{overflow-anchor:none}
 .chuntris-mode-cards button span:not(.chuntris-mode-index){font-size:.66rem;line-height:1.35;color:#958b84}
 .chuntris-player-step{display:block;margin-top:auto}
 .chuntris-player-step[hidden]{display:none}
-.chuntris-game[data-ui-state="start-mode"] .chuntris-player-step,.chuntris-game[data-ui-state="start-player"] .chuntris-player-step{display:block!important}
+.chuntris-game[data-ui-state="start-difficulty"] .chuntris-player-step{display:block!important}
 .chuntris-player-step .btn{width:100%;min-height:42px;border:1px solid #ff913f;border-radius:11px;background:linear-gradient(135deg,#ff6416,#ff9f31);color:#160b05;font-size:.82rem;font-weight:1000;box-shadow:0 8px 24px rgba(255,107,24,.18)}
 .chuntris-start-utils{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px}
 .chuntris-start-utils button{min-height:38px;padding:5px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:#111;color:#cfc6bf;font-size:.58rem;line-height:1.2}
@@ -79,5 +79,37 @@ html,.chuntris-page{overflow-anchor:none}
 .chuntris-pause-actions .chuntris-return-link{grid-column:1/-1;width:100%;min-height:46px}
 .chuntris-terminal-actions .chuntris-return-link{flex-basis:100%;width:100%}
 
-.chuntris-mode-cards button[data-chuntris-mode="hard"] .chuntris-mode-index{color:#ff6b5f!important}
-.chuntris-mode-cards button[data-chuntris-mode="hard"].is-active{border-color:#ff5448;background:linear-gradient(140deg,rgba(255,64,52,.18),#111 65%);box-shadow:inset 3px 0 0 #ff5448}
+
+
+.chuntris-mode-step[hidden],.chuntris-difficulty-step[hidden]{display:none!important}
+.chuntris-mode-step{display:block}
+.chuntris-difficulty-step{display:flex;flex-direction:column;min-height:0;flex:1}
+.chuntris-step-back{align-self:flex-start;margin:2px 0 6px;padding:0;border:0;background:transparent;color:#9f948c;font:inherit;font-size:.62rem;cursor:pointer}
+.chuntris-step-back:hover{color:#ff9a58}
+.chuntris-difficulty-cards{display:grid;grid-template-columns:1fr;gap:6px;margin:4px 0 7px}
+.chuntris-difficulty-cards button{min-height:68px;padding:8px 10px;border:1px solid rgba(255,255,255,.11);border-radius:12px;background:linear-gradient(180deg,#151515,#0d0d0d);color:#eee;text-align:left;cursor:pointer}
+.chuntris-difficulty-cards button:hover{border-color:rgba(255,134,58,.45)}
+.chuntris-difficulty-cards button.is-active{border-color:#ff741f;background:linear-gradient(140deg,rgba(255,107,24,.2),#111 65%);box-shadow:inset 3px 0 0 #ff6b18}
+.chuntris-difficulty-cards button[data-chuntris-difficulty="hard"].is-active{border-color:#ff5b4d;background:linear-gradient(140deg,rgba(255,70,55,.18),#111 65%);box-shadow:inset 3px 0 0 #ff5448}
+.chuntris-difficulty-cards button[data-chuntris-difficulty="extreme"]{border-color:rgba(196,83,255,.18)}
+.chuntris-difficulty-cards button[data-chuntris-difficulty="extreme"].is-active{border-color:#c453ff;background:linear-gradient(140deg,rgba(178,63,255,.2),#111 65%);box-shadow:inset 3px 0 0 #c453ff}
+.chuntris-difficulty-cards button>span{display:block;margin-bottom:3px;color:#ff8a36;font-size:.55rem;font-weight:900;letter-spacing:.11em}
+.chuntris-difficulty-cards button[data-chuntris-difficulty="hard"]>span{color:#ff7568}
+.chuntris-difficulty-cards button[data-chuntris-difficulty="extreme"]>span{color:#d78aff}
+.chuntris-difficulty-cards button strong{display:block;font-size:.9rem}
+.chuntris-difficulty-cards button small{display:block;margin-top:3px;color:#91877f;font-size:.61rem;line-height:1.35}
+.chuntris-game[data-ui-state="start-difficulty"] #chuntris-start-eyebrow{color:#ff9a58}
+.chuntris-ranking-difficulty-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.chuntris-ranking-difficulty-tabs button{min-height:30px;padding:0 10px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:#111;color:#bdb5af;font:inherit;font-size:.66rem;cursor:pointer}
+.chuntris-ranking-difficulty-tabs button.is-active{border-color:#ff7b2e;background:#ff6b1818;color:#ff9f68}
+.chuntris-ranking-difficulty-tabs button[data-chuntris-ranking-difficulty="extreme"].is-active{border-color:#c453ff;background:#c453ff1a;color:#e2a8ff}
+@media(max-width:620px){
+  .chuntris-difficulty-cards{gap:5px}
+  .chuntris-difficulty-cards button{min-height:61px;padding:7px 9px}
+  .chuntris-difficulty-cards button strong{font-size:.82rem}
+  .chuntris-difficulty-cards button small{font-size:.56rem}
+}
+@media(max-height:680px) and (min-width:901px){
+  .chuntris-difficulty-cards button{min-height:58px;padding:6px 9px}
+  .chuntris-difficulty-cards button small{font-size:.56rem}
+}
