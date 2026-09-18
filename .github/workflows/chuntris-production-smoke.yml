@@ -50,6 +50,7 @@ jobs:
               grep -q 'id="chuntris-start-view"' /tmp/chuntris.html && \
               grep -q 'id="chuntris-play-view"' /tmp/chuntris.html && \
               grep -q 'id="chuntris-countdown"' /tmp/chuntris.html && \
+              grep -q 'chuntris-return-link' /tmp/chuntris.html && \
               grep -q 'id="chuntris-ranking-register"' /tmp/chuntris.html && \
               grep -q 'id="chuntris-ranking-nickname"' /tmp/chuntris.html && \
               ! grep -q 'id="chuntris-nickname"' /tmp/chuntris.html && \
@@ -151,6 +152,7 @@ jobs:
             const playBoardBox=await page.locator('.chuntris-board-wrap').boundingBox();
             assert.ok(playBoardBox&&playBoardBox.y+playBoardBox.height<=viewport.height+1,`${label} play board bottom clipped: ${playBoardBox?.y+playBoardBox?.height} > ${viewport.height}`);
             assert.ok(Math.abs(startCardBox.width-playBoardBox.width)<=3,`${label} start/play board widths differ`);
+            assert.ok(Math.abs(startCardBox.y-playBoardBox.y)<=2,`${label} start/play board top positions differ: ${startCardBox.y} vs ${playBoardBox.y}`);
 
             for(const id of ['#chuntris-utility-ranking','#chuntris-utility-sound','#chuntris-utility-controls','#chuntris-pause']){
               assert.ok(await page.locator(id).isVisible(),`${label} utility missing ${id}`);
@@ -187,6 +189,9 @@ jobs:
 
             await page.locator('#chuntris-pause').click();
             assert.ok(await page.locator('[data-chuntris-panel="pause"]').isVisible(),`${label} pause panel missing`);
+            const pauseReturn=page.locator('[data-chuntris-panel="pause"] .chuntris-return-link');
+            assert.ok(await pauseReturn.isVisible(),`${label} pause minigames return link missing`);
+            assert.equal(await pauseReturn.getAttribute('href'),'minigames.html');
             await page.locator('#chuntris-pause-continue').click();
             await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing');
 
@@ -194,6 +199,11 @@ jobs:
             assert.ok(await page.locator('#chuntris-harddrop-fx').evaluate(el=>el.classList.contains('is-active')),`${label} hard-drop effect missing`);
             await page.evaluate(()=>window.ChuntrisApp.showClearEffect(4));
             assert.equal(await page.locator('#chuntris-clear-label').textContent(),'QUAD',`${label} QUAD label mismatch`);
+            await page.evaluate(()=>{const game=window.ChuntrisApp.getGame();game.state.status='gameover';window.ChuntrisApp.render();});
+            await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='gameover');
+            const terminalReturn=page.locator('#chuntris-overlay .chuntris-return-link');
+            assert.ok(await terminalReturn.isVisible(),`${label} game-over minigames return link missing`);
+            assert.equal(await terminalReturn.getAttribute('href'),'minigames.html');
             assert.equal(await page.locator('#chuntris-line-fx .chuntris-line-flash').count(),4,`${label} line flashes missing`);
 
             assert.deepEqual(errors,[],`${label} page errors: ${errors.join(' | ')}`);
