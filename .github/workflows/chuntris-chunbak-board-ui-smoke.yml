@@ -211,14 +211,26 @@ jobs:
             assert.ok(Math.abs((startBox.height/startBox.width)-2)<0.04,`Chuntris start card ratio mismatch: ${startBox.width}x${startBox.height}`);
             assert.ok(await page.locator('#chuntris-mode-classic').isVisible(),'classic mode missing');
             assert.ok(await page.locator('#chuntris-mode-sprint40').isVisible(),'sprint mode missing');
-            assert.ok(await page.locator('#chuntris-start').isVisible(),'start button must be visible with mode selection');
+            assert.equal(await page.locator('#chuntris-start').isVisible(),false,'start button must stay hidden before difficulty selection');
             for(const selector of ['[data-chuntris-open="ranking"]','[data-chuntris-open="sound"]','[data-chuntris-open="controls"]']){
               assert.ok(await page.locator(`.chuntris-start-utils ${selector}`).isVisible(),`start utility missing: ${selector}`);
             }
-            assert.ok((await startCard.evaluate(el=>el.scrollHeight<=el.clientHeight+1)),'Chuntris start UI overflows board-sized card');
+            assert.ok((await startCard.evaluate(el=>el.scrollHeight<=el.clientHeight+1)),'Chuntris mode step overflows board-sized card');
 
             const startScrollY=await page.evaluate(()=>window.scrollY);
             await page.locator('#chuntris-mode-classic').click();
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-difficulty','Chuntris did not enter difficulty selection');
+            assert.ok(await page.locator('#chuntris-difficulty-step').isVisible(),'difficulty step missing');
+            assert.ok(await page.locator('[data-chuntris-difficulty="normal"]').isVisible(),'normal difficulty missing');
+            assert.equal(await page.locator('#chuntris-start').isVisible(),false,'start button must stay hidden before difficulty is chosen');
+            assert.ok((await startCard.evaluate(el=>el.scrollHeight<=el.clientHeight+1)),'Chuntris difficulty step overflows board-sized card');
+
+            await page.locator('[data-chuntris-difficulty="normal"]').click();
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-player','Chuntris did not enter final start step');
+            assert.ok(await page.locator('#chuntris-player-step').isVisible(),'final start step missing');
+            assert.ok(await page.locator('#chuntris-start').isVisible(),'start button missing after difficulty selection');
+            assert.ok((await startCard.evaluate(el=>el.scrollHeight<=el.clientHeight+1)),'Chuntris final start step overflows board-sized card');
+
             await page.locator('#chuntris-start').click();
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'countdown','Chuntris did not enter countdown state');
             assert.ok(await page.locator('#chuntris-countdown').isVisible(),'countdown layer missing');
