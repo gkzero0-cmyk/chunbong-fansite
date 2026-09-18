@@ -36,6 +36,77 @@ jobs:
           done
           cat /tmp/board-ui-http.log
           exit 1
+      - name: Verify local Chuntris multiplayer mode picker
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import { chromium } from 'playwright';
+          import assert from 'node:assert/strict';
+
+          const browser=await chromium.launch({headless:true});
+          try{
+            for(const mode of ['classic','sprint40','hard']){
+              const page=await browser.newPage({viewport:{width:1280,height:800}});
+              let requestedMode=null;
+              let room={
+                code:'ABC234',game:'chuntris',mode,seed:123456,round:1,state:'waiting',startAt:null,winnerId:null,
+                players:[
+                  {id:'p1',nickname:'로컬A',ready:false,score:0,lines:0,timeMs:0,status:'waiting',finished:false,finishedAt:null,rematch:false},
+                  {id:'p2',nickname:'로컬B',ready:false,score:0,lines:0,timeMs:0,status:'waiting',finished:false,finishedAt:null,rematch:false}
+                ],
+                selfId:'p1',serverNow:Date.now()
+              };
+
+              await page.route('**/api/content?type=minigame-multiplayer**',async route=>{
+                const req=route.request();
+                if(req.method()==='GET'){
+                  room.serverNow=Date.now();
+                  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({room})});
+                  return;
+                }
+                const body=JSON.parse(req.postData()||'{}');
+                if(body.action==='create'){
+                  requestedMode=body.mode;
+                  room={...room,mode:body.mode,selfId:'p1',serverNow:Date.now()};
+                  await route.fulfill({status:201,contentType:'application/json',body:JSON.stringify({token:'token-a',room})});
+                  return;
+                }
+                if(body.action==='ready'){
+                  room={
+                    ...room,state:'countdown',startAt:Date.now()+250,serverNow:Date.now(),
+                    players:room.players.map(player=>({...player,ready:true}))
+                  };
+                  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({room})});
+                  return;
+                }
+                if(body.action==='progress'){
+                  room={...room,state:'playing',serverNow:Date.now()};
+                  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({room})});
+                  return;
+                }
+                await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({room})});
+              });
+
+              await page.goto(process.env.BASE_URL+'/chuntris.html?_local_mp='+mode,{waitUntil:'domcontentloaded'});
+              await page.waitForFunction(()=>Boolean(window.ChuntrisApp?.startMultiplayer&&window.MinigameMultiplayer));
+              await page.locator('[data-chuntris-multiplayer]').click();
+              await page.locator('[data-mp-nickname]').fill('로컬멀티');
+              await page.locator('[data-mp-chuntris-mode="'+mode+'"]').click();
+              assert.equal(await page.locator('[data-mp-chuntris-mode="'+mode+'"]').getAttribute('aria-pressed'),'true');
+              await page.locator('[data-mp-create]').click();
+              await page.waitForFunction(()=>document.querySelector('[data-mp-room-code]')?.textContent?.trim()==='ABC234');
+              assert.equal(requestedMode,mode,'create payload mode mismatch');
+              assert.match(await page.locator('[data-mp-room-mode]').innerText(),new RegExp(mode==='classic'?'클래식':mode==='hard'?'하드':'40줄'));
+              await page.locator('[data-mp-ready]').click();
+              await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing',{timeout:5000});
+              assert.equal(await page.locator('#chuntris-game').getAttribute('data-mode'),mode,'engine mode mismatch');
+              await page.close();
+            }
+          }finally{
+            await browser.close();
+          }
+          EOF_NODE
       - name: Verify board-sized starts countdown and viewport fit
         env:
           BASE_URL: http://127.0.0.1:4173
