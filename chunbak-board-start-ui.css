@@ -6,7 +6,7 @@
 .chunbak-page .chunbak-hero .minigame-back-link{position:static;min-height:32px;margin:0;padding:0 12px;border-color:rgba(255,107,24,.28);background:#101010;color:#d8d0c9;font-size:.72rem}
 .chunbak-page .content-section{padding:4px 0 28px}
 .chunbak-page .content-section>.page-shell{width:min(98%,1180px)}
-.chunbak-game{--chunbak-toolbar-height:58px;--chunbak-board-gap:14px;gap:8px}
+.chunbak-game{overflow-anchor:none;--chunbak-toolbar-height:58px;--chunbak-board-gap:14px;gap:8px}
 .chunbak-play-view{gap:var(--chunbak-board-gap)}
 .chunbak-play-top{position:relative;z-index:12;height:var(--chunbak-toolbar-height);min-height:var(--chunbak-toolbar-height);margin-inline:auto;padding:5px 8px;border:1px solid rgba(255,107,24,.16);border-radius:12px;background:linear-gradient(180deg,#111,#0b0b0b)}
 .chunbak-play-status .eyebrow{color:#ff8a36}

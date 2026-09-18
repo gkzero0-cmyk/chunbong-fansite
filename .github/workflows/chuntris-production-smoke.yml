@@ -120,6 +120,7 @@ jobs:
             await page.goto(`${BASE}/chuntris.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
             await page.waitForFunction(()=>Boolean(window.ChuntrisApp?.getGame?.()));
             await page.waitForFunction(()=>Boolean(window.ChuntrisPostgameRanking));
+            await page.waitForFunction(()=>getComputedStyle(document.querySelector('#chuntris-game')).transform==='none');
             const viewport=page.viewportSize();
             assert.ok(viewport,`${label} viewport missing`);
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-mode');
@@ -165,7 +166,8 @@ jobs:
               ]);
               assert.ok(left&&center&&right,`${label} desktop regions missing`);
               assert.ok(left.x<center.x&&center.x<right.x,`${label} desktop region order invalid`);
-              assert.ok(center.width>=280,`${label} board too narrow`);
+              const expectedBoardWidth=Math.min(340,viewport.height*0.36,viewport.width-28);
+              assert.ok(Math.abs(center.width-expectedBoardWidth)<=4,`${label} board width mismatch: ${center.width} vs expected ${expectedBoardWidth}`);
               const timeFits=await page.locator('#chuntris-time').evaluate(el=>{
                 const original=el.textContent;
                 el.textContent='99:59.999';
