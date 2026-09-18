@@ -1,0 +1,133 @@
+name: Activity center browser smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'content.js'
+      - 'page.js'
+      - 'activity-center.js'
+      - 'activity-center.css'
+      - 'lib/activity.js'
+      - 'api/content.js'
+      - 'api/fanart.js'
+      - 'lib/activity-feed.js'
+      - 'tests/activity-center-regression.mjs'
+      - '.github/workflows/activity-center-browser-smoke.yml'
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local site
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/activity-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/activity-http.log
+          exit 1
+      - name: Verify bell unread state feed and deep links
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import { chromium } from 'playwright';
+          import assert from 'node:assert/strict';
+
+          const browser=await chromium.launch({headless:true});
+          const context=await browser.newContext({viewport:{width:1440,height:900}});
+          let activityItems=[
+            {id:'notice:9001',type:'notice',group:'notice',label:'공지',title:'휴방 공지 (세팅 이슈)',publishedAt:'2026-09-18T09:19:00.000Z',timestamp:1789723140000,precision:'datetime',originalDate:'2026-09-18',href:'notice.html?open=9001',sourceHref:'https://example.com/notice',thumb:'',meta:''},
+            {id:'youtube:lmnopqrstuv',type:'shorts',group:'media',label:'Shorts',title:'오늘의 쇼츠',publishedAt:'2026-09-18T08:05:00.000Z',timestamp:1789718700000,precision:'datetime',originalDate:'2026-09-18',href:'youtube.html?kind=shorts&open=lmnopqrstuv',sourceHref:'https://youtube.com/shorts/lmnopqrstuv',thumb:'',meta:''},
+            {id:'fanart:8001',type:'fanart',group:'fanart',label:'팬아트',title:'가을 팬아트',publishedAt:'2026-09-18T07:10:00.000Z',timestamp:1789715400000,precision:'datetime',originalDate:'2026-09-18',href:'fanart.html?open=8001',sourceHref:'https://example.com/fanart',thumb:'',meta:'팬작가'}
+          ];
+
+          const page=await context.newPage();
+          const errors=[];
+          page.on('pageerror',error=>errors.push(error.message));
+          await page.route('**/api/content?type=activity',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:activityItems,source:'activity',fallback:false})}));
+
+          await page.goto(process.env.BASE_URL+'/index.html?_smoke='+Date.now(),{waitUntil:'networkidle'});
+          await page.waitForSelector('.activity-bell');
+          assert.equal(await page.locator('.header-live[href*="sooplive.com"]').count(),0,'SOOP header shortcut still visible');
+          assert.ok(await page.locator('.theme-toggle').isVisible(),'theme toggle missing');
+          assert.ok(await page.locator('.changelog-button').isVisible(),'changelog button missing');
+          assert.equal((await page.locator('.changelog-button span').textContent())?.trim(),'업데이트 일지');
+          assert.ok(await page.locator('.activity-bell').isVisible(),'activity bell missing');
+          const headerOrder=await page.locator('.theme-toggle').evaluate(el=>({changelog:el.nextElementSibling?.classList.contains('changelog-button'),activity:el.nextElementSibling?.nextElementSibling?.classList.contains('activity-center')}));
+          assert.deepEqual(headerOrder,{changelog:true,activity:true},'header controls must be theme → changelog → activity bell');
+          assert.equal(await page.locator('.activity-unread-dot').isVisible(),true,'new content must show red unread dot');
+
+          await page.locator('.activity-bell').click();
+          assert.equal(await page.locator('.activity-panel').isVisible(),true,'activity panel did not open');
+          assert.equal(await page.locator('.activity-unread-dot').isVisible(),false,'opening activity panel must clear red dot');
+          assert.equal(await page.locator('.activity-item').count(),3);
+          assert.equal((await page.locator('.activity-item').first().locator('strong').textContent())?.trim(),'휴방 공지 (세팅 이슈)');
+          assert.equal(await page.locator('.activity-item').first().getAttribute('href'),'notice.html?open=9001');
+          assert.match((await page.locator('.activity-item').first().locator('time').textContent())||'',/18:19/);
+          const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('chunbong-activity-seen-v1')||'{}'));
+          assert.ok(stored.ids.includes('notice:9001')&&stored.ids.includes('fanart:8001'),'opening panel did not persist seen IDs');
+
+          await page.locator('[data-activity-filter="notice"]').click();
+          assert.equal(await page.locator('.activity-item').count(),1,'notice filter did not narrow list');
+          await page.locator('[data-activity-filter="media"]').click();
+          assert.equal(await page.locator('.activity-item').count(),1,'media filter did not narrow list');
+          await page.locator('.activity-close').click();
+
+          activityItems=[
+            {id:'notice:9002',type:'notice',group:'notice',label:'공지',title:'새 공지',publishedAt:'2026-09-18T09:25:00.000Z',timestamp:1789723500000,precision:'datetime',originalDate:'2026-09-18',href:'notice.html?open=9002',sourceHref:'https://example.com/new',thumb:'',meta:''},
+            ...activityItems
+          ];
+          await page.reload({waitUntil:'networkidle'});
+          await page.waitForSelector('.activity-bell');
+          assert.equal(await page.locator('.activity-unread-dot').isVisible(),true,'new item after prior read must restore red dot');
+
+          await page.route('**/api/content?type=notice',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:[{id:'9001',category:'NOTICE',title:'휴방 공지 (세팅 이슈)',date:'2026-09-18',sortDate:'2026-09-18 18:19:00',content:'세팅 이슈로 오늘은 휴방입니다.',link:'https://example.com/notice'}]})}));
+          await page.route('**/api/content?type=notice-detail&id=9001',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({item:{id:'9001',content:'세팅 이슈로 오늘은 휴방입니다.'}})}));
+          await page.goto(process.env.BASE_URL+'/notice.html?open=9001',{waitUntil:'networkidle'});
+          await page.waitForFunction(()=>document.querySelector('[data-notice-id="9001"] .notice-body')?.classList.contains('open'));
+          assert.equal(await page.locator('[data-notice-id="9001"] .notice-toggle').getAttribute('aria-expanded'),'true','notice deep link did not open target post');
+
+          await page.route('**/api/content?type=youtube',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({groups:{videos:[],shorts:[{id:'lmnopqrstuv',kind:'shorts',title:'오늘의 쇼츠',date:'2026-09-18',dateIso:'2026-09-18T08:05:00.000Z',link:'https://youtube.com/shorts/lmnopqrstuv',embed:'https://www.youtube.com/embed/lmnopqrstuv?rel=0',platform:'youtube'}]}})}));
+          await page.goto(process.env.BASE_URL+'/youtube.html?kind=shorts&open=lmnopqrstuv',{waitUntil:'networkidle'});
+          await page.waitForFunction(()=>document.querySelector('#youtube-player-title')?.textContent==='오늘의 쇼츠');
+          assert.equal(await page.locator('[data-youtube-kind="shorts"]').getAttribute('aria-selected'),'true','YouTube deep link did not select Shorts tab');
+
+          await page.goto(process.env.BASE_URL+'/changelog.html',{waitUntil:'networkidle'});
+          await page.waitForSelector('.changelog-day');
+          assert.equal(await page.locator('.changelog-button').getAttribute('aria-current'),'page','changelog header button should be active on changelog page');
+          assert.equal(await page.locator('.changelog-day').first().getAttribute('data-changelog-date'),'2026-09-18','latest changelog date must render first');
+          assert.ok(await page.locator('[data-changelog-date="2026-09-18"]').getByText('춘트리스·춘박 랭킹 등록 방식 개선').count(),'actual ranking changelog entry missing');
+          assert.ok(await page.locator('[data-changelog-date="2026-09-17"]').getByText('춘박게임 추가',{exact:true}).count(),'actual Chunbak changelog entry missing');
+
+          const mobile=await context.newPage();
+          await mobile.setViewportSize({width:390,height:844});
+          await mobile.route('**/api/content?type=activity',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:activityItems})}));
+          await mobile.goto(process.env.BASE_URL+'/index.html?_mobile='+Date.now(),{waitUntil:'networkidle'});
+          assert.ok(await mobile.locator('.changelog-button').isVisible(),'mobile changelog gear missing');
+          assert.equal(await mobile.locator('.changelog-button span').isVisible(),false,'mobile changelog text should collapse to icon only');
+          await mobile.locator('.activity-bell').click();
+          const panelBox=await mobile.locator('.activity-panel').boundingBox();
+          assert.ok(panelBox&&panelBox.x>=0&&panelBox.x+panelBox.width<=390&&panelBox.y>=0&&panelBox.y+panelBox.height<=844,'mobile activity panel clips viewport');
+          const mobileHeader=await mobile.locator('.site-header').evaluate(el=>({scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}));
+          assert.ok(mobileHeader.scrollWidth<=mobileHeader.clientWidth+1,`activity controls overflow mobile header: ${mobileHeader.scrollWidth} > ${mobileHeader.clientWidth}`);
+          const bellBox=await mobile.locator('.activity-bell').boundingBox();
+          assert.ok(bellBox&&bellBox.x>=0&&bellBox.x+bellBox.width<=390,'activity bell clips mobile viewport');
+          await mobile.close();
+
+          assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
+          await page.close();
+          await context.close();
+          await browser.close();
+          EOF_NODE

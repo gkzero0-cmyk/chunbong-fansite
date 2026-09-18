@@ -10,7 +10,10 @@ function firstImage(html='') {
 function normalize(item) {
   item = item?.item || item;
   const id=first(item,['articleId','articleid','articleNo','id']); const menuId=first(item,['menuId','menuid','menuNo'])||FANART_MENU_ID; const thumb=first(item,['thumbnailImageUrl','thumbnailUrl','imageUrl','representImageUrl'])||'';
-  return { id:id?String(id):'', menuId:String(menuId), title:clean(first(item,['subject','title'])||'춘봉 팬아트'), author:clean(first(item,['writerNickname','writerName','nickname','userNickname'])||''), date:normalizeDate(first(item,['writeDateTimestamp','writeDate','regDate'])), thumb, fullImage:thumb, link:id?`https://cafe.naver.com/ca-fe/cafes/${CAFE_ID}/articles/${id}?menuid=${menuId}`:FANART_BOARD };
+  const rawDate=first(item,['writeDateTimestamp','writeDate','regDate']);
+  const numericDate=typeof rawDate==='number'?rawDate:Number(/^\d{10,13}$/.test(String(rawDate||'').trim())?rawDate:NaN);
+  const dateIso=Number.isFinite(numericDate)?new Date(numericDate<1e12?numericDate*1000:numericDate).toISOString():'';
+  return { id:id?String(id):'', menuId:String(menuId), title:clean(first(item,['subject','title'])||'춘봉 팬아트'), author:clean(first(item,['writerNickname','writerName','nickname','userNickname'])||''), date:normalizeDate(rawDate), sortDate:rawDate?String(rawDate):'', dateIso, thumb, fullImage:thumb, link:id?`https://cafe.naver.com/ca-fe/cafes/${CAFE_ID}/articles/${id}?menuid=${menuId}`:FANART_BOARD };
 }
 async function enrich(item) {
   if (!item.id || item.thumb) return item;

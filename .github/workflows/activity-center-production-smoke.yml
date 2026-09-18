@@ -1,0 +1,119 @@
+name: Activity center production smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'content.js'
+      - 'page.js'
+      - 'activity-center.js'
+      - 'activity-center.css'
+      - 'changelog-data.js'
+      - 'changelog.js'
+      - 'changelog.css'
+      - 'changelog.html'
+      - 'lib/activity.js'
+      - 'api/content.js'
+      - 'api/fanart.js'
+      - 'lib/activity-feed.js'
+      - '.github/workflows/activity-center-production-smoke.yml'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Wait for current activity-center production
+        env:
+          BASE_URL: https://chunbong-fansite.vercel.app
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            stamp=$(date +%s)
+            if curl -fsS -H 'cache-control: no-cache' "$BASE_URL/activity-center.js?_smoke=$stamp" -o /tmp/activity-center.js && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/activity-center.css?_smoke=$stamp" -o /tmp/activity-center.css && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/content.js?_smoke=$stamp" -o /tmp/content.js && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/api/content?type=activity&_smoke=$stamp" -o /tmp/activity.json && \
+               grep -q 'chunbong-activity-seen-v1' /tmp/activity-center.js && \
+               grep -q 'activity-unread-dot' /tmp/activity-center.js && \
+               grep -q 'header-live\[href\*="sooplive.com"\]' /tmp/content.js && \
+               node -e "const p=require('/tmp/activity.json'); if(!Array.isArray(p.items)||!p.items.length) process.exit(1); for(const x of p.items){if(!x.id||!x.type||!x.title||!x.href)process.exit(1)}"; then
+              echo 'Current activity center production is ready.'
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'Timed out waiting for current activity center production.'
+          exit 1
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Verify production bell and read state
+        env:
+          BASE_URL: https://chunbong-fansite.vercel.app
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import { chromium } from 'playwright';
+          import assert from 'node:assert/strict';
+
+          const browser=await chromium.launch({headless:true});
+          try{
+            for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
+              const context=await browser.newContext({viewport,isMobile:viewport.width<=390,hasTouch:viewport.width<=390});
+              const page=await context.newPage();
+              const errors=[];
+              page.on('pageerror',error=>errors.push(error.message));
+              await page.goto(`${process.env.BASE_URL}/index.html?_activity_smoke=${Date.now()}`,{waitUntil:'networkidle'});
+              await page.waitForSelector('.activity-bell');
+
+              assert.equal(await page.locator('.header-live[href*="sooplive.com"]').count(),0,'SOOP header shortcut still visible');
+              assert.ok(await page.locator('.theme-toggle').isVisible(),'theme toggle missing');
+              assert.ok(await page.locator('.activity-bell').isVisible(),'activity bell missing');
+              const headerOrder=await page.locator('.theme-toggle').evaluate(el=>({changelog:el.nextElementSibling?.classList.contains('changelog-button'),activity:el.nextElementSibling?.nextElementSibling?.classList.contains('activity-center')}));
+              assert.deepEqual(headerOrder,{changelog:true,activity:true},'header controls must be theme → changelog → activity bell');
+
+              const response=await page.evaluate(async()=>{
+                const r=await fetch('/api/content?type=activity',{headers:{accept:'application/json'}});
+                return {status:r.status,payload:await r.json()};
+              });
+              assert.equal(response.status,200);
+              assert.ok(Array.isArray(response.payload.items)&&response.payload.items.length>0,'production activity feed empty');
+
+              assert.equal(await page.locator('.activity-unread-dot').isVisible(),true,'fresh browser should show unread dot');
+              await page.locator('.activity-bell').click();
+              assert.ok(await page.locator('.activity-panel').isVisible(),'activity panel did not open');
+              assert.equal(await page.locator('.activity-unread-dot').isVisible(),false,'opening panel did not clear unread dot');
+              assert.ok(await page.locator('.activity-item').count()>0,'activity panel has no items');
+              const seen=await page.evaluate(()=>JSON.parse(localStorage.getItem('chunbong-activity-seen-v1')||'{}'));
+              assert.ok(Array.isArray(seen.ids)&&seen.ids.length>0,'seen activity IDs were not persisted');
+
+              await page.goto(`${process.env.BASE_URL}/changelog.html?_smoke=${Date.now()}`,{waitUntil:'networkidle'});
+              await page.waitForSelector('.changelog-day');
+              assert.equal(await page.locator('.changelog-day').first().getAttribute('data-changelog-date'),'2026-09-18','production changelog latest date is not first');
+              assert.equal(await page.locator('.changelog-button').getAttribute('aria-current'),'page','production changelog button is not active');
+
+              if(viewport.width<=390){
+                const panel=await page.locator('.activity-panel').boundingBox();
+                const bell=await page.locator('.activity-bell').boundingBox();
+                const header=await page.locator('.site-header').evaluate(el=>({scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}));
+                assert.ok(panel&&panel.x>=0&&panel.x+panel.width<=viewport.width&&panel.y>=0&&panel.y+panel.height<=viewport.height,'mobile panel clips viewport');
+                assert.ok(bell&&bell.x>=0&&bell.x+bell.width<=viewport.width,'mobile bell clips viewport');
+                assert.ok(header.scrollWidth<=header.clientWidth+1,'activity controls overflow mobile header');
+              }
+
+              assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
+              await context.close();
+            }
+          }finally{
+            await browser.close();
+          }
+          EOF_NODE

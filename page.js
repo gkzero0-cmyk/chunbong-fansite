@@ -11,6 +11,9 @@
     youtube: '/api/content?type=youtube'
   };
   const NOTICE_REFRESH_MS = 5 * 60 * 1000;
+  const pageParams = new URLSearchParams(window.location.search);
+  const requestedOpenId = pageParams.get('open') || '';
+  const requestedKind = pageParams.get('kind') || '';
   const noticeDetailCache = new Map();
   let noticeRefreshTimer = null;
   const esc = (value = '') => String(value)
@@ -290,6 +293,14 @@
       });
     });
 
+    if (requestedOpenId) {
+      const targetCard = $('[data-notice-id="' + CSS.escape(String(requestedOpenId)) + '"]', list);
+      if (targetCard) requestAnimationFrame(() => {
+        $('.notice-toggle', targetCard)?.click();
+        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    }
+
     if (!noticeRefreshTimer) {
       noticeRefreshTimer = setInterval(() => {
         if (document.hidden || $('.notice-body.open', list)) return;
@@ -326,16 +337,17 @@
     }
   }
 
-  function renderVideoList(kind, items, list) {
+  function renderVideoList(kind, items, list, selectedId = '') {
+    const selectedIndex = Math.max(0, items.findIndex(item => String(item?.id || '') === String(selectedId || '')));
     list.innerHTML = items.map((item, index) => `
-      <button class="video-list-card${index === 0 ? ' selected' : ''}" type="button" data-video-index="${index}">
+      <button class="video-list-card${index === selectedIndex ? ' selected' : ''}" type="button" data-video-index="${index}">
         <span class="video-thumb">
           ${item.thumb ? `<img src="${esc(item.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : '<span class="thumb-placeholder">▶</span>'}
           <i>▶</i>
         </span>
         <span class="video-copy"><small>${esc((item.kind || '').toUpperCase() || item.date || (kind === 'vod' ? 'REPLAY' : 'HOT CLIP'))}${item.date ? ` · ${esc(item.date)}` : ''}</small><strong>${esc(item.title)}</strong></span>
       </button>`).join('');
-    if (items[0]) setVideoPlayer(kind, items[0]);
+    if (items[selectedIndex]) setVideoPlayer(kind, items[selectedIndex]);
     $$('[data-video-index]', list).forEach(button => {
       button.addEventListener('click', () => {
         $$('[data-video-index]', list).forEach(node => node.classList.remove('selected'));
@@ -352,7 +364,7 @@
     const fallback = data.fallback?.vod || [];
     list.innerHTML = '<div class="loading-card">영상을 불러오는 중...</div>';
     const items = await loadItems('vod', fallback);
-    renderVideoList(kind, items, list);
+    renderVideoList(kind, items, list, requestedOpenId);
   }
 
   async function renderClipsPage() {
@@ -366,7 +378,7 @@
       catch: Array.isArray(payload.groups?.catch) ? payload.groups.catch : [],
       clip: Array.isArray(payload.groups?.clip) ? payload.groups.clip : []
     };
-    let activeKind = 'catch';
+    let activeKind = requestedKind === 'clip' || requestedKind === 'catch' ? requestedKind : 'catch';
 
     const updateCounts = () => {
       const catchCount = $('[data-clip-count="catch"]');
@@ -391,12 +403,12 @@
         setupReveal();
         return;
       }
-      renderVideoList('clip', items, list);
+      renderVideoList('clip', items, list, kind === requestedKind ? requestedOpenId : '');
     };
 
     updateCounts();
     tabs.forEach(tab => tab.addEventListener('click', () => renderKind(tab.dataset.clipKind)));
-    if (!groups.catch.length && groups.clip.length) activeKind = 'clip';
+    if (!groups[activeKind]?.length) activeKind = groups.catch.length ? 'catch' : 'clip';
     renderKind(activeKind);
   }
 
@@ -412,7 +424,7 @@
       videos: Array.isArray(payload.groups?.videos) ? payload.groups.videos.slice(0, 12) : [],
       shorts: Array.isArray(payload.groups?.shorts) ? payload.groups.shorts.slice(0, 12) : []
     };
-    let activeKind = groups.videos.length ? 'videos' : 'shorts';
+    let activeKind = requestedKind === 'shorts' || requestedKind === 'videos' ? requestedKind : (groups.videos.length ? 'videos' : 'shorts');
 
     const updateCounts = () => {
       const videoCount = $('[data-youtube-count="videos"]');
@@ -437,11 +449,12 @@
         setupReveal();
         return;
       }
-      renderVideoList('youtube', items, list);
+      renderVideoList('youtube', items, list, kind === requestedKind ? requestedOpenId : '');
     };
 
     updateCounts();
     tabs.forEach(tab => tab.addEventListener('click', () => renderKind(tab.dataset.youtubeKind)));
+    if (!groups[activeKind]?.length) activeKind = groups.videos.length ? 'videos' : 'shorts';
     renderKind(activeKind);
   }
 
@@ -489,6 +502,10 @@
     });
     $$('[data-dialog-close]', dialog).forEach(button => button.addEventListener('click', () => dialog.close()));
     dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+    if (requestedOpenId) {
+      const targetIndex = items.findIndex(item => String(item?.id || '') === String(requestedOpenId));
+      if (targetIndex >= 0) requestAnimationFrame(() => $('[data-fanart-index="' + targetIndex + '"]', grid)?.click());
+    }
     setupReveal();
   }
 
