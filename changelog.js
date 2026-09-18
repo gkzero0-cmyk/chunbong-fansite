@@ -5,14 +5,16 @@
   const indexRoot=document.getElementById('changelog-index-list');
   if(!root||!indexRoot) return;
 
-  const staticGroups=Array.isArray(window.CHUNBONG_CHANGELOG)?[...window.CHUNBONG_CHANGELOG]:[];
-  const labels={new:'NEW',improved:'IMPROVED',fixed:'FIXED'};
+  const groups=(Array.isArray(window.CHUNBONG_CHANGELOG)?window.CHUNBONG_CHANGELOG:[])
+    .filter(group=>group&&/^20\d{2}-\d{2}-\d{2}$/.test(String(group.date||'')))
+    .map(group=>({date:group.date,items:Array.isArray(group.items)?group.items:[]}))
+    .sort((a,b)=>b.date.localeCompare(a.date));
+
+  const labels={new:'신규',improved:'개선',fixed:'수정'};
   const esc=(value='')=>String(value)
     .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
     .replaceAll('"','&quot;').replaceAll("'",'&#039;');
 
-  const validDate=value=>/^20\d{2}-\d{2}-\d{2}$/.test(String(value||''));
-  const normalizeTitle=value=>String(value||'').toLowerCase().replace(/[^0-9a-z가-힣]+/g,' ').trim();
   const formatDate=date=>{
     const parsed=new Date(date+'T00:00:00+09:00');
     if(Number.isNaN(parsed.getTime())) return {main:date,sub:''};
@@ -22,60 +24,12 @@
     };
   };
 
-  function mergeGroups(archiveGroups=[]){
-    const map=new Map();
-    const ensure=date=>{
-      if(!map.has(date))map.set(date,{date,items:[],seen:new Set()});
-      return map.get(date);
-    };
-    staticGroups
-      .filter(group=>group&&validDate(group.date))
-      .forEach(group=>{
-        const row=ensure(group.date);
-        (Array.isArray(group.items)?group.items:[]).forEach(item=>{
-          const key=normalizeTitle(item?.title);
-          if(key)row.seen.add(key);
-          row.items.push({...item,source:'curated'});
-        });
-      });
-
-    (Array.isArray(archiveGroups)?archiveGroups:[]).forEach(group=>{
-      if(!validDate(group?.date))return;
-      const row=ensure(group.date);
-      (Array.isArray(group.items)?group.items:[]).forEach(item=>{
-        const key=normalizeTitle(item?.title);
-        if(!key||row.seen.has(key))return;
-        row.seen.add(key);
-        row.items.push({
-          type:['new','improved','fixed'].includes(item?.type)?item.type:'improved',
-          title:item?.title||'업데이트',
-          description:'',
-          source:'commit',
-          sha:item?.shortSha||String(item?.sha||'').slice(0,7),
-          url:item?.url||''
-        });
-      });
-    });
-
-    return [...map.values()]
-      .map(({date,items})=>({date,items}))
-      .sort((a,b)=>b.date.localeCompare(a.date));
-  }
-
   function cardHtml(item){
     const kind=['new','improved','fixed'].includes(item?.type)?item.type:'improved';
-    const title=esc(item?.title||'업데이트');
-    if(item?.source==='commit'){
-      const sha=esc(item?.sha||'');
-      const link=item?.url?'<a href="'+esc(item.url)+'" target="_blank" rel="noreferrer">GitHub 기록 ↗</a>':'개발 기록';
-      return '<article class="changelog-card is-commit">'+
-        '<div class="changelog-card-top"><span class="changelog-kind" data-kind="'+kind+'">'+labels[kind]+'</span><h3>'+title+'</h3></div>'+
-        '<div class="changelog-commit-meta">'+(sha?'<code>'+sha+'</code>':'')+link+'</div>'+
-      '</article>';
-    }
+    const description=String(item?.description||'').trim();
     return '<article class="changelog-card">'+
-      '<div class="changelog-card-top"><span class="changelog-kind" data-kind="'+kind+'">'+labels[kind]+'</span><h3>'+title+'</h3></div>'+
-      '<p>'+esc(item?.description||'')+'</p>'+
+      '<div class="changelog-card-top"><span class="changelog-kind" data-kind="'+kind+'">'+labels[kind]+'</span><h3>'+esc(item?.title||'업데이트')+'</h3></div>'+
+      (description?'<p>'+esc(description)+'</p>':'')+
     '</article>';
   }
 
@@ -95,8 +49,7 @@
     dateObserver?.disconnect();
     if(!('IntersectionObserver' in window))return;
     dateObserver=new IntersectionObserver(rows=>{
-      const visible=rows
-        .filter(row=>row.isIntersecting)
+      const visible=rows.filter(row=>row.isIntersecting)
         .sort((a,b)=>Math.abs(a.boundingClientRect.top)-Math.abs(b.boundingClientRect.top));
       if(visible[0])setActiveDate(visible[0].target.dataset.changelogDate||'');
     },{rootMargin:'-92px 0px -62% 0px',threshold:[0,.01,.1]});
@@ -115,18 +68,17 @@
     });
   }
 
-  function render(groups,{latestKey='',synced=false}={}){
-    const total=groups.reduce((sum,group)=>sum+(Array.isArray(group.items)?group.items.length:0),0);
+  function render(latestKey=''){
+    const total=groups.reduce((sum,group)=>sum+group.items.length,0);
     const latest=document.getElementById('changelog-latest');
     const count=document.getElementById('changelog-count');
     const status=document.getElementById('changelog-sync-status');
+
     if(latest)latest.textContent=groups[0]?.date||'LATEST';
-    if(count)count.textContent=total+'개의 업데이트 · '+groups.length+'일 기록';
+    if(count)count.textContent=total+'개의 주요 업데이트 · '+groups.length+'일 기록';
     if(status){
-      status.textContent=synced
-        ? 'GitHub 개발 기록과 자동 동기화되었습니다. 새 변경은 최신 날짜에 자동으로 추가됩니다.'
-        : '저장된 업데이트를 표시 중입니다. 개발 기록 동기화를 확인하고 있습니다.';
-      status.className='changelog-sync-status '+(synced?'is-live':'');
+      status.textContent='사용자에게 중요한 변경사항만 한글로 간단하게 정리했습니다.';
+      status.className='changelog-sync-status is-live';
     }
 
     indexRoot.innerHTML=groups.map(group=>
@@ -135,10 +87,9 @@
 
     root.innerHTML=groups.length?groups.map(group=>{
       const date=formatDate(group.date);
-      const items=Array.isArray(group.items)?group.items:[];
       return '<section class="changelog-day reveal" id="changelog-'+esc(group.date)+'" data-changelog-date="'+esc(group.date)+'">'+
-        '<div class="changelog-date"><time datetime="'+esc(group.date)+'">'+esc(date.main)+'</time><small>'+esc(date.sub)+' · '+items.length+'개</small></div>'+
-        '<div class="changelog-entries">'+items.map(cardHtml).join('')+'</div>'+
+        '<div class="changelog-date"><time datetime="'+esc(group.date)+'">'+esc(date.main)+'</time><small>'+esc(date.sub)+' · '+group.items.length+'개</small></div>'+
+        '<div class="changelog-entries">'+group.items.map(cardHtml).join('')+'</div>'+
       '</section>';
     }).join(''):'<div class="changelog-empty">등록된 업데이트가 없습니다.</div>';
 
@@ -151,23 +102,16 @@
     document.dispatchEvent(new CustomEvent('chunbong:changelog-ready',{detail:{latestKey:resolvedKey,latestDate:groups[0]?.date||''}}));
   }
 
-  const initial=mergeGroups([]);
-  render(initial,{synced:false});
+  render();
 
+  // 최신 여부 판정용 키만 확인하며 개발 기록의 제목·링크·출처는 화면에 표시하지 않습니다.
   (async()=>{
     try{
-      const response=await fetch('/api/content?type=changelog-history',{headers:{accept:'application/json'}});
-      if(!response.ok)throw new Error('HTTP '+response.status);
+      const response=await fetch('/api/content?type=changelog-history&summary=1',{headers:{accept:'application/json'}});
+      if(!response.ok)return;
       const payload=await response.json();
-      const groups=mergeGroups(payload.groups);
       const latestKey=payload.latest?.sha||payload.latest?.shortSha||'';
-      render(groups,{latestKey,synced:true});
-    }catch(_){
-      const status=document.getElementById('changelog-sync-status');
-      if(status){
-        status.textContent='현재 저장된 업데이트 전체를 표시 중입니다. 자동 개발 기록 동기화는 잠시 후 다시 시도됩니다.';
-        status.className='changelog-sync-status is-fallback';
-      }
-    }
+      if(latestKey)render(latestKey);
+    }catch(_){}
   })();
 })();
