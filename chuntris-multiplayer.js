@@ -53,7 +53,7 @@
 
   const hud=document.createElement('div');
   hud.className='mp-hud';hud.hidden=true;
-  hud.innerHTML='<div><span>ME</span><strong data-mp-hud-me>-</strong></div><b class="mp-vs">VS</b><div><span>RIVAL</span><strong data-mp-hud-rival>-</strong></div>';
+  hud.innerHTML='<div><span>ME</span><strong data-mp-hud-me>-</strong></div><b class="mp-vs" data-mp-hud-mode>VS</b><div><span>RIVAL</span><strong data-mp-hud-rival>-</strong></div>';
   document.querySelector('.chuntris-board-wrap')?.append(hud);
 
   const $=selector=>shell.querySelector(selector);
@@ -149,13 +149,14 @@
   function startPolling(){if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(refresh,700);void refresh();}
   function handleRoom(room){
     if(!room)return;
+    clockOffset=Number(room.serverNow||Date.now())-Date.now();
     if(room.state==='countdown'&&room.startAt&&room.round!==startedRound){
       if(startTimer)clearTimeout(startTimer);
-      const delay=Math.max(0,room.startAt-Date.now());
+      const delay=Math.max(0,room.startAt-serverNow());
       startTimer=setTimeout(()=>{
         if(startedRound===room.round)return;
         startedRound=room.round;terminalSent='';
-        App.startMultiplayer?.(room.seed);
+        App.startMultiplayer?.(room.seed,room.mode);
         close();
         startProgress(room);
       },delay);
@@ -169,7 +170,7 @@
       const snap=App.getGame()?.getSnapshot?.();if(!snap)return;
       let status=snap.status==='completed'?'completed':snap.status==='gameover'?'gameover':'playing';
       if((status==='completed'||status==='gameover')&&terminalSent===status)return;
-      const payload={lines:snap.lines,score:snap.score,timeMs:Math.max(snap.elapsedMs,Date.now()-(room.startAt||Date.now())),status};
+      const payload={lines:snap.lines,score:snap.score,timeMs:Math.max(snap.elapsedMs,serverNow()-(room.startAt||serverNow())),status};
       try{
         const data=await client.progress(payload);render(data.room);handleRoom(data.room);
         if(status!=='playing')terminalSent=status;
@@ -183,17 +184,19 @@
   els.close.addEventListener('click',close);
   shell.addEventListener('click',event=>{if(event.target===shell)close();});
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!shell.hidden){event.preventDefault();close();}});
+  modeButtons.forEach(button=>button.addEventListener('click',()=>setSelectedMode(button.dataset.mpChuntrisMode)));
   els.showJoin.addEventListener('click',()=>{els.joinBox.hidden=!els.joinBox.hidden;if(!els.joinBox.hidden)els.code.focus();});
   els.code.addEventListener('input',()=>{els.code.value=els.code.value.toUpperCase().replace(/[^A-Z2-9]/g,'').slice(0,6);});
-  els.create.addEventListener('click',async()=>{try{message('방 만드는 중…');const data=await client.create(normalizeName());saveSession();render(data.room);startPolling();message('방 코드나 초대 링크를 친구에게 보내 주세요.');}catch(error){message(errorMessage(error),true);}});
-  els.join.addEventListener('click',async()=>{try{message('입장 중…');const data=await client.join(els.code.value,normalizeName());saveSession();render(data.room);startPolling();message('입장했습니다. 두 명 모두 READY를 눌러 주세요.');}catch(error){message(errorMessage(error),true);}});
-  els.ready.addEventListener('click',async()=>{try{const me=currentPlayers(client.room||{players:[]}).me;const data=await client.ready(!me?.ready);render(data.room);message(data.room.state==='countdown'?'곧 동시에 시작합니다!':'READY 상태를 변경했습니다.');handleRoom(data.room);}catch(error){message(errorMessage(error),true);}});
+  els.create.addEventListener('click',async()=>{try{message('방 만드는 중…');const data=await client.create(normalizeName(),selectedMode);saveSession();render(data.room);startPolling();message(`${modeMeta(data.room.mode).label} 방을 만들었습니다. 초대 링크를 친구에게 보내 주세요.`);}catch(error){message(errorMessage(error),true);}});
+  els.join.addEventListener('click',async()=>{try{message('입장 중…');const data=await client.join(els.code.value,normalizeName());saveSession();render(data.room);startPolling();message(`${modeMeta(data.room.mode).label} 방에 입장했습니다. 두 명 모두 READY를 눌러 주세요.`);}catch(error){message(errorMessage(error),true);}});
+  els.ready.addEventListener('click',async()=>{try{const me=currentPlayers(client.room||{players:[]}).me;const data=await client.ready(!me?.ready);render(data.room);message(data.room.state==='countdown'?`${modeMeta(data.room.mode).label} 대결이 곧 시작됩니다!`:'READY 상태를 변경했습니다.');handleRoom(data.room);}catch(error){message(errorMessage(error),true);}});
   els.leave.addEventListener('click',async()=>{try{await client.leave();saveSession();stopTimers();render(null);hud.hidden=true;message('방에서 나왔습니다.');}catch(error){message(errorMessage(error),true);}});
   els.copy.addEventListener('click',async()=>{const text=root.MinigameMultiplayer.roomInviteUrl(client.code);try{await navigator.clipboard.writeText(text);message('초대 링크를 복사했습니다.');}catch{message(`방 코드: ${client.code}`);}});
 
+  setSelectedMode(selectedMode);
   const params=new URLSearchParams(location.search);
   const invite=params.get('room');
-  if(invite){open();els.showJoin.click();els.code.value=invite.toUpperCase().replace(/[^A-Z2-9]/g,'').slice(0,6);message('닉네임을 입력하고 입장해 주세요.');}
+  if(invite){open();els.showJoin.click();els.code.value=invite.toUpperCase().replace(/[^A-Z2-9]/g,'').slice(0,6);message('닉네임을 입력하고 입장해 주세요. 모드는 방 설정을 따릅니다.');}
   try{
     const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');
     if(saved?.code&&saved?.token&&!invite){client.restore(saved.code,saved.token);open();startPolling();message('이전 멀티플레이 방을 다시 연결하는 중…');}
