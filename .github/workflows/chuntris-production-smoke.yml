@@ -63,6 +63,7 @@ jobs:
               grep -q -- '--chuntris-shell-bg' /tmp/chuntris-vcompany-ui.css && \
               grep -Fq -- '--chuntris-stage-height:min(680px,72svh)!important' /tmp/chuntris-board-start-ui.css && \
               grep -Fq -- '--chuntris-board-width:min(340px,36svh,calc(100vw - 28px))' /tmp/chuntris-board-start-ui.css && \
+              grep -Fq 'overflow-anchor:none' /tmp/chuntris-board-start-ui.css && \
               node -e "const p=require('/tmp/chuntris-ranking.json');if(p.mode!=='classic'||!Array.isArray(p.entries))process.exit(1)"; then
               echo 'Current postgame-ranking Chuntris production is ready.'
               exit 0
@@ -136,6 +137,7 @@ jobs:
             assert.ok(startCardBox,`${label} start card missing`);
             assert.ok(startCardBox.y>=-1&&startCardBox.y+startCardBox.height<=viewport.height+1,`${label} start card bottom clipped: ${startCardBox.y+startCardBox.height} > ${viewport.height}`);
             assert.ok(Math.abs(startCardBox.height/startCardBox.width-2)<0.04,`${label} start card ratio mismatch`);
+            const startScrollY=await page.evaluate(()=>window.scrollY);
             await page.locator('#chuntris-mode-classic').click();
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-player');
             await page.locator('#chuntris-start').click();
@@ -147,6 +149,9 @@ jobs:
             await page.waitForFunction(()=>document.querySelector('#chuntris-countdown-value')?.textContent?.trim()==='1',{timeout:1800});
             await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing',{timeout:3000});
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'playing');
+            await page.waitForTimeout(120);
+            const playScrollY=await page.evaluate(()=>window.scrollY);
+            assert.ok(Math.abs(playScrollY-startScrollY)<=1,`${label} transition changed scrollY: ${startScrollY} -> ${playScrollY}`);
             const documentWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
             assert.ok(documentWidth<=viewport.width+1,`${label} horizontal overflow`);
             await assertGameStageFitsViewport(page,label);
