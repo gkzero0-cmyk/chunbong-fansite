@@ -302,3 +302,54 @@
 }
 .cg-overlay{background:rgba(20,23,19,.78)!important}
 .cg-fruit.selected:after{box-shadow:0 0 0 1px rgba(230,232,226,.14) inset,0 0 10px rgba(210,154,87,.2)!important}
+
+
+/* Requested comfort palette: 2026-09-19 */
+.chungwagame-page{
+  color:#E6E7E1;
+  background:#252A22;
+}
+.chungwagame-shell{color:#E6E7E1}
+.chungwagame-navline{color:#B3B7AE}
+.chungwagame-brand h1{color:#F0F1EC}
+.chungwagame-brand p{color:#B8BBB2}
+.chungwagame-brand p strong{color:#C8D69A}
+.chungwagame-brand-mark{
+  background:#30362C;
+  border-color:#4A5142;
+  box-shadow:0 8px 22px rgba(0,0,0,.22)
+}
+.cg-card,.cg-board-card,.cg-utility,.cg-modal-card,.cg-stat,.cg-overlay-inner{
+  background:#30362C;
+  border-color:#4A5142;
+  color:#E6E7E1;
+  box-shadow:0 10px 24px rgba(0,0,0,.18)
+}
+.cg-board-card{background:#30362C}
+.cg-board-wrap{
+  background:
+    linear-gradient(to right,rgba(226,228,221,.085) 1px,transparent 1px),
+    linear-gradient(to bottom,rgba(226,228,221,.085) 1px,transparent 1px),
+    #282E25;
+  background-size:5.8823529% 100%,100% 10%,100% 100%;
+  border-color:#4A5142;
+  box-shadow:inset 0 0 0 1px rgba(235,236,230,.025)
+}
+.cg-selection,.cg-ranking-list li,.cg-speech,.cg-howto{
+  background:#30362C;
+  border-color:#4A5142;
+  color:#E6E7E1
+}
+.cg-selection span,.cg-message,.cg-shortcuts,.cg-ranking-status,.cg-utility small,.cg-howto ol{color:#B9BDB4}
+.cg-selection strong,.cg-howto b,.cg-speech b{color:#CBD6A5}
+.cg-time-track{background:#20251E}
+.cg-time-fill{background:linear-gradient(90deg,#7E925A 0%,#A2A767 58%,#C18D59 82%,#C96B5E 100%)}
+.cg-utility:hover{background:#383F33}
+.cg-utility.danger:hover{background:#46332F}
+.cg-secondary{background:#30362C;color:#E6E7E1;border-color:#4A5142}
+.cg-plain{color:#E6E7E1;border-color:#4A5142}
+.cg-modal-card header button{background:#383F33;color:#E6E7E1}
+.cg-fruit.selected:after{border-color:#D4A260;box-shadow:0 0 0 1px rgba(232,231,220,.16) inset,0 0 10px rgba(199,143,72,.22)}
+.cg-drag{border-color:#D2A067;background:rgba(210,160,103,.08);box-shadow:0 0 0 1px rgba(230,232,225,.07) inset}
+.cg-drag.valid{border-color:#A8BA78;background:rgba(151,172,105,.12)}
+.cg-hint{border-color:#C97868;background:rgba(201,120,104,.07)}
