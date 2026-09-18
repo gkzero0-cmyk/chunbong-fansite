@@ -8,6 +8,7 @@ on:
       - 'chuntris-fullscreen.css'
       - 'chuntris-immersive.css'
       - 'chuntris-vcompany-ui.css'
+      - 'chuntris-board-start-ui.css'
       - 'chuntris-engine.js'
       - 'chuntris-audio.js'
       - 'chuntris-ranking-core.js'
