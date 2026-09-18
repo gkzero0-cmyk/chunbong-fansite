@@ -117,8 +117,8 @@ jobs:
             assert.ok(await page.locator('#chuntris-difficulty-step').isVisible(),`${label} difficulty step missing`);
             assert.ok(await page.locator('[data-chuntris-difficulty="normal"]').isVisible(),`${label} normal difficulty missing`);
             await page.locator('[data-chuntris-difficulty="normal"]').click();
-            assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-player');
-            assert.ok(await page.locator('#chuntris-player-step').isVisible(),`${label} player step missing`);
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-difficulty');
+            assert.ok(await page.locator('#chuntris-player-step').isVisible(),`${label} start action missing in difficulty step`);
             await page.locator('#chuntris-start').click();
             await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing');
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'playing');
