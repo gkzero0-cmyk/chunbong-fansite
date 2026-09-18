@@ -95,8 +95,26 @@ jobs:
             const boardBox=await page.locator('.chuntris-board-wrap').boundingBox();
             insideViewport(boardBox,viewport,'Chuntris play board');
             assert.ok(Math.abs(startBox.width-boardBox.width)<=3,`Chuntris start/play widths differ: ${startBox.width} vs ${boardBox.width}`);
+            assert.ok(Math.abs(startBox.y-boardBox.y)<=2,`Chuntris start/play top positions differ: ${startBox.y} vs ${boardBox.y}`);
             assert.ok(Math.abs((boardBox.height/boardBox.width)-2)<0.04,'Chuntris board ratio changed');
             assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'Chuntris horizontal overflow');
+
+            await page.locator('#chuntris-pause').click();
+            assert.ok(await page.locator('[data-chuntris-panel="pause"]').isVisible(),'Chuntris pause panel missing');
+            const ctPauseReturn=page.locator('[data-chuntris-panel="pause"] .chuntris-return-link');
+            assert.ok(await ctPauseReturn.isVisible(),'Chuntris pause return-to-minigames link missing');
+            assert.equal(await ctPauseReturn.getAttribute('href'),'minigames.html');
+            await page.locator('#chuntris-pause-continue').click();
+            await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing');
+
+            await page.evaluate(()=>{
+              const overlay=document.querySelector('#chuntris-overlay');
+              if(overlay) overlay.hidden=false;
+            });
+            const ctGameOverReturn=page.locator('#chuntris-overlay .chuntris-return-link');
+            assert.ok(await ctGameOverReturn.isVisible(),'Chuntris game-over return-to-minigames link missing');
+            assert.equal(await ctGameOverReturn.getAttribute('href'),'minigames.html');
+
             assert.deepEqual(errors,[],`Chuntris page errors: ${errors.join(' | ')}`);
             await page.close();
           }
@@ -126,8 +144,24 @@ jobs:
             const stageBox=await page.locator('#chunbak-stage').boundingBox();
             insideViewport(stageBox,viewport,'Chunbak play stage');
             assert.ok(Math.abs(startBox.width-stageBox.width)<=3,`Chunbak start/play widths differ: ${startBox.width} vs ${stageBox.width}`);
+            assert.ok(Math.abs(startBox.y-stageBox.y)<=2,`Chunbak start/play top positions differ: ${startBox.y} vs ${stageBox.y}`);
             assert.ok(Math.abs((stageBox.height/stageBox.width)-(680/420))<0.04,'Chunbak play stage ratio changed');
             assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'Chunbak horizontal overflow');
+
+            await page.locator('#chunbak-pause').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='paused');
+            const cbPauseReturn=page.locator('[data-chunbak-panel="pause"] .chunbak-return-link');
+            assert.ok(await cbPauseReturn.isVisible(),'Chunbak pause return-to-minigames link missing');
+            assert.equal(await cbPauseReturn.getAttribute('href'),'minigames.html');
+            await page.locator('[data-chunbak-action="resume"]').click();
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing');
+
+            await page.evaluate(()=>window.ChunbakGame.setGameOver());
+            await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='gameover');
+            const cbGameOverReturn=page.locator('#chunbak-overlay .chunbak-return-link');
+            assert.ok(await cbGameOverReturn.isVisible(),'Chunbak game-over return-to-minigames link missing');
+            assert.equal(await cbGameOverReturn.getAttribute('href'),'minigames.html');
+
             assert.deepEqual(errors,[],`Chunbak page errors: ${errors.join(' | ')}`);
             await page.close();
           }
