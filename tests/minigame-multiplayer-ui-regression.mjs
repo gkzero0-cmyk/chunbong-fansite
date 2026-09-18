@@ -18,6 +18,7 @@ assert.match(runtime,/root\.ChuntrisApp=\{start,startMultiplayer,/,'startMultipl
 assert.match(common,/type=minigame-multiplayer/,'shared client must target multiplayer API');
 assert.match(common,/function seededRandom\(seed\)/,'shared client should expose seeded random helper');
 assert.match(common,/roomInviteUrl/,'shared client should build invite links');
+assert.match(common,/async create\(nickname,mode\)/,'shared client create must accept a room mode');
 
 for(const marker of ['action:\'create\'','action:\'join\'','action:\'ready\'','action:\'progress\'','action:\'rematch\'','action:\'leave\'']){
   assert.ok(common.includes(marker),'shared client action missing: '+marker);
