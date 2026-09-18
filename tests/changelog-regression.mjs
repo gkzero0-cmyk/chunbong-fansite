@@ -30,8 +30,8 @@ for(const group of groups){
 }
 const sorted=[...groups].sort((a,b)=>b.date.localeCompare(a.date));
 assert.equal(sorted[0].date,'2026-09-18','latest changelog date should be first');
-assert.ok(groups.some(group=>group.date==='2026-09-13'&&group.items.some(item=>/춘박게임 추가/.test(item.title))),'requested 2026-09-13 Chunbak entry missing');
-assert.ok(groups.some(group=>group.date==='2026-09-16'&&group.items.some(item=>/랭킹 기능 추가/.test(item.title))),'requested 2026-09-16 ranking entry missing');
+assert.ok(groups.some(group=>group.date==='2026-09-17'&&group.items.some(item=>item.title==='춘박게임 추가')),'actual 2026-09-17 Chunbak entry missing');
+assert.ok(groups.some(group=>group.date==='2026-09-18'&&group.items.some(item=>/랭킹 등록 방식 개선/.test(item.title))),'actual 2026-09-18 ranking update entry missing');
 
 assert.match(content,/className = 'changelog-button'/,'shared header bootstrap must create changelog button');
 assert.match(content,/link\.href = 'changelog\.html'/);
