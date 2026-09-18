@@ -118,6 +118,23 @@ window.CHUNBONG_CONTENT = {
 
 (() => {
   const header = document.querySelector('.site-header');
+  if (!header || header.querySelector('.changelog-button')) return;
+  const themeToggle = header.querySelector('.theme-toggle');
+  const navToggle = header.querySelector('.nav-toggle');
+  const link = document.createElement('a');
+  link.className = 'changelog-button';
+  link.href = 'changelog.html';
+  link.setAttribute('aria-label', '업데이트 일지');
+  link.title = '업데이트 일지';
+  if (document.body.dataset.page === 'changelog') link.setAttribute('aria-current', 'page');
+  link.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"></path><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.5-2-3.4-2.4 1a8 8 0 0 0-1.7-1L15 3.5h-4L10.7 6A8 8 0 0 0 9 7L6.6 6.1l-2 3.4 2 1.5a7.6 7.6 0 0 0 0 2l-2 1.5 2 3.4L9 17a8 8 0 0 0 1.7 1l.3 2.5h4l.3-2.5a8 8 0 0 0 1.7-1l2.4.9 2-3.4-2-1.5Z"></path></svg><span>업데이트 일지</span>';
+  if (themeToggle) themeToggle.insertAdjacentElement('afterend', link);
+  else header.insertBefore(link, navToggle || null);
+})();
+
+
+(() => {
+  const header = document.querySelector('.site-header');
   if (!header) return;
   header.querySelectorAll('.header-live[href*="sooplive.com"]').forEach(node => node.remove());
 
