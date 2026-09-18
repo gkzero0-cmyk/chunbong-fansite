@@ -44,6 +44,13 @@
   const status = wrapper.querySelector('.activity-status');
   const list = wrapper.querySelector('.activity-list');
   const tabs = [...wrapper.querySelectorAll('[data-activity-filter]')];
+  const mobileQuery = typeof window.matchMedia === 'function' ? window.matchMedia('(max-width: 760px)') : null;
+
+  function syncPanelHost() {
+    const mobile = Boolean(mobileQuery?.matches);
+    if (mobile && panel.parentElement !== document.body) document.body.append(panel);
+    else if (!mobile && panel.parentElement !== wrapper) wrapper.append(panel);
+  }
 
   const state = { items: [], filter: 'all', loaded: false, loading: false };
 
@@ -181,6 +188,7 @@
   }
 
   function setOpen(open) {
+    syncPanelHost();
     panel.hidden = !open;
     button.setAttribute('aria-expanded', String(open));
     wrapper.classList.toggle('open', open);
@@ -202,13 +210,19 @@
     render();
   }));
   document.addEventListener('click', event => {
-    if (!panel.hidden && !wrapper.contains(event.target)) setOpen(false);
+    if (!panel.hidden && !wrapper.contains(event.target) && !panel.contains(event.target)) setOpen(false);
   });
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && !panel.hidden) {
       setOpen(false);
       button.focus();
     }
+  });
+
+  mobileQuery?.addEventListener?.('change', () => {
+    const wasOpen = !panel.hidden;
+    syncPanelHost();
+    if (wasOpen) render();
   });
 
   refresh();
