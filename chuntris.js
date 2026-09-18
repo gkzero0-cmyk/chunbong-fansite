@@ -10,6 +10,12 @@
   const CLASSIC_BEST_KEY = 'chuntris.bestScore.classic.v1';
   const SPRINT_BEST_KEY = 'chuntris.bestTime.sprint40.v1';
   const HARD_BEST_KEY = 'chuntris.bestScore.hard.v1';
+  const CLASSIC_EXTREME_BEST_KEY = 'chuntris.bestScore.classic.extreme.v1';
+  const SPRINT_HARD_BEST_KEY = 'chuntris.bestTime.sprint40.hard.v1';
+  const SPRINT_EXTREME_BEST_KEY = 'chuntris.bestTime.sprint40.extreme.v1';
+  const SCORE180_NORMAL_BEST_KEY = 'chuntris.bestScore.score180.normal.v1';
+  const SCORE180_HARD_BEST_KEY = 'chuntris.bestScore.score180.hard.v1';
+  const SCORE180_EXTREME_BEST_KEY = 'chuntris.bestScore.score180.extreme.v1';
   const NICKNAME_KEY = 'chuntris.nickname.v1';
   const RANKING_ENDPOINT = '/api/content?type=chuntris-ranking';
   const REACTION_SPRITE = 'assets/chuntris/reactions.webp';
@@ -31,11 +37,14 @@
     sleep:['춘봉 졸린 표정','잠깐 쉬는 중…'], love:['춘봉 하트눈 표정','완벽해! 최고야!'],
     angry:['춘봉 화난 표정','집중! 아직 안 끝났어!'], calm:['춘봉 평온한 표정','천천히, 정확하게!']
   });
-  const COLORS = Object.freeze({I:'#41d9ff',O:'#ffd73b',T:'#a86dff',S:'#55dc73',Z:'#ff5c67',J:'#5d82ff',L:'#ff9c3e'});
+  const COLORS = Object.freeze({I:'#41d9ff',O:'#ffd73b',T:'#a86dff',S:'#55dc73',Z:'#ff5c67',J:'#5d82ff',L:'#ff9c3e',G:'#656a74'});
 
   const els = {
     game:document.getElementById('chuntris-game'), startView:document.getElementById('chuntris-start-view'),
     playView:document.getElementById('chuntris-play-view'), playerStep:document.getElementById('chuntris-player-step'),
+    modeStep:document.getElementById('chuntris-mode-step'), difficultyStep:document.getElementById('chuntris-difficulty-step'),
+    startEyebrow:document.getElementById('chuntris-start-eyebrow'), startTitle:document.getElementById('chuntris-start-title'),
+    startCopy:document.getElementById('chuntris-start-copy'), backMode:document.getElementById('chuntris-back-mode'),
     board:document.getElementById('chuntris-board'), boardWrap:document.querySelector('.chuntris-board-wrap'),
     hold:document.getElementById('chuntris-hold'), next:document.getElementById('chuntris-next'),
     score:document.getElementById('chuntris-score'), level:document.getElementById('chuntris-level'),
@@ -51,20 +60,24 @@
     pauseContinue:document.getElementById('chuntris-pause-continue'), pauseNew:document.getElementById('chuntris-pause-new'),
     newConfirm:document.getElementById('chuntris-new-confirm'), newCancel:document.getElementById('chuntris-new-cancel'),
     clearLabel:document.getElementById('chuntris-clear-label'), hardDropFx:document.getElementById('chuntris-harddrop-fx'),
-    lineFx:document.getElementById('chuntris-line-fx'), countdown:document.getElementById('chuntris-countdown'),
-    countdownValue:document.getElementById('chuntris-countdown-value')
+    lineFx:document.getElementById('chuntris-line-fx'), gimmickAlert:document.getElementById('chuntris-gimmick-alert'),
+    countdown:document.getElementById('chuntris-countdown'), countdownValue:document.getElementById('chuntris-countdown-value')
   };
   if (!els.game || !els.board) return;
 
   const rankingButtons = [...document.querySelectorAll('[data-chuntris-ranking-mode]')];
+  const rankingDifficultyButtons = [...document.querySelectorAll('[data-chuntris-ranking-difficulty]')];
   const modalPanels = [...document.querySelectorAll('[data-chuntris-panel]')];
   const modeButtons = [...document.querySelectorAll('[data-chuntris-mode]')];
+  const difficultyButtons = [...document.querySelectorAll('[data-chuntris-difficulty]')];
   const repeats = new Map();
   let mode = 'classic';
+  let difficulty = 'normal';
   let rankingMode = 'classic';
+  let rankingDifficulty = 'normal';
   let rankingRequestId = 0;
   let lastSubmittedTerminal = '';
-  let game = new Engine.ChuntrisGame({mode});
+  let game = new Engine.ChuntrisGame({mode,difficulty});
   let rafId = 0;
   let lastStatus = 'idle';
   let lastLevel = 1;
@@ -82,6 +95,8 @@
   let countdownTimer = 0;
   let countdownToken = 0;
   let startViewportY = 0;
+  let lastGimmickSlot = 0;
+  let gimmickTimer = 0;
 
   function storageGet(key, fallback = null) { try { const value=localStorage.getItem(key); return value==null?fallback:value; } catch { return fallback; } }
   function storageSet(key, value) { try { localStorage.setItem(key,String(value)); } catch {} }
@@ -93,7 +108,22 @@
     const minutes=Math.floor(safe/60000),seconds=Math.floor((safe%60000)/1000),millis=safe%1000;
     return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}.${String(millis).padStart(3,'0')}`;
   }
-  function currentBest(){if(mode==='sprint40')return numberFromStorage(SPRINT_BEST_KEY,0);return numberFromStorage(mode==='hard'?HARD_BEST_KEY:CLASSIC_BEST_KEY,0);}
+  function bestStorageKey(nextMode=mode,nextDifficulty=difficulty){
+    const safeMode=nextMode==='sprint40'?'sprint40':nextMode==='score180'?'score180':'classic';
+    const safeDifficulty=nextDifficulty==='extreme'?'extreme':nextDifficulty==='hard'?'hard':'normal';
+    if(safeMode==='classic'&&safeDifficulty==='normal')return CLASSIC_BEST_KEY;
+    if(safeMode==='classic'&&safeDifficulty==='hard')return HARD_BEST_KEY;
+    if(safeMode==='classic'&&safeDifficulty==='extreme')return CLASSIC_EXTREME_BEST_KEY;
+    if(safeMode==='sprint40'&&safeDifficulty==='hard')return SPRINT_HARD_BEST_KEY;
+    if(safeMode==='sprint40'&&safeDifficulty==='extreme')return SPRINT_EXTREME_BEST_KEY;
+    if(safeMode==='sprint40')return SPRINT_BEST_KEY;
+    if(safeDifficulty==='hard')return SCORE180_HARD_BEST_KEY;
+    if(safeDifficulty==='extreme')return SCORE180_EXTREME_BEST_KEY;
+    return SCORE180_NORMAL_BEST_KEY;
+  }
+  function currentBest(){return numberFromStorage(bestStorageKey(),0);}
+  function difficultyLabel(value=difficulty){return value==='extreme'?'익스트림':value==='hard'?'하드':'노말';}
+  function modeLabel(value=mode){return value==='sprint40'?'40줄 타임어택':value==='score180'?'3분 점수전':'클래식 무한';}
   function currentNickname(){
     const raw=els.nickname?.value||'';
     if (!raw.trim()) return null;
@@ -102,17 +132,27 @@
   }
 
   function setViewState(nextState){
-    const allowed=new Set(['start-mode','start-player','countdown','playing','paused','terminal']);
+    const allowed=new Set(['start-mode','start-difficulty','countdown','playing','paused','terminal']);
     uiState=allowed.has(nextState)?nextState:'start-mode';
     els.game.dataset.uiState=uiState;
-    const start=uiState==='start-mode'||uiState==='start-player'||uiState==='countdown';
+    const start=uiState==='start-mode'||uiState==='start-difficulty'||uiState==='countdown';
     if(els.startView) els.startView.hidden=!start;
     if(els.playView) els.playView.hidden=start;
-    if(els.playerStep) els.playerStep.hidden=!start;
+    if(els.modeStep) els.modeStep.hidden=uiState!=='start-mode';
+    if(els.difficultyStep) els.difficultyStep.hidden=uiState!=='start-difficulty';
+    if(els.playerStep) els.playerStep.hidden=uiState!=='start-difficulty';
+    if(els.startEyebrow)els.startEyebrow.textContent=uiState==='start-difficulty'?'SELECT DIFFICULTY':'SELECT MODE';
+    if(els.startTitle)els.startTitle.textContent=uiState==='start-difficulty'?'난이도 선택':'게임 모드 선택';
+    if(els.startCopy)els.startCopy.textContent=uiState==='start-difficulty'
+      ?`${modeLabel()} · 플레이할 난이도를 골라 주세요.`
+      :'플레이할 모드를 먼저 골라 주세요.';
     if(start) closeModalShell(false);
   }
 
-  function syncRankingButtons(){rankingButtons.forEach(button=>{const active=button.dataset.chuntrisRankingMode===rankingMode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});}
+  function syncRankingButtons(){
+    rankingButtons.forEach(button=>{const active=button.dataset.chuntrisRankingMode===rankingMode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
+    rankingDifficultyButtons.forEach(button=>{const active=button.dataset.chuntrisRankingDifficulty===rankingDifficulty;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
+  }
   function renderRanking(entries){
     if(!els.rankingList)return;
     const current=currentNickname();
@@ -124,19 +164,21 @@
       if(current&&current!==false&&RankingCore?.normalizeNickname(entry.nickname).toLocaleLowerCase('ko-KR')===current.key)item.classList.add('is-current-player');
       item.append(rank,nickname,metric);els.rankingList.append(item);
     });
-    if(els.rankingStatus)els.rankingStatus.textContent=entries.length?`TOP ${Math.min(entries.length,10)} · 최고 기록 기준`:'아직 등록된 기록이 없어요.';
+    if(els.rankingStatus)els.rankingStatus.textContent=entries.length?`TOP ${Math.min(entries.length,10)} · ${difficultyLabel(rankingDifficulty)} · 최고 기록 기준`:`${difficultyLabel(rankingDifficulty)} 난이도에 아직 등록된 기록이 없어요.`;
   }
-  async function loadRanking(nextMode=mode){
-    rankingMode=nextMode==='sprint40'?'sprint40':nextMode==='hard'?'hard':'classic';syncRankingButtons();const requestId=++rankingRequestId;
+  async function loadRanking(nextMode=mode,nextDifficulty=difficulty){
+    rankingMode=nextMode==='sprint40'?'sprint40':nextMode==='score180'?'score180':'classic';
+    rankingDifficulty=nextDifficulty==='extreme'?'extreme':nextDifficulty==='hard'?'hard':'normal';
+    syncRankingButtons();const requestId=++rankingRequestId;
     if(els.rankingStatus)els.rankingStatus.textContent='랭킹 불러오는 중…';
     if(typeof fetch!=='function'){if(els.rankingStatus)els.rankingStatus.textContent='랭킹 연결을 사용할 수 없어요. 게임은 계속할 수 있어요.';return;}
-    try{const response=await fetch(`${RANKING_ENDPOINT}&mode=${encodeURIComponent(rankingMode)}`,{headers:{accept:'application/json'}});if(!response.ok)throw new Error(`ranking ${response.status}`);const payload=await response.json();if(requestId!==rankingRequestId)return;renderRanking(Array.isArray(payload.entries)?payload.entries:[]);}catch{if(requestId===rankingRequestId&&els.rankingStatus)els.rankingStatus.textContent='랭킹을 불러오지 못했어요. 게임은 계속할 수 있어요.';}
+    try{const response=await fetch(`${RANKING_ENDPOINT}&mode=${encodeURIComponent(rankingMode)}&difficulty=${encodeURIComponent(rankingDifficulty)}`,{headers:{accept:'application/json'}});if(!response.ok)throw new Error(`ranking ${response.status}`);const payload=await response.json();if(requestId!==rankingRequestId)return;renderRanking(Array.isArray(payload.entries)?payload.entries:[]);}catch{if(requestId===rankingRequestId&&els.rankingStatus)els.rankingStatus.textContent='랭킹을 불러오지 못했어요. 게임은 계속할 수 있어요.';}
   }
   async function submitRanking(state){
     const nickname=currentNickname();
     if (!nickname || typeof fetch !== 'function') return;
-    const key=`${mode}:${state.status}:${state.elapsedMs}:${state.score}:${state.lines}`;if(key===lastSubmittedTerminal)return;lastSubmittedTerminal=key;
-    try{const response=await fetch(RANKING_ENDPOINT,{method:'POST',headers:{'content-type':'application/json',accept:'application/json'},body:JSON.stringify({mode,nickname:nickname.displayName,score:state.score,lines:state.lines,level:state.level,timeMs:state.elapsedMs})});if(!response.ok)throw new Error(`ranking ${response.status}`);const payload=await response.json();if(payload.mode===rankingMode&&Array.isArray(payload.entries))renderRanking(payload.entries);else void loadRanking(rankingMode);}catch{if(els.rankingStatus)els.rankingStatus.textContent='기록 저장에 실패했어요. 게임 기록은 기기 안에 유지돼요.';}
+    const key=`${mode}:${difficulty}:${state.status}:${state.elapsedMs}:${state.score}:${state.lines}`;if(key===lastSubmittedTerminal)return;lastSubmittedTerminal=key;
+    try{const response=await fetch(RANKING_ENDPOINT,{method:'POST',headers:{'content-type':'application/json',accept:'application/json'},body:JSON.stringify({mode,difficulty,nickname:nickname.displayName,score:state.score,lines:state.lines,level:state.level,timeMs:state.elapsedMs})});if(!response.ok)throw new Error(`ranking ${response.status}`);const payload=await response.json();if(payload.mode===rankingMode&&payload.difficulty===rankingDifficulty&&Array.isArray(payload.entries))renderRanking(payload.entries);else void loadRanking(rankingMode,rankingDifficulty);}catch{if(els.rankingStatus)els.rankingStatus.textContent='기록 저장에 실패했어요. 게임 기록은 기기 안에 유지돼요.';}
   }
 
   function setReaction(name){
@@ -154,14 +196,48 @@
   function drawCell(ctx,x,y,size,color,alpha=1){const gap=Math.max(1,size*.055);ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle=color;ctx.fillRect(x*size+gap,y*size+gap,size-gap*2,size-gap*2);ctx.fillStyle='rgba(255,255,255,.22)';ctx.fillRect(x*size+gap*1.5,y*size+gap*1.5,size-gap*3,Math.max(2,size*.08));ctx.strokeStyle='rgba(0,0,0,.38)';ctx.lineWidth=Math.max(1,size*.045);ctx.strokeRect(x*size+gap,y*size+gap,size-gap*2,size-gap*2);ctx.restore();}
   function drawBoard(state){
     const {ctx,width,height}=prepareCanvas(els.board,2);ctx.clearRect(0,0,width,height);ctx.fillStyle='#080808';ctx.fillRect(0,0,width,height);const cell=width/Engine.BOARD_WIDTH;ctx.strokeStyle='rgba(255,255,255,.055)';ctx.lineWidth=1;
+    const now=Date.now(),gimmick=state.difficulty==='extreme'?state.gimmick:null;
+    const blinkActive=gimmick?.kind==='blink'&&Number(gimmick.until)>now;
+    const phantomActive=gimmick?.kind==='phantom'&&Number(gimmick.until)>now;
+    const blinkVisible=!blinkActive||Math.floor(now/135)%2===0;
     for(let x=0;x<=Engine.BOARD_WIDTH;x++){ctx.beginPath();ctx.moveTo(x*cell,0);ctx.lineTo(x*cell,height);ctx.stroke();}for(let y=0;y<=Engine.VISIBLE_ROWS;y++){ctx.beginPath();ctx.moveTo(0,y*cell);ctx.lineTo(width,y*cell);ctx.stroke();}
-    for(let y=Engine.HIDDEN_ROWS;y<Engine.BOARD_ROWS;y++)for(let x=0;x<Engine.BOARD_WIDTH;x++){const type=state.board[y][x];if(type)drawCell(ctx,x,y-Engine.HIDDEN_ROWS,cell,COLORS[type]||'#aaa');}
-    if(state.active){const gy=Engine.ghostY(state.board,state.active),ghost={...state.active,y:gy};for(const [x,y] of Engine.cellsFor(ghost))if(y>=Engine.HIDDEN_ROWS)drawCell(ctx,x,y-Engine.HIDDEN_ROWS,cell,COLORS[ghost.type]||'#aaa',.18);for(const [x,y] of Engine.cellsFor(state.active))if(y>=Engine.HIDDEN_ROWS)drawCell(ctx,x,y-Engine.HIDDEN_ROWS,cell,COLORS[state.active.type]||'#aaa',1);}
+    if(blinkVisible){
+      for(let y=Engine.HIDDEN_ROWS;y<Engine.BOARD_ROWS;y++)for(let x=0;x<Engine.BOARD_WIDTH;x++){const type=state.board[y][x];if(type)drawCell(ctx,x,y-Engine.HIDDEN_ROWS,cell,COLORS[type]||'#aaa',type==='G'?.82:1);}
+    }
+    if(state.active&&!phantomActive){
+      const gy=Engine.ghostY(state.board,state.active),ghost={...state.active,y:gy};
+      for(const [x,y] of Engine.cellsFor(ghost))if(y>=Engine.HIDDEN_ROWS)drawCell(ctx,x,y-Engine.HIDDEN_ROWS,cell,COLORS[ghost.type]||'#aaa',.16);
+      for(const [x,y] of Engine.cellsFor(state.active))if(y>=Engine.HIDDEN_ROWS)drawCell(ctx,x,y-Engine.HIDDEN_ROWS,cell,COLORS[state.active.type]||'#aaa',1);
+    }
   }
   function drawMini(canvas,types,slots){if(!canvas)return;const {ctx,width,height}=prepareCanvas(canvas,canvas===els.next?(300/180):.75);ctx.clearRect(0,0,width,height);ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(0,0,width,height);const list=Array.isArray(types)?types:[types],slotH=height/slots;list.slice(0,slots).forEach((type,index)=>{if(!type||!Engine.SHAPES[type])return;const cells=Engine.SHAPES[type][0];const minX=Math.min(...cells.map(c=>c[0])),maxX=Math.max(...cells.map(c=>c[0])),minY=Math.min(...cells.map(c=>c[1])),maxY=Math.max(...cells.map(c=>c[1]));const size=Math.min(width/(maxX-minX+2),slotH/(maxY-minY+2)),ox=(width-(maxX-minX+1)*size)/2-minX*size,oy=index*slotH+(slotH-(maxY-minY+1)*size)/2-minY*size;cells.forEach(([x,y])=>{ctx.save();ctx.translate(ox,oy);drawCell(ctx,x,y,size,COLORS[type]||'#aaa');ctx.restore();});});}
 
-  function statusMessage(state){if(state.status==='idle')return mode==='classic'?'클래식 무한 · 오래 버티며 최고 점수에 도전하세요.':mode==='hard'?'하드 무한 · 빠른 중력과 짧은 고정 시간에 도전하세요.':'40줄 타임어택 · 40줄을 가장 빠르게 지워 보세요.';if(state.status==='paused')return'일시정지 중';if(state.status==='gameover')return'GAME OVER · 새 게임으로 다시 도전하세요.';if(state.status==='completed')return`40줄 완주! 기록 ${formatTime(state.elapsedMs)}`;if(mode==='sprint40')return`${state.lines}/40줄 · ${Math.max(0,40-state.lines)}줄 남았어요.`;return`LEVEL ${state.level} · COMBO ${Math.max(0,state.combo)}`;}
-  function updateRecords(state,previousStatus){if(state.status==='gameover'&&previousStatus!=='gameover'&&(mode==='classic'||mode==='hard')){const old=currentBest();if(state.score>old){storageSet(mode==='hard'?HARD_BEST_KEY:CLASSIC_BEST_KEY,state.score);bestFlashUntil=Date.now()+1800;}}if(state.status==='completed'&&previousStatus!=='completed'&&mode==='sprint40'){const old=currentBest();if(!old||state.elapsedMs<old){storageSet(SPRINT_BEST_KEY,state.elapsedMs);bestFlashUntil=Date.now()+1800;}}}
+  function statusMessage(state){
+    if(state.status==='idle')return `${modeLabel()} · ${difficultyLabel()} 난이도`;
+    if(state.status==='paused')return'일시정지 중';
+    if(state.status==='gameover')return'GAME OVER · 새 게임으로 다시 도전하세요.';
+    if(state.status==='completed'){
+      if(mode==='sprint40')return`40줄 완주! 기록 ${formatTime(state.elapsedMs)}`;
+      if(mode==='score180')return`3분 종료! 최종 점수 ${Number(state.score||0).toLocaleString('ko-KR')}`;
+    }
+    if(mode==='sprint40')return`${state.lines}/40줄 · ${Math.max(0,40-state.lines)}줄 남았어요. · ${difficultyLabel()}`;
+    if(mode==='score180')return`남은 시간 ${formatTime(Math.max(0,Engine.SCORE_ATTACK_MS-state.elapsedMs))} · SCORE ${Number(state.score||0).toLocaleString('ko-KR')}`;
+    return`LEVEL ${state.level} · COMBO ${Math.max(0,state.combo)} · ${difficultyLabel()}`;
+  }
+
+  function updateRecords(state,previousStatus){
+    const enteredGameover=state.status==='gameover'&&previousStatus!=='gameover';
+    const enteredCompleted=state.status==='completed'&&previousStatus!=='completed';
+    if(mode==='classic'&&enteredGameover){
+      const old=currentBest();if(state.score>old){storageSet(bestStorageKey(),state.score);bestFlashUntil=Date.now()+1800;}
+    }
+    if(mode==='sprint40'&&enteredCompleted){
+      const old=currentBest();if(!old||state.elapsedMs<old){storageSet(bestStorageKey(),state.elapsedMs);bestFlashUntil=Date.now()+1800;}
+    }
+    if(mode==='score180'&&(enteredCompleted||enteredGameover)){
+      const old=currentBest();if(state.score>old){storageSet(bestStorageKey(),state.score);bestFlashUntil=Date.now()+1800;}
+    }
+  }
 
   function restartAnimation(element,className){if(!element)return;element.classList.remove(className);void element.offsetWidth;element.classList.add(className);}
   function showHardDropEffect(detail={}){
@@ -212,22 +288,45 @@
       els.lineFx?.replaceChildren();
     },950);
   }
+  function showGimmickEffect(gimmick){
+    if(!gimmick||gimmick.slot===lastGimmickSlot)return;
+    lastGimmickSlot=gimmick.slot;
+    const labels={blink:'⚡ 블링크 · 보드가 깜빡입니다',phantom:'👻 팬텀 · 현재 블록이 사라집니다',garbage:'☠ 가비지 · 바닥 방해 라인 발생'};
+    if(els.gimmickAlert){
+      els.gimmickAlert.textContent=labels[gimmick.kind]||'EXTREME GIMMICK';
+      els.gimmickAlert.className=`chuntris-gimmick-alert is-${gimmick.kind||'active'} is-visible`;
+      clearTimeout(gimmickTimer);gimmickTimer=setTimeout(()=>els.gimmickAlert?.classList.remove('is-visible'),1650);
+    }
+    transientReaction={name:gimmick.kind==='garbage'?'burnout':gimmick.kind==='phantom'?'question':'dizzy',until:Date.now()+1500};
+    if(root.ChuntrisAudio)root.ChuntrisAudio.play(gimmick.kind==='garbage'?'harddrop':'levelup');
+  }
   function observeEvents(state){
     if(state.lastClear&&state.lastClear.at!==lastClearAt){lastClearAt=state.lastClear.at;const clear=state.lastClear;if(clear.lines>0){showClearEffect(clear.lines,clear);const clearSound=CLEAR_SOUNDS[clear.lines];if(clearSound&&root.ChuntrisAudio)root.ChuntrisAudio.play(clearSound);let name='smile',duration=850;if(clear.lines===2){name='sparkle';duration=950;}else if(clear.lines===3){name='love';duration=1150;}else if(clear.lines>=4){name='money';duration=1300;}transientReaction={name,until:Date.now()+duration};}}
+    if(state.lastGimmick&&state.lastGimmick.slot!==lastGimmickSlot)showGimmickEffect(state.lastGimmick);
     if(state.level!==lastLevel&&state.level>lastLevel&&root.ChuntrisAudio)root.ChuntrisAudio.play('levelup');lastLevel=state.level;
   }
 
   function render(){
     const state=game.getSnapshot(),previousStatus=lastStatus;updateRecords(state,previousStatus);observeEvents(state);
     if(!els.playView?.hidden){drawBoard(state);drawMini(els.hold,state.hold?[state.hold]:[],1);drawMini(els.next,state.next,5);}
-    if(els.score)els.score.textContent=state.score.toLocaleString('ko-KR');if(els.level)els.level.textContent=state.level;if(els.lines)els.lines.textContent=mode==='sprint40'?`${state.lines} / 40`:state.lines;if(els.time)els.time.textContent=formatTime(state.elapsedMs);
-    const best=currentBest();if(els.best)els.best.textContent=mode==='sprint40'?(best?formatTime(best):'--:--.---'):Number(best).toLocaleString('ko-KR');if(els.status)els.status.textContent=statusMessage(state);els.game.dataset.gameStatus=state.status;els.game.dataset.mode=mode;
+    if(els.score)els.score.textContent=state.score.toLocaleString('ko-KR');
+    if(els.level)els.level.textContent=state.level;
+    if(els.lines)els.lines.textContent=mode==='sprint40'?`${state.lines} / 40`:state.lines;
+    if(els.time)els.time.textContent=mode==='score180'?formatTime(Math.max(0,Engine.SCORE_ATTACK_MS-state.elapsedMs)):formatTime(state.elapsedMs);
+    const best=currentBest();
+    if(els.best)els.best.textContent=mode==='sprint40'?(best?formatTime(best):'--:--.---'):Number(best).toLocaleString('ko-KR');
+    if(els.status)els.status.textContent=statusMessage(state);
+    els.game.dataset.gameStatus=state.status;els.game.dataset.mode=mode;els.game.dataset.difficulty=difficulty;
+    els.boardWrap?.classList.toggle('is-extreme',difficulty==='extreme');
+    els.boardWrap?.classList.toggle('is-gimmick-blink',state.gimmick?.kind==='blink'&&Number(state.gimmick?.until)>Date.now());
+    els.boardWrap?.classList.toggle('is-gimmick-phantom',state.gimmick?.kind==='phantom'&&Number(state.gimmick?.until)>Date.now());
     if(els.pause)els.pause.disabled=!(state.status==='playing'||state.status==='paused');
     const terminal=state.status==='gameover'||state.status==='completed';if(terminal&&uiState!=='terminal')setViewState('terminal');
-    if(els.overlay){els.overlay.hidden=!terminal;if(terminal){els.overlayTitle.textContent=state.status==='completed'?'40 LINES!':'GAME OVER';els.overlayCopy.textContent=statusMessage(state);}}
+    if(els.overlay){els.overlay.hidden=!terminal;if(terminal){els.overlayTitle.textContent=state.status==='completed'?(mode==='sprint40'?'40 LINES!':mode==='score180'?'3 MIN SCORE!':'COMPLETE!'):'GAME OVER';els.overlayCopy.textContent=statusMessage(state);}}
     setReaction(chooseReaction(state));
     if(previousStatus!==state.status&&root.ChuntrisAudio){if(state.status==='gameover')root.ChuntrisAudio.play('gameover');if(state.status==='completed')root.ChuntrisAudio.play('complete');}
-    if(previousStatus!==state.status&&(((mode==='classic'||mode==='hard')&&state.status==='gameover')||(mode==='sprint40'&&state.status==='completed')))void submitRanking(state);
+    const shouldSubmit=(mode==='classic'&&state.status==='gameover')||(mode==='sprint40'&&state.status==='completed')||(mode==='score180'&&(state.status==='completed'||state.status==='gameover'));
+    if(previousStatus!==state.status&&shouldSubmit)void submitRanking(state);
     lastStatus=state.status;return state;
   }
 
@@ -236,7 +335,7 @@
   function openUtilityModal(kind,trigger=null){
     if(!['ranking','sound','controls'].includes(kind))return;modalTrigger=trigger||document.activeElement;const state=game.getSnapshot();modalReturnToPause=activeModal==='pause'||uiState==='paused';modalAutoPaused=false;
     if (state.status === 'playing') { game.pause(Date.now()); modalAutoPaused = true; setViewState('paused'); }
-    showModalPanel(kind);if(kind==='ranking')void loadRanking(rankingMode);render();
+    showModalPanel(kind);if(kind==='ranking')void loadRanking(rankingMode,rankingDifficulty);render();
   }
   function closeUtilityModal(){
     if(!['ranking','sound','controls'].includes(activeModal)){closeModalShell();return;}
@@ -249,11 +348,13 @@
     const state=game.getSnapshot();if(state.status==='playing')game.pause(Date.now());else if(state.status!=='paused')return false;modalAutoPaused=false;modalReturnToPause=false;setViewState('paused');showModalPanel('pause');render();return true;
   }
   function continueGame(){if(game.getSnapshot().status==='paused')game.resume(Date.now());closeModalShell();setViewState('playing');lastInputAt=Date.now();render();ensureLoop();return true;}
-  function returnToStartForNewGame(){cancelCountdown();game.reset(mode);lastStatus='idle';lastLevel=1;lastClearAt=null;transientReaction=null;lastSubmittedTerminal='';closeModalShell(false);setViewState('start-player');render();return true;}
+  function returnToStartForNewGame(){cancelCountdown();game.reset(mode,difficulty);lastStatus='idle';lastLevel=1;lastClearAt=null;lastGimmickSlot=0;transientReaction=null;lastSubmittedTerminal='';closeModalShell(false);setViewState('start-difficulty');render();return true;}
 
   function setStartControlsDisabled(disabled){
     if(els.start)els.start.disabled=Boolean(disabled);
     modeButtons.forEach(button=>{button.disabled=Boolean(disabled);});
+    difficultyButtons.forEach(button=>{button.disabled=Boolean(disabled);});
+    if(els.backMode)els.backMode.disabled=Boolean(disabled);
     els.startView?.querySelectorAll('.chuntris-start-utils button').forEach(button=>{button.disabled=Boolean(disabled);});
   }
   function cancelCountdown(){
@@ -275,7 +376,7 @@
     root.setTimeout?.(restore,260);
   }
   function beginGame(){
-    game.start(Date.now());lastStatus='idle';lastLevel=1;lastClearAt=null;lastInputAt=Date.now();transientReaction=null;lastSubmittedTerminal='';
+    game.start(Date.now());lastStatus='idle';lastLevel=1;lastClearAt=null;lastGimmickSlot=0;lastInputAt=Date.now();transientReaction=null;lastSubmittedTerminal='';
     if(els.countdown){els.countdown.hidden=true;els.countdown.classList.remove('is-start');}
     setStartControlsDisabled(false);closeModalShell(false);setViewState('playing');render();restoreStartViewport();ensureLoop();return true;
   }
@@ -289,13 +390,15 @@
       return ((t^(t>>>14))>>>0)/4294967296;
     };
   }
-  function startMultiplayer(seed,multiplayerMode='sprint40'){
+  function startMultiplayer(seed,multiplayerMode='sprint40',multiplayerDifficulty='normal'){
     cancelCountdown();
-    mode=multiplayerMode==='classic'?'classic':multiplayerMode==='hard'?'hard':'sprint40';
-    game=new Engine.ChuntrisGame({mode,random:seededRandom(seed)});
+    mode=multiplayerMode==='sprint40'?'sprint40':multiplayerMode==='score180'?'score180':'classic';
+    difficulty=multiplayerDifficulty==='extreme'?'extreme':multiplayerDifficulty==='hard'?'hard':'normal';
+    game=new Engine.ChuntrisGame({mode,difficulty,random:seededRandom(seed)});
     modeButtons.forEach(button=>{const active=button.dataset.chuntrisMode===mode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
+    difficultyButtons.forEach(button=>{const active=button.dataset.chuntrisDifficulty===difficulty;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
     startViewportY=typeof root.scrollY==='number'?root.scrollY:0;
-    lastStatus='idle';lastLevel=1;lastClearAt=null;lastInputAt=Date.now();transientReaction=null;lastSubmittedTerminal='';
+    lastStatus='idle';lastLevel=1;lastClearAt=null;lastGimmickSlot=0;lastInputAt=Date.now();transientReaction=null;lastSubmittedTerminal='';
     game.start(Date.now());
     if(els.countdown){els.countdown.hidden=true;els.countdown.classList.remove('is-start');}
     setStartControlsDisabled(false);closeModalShell(false);setViewState('playing');render();restoreStartViewport();ensureLoop();
@@ -307,7 +410,7 @@
     if(nickname===false){if(els.status)els.status.textContent='닉네임 형식을 확인해 주세요. 비워두면 로컬 기록으로 바로 플레이할 수 있어요.';els.nickname?.focus();return false;}
     if(nickname)storageSet(NICKNAME_KEY,nickname.displayName);
     if(root.ChuntrisAudio)root.ChuntrisAudio.resume();
-    if(['playing','paused','gameover','completed'].includes(game.getSnapshot().status))game.reset(mode);
+    if(['playing','paused','gameover','completed'].includes(game.getSnapshot().status))game.reset(mode,difficulty);
     cancelCountdown();
     startViewportY=typeof root.scrollY==='number'?root.scrollY:0;
     els.start?.blur?.();
@@ -330,7 +433,22 @@
     advance();
     return true;
   }
-  function setMode(nextMode){cancelCountdown();mode=nextMode==='sprint40'?'sprint40':nextMode==='hard'?'hard':'classic';game=new Engine.ChuntrisGame({mode});modeButtons.forEach(button=>{const active=button.dataset.chuntrisMode===mode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});lastStatus='idle';lastLevel=1;lastClearAt=null;transientReaction=null;lastSubmittedTerminal='';setViewState('start-player');render();void loadRanking(mode);}
+  function setMode(nextMode){
+    cancelCountdown();mode=nextMode==='sprint40'?'sprint40':nextMode==='score180'?'score180':'classic';difficulty='normal';
+    game=new Engine.ChuntrisGame({mode,difficulty});
+    modeButtons.forEach(button=>{const active=button.dataset.chuntrisMode===mode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
+    difficultyButtons.forEach(button=>{const active=button.dataset.chuntrisDifficulty===difficulty;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
+    lastStatus='idle';lastLevel=1;lastClearAt=null;lastGimmickSlot=0;transientReaction=null;lastSubmittedTerminal='';
+    setViewState('start-difficulty');render();void loadRanking(mode,difficulty);
+  }
+  function setDifficulty(nextDifficulty){
+    cancelCountdown();difficulty=nextDifficulty==='extreme'?'extreme':nextDifficulty==='hard'?'hard':'normal';
+    game=new Engine.ChuntrisGame({mode,difficulty});
+    difficultyButtons.forEach(button=>{const active=button.dataset.chuntrisDifficulty===difficulty;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
+    lastStatus='idle';lastLevel=1;lastClearAt=null;lastGimmickSlot=0;transientReaction=null;lastSubmittedTerminal='';
+    setViewState('start-difficulty');render();void loadRanking(mode,difficulty);
+  }
+  function backToModeSelection(){cancelCountdown();setViewState('start-mode');render();}
   function pause(){const state=game.getSnapshot();if(state.status==='playing')return openPauseMenu();if(state.status==='paused')return continueGame();return false;}
 
   function act(action){
@@ -366,7 +484,10 @@
 
   els.mobile?.querySelectorAll('[data-chuntris-action]').forEach(button=>{const action=button.dataset.chuntrisAction,repeatable=['left','right','soft-drop'].includes(action),key=`pointer:${action}`;button.addEventListener('pointerdown',event=>{event.preventDefault();button.setPointerCapture?.(event.pointerId);if(repeatable)startRepeat(key,action);else act(action);});for(const type of ['pointerup','pointercancel','pointerleave'])button.addEventListener(type,()=>stopRepeat(key));});
   modeButtons.forEach(button=>button.addEventListener('click',()=>setMode(button.dataset.chuntrisMode)));
-  rankingButtons.forEach(button=>button.addEventListener('click',()=>void loadRanking(button.dataset.chuntrisRankingMode)));
+  difficultyButtons.forEach(button=>button.addEventListener('click',()=>setDifficulty(button.dataset.chuntrisDifficulty)));
+  els.backMode?.addEventListener('click',backToModeSelection);
+  rankingButtons.forEach(button=>button.addEventListener('click',()=>void loadRanking(button.dataset.chuntrisRankingMode,rankingDifficulty)));
+  rankingDifficultyButtons.forEach(button=>button.addEventListener('click',()=>void loadRanking(rankingMode,button.dataset.chuntrisRankingDifficulty)));
   document.querySelectorAll('[data-chuntris-open]').forEach(button=>button.addEventListener('click',event=>openUtilityModal(button.dataset.chuntrisOpen,event.currentTarget)));
   document.querySelectorAll('[data-chuntris-modal-close]').forEach(button=>button.addEventListener('click',()=>{if(['ranking','sound','controls'].includes(activeModal))closeUtilityModal();else if(activeModal==='pause')continueGame();else closeModalShell();}));
   els.start?.addEventListener('click',start);els.pause?.addEventListener('click',openPauseMenu);els.pauseContinue?.addEventListener('click',continueGame);els.pauseNew?.addEventListener('click',()=>showModalPanel('new-game-confirm'));els.newConfirm?.addEventListener('click',returnToStartForNewGame);els.newCancel?.addEventListener('click',()=>showModalPanel('pause'));
@@ -379,6 +500,6 @@
   function ensureLoop(){if(!rafId)rafId=root.requestAnimationFrame(frame);}
 
   if(els.nickname)els.nickname.value=storageGet(NICKNAME_KEY,'');
-  root.ChuntrisApp={start,startMultiplayer,pause,setMode,render,loadRanking,getNickname:()=>els.nickname?.value||'',getGame:()=>game,getUiState:()=>uiState,setViewState,openUtilityModal,closeUtilityModal,openPauseMenu,continueGame,returnToStartForNewGame,showHardDropEffect,showClearEffect};
-  setReaction('idle');setViewState('start-mode');render();ensureLoop();void loadRanking(mode);
+  root.ChuntrisApp={start,startMultiplayer,pause,setMode,setDifficulty,render,loadRanking,getNickname:()=>els.nickname?.value||'',getGame:()=>game,getUiState:()=>uiState,setViewState,openUtilityModal,closeUtilityModal,openPauseMenu,continueGame,returnToStartForNewGame,showHardDropEffect,showClearEffect};
+  setReaction('idle');setViewState('start-mode');render();ensureLoop();void loadRanking(mode,difficulty);
 })(typeof globalThis!=='undefined'?globalThis:window);

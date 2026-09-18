@@ -15,6 +15,6 @@ assert.ok(chunbakCss.includes('.minigame-back-link'), 'Chunbak back link must ha
 assert.ok(chuntrisHtml.includes('id="chuntris-overlay-restart"'), 'terminal overlay must expose a restart button');
 assert.ok(chuntrisHtml.includes('onclick="ChuntrisApp.start()"'), 'terminal restart button must immediately start another run');
 assert.ok(chuntrisJs.includes('root.ChuntrisApp={start,'), 'terminal restart must reuse the existing public start/reset flow');
-assert.ok(chuntrisJs.includes("if(['playing','paused','gameover','completed'].includes(game.getSnapshot().status))game.reset(mode)"), 'public start flow must reset terminal games while preserving the selected mode');
+assert.ok(chuntrisJs.includes("if(['playing','paused','gameover','completed'].includes(game.getSnapshot().status))game.reset(mode,difficulty)"), 'public start flow must reset terminal games while preserving the selected mode and difficulty');
 
 console.log('minigame navigation and Chuntris restart regression passed');

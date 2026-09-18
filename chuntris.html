@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#ff6b18">
-  <meta name="description" content="춘봉 캐릭터와 함께 즐기는 클래식·하드 무한·40줄 타임어택 테트리스 게임 춘트리스">
+  <meta name="description" content="춘봉 캐릭터와 함께 즐기는 클래식 무한·40줄 타임어택·3분 점수전과 노말·하드·익스트림 난이도의 테트리스 게임 춘트리스">
   <title>춘트리스 | 춘봉 팬사이트</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="chuntris.css">
@@ -28,24 +28,35 @@
       <a class="minigame-back-link" href="minigames.html" aria-label="미니게임 목록으로 돌아가기">← 미니게임으로 돌아가기</a>
       <p class="kicker">08 / CHUNTRIS</p>
       <h1>춘트리스</h1>
-      <p>춘봉과 함께 즐기는 블록 퍼즐. 클래식·하드 무한과 40줄 타임어택에 도전해 보세요.</p>
+      <p>춘봉과 함께 즐기는 블록 퍼즐. 클래식 무한, 40줄 타임어택, 3분 점수전 중 하나를 고른 뒤 노말·하드·익스트림 난이도에 도전해 보세요.</p>
     </div>
   </section>
   <section class="content-section">
     <div class="page-shell">
-      <section id="chuntris-game" class="chuntris-game chuntris-immersive reveal" data-game-status="idle" data-mode="classic" data-ui-state="start-mode" aria-label="춘트리스 게임">
+      <section id="chuntris-game" class="chuntris-game chuntris-immersive reveal" data-game-status="idle" data-mode="classic" data-difficulty="normal" data-ui-state="start-mode" aria-label="춘트리스 게임">
         <section id="chuntris-start-view" class="chuntris-start-view" aria-label="춘트리스 시작 화면">
           <div class="chuntris-start-card has-multiplayer">
             <div id="chuntris-countdown" class="chuntris-countdown" hidden aria-live="assertive" aria-atomic="true"><span class="chuntris-countdown-label">GET READY</span><strong id="chuntris-countdown-value">3</strong><small>잠시 후 시작합니다</small></div>
-            <span class="eyebrow">SELECT MODE</span>
-            <h2>게임 모드 선택</h2>
-            <p>플레이할 모드를 고른 뒤 바로 시작하세요.</p>
-            <div class="chuntris-mode-cards" role="group" aria-label="게임 모드">
-              <button id="chuntris-mode-classic" type="button" class="is-active" data-chuntris-mode="classic" aria-pressed="true"><span class="chuntris-mode-index">01 / CLASSIC</span><strong>클래식 무한</strong><span>오래 버티며 최고 점수에 도전</span></button>
-              <button id="chuntris-mode-sprint40" type="button" data-chuntris-mode="sprint40" aria-pressed="false"><span class="chuntris-mode-index">02 / SPRINT 40</span><strong>40줄 타임어택</strong><span>40줄을 가장 빠르게 지우면 종료</span></button><button id="chuntris-mode-hard" type="button" data-chuntris-mode="hard" aria-pressed="false"><span class="chuntris-mode-index">03 / HARD</span><strong>하드 무한</strong><span>빠른 중력 · 6줄마다 가속 · 짧은 고정 시간</span></button>
+            <span class="eyebrow" id="chuntris-start-eyebrow">SELECT MODE</span>
+            <h2 id="chuntris-start-title">게임 모드 선택</h2>
+            <p id="chuntris-start-copy">플레이할 모드를 먼저 골라 주세요.</p>
+            <div id="chuntris-mode-step" class="chuntris-mode-step">
+              <div class="chuntris-mode-cards" role="group" aria-label="게임 모드">
+                <button id="chuntris-mode-classic" type="button" data-chuntris-mode="classic" aria-pressed="false"><span class="chuntris-mode-index">01 / CLASSIC</span><strong>클래식 무한</strong><span>오래 버티며 최고 점수에 도전</span></button>
+                <button id="chuntris-mode-sprint40" type="button" data-chuntris-mode="sprint40" aria-pressed="false"><span class="chuntris-mode-index">02 / SPRINT 40</span><strong>40줄 타임어택</strong><span>40줄을 가장 빠르게 지우면 종료</span></button>
+                <button id="chuntris-mode-score180" type="button" data-chuntris-mode="score180" aria-pressed="false"><span class="chuntris-mode-index">03 / SCORE 180</span><strong>3분 점수전</strong><span>3분 동안 최대한 높은 점수를 획득</span></button>
+              </div>
             </div>
-            <div id="chuntris-player-step" class="chuntris-player-step" hidden>
-              <button id="chuntris-start" class="btn btn-primary" type="button">게임 시작</button>
+            <div id="chuntris-difficulty-step" class="chuntris-difficulty-step" hidden>
+              <button id="chuntris-back-mode" class="chuntris-step-back" type="button">← 게임 모드 다시 선택</button>
+              <div class="chuntris-difficulty-cards" role="group" aria-label="난이도">
+                <button type="button" class="is-active" data-chuntris-difficulty="normal" aria-pressed="true"><span>01 / NORMAL</span><strong>노말</strong><small>기존 기본 난이도 · 안정적인 속도</small></button>
+                <button type="button" data-chuntris-difficulty="hard" aria-pressed="false"><span>02 / HARD</span><strong>하드</strong><small>빠른 중력 · 6줄마다 가속 · 300ms 고정</small></button>
+                <button type="button" data-chuntris-difficulty="extreme" aria-pressed="false"><span>03 / EXTREME</span><strong>익스트림</strong><small>고수 전용 · 초고속 중력 · 4줄마다 가속 · 140ms 고정</small></button>
+              </div>
+              <div id="chuntris-player-step" class="chuntris-player-step">
+                <button id="chuntris-start" class="btn btn-primary" type="button">선택한 난이도로 시작</button>
+              </div>
             </div>
             <div class="chuntris-start-utils has-multiplayer">
               <button type="button" data-chuntris-open="ranking">🏆 전체 랭킹</button>
@@ -74,6 +85,7 @@
             <div class="chuntris-board-wrap">
               <canvas id="chuntris-board" width="320" height="640" aria-label="춘트리스 10×20 게임 보드"></canvas>
               <div id="chuntris-harddrop-fx" class="chuntris-harddrop-fx" aria-hidden="true"></div>
+              <div id="chuntris-gimmick-alert" class="chuntris-gimmick-alert" aria-live="polite" aria-atomic="true"></div>
               <div id="chuntris-line-fx" class="chuntris-line-fx" aria-hidden="true"></div>
               <div id="chuntris-clear-label" class="chuntris-clear-label" aria-live="polite"></div>
               <div class="chuntris-board-overlay" id="chuntris-overlay" hidden>
@@ -104,7 +116,7 @@
           <section class="chuntris-modal-card">
             <header><div><span class="eyebrow">CHUNTRIS</span><h2 id="chuntris-modal-title">메뉴</h2></div><button type="button" class="chuntris-modal-close" data-chuntris-modal-close aria-label="닫기">×</button></header>
             <div id="chuntris-modal-body" class="chuntris-modal-body">
-              <section id="chuntris-ranking" data-chuntris-panel="ranking" hidden><div class="chuntris-ranking-head"><div><span class="eyebrow">GLOBAL</span><h2>전체 랭킹</h2></div><div class="chuntris-ranking-tabs" role="group" aria-label="전체 랭킹 모드"><button type="button" class="is-active" data-chuntris-ranking-mode="classic" aria-pressed="true">클래식</button><button type="button" data-chuntris-ranking-mode="sprint40" aria-pressed="false">40줄</button><button type="button" data-chuntris-ranking-mode="hard" aria-pressed="false">하드</button></div></div><p id="chuntris-ranking-status" class="chuntris-ranking-status" aria-live="polite">랭킹 불러오는 중…</p><ol id="chuntris-ranking-list" class="chuntris-ranking-list"></ol></section>
+              <section id="chuntris-ranking" data-chuntris-panel="ranking" hidden><div class="chuntris-ranking-head"><div><span class="eyebrow">GLOBAL</span><h2>전체 랭킹</h2></div><div class="chuntris-ranking-tabs" role="group" aria-label="전체 랭킹 모드"><button type="button" class="is-active" data-chuntris-ranking-mode="classic" aria-pressed="true">클래식</button><button type="button" data-chuntris-ranking-mode="sprint40" aria-pressed="false">40줄</button><button type="button" data-chuntris-ranking-mode="score180" aria-pressed="false">3분 점수전</button></div><div class="chuntris-ranking-difficulty-tabs" role="group" aria-label="전체 랭킹 난이도"><button type="button" class="is-active" data-chuntris-ranking-difficulty="normal" aria-pressed="true">노말</button><button type="button" data-chuntris-ranking-difficulty="hard" aria-pressed="false">하드</button><button type="button" data-chuntris-ranking-difficulty="extreme" aria-pressed="false">익스트림</button></div></div><p id="chuntris-ranking-status" class="chuntris-ranking-status" aria-live="polite">랭킹 불러오는 중…</p><ol id="chuntris-ranking-list" class="chuntris-ranking-list"></ol></section>
               <section data-chuntris-panel="sound" hidden><h3>소리 설정</h3><button id="chuntris-sound" class="chuntris-sound" type="button" aria-pressed="true">효과음 ON</button><label class="chuntris-volume-label" for="chuntris-volume">음량 <input id="chuntris-volume" type="range" min="0" max="100" step="1" value="70"></label></section>
               <section data-chuntris-panel="controls" hidden><h3>키 조작법</h3><div class="chuntris-controls-grid"><p><kbd>←</kbd><kbd>→</kbd><span>이동</span></p><p><kbd>↓</kbd><span>소프트 드롭</span></p><p><kbd>Z</kbd>/<kbd>X</kbd>/<kbd>↑</kbd><span>회전</span></p><p><kbd>Space</kbd><span>하드 드롭</span></p><p><kbd>C</kbd>/<kbd>Shift</kbd><span>HOLD</span></p><p><kbd>P</kbd>/<kbd>Esc</kbd><span>일시정지</span></p></div></section>
               <section data-chuntris-panel="pause" hidden><h3>일시정지</h3><div class="chuntris-pause-actions"><button id="chuntris-pause-continue" class="btn btn-primary" type="button">계속하기</button><button id="chuntris-pause-new" class="btn btn-ghost" type="button">새 게임</button><button type="button" data-chuntris-open="sound">소리 설정</button><button type="button" data-chuntris-open="controls">키 조작법</button><a class="btn btn-ghost chuntris-return-link" href="minigames.html">← 미니게임으로 돌아가기</a></div></section>

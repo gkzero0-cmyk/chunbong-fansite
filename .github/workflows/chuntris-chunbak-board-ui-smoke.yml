@@ -6,6 +6,9 @@ on:
     paths:
       - 'chuntris.html'
       - 'chuntris.js'
+      - 'minigame-multiplayer.css'
+      - 'chuntris-multiplayer.js'
+      - 'chuntris-engine.js'
       - 'chuntris-board-start-ui.css'
       - 'chunbak.html'
       - 'chunbak.js'
@@ -41,7 +44,7 @@ jobs:
           done
           cat /tmp/board-ui-http.log
           exit 1
-      - name: Verify local Chuntris multiplayer mode picker
+      - name: Verify local Chuntris multiplayer mode and difficulty matrix
         env:
           BASE_URL: http://127.0.0.1:4173
         run: |
@@ -50,68 +53,66 @@ jobs:
           import assert from 'node:assert/strict';
 
           const browser=await chromium.launch({headless:true});
+          const modes=['classic','sprint40','score180'];
+          const difficulties=['normal','hard','extreme'];
           try{
-            for(const mode of ['classic','sprint40','hard']){
-              const page=await browser.newPage({viewport:{width:1280,height:800}});
-              let requestedMode=null;
-              let room={
-                code:'ABC234',game:'chuntris',mode,seed:123456,round:1,state:'waiting',startAt:null,winnerId:null,
-                players:[
-                  {id:'p1',nickname:'로컬A',ready:false,score:0,lines:0,timeMs:0,status:'waiting',finished:false,finishedAt:null,rematch:false},
-                  {id:'p2',nickname:'로컬B',ready:false,score:0,lines:0,timeMs:0,status:'waiting',finished:false,finishedAt:null,rematch:false}
-                ],
-                selfId:'p1',serverNow:Date.now()
-              };
+            for(const mode of modes){
+              for(const difficulty of difficulties){
+                const page=await browser.newPage({viewport:{width:1280,height:800}});
+                let requested=null;
+                let room={
+                  code:'ABC234',game:'chuntris',mode,difficulty,seed:123456,round:1,state:'waiting',startAt:null,winnerId:null,
+                  players:[
+                    {id:'p1',nickname:'로컬A',ready:false,score:0,lines:0,timeMs:0,status:'waiting',finished:false,finishedAt:null,rematch:false},
+                    {id:'p2',nickname:'로컬B',ready:false,score:0,lines:0,timeMs:0,status:'waiting',finished:false,finishedAt:null,rematch:false}
+                  ],
+                  selfId:'p1',serverNow:Date.now()
+                };
+                await page.route('**/api/content?type=minigame-multiplayer**',async route=>{
+                  const req=route.request();
+                  if(req.method()==='GET'){
+                    room.serverNow=Date.now();
+                    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({room})});return;
+                  }
+                  const body=JSON.parse(req.postData()||'{}');
+                  if(body.action==='create'){
+                    requested={mode:body.mode,difficulty:body.difficulty};
+                    room={...room,mode:body.mode,difficulty:body.difficulty,selfId:'p1',serverNow:Date.now()};
+                    await route.fulfill({status:201,contentType:'application/json',body:JSON.stringify({token:'token-a',room})});return;
+                  }
+                  if(body.action==='ready'){
+                    room={...room,state:'countdown',startAt:Date.now()+200,serverNow:Date.now(),players:room.players.map(player=>({...player,ready:true}))};
+                    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({room})});return;
+                  }
+                  if(body.action==='progress'){
+                    room={...room,state:'playing',serverNow:Date.now()};
+                    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({room})});return;
+                  }
+                  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({room})});
+                });
 
-              await page.route('**/api/content?type=minigame-multiplayer**',async route=>{
-                const req=route.request();
-                if(req.method()==='GET'){
-                  room.serverNow=Date.now();
-                  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({room})});
-                  return;
-                }
-                const body=JSON.parse(req.postData()||'{}');
-                if(body.action==='create'){
-                  requestedMode=body.mode;
-                  room={...room,mode:body.mode,selfId:'p1',serverNow:Date.now()};
-                  await route.fulfill({status:201,contentType:'application/json',body:JSON.stringify({token:'token-a',room})});
-                  return;
-                }
-                if(body.action==='ready'){
-                  room={
-                    ...room,state:'countdown',startAt:Date.now()+250,serverNow:Date.now(),
-                    players:room.players.map(player=>({...player,ready:true}))
-                  };
-                  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({room})});
-                  return;
-                }
-                if(body.action==='progress'){
-                  room={...room,state:'playing',serverNow:Date.now()};
-                  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({room})});
-                  return;
-                }
-                await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({room})});
-              });
-
-              await page.goto(process.env.BASE_URL+'/chuntris.html?_local_mp='+mode,{waitUntil:'domcontentloaded'});
-              await page.waitForFunction(()=>Boolean(window.ChuntrisApp?.startMultiplayer&&window.MinigameMultiplayer));
-              await page.locator('[data-chuntris-multiplayer]').click();
-              await page.locator('[data-mp-nickname]').fill('로컬멀티');
-              await page.locator('[data-mp-chuntris-mode="'+mode+'"]').click();
-              assert.equal(await page.locator('[data-mp-chuntris-mode="'+mode+'"]').getAttribute('aria-pressed'),'true');
-              await page.locator('[data-mp-create]').click();
-              await page.waitForFunction(()=>document.querySelector('[data-mp-room-code]')?.textContent?.trim()==='ABC234');
-              assert.equal(requestedMode,mode,'create payload mode mismatch');
-              assert.match(await page.locator('[data-mp-room-mode]').innerText(),new RegExp(mode==='classic'?'클래식':mode==='hard'?'하드':'40줄'));
-              await page.locator('[data-mp-ready]').click();
-              await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing',{timeout:5000});
-              assert.equal(await page.locator('#chuntris-game').getAttribute('data-mode'),mode,'engine mode mismatch');
-              await page.close();
+                await page.goto(process.env.BASE_URL+'/chuntris.html?_local_mp='+mode+'_'+difficulty,{waitUntil:'domcontentloaded'});
+                await page.waitForFunction(()=>Boolean(window.ChuntrisApp?.startMultiplayer&&window.MinigameMultiplayer));
+                await page.locator('[data-chuntris-multiplayer]').click();
+                await page.locator('[data-mp-nickname]').fill('로컬멀티');
+                await page.locator('[data-mp-chuntris-mode="'+mode+'"]').click();
+                await page.locator('[data-mp-chuntris-difficulty="'+difficulty+'"]').click();
+                await page.locator('[data-mp-create]').click();
+                await page.waitForFunction(()=>document.querySelector('[data-mp-room-code]')?.textContent?.trim()==='ABC234');
+                assert.deepEqual(requested,{mode,difficulty});
+                const roomLabel=await page.locator('[data-mp-room-mode]').innerText();
+                assert.match(roomLabel,new RegExp(mode==='classic'?'클래식':mode==='sprint40'?'40줄':'3분'));
+                assert.match(roomLabel,new RegExp(difficulty==='normal'?'노말':difficulty==='hard'?'하드':'익스트림'));
+                await page.locator('[data-mp-ready]').click();
+                await page.waitForFunction(()=>document.querySelector('#chuntris-game')?.dataset.gameStatus==='playing',{timeout:5000});
+                assert.equal(await page.locator('#chuntris-game').getAttribute('data-mode'),mode);
+                assert.equal(await page.locator('#chuntris-game').getAttribute('data-difficulty'),difficulty);
+                await page.close();
+              }
             }
-          }finally{
-            await browser.close();
-          }
+          }finally{await browser.close();}
           EOF_NODE
+
       - name: Verify seeded Chunbak and Chungwagame starts
         env:
           BASE_URL: http://127.0.0.1:4173
@@ -210,14 +211,26 @@ jobs:
             assert.ok(Math.abs((startBox.height/startBox.width)-2)<0.04,`Chuntris start card ratio mismatch: ${startBox.width}x${startBox.height}`);
             assert.ok(await page.locator('#chuntris-mode-classic').isVisible(),'classic mode missing');
             assert.ok(await page.locator('#chuntris-mode-sprint40').isVisible(),'sprint mode missing');
-            assert.ok(await page.locator('#chuntris-start').isVisible(),'start button must be visible with mode selection');
+            assert.equal(await page.locator('#chuntris-start').isVisible(),false,'start button must stay hidden before difficulty selection');
             for(const selector of ['[data-chuntris-open="ranking"]','[data-chuntris-open="sound"]','[data-chuntris-open="controls"]']){
               assert.ok(await page.locator(`.chuntris-start-utils ${selector}`).isVisible(),`start utility missing: ${selector}`);
             }
-            assert.ok((await startCard.evaluate(el=>el.scrollHeight<=el.clientHeight+1)),'Chuntris start UI overflows board-sized card');
+            assert.ok((await startCard.evaluate(el=>el.scrollHeight<=el.clientHeight+1)),'Chuntris mode step overflows board-sized card');
 
             const startScrollY=await page.evaluate(()=>window.scrollY);
             await page.locator('#chuntris-mode-classic').click();
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-difficulty','Chuntris did not enter difficulty selection');
+            assert.ok(await page.locator('#chuntris-difficulty-step').isVisible(),'difficulty step missing');
+            assert.ok(await page.locator('[data-chuntris-difficulty="normal"]').isVisible(),'normal difficulty missing');
+            assert.ok(await page.locator('#chuntris-start').isVisible(),'start button must be visible with the default normal difficulty');
+            assert.ok((await startCard.evaluate(el=>el.scrollHeight<=el.clientHeight+1)),'Chuntris difficulty step overflows board-sized card');
+
+            await page.locator('[data-chuntris-difficulty="normal"]').click();
+            assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'start-difficulty','Chuntris must remain in the difficulty step until start');
+            assert.ok(await page.locator('#chuntris-player-step').isVisible(),'start action missing in difficulty step');
+            assert.ok(await page.locator('#chuntris-start').isVisible(),'start button missing after difficulty selection');
+            assert.ok((await startCard.evaluate(el=>el.scrollHeight<=el.clientHeight+1)),'Chuntris difficulty/start step overflows board-sized card');
+
             await page.locator('#chuntris-start').click();
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'countdown','Chuntris did not enter countdown state');
             assert.ok(await page.locator('#chuntris-countdown').isVisible(),'countdown layer missing');

@@ -11,6 +11,8 @@
   const BOARD_ROWS = VISIBLE_ROWS + HIDDEN_ROWS;
   const PIECE_TYPES = Object.freeze(['I', 'O', 'T', 'S', 'Z', 'J', 'L']);
   const LOCK_DELAY_MS = 500;
+  const SCORE_ATTACK_MS = 180000;
+  const EXTREME_GIMMICK_INTERVAL_MS = 9000;
 
   const SHAPES = Object.freeze({
     I: [
@@ -118,19 +120,69 @@
   }
 
   function normalizeMode(mode) {
-    return mode === 'sprint40' || mode === 'hard' ? mode : 'classic';
+    return mode === 'sprint40' || mode === 'score180' ? mode : 'classic';
   }
 
-  function gravityMs(level, mode = 'classic') {
+  function normalizeDifficulty(difficulty) {
+    return difficulty === 'hard' || difficulty === 'extreme' ? difficulty : 'normal';
+  }
+
+  function resolveConfig(mode = 'classic', difficulty = null) {
+    const legacyHard = mode === 'hard' && difficulty == null;
+    return {
+      mode: normalizeMode(mode),
+      difficulty: normalizeDifficulty(legacyHard ? 'hard' : difficulty)
+    };
+  }
+
+  function gravityMs(level, mode = 'classic', difficulty = 'normal') {
     const safeMode = normalizeMode(mode);
-    if (safeMode === 'sprint40') return 1000;
+    const safeDifficulty = normalizeDifficulty(difficulty);
     const safeLevel = Math.max(1, Number(level) || 1);
-    if (safeMode === 'hard') return Math.max(45, Math.round(420 * Math.pow(0.80, safeLevel - 1)));
+    if (safeDifficulty === 'extreme') return Math.max(18, Math.round(220 * Math.pow(0.72, safeLevel - 1)));
+    if (safeDifficulty === 'hard') return Math.max(45, Math.round(420 * Math.pow(0.80, safeLevel - 1)));
+    if (safeMode === 'sprint40') return 1000;
     return Math.max(80, Math.round(1000 * Math.pow(0.85, safeLevel - 1)));
   }
 
-  function lockDelayMs(mode = 'classic') {
-    return normalizeMode(mode) === 'hard' ? 300 : LOCK_DELAY_MS;
+  function lockDelayMs(difficulty = 'normal') {
+    const safeDifficulty = normalizeDifficulty(difficulty);
+    if (safeDifficulty === 'extreme') return 140;
+    if (safeDifficulty === 'hard') return 300;
+    return LOCK_DELAY_MS;
+  }
+
+  function levelForLines(lines = 0, mode = 'classic', difficulty = 'normal') {
+    const safeLines = Math.max(0, Number(lines) || 0);
+    const safeDifficulty = normalizeDifficulty(difficulty);
+    if (safeDifficulty === 'extreme') return Math.floor(safeLines / 4) + 1;
+    if (safeDifficulty === 'hard') return Math.floor(safeLines / 6) + 1;
+    if (normalizeMode(mode) === 'sprint40') return 1;
+    return Math.floor(safeLines / 10) + 1;
+  }
+
+  function extremeGimmickForSlot(slot) {
+    const kinds = ['blink', 'phantom', 'garbage'];
+    return kinds[(Math.max(1, Number(slot) || 1) - 1) % kinds.length];
+  }
+
+  function deterministicHoles(seed, slot, count, width = BOARD_WIDTH) {
+    let value = ((Number(seed) || 0) ^ Math.imul(Math.max(1, Number(slot) || 1), 0x9E3779B1)) >>> 0;
+    const holes = [];
+    while (holes.length < Math.max(1, Math.min(width - 1, count))) {
+      value = (Math.imul(value ^ (value >>> 16), 0x45d9f3b) + 0x27100001) >>> 0;
+      const col = value % width;
+      if (!holes.includes(col)) holes.push(col);
+    }
+    return holes.sort((a, b) => a - b);
+  }
+
+  function injectGarbageRow(board, holes = [4]) {
+    const topOccupied = board[0].some(Boolean);
+    const next = board.slice(1).map(row => row.slice());
+    const holeSet = new Set(holes);
+    next.push(Array.from({ length: BOARD_WIDTH }, (_, x) => holeSet.has(x) ? null : 'G'));
+    return { board: next, toppedOut: topOccupied };
   }
 
   function clearCompletedLines(board) {
@@ -176,15 +228,18 @@
   }
 
   class ChuntrisGame {
-    constructor({ mode = 'classic', random = Math.random } = {}) {
+    constructor({ mode = 'classic', difficulty = null, random = Math.random } = {}) {
       this.random = typeof random === 'function' ? random : Math.random;
+      this.gimmickSeed = Math.floor(this.random() * 0x100000000) >>> 0;
+      const config = resolveConfig(mode, difficulty);
       this.state = {
         board: createEmptyBoard(), active: null, hold: null, next: [], canHold: true,
         score: 0, lines: 0, level: 1, combo: -1, backToBack: false,
-        mode: normalizeMode(mode), elapsedMs: 0,
+        mode: config.mode, difficulty: config.difficulty, elapsedMs: 0,
         status: 'idle', startedAt: 0, pausedAt: null, pausedDurationMs: 0,
         lastAdvanceAt: 0, lastGravityAt: 0, groundedAt: null,
-        lastAction: null, lastClear: null
+        lastAction: null, lastClear: null,
+        gimmickSlot: 0, gimmick: null, lastGimmick: null
       };
       this.ensureQueue(7);
       this.spawnNext();
@@ -210,14 +265,16 @@
       return true;
     }
 
-    reset(mode = this.state.mode) {
-      const nextMode = normalizeMode(mode);
+    reset(mode = this.state.mode, difficulty = this.state.difficulty) {
+      const config = resolveConfig(mode, difficulty);
+      this.gimmickSeed = Math.floor(this.random() * 0x100000000) >>> 0;
       this.state = {
         board: createEmptyBoard(), active: null, hold: null, next: [], canHold: true,
         score: 0, lines: 0, level: 1, combo: -1, backToBack: false,
-        mode: nextMode, elapsedMs: 0, status: 'idle', startedAt: 0,
+        mode: config.mode, difficulty: config.difficulty, elapsedMs: 0, status: 'idle', startedAt: 0,
         pausedAt: null, pausedDurationMs: 0, lastAdvanceAt: 0, lastGravityAt: 0,
-        groundedAt: null, lastAction: null, lastClear: null
+        groundedAt: null, lastAction: null, lastClear: null,
+        gimmickSlot: 0, gimmick: null, lastGimmick: null
       };
       this.ensureQueue(7);
       this.spawnNext();
@@ -226,7 +283,7 @@
     }
 
     start(nowMs = Date.now()) {
-      if (this.state.status === 'gameover' || this.state.status === 'completed') this.reset(this.state.mode);
+      if (this.state.status === 'gameover' || this.state.status === 'completed') this.reset(this.state.mode, this.state.difficulty);
       this.state.status = 'playing';
       this.state.startedAt = nowMs;
       this.state.elapsedMs = 0;
@@ -238,7 +295,9 @@
       return this.getSnapshot();
     }
 
-    setMode(mode) { return this.reset(mode); }
+    setMode(mode) { return this.reset(mode, this.state.difficulty); }
+
+    setDifficulty(difficulty) { return this.reset(this.state.mode, difficulty); }
 
     pause(nowMs = Date.now()) {
       if (this.state.status !== 'playing') return false;
@@ -407,11 +466,7 @@
       this.state.combo = result.nextCombo;
       this.state.backToBack = result.nextBackToBack;
       this.state.lines += Math.max(0, Number(lines) || 0);
-      this.state.level = this.state.mode === 'classic'
-        ? Math.floor(this.state.lines / 10) + 1
-        : this.state.mode === 'hard'
-          ? Math.floor(this.state.lines / 6) + 1
-          : 1;
+      this.state.level = levelForLines(this.state.lines, this.state.mode, this.state.difficulty);
       this.state.lastClear = {
         lines: Math.max(0, Number(lines) || 0), tSpin: Boolean(tSpin),
         points: result.points, combo: this.state.combo,
@@ -428,10 +483,54 @@
       return result;
     }
 
+    updateExtremeGimmick(nowMs = Date.now()) {
+      if (this.state.difficulty !== 'extreme' || this.state.status !== 'playing') {
+        this.state.gimmick = null;
+        return null;
+      }
+      const slot = Math.floor(this.state.elapsedMs / EXTREME_GIMMICK_INTERVAL_MS);
+      if (slot <= 0 || slot <= this.state.gimmickSlot) {
+        if (this.state.gimmick && Number(this.state.gimmick.until) <= nowMs) this.state.gimmick = null;
+        return this.state.gimmick;
+      }
+
+      this.state.gimmickSlot = slot;
+      const kind = extremeGimmickForSlot(slot);
+      const event = { kind, slot, at: nowMs, until: nowMs };
+
+      if (kind === 'blink') {
+        event.until = nowMs + 1900;
+      } else if (kind === 'phantom') {
+        event.until = nowMs + 1350;
+      } else if (kind === 'garbage') {
+        const holeCount = slot >= 6 ? 1 : 2;
+        const holes = deterministicHoles(this.gimmickSeed, slot, holeCount);
+        const injected = injectGarbageRow(this.state.board, holes);
+        this.state.board = injected.board;
+        event.holes = holes;
+        event.until = nowMs + 1100;
+        if (injected.toppedOut || (this.state.active && collides(this.state.board, this.state.active))) {
+          this.state.status = 'gameover';
+          this.updateElapsed(nowMs);
+        }
+      }
+
+      this.state.gimmick = event;
+      this.state.lastGimmick = { ...event };
+      return event;
+    }
+
     advance(nowMs = Date.now()) {
       if (!this.isPlaying()) return this.getSnapshot();
       this.updateElapsed(nowMs);
-      const interval = gravityMs(this.state.level, this.state.mode);
+      if (this.state.mode === 'score180' && this.state.elapsedMs >= SCORE_ATTACK_MS) {
+        this.state.elapsedMs = SCORE_ATTACK_MS;
+        this.state.status = 'completed';
+        return this.getSnapshot();
+      }
+      this.updateExtremeGimmick(nowMs);
+      if (this.state.status !== 'playing') return this.getSnapshot();
+      const interval = gravityMs(this.state.level, this.state.mode, this.state.difficulty);
       if (this.state.lastGravityAt == null) this.state.lastGravityAt = nowMs;
 
       let safety = 0;
@@ -450,15 +549,15 @@
       }
 
       this.refreshGrounded(nowMs);
-      if (this.state.groundedAt != null && nowMs - this.state.groundedAt >= lockDelayMs(this.state.mode)) this.lockActive(nowMs);
+      if (this.state.groundedAt != null && nowMs - this.state.groundedAt >= lockDelayMs(this.state.difficulty)) this.lockActive(nowMs);
       this.state.lastAdvanceAt = nowMs;
       return this.getSnapshot();
     }
   }
 
   return {
-    BOARD_WIDTH, VISIBLE_ROWS, HIDDEN_ROWS, BOARD_ROWS, LOCK_DELAY_MS,
+    BOARD_WIDTH, VISIBLE_ROWS, HIDDEN_ROWS, BOARD_ROWS, LOCK_DELAY_MS, SCORE_ATTACK_MS, EXTREME_GIMMICK_INTERVAL_MS,
     PIECE_TYPES, SHAPES, createSevenBag, createEmptyBoard, cellsFor,
-    collides, ghostY, normalizeMode, gravityMs, lockDelayMs, clearCompletedLines, scoreClear, ChuntrisGame
+    collides, ghostY, normalizeMode, normalizeDifficulty, resolveConfig, gravityMs, lockDelayMs, levelForLines, extremeGimmickForSlot, deterministicHoles, injectGarbageRow, clearCompletedLines, scoreClear, ChuntrisGame
   };
 });
