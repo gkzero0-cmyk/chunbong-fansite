@@ -13,6 +13,7 @@ const fetchChunbongData = require('../lib/chunbong-data');
 const handleChuntrisRanking = require('../lib/chuntris-ranking-api');
 const handleChunbakRanking = require('../lib/chunbak-ranking-api');
 const handleChungwagameRanking = require('../lib/chungwagame-ranking-api');
+const handleChuncortileRanking = require('../lib/chuncortile-ranking-api');
 const handleMinigameMultiplayer = require('../lib/minigame-multiplayer-api');
 const handleChangelogHistory = require('../lib/changelog-history-api');
 const youtubeEngagementCache = require('../data/youtube-engagement-cache.json');
@@ -247,6 +248,7 @@ async function handler(req,res) {
   if(type==='chuntris-ranking') return handleChuntrisRanking(req,res);
   if(type==='chunbak-ranking') return handleChunbakRanking(req,res);
   if(type==='chungwagame-ranking') return handleChungwagameRanking(req,res);
+  if(type==='chuncortile-ranking') return handleChuncortileRanking(req,res);
   if(type==='minigame-multiplayer') return handleMinigameMultiplayer(req,res);
   if(type==='changelog-history') return handleChangelogHistory(req,res);
   const forceDataRefresh=type==='data'&&String(req.query?.refresh||'')==='1';

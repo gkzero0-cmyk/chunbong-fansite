@@ -39,7 +39,9 @@ jobs:
           node --check chungwagame.js
           node --check chungwagame-postgame-ranking.js
           node --check chuncortile-core.js
+          node --check chuncortile-ranking-core.js
           node --check chuncortile.js
+          node --check chuncortile-postgame-ranking.js
           node --check api/_shared.js
           node --check api/content.js
           node --check lib/activity-feed.js
@@ -55,6 +57,7 @@ jobs:
           node --check lib/minigame-multiplayer-api.js
           node --check lib/chunbak-ranking-api.js
           node --check lib/chungwagame-ranking-api.js
+          node --check lib/chuncortile-ranking-api.js
           node --check lib/chunbong-data.js
           node --check lib/soop-analytics.js
           node --check lib/soop-analytics-base.js
