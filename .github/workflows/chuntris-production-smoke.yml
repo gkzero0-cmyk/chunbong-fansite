@@ -166,7 +166,8 @@ jobs:
               ]);
               assert.ok(left&&center&&right,`${label} desktop regions missing`);
               assert.ok(left.x<center.x&&center.x<right.x,`${label} desktop region order invalid`);
-              assert.ok(center.width>=280,`${label} board too narrow`);
+              const expectedBoardWidth=Math.min(340,viewport.height*0.36,viewport.width-28);
+              assert.ok(Math.abs(center.width-expectedBoardWidth)<=4,`${label} board width mismatch: ${center.width} vs expected ${expectedBoardWidth}`);
               const timeFits=await page.locator('#chuntris-time').evaluate(el=>{
                 const original=el.textContent;
                 el.textContent='99:59.999';
