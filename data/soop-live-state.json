@@ -6660,11 +6660,22 @@
         "categoryName": "버추얼",
         "followerCount": 30292,
         "fanclubCount": 7672
+      },
+      {
+        "capturedAt": "2026-09-18T16:56:53.402Z",
+        "live": true,
+        "startedAt": "2026-09-18T16:25:33.000Z",
+        "title": "마이크 테스트 도와주실 봉봉이 구해요",
+        "viewerCount": 24,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30292,
+        "fanclubCount": 7672
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-18T16:49:55.878Z",
+    "capturedAt": "2026-09-18T16:56:53.402Z",
     "followerCount": 30292,
     "fanclubCount": 7672
   }
