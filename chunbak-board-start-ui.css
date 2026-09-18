@@ -6,15 +6,16 @@
 .chunbak-page .chunbak-hero .minigame-back-link{position:static;min-height:32px;margin:0;padding:0 12px;border-color:rgba(255,107,24,.28);background:#101010;color:#d8d0c9;font-size:.72rem}
 .chunbak-page .content-section{padding:4px 0 28px}
 .chunbak-page .content-section>.page-shell{width:min(98%,1180px)}
-.chunbak-game{gap:8px}
-.chunbak-play-top{min-height:44px;margin-inline:auto;padding:5px 8px;border:1px solid rgba(255,107,24,.16);border-radius:12px;background:linear-gradient(180deg,#111,#0b0b0b)}
+.chunbak-game{--chunbak-toolbar-height:58px;--chunbak-board-gap:14px;gap:8px}
+.chunbak-play-view{gap:var(--chunbak-board-gap)}
+.chunbak-play-top{position:relative;z-index:12;height:var(--chunbak-toolbar-height);min-height:var(--chunbak-toolbar-height);margin-inline:auto;padding:5px 8px;border:1px solid rgba(255,107,24,.16);border-radius:12px;background:linear-gradient(180deg,#111,#0b0b0b)}
 .chunbak-play-status .eyebrow{color:#ff8a36}
 .chunbak-layout,.chunbak-layout-immersive{grid-template-columns:minmax(190px,260px) minmax(0,420px) minmax(190px,260px);gap:12px}
 .chunbak-stage{width:min(420px,44svh,calc(100vw - 28px));max-width:100%;height:auto;aspect-ratio:420/680;border:2px solid rgba(255,107,24,.48);border-radius:18px;background:radial-gradient(circle at 50% 0%,rgba(255,107,24,.12),transparent 28%),linear-gradient(180deg,#160e0a,#090706);box-shadow:0 0 0 1px rgba(255,139,67,.06),0 22px 55px rgba(0,0,0,.38)}
 .chunbak-rail>section,.chunbak-stats{border-color:rgba(255,255,255,.1);background:linear-gradient(180deg,#121212,#0b0b0b)}
 .chunbak-right .eyebrow,.chunbak-panel-head .eyebrow{color:#ff8a36;opacity:1}
 
-.chunbak-start-view{min-height:0;place-items:start center}
+.chunbak-start-view{min-height:0;padding-top:calc(var(--chunbak-toolbar-height) + var(--chunbak-board-gap));place-items:start center}
 .chunbak-start-card{display:flex;flex-direction:column;justify-content:center;width:min(420px,44svh,calc(100vw - 28px));max-width:100%;height:auto;aspect-ratio:420/680;padding:24px 18px;border:2px solid rgba(255,107,24,.48);border-radius:18px;background:radial-gradient(circle at 50% 8%,rgba(255,107,24,.17),transparent 30%),linear-gradient(180deg,#11100f,#080808 72%);box-shadow:0 0 0 1px rgba(255,150,80,.06),0 24px 60px rgba(0,0,0,.4);text-align:center}
 .chunbak-start-card>.eyebrow{margin:0;color:#ff8a36;font-size:.62rem;font-weight:1000;letter-spacing:.18em;justify-content:center}
 .chunbak-start-card h2{margin:10px 0 7px;font-size:clamp(1.8rem,5svh,2.8rem);line-height:1;color:#fff7f0;letter-spacing:-.045em}
@@ -45,6 +46,7 @@
   .chunbak-evolution{order:5}
 }
 @media(max-width:520px){
+  .chunbak-game{--chunbak-toolbar-height:48px;--chunbak-board-gap:10px}
   .chunbak-page .page-shell{padding-inline:8px}
   .chunbak-start-card{padding:18px 13px;border-radius:15px}
   .chunbak-start-card h2{font-size:1.75rem}
@@ -61,3 +63,9 @@
   .chunbak-start-card>p:nth-of-type(3){display:none}
   #chunbak-start{margin-top:10px}
 }
+
+.chunbak-return-link{display:flex;align-items:center;justify-content:center;text-decoration:none}
+.chunbak-pause-actions .chunbak-return-link{grid-column:1/-1;width:100%;min-height:48px}
+.chunbak-terminal-actions .chunbak-return-link{flex-basis:100%;width:100%}
+
+.chunbak-utility-cluster{position:relative;z-index:13}
