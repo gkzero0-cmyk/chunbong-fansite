@@ -27,3 +27,17 @@
 .mp-final-scores{display:grid;gap:5px;margin-top:10px}
 .mp-final-scores em{display:flex;justify-content:space-between;gap:10px;padding:7px 9px;border-radius:9px;background:#191919;color:#aaa;font-style:normal;font-size:10px}
 .mp-final-scores b{color:#eee}
+
+.chuntris-start-card.has-multiplayer{padding:13px 12px}
+.chuntris-start-card.has-multiplayer>p{font-size:.67rem;line-height:1.35}
+.chuntris-start-card.has-multiplayer .chuntris-mode-cards{gap:4px;margin:6px 0 5px}
+.chuntris-start-card.has-multiplayer .chuntris-mode-cards button{min-height:56px;padding:6px 8px}
+.chuntris-start-card.has-multiplayer .chuntris-mode-cards button strong{font-size:.86rem}
+.chuntris-start-card.has-multiplayer .chuntris-player-step .btn{min-height:38px}
+.chuntris-start-card.has-multiplayer .chuntris-start-utils{margin-top:5px}
+.chuntris-start-card.has-multiplayer .chuntris-start-utils button{min-height:32px}
+@media(max-width:620px){
+  .chuntris-start-card.has-multiplayer{padding:11px 10px}
+  .chuntris-start-card.has-multiplayer .chuntris-mode-cards button{min-height:54px}
+  .chuntris-start-card.has-multiplayer .chuntris-start-utils button{min-height:30px;font-size:.47rem}
+}
