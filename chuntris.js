@@ -196,14 +196,48 @@
   function drawCell(ctx,x,y,size,color,alpha=1){const gap=Math.max(1,size*.055);ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle=color;ctx.fillRect(x*size+gap,y*size+gap,size-gap*2,size-gap*2);ctx.fillStyle='rgba(255,255,255,.22)';ctx.fillRect(x*size+gap*1.5,y*size+gap*1.5,size-gap*3,Math.max(2,size*.08));ctx.strokeStyle='rgba(0,0,0,.38)';ctx.lineWidth=Math.max(1,size*.045);ctx.strokeRect(x*size+gap,y*size+gap,size-gap*2,size-gap*2);ctx.restore();}
   function drawBoard(state){
     const {ctx,width,height}=prepareCanvas(els.board,2);ctx.clearRect(0,0,width,height);ctx.fillStyle='#080808';ctx.fillRect(0,0,width,height);const cell=width/Engine.BOARD_WIDTH;ctx.strokeStyle='rgba(255,255,255,.055)';ctx.lineWidth=1;
+    const now=Date.now(),gimmick=state.difficulty==='extreme'?state.gimmick:null;
+    const blinkActive=gimmick?.kind==='blink'&&Number(gimmick.until)>now;
+    const phantomActive=gimmick?.kind==='phantom'&&Number(gimmick.until)>now;
+    const blinkVisible=!blinkActive||Math.floor(now/135)%2===0;
     for(let x=0;x<=Engine.BOARD_WIDTH;x++){ctx.beginPath();ctx.moveTo(x*cell,0);ctx.lineTo(x*cell,height);ctx.stroke();}for(let y=0;y<=Engine.VISIBLE_ROWS;y++){ctx.beginPath();ctx.moveTo(0,y*cell);ctx.lineTo(width,y*cell);ctx.stroke();}
-    for(let y=Engine.HIDDEN_ROWS;y<Engine.BOARD_ROWS;y++)for(let x=0;x<Engine.BOARD_WIDTH;x++){const type=state.board[y][x];if(type)drawCell(ctx,x,y-Engine.HIDDEN_ROWS,cell,COLORS[type]||'#aaa');}
-    if(state.active){const gy=Engine.ghostY(state.board,state.active),ghost={...state.active,y:gy};for(const [x,y] of Engine.cellsFor(ghost))if(y>=Engine.HIDDEN_ROWS)drawCell(ctx,x,y-Engine.HIDDEN_ROWS,cell,COLORS[ghost.type]||'#aaa',.18);for(const [x,y] of Engine.cellsFor(state.active))if(y>=Engine.HIDDEN_ROWS)drawCell(ctx,x,y-Engine.HIDDEN_ROWS,cell,COLORS[state.active.type]||'#aaa',1);}
+    if(blinkVisible){
+      for(let y=Engine.HIDDEN_ROWS;y<Engine.BOARD_ROWS;y++)for(let x=0;x<Engine.BOARD_WIDTH;x++){const type=state.board[y][x];if(type)drawCell(ctx,x,y-Engine.HIDDEN_ROWS,cell,COLORS[type]||'#aaa',type==='G'?.82:1);}
+    }
+    if(state.active&&!phantomActive){
+      const gy=Engine.ghostY(state.board,state.active),ghost={...state.active,y:gy};
+      for(const [x,y] of Engine.cellsFor(ghost))if(y>=Engine.HIDDEN_ROWS)drawCell(ctx,x,y-Engine.HIDDEN_ROWS,cell,COLORS[ghost.type]||'#aaa',.16);
+      for(const [x,y] of Engine.cellsFor(state.active))if(y>=Engine.HIDDEN_ROWS)drawCell(ctx,x,y-Engine.HIDDEN_ROWS,cell,COLORS[state.active.type]||'#aaa',1);
+    }
   }
   function drawMini(canvas,types,slots){if(!canvas)return;const {ctx,width,height}=prepareCanvas(canvas,canvas===els.next?(300/180):.75);ctx.clearRect(0,0,width,height);ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(0,0,width,height);const list=Array.isArray(types)?types:[types],slotH=height/slots;list.slice(0,slots).forEach((type,index)=>{if(!type||!Engine.SHAPES[type])return;const cells=Engine.SHAPES[type][0];const minX=Math.min(...cells.map(c=>c[0])),maxX=Math.max(...cells.map(c=>c[0])),minY=Math.min(...cells.map(c=>c[1])),maxY=Math.max(...cells.map(c=>c[1]));const size=Math.min(width/(maxX-minX+2),slotH/(maxY-minY+2)),ox=(width-(maxX-minX+1)*size)/2-minX*size,oy=index*slotH+(slotH-(maxY-minY+1)*size)/2-minY*size;cells.forEach(([x,y])=>{ctx.save();ctx.translate(ox,oy);drawCell(ctx,x,y,size,COLORS[type]||'#aaa');ctx.restore();});});}
 
-  function statusMessage(state){if(state.status==='idle')return mode==='classic'?'클래식 무한 · 오래 버티며 최고 점수에 도전하세요.':mode==='hard'?'하드 무한 · 빠른 중력과 짧은 고정 시간에 도전하세요.':'40줄 타임어택 · 40줄을 가장 빠르게 지워 보세요.';if(state.status==='paused')return'일시정지 중';if(state.status==='gameover')return'GAME OVER · 새 게임으로 다시 도전하세요.';if(state.status==='completed')return`40줄 완주! 기록 ${formatTime(state.elapsedMs)}`;if(mode==='sprint40')return`${state.lines}/40줄 · ${Math.max(0,40-state.lines)}줄 남았어요.`;return`LEVEL ${state.level} · COMBO ${Math.max(0,state.combo)}`;}
-  function updateRecords(state,previousStatus){if(state.status==='gameover'&&previousStatus!=='gameover'&&(mode==='classic'||mode==='hard')){const old=currentBest();if(state.score>old){storageSet(mode==='hard'?HARD_BEST_KEY:CLASSIC_BEST_KEY,state.score);bestFlashUntil=Date.now()+1800;}}if(state.status==='completed'&&previousStatus!=='completed'&&mode==='sprint40'){const old=currentBest();if(!old||state.elapsedMs<old){storageSet(SPRINT_BEST_KEY,state.elapsedMs);bestFlashUntil=Date.now()+1800;}}}
+  function statusMessage(state){
+    if(state.status==='idle')return `${modeLabel()} · ${difficultyLabel()} 난이도`;
+    if(state.status==='paused')return'일시정지 중';
+    if(state.status==='gameover')return'GAME OVER · 새 게임으로 다시 도전하세요.';
+    if(state.status==='completed'){
+      if(mode==='sprint40')return`40줄 완주! 기록 ${formatTime(state.elapsedMs)}`;
+      if(mode==='score180')return`3분 종료! 최종 점수 ${Number(state.score||0).toLocaleString('ko-KR')}`;
+    }
+    if(mode==='sprint40')return`${state.lines}/40줄 · ${Math.max(0,40-state.lines)}줄 남았어요. · ${difficultyLabel()}`;
+    if(mode==='score180')return`남은 시간 ${formatTime(Math.max(0,Engine.SCORE_ATTACK_MS-state.elapsedMs))} · SCORE ${Number(state.score||0).toLocaleString('ko-KR')}`;
+    return`LEVEL ${state.level} · COMBO ${Math.max(0,state.combo)} · ${difficultyLabel()}`;
+  }
+
+  function updateRecords(state,previousStatus){
+    const enteredGameover=state.status==='gameover'&&previousStatus!=='gameover';
+    const enteredCompleted=state.status==='completed'&&previousStatus!=='completed';
+    if(mode==='classic'&&enteredGameover){
+      const old=currentBest();if(state.score>old){storageSet(bestStorageKey(),state.score);bestFlashUntil=Date.now()+1800;}
+    }
+    if(mode==='sprint40'&&enteredCompleted){
+      const old=currentBest();if(!old||state.elapsedMs<old){storageSet(bestStorageKey(),state.elapsedMs);bestFlashUntil=Date.now()+1800;}
+    }
+    if(mode==='score180'&&(enteredCompleted||enteredGameover)){
+      const old=currentBest();if(state.score>old){storageSet(bestStorageKey(),state.score);bestFlashUntil=Date.now()+1800;}
+    }
+  }
 
   function restartAnimation(element,className){if(!element)return;element.classList.remove(className);void element.offsetWidth;element.classList.add(className);}
   function showHardDropEffect(detail={}){
@@ -254,8 +288,21 @@
       els.lineFx?.replaceChildren();
     },950);
   }
+  function showGimmickEffect(gimmick){
+    if(!gimmick||gimmick.slot===lastGimmickSlot)return;
+    lastGimmickSlot=gimmick.slot;
+    const labels={blink:'⚡ 블링크 · 보드가 깜빡입니다',phantom:'👻 팬텀 · 현재 블록이 사라집니다',garbage:'☠ 가비지 · 바닥 방해 라인 발생'};
+    if(els.gimmickAlert){
+      els.gimmickAlert.textContent=labels[gimmick.kind]||'EXTREME GIMMICK';
+      els.gimmickAlert.className=`chuntris-gimmick-alert is-${gimmick.kind||'active'} is-visible`;
+      clearTimeout(gimmickTimer);gimmickTimer=setTimeout(()=>els.gimmickAlert?.classList.remove('is-visible'),1650);
+    }
+    transientReaction={name:gimmick.kind==='garbage'?'burnout':gimmick.kind==='phantom'?'question':'dizzy',until:Date.now()+1500};
+    if(root.ChuntrisAudio)root.ChuntrisAudio.play(gimmick.kind==='garbage'?'harddrop':'levelup');
+  }
   function observeEvents(state){
     if(state.lastClear&&state.lastClear.at!==lastClearAt){lastClearAt=state.lastClear.at;const clear=state.lastClear;if(clear.lines>0){showClearEffect(clear.lines,clear);const clearSound=CLEAR_SOUNDS[clear.lines];if(clearSound&&root.ChuntrisAudio)root.ChuntrisAudio.play(clearSound);let name='smile',duration=850;if(clear.lines===2){name='sparkle';duration=950;}else if(clear.lines===3){name='love';duration=1150;}else if(clear.lines>=4){name='money';duration=1300;}transientReaction={name,until:Date.now()+duration};}}
+    if(state.lastGimmick&&state.lastGimmick.slot!==lastGimmickSlot)showGimmickEffect(state.lastGimmick);
     if(state.level!==lastLevel&&state.level>lastLevel&&root.ChuntrisAudio)root.ChuntrisAudio.play('levelup');lastLevel=state.level;
   }
 
