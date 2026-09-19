@@ -22,6 +22,7 @@
       '<header class="activity-panel-head"><div><small>CHUNBONG FAN HUB</small><strong>최근 업데이트</strong></div><button class="activity-close" type="button" aria-label="알림 닫기">×</button></header>' +
       '<div class="activity-tabs" role="tablist" aria-label="업데이트 종류">' +
         '<button type="button" class="active" data-activity-filter="all" role="tab" aria-selected="true">전체</button>' +
+        '<button type="button" data-activity-filter="schedule" role="tab" aria-selected="false">일정</button>' +
         '<button type="button" data-activity-filter="notice" role="tab" aria-selected="false">공지</button>' +
         '<button type="button" data-activity-filter="media" role="tab" aria-selected="false">영상</button>' +
         '<button type="button" data-activity-filter="fanart" role="tab" aria-selected="false">팬아트</button>' +
