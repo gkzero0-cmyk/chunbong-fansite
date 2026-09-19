@@ -314,6 +314,13 @@
     if(mode==='success') setTimeout(()=>{if(!state.refreshing) button.textContent='새로고침';},1200);
   }
 
+  function renderInitialLoadFailure() {
+    $('.loading-card').forEach(card=>{
+      card.className='data-empty data-load-error';
+      card.textContent='데이터를 불러오지 못했습니다. 위 새로고침 버튼으로 다시 시도해 주세요.';
+    });
+  }
+
   async function refresh({force=false}={}) {
     if(force&&state.refreshing) return;
     if(force){state.refreshing=true;setRetryState('loading');}
@@ -328,6 +335,7 @@
       root.classList.remove('ready','partial');root.classList.add('error');
       root.querySelector('strong').textContent='춘봉 데이터를 불러오지 못했습니다.';
       $('#data-updated').textContent=error?.message||'네트워크 오류';
+      if(!state.payload) renderInitialLoadFailure();
       if(force) setRetryState('error');
     } finally {
       if(force){state.refreshing=false;const button=$('#data-retry');if(button)button.disabled=false;}

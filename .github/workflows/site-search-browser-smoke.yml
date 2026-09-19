@@ -1,0 +1,90 @@
+name: Site search browser smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'site-search.js'
+      - 'site-search.css'
+      - 'activity-center.js'
+      - 'service-worker.js'
+      - '.github/workflows/site-search-browser-smoke.yml'
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local site
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/search-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/search-http.log
+          exit 1
+      - name: Verify desktop and mobile global search
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import { chromium } from 'playwright';
+          import assert from 'node:assert/strict';
+
+          const browser=await chromium.launch({headless:true});
+          const context=await browser.newContext({viewport:{width:1440,height:900}});
+          const activity={items:[
+            {id:'notice:1',type:'notice',group:'notice',label:'공지',title:'오늘 휴방 공지',publishedAt:'2026-09-19T12:00:00.000Z',href:'notice.html?open=1',meta:'SOOP 공지'},
+            {id:'youtube:2',type:'youtube',group:'media',label:'YouTube',title:'춘봉 새 영상',publishedAt:'2026-09-19T11:00:00.000Z',href:'youtube.html?open=2',meta:'춘봉TV'}
+          ]};
+          const schedule={items:[
+            {id:'s1',title:'마인크래프트 방송',start:'2026-09-20T20:00:00+09:00',tags:['마인크래프트'],link:'schedule.html'}
+          ]};
+          const attachRoutes=page=>{
+            page.route('**/api/content?type=activity',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(activity)}));
+            page.route('**/api/content?type=schedule',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(schedule)}));
+          };
+
+          const page=await context.newPage();
+          attachRoutes(page);
+          const errors=[];
+          page.on('pageerror',error=>errors.push(error.message));
+          await page.goto(process.env.BASE_URL+'/index.html?_search='+Date.now(),{waitUntil:'networkidle'});
+          await page.waitForSelector('.site-search-button');
+          const order=await page.locator('.activity-center').evaluate(el=>el.nextElementSibling?.classList.contains('site-search'));
+          assert.equal(order,true,'search control must follow existing activity control');
+          await page.keyboard.press('Control+K');
+          await page.waitForSelector('.site-search-dialog[open]');
+          const input=page.locator('.site-search-input');
+          await input.fill('휴방');
+          await page.waitForFunction(()=>[...document.querySelectorAll('.site-search-result strong')].some(node=>node.textContent?.includes('오늘 휴방 공지')));
+          assert.ok(await page.getByText('오늘 휴방 공지',{exact:true}).count(),'remote activity search result missing');
+          await input.fill('마인크래프트');
+          await page.waitForFunction(()=>[...document.querySelectorAll('.site-search-result strong')].some(node=>node.textContent?.includes('마인크래프트 방송')));
+          assert.ok(await page.getByText('마인크래프트 방송',{exact:true}).count(),'schedule search result missing');
+          await page.keyboard.press('Escape');
+          assert.equal(await page.locator('.site-search-dialog').getAttribute('open'),null,'Escape should close search');
+
+          const mobile=await context.newPage();
+          await mobile.setViewportSize({width:390,height:844});
+          attachRoutes(mobile);
+          await mobile.goto(process.env.BASE_URL+'/index.html?_search_mobile='+Date.now(),{waitUntil:'networkidle'});
+          await mobile.waitForSelector('.site-search-button');
+          const header=await mobile.locator('.site-header').evaluate(el=>({scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}));
+          assert.ok(header.scrollWidth<=header.clientWidth+1,`search control overflowed mobile header: ${header.scrollWidth} > ${header.clientWidth}`);
+          await mobile.locator('.site-search-button').click();
+          const box=await mobile.locator('.site-search-dialog').boundingBox();
+          assert.ok(box&&box.x>=0&&box.x+box.width<=390&&box.y>=0&&box.y+box.height<=844,'mobile search dialog clips viewport');
+
+          assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
+          await browser.close();
+          EOF_NODE

@@ -230,3 +230,21 @@
   document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
   window.addEventListener('pagehide', () => window.clearInterval(timer), { once:true });
 })();
+
+
+(() => {
+  if (!document.querySelector('link[data-site-search-styles]')) {
+    const stylesheet=document.createElement('link');
+    stylesheet.rel='stylesheet';
+    stylesheet.href='site-search.css';
+    stylesheet.dataset.siteSearchStyles='true';
+    document.head.appendChild(stylesheet);
+  }
+  if (!document.querySelector('script[data-site-search-runtime]')) {
+    const script=document.createElement('script');
+    script.src='site-search.js';
+    script.defer=true;
+    script.dataset.siteSearchRuntime='true';
+    document.body.appendChild(script);
+  }
+})();

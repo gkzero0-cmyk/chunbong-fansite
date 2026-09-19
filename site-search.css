@@ -1,0 +1,39 @@
+.site-search{display:flex;align-items:center}
+.site-search-button{height:40px;min-width:40px;padding:0 10px;border:1px solid #2e2e30;border-radius:999px;background:#111113;color:#d6d0cb;display:flex;align-items:center;gap:7px;cursor:pointer}
+.site-search-button:hover{border-color:#ff6b1870;color:#fff;background:#181311}
+.site-search-button svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9}
+.site-search-shortcut{font-size:9px;color:#777;font-weight:900;letter-spacing:.03em}
+.site-search-dialog{width:min(720px,calc(100vw - 28px));max-height:min(78vh,720px);padding:0;border:1px solid #353537;border-radius:24px;background:#101012;color:#f5f2ef;box-shadow:0 28px 100px #000b;overflow:hidden}
+.site-search-dialog::backdrop{background:#000a;backdrop-filter:blur(7px)}
+.site-search-shell{display:grid;grid-template-rows:auto minmax(0,1fr);max-height:min(78vh,720px)}
+.site-search-head{padding:16px;border-bottom:1px solid #29292c;background:#121214}
+.site-search-input-wrap{display:flex;align-items:center;gap:11px;padding:0 13px;border:1px solid #343438;border-radius:15px;background:#0a0a0c}
+.site-search-input-wrap:focus-within{border-color:#ff6b18;box-shadow:0 0 0 3px #ff6b1817}
+.site-search-input-wrap svg{width:19px;height:19px;fill:none;stroke:#9a918a;stroke-width:1.9;flex:0 0 auto}
+.site-search-input{width:100%;height:52px;border:0;outline:0;background:transparent;color:#fff;font:inherit;font-size:16px}
+.site-search-input::placeholder{color:#68625e}
+.site-search-close{width:34px;height:34px;border:0;border-radius:10px;background:#1c1c1f;color:#aaa;font-size:20px;cursor:pointer;flex:0 0 auto}
+.site-search-body{overflow:auto;padding:14px}
+.site-search-status{padding:10px 8px;color:#8c837d;font-size:11px}
+.site-search-results{display:grid;gap:8px}
+.site-search-group{display:grid;gap:7px;margin-bottom:10px}
+.site-search-group-title{padding:6px 6px 2px;color:#ff9a58;font-size:9px;font-weight:1000;letter-spacing:.14em}
+.site-search-result{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px;border:1px solid #252528;border-radius:14px;background:#151517;color:#eee;text-decoration:none}
+.site-search-result:hover,.site-search-result:focus-visible{border-color:#ff6b1866;background:#1b1512}
+.site-search-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:#ff6b1815;color:#ff9b5e;font-size:10px;font-weight:1000}
+.site-search-copy{min-width:0}
+.site-search-copy strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+.site-search-copy small{display:block;margin-top:4px;color:#777;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.site-search-result>span:last-child{color:#625d59;font-size:14px}
+.site-search-empty{padding:44px 20px;text-align:center;color:#777;border:1px dashed #303034;border-radius:16px}
+.site-search-help{padding:12px 5px 2px;color:#666;font-size:9px;text-align:center}
+[data-theme="light"] .site-search-button{border-color:#ded7d1;background:#fff;color:#4d443e}
+[data-theme="light"] .site-search-dialog{border-color:#ded7d1;background:#fff;color:#2b231e;box-shadow:0 28px 80px #51351c2b}
+[data-theme="light"] .site-search-head{background:#fffaf6;border-color:#eee5de}
+[data-theme="light"] .site-search-input-wrap{border-color:#ddd3cb;background:#fff}
+[data-theme="light"] .site-search-input{color:#2b231e}
+[data-theme="light"] .site-search-close{background:#f3ece6;color:#6f6259}
+[data-theme="light"] .site-search-result{border-color:#e8dfd8;background:#fff;color:#342a24}
+[data-theme="light"] .site-search-result:hover,[data-theme="light"] .site-search-result:focus-visible{border-color:#ff9d67;background:#fff8f2}
+@media(max-width:760px){.site-search-shortcut{display:none}.site-search-button{width:38px;height:38px;padding:0;justify-content:center}.site-search-dialog{width:calc(100vw - 16px);max-height:calc(100dvh - 28px);border-radius:19px}.site-search-shell{max-height:calc(100dvh - 28px)}.site-search-head{padding:10px}.site-search-body{padding:10px}.site-search-result{grid-template-columns:36px minmax(0,1fr) auto;padding:9px}.site-search-icon{width:36px;height:36px}}
+@media(prefers-reduced-motion:reduce){.site-search-dialog::backdrop{backdrop-filter:none}}
