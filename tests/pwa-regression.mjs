@@ -28,6 +28,7 @@ assert.match(sw, /CHUNBONG_PWA/);
 assert.match(sw, /\/offline\.html/);
 assert.match(sw, /url\.pathname\.startsWith\('\/api\/'\)/);
 assert.match(sw, /networkFirst/);
+assert.match(sw, /\/site-shell\.js/, 'service worker must precache the shared site shell');
 assert.match(offline, /오프라인 상태입니다/);
 
 for (const html of htmlPaths) {
