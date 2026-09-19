@@ -353,3 +353,42 @@
 .cg-drag{border-color:#D2A067;background:rgba(210,160,103,.08);box-shadow:0 0 0 1px rgba(230,232,225,.07) inset}
 .cg-drag.valid{border-color:#A8BA78;background:rgba(151,172,105,.12)}
 .cg-hint{border-color:#C97868;background:rgba(201,120,104,.07)}
+
+
+/* Expanded desktop game footprint: 2026-09-19 */
+@media(min-width:1101px){
+  .chungwagame-page{padding:6px 0 12px}
+  .chungwagame-shell{width:min(1450px,calc(100vw - 36px));max-width:none}
+  .chungwagame-navline{margin-bottom:3px}
+  .chungwagame-topbar{min-height:62px;margin-bottom:5px}
+  .chungwagame-layout{
+    grid-template-columns:190px minmax(0,min(1040px,calc((100svh - 155px) * 1.7))) 118px;
+    gap:14px
+  }
+  .cg-mascot-card{padding:13px 11px 14px}
+  .cg-ten-mascot{width:132px;height:118px}
+  .cg-speech{padding:10px 8px;font-size:12px;line-height:1.5}
+  .cg-speech b{font-size:19px}
+  .cg-howto{padding:16px}
+  .cg-howto h2{font-size:16px;margin-bottom:10px}
+  .cg-howto ol{font-size:12px;line-height:1.5;gap:8px}
+  .cg-board-card{padding:9px;border-radius:24px}
+  .cg-board-head{min-height:39px;padding:0 6px 7px}
+  .cg-selection span{font-size:10px}
+  .cg-selection strong{font-size:20px}
+  .cg-message{font-size:11px}
+  .cg-utility{min-height:82px;border-radius:17px}
+  .cg-utility span{font-size:22px}
+  .cg-utility b{font-size:11px}
+  .cg-utility small{font-size:8px}
+}
+@media(min-width:1500px) and (min-height:820px){
+  .chungwagame-shell{width:min(1520px,calc(100vw - 44px))}
+  .chungwagame-layout{
+    grid-template-columns:205px minmax(0,1080px) 126px;
+    gap:16px
+  }
+  .cg-ten-mascot{width:145px;height:128px}
+  .cg-howto ol{font-size:12.5px}
+  .cg-utility{min-height:88px}
+}
