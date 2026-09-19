@@ -18,6 +18,8 @@ on:
       - 'minigame-multiplayer.js'
       - 'score-race-multiplayer.js'
       - 'chunbak-board-start-ui.css'
+      - 'mobile-minigames.css'
+      - 'mobile-minigames.js'
       - '.github/workflows/chuntris-chunbak-board-ui-smoke.yml'
 
 jobs:
@@ -243,12 +245,22 @@ jobs:
             assert.equal(await page.locator('#chuntris-game').getAttribute('data-ui-state'),'playing','play view did not start after countdown');
             await page.waitForTimeout(420);
             const playScrollY=await page.evaluate(()=>window.scrollY);
-            assert.ok(Math.abs(playScrollY-startScrollY)<=1,`Chuntris transition changed scrollY: ${startScrollY} -> ${playScrollY}`);
+            if(!mobile)assert.ok(Math.abs(playScrollY-startScrollY)<=1,`Chuntris desktop transition changed scrollY: ${startScrollY} -> ${playScrollY}`);
 
             const boardBox=await page.locator('.chuntris-board-wrap').boundingBox();
             insideViewport(boardBox,viewport,'Chuntris play board');
-            assert.ok(Math.abs(startBox.width-boardBox.width)<=3,`Chuntris start/play widths differ: ${startBox.width} vs ${boardBox.width}`);
-            assert.ok(Math.abs(startBox.y-boardBox.y)<=2,`Chuntris start/play top positions differ: ${startBox.y} vs ${boardBox.y}`);
+            if(mobile){
+              assert.ok(boardBox.width>=280&&boardBox.width<=viewport.width-16,`Chuntris mobile board width is not touch-friendly: ${boardBox.width}`);
+              const statsBox=await page.locator('.chuntris-stats').boundingBox();
+              assert.ok(statsBox&&statsBox.y<boardBox.y,'Chuntris mobile stats must stay above the board');
+              const controls=page.locator('#chuntris-mobile-controls');
+              assert.ok(await controls.isVisible(),'Chuntris mobile touch controls missing');
+              const touchButton=await controls.locator('button').first().boundingBox();
+              assert.ok(touchButton&&touchButton.height>=44,'Chuntris mobile touch target must be at least 44px high');
+            }else{
+              assert.ok(Math.abs(startBox.width-boardBox.width)<=3,`Chuntris desktop start/play widths differ: ${startBox.width} vs ${boardBox.width}`);
+              assert.ok(Math.abs(startBox.y-boardBox.y)<=2,`Chuntris desktop start/play top positions differ: ${startBox.y} vs ${boardBox.y}`);
+            }
             assert.ok(Math.abs((boardBox.height/boardBox.width)-2)<0.04,'Chuntris board ratio changed');
             assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'Chuntris horizontal overflow');
 
@@ -299,8 +311,18 @@ jobs:
             await page.waitForFunction(()=>document.querySelector('#chunbak-game')?.dataset.gameStatus==='playing');
             const stageBox=await page.locator('#chunbak-stage').boundingBox();
             insideViewport(stageBox,viewport,'Chunbak play stage');
-            assert.ok(Math.abs(startBox.width-stageBox.width)<=3,`Chunbak start/play widths differ: ${startBox.width} vs ${stageBox.width}`);
-            assert.ok(Math.abs(startBox.y-stageBox.y)<=2,`Chunbak start/play top positions differ: ${startBox.y} vs ${stageBox.y}`);
+            if(mobile){
+              assert.ok(stageBox.width>=260&&stageBox.width<=viewport.width-16,`Chunbak mobile stage width is not touch-friendly: ${stageBox.width}`);
+              const statsBox=await page.locator('.chunbak-stats').boundingBox();
+              assert.ok(statsBox&&statsBox.y<stageBox.y,'Chunbak mobile stats must stay above the stage');
+              assert.equal(await page.locator('.chunbak-ranking').isVisible(),false,'Chunbak ranking rail should not push the mobile stage down');
+              assert.equal(await page.locator('.chunbak-evolution').isVisible(),false,'Chunbak evolution rail should not push the mobile stage down');
+              const utilityButton=await page.locator('.chunbak-utility-cluster button').first().boundingBox();
+              assert.ok(utilityButton&&utilityButton.height>=40,'Chunbak mobile utility touch target too small');
+            }else{
+              assert.ok(Math.abs(startBox.width-stageBox.width)<=3,`Chunbak desktop start/play widths differ: ${startBox.width} vs ${stageBox.width}`);
+              assert.ok(Math.abs(startBox.y-stageBox.y)<=2,`Chunbak desktop start/play top positions differ: ${startBox.y} vs ${stageBox.y}`);
+            }
             assert.ok(Math.abs((stageBox.height/stageBox.width)-(680/420))<0.04,'Chunbak play stage ratio changed');
             assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'Chunbak horizontal overflow');
 
