@@ -19,7 +19,25 @@
       "src": "/assets/app-icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,w_192,h_192,f_png/v1789825375/chunbong-fansite/app-icons/app-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,w_512,h_512,f_png/v1789825375/chunbong-fansite/app-icons/app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,w_512,h_512,f_png/v1789825375/chunbong-fansite/app-icons/app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
