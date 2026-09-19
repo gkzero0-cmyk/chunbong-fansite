@@ -1,0 +1,46 @@
+name: PWA production smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '*.html'
+      - 'page.js'
+      - 'site-quality.css'
+      - 'manifest.webmanifest'
+      - 'service-worker.js'
+      - 'assets/app-icon.svg'
+      - '.github/workflows/pwa-production-smoke.yml'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Wait for production PWA files
+        env:
+          BASE_URL: https://chunbong-fansite.vercel.app
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            stamp=$(date +%s)
+            if curl -fsS -H 'cache-control: no-cache' "$BASE_URL/manifest.webmanifest?_smoke=$stamp" -o /tmp/manifest.webmanifest &&                curl -fsS -H 'cache-control: no-cache' "$BASE_URL/service-worker.js?_smoke=$stamp" -o /tmp/service-worker.js &&                curl -fsS -H 'cache-control: no-cache' "$BASE_URL/page.js?_smoke=$stamp" -o /tmp/page.js &&                grep -q '"name": "춘봉 팬허브"' /tmp/manifest.webmanifest &&                grep -q 'CHUNBONG_PWA' /tmp/service-worker.js &&                grep -q 'setupPwaExperience' /tmp/page.js; then
+              echo 'Production PWA bundle is ready.'
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'Timed out waiting for production PWA bundle.'
+          exit 1
+      - name: Verify service worker header
+        env:
+          BASE_URL: https://chunbong-fansite.vercel.app
+        run: |
+          headers=$(curl -fsSI "$BASE_URL/service-worker.js")
+          printf '%s\n' "$headers"
+          printf '%s\n' "$headers" | grep -i '^cache-control:' | grep -qi 'no-cache'
