@@ -14,6 +14,12 @@ const content = read('content.js');
 const css = read('site-quality.css');
 const offline = read('offline.html');
 const vercel = JSON.parse(read('vercel.json'));
+for (const iconPath of ['assets/app-icon-192.png','assets/app-icon-512.png','assets/apple-touch-icon.png']) {
+  const stat = fs.statSync(iconPath);
+  assert.ok(stat.size > 1000, iconPath + ' must be a real PNG asset');
+  const signature = fs.readFileSync(iconPath).subarray(0, 8).toString('hex');
+  assert.equal(signature, '89504e470d0a1a0a', iconPath + ' must have a PNG signature');
+}
 
 assert.equal(manifest.name, '춘봉 팬허브');
 assert.equal(manifest.display, 'standalone');
