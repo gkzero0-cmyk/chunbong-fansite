@@ -12,6 +12,7 @@
 
 /* Direct-selection backs: uploaded celestial card art with matching gold/navy 1–78 medallions. */
 #tarot-deck .tarot-card-back{
+  box-sizing:border-box;
   display:grid;
   place-items:center;
   position:relative;
