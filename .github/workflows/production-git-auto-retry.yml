@@ -55,11 +55,16 @@ jobs:
             'x-github-api-version': '2022-11-28'
           };
           const repository = process.env.GITHUB_REPOSITORY;
-          const commitsResponse = await fetch(`https://api.github.com/repos/${repository}/commits?per_page=30`, { headers });
+          const commitsResponse = await fetch(`https://api.github.com/repos/${repository}/commits?sha=main&per_page=100`, { headers });
           if (!commitsResponse.ok) throw new Error(`commit lookup failed: ${commitsResponse.status}`);
           const commits = await commitsResponse.json();
 
+          const nowMs = Date.now();
+          const scanWindowMs = (90000 + 7200) * 1000;
+
           for (const commit of commits) {
+            const commitTime = Date.parse(commit?.commit?.committer?.date || commit?.commit?.author?.date || '');
+            if (Number.isFinite(commitTime) && nowMs - commitTime > scanWindowMs) break;
             const statusResponse = await fetch(
               `https://api.github.com/repos/${repository}/commits/${commit.sha}/status`,
               { headers }
