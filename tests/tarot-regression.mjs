@@ -74,10 +74,10 @@ const script = read('tarot.js');
 assert.ok(script.includes("fetch('/api/tarot-reading'"), 'tarot frontend must call the local counseling endpoint');
 assert.ok(script.includes('textContent'), 'counseling output must be rendered as text, not trusted HTML');
 assert.ok(!script.includes('OPENAI_API_KEY'), 'client code must never contain the OpenAI API key name');
-assert.ok(script.includes('assets/tarot/hd/pair-${String(pair).padStart(2, \'0\')}.avif'), 'tarot results must load the source-derived HD pair for the selected card');
-assert.ok(script.includes('globalIndex = sheet * 13 + slot'), 'tarot renderer must map all 78 legacy slots into HD pairs');
+assert.ok(script.includes('c_crop,g_north_west'), 'tarot results must request one Cloudinary crop per selected original card');
+assert.ok(script.includes('globalIndex = sheet * 13 + slot'), 'tarot renderer must map all 78 source slots into individual card crops');
 assert.ok(script.includes('viewBox="0 0 960 1440"'), 'tarot renderer must crop one exact 960x1440 card region from a pair');
-assert.ok(script.includes('width="1920" height="1440"'), 'SVG crop must preserve the pair asset pixel geometry');
+assert.ok(script.includes('q_100/f_avif'), 'single-card delivery must keep maximum Cloudinary quality');
 assert.ok(script.includes('feConvolveMatrix'), 'tarot artwork must use the mild sharpening pass');
 assert.ok(!script.includes("backgroundSize = '200% 100%'"), 'result rendering must not rely on CSS background sprite scaling');
 assert.ok(script.includes('toggleDirectSelection'), 'direct selection must support cancel and reselect');
@@ -95,4 +95,4 @@ for (const token of ['.tarot-card-art-button', '.tarot-card-art-svg', '.tarot-ca
 assert.ok(qualityCss.includes('max-width:320px'), 'normal result cards should remain within the detail-preserving display width');
 assert.ok(qualityCss.includes('width:min(72vw,600px)'), 'zoom view should provide a substantially larger inspection view');
 
-console.log('tarot expanded data, exact HD crop, reselect UI, page and styling regression test passed');
+console.log('tarot expanded data, original-card crop, reselect UI, page and styling regression test passed');

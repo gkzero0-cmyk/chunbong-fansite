@@ -28,15 +28,15 @@ assert.equal(notice.group,'notice');
 assert.match(items.find(item=>item.type==='fanart').href,/fanart\.html\?open=8001/);
 assert.match(items.find(item=>item.type==='shorts').href,/youtube\.html\?kind=shorts&open=lmnopqrstuv/);
 
-const content=fs.readFileSync(new URL('../content.js',import.meta.url),'utf8');
+const shell=fs.readFileSync(new URL('../site-shell.js',import.meta.url),'utf8');
 const activityJs=fs.readFileSync(new URL('../activity-center.js',import.meta.url),'utf8');
 const activityCss=fs.readFileSync(new URL('../activity-center.css',import.meta.url),'utf8');
 const pageJs=fs.readFileSync(new URL('../page.js',import.meta.url),'utf8');
 const apiContent=fs.readFileSync(new URL('../api/content.js',import.meta.url),'utf8');
 
-assert.match(content,/header-live\[href\*="sooplive\.com"\]/,'SOOP header shortcut must be removed at bootstrap');
-assert.match(content,/activity-center\.css/);
-assert.match(content,/activity-center\.js/);
+assert.match(shell,/header-live\[href\*="sooplive\.com"\]/,'SOOP header shortcut must be removed by shared site shell');
+assert.match(shell,/activity-center\.css/);
+assert.match(shell,/activity-center\.js/);
 assert.match(activityJs,/chunbong-activity-seen-v1/,'read state must use a stable localStorage key');
 assert.match(activityJs,/type=activity/,'bell must load the unified activity API');
 assert.match(activityJs,/activity-unread-dot/,'unread indicator must exist');
@@ -56,7 +56,7 @@ const htmlFiles=fs.readdirSync(new URL('..',import.meta.url)).filter(name=>name.
 for(const name of htmlFiles){
   const html=fs.readFileSync(new URL('../'+name,import.meta.url),'utf8');
   if(!html.includes('class="site-header"')) continue;
-  assert.match(html,/content\.js/,'shared header page '+name+' must load content.js so the bell appears');
+  assert.match(html,/site-shell\.js/,'shared header page '+name+' must load site-shell.js so the bell appears');
 }
 
 console.log('activity notification center regression passed');

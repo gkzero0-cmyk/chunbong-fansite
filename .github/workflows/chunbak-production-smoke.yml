@@ -64,7 +64,7 @@ jobs:
             sleep 15
           done
           curl -fsS "$BASE_URL/minigames.html" >/dev/null
-          for n in $(seq 1 11); do curl -fsS "$BASE_URL/assets/chunbak/$n.png" >/dev/null; done
+          for n in $(seq 1 11); do curl -fsS "$BASE_URL/assets/chunbak/$n.webp" >/dev/null; done
           curl -fsS "$BASE_URL/api/content?type=chunbak-ranking&mode=classic" >/tmp/chunbak-ranking.json
           status=$(curl -sS -o /tmp/chunbak-invalid.json -w '%{http_code}' \
             -H 'content-type: application/json' \

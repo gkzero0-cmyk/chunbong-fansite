@@ -33,14 +33,24 @@ const descriptor = tarot.cardArtworkDescriptor({ imageSheet: 0, imageSlot: 1 });
 assert.deepEqual(descriptor, {
   pair: 0,
   pairSlot: 1,
-  url: 'assets/tarot/hd/pair-00.avif',
-  sourceX: -960
+  cardIndex: 1,
+  url: 'https://res.cloudinary.com/lyppgyei/image/upload/c_crop,g_north_west,h_1488,w_898,x_898,y_0/q_100/f_avif/chunbong-fansite/tarot-original/sheet-0.avif',
+  sourceX: 0,
+  sheetWidth: 898,
+  sheetHeight: 1488,
+  cellWidth: 898,
+  cellHeight: 1488
 });
 assert.deepEqual(tarot.cardArtworkDescriptor({ imageSheet: 5, imageSlot: 12 }), {
   pair: 38,
   pairSlot: 1,
-  url: 'assets/tarot/hd/pair-38.avif',
-  sourceX: -960
+  cardIndex: 77,
+  url: 'https://res.cloudinary.com/lyppgyei/image/upload/c_crop,g_north_west,h_1488,w_898,x_10776,y_0/q_100/f_avif/chunbong-fansite/tarot-original/sheet-5.avif',
+  sourceX: 0,
+  sheetWidth: 898,
+  sheetHeight: 1488,
+  cellWidth: 898,
+  cellHeight: 1488
 });
 
 const html = read('tarot.html');
@@ -53,7 +63,8 @@ assert.ok(script.includes('toggleDirectSelection'), 'frontend must use toggle se
 assert.ok(script.includes('selectionCanComplete'), 'frontend must gate reveal behind the requested card count');
 assert.ok(script.includes('feConvolveMatrix'), 'result artwork should use a mild same-origin SVG sharpening filter');
 assert.ok(script.includes('tarot-confirm-selection'), 'frontend must wait for explicit confirmation before reveal');
-assert.ok(script.includes('viewBox="0 0 960 1440"'), 'SVG crop should render one exact 960x1440 card region');
+assert.ok(script.includes('viewBox="0 0 960 1440"'), 'result shell should preserve the existing 960x1440 display geometry');
+assert.ok(script.includes('q_100/f_avif'), 'result art should request the original card crop at maximum delivery quality');
 assert.ok(!script.includes("button.disabled = true;\n    button.classList.add('selected');\n    soundController.play('select');\n    renderSelectedSlots();\n    byId('tarot-selection-status').textContent = `78장 중 ${state.selected.length}/${state.count}장을 선택했습니다.`;\n    if (state.selected.length === state.count) beginReveal();"), 'filling the requested count must not auto-reveal immediately');
 
 const css = read('tarot-quality.css');

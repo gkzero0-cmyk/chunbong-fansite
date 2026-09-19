@@ -198,6 +198,19 @@
     $('#schedule-calendar-today')?.addEventListener('click', () => { state.calendarMonth = state.today.slice(0, 7); renderCalendar(); });
   }
 
+  function fallbackScheduleStatus() {
+    const updatedAt = window.CHUNBONG_CONTENT?.notionScheduleUpdatedAt;
+    const parsed = updatedAt ? new Date(updatedAt) : null;
+    if (!parsed || Number.isNaN(parsed.getTime())) return 'Notion 백업 · 최신 정보 확인 필요';
+    const date = new Intl.DateTimeFormat('ko-KR', {
+      timeZone:'Asia/Seoul', year:'numeric', month:'2-digit', day:'2-digit'
+    }).format(parsed);
+    const ageDays = Math.max(0, Math.floor((Date.now() - parsed.getTime()) / 86400000));
+    return ageDays >= 7
+      ? `Notion 백업 · ${date} 기준 · 최신 정보 확인 필요`
+      : `Notion 백업 · ${date} 기준`;
+  }
+
   async function refreshSchedule() {
     if (page !== 'schedule') return;
     const grid = $('#schedule-grid');
@@ -213,7 +226,7 @@
     if (!state.calendarMonth) state.calendarMonth = state.today.slice(0, 7);
     setMode(state.mode);
     const updated = $('#schedule-updated');
-    if (updated) updated.textContent = live.length ? 'Notion 실시간 일정 · KST 기준' : 'Notion 최신 백업 · KST 기준';
+    if (updated) updated.textContent = live.length ? 'Notion 실시간 일정 · KST 기준' : fallbackScheduleStatus();
   }
 
   function init() {

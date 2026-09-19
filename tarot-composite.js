@@ -44,6 +44,14 @@ const ORIGINAL_SHEET_HEIGHT = 1488;
 const ORIGINAL_SHEET_CARD_COUNT = 13;
 const ORIGINAL_SHEET_WIDTH = ORIGINAL_SHEET_CELL_WIDTH * ORIGINAL_SHEET_CARD_COUNT;
 
+function originalCardCropUrl(sheet, slot) {
+  const safeSheet = Number(sheet);
+  const safeSlot = Number(slot);
+  if (!Number.isInteger(safeSheet) || safeSheet < 0 || safeSheet > 5 || !Number.isInteger(safeSlot) || safeSlot < 0 || safeSlot >= ORIGINAL_SHEET_CARD_COUNT) return '';
+  const cropX = safeSlot * ORIGINAL_SHEET_CELL_WIDTH;
+  return `https://res.cloudinary.com/lyppgyei/image/upload/c_crop,g_north_west,h_${ORIGINAL_SHEET_HEIGHT},w_${ORIGINAL_SHEET_CELL_WIDTH},x_${cropX},y_0/q_100/f_avif/chunbong-fansite/tarot-original/sheet-${safeSheet}.avif`;
+}
+
 function escapeXml(value) {
   return String(value ?? '').replace(/[&<>"']/g, character => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;'
@@ -69,6 +77,25 @@ function cardDisplayMeta(card) {
 
 function descriptorFromLegacyImage(href, x) {
   const url = String(href || '');
+  const originalSheet = url.match(/\/tarot-original\/sheet-(\d)\.avif(?:[?#].*)?$/);
+  const cropX = url.match(/(?:^|[,/])x_(\d+)(?:[,/]|$)/);
+  if (originalSheet && cropX) {
+    const sheet = Number(originalSheet[1]);
+    const slot = Math.round(Number(cropX[1]) / ORIGINAL_SHEET_CELL_WIDTH);
+    const cardIndex = sheet * ORIGINAL_SHEET_CARD_COUNT + slot;
+    if (Number.isInteger(cardIndex) && cardIndex >= 0 && cardIndex <= 77 && slot >= 0 && slot < ORIGINAL_SHEET_CARD_COUNT) {
+      return {
+        cardIndex,
+        url,
+        sourceX: 0,
+        sheetWidth: ORIGINAL_SHEET_CELL_WIDTH,
+        sheetHeight: ORIGINAL_SHEET_HEIGHT,
+        cellWidth: ORIGINAL_SHEET_CELL_WIDTH,
+        cellHeight: ORIGINAL_SHEET_HEIGHT
+      };
+    }
+  }
+
   const match = url.match(/(?:^|\/)pair-(\d{2})\.avif(?:[?#].*)?$/);
   const sourceX = Number(x);
   if (!match || !Number.isFinite(sourceX)) return null;
@@ -89,9 +116,9 @@ function originalArtworkDescriptor(card) {
     cardIndex,
     sheet,
     slot,
-    url: `${ORIGINAL_CLOUDINARY_BASE}/sheet-${sheet}.avif`,
-    sourceX: slot === 0 ? 0 : -(slot * ORIGINAL_SHEET_CELL_WIDTH),
-    sheetWidth: ORIGINAL_SHEET_WIDTH,
+    url: originalCardCropUrl(sheet, slot),
+    sourceX: 0,
+    sheetWidth: ORIGINAL_SHEET_CELL_WIDTH,
     sheetHeight: ORIGINAL_SHEET_HEIGHT,
     cellWidth: ORIGINAL_SHEET_CELL_WIDTH,
     cellHeight: ORIGINAL_SHEET_HEIGHT
@@ -218,6 +245,7 @@ function upgradeAll(root = document) {
 
 const TAROT_COMPOSITE_API = {
   cardDisplayMeta,
+  originalCardCropUrl,
   descriptorFromLegacyImage,
   originalArtworkDescriptor,
   buildCompositeSvg,

@@ -3,6 +3,7 @@ import fs from 'node:fs';
 
 const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
 
+const shell=read('site-shell.js');
 const content=read('content.js');
 const page=read('page.js');
 const activity=read('activity-center.js');
@@ -18,8 +19,12 @@ const htmlPages = [
   'minigames.html','chuntris.html','chunbak.html','chungwagame.html','chuncortile.html','history.html','data.html','changelog.html'
 ].map(file=>({file,html:read(file)}));
 
-assert.match(content,/ChunbongCache/);
-assert.match(content,/nav-group/);
+assert.match(shell,/ChunbongCache/);
+assert.match(shell,/nav-group/);
+assert.match(shell,/theme-toggle/);
+assert.match(shell,/activity-center\.js/);
+assert.doesNotMatch(content,/ChunbongCache/);
+assert.doesNotMatch(content,/nav-group/);
 assert.match(content,/minigames:\s*\[/);
 assert.match(page,/notionScheduleUpdatedAt/);
 assert.match(page,/ChunbongCache/);

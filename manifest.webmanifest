@@ -7,11 +7,26 @@
   "start_url": "/index.html?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "any",
   "background_color": "#080808",
   "theme_color": "#ff6b18",
   "icons": [
+    {
+      "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fit,h_192,w_192/f_png/v1789811985/chunbong-fansite/pwa/app-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fit,h_512,w_512/f_png/v1789811985/chunbong-fansite/pwa/app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "/assets/app-icon.svg",
       "sizes": "any",
@@ -24,19 +39,37 @@
       "name": "미니게임",
       "short_name": "게임",
       "url": "/minigames.html",
-      "icons": [{"src": "/assets/app-icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+      "icons": [
+        {
+          "src": "/assets/app-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
     },
     {
       "name": "타로 보기",
       "short_name": "타로",
       "url": "/tarot.html",
-      "icons": [{"src": "/assets/app-icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+      "icons": [
+        {
+          "src": "/assets/app-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
     },
     {
       "name": "방송 일정",
       "short_name": "일정",
       "url": "/schedule.html",
-      "icons": [{"src": "/assets/app-icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+      "icons": [
+        {
+          "src": "/assets/app-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
     }
   ]
 }

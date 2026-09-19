@@ -6,7 +6,7 @@
   const SPAWN_WEIGHTS = Object.freeze([0.35,0.27,0.18,0.12,0.08]);
   const STAGES = Object.freeze(Array.from({length:MAX_STAGE}, (_, index) => {
     const id = index + 1;
-    return Object.freeze({ id, radius:RADII[id], image:`assets/chunbak/${id}.png` });
+    return Object.freeze({ id, radius:RADII[id], image:`assets/chunbak/${id}.webp` });
   }));
 
   function pickSpawnStage(random = Math.random) {
