@@ -8,6 +8,7 @@ on:
       - 'changelog.css'
       - 'changelog.js'
       - 'changelog-data.js'
+      - 'changelog-auto-summary.js'
       - 'content.js'
       - 'theme.css'
       - 'lib/changelog-history-api.js'
@@ -20,6 +21,7 @@ on:
       - 'changelog.css'
       - 'changelog.js'
       - 'changelog-data.js'
+      - 'changelog-auto-summary.js'
       - 'content.js'
       - 'theme.css'
       - 'lib/changelog-history-api.js'
@@ -66,10 +68,17 @@ jobs:
           const latestSha='1234567890abcdef';
           const archive={
             siteStartedAt:'2026-08-30',
-            latest:{sha:latestSha,shortSha:'1234567',date:'2026-09-20',title:'자동 최신 업데이트',type:'new'},
+            latest:{sha:latestSha,shortSha:'1234567',date:'2026-09-20',time:'2026-09-20T01:00:00Z',title:'add tarot card journal',rawTitle:'feat: add tarot card journal',type:'new'},
             groups:[
-              {date:'2026-09-20',items:[{sha:latestSha,shortSha:'1234567',date:'2026-09-20',title:'자동 최신 업데이트',type:'new',url:'#'}]},
-              {date:'2026-08-30',items:[{sha:'initial000',shortSha:'initial',date:'2026-08-30',title:'춘봉 팬사이트 프로젝트 시작',type:'new',url:'#'}]}
+              {date:'2026-09-20',items:[
+                {sha:latestSha,shortSha:'1234567',date:'2026-09-20',time:'2026-09-20T01:00:00Z',title:'add tarot card journal',rawTitle:'feat: add tarot card journal',type:'new',url:'#'},
+                {sha:'fix-tarot',shortSha:'fix-tar',date:'2026-09-20',time:'2026-09-20T00:50:00Z',title:'repair tarot reveal',rawTitle:'fix: repair tarot reveal',type:'fixed',url:'#'},
+                {sha:'pwa-new',shortSha:'pwa-new',date:'2026-09-20',time:'2026-09-20T00:40:00Z',title:'improve PWA offline cache',rawTitle:'perf: improve PWA offline cache',type:'improved',url:'#'},
+                {sha:'test-only',shortSha:'test-on',date:'2026-09-20',time:'2026-09-20T00:30:00Z',title:'tarot regression only',rawTitle:'test: tarot regression only',type:'improved',url:'#'}
+              ]},
+              {date:'2026-09-19',items:[
+                {sha:'d995917165b259f262fa3af6a47e56cefb0019a0',shortSha:'d995917',date:'2026-09-19',time:'2026-09-19T14:20:38Z',title:'타로 효과음 단일 컨트롤러 정리',rawTitle:'refactor: 타로 효과음 단일 컨트롤러 정리',type:'improved',url:'#'}
+              ]}
             ]
           };
 
@@ -92,9 +101,12 @@ jobs:
           assert.equal(await page.locator('.changelog-day').last().getAttribute('data-changelog-date'),'2026-08-30');
           assert.ok(await page.locator('#changelog-index-list a[data-changelog-index-date="2026-09-20"]').isVisible(),'automatic date index missing');
           assert.ok(await page.locator('#changelog-index-list a[data-changelog-index-date="2026-09-19"]').isVisible(),'curated date index missing');
-          assert.ok(await page.getByText('자동 최신 업데이트',{exact:true}).count(),'automatic main update missing from timeline');
+          assert.ok(await page.getByText('타로 기능 추가',{exact:true}).count(),'automatic Tarot summary missing from timeline');
+          assert.ok(await page.getByText('PWA·앱 설치 경험 개선',{exact:true}).count(),'automatic PWA summary missing from timeline');
+          assert.equal(await page.getByText('add tarot card journal',{exact:true}).count(),0,'raw developer title must not render');
+          assert.equal(await page.getByText('repair tarot reveal',{exact:true}).count(),0,'raw fix title must not render');
           assert.ok(await page.getByText('미니게임 콘텐츠 확장',{exact:true}).count(),'curated Korean changelog item missing');
-          assert.match((await page.locator('#changelog-sync-status').textContent())||'',/자동 동기화/,'automatic sync status missing');
+          assert.match((await page.locator('#changelog-sync-status').textContent())||'',/한글 요약 2개/,'automatic Korean summary status missing');
           assert.equal(await page.locator('.changelog-card.is-commit').count(),0,'developer commit cards must not render');
           assert.equal(await page.getByText(/GitHub/).count(),0,'GitHub source text must not render in changelog');
           await page.waitForFunction(key=>localStorage.getItem('chunbong-changelog-seen-v2')===key,latestSha);

@@ -9,7 +9,8 @@
     .filter(group=>group&&/^20\d{2}-\d{2}-\d{2}$/.test(String(group.date||'')))
     .map(group=>({date:group.date,items:Array.isArray(group.items)?group.items:[]}))
     .sort((a,b)=>b.date.localeCompare(a.date));
-  const AUTO_SYNC_BASE_SHA='af3bb1f6ecb4308b06ab27e850ec149e0d42a0fa';
+  const checkpoint=window.CHUNBONG_CHANGELOG_META||{};
+  const autoSummarizer=window.CHUNBONG_CHANGELOG_AUTO;
 
   const titleKey=(value='')=>String(value)
     .toLowerCase()
@@ -17,33 +18,20 @@
     .replace(/[^0-9a-z가-힣]+/g,'')
     .trim();
 
-  function automaticUpdatesSinceBaseline(automaticGroups=[]){
-    const recent=[];
-    let reachedBaseline=false;
-    for(const group of Array.isArray(automaticGroups)?automaticGroups:[]){
-      const items=[];
-      for(const item of Array.isArray(group?.items)?group.items:[]){
-        if(String(item?.sha||'')===AUTO_SYNC_BASE_SHA){
-          reachedBaseline=true;
-          break;
-        }
-        items.push(item);
-      }
-      if(items.length)recent.push({date:group?.date,items});
-      if(reachedBaseline)break;
-    }
-    return recent;
-  }
-
   function mergeAutomaticGroups(automaticGroups=[]){
     const byDate=new Map(groups.map(group=>[group.date,{date:group.date,items:[...group.items]}]));
-    const seenTitles=new Set(groups.flatMap(group=>group.items.map(item=>titleKey(item?.title||''))).filter(Boolean));
+    const seenByDate=new Map();
+    for(const group of groups){
+      seenByDate.set(group.date,new Set(group.items.map(item=>titleKey(item?.title||'')).filter(Boolean)));
+    }
 
-    for(const automaticGroup of automaticUpdatesSinceBaseline(automaticGroups)){
+    for(const automaticGroup of Array.isArray(automaticGroups)?automaticGroups:[]){
       const date=String(automaticGroup?.date||'');
       if(!/^20\d{2}-\d{2}-\d{2}$/.test(date))continue;
       if(!byDate.has(date))byDate.set(date,{date,items:[]});
+      if(!seenByDate.has(date))seenByDate.set(date,new Set());
       const target=byDate.get(date);
+      const seenTitles=seenByDate.get(date);
       for(const item of Array.isArray(automaticGroup?.items)?automaticGroup.items:[]){
         const title=String(item?.title||'').trim();
         const key=titleKey(title);
@@ -132,7 +120,7 @@
     if(status){
       const automaticCount=groups.reduce((sum,group)=>sum+group.items.filter(item=>item?.auto).length,0);
       status.textContent=automaticCount
-        ? `직접 정리한 주요 업데이트를 우선 표시하고, main의 새 변경사항 ${automaticCount}개를 자동 동기화했습니다.`
+        ? `직접 정리한 기록을 우선 표시하고, main의 새 변경사항을 사용자용 한글 요약 ${automaticCount}개로 자동 정리했습니다.`
         : '사용자에게 중요한 변경사항만 한글로 간단하게 정리했습니다.';
       status.className='changelog-sync-status is-live';
     }
@@ -163,10 +151,15 @@
   // 수동 한글 요약을 먼저 보여준 뒤 GitHub main의 새 유효 변경사항만 자동으로 합칩니다.
   (async()=>{
     try{
-      const response=await fetch('/api/content?type=changelog-history',{headers:{accept:'application/json'}});
+      const since=String(checkpoint.throughTime||'').trim();
+      const historyUrl='/api/content?type=changelog-history'+(since?'&since='+encodeURIComponent(since):'');
+      const response=await fetch(historyUrl,{headers:{accept:'application/json'}});
       if(!response.ok)throw new Error('changelog_history_unavailable');
       const payload=await response.json();
-      mergeAutomaticGroups(payload.groups);
+      const summarized=autoSummarizer?.summarizeSince
+        ? autoSummarizer.summarizeSince(payload.groups,checkpoint)
+        : [];
+      mergeAutomaticGroups(summarized);
       const latestKey=payload.latest?.sha||payload.latest?.shortSha||'';
       render(latestKey);
     }catch(_){
