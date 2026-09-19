@@ -37,6 +37,7 @@ assert.match(page, /새 버전 준비 완료/);
 assert.match(css, /\.pwa-install-chip/);
 assert.match(css, /\.pwa-update-toast/);
 assert.match(sw, /CHUNBONG_PWA/);
+assert.match(sw, /chunbong-pwa-20260920-v16/,'mobile app mode release must advance the PWA cache');
 assert.match(sw, /\/offline\.html/);
 assert.match(sw, /url\.pathname\.startsWith\('\/api\/'\)/);
 assert.match(sw, /networkFirst/);
@@ -45,6 +46,7 @@ assert.match(sw, /\['script','style','worker','image','font'\]/, 'static assets 
 assert.match(shell, /chunbong-cache-v2:/, 'cross-page session cache namespace missing');
 assert.match(shell, /sessionStorage\.setItem/, 'shared cache should persist within the tab');
 assert.match(sw, /\/site-shell\.js/, 'PWA app shell must cache site-shell.js');
+assert.match(sw, /\/mobile-site\.js/, 'PWA app shell must cache mobile-site.js');
 assert.match(page, /schedule: '\/api\/content\?type=schedule'/, 'schedule page must use live content API');
 assert.match(schedulePage, /await loadContent\('schedule'\)/, 'schedule renderer must request live schedule data');
 assert.match(offline, /오프라인 상태입니다/);
