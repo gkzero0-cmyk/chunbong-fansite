@@ -28,7 +28,8 @@ assert.match(css,/@media\(max-width:760px\)[\s\S]*?\.changelog-index nav\{displa
 assert.match(js,/sort\(\(a,b\)=>b\.date\.localeCompare\(a\.date\)\)/,'latest date must sort first');
 assert.match(js,/fetch\('\/api\/content\?type=changelog-history',/,'runtime should fetch the full repository history for automatic changelog sync');
 assert.match(js,/mergeAutomaticGroups/,'runtime must merge automatic main updates into curated entries');
-assert.match(js,/date<latestCuratedDate/,'automatic sync should not flood older curated history');
+assert.match(js,/AUTO_SYNC_BASE_SHA='af3bb1f6ecb4308b06ab27e850ec149e0d42a0fa'/,'automatic sync baseline must remain anchored after the last curated checkpoint');
+assert.match(js,/automaticUpdatesSinceBaseline/,'automatic sync must stop at the curated baseline commit');
 assert.match(js,/item=>item\?\.auto/,'sync status should report automatically merged entries');
 assert.match(js,/type=changelog-history&summary=1/,'runtime should retain summary fallback when archive loading fails');
 assert.doesNotMatch(js,/changelog-commit-meta|is-commit/,'developer commit metadata must not render in the changelog');
