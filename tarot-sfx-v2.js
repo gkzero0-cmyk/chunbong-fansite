@@ -155,8 +155,6 @@ function installEnhancedTarotSfx(root = globalThis) {
 
   const storage = root.localStorage;
   const controller = createEnhancedTarotSoundController(storage, root.AudioContext || root.webkitAudioContext);
-  const preserved = root.__CHUNBONG_TAROT_SFX_PREF__;
-  if (preserved && typeof preserved.enabled === 'boolean') controller.setEnabled(preserved.enabled);
 
   const byId = id => documentRef.getElementById(id);
   const setup = byId('tarot-setup');
