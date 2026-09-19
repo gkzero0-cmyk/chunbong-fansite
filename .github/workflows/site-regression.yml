@@ -60,6 +60,7 @@ jobs:
           node --check page-notice.js
           node --check page-media.js
           node --check page-fanart.js
+          node --check site-shell.js
           node --check content.js
           node --check changelog.js
           node --check changelog-data.js
