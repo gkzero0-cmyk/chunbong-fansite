@@ -12,6 +12,8 @@ for(const [name,source] of [['Chungwagame',chungwa],['Chuncortile',chuncor]]){
   assert.match(source,/game-layout\.css/,`${name} production smoke must track shared desktop layout`);
   assert.match(source,/mobile-minigames\.css/,`${name} production smoke must track mobile layout`);
   assert.match(source,/cache-control: no-cache/,`${name} production smoke must bypass stale CDN responses`);
+  assert.match(source,/for file in "\$\{files\[@\]\}"; do/,`${name} production smoke must expand the Bash asset array`);
+  assert.doesNotMatch(source,/for file in "\\\\\$\{files\[@\]\}"; do/,`${name} production smoke must not escape Bash array expansion`);
 }
 
 assert.match(chungwa,/chungwagame\.css/);
