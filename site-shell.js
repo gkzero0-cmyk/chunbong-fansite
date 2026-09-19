@@ -281,6 +281,21 @@
   if (!header) return;
   header.querySelectorAll('.header-live[href*="sooplive.com"]').forEach(node => node.remove());
 
+  if (!document.querySelector('link[data-site-search-styles]')) {
+    const stylesheet = document.createElement('link');
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = 'site-search.css';
+    stylesheet.dataset.siteSearchStyles = 'true';
+    document.head.appendChild(stylesheet);
+  }
+  if (!document.querySelector('script[data-site-search-runtime]')) {
+    const script = document.createElement('script');
+    script.src = 'site-search.js';
+    script.defer = true;
+    script.dataset.siteSearchRuntime = 'true';
+    document.body.appendChild(script);
+  }
+
   if (!document.querySelector('link[data-activity-center-styles]')) {
     const stylesheet = document.createElement('link');
     stylesheet.rel = 'stylesheet';
