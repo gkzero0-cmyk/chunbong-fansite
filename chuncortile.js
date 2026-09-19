@@ -23,7 +23,7 @@
   if(Object.values(e).some(value=>!value))return;
 
   let board=Core.createBoard(),score=0,best=Number(localStorage.getItem(BEST_KEY)||0),misses=0,combo=0,maxCombo=0,lastClearAt=0;
-  let remainingMs=Core.GAME_MS,endAt=0,running=false,paused=false,raf=0,soundOn=true,audioCtx=null,hintIndex=-1,seed=0;
+  let remainingMs=Core.GAME_MS,endAt=0,running=false,paused=false,resolving=false,raf=0,soundOn=true,audioCtx=null,hintIndex=-1,seed=0;
   let modalPaused=false,modalFromPause=false;
 
   const cells=[];
@@ -104,22 +104,71 @@
 
   function showClearFx(matches,clickIndex,removed,chain){
     const wrapRect=e.wrap.getBoundingClientRect();
-    const burstColors=['#fff4b8','#ff7850','#58dbff','#8cff9a','#ff70c3'];
-    const limited=matches.slice(0,4);
-    limited.forEach((index,mIndex)=>{
-      const rect=cells[index].getBoundingClientRect(),x=rect.left-wrapRect.left+rect.width/2,y=rect.top-wrapRect.top+rect.height/2;
-      for(let p=0;p<4;p+=1){
-        const particle=document.createElement('i');particle.className='ct-burst';
-        particle.style.left=`${x}px`;particle.style.top=`${y}px`;particle.style.setProperty('--burst',burstColors[(mIndex+p+chain)%burstColors.length]);
-        const angle=(Math.PI*2*(p/4))+(mIndex*.4),distance=22+Math.random()*26;
-        particle.style.setProperty('--dx',`${Math.cos(angle)*distance}px`);particle.style.setProperty('--dy',`${Math.sin(angle)*distance}px`);
-        e.fx.append(particle);setTimeout(()=>particle.remove(),700);
+    const clickRect=cells[clickIndex].getBoundingClientRect();
+    const origin={
+      x:clickRect.left-wrapRect.left+clickRect.width/2,
+      y:clickRect.top-wrapRect.top+clickRect.height/2
+    };
+    const matchType=board[matches[0]];
+    const matchColor=COLORS[Number.isInteger(matchType)?matchType:0]||'#ff7650';
+    const burstColors=[matchColor,'#fff4cf','#ffffff','#ffb36d'];
+
+    matches.forEach((index,mIndex)=>{
+      const rect=cells[index].getBoundingClientRect();
+      const x=rect.left-wrapRect.left+rect.width/2;
+      const y=rect.top-wrapRect.top+rect.height/2;
+      const dx=x-origin.x,dy=y-origin.y;
+      const distance=Math.hypot(dx,dy);
+      const angle=Math.atan2(dy,dx)*180/Math.PI;
+
+      const line=document.createElement('i');
+      line.className='ct-match-line';
+      line.style.left=`${origin.x}px`;
+      line.style.top=`${origin.y}px`;
+      line.style.width=`${distance}px`;
+      line.style.transform=`rotate(${angle}deg)`;
+      line.style.setProperty('--match-color',matchColor);
+      e.fx.append(line);
+      setTimeout(()=>line.remove(),520);
+
+      const ring=document.createElement('i');
+      ring.className='ct-clear-ring';
+      ring.style.left=`${x}px`;
+      ring.style.top=`${y}px`;
+      ring.style.setProperty('--match-color',matchColor);
+      e.fx.append(ring);
+      setTimeout(()=>ring.remove(),560);
+
+      for(let p=0;p<8;p+=1){
+        const particle=document.createElement('i');
+        particle.className='ct-burst';
+        particle.style.left=`${x}px`;
+        particle.style.top=`${y}px`;
+        particle.style.setProperty('--burst',burstColors[(mIndex+p+chain)%burstColors.length]);
+        const burstAngle=(Math.PI*2*(p/8))+(mIndex*.27);
+        const distancePx=30+Math.random()*38;
+        particle.style.setProperty('--dx',`${Math.cos(burstAngle)*distancePx}px`);
+        particle.style.setProperty('--dy',`${Math.sin(burstAngle)*distancePx}px`);
+        e.fx.append(particle);
+        setTimeout(()=>particle.remove(),760);
       }
     });
-    const target=cells[clickIndex].getBoundingClientRect();
-    const pop=document.createElement('b');pop.className='ct-score-pop';pop.textContent=`+${removed}${chain>=2?` · x${chain}`:''}`;
-    pop.style.left=`${target.left-wrapRect.left+target.width/2}px`;pop.style.top=`${target.top-wrapRect.top+target.height/2}px`;
-    e.fx.append(pop);setTimeout(()=>pop.remove(),800);
+
+    const originRing=document.createElement('i');
+    originRing.className='ct-clear-ring';
+    originRing.style.left=`${origin.x}px`;
+    originRing.style.top=`${origin.y}px`;
+    originRing.style.setProperty('--match-color',matchColor);
+    e.fx.append(originRing);
+    setTimeout(()=>originRing.remove(),560);
+
+    const pop=document.createElement('b');
+    pop.className='ct-score-pop';
+    pop.textContent=`+${removed}${chain>=2?` · COMBO x${chain}`:''}`;
+    pop.style.left=`${origin.x}px`;
+    pop.style.top=`${origin.y}px`;
+    e.fx.append(pop);
+    setTimeout(()=>pop.remove(),900);
     showCombo(chain);
   }
 
@@ -147,7 +196,7 @@
   }
 
   function resetRoundState(){
-    score=0;misses=0;combo=0;maxCombo=0;lastClearAt=0;remainingMs=Core.GAME_MS;hintIndex=-1;running=false;paused=false;cancelAnimationFrame(raf);
+    score=0;misses=0;combo=0;maxCombo=0;lastClearAt=0;remainingMs=Core.GAME_MS;hintIndex=-1;running=false;paused=false;resolving=false;cancelAnimationFrame(raf);
     e.pauseOverlay.classList.add('hidden');e.over.classList.add('hidden');e.rankingModal.hidden=true;e.comboPop.classList.remove('show','hot');e.fx.replaceChildren();
   }
 
@@ -184,21 +233,21 @@
   }
 
   function handleCell(index){
-    if(!running||paused)return;
+    if(!running||paused||resolving)return;
     if(board[index]!==null){setMessage('타일이 아니라 빈 칸을 눌러주세요.');return;}
     hintIndex=-1;
     const result=Core.applyClick(board,index);
     if(result.removed>=2){
       const now=performance.now();
       combo=lastClearAt&&now-lastClearAt<=COMBO_WINDOW?combo+1:1;lastClearAt=now;maxCombo=Math.max(maxCombo,combo);
-      const clearing=new Set(result.matches);renderBoard(clearing);score+=result.removed;best=Math.max(best,score);updateHud();
+      resolving=true;const clearing=new Set(result.matches);renderBoard(clearing);score+=result.removed;best=Math.max(best,score);updateHud();
       setMessage(combo>=2?`${result.removed}개 제거! COMBO x${combo}`:`${result.removed}개 제거! +${result.removed}점`);
       flash('good');showClearFx(result.matches,index,result.removed,combo);sound.clear(result.removed,combo);
       setTimeout(()=>{
-        board=result.board;renderBoard();updateHud();
+        board=result.board;resolving=false;renderBoard();updateHud();
         if(Core.remainingTiles(board)===0)finishGame('clear');
         else if(!Core.findAnyMove(board))setMessage('가능한 매치가 없어요. 다시 시작으로 새 보드를 만들어 주세요.');
-      },180);
+      },360);
       return;
     }
     combo=0;lastClearAt=0;misses+=1;endAt-=Core.MISS_PENALTY_MS;remainingMs=Math.max(0,endAt-performance.now());updateHud();
