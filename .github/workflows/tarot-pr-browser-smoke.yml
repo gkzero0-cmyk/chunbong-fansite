@@ -89,7 +89,7 @@ jobs:
             });
 
             for(const item of deckState){
-              assert.match(item.backgroundImage,/v1789845157\/chunbong-fansite\/tarot-card-back\.png/,'deck card must use the exact uploaded back');
+              assert.match(item.backgroundImage,/f_auto,q_auto:good,c_limit,w_768\/v1789845157\/chunbong-fansite\/tarot-card-back\.png/,'deck card must use the exact uploaded back');
               assert.ok(Math.abs(item.ratio-(2/3))<0.02,'deck card back must preserve the 2:3 uploaded-art ratio');
               assert.match(item.font,/Georgia/i,'deck number must use celestial serif typography');
               assert.equal(item.color,'rgb(255, 215, 95)','deck number must use matching gold');
