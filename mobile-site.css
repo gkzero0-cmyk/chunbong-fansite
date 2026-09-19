@@ -419,7 +419,22 @@
   body[data-page="changelog"] .changelog-layout{
     display:grid!important;grid-template-columns:1fr!important;gap:10px!important
   }
-  body[data-page="changelog"] .changelog-index{display:none!important}
+  body[data-page="changelog"] .changelog-index{
+    display:block!important;position:static!important;width:100%!important;min-width:0!important
+  }
+  body[data-page="changelog"] .changelog-index-inner{
+    position:static!important;width:100%!important;padding:8px!important;border-radius:13px!important
+  }
+  body[data-page="changelog"] .changelog-index-inner>p,
+  body[data-page="changelog"] .changelog-index-home{display:none!important}
+  body[data-page="changelog"] #changelog-index-list{
+    display:flex!important;gap:6px!important;overflow-x:auto!important;
+    overscroll-behavior-x:contain!important;scrollbar-width:none!important;padding:1px!important
+  }
+  body[data-page="changelog"] #changelog-index-list::-webkit-scrollbar{display:none}
+  body[data-page="changelog"] #changelog-index-list a{
+    flex:0 0 auto!important;min-height:40px!important;padding:8px 11px!important;border-radius:10px!important
+  }
   body[data-page="changelog"] .changelog-timeline{min-width:0!important}
 
   /* Activity center becomes a bottom sheet. */
