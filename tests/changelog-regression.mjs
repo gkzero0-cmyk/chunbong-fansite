@@ -48,6 +48,10 @@ assert.equal(sorted[0].date,'2026-09-19','latest curated changelog date should b
 assert.equal(sorted.at(-1).date,'2026-08-30','first-day site record must be preserved');
 assert.ok(groups.some(group=>group.date==='2026-09-17'&&group.items.some(item=>item.title==='춘박게임 추가')),'actual 2026-09-17 Chunbak entry missing');
 assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>/멀티플레이/.test(item.title))),'latest multiplayer entry missing');
+assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='팬사이트 런타임·캐시 최적화')),'#127 curated optimization entry missing');
+assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='페이지 런타임 분리 및 타로 카드 전송량 최적화')),'#128 curated optimization entry missing');
+assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='PWA·SEO·정적 자산 캐시 마무리')),'#129 curated optimization entry missing');
+assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='업데이트 일지 자동 동기화')),'#130 curated changelog sync entry missing');
 
 assert.match(apiEntry,/handleChangelogHistory/,'content API must import changelog history handler');
 assert.match(apiEntry,/type==='changelog-history'/,'content API must route changelog history');

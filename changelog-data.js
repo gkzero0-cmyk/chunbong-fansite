@@ -6,7 +6,11 @@ window.CHUNBONG_CHANGELOG = [
       { type: 'improved', title: '미니게임 멀티플레이 개선', description: '춘트리스·춘박게임·춘과게임·춘컬타일의 1:1 플레이를 보강하고 두 플레이어가 같은 조건에서 시작하도록 개선했습니다.' },
       { type: 'improved', title: '팬사이트 고해상도 화면 대응', description: '고해상도 모니터에서 화면이 지나치게 작게 보이지 않도록 팬사이트 전체 레이아웃과 미니게임 크기를 확대했습니다.' },
       { type: 'improved', title: '업데이트 일지 가독성 개선', description: '개발용 세부 기록 대신 주요 변경사항만 한글로 정리하고 날짜 목차를 더 크고 보기 쉽게 개선했습니다.' },
-      { type: 'improved', title: '테마 전환 버튼 간소화', description: '상단 라이트·다크 모드 버튼의 글자를 제거하고 해와 달 아이콘만 표시하도록 정리했습니다.' }
+      { type: 'improved', title: '테마 전환 버튼 간소화', description: '상단 라이트·다크 모드 버튼의 글자를 제거하고 해와 달 아이콘만 표시하도록 정리했습니다.' },
+      { type: 'improved', title: '팬사이트 런타임·캐시 최적화', description: '실시간 일정 API, 안전한 탭 내 콘텐츠 캐시, 정적 자산 재검증 캐시와 타로 최종 이미지 직접 렌더링을 적용했습니다.' },
+      { type: 'improved', title: '페이지 런타임 분리 및 타로 카드 전송량 최적화', description: '공통 페이지 스크립트를 페이지별로 분리하고, 타로는 전체 시트 대신 카드 단위 Cloudinary crop을 사용해 전송량을 줄였습니다.' },
+      { type: 'improved', title: 'PWA·SEO·정적 자산 캐시 마무리', description: '홈 canonical과 sitemap을 루트 URL로 통일하고 PWA 시작 주소, HSTS, 정적 자산 캐시 정책을 정리했습니다.' },
+      { type: 'improved', title: '업데이트 일지 자동 동기화', description: '기존 한글 요약을 우선 유지하면서 main의 새 유효 변경사항을 업데이트 일지에 자동으로 합쳐 표시하도록 개선했습니다.' }
     ]
   },
   {
