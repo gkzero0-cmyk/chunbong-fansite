@@ -67,13 +67,15 @@ jobs:
           const browser=await chromium.launch({headless:true});
           const context=await browser.newContext({viewport:{width:1280,height:800}});
           const page=await context.newPage();
-          const latestSha='1234567890abcdef';
-          const archive={
+          const firstSha='1234567890abcdef';
+          const refreshedSha='fedcba0987654321';
+          const newestSha='1111222233334444';
+          let archive={
             siteStartedAt:'2026-08-30',
-            latest:{sha:latestSha,shortSha:'1234567',date:'2026-09-20',time:'2026-09-20T01:00:00Z',title:'add tarot card journal',rawTitle:'feat: add tarot card journal',type:'new'},
+            latest:{sha:firstSha,shortSha:'1234567',date:'2026-09-20',time:'2026-09-20T01:00:00Z',title:'add tarot card journal',rawTitle:'feat: add tarot card journal',type:'new'},
             groups:[
               {date:'2026-09-20',items:[
-                {sha:latestSha,shortSha:'1234567',date:'2026-09-20',time:'2026-09-20T01:00:00Z',title:'add tarot card journal',rawTitle:'feat: add tarot card journal',type:'new',url:'#'},
+                {sha:firstSha,shortSha:'1234567',date:'2026-09-20',time:'2026-09-20T01:00:00Z',title:'add tarot card journal',rawTitle:'feat: add tarot card journal',type:'new',url:'#'},
                 {sha:'fix-tarot',shortSha:'fix-tar',date:'2026-09-20',time:'2026-09-20T00:50:00Z',title:'repair tarot reveal',rawTitle:'fix: repair tarot reveal',type:'fixed',url:'#'},
                 {sha:'pwa-new',shortSha:'pwa-new',date:'2026-09-20',time:'2026-09-20T00:40:00Z',title:'improve PWA offline cache',rawTitle:'perf: improve PWA offline cache',type:'improved',url:'#'},
                 {sha:'test-only',shortSha:'test-on',date:'2026-09-20',time:'2026-09-20T00:30:00Z',title:'tarot regression only',rawTitle:'test: tarot regression only',type:'improved',url:'#'}
@@ -111,12 +113,43 @@ jobs:
           assert.equal(((await page.locator('#changelog-sync-status').textContent())||'').trim(),'사용자에게 중요한 변경사항만 한글로 간단하게 정리했습니다.','technical automatic-sync status wording must stay hidden');
           assert.equal(await page.locator('.changelog-card.is-commit').count(),0,'developer commit cards must not render');
           assert.equal(await page.getByText(/GitHub/).count(),0,'GitHub source text must not render in changelog');
-          await page.waitForFunction(key=>localStorage.getItem('chunbong-changelog-seen-v2')===key,latestSha);
+          await page.waitForFunction(key=>localStorage.getItem('chunbong-changelog-seen-v2')===key,firstSha);
+
+          archive={
+            ...archive,
+            latest:{sha:refreshedSha,shortSha:'fedcba0',date:'2026-09-21',time:'2026-09-20T15:05:00Z',title:'add Chuntris practice mode',rawTitle:'feat: add Chuntris practice mode',type:'new'},
+            groups:[
+              {date:'2026-09-21',items:[
+                {sha:refreshedSha,shortSha:'fedcba0',date:'2026-09-21',time:'2026-09-20T15:05:00Z',title:'add Chuntris practice mode',rawTitle:'feat: add Chuntris practice mode',type:'new',url:'#'}
+              ]},
+              ...archive.groups
+            ]
+          };
+          await page.evaluate(()=>{const base=Date.now();Date.now=()=>base+61_000;window.dispatchEvent(new Event('focus'));});
+          await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-21');
+          assert.ok(await page.getByText('춘트리스 기능 추가',{exact:true}).count(),'focus refresh must add the newest grouped Korean update');
+          assert.equal(await page.getByText('타로 기능 추가',{exact:true}).count(),1,'focus refresh must rebuild from curated data without duplicating existing automatic cards');
+          await page.waitForFunction(key=>localStorage.getItem('chunbong-changelog-seen-v2')===key,refreshedSha);
 
           await page.goto(process.env.BASE_URL+'/index.html?_changelog_seen='+Date.now(),{waitUntil:'domcontentloaded'});
           await page.waitForFunction(()=>document.querySelector('.changelog-button'));
           await page.waitForTimeout(150);
           assert.equal(await page.locator('.changelog-unread-dot').isHidden(),true,'red dot must clear after changelog was viewed');
+
+          archive={
+            ...archive,
+            latest:{sha:newestSha,shortSha:'1111222',date:'2026-09-21',time:'2026-09-20T15:10:00Z',title:'fix mobile site header',rawTitle:'fix: mobile site header',type:'fixed'},
+            groups:[
+              {date:'2026-09-21',items:[
+                {sha:newestSha,shortSha:'1111222',date:'2026-09-21',time:'2026-09-20T15:10:00Z',title:'fix mobile site header',rawTitle:'fix: mobile site header',type:'fixed',url:'#'},
+                ...archive.groups[0].items
+              ]},
+              ...archive.groups.slice(1)
+            ]
+          };
+          await page.evaluate(()=>{const base=Date.now();Date.now=()=>base+61_000;window.dispatchEvent(new Event('focus'));});
+          await page.waitForFunction(()=>document.querySelector('.changelog-unread-dot')?.hidden===false);
+          assert.match(await page.locator('.changelog-button').getAttribute('aria-label'),/새 업데이트 있음/,'header red dot must refresh after returning to the tab');
 
           await page.setViewportSize({width:390,height:844});
           await page.goto(process.env.BASE_URL+'/changelog.html?_mobile='+Date.now(),{waitUntil:'domcontentloaded'});
