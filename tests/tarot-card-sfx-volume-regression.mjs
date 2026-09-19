@@ -7,20 +7,21 @@ const html = fs.readFileSync(new URL('../tarot.html', import.meta.url), 'utf8');
 const enhancedJsUrl = new URL('../tarot-sfx-v2.js', import.meta.url);
 const enhancedCssUrl = new URL('../tarot-effects-v2.css', import.meta.url);
 const preloadUrl = new URL('../tarot-sfx-v2-preload.js', import.meta.url);
+const tarotJsUrl = new URL('../tarot.js', import.meta.url);
 
-assert.ok(fs.existsSync(preloadUrl), 'tarot SFX preload bridge should exist');
+assert.equal(fs.existsSync(preloadUrl), false, 'legacy tarot SFX preload bridge should be removed');
 assert.ok(fs.existsSync(enhancedJsUrl), 'enhanced Tarot SFX module should exist');
 assert.ok(fs.existsSync(enhancedCssUrl), 'enhanced Tarot reveal stylesheet should exist');
 
 const enhanced = require('../tarot-sfx-v2.js');
 const css = fs.readFileSync(enhancedCssUrl, 'utf8');
 const js = fs.readFileSync(enhancedJsUrl, 'utf8');
+const tarotJs = fs.readFileSync(tarotJsUrl, 'utf8');
 
-const preloadIndex = html.indexOf('tarot-sfx-v2-preload.js');
 const coreIndex = html.indexOf('tarot.js');
 const enhancedIndex = html.indexOf('tarot-sfx-v2.js');
-assert.ok(preloadIndex >= 0 && preloadIndex < coreIndex, 'preload bridge should run before tarot.js so the old synthesized SFX stay muted');
-assert.ok(enhancedIndex > coreIndex, 'enhanced SFX should install after tarot.js');
+assert.ok(enhancedIndex >= 0 && enhancedIndex < coreIndex, 'enhanced SFX factory should load before tarot.js');
+assert.ok(!html.includes('tarot-sfx-v2-preload.js'), 'Tarot page should not load a preference preload bridge');
 assert.ok(html.includes('tarot-effects-v2.css'), 'Tarot page should load enhanced reveal FX stylesheet');
 
 const memory = new Map();
@@ -116,16 +117,21 @@ assert.ok(revealContext.bufferSourceCount >= 8, 'reveal SFX should layer a long 
 for (const token of ['cardShuffle', 'cardSlap', 'cardSpread']) {
   assert.ok(js.includes(token), `enhanced Tarot SFX should include ${token}`);
 }
-assert.ok(js.includes("classList.add('is-revealing')"), 'result reveal should enable the enhanced reveal state');
-assert.ok(js.includes("classList.remove('is-revealing')"), 'enhanced reveal state should be cleared after the animation');
+assert.ok(tarotJs.includes("classList.add('is-revealing')"), 'main Tarot runtime should enable the enhanced reveal state');
+assert.ok(tarotJs.includes("classList.remove('is-revealing')"), 'main Tarot runtime should clear the enhanced reveal state');
 for (const keyframe of ['tarotRevealBurst', 'tarotRevealSpark', 'tarotArtFlare']) {
   assert.ok(css.includes(`@keyframes ${keyframe}`), `enhanced reveal should include ${keyframe}`);
 }
 assert.ok(css.includes('.tarot-results.is-revealing'), 'enhanced reveal styling should be scoped to the reveal phase');
 
-assert.equal(typeof enhanced.hasRenderedTarotCards, 'function', 'enhanced reveal should expose a rendered-card guard');
-assert.equal(enhanced.hasRenderedTarotCards({ querySelector: () => null }), false, 'empty result area must not trigger reveal SFX/FX');
-assert.equal(enhanced.hasRenderedTarotCards({ querySelector: selector => selector === '.tarot-card-result' ? {} : null }), true, 'rendered Tarot cards should allow reveal SFX/FX');
-assert.ok(js.includes('!hasRenderedTarotCards(results)'), 'reveal trigger should guard against empty result areas');
+assert.equal(typeof enhanced.createEnhancedTarotSoundController, 'function', 'enhanced SFX factory must remain exported');
+assert.equal(enhanced.installEnhancedTarotSfx, undefined, 'duplicate DOM installer must be removed');
+assert.ok(!js.includes('MutationObserver'), 'SFX module should no longer observe result DOM mutations');
+assert.ok(tarotJs.includes('window.CHUNBONG_TAROT_SFX_V2?.createEnhancedTarotSoundController'), 'main Tarot runtime must own the enhanced controller');
 
-console.log('tarot enhanced card SFX and reveal FX regression test passed');
+const completeSound = enhanced.createEnhancedTarotSoundController(storage, FakeAudioContext);
+completeSound.setEnabled(true);
+completeSound.setVolume(1);
+assert.doesNotThrow(() => completeSound.play('complete'), 'single controller should retain completion chime');
+
+console.log('tarot enhanced single-controller SFX and reveal FX regression test passed');
