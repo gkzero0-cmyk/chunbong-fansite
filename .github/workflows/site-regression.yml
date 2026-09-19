@@ -49,6 +49,8 @@ jobs:
           node --check api/fanart.js
           node --check activity-center.js
           node --check daily-fortune.js
+          node --check home-overview.js
+          node --check api/version.js
           node --check tarot.js
           node --check tarot-sfx-v2-preload.js
           node --check tarot-sfx-v2.js
