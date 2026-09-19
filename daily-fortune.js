@@ -240,10 +240,10 @@
       if (event.target === dialog) closeDialog();
     });
 
-    renderState(false);
     if (state) {
       showLauncher();
     } else {
+      renderState(false);
       setTimeout(() => {
         if (!dialog.open) openDialog();
       }, reducedMotion() ? 0 : 450);
