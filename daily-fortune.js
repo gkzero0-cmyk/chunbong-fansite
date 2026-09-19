@@ -163,6 +163,7 @@ if (typeof document !== 'undefined') {
   const stage = document.querySelector('.daily-fortune-stage');
   const burst = document.getElementById('daily-fortune-burst');
   const soundToggle = document.getElementById('daily-fortune-sound');
+  const floatingButton = document.getElementById('daily-fortune-floating');
   let todayKey = kstDateKey();
   let current = loadDailyFortune(window.localStorage, todayKey, cards);
   let revealing = false;
@@ -272,6 +273,17 @@ if (typeof document !== 'undefined') {
     openButton.dataset.drawn = 'true';
   }
 
+  function syncFloatingShortcut() {
+    if (!floatingButton) return;
+    const visible = Boolean(current) && !dialog?.open;
+    floatingButton.hidden = !visible;
+    floatingButton.setAttribute('aria-hidden', String(!visible));
+    if (visible) {
+      const card = cards[current.cardIndex];
+      floatingButton.setAttribute('aria-label', `오늘의 운세 다시 보기 · ${card?.nameKo || '오늘의 카드'}`);
+    }
+  }
+
   function applyRecord(record, animate = false) {
     const card = cards[record.cardIndex];
     if (!card) return;
@@ -305,6 +317,7 @@ if (typeof document !== 'undefined') {
       if (status) status.textContent = '오늘의 카드는 정해졌어요. 다음 카드는 KST 자정 이후에 만날 수 있습니다.';
       stage?.classList.remove('is-celebrating');
       updateTrigger(record);
+      syncFloatingShortcut();
     };
 
     if (animate && !prefersReducedMotion()) {
@@ -343,6 +356,7 @@ if (typeof document !== 'undefined') {
     if (status) status.textContent = '카드를 눌러 오늘의 메시지를 확인해 보세요.';
     if (dateLabel) dateLabel.textContent = formatKstLabel(todayKey);
     updateTrigger(null);
+    syncFloatingShortcut();
     scheduleMidnightReset();
   }
 
@@ -384,6 +398,7 @@ if (typeof document !== 'undefined') {
     } else {
       dialog.setAttribute('open', '');
     }
+    syncFloatingShortcut();
     if (current) applyRecord(current, false);
     else cardButton?.focus({ preventScroll: true });
   }
@@ -392,6 +407,7 @@ if (typeof document !== 'undefined') {
     if (!dialog) return;
     if (dialog.close) dialog.close();
     else dialog.removeAttribute('open');
+    syncFloatingShortcut();
   }
 
   function init() {
@@ -402,12 +418,15 @@ if (typeof document !== 'undefined') {
     else resetForNewDay();
 
     openButton.addEventListener('click', openDialog);
+    floatingButton?.addEventListener('click', openDialog);
     closeButton?.addEventListener('click', closeDialog);
     cardButton.addEventListener('click', drawToday);
     soundToggle?.addEventListener('click', () => setSoundEnabled(!soundEnabled()));
     dialog.addEventListener('click', event => {
       if (event.target === dialog) closeDialog();
     });
+    dialog.addEventListener('close', syncFloatingShortcut);
+    syncFloatingShortcut();
 
     if (!current) {
       let alreadyOpened = false;
