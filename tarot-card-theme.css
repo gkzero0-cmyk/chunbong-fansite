@@ -40,7 +40,7 @@
 }
 #tarot-deck .tarot-card-back:hover,#tarot-deck .tarot-card-back:focus-visible{border-color:var(--chunbong-tarot-gold-light)!important;box-shadow:0 16px 34px #000c,0 0 22px #f6c84f55!important}
 #tarot-deck .tarot-card-back-number{
-  position:relative!important;width:44px!important;height:44px!important;border:2px solid var(--chunbong-tarot-gold-light)!important;border-radius:50%!important;
+  box-sizing:border-box!important;position:relative!important;width:44px!important;height:44px!important;border:2px solid var(--chunbong-tarot-gold-light)!important;border-radius:50%!important;
   background:radial-gradient(circle at 50% 36%,#193d76 0 18%,#0a2147 42%,#040d20 76%,#020711 100%)!important;color:#ffe58a!important;
   font-family:Georgia,"Times New Roman",serif!important;font-size:18px!important;font-weight:800!important;letter-spacing:-.02em!important;
   text-shadow:0 1px 2px #000,0 0 8px #f6c84f88!important;box-shadow:0 0 0 2px #06152f,0 0 0 3px #a96d0c,0 5px 13px #000b,inset 0 1px 3px #fff3b12e!important
