@@ -288,6 +288,41 @@ if (typeof document !== 'undefined') {
     return READING_CONFIG.spreads[spreadId] || null;
   }
 
+  let setupMode = 'quick';
+
+  function syncSetupModeUI() {
+    const setup=byId('tarot-setup');
+    if(!setup) return;
+    const quick=setupMode==='quick';
+    setup.dataset.tarotMode=setupMode;
+    setup.querySelectorAll('.tarot-detail-only').forEach(node=>{ node.hidden=quick; });
+    setup.querySelectorAll('[data-tarot-mode-button]').forEach(button=>{
+      const active=button.dataset.tarotModeButton===setupMode;
+      button.classList.toggle('is-active',active);
+      button.setAttribute('aria-pressed',String(active));
+    });
+    if(quick){
+      const topic=setup.querySelector('input[name="topic"][value="general"]');
+      if(topic) topic.checked=true;
+      const cardMode=setup.querySelector('input[name="selection-mode"][value="cards"]');
+      if(cardMode) cardMode.checked=true;
+      const checked=setup.querySelector('input[name="spread"]:checked');
+      if(Number(checked?.dataset.count||0)>3){
+        const fallback=setup.querySelector('input[name="spread"][data-count="1"]')||setup.querySelector('input[name="spread"]');
+        if(fallback) fallback.checked=true;
+      }
+    }
+    setup.querySelectorAll('#tarot-spread-options label').forEach(label=>{
+      const input=label.querySelector('input[name="spread"]');
+      label.hidden=quick&&Number(input?.dataset.count||0)>3;
+    });
+    const help=byId('tarot-mode-help');
+    if(help) help.textContent=quick
+      ? '질문을 적고 1장 또는 3장을 선택한 뒤 바로 카드를 골라보세요.'
+      : '주제와 스프레드, 숫자 입력 또는 직접 선택 방식까지 세밀하게 설정할 수 있습니다.';
+    syncSelectionModeUI();
+  }
+
   function renderSpreadChoices(topicId, selectedSpreadId = '') {
     const container = byId('tarot-spread-options');
     if (!container) return;
@@ -308,7 +343,7 @@ if (typeof document !== 'undefined') {
     }));
     const spread = spreadForId(active);
     if (spread) renderNumberInputs(spread.count);
-    syncSelectionModeUI();
+    syncSetupModeUI();
   }
 
   function readSetup() {
@@ -753,16 +788,28 @@ if (typeof document !== 'undefined') {
     byId('tarot-number-error').textContent = '';
     const confirm = byId('tarot-confirm-selection');
     if (confirm) { confirm.hidden = true; confirm.disabled = true; }
-    byId('tarot-selection-status').textContent = '주제와 리딩 방식, 카드 선택 방식을 정해 주세요.';
+    byId('tarot-selection-status').textContent = setupMode === 'quick' ? '질문과 카드 장수를 정한 뒤 카드를 골라 주세요.' : '주제와 리딩 방식, 카드 선택 방식을 정해 주세요.';
     scrollToElement(byId('tarot-setup'));
   }
 
   const setup = byId('tarot-setup');
   if (setup) {
     renderSpreadChoices('general');
-    syncSelectionModeUI();
+    setupMode='quick';
+    syncSetupModeUI();
     updateSoundToggle();
     updateVolumeUI();
+    setup.querySelectorAll('[data-tarot-mode-button]').forEach(button=>button.addEventListener('click',()=>{
+      const next=button.dataset.tarotModeButton==='detail'?'detail':'quick';
+      if(next===setupMode) return;
+      setupMode=next;
+      if(setupMode==='quick'){
+        renderSpreadChoices('general',setup.querySelector('input[name="spread"]:checked')?.value||'single');
+      }else{
+        syncSetupModeUI();
+      }
+      byId('tarot-number-error').textContent='';
+    }));
     setup.addEventListener('change', event => {
       if (event.target.name === 'topic') renderSpreadChoices(event.target.value);
       if (event.target.name === 'spread') {
