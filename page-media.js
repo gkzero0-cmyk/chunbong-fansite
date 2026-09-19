@@ -23,7 +23,7 @@
       type:kind==='youtube'?'youtube':String(item.kind||kind||'vod'),
       title:String(item.title||''),
       meta:[platformLabel,item.date||item.meta||''].filter(Boolean).join(' · '),
-      href:(kind==='youtube'?'youtube.html':kind==='clips'?'clips.html':'vod.html')+'?'+(item.kind?'kind='+encodeURIComponent(item.kind)+'&':'')+'open='+encodeURIComponent(String(item.id||item.videoId||'')),
+      href:(kind==='youtube'?'youtube.html':kind==='clip'?'clips.html':'vod.html')+'?'+(item.kind?'kind='+encodeURIComponent(item.kind)+'&':'')+'open='+encodeURIComponent(String(item.id||item.videoId||'')),
       sourceHref:item.link||'',thumb:item.thumb||''
     }}));
     if (item?.embed) {
