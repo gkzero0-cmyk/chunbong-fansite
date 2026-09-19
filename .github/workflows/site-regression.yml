@@ -50,6 +50,8 @@ jobs:
           node --check activity-center.js
           node --check daily-fortune.js
           node --check home-overview.js
+          node --check personal-hub.js
+          node --check timeline.js
           node --check api/version.js
           node --check tarot.js
           node --check tarot-sfx-v2-preload.js
