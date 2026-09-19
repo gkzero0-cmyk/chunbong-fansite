@@ -119,7 +119,8 @@
     const item=event.detail||{};
     if(!item.title)return;
     currentMedia=normalizeMedia(item);
-    trackRecent(currentMedia);
+    updateMediaFavoriteButton(currentMedia);
+    if(item.trackRecent!==false)trackRecent(currentMedia);
   });
 
   const ACHIEVEMENTS=[
@@ -240,6 +241,8 @@
     }
     prefs.enabled=true;
     setAlertPrefs(prefs);
+    if(!scheduleItems.length)await loadSchedule();
+    if(!alertTimer)alertTimer=setInterval(checkBroadcastAlert,60*1000);
     renderDashboard();
     checkBroadcastAlert();
   }
@@ -360,9 +363,12 @@
   enhanceMinigameProfile();
   createHubDrawer();
   renderHubDrawer();
-  void loadSchedule().then(()=>{renderDashboard();checkBroadcastAlert()});
+  const initialAlertPrefs=getAlertPrefs();
+  if(page==='home'||initialAlertPrefs.enabled){
+    void loadSchedule().then(()=>{renderDashboard();checkBroadcastAlert()});
+  }
   renderDashboard();
-  alertTimer=setInterval(checkBroadcastAlert,60*1000);
+  if(initialAlertPrefs.enabled)alertTimer=setInterval(checkBroadcastAlert,60*1000);
   window.addEventListener('storage',()=>{store=loadStore();renderHubDrawer();renderDashboard();renderTarotJournal()});
   window.addEventListener('pagehide',()=>clearInterval(alertTimer),{once:true});
 
