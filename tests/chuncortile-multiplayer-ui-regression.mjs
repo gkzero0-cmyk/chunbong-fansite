@@ -35,10 +35,10 @@ assert.match(ctCss, /grid-template-columns:150px minmax\(0,760px\) 104px/);
 assert.match(ctCss, /assets\/chuncortile\/tiles-user\.webp/);
 assert.ok(fs.existsSync(new URL('../assets/chuncortile/tiles-user.webp', import.meta.url)));
 
-assert.match(siteCss, /\.ct-shell\{width:min\(1360px,96vw\)!important/);
-assert.match(siteCss, /\.chungwagame-shell\{width:min\(1360px,96vw\)!important/);
-assert.match(siteCss, /\.ct-shell\{width:min\(1580px,94vw\)!important/);
-assert.match(siteCss, /\.chungwagame-shell\{width:min\(1580px,94vw\)!important/);
+assert.match(siteCss, /\.ct-shell\{width:min\(1520px,96vw\)!important/);
+assert.match(siteCss, /\.chungwagame-shell\{width:min\(1520px,96vw\)!important/);
+assert.match(siteCss, /\.ct-shell\{width:min\(1840px,94vw\)!important/);
+assert.match(siteCss, /\.chungwagame-shell\{width:min\(1840px,94vw\)!important/);
 
 const paletteMarker = chungwaCss.lastIndexOf('/* Requested comfort palette: 2026-09-19 */');
 assert.ok(paletteMarker >= 0);
