@@ -24,7 +24,7 @@
   const changelog=header.querySelector('.changelog-button');
   const theme=header.querySelector('.theme-toggle');
   const navToggle=header.querySelector('.nav-toggle');
-  if(activity) activity.insertAdjacentElement('beforebegin',wrapper);
+  if(activity) activity.insertAdjacentElement('afterend',wrapper);
   else if(changelog) changelog.insertAdjacentElement('afterend',wrapper);
   else if(theme) theme.insertAdjacentElement('afterend',wrapper);
   else header.insertBefore(wrapper,navToggle||null);
