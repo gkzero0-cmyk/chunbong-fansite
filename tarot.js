@@ -221,7 +221,10 @@ if (typeof window !== 'undefined') window.CHUNBONG_TAROT = TAROT_API;
 if (typeof module !== 'undefined' && module.exports) module.exports = TAROT_API;
 
 if (typeof document !== 'undefined') {
-  const soundController = createTarotSoundController();
+  const enhancedSoundFactory = window.CHUNBONG_TAROT_SFX_V2?.createEnhancedTarotSoundController;
+  const soundController = typeof enhancedSoundFactory === 'function'
+    ? enhancedSoundFactory()
+    : createTarotSoundController();
   const state = {
     topic: 'general',
     spreadId: 'single',
