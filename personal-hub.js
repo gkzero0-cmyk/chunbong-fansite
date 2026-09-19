@@ -1,5 +1,6 @@
 (()=>{
   'use strict';
+  if(window.ChunbongPersonal)return;
   const STORAGE_KEY='chunbong-personal-hub-v1';
   const MAX_FAVORITES=80,MAX_TAROT=40;
   const GAME_LABELS={chuntris:'춘트리스',chunbak:'춘박게임',chungwagame:'춘과게임',chuncortile:'춘컬타일'};
