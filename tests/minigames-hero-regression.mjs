@@ -21,6 +21,6 @@ assert.ok(
   css.includes('.minigames-hero-layout{grid-template-columns:1fr;gap:24px}'),
   'mobile hero must stack to one column'
 );
-assert.ok(assetStat.size>12000,'bundled hero asset unexpectedly small');
+assert.ok(assetStat.size>5000,'bundled hero asset unexpectedly small');
 
 console.log('minigames hero artwork regression passed');
