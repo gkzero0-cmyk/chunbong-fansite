@@ -60,6 +60,31 @@ assert.ok(groups.some(group=>group.date==='2026-09-18'&&group.items.some(item=>i
 assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='오늘의 운세 메이저 아르카나 22장 추가')),'daily fortune backfill missing');
 assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='PWA 앱 아이콘 호환성 보강')),'PWA icon backfill missing');
 assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='타로 효과음 구조 안정화')),'Tarot SFX backfill missing');
+const expectedMilestones=[
+  ['2026-08-30','춘봉 팬사이트 프로젝트 시작'],
+  ['2026-08-31','78장 타로 리딩 기능 추가'],
+  ['2026-08-31','AI 타로 상세 상담 추가'],
+  ['2026-09-01','SOOP CATCH 재생·공식 일정 정리'],
+  ['2026-09-02','타로 고해상도 카드·직접 선택 개선'],
+  ['2026-09-03','춘봉 데이터 대시보드 추가'],
+  ['2026-09-05','춘봉 데이터 Trackify 연동·로딩 안정화'],
+  ['2026-09-06','SOOP 방송 이력·카테고리 제어 개선'],
+  ['2026-09-07','타로 원본 이미지·벡터 카드 프레임 개선'],
+  ['2026-09-08','방송 캘린더 팔로워·팬클럽 지표 수정'],
+  ['2026-09-09','춘봉 방송 이력 페이지 추가'],
+  ['2026-09-10','타로 상담 히어로 비주얼 추가'],
+  ['2026-09-11','타로 카드 효과음·음량·리빌 효과 개선'],
+  ['2026-09-12','타로 주제별 스프레드·상담 문장 개선'],
+  ['2026-09-13','춘트리스 웹게임 추가'],
+  ['2026-09-14','춘트리스 화면 맞춤·반응 이미지 품질 개선'],
+  ['2026-09-17','춘박게임 추가'],
+  ['2026-09-18','홈 방송 D-day 추가'],
+  ['2026-09-19','설치형 PWA·오프라인 기본 화면 추가'],
+  ['2026-09-19','오늘의 운세 메이저 아르카나 22장 추가']
+];
+for(const [date,title] of expectedMilestones){
+  assert.ok(groups.some(group=>group.date===date&&group.items.some(item=>item.title===title)),`missing audited changelog milestone: ${date} ${title}`);
+}
 assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>/멀티플레이/.test(item.title))),'latest multiplayer entry missing');
 assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='팬사이트 런타임·캐시 최적화')),'#127 curated optimization entry missing');
 assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='페이지 런타임 분리 및 타로 카드 전송량 최적화')),'#128 curated optimization entry missing');
