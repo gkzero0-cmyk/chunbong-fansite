@@ -25,7 +25,9 @@ jobs:
         with:
           node-version: '24'
       - name: Static regression
-        run: node tests/pwa-regression.mjs
+        run: |
+          node tests/pwa-regression.mjs
+          node tests/pwa-icon-compat-regression.mjs
       - name: Install Playwright Chromium
         run: |
           npm install --no-save --no-package-lock playwright@1.55.0
