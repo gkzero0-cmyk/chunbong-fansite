@@ -7,7 +7,7 @@ const media=read('page-media.js');
 const sw=read('service-worker.js');
 
 assert.match(page,/\$\$\('\[data-nav\]', nav\)\.forEach/,'navigation accessibility must iterate all primary links');
-assert.doesNotMatch(page,/\$\('\[data-nav\]', nav\)\.forEach/,'single-element selector must not be used as a collection');
+assert.ok(!page.includes("\n    $('[data-nav]', nav).forEach"),'single-element selector must not be used as a collection');
 assert.match(page,/setAttribute\('aria-current', 'page'\)/,'active primary navigation must expose aria-current=page');
 assert.match(page,/removeAttribute\('aria-current'\)/,'inactive primary navigation must clear aria-current');
 assert.match(media,/setAttribute\('aria-busy','true'\)/,'media lists must announce loading');
