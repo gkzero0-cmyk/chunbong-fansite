@@ -144,6 +144,7 @@
 
   async function setAlertEnabled(enabled){
     const state=read();
+    if(enabled&&(!('Notification'in window))) enabled=false;
     if(enabled&&'Notification'in window&&Notification.permission==='default'){
       try{const permission=await Notification.requestPermission();if(permission!=='granted')enabled=false}catch(_){enabled=false}
     }
@@ -151,7 +152,7 @@
   }
   async function showReminder(item){
     const title='춘봉 방송 예정 시간이에요';
-    const options={body:item.title||'방송 일정을 확인해 보세요.',icon:'/assets/app-icon-192.png',badge:'/assets/app-icon-192.png',tag:'chunbong-schedule-'+String(item.start||''),data:{url:item.link||'/schedule.html'}};
+    const options={body:item.title||'방송 일정을 확인해 보세요.',icon:'/assets/app-icon-192.png',badge:'/assets/app-icon-192.png',tag:'chunbong-schedule-'+String(item.start||''),data:{url:'/schedule.html'}};
     try{
       const reg=await navigator.serviceWorker?.ready;
       if(reg?.showNotification)await reg.showNotification(title,options);
@@ -189,7 +190,7 @@
       </section>
       <div class="personal-grid">
         <section class="personal-panel"><header><div><small>CONTINUE</small><h2>이어보기</h2></div></header>
-          ${recent?`<a class="personal-recent" href="${esc(hrefFor(recent))}"><strong>${esc(recent.title||'최근 콘텐츠')}</strong><span>${esc(recent.meta||recent.type||'')} · ${esc(formatDate(recent.updatedAt))}</span><b>이어보기 →</b></a>`:'<p class="personal-empty">아직 본 콘텐츠가 없습니다.</p>'}
+          ${recent?`<a class="personal-recent" href="${esc(hrefFor(recent))}"><strong>${esc(recent.title||'최근 콘텐츠')}</strong><span>${esc(recent.meta||recent.type||'')} · ${esc(formatDate(recent.updatedAt))}${recent.progress?' · '+Math.floor(recent.progress/60)+':'+String(recent.progress%60).padStart(2,'0')+'까지':''}</span><b>이어보기 →</b></a>`:'<p class="personal-empty">아직 본 콘텐츠가 없습니다.</p>'}
         </section>
         <section class="personal-panel"><header><div><small>DAILY CHALLENGE</small><h2>오늘의 도전</h2></div></header>
           <a class="personal-challenge" href="${challenge.href}"><strong>${esc(challenge.title)}</strong><span>${esc(challenge.desc)}</span><b>도전하기 →</b></a>
@@ -226,8 +227,19 @@
   }
 
   function boot(){
+    selectedMedia=window.__CHUNBONG_CURRENT_MEDIA__||selectedMedia;
+    if(selectedMedia)recordRecent(selectedMedia);
     watchGame();renderDashboard();renderAppHome();syncSaveButton();
+    const nativeVideo=document.querySelector('video');
+    let lastProgressWrite=0;
+    nativeVideo?.addEventListener('timeupdate',()=>{
+      if(!selectedMedia||!Number.isFinite(nativeVideo.currentTime))return;
+      if(Date.now()-lastProgressWrite<5000)return;
+      lastProgressWrite=Date.now();
+      recordRecent({...selectedMedia,progress:Math.max(0,Math.floor(nativeVideo.currentTime)),duration:Number.isFinite(nativeVideo.duration)?Math.floor(nativeVideo.duration):0});
+    });
     document.addEventListener('chunbong:personal-updated',()=>{renderDashboard();renderAppHome();syncSaveButton()});
+    setTimeout(()=>document.dispatchEvent(new CustomEvent('chunbong:personal-updated',{detail:read()})),0);
     void checkBroadcastReminder();
     const timer=setInterval(checkBroadcastReminder,60000);
     window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});
