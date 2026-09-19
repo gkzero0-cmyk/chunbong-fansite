@@ -166,10 +166,10 @@
   .chunbak-rail>section,.chunbak-stats{padding:19px!important}
 
   /* Chungwagame */
-  .chungwagame-shell{width:min(1360px,96vw)!important}
+  .chungwagame-shell{width:min(1520px,96vw)!important}
   .chungwagame-layout{
-    grid-template-columns:180px minmax(0,940px) 124px!important;
-    gap:14px!important
+    grid-template-columns:205px minmax(0,1080px) 126px!important;
+    gap:16px!important
   }
   .chungwagame-topbar{min-height:68px!important}
   .chungwagame-brand-mark{width:58px!important;height:58px!important}
@@ -177,10 +177,10 @@
   .cg-stat{min-width:100px!important;padding:9px 12px!important}
 
   /* Chuncortile: same footprint as Chungwagame */
-  .ct-shell{width:min(1360px,96vw)!important;padding-top:20px!important}
+  .ct-shell{width:min(1520px,96vw)!important;padding-top:16px!important}
   .ct-layout{
-    grid-template-columns:180px minmax(0,940px) 124px!important;
-    gap:14px!important
+    grid-template-columns:225px minmax(0,1040px) 130px!important;
+    gap:16px!important
   }
   .ct-topbar{margin-bottom:10px!important}
   .ct-brand-icon{width:58px!important;height:58px!important}
@@ -241,15 +241,15 @@
   }
   .chunbak-stage{width:min(100%,660px)!important}
 
-  .chungwagame-shell{width:min(1580px,94vw)!important}
+  .chungwagame-shell{width:min(1840px,94vw)!important}
   .chungwagame-layout{
-    grid-template-columns:210px minmax(0,1080px) 140px!important;
-    gap:18px!important
+    grid-template-columns:240px minmax(0,1260px) 150px!important;
+    gap:20px!important
   }
 
-  .ct-shell{width:min(1580px,94vw)!important}
+  .ct-shell{width:min(1840px,94vw)!important}
   .ct-layout{
-    grid-template-columns:210px minmax(0,1080px) 140px!important;
-    gap:18px!important
+    grid-template-columns:250px minmax(0,1280px) 150px!important;
+    gap:20px!important
   }
 }
