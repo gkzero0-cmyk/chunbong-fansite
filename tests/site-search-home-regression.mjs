@@ -22,6 +22,7 @@ for(const type of ['schedule','notice','vod','clips','youtube']){
 assert.match(improvements,/notice-detail&id=202862381/,'global search must index broadcast history text');
 assert.match(improvements,/changelog-history&since=2026-08-30/,'global search must index update history');
 assert.match(improvements,/aria-activedescendant/,'global search must expose keyboard selection to assistive technology');
+assert.match(improvements,/normalize\(input\.value\)\.length>=2/,'content search must lazy-load only after two characters');
 assert.match(improvementCss,/site-search-result-copy/,'global search result layout styles missing');
 assert.match(improvementCss,/\[data-theme="light"\] \.site-search-dialog/,'global search must support light theme');
 assert.doesNotMatch(improvementCss,/home-today-dashboard|home-today-card/,'duplicate dashboard styles must be removed');
