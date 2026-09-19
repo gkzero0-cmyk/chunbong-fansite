@@ -27,12 +27,12 @@ assert.match(index,/home-dday\.js/,'home D-day script missing');
 assert.match(index,/<p class="home-dday-date">2020년 7월 3일<\/p>/,'first broadcast date must be plain text');
 assert.match(index,/<p class="home-dday-date">2023년 11월 30일<\/p>/,'SOOP first broadcast date must be plain text');
 assert.doesNotMatch(index,/<p class="home-dday-date"><a\b/,'broadcast dates must not contain links');
-assert.match(index,/href="https:\/\/namu\.wiki\/w\/%EC%B6%98%EB%B4%89"/,'home official-channel card must link to Chunbong wiki');
+assert.match(index,/href="https:\/\/www\.sooplive\.com\/station\/chunbongtv"/,'home official-profile card must link to Chunbong SOOP');
 assert.match(styles,/\.home-dday-strip\{/,'D-day strip style missing');
-assert.match(styles,/\.status-card-link\{/,'home wiki card interaction style missing');
+assert.match(styles,/\.status-card-link\{/,'home official-profile card interaction style missing');
 
 assert.match(tarot,/class="tarot-hero-banner-link"/,'tarot hero image link missing');
 assert.match(tarot,/href="https:\/\/namu\.wiki\/w\/%EC%B6%98%EB%B4%89\/%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%A8%B8%20%ED%83%80%EB%A1%9C%EC%83%81%EB%8B%B4%20%EB%AA%A9%EB%A1%9D"/,'tarot wiki destination mismatch');
 assert.match(tarotStyles,/\.tarot-hero-banner-link\{/,'tarot hero link style missing');
 
-console.log('Home D-day dates and remaining NamuWiki links regression passed');
+console.log('Home D-day dates and profile links regression passed');
