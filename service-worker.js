@@ -1,5 +1,5 @@
 /* CHUNBONG_PWA v1 */
-const CACHE_NAME = 'chunbong-pwa-20260919-v7';
+const CACHE_NAME = 'chunbong-pwa-20260920-v8';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -14,6 +14,8 @@ const APP_SHELL = [
   '/content.js',
   '/daily-fortune.css',
   '/daily-fortune.js',
+  '/home-overview.css',
+  '/home-overview.js',
   '/manifest.webmanifest',
   '/assets/app-icon.svg',
   '/assets/app-icon-192.png',
