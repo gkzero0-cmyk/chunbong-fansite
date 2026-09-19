@@ -108,9 +108,10 @@ async function runHandler(type, fetchImpl) {
 import fs from 'node:fs';
 const clipsHtml = fs.readFileSync(new URL('../clips.html', import.meta.url), 'utf8');
 const pageJs = fs.readFileSync(new URL('../page.js', import.meta.url), 'utf8');
+const pageMediaJs = fs.readFileSync(new URL('../page-media.js', import.meta.url), 'utf8');
 assert.ok(clipsHtml.includes('data-clip-kind=\"catch\"'), 'clips page should have a Catch tab');
 assert.ok(clipsHtml.includes('data-clip-kind=\"clip\"'), 'clips page should have a Clip tab');
-assert.ok(pageJs.includes('renderClipsPage'), 'clips page should have grouped rendering logic');
+assert.ok(pageMediaJs.includes('renderClipsPage'), 'clips page should have grouped rendering logic');
 assert.ok(pageJs.includes('retry-content'), 'content error states should expose retry controls');
 
 console.log('content regression test passed');
