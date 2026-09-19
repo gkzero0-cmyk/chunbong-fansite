@@ -1,0 +1,100 @@
+name: Tarot card theme browser smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tarot.html'
+      - 'tarot.js'
+      - 'tarot-composite.js'
+      - 'tarot-composite.css'
+      - 'tarot-card-theme.css'
+      - 'tests/tarot-clarity-numbered-backs-regression.mjs'
+      - '.github/workflows/tarot-card-theme-browser-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Static tarot theme regression
+        run: |
+          node tests/tarot-clarity-numbered-backs-regression.mjs
+          node tests/tarot-00-vector-composite-regression.mjs
+          node tests/tarot-uploaded-original-art-regression.mjs
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start local site
+        run: |
+          python3 -m http.server 4174 --bind 127.0.0.1 >/tmp/tarot-theme-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4174/tarot.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/tarot-theme-http.log
+          exit 1
+
+      - name: Verify shared backs, numbers and revealed celestial frame
+        env:
+          BASE_URL: http://127.0.0.1:4174
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import assert from 'node:assert/strict';
+          import { chromium } from 'playwright';
+
+          const browser=await chromium.launch({headless:true});
+          try{
+            const page=await browser.newPage({viewport:{width:1280,height:1000}});
+            await page.route('https://res.cloudinary.com/**',route=>route.fulfill({
+              status:200,
+              contentType:'image/svg+xml',
+              body:'<svg xmlns="http://www.w3.org/2000/svg" width="898" height="1488"><rect width="898" height="1488" fill="#222"/></svg>'
+            }));
+            await page.goto(process.env.BASE_URL+'/tarot.html?_theme='+Date.now(),{waitUntil:'domcontentloaded'});
+            await page.locator('input[name="selection-mode"][value="cards"]').check();
+            await page.locator('#tarot-shuffle').click();
+            await page.waitForFunction(()=>document.querySelectorAll('#tarot-deck .tarot-card-back').length===78);
+
+            const back=page.locator('#tarot-deck .tarot-card-back').first();
+            const number=back.locator('.tarot-card-back-number');
+            const backStyle=await back.evaluate(el=>getComputedStyle(el).backgroundImage);
+            assert.match(backStyle,/data:image\/avif;base64,/,'78-card back must use uploaded celestial artwork');
+
+            const numberStyle=await number.evaluate(el=>({
+              family:getComputedStyle(el).fontFamily,
+              color:getComputedStyle(el).color,
+              border:getComputedStyle(el).borderTopColor,
+              width:el.getBoundingClientRect().width,
+              height:el.getBoundingClientRect().height
+            }));
+            assert.match(numberStyle.family,/Georgia/i,'shuffle number must use celestial serif type');
+            assert.equal(numberStyle.border,'rgb(255, 231, 153)','shuffle number must use pale celestial gold');
+            assert.ok(Math.abs(numberStyle.width-44)<1&&Math.abs(numberStyle.height-44)<1,'desktop number badge must stay 44px');
+
+            await back.click();
+            const confirm=page.locator('#tarot-confirm-selection');
+            await page.waitForFunction(()=>!document.querySelector('#tarot-confirm-selection')?.disabled);
+            await confirm.click();
+            await page.waitForFunction(()=>document.querySelector('#tarot-results')?.hidden===false);
+            await page.waitForFunction(()=>document.querySelectorAll('#tarot-reading-grid .tarot-composite-svg').length>=1);
+            assert.ok(await page.locator('#tarot-reading-grid .tarot-vector-celestial').count()>0,'revealed front frame must contain celestial stars');
+            assert.ok(await page.locator('#tarot-reading-grid .tarot-vector-crescents').count()>0,'revealed front frame must contain crescent ornaments');
+            const frame=page.locator('#tarot-reading-grid .tarot-card-art.tarot-card-composite').first();
+            assert.equal(await frame.evaluate(el=>getComputedStyle(el).borderTopColor),'rgb(246, 200, 79)','revealed card exterior must use celestial gold');
+            console.log('TAROT_SHARED_CARD_THEME=PASS');
+          }finally{
+            await browser.close();
+          }
+          EOF_NODE
