@@ -198,12 +198,18 @@ html,.chuntris-page{overflow-anchor:none}
   backdrop-filter:blur(8px);
   box-shadow:inset 0 0 0 1px rgba(255,126,47,.16)
 }
+.chuntris-state-eyebrow{
+  color:#ff8a36!important;
+  font-size:.58rem!important;
+  font-weight:1000!important;
+  letter-spacing:.18em!important
+}
 .chuntris-board-overlay>strong{
   color:#ff8130!important;
   font-size:clamp(1.65rem,5.2vw,2.25rem)!important;
   letter-spacing:.02em!important
 }
-.chuntris-board-overlay>span{
+.chuntris-board-overlay>span:not(.chuntris-state-eyebrow){
   max-width:92%;
   color:#c6bdb7!important;
   font-size:.82rem!important;
