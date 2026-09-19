@@ -13,6 +13,9 @@
 /* Direct-selection backs: uploaded celestial card art with matching gold/navy 1–78 medallions. */
 #tarot-deck .tarot-card-back{
   box-sizing:border-box;
+  width:84px!important;
+  height:126px!important;
+  aspect-ratio:auto!important;
   display:grid;
   place-items:center;
   position:relative;
@@ -77,11 +80,14 @@
   box-shadow:inset 0 0 0 2px #08142d,0 0 0 2px #071126,0 0 0 4px #f0bd3d,0 0 20px #ffd34a70;
 }
 
+@media(max-width:900px){#tarot-deck .tarot-card-back{width:72px!important;height:108px!important}}
 @media(max-width:700px){
   .tarot-card-dialog-art .tarot-card-art.tarot-card-composite{width:min(88vw,540px)}
+  #tarot-deck .tarot-card-back{width:58px!important;height:87px!important}
   #tarot-deck .tarot-card-back-number{width:38px;height:38px;font-size:14px}
 }
 @media(max-width:430px){
+  #tarot-deck .tarot-card-back{width:52px!important;height:78px!important}
   #tarot-deck .tarot-card-back-number{width:33px;height:33px;font-size:12px;border-width:1.5px}
 }
 
