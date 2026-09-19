@@ -30,7 +30,13 @@ const APP_SHELL = [
   '/minigames.css',
   '/minigame-profile.css',
   '/minigame-profile.js',
-  '/personal-hub.css'
+  '/personal-hub.css',
+  '/personal-hub.js',
+  '/myhub.html',
+  '/timeline.html',
+  '/timeline.css',
+  '/timeline.js',
+  '/changelog-data.js'
 ];
 
 self.addEventListener('install', event => {
