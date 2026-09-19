@@ -27,6 +27,7 @@ assert.match(hub,/recent:null/,'continue-watching store missing');
 assert.match(hub,/tarot:\[\]/,'tarot journal store missing');
 assert.match(hub,/games:\{plays:/,'minigame play history missing');
 assert.match(hub,/alerts:\{enabled:false/,'broadcast reminder preference missing');
+assert.match(hub,/lastLiveBroadcastId/,'live broadcast dedupe state missing');
 assert.match(hub,/function favoriteItem/);
 assert.match(hub,/function recordRecent/);
 assert.match(hub,/function recordTarot/);
@@ -35,6 +36,8 @@ assert.match(hub,/function gameSnapshot/);
 assert.match(hub,/function dailyChallenge/);
 assert.match(hub,/Notification\.requestPermission/,'broadcast reminder must ask permission only after opt-in');
 assert.match(hub,/\/api\/content\?type=schedule/,'broadcast reminder must use the live schedule');
+assert.match(hub,/\/api\/content\?type=live/,'broadcast reminder must also monitor actual SOOP live state');
+assert.match(hub,/춘봉 방송이 시작됐어요/,'actual live-start notification copy missing');
 assert.match(hub,/now>=at-5\*60000&&now<=at\+15\*60000/,'schedule reminder window missing');
 assert.doesNotMatch(hub,/fetch\([^)]*(favorite|tarot|personal|profile)/i,'personal records must not be uploaded to a server');
 
