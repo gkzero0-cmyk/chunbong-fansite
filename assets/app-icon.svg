@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+<title id="title">춘봉 팬허브 앱 아이콘</title>
+<desc id="desc">검정 배경과 주황색 프레임 안에 CB 글자가 있는 춘봉 팬허브 아이콘</desc>
+<rect width="512" height="512" rx="112" fill="#080808"/>
+<rect x="54" y="54" width="404" height="404" rx="104" fill="#ff6b18"/>
+<rect x="78" y="78" width="356" height="356" rx="88" fill="#111111"/>
+<circle cx="256" cy="240" r="126" fill="#ff6b18" opacity=".12"/>
+<text x="256" y="274" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="154" font-weight="900" letter-spacing="-8" fill="#ffffff">CB</text>
+<text x="256" y="340" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="28" font-weight="800" letter-spacing="7" fill="#ff8c49">FAN HUB</text>
+</svg>

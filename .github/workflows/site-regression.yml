@@ -17,6 +17,8 @@ jobs:
           node-version: '24'
       - name: Check JavaScript syntax
         run: |
+          node --check service-worker.js
+          node --check theme-init.js
           node --check data.js
           node --check data-core.js
           node --check data-soop-periods.js
