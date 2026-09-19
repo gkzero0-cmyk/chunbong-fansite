@@ -12,7 +12,7 @@ const chuntrisHtml = read('chuntris.html');
 const chunbakHtml = read('chunbak.html');
 const multiplayerCss = read('minigame-multiplayer.css');
 const chungwaCss = read('chungwagame.css');
-const siteCss = read('styles.css');
+const gameLayout = read('game-layout.css');
 
 assert.match(chuntrisHtml, /chuntris-mode-score180[\s\S]*data-chuntris-multiplayer/);
 assert.equal((chuntrisHtml.match(/data-chuntris-multiplayer/g) || []).length, 1);
@@ -35,10 +35,10 @@ assert.match(ctCss, /grid-template-columns:150px minmax\(0,760px\) 104px/);
 assert.match(ctCss, /assets\/chuncortile\/tiles-user\.webp/);
 assert.ok(fs.existsSync(new URL('../assets/chuncortile/tiles-user.webp', import.meta.url)));
 
-assert.match(siteCss, /\.ct-shell\{width:min\(1520px,96vw\)!important/);
-assert.match(siteCss, /\.chungwagame-shell\{width:min\(1520px,96vw\)!important/);
-assert.match(siteCss, /\.ct-shell\{width:min\(1840px,94vw\)!important/);
-assert.match(siteCss, /\.chungwagame-shell\{width:min\(1840px,94vw\)!important/);
+assert.match(gameLayout, /\.chuncortile-page\{--game-shell-max:1520px;--game-left:225px;--game-board:1040px/);
+assert.match(gameLayout, /\.chungwagame-page\{--game-shell-max:1520px;--game-left:205px;--game-board:1080px/);
+assert.match(gameLayout, /\.chuncortile-page\{--game-shell-max:1840px;--game-left:250px;--game-board:1280px/);
+assert.match(gameLayout, /\.chungwagame-page\{--game-shell-max:1840px;--game-left:240px;--game-board:1260px/);
 
 const paletteMarker = chungwaCss.lastIndexOf('/* Requested comfort palette: 2026-09-19 */');
 assert.ok(paletteMarker >= 0);

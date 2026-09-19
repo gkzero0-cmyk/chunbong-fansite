@@ -22,11 +22,12 @@ assert.match(html,/id="changelog-index-list"/,'date index missing');
 assert.match(html,/날짜별 목차/);
 assert.match(html,/changelog-data\.js/);
 assert.match(html,/changelog\.js/);
-assert.match(css,/\.changelog-layout\{[^}]*grid-template-columns:178px minmax\(0,1fr\)/,'desktop date index layout missing');
+assert.match(css,/\.changelog-layout\{[^}]*grid-template-columns:238px minmax\(0,1fr\)/,'desktop date index layout missing');
 assert.match(css,/\.changelog-index-inner\{[^}]*position:sticky/,'date index must stay visible while scrolling');
 assert.match(css,/@media\(max-width:760px\)[\s\S]*?\.changelog-index nav\{display:flex/,'mobile date index should become horizontally scrollable');
 assert.match(js,/sort\(\(a,b\)=>b\.date\.localeCompare\(a\.date\)\)/,'latest date must sort first');
-assert.match(js,/type=changelog-history/,'runtime must load automatic repository history');
+assert.match(js,/type=changelog-history&summary=1/,'runtime should use repository history only for the unread summary key');
+assert.doesNotMatch(js,/changelog-commit-meta|is-commit/,'developer commit details must not render in the curated changelog');
 assert.match(js,/chunbong:changelog-ready/,'changelog must publish its latest seen key');
 
 const sandbox={window:{}};
@@ -47,7 +48,7 @@ assert.match(apiEntry,/handleChangelogHistory/,'content API must import changelo
 assert.match(apiEntry,/type==='changelog-history'/,'content API must route changelog history');
 assert.match(historyApi,/SITE_STARTED_AT='2026-08-30'/,'history API must preserve the repository first day');
 assert.match(historyApi,/per_page=100/,'history API must page through the repository history');
-assert.match(historyApi,/TECHNICAL_PREFIXES/,'technical automation commits should not drive the user-facing update archive');
+assert.match(historyApi,/TECHNICAL_PREFIXES/,'technical automation commits should stay filtered from repository history metadata');
 
 assert.match(content,/className = 'changelog-button'/,'shared header bootstrap must create changelog button');
 assert.match(content,/link\.href = 'changelog\.html'/);

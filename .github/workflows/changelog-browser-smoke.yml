@@ -87,12 +87,15 @@ jobs:
           assert.match(await page.locator('.changelog-button').getAttribute('aria-label'),/새 업데이트 있음/);
 
           await page.goto(process.env.BASE_URL+'/changelog.html?_changelog='+Date.now(),{waitUntil:'domcontentloaded'});
-          await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-20');
-          assert.equal(await page.locator('.changelog-day').first().getAttribute('data-changelog-date'),'2026-09-20');
+          await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-19');
+          assert.equal(await page.locator('.changelog-day').first().getAttribute('data-changelog-date'),'2026-09-19');
           assert.equal(await page.locator('.changelog-day').last().getAttribute('data-changelog-date'),'2026-08-30');
-          assert.ok(await page.locator('#changelog-index-list a[data-changelog-index-date="2026-09-20"]').isVisible());
+          assert.ok(await page.locator('#changelog-index-list a[data-changelog-index-date="2026-09-19"]').isVisible());
           assert.ok(await page.locator('#changelog-index-list a[data-changelog-index-date="2026-08-30"]').isVisible());
-          assert.equal(await page.evaluate(()=>localStorage.getItem('chunbong-changelog-seen-v2')),latestSha);
+          assert.ok(await page.getByText('미니게임 콘텐츠 확장',{exact:true}).count(),'curated Korean changelog item missing');
+          assert.equal(await page.locator('.changelog-card.is-commit').count(),0,'developer commit cards must not render');
+          assert.equal(await page.getByText(/GitHub/).count(),0,'GitHub source text must not render in changelog');
+          await page.waitForFunction(key=>localStorage.getItem('chunbong-changelog-seen-v2')===key,latestSha);
 
           await page.goto(process.env.BASE_URL+'/index.html?_changelog_seen='+Date.now(),{waitUntil:'domcontentloaded'});
           await page.waitForFunction(()=>document.querySelector('.changelog-button'));
@@ -101,7 +104,7 @@ jobs:
 
           await page.setViewportSize({width:390,height:844});
           await page.goto(process.env.BASE_URL+'/changelog.html?_mobile='+Date.now(),{waitUntil:'domcontentloaded'});
-          await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-20');
+          await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-19');
           assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),true,'mobile changelog must not overflow horizontally');
           assert.ok(await page.locator('#changelog-index-list').isVisible(),'mobile date index missing');
 

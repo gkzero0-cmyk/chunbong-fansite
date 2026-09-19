@@ -1,3 +1,41 @@
+(() => {
+  'use strict';
+  const memory=new Map();
+  const read=key=>memory.get(key)||null;
+  const write=(key,value)=>{
+    const row={at:Date.now(),value};
+    memory.set(key,row);
+    return value;
+  };
+  window.ChunbongCache={
+    get(key,ttl=180000){
+      const row=read(key);
+      return row&&Date.now()-Number(row.at||0)<ttl?row.value:null;
+    },
+    set:write,
+    clear(key){ memory.delete(key); },
+    async fetchJson(key,url,{ttl=180000,force=false,headers={accept:'application/json'}}={}){
+      if(!force){
+        const cached=this.get(key,ttl);
+        if(cached) return cached;
+      }
+      const response=await fetch(url,{headers});
+      if(!response.ok) throw new Error('HTTP '+response.status);
+      return write(key,await response.json());
+    }
+  };
+
+  if(!document.querySelector('link[data-site-quality]')){
+    const link=document.createElement('link');
+    link.rel='stylesheet';link.href='site-quality.css';link.dataset.siteQuality='true';
+    document.head.appendChild(link);
+  }
+  for(const src of ['site-meta.js','site-health.js']){
+    if(document.querySelector('script[src="'+src+'"]')) continue;
+    const script=document.createElement('script');script.src=src;script.defer=true;document.head.appendChild(script);
+  }
+})();
+
 window.CHUNBONG_CONTENT = {
   sources: {
     station: 'https://www.sooplive.com/station/chunbongtv',
@@ -13,6 +51,12 @@ window.CHUNBONG_CONTENT = {
     history: 'https://www.sooplive.com/station/chunbongtv/post/202862381'
   },
   schedulePostId: '203015477',
+  minigames: [
+    { href:'chuntris.html', title:'춘트리스', tag:'BLOCK PUZZLE', desc:'클래식 무한 · 40줄 타임어택 · 3분 점수전과 노말 · 하드 · 익스트림 난이도를 즐겨보세요.' },
+    { href:'chunbak.html', title:'춘박게임', tag:'MERGE PUZZLE', desc:'같은 춘봉을 합쳐 11단계 왕관 춘봉까지 키우고 1:1 점수 대결도 즐겨보세요.' },
+    { href:'chungwagame.html', title:'춘과게임', tag:'SUM PUZZLE', desc:'춘과 숫자를 드래그해 합이 10이 되도록 맞추고 120초 점수 대결에 도전해보세요.' },
+    { href:'chuncortile.html', title:'춘컬타일', tag:'COLOR TILE', desc:'빈 칸을 눌러 상하좌우의 같은 춘봉 타일을 찾아 지우는 120초 컬러 퍼즐입니다.' }
+  ],
   notionScheduleUpdatedAt: '2026-08-26T20:28:56Z',
   notionSchedule: [
     { title: '챈나님 경찰과 도둑', tags: ['마크'], start: '2026-08-24T12:00:00Z', end: '', isDateTime: true, link: 'https://app.notion.com/p/3c259c07cee480dd9c42e7b2ee1825dd' },
@@ -86,6 +130,40 @@ window.CHUNBONG_CONTENT = {
   wrapper.addEventListener('focusin', () => setExpanded(true));
   wrapper.addEventListener('focusout', event => {
     if (!wrapper.contains(event.relatedTarget)) setExpanded(false);
+  });
+})();
+
+(() => {
+  const nav=document.getElementById('main-nav');
+  if(!nav||nav.querySelector('.nav-group')) return;
+  const NAV_GROUPS=[
+    {label:'방송',items:['schedule','notice']},
+    {label:'영상',items:['vod','clips','youtube']},
+    {label:'팬존',items:['fanart','tarot']},
+    {label:'기록',items:['history','data']}
+  ];
+  const current=document.body.dataset.page||'';
+  NAV_GROUPS.forEach(group=>{
+    const links=group.items.map(key=>nav.querySelector('[data-nav="'+key+'"]')).filter(Boolean);
+    if(!links.length) return;
+    const wrap=document.createElement('div');
+    wrap.className='nav-group'+(group.items.includes(current)?' active':'');
+    const trigger=document.createElement('button');
+    trigger.type='button';trigger.className='nav-group-trigger';trigger.textContent=group.label;
+    trigger.setAttribute('aria-haspopup','true');trigger.setAttribute('aria-expanded','false');
+    const menu=document.createElement('div');
+    menu.className='nav-group-submenu';menu.setAttribute('role','menu');menu.setAttribute('aria-label',group.label+' 메뉴');
+    const first=links[0];
+    first.parentNode.insertBefore(wrap,first);
+    wrap.append(trigger,menu);
+    links.forEach(link=>{link.setAttribute('role','menuitem');menu.appendChild(link)});
+    const setOpen=open=>{wrap.classList.toggle('open',open);trigger.setAttribute('aria-expanded',String(open))};
+    trigger.addEventListener('click',()=>setOpen(!wrap.classList.contains('open')));
+    wrap.addEventListener('mouseenter',()=>setOpen(true));
+    wrap.addEventListener('mouseleave',()=>setOpen(false));
+    wrap.addEventListener('focusin',()=>setOpen(true));
+    wrap.addEventListener('focusout',event=>{if(!wrap.contains(event.relatedTarget))setOpen(false)});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&wrap.classList.contains('open')){setOpen(false);trigger.focus()}});
   });
 })();
 
@@ -181,9 +259,9 @@ window.CHUNBONG_CONTENT = {
 
   (async () => {
     try {
-      const response = await fetch('/api/content?type=changelog-history&summary=1', { headers:{ accept:'application/json' } });
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      const payload = await response.json();
+      const payload = window.ChunbongCache
+        ? await window.ChunbongCache.fetchJson('changelog-summary','/api/content?type=changelog-history&summary=1',{ttl:5*60*1000})
+        : await (async()=>{const response=await fetch('/api/content?type=changelog-history&summary=1',{headers:{accept:'application/json'}});if(!response.ok)throw new Error('HTTP '+response.status);return response.json()})();
       const latestKey = payload.latest?.sha || payload.latest?.shortSha || '';
       if (!latestKey) return setUnread(false);
       if (document.body.dataset.page === 'changelog') return markSeen(latestKey);
@@ -196,6 +274,28 @@ window.CHUNBONG_CONTENT = {
   })();
 })();
 
+
+(() => {
+  const games=window.CHUNBONG_CONTENT?.minigames||[];
+  if(document.body.dataset.page==='home'){
+    const card=document.querySelector('.portal-card[href="minigames.html"] p');
+    if(card) card.textContent='춘트리스·춘박게임·춘과게임·춘컬타일을 한곳에서 즐깁니다.';
+  }
+  if(document.body.dataset.page==='minigames'){
+    games.forEach(game=>{
+      const card=document.querySelector('.minigame-card[href="'+game.href+'"]');
+      if(!card) return;
+      const tag=card.querySelector('.minigame-tag'),title=card.querySelector('strong'),desc=card.querySelector('p');
+      if(tag)tag.textContent=game.tag;if(title)title.textContent=game.title;if(desc)desc.textContent=game.desc;
+      card.dataset.minigameCopySynced='true';
+    });
+  }
+  document.querySelectorAll('img').forEach(img=>{
+    if(!img.hasAttribute('decoding')) img.decoding='async';
+    if(img.getAttribute('fetchpriority')==='high'||img.closest('.hero-art,.minigames-hero-art')) return;
+    if(!img.hasAttribute('loading')) img.loading='lazy';
+  });
+})();
 
 (() => {
   const header = document.querySelector('.site-header');

@@ -24,7 +24,7 @@ assert.match(html,/id="ct-fx-layer"/,'clear FX layer missing');
 assert.match(html,/chuncortile-ranking-core\.js/);
 assert.match(html,/chuncortile-postgame-ranking\.js/);
 assert.match(css,/grid-template-columns:repeat\(25,minmax\(0,1fr\)\)/);
-assert.match(css,/assets\/chuncortile\/tiles\.png/);
+assert.match(css,/assets\/chuncortile\/tiles-user\.webp/);
 assert.match(css,/@keyframes ctBurst/,'clear particle animation missing');
 assert.match(css,/@keyframes ctComboPop/,'combo pop animation missing');
 for(let i=1;i<=11;i++)assert.match(css,new RegExp('\\.ct-face-'+i+'\\{background-position:'),'tile sprite position missing '+i);

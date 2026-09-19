@@ -1,0 +1,58 @@
+/* Shared UX / accessibility layer. */
+:where(a,button,input,select,textarea,[tabindex]):focus-visible{
+  outline:3px solid #ff8a43;
+  outline-offset:3px;
+  box-shadow:0 0 0 2px rgba(7,7,7,.9),0 0 0 5px rgba(255,138,67,.24)
+}
+:where(button,a){-webkit-tap-highlight-color:transparent}
+.skip-link{
+  position:fixed;z-index:1000;left:16px;top:12px;transform:translateY(-160%);
+  padding:10px 14px;border-radius:10px;background:#ff6b18;color:#160b05;font-weight:900
+}
+.skip-link:focus{transform:none}
+
+/* Compact top-level navigation with grouped destinations. */
+@media(min-width:761px){
+  .nav-group{position:relative;display:flex;align-items:center;height:100%;flex:0 0 auto}
+  .nav-group-trigger{
+    height:100%;padding:10px 11px;border:0;border-radius:999px;background:transparent;
+    color:#a7a19b;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap
+  }
+  .nav-group-trigger::after{content:"⌄";margin-left:5px;font-size:.72em;color:#777}
+  .nav-group.active>.nav-group-trigger,.nav-group:hover>.nav-group-trigger,.nav-group:focus-within>.nav-group-trigger{color:#fff;background:#ff6b1818}
+  .nav-group.active>.nav-group-trigger{color:var(--orange-2)}
+  .nav-group-submenu{
+    position:absolute;z-index:145;top:calc(100% - 5px);left:50%;width:190px;padding:8px;
+    display:grid;gap:4px;opacity:0;visibility:hidden;pointer-events:none;transform:translate(-50%,8px);
+    border:1px solid #303030;border-radius:16px;background:#0f0f10ef;
+    box-shadow:0 18px 48px rgba(0,0,0,.55);backdrop-filter:blur(16px);
+    transition:opacity .16s ease,transform .16s ease,visibility .16s ease
+  }
+  .nav-group:hover>.nav-group-submenu,.nav-group:focus-within>.nav-group-submenu,.nav-group.open>.nav-group-submenu{
+    opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,0)
+  }
+  .main-nav .nav-group-submenu a{
+    width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:10px 11px!important;border-radius:10px;font-size:12px!important;color:#d8d3ce;background:transparent
+  }
+  .main-nav .nav-group-submenu a:hover,.main-nav .nav-group-submenu a:focus-visible,.main-nav .nav-group-submenu a.active{background:#ff6b1818;color:#fff}
+}
+@media(max-width:1180px) and (min-width:761px){
+  .main-nav>a,.nav-minigames>a[data-nav="minigames"],.nav-group-trigger{font-size:12px!important;padding:10px 9px!important}
+}
+@media(max-width:760px){
+  .nav-group,.nav-group-submenu{display:contents}
+  .nav-group-trigger{display:none}
+}
+
+/* Avoid unreadably tiny labels without changing game geometry. */
+.portal-card small,.video-copy small,.status-card small,.schedule-tag,.notice-main small{font-size:max(10px,.68rem)}
+.cg-utility small,.ct-tool small,.chuntris-stats span{font-size:max(8px,.64rem)}
+@media(min-width:1600px){
+  .portal-card small,.video-copy small,.schedule-tag,.notice-main small{font-size:max(11px,.68rem)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto!important}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}

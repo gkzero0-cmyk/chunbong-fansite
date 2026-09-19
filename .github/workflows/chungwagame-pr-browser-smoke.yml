@@ -6,6 +6,7 @@ on:
     paths:
       - 'chungwagame.html'
       - 'chungwagame.css'
+      - 'game-layout.css'
       - 'chungwagame.js'
       - 'chungwagame-ranking-core.js'
       - 'chungwagame-postgame-ranking.js'
