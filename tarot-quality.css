@@ -26,3 +26,14 @@
 .tarot-card-dialog-note{max-width:620px;margin:14px auto 0;color:#958b84;font-size:12px;line-height:1.7;text-align:center}
 @media(max-width:700px){.tarot-stage-actions{margin-top:18px}.tarot-card-art-button{max-width:300px}.tarot-card-dialog{width:96vw;border-radius:20px}.tarot-card-dialog-inner{padding:14px}.tarot-card-dialog-art .tarot-card-art{width:min(84vw,520px)}.tarot-card-dialog-note{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.tarot-card-zoom-label,.tarot-card-art-button .tarot-card-art{transition:none}}
+
+
+/* Quick / detailed tarot setup */
+.tarot-mode-switch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:10px}
+.tarot-mode-switch button{display:flex;flex-direction:column;gap:4px;text-align:left;padding:14px 16px;border:1px solid #303035;border-radius:16px;background:#111114;color:#aaa;cursor:pointer;transition:.18s}
+.tarot-mode-switch button strong{color:#f3eee9;font-size:14px}.tarot-mode-switch button span{font-size:10px;color:#777}
+.tarot-mode-switch button.is-active{border-color:#b88747;background:linear-gradient(145deg,#211b16,#111114);box-shadow:0 0 0 1px #b8874730 inset}
+.tarot-mode-switch button.is-active strong{color:#f1c879}.tarot-mode-help{margin:0 0 18px;color:#8e8781;font-size:12px;line-height:1.6}
+.tarot-setup[data-tarot-mode="quick"] .tarot-question-label{margin-top:4px}
+@media(max-width:600px){.tarot-mode-switch{grid-template-columns:1fr}.tarot-mode-switch button{padding:12px 14px}}
+[data-theme="light"] .tarot-mode-switch button{border-color:#ddd2c7;background:#fff;color:#6e655e}[data-theme="light"] .tarot-mode-switch button strong{color:#342820}[data-theme="light"] .tarot-mode-switch button.is-active{border-color:#b88747;background:#fff8eb}[data-theme="light"] .tarot-mode-switch button.is-active strong{color:#815c23}
