@@ -116,8 +116,7 @@ window.CHUNBONG_CHANGELOG = [
   {
     date: '2026-09-05',
     items: [
-      { type: 'new', title: 'YouTube 참여도 데이터 추가', description: '춘봉TV 영상의 공개 조회수·댓글 등 공개 지표를 수집해 데이터 페이지에서 확인할 수 있도록 추가했습니다.' },
-      { type: 'improved', title: '춘봉 데이터 Trackify 연동·로딩 안정화', description: 'SOOP 방송 기록과 차트를 Trackify 기반 데이터로 보강하고 대시보드가 더 빠르고 안정적으로 표시되도록 개선했습니다.' }
+      { type: 'new', title: 'YouTube 참여도 데이터 추가', description: '춘봉TV 영상의 공개 조회수·댓글 등 공개 지표를 수집해 데이터 페이지에서 확인할 수 있도록 추가했습니다.' }
     ]
   },
   {
