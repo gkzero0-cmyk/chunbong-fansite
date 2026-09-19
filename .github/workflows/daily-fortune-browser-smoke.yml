@@ -1,0 +1,132 @@
+name: Daily fortune browser smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'daily-fortune.js'
+      - 'daily-fortune.css'
+      - 'service-worker.js'
+      - 'tests/daily-fortune-regression.mjs'
+      - '.github/workflows/daily-fortune-browser-smoke.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'daily-fortune.js'
+      - 'daily-fortune.css'
+      - 'service-worker.js'
+      - 'tests/daily-fortune-regression.mjs'
+      - '.github/workflows/daily-fortune-browser-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Static daily fortune regression
+        run: node tests/daily-fortune-regression.mjs
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start local site
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/daily-fortune-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4173/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/daily-fortune-http.log
+          exit 1
+
+      - name: Verify daily fortune draw, persistence, reopen and KST reset
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import assert from 'node:assert/strict';
+          import { chromium } from 'playwright';
+
+          const browser = await chromium.launch({ headless: true });
+          const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+          const page = await context.newPage();
+
+          await page.route('https://res.cloudinary.com/**', route => route.fulfill({
+            status: 200,
+            contentType: 'image/svg+xml',
+            body: '<svg xmlns="http://www.w3.org/2000/svg" width="898" height="1488"><rect width="898" height="1488" fill="#111"/></svg>'
+          }));
+
+          await page.goto(process.env.BASE_URL + '/index.html?_daily_fortune=' + Date.now(), { waitUntil: 'domcontentloaded' });
+
+          await page.waitForFunction(() => window.CHUNBONG_DAILY_FORTUNE && document.querySelector('#daily-fortune-dialog')?.open === true);
+          assert.equal(await page.locator('#daily-fortune-dialog').isVisible(), true, 'first visit should auto-open daily fortune');
+          assert.equal(await page.locator('[data-daily-fortune-result]').isHidden(), true, 'result must stay hidden before the draw');
+          assert.equal(await page.locator('[data-daily-fortune-image]').getAttribute('src'), null, 'card artwork must not load before the draw');
+
+          const boundary = await page.evaluate(() => ({
+            before: window.CHUNBONG_DAILY_FORTUNE.kstDate(new Date('2026-09-19T14:59:59Z')),
+            after: window.CHUNBONG_DAILY_FORTUNE.kstDate(new Date('2026-09-19T15:00:00Z'))
+          }));
+          assert.equal(boundary.before, '2026-09-19', 'KST date must remain the same before midnight');
+          assert.equal(boundary.after, '2026-09-20', 'KST date must roll over exactly at midnight');
+
+          await page.locator('[data-daily-fortune-card]').click();
+          await page.waitForFunction(() => {
+            const key = window.CHUNBONG_DAILY_FORTUNE?.STORAGE_KEY;
+            const raw = key ? localStorage.getItem(key) : '';
+            if (!raw) return false;
+            const state = JSON.parse(raw);
+            return Number.isInteger(state.card) && state.card >= 0 && state.card <= 21;
+          });
+          await page.waitForFunction(() => document.querySelector('[data-daily-fortune-result]')?.hidden === false);
+
+          const firstState = await page.evaluate(() => JSON.parse(localStorage.getItem(window.CHUNBONG_DAILY_FORTUNE.STORAGE_KEY)));
+          assert.ok(firstState.date, 'drawn result must save its KST date');
+          assert.ok(firstState.card >= 0 && firstState.card <= 21, 'drawn card must be one of the 22 Major Arcana');
+          assert.equal(await page.locator('[data-daily-fortune-card]').isDisabled(), true, 'same result dialog must not allow a second draw');
+          assert.match((await page.locator('[data-daily-fortune-image]').getAttribute('src')) || '', /res\.cloudinary\.com\/.*c_crop.*f_auto\/q_auto/, 'drawn card must use the optimized card crop URL');
+
+          const firstTitle = (await page.locator('[data-daily-fortune-result-title]').textContent())?.trim();
+          assert.ok(firstTitle && /오늘의 운세/.test(firstTitle), 'fortune result title must render');
+
+          await page.locator('[data-daily-fortune-close]').click();
+          await page.waitForFunction(() => document.querySelector('#daily-fortune-dialog')?.open === false);
+          assert.equal(await page.locator('[data-daily-fortune-launcher]').isVisible(), true, 'closing result must show the bottom-right launcher');
+
+          await page.locator('[data-daily-fortune-launcher]').click();
+          await page.waitForFunction(() => document.querySelector('#daily-fortune-dialog')?.open === true);
+          assert.equal(await page.locator('[data-daily-fortune-card]').isDisabled(), true, 'reopened same-day result must remain locked');
+          assert.equal((await page.locator('[data-daily-fortune-result-title]').textContent())?.trim(), firstTitle, 'launcher must reopen the same fortune result');
+
+          await page.locator('[data-daily-fortune-close]').click();
+          await page.reload({ waitUntil: 'domcontentloaded' });
+          await page.waitForFunction(() => window.CHUNBONG_DAILY_FORTUNE && document.querySelector('[data-daily-fortune-launcher]')?.hidden === false);
+          assert.equal(await page.evaluate(() => document.querySelector('#daily-fortune-dialog')?.open), false, 'same-day reload must not auto-open a new draw');
+          assert.equal(await page.locator('[data-daily-fortune-launcher]').isVisible(), true, 'same-day reload must expose the saved-result launcher');
+
+          await page.evaluate(() => {
+            const key = window.CHUNBONG_DAILY_FORTUNE.STORAGE_KEY;
+            const current = JSON.parse(localStorage.getItem(key));
+            localStorage.setItem(key, JSON.stringify({ ...current, date: '2000-01-01' }));
+          });
+          await page.reload({ waitUntil: 'domcontentloaded' });
+          await page.waitForFunction(() => document.querySelector('#daily-fortune-dialog')?.open === true);
+          assert.equal(await page.locator('[data-daily-fortune-card]').isDisabled(), false, 'expired KST date must unlock a new draw');
+          assert.equal(await page.locator('[data-daily-fortune-result]').isHidden(), true, 'expired result must not leak into the new day');
+          assert.equal(await page.locator('[data-daily-fortune-image]').getAttribute('src'), null, 'new day must return to an unloaded card back');
+
+          await browser.close();
+          EOF_NODE
