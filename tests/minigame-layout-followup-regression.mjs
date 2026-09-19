@@ -40,9 +40,10 @@ assert.match(ctJs, /if\(!running\|\|paused\|\|resolving\)return/);
 assert.match(ctJs, /line\.className='ct-match-line'/);
 assert.match(ctJs, /ring\.className='ct-clear-ring'/);
 assert.match(ctJs, /line\.style\.setProperty\('--match-color',matchColor\)/);
-assert.match(ctJs, /resolving=true;const clearing=new Set\(result\.matches\)/);
+assert.match(ctJs, /resolving=true;result\.matches\.forEach\(matchIndex=>cells\[matchIndex\]\?\.classList\.add\('is-clearing'\)\)/);
+assert.doesNotMatch(ctJs, /renderBoard\(clearing\)/,'pre-clear full-board repaint must stay removed');
 assert.match(ctJs, /board=result\.board;resolving=false;renderBoard\(\)/);
-assert.match(ctJs, /\},360\);/);
+assert.match(ctJs, /\},CLEAR_RESOLVE_MS\);/);
 
 const startPos = chuntrisHtml.indexOf('id="chuntris-start"');
 const backPos = chuntrisHtml.indexOf('id="chuntris-back-mode"');
