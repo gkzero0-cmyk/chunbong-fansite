@@ -30,7 +30,7 @@ assert.match(home, /class="hero-character"[^>]*loading="eager"[^>]*decoding="asy
 assert.ok(home.includes('src="assets/chunbong-main.webp"'), 'home hero artwork must remain unchanged');
 
 const sw=read('service-worker.js');
-assert.ok(sw.includes("chunbong-pwa-20260919-v6"));
+assert.ok(sw.includes("chunbong-pwa-20260919-v7"));
 assert.ok(sw.includes("'/theme.css'"));
 assert.ok(sw.includes("'/theme-init.js'"));
 

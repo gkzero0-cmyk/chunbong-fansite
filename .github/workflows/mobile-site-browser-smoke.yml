@@ -6,6 +6,7 @@ on:
     paths:
       - 'mobile-site.css'
       - 'mobile-site.js'
+      - 'site-shell.js'
       - 'index.html'
       - 'schedule.html'
       - 'notice.html'
