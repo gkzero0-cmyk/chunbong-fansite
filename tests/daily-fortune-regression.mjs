@@ -26,6 +26,12 @@ assert.match(js, /pointermove/, 'daily fortune prism tilt pointer tracking missi
 assert.match(js, /showModal\(\)/, 'daily fortune must open as a dialog');
 assert.match(js, /data-daily-fortune-launcher/, 'persistent bottom-right reopen launcher missing');
 assert.match(css, /\.daily-fortune-launcher\{position:fixed/, 'launcher must remain fixed on screen');
+assert.match(css, /f_auto,q_auto:good,c_limit,w_768\/v1789845157\/chunbong-fansite\/tarot-card-back\.png/, 'daily fortune must use the exact uploaded celestial card-back asset');
+assert.match(css, /\.daily-fortune-back\{[\s\S]*background-image:url\("https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/f_auto,q_auto:good,c_limit,w_768\/v1789845157\/chunbong-fansite\/tarot-card-back\.png"\)/, 'daily fortune back must use the uploaded image');
+assert.match(css, /\.daily-fortune-launcher>span\{[\s\S]*tarot-card-back\.png/, 'saved-fortune launcher must reuse the uploaded card back');
+assert.match(css, /\.daily-fortune-front\{[\s\S]*#08152f/, 'daily fortune front must use the matching deep-navy celestial frame');
+assert.match(css, /\.daily-fortune-front-frame::before,\.daily-fortune-front-frame::after/, 'daily fortune front must include matching celestial star medallions');
+assert.match(css, /\.daily-fortune-front-title\{[\s\S]*#102344/, 'daily fortune title plate must use the matching navy-and-gold theme');
 assert.match(css, /@keyframes dailyFortuneBackSpin/, 'high-speed card-back spin animation missing');
 assert.match(css, /\.daily-fortune-stage\.is-spinning \.daily-fortune-card-inner/, 'spin state styling missing');
 assert.match(css, /\.daily-fortune-card\.is-revealed \.daily-fortune-card-inner\{transform:rotateY\(180deg\) rotateZ\(1turn\)\}/, 'card flip animation missing');
@@ -33,7 +39,7 @@ assert.match(css, /\.daily-fortune-stage\.is-prism-active \.daily-fortune-card/,
 assert.match(css, /--glow-x/, 'pointer-follow prism glow variables missing');
 assert.match(css, /dailyFortuneParticle/, 'fortune reveal particles missing');
 assert.match(css, /@media\(prefers-reduced-motion:reduce\)/, 'reduced-motion fallback missing');
-assert.match(sw, /chunbong-pwa-20260920-v13/, 'daily fortune service worker revision missing');
+assert.match(sw, /chunbong-pwa-20260920-v14/, 'daily fortune service worker revision missing');
 assert.match(sw, /'\/daily-fortune\.css'/);
 assert.match(sw, /'\/daily-fortune\.js'/);
 
