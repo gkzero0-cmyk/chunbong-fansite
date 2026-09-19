@@ -160,7 +160,7 @@
     }catch(_){}
   }
   async function checkBroadcastReminder(){
-    const state=read();if(!state.alerts.enabled||document.hidden)return;
+    const state=read();if(!state.alerts.enabled)return;
     try{
       const payload=window.ChunbongCache
         ?await window.ChunbongCache.fetchJson('personal:schedule','/api/content?type=schedule',{ttl:60000})
@@ -242,6 +242,7 @@
     setTimeout(()=>document.dispatchEvent(new CustomEvent('chunbong:personal-updated',{detail:read()})),0);
     void checkBroadcastReminder();
     const timer=setInterval(checkBroadcastReminder,60000);
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)void checkBroadcastReminder()});
     window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});
   }
 
