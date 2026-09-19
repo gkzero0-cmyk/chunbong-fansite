@@ -119,9 +119,7 @@
     if(count)count.textContent=total+'개의 주요 업데이트 · '+groups.length+'일 기록';
     if(status){
       const automaticCount=groups.reduce((sum,group)=>sum+group.items.filter(item=>item?.auto).length,0);
-      status.textContent=automaticCount
-        ? `직접 정리한 기록을 우선 표시하고, main의 새 변경사항을 사용자용 한글 요약 ${automaticCount}개로 자동 정리했습니다.`
-        : '사용자에게 중요한 변경사항만 한글로 간단하게 정리했습니다.';
+      status.textContent='사용자에게 중요한 변경사항만 한글로 간단하게 정리했습니다.';
       status.className='changelog-sync-status is-live';
     }
 
