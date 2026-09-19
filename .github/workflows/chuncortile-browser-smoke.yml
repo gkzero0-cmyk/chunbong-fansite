@@ -30,6 +30,7 @@ on:
       - 'api/content.js'
       - 'assets/chuncortile/tiles-user.webp'
       - 'mobile-minigames.css'
+      - 'mobile-minigames.js'
 jobs:
   browser-smoke:
     runs-on: ubuntu-latest
