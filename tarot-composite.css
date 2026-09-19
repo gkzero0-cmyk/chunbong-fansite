@@ -20,3 +20,121 @@
 @media(max-width:700px){.tarot-card-dialog-art .tarot-card-art.tarot-card-composite{width:min(88vw,540px)}#tarot-deck .tarot-card-back-number{width:36px;height:36px;font-size:13px}}
 @media(max-width:430px){#tarot-deck .tarot-card-back-number{width:32px;height:32px;font-size:12px}}
 @media(prefers-reduced-motion:reduce){.tarot-card-art.tarot-card-composite.is-reversed{transform:none!important}}
+
+
+/* Shared uploaded celestial card-back theme: 2026-09-20 */
+:root{--chunbong-tarot-back:url('/assets/tarot-card-back.webp')}
+#tarot-deck .tarot-card-back{
+  display:grid;
+  place-items:center;
+  position:relative;
+  overflow:hidden;
+  border:1px solid #efc75f!important;
+  background:#07142f var(--chunbong-tarot-back) center/cover no-repeat!important;
+  box-shadow:0 10px 24px #000b,0 0 0 1px #6c4614,inset 0 0 0 2px #07142f!important
+}
+#tarot-deck .tarot-card-back:before{
+  content:"";
+  position:absolute;
+  inset:3px;
+  border:1px solid #f5d36d9f;
+  border-radius:8px;
+  pointer-events:none;
+  box-shadow:inset 0 0 0 1px #07142fb8
+}
+#tarot-deck .tarot-card-back-number{
+  position:relative;
+  z-index:3;
+  display:grid;
+  place-items:center;
+  min-width:46px;
+  width:auto;
+  height:42px;
+  padding:0 9px;
+  border:1px solid #f9da78;
+  border-radius:12px;
+  background:
+    radial-gradient(circle at 50% 0,#f8df7b22,transparent 58%),
+    linear-gradient(180deg,#0b2149f2,#06142ff2);
+  color:#f7d66e;
+  font-family:Georgia,'Times New Roman',serif;
+  font-size:18px;
+  font-weight:800;
+  font-variant-numeric:lining-nums tabular-nums;
+  letter-spacing:.025em;
+  line-height:1;
+  text-align:center;
+  -webkit-text-stroke:.25px #a16e1b;
+  text-shadow:0 1px 0 #fff3b44d,0 2px 4px #000,0 0 10px #eabf4b7a;
+  box-shadow:inset 0 0 0 1px #5f4218,0 5px 14px #000a,0 0 14px #d4a4362e;
+  pointer-events:none
+}
+#tarot-deck .tarot-card-back-number:before,
+#tarot-deck .tarot-card-back-number:after{
+  content:"✦";
+  position:absolute;
+  top:50%;
+  transform:translateY(-52%);
+  color:#e8bd48;
+  font-size:8px;
+  text-shadow:0 0 5px #f6dc74
+}
+#tarot-deck .tarot-card-back-number:before{left:4px}
+#tarot-deck .tarot-card-back-number:after{right:4px}
+#tarot-deck .tarot-card-back:hover .tarot-card-back-number,
+#tarot-deck .tarot-card-back:focus-visible .tarot-card-back-number{
+  border-color:#fff0a4;
+  color:#fff0a0;
+  background:linear-gradient(180deg,#12315f,#081a39);
+  box-shadow:inset 0 0 0 1px #88601f,0 5px 14px #000b,0 0 18px #efcb5c72
+}
+#tarot-deck .tarot-card-back.selected{
+  opacity:1!important;
+  cursor:pointer;
+  border-color:#ffe588!important;
+  box-shadow:0 0 0 2px #07142f,0 0 0 4px #f1c95d,0 0 28px #e8b84562!important
+}
+#tarot-deck .tarot-card-back.selected .tarot-card-back-number{
+  border-color:#fff1a8;
+  background:linear-gradient(180deg,#f2d16c,#b98021);
+  color:#08152f;
+  -webkit-text-stroke:0;
+  text-shadow:0 1px 0 #fff8c8;
+  box-shadow:0 0 0 2px #0b1c3b,0 6px 16px #0009
+}
+
+.tarot-card-art.tarot-card-composite{
+  position:relative;
+  overflow:hidden!important;
+  border:0!important;
+  border-radius:20px!important;
+  background:#07142f!important;
+  box-shadow:0 0 0 1px #f6d36c,0 0 0 4px #07142f,0 0 0 6px #b47c22,0 20px 52px #000c!important
+}
+.tarot-card-art.tarot-card-composite:after{
+  content:"";
+  position:absolute;
+  z-index:8;
+  inset:4px;
+  pointer-events:none;
+  border:2px solid #f7d66f;
+  border-radius:16px;
+  box-shadow:inset 0 0 0 2px #07142f,inset 0 0 0 3px #8f611d;
+  background:
+    radial-gradient(circle at 12px 12px,#fff1a0 0 2px,#d7a12d 3px 4px,transparent 5px),
+    radial-gradient(circle at calc(100% - 12px) 12px,#fff1a0 0 2px,#d7a12d 3px 4px,transparent 5px),
+    radial-gradient(circle at 12px calc(100% - 12px),#fff1a0 0 2px,#d7a12d 3px 4px,transparent 5px),
+    radial-gradient(circle at calc(100% - 12px) calc(100% - 12px),#fff1a0 0 2px,#d7a12d 3px 4px,transparent 5px)
+}
+.tarot-card-art.tarot-card-composite .tarot-composite-svg{
+  width:calc(100% - 12px)!important;
+  height:calc(100% - 12px)!important;
+  margin:6px!important;
+  border-radius:14px!important
+}
+@media(max-width:700px){
+  #tarot-deck .tarot-card-back-number{min-width:38px;height:34px;padding:0 7px;font-size:14px;border-radius:10px}
+}
+@media(max-width:430px){
+  #tarot-deck .tarot-card-back-number{min-width:34px;height:31px;padding:0 6px;font-size:13px}
+}
