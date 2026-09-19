@@ -22,6 +22,7 @@ const commits=[
 
 assert.equal(_internals.SITE_STARTED_AT,'2026-08-30');
 assert.equal(_internals.normalizeTitle('feat: add multiplayer'),'add multiplayer');
+assert.equal(_internals.normalizeTitle('perf: 팬사이트 최적화 (#129)'),'팬사이트 최적화');
 assert.equal(_internals.summaryOf('perf: title\n\n첫 번째 설명\n두 번째 설명\n세 번째 설명'),'첫 번째 설명 · 두 번째 설명');
 assert.equal(_internals.commitType('feat: add multiplayer'),'new');
 assert.equal(_internals.commitType('fix: repair'),'fixed');
