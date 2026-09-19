@@ -72,7 +72,7 @@ jobs:
             });
           }
 
-          async function dragRect(page,rect){
+          async function dragRect(page,rect,{hold=false}={}){
             assert.ok(rect,'no sum-10 rectangle found');
             const a=await page.locator(`.cg-fruit[data-index="${rect.start}"]`).boundingBox();
             const b=await page.locator(`.cg-fruit[data-index="${rect.end}"]`).boundingBox();
@@ -80,7 +80,7 @@ jobs:
             await page.mouse.move(a.x+a.width/2,a.y+a.height/2);
             await page.mouse.down();
             await page.mouse.move(b.x+b.width/2,b.y+b.height/2,{steps:5});
-            await page.mouse.up();
+            if(!hold)await page.mouse.up();
           }
 
           async function imageWidth(page,url){
@@ -141,7 +141,11 @@ jobs:
             await page.waitForFunction(()=>document.querySelector('#chungwagame')?.dataset.gameStatus==='playing');
 
             let first=await findTenRect(page);
-            await dragRect(page,first);
+            await dragRect(page,first,{hold:true});
+            assert.equal(await page.locator('#cg-drag').getAttribute('data-sum'),'10','live drag sum must expose 10');
+            assert.equal(await page.locator('#cg-drag').getAttribute('data-state'),'valid','sum-10 drag must expose a valid state');
+            assert.ok(await page.locator('#cg-drag').evaluate(el=>el.classList.contains('valid')),'valid drag outline missing');
+            await page.mouse.up();
             await page.waitForFunction(()=>Number(document.querySelector('#cg-score')?.textContent||0)>0);
             assert.ok(await page.locator('#cg-fx-layer').evaluate(el=>el.childElementCount>0),'success effect missing');
 
