@@ -12,7 +12,7 @@ const chuntrisHtml = read('chuntris.html');
 const chunbakHtml = read('chunbak.html');
 const multiplayerCss = read('minigame-multiplayer.css');
 const chungwaCss = read('chungwagame.css');
-const siteCss = read('styles.css');
+const gameLayout = read('game-layout.css');
 
 assert.match(chuntrisHtml, /chuntris-mode-score180[\s\S]*data-chuntris-multiplayer/);
 assert.equal((chuntrisHtml.match(/data-chuntris-multiplayer/g) || []).length, 1);
