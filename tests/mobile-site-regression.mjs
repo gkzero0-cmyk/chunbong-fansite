@@ -36,7 +36,7 @@ assert.match(css,/\.activity-panel\{[\s\S]*bottom:max\(8px,env\(safe-area-inset-
 assert.match(js,/mobile-site-nav-open/);
 assert.match(js,/event\.key==='Escape'/);
 assert.match(js,/visualViewport/);
-assert.match(js,/data-mobile-scrollable/);
+assert.match(js,/mobileScrollable/);
 new Function(js);
 
 console.log('Mobile site regression passed');
