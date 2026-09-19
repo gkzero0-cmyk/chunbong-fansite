@@ -4,9 +4,13 @@ import assert from 'node:assert/strict';
 const html = fs.readFileSync(new URL('../chunbak.html', import.meta.url), 'utf8');
 const js = fs.readFileSync(new URL('../chunbak.js', import.meta.url), 'utf8');
 
-assert.match(html, /id="chunbak-start"[^>]*disabled/, 'start must be disabled until all stage images preload');
-assert.match(html, /id="chunbak-restart"[^>]*disabled/, 'restart must also be disabled until all stage images preload');
-assert.ok(js.includes('restartButton.disabled = false'), 'restart must be enabled only after preload succeeds');
-assert.ok(js.includes('restartButton.disabled = true'), 'restart must remain disabled when preload fails');
+assert.match(html, /id="chunbak-start"[^>]*disabled/, 'start must be disabled until spawnable stage images preload');
+assert.match(html, /id="chunbak-restart"[^>]*disabled/, 'restart must be disabled until the initial asset gate passes');
+assert.ok(js.includes('Core.STAGES.slice(0, 5)'), 'only stages 1-5 should block first play');
+assert.ok(js.includes('Promise.allSettled(Core.STAGES.slice(5)'), 'higher stages should warm independently after first play is ready');
+assert.ok(js.includes('requestIdleCallback'), 'remaining stages should prefer idle-time warming');
+assert.ok(js.includes('ensureStageImage'), 'a merged stage must be able to request its image on demand');
+assert.ok(js.includes('restartButton.disabled = false'), 'restart must be enabled after the initial asset gate succeeds');
+assert.ok(js.includes('restartButton.disabled = true'), 'restart must remain disabled when the initial asset gate fails');
 
-console.log('chunbak asset gate regression passed');
+console.log('chunbak progressive asset gate regression passed');

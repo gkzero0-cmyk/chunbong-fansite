@@ -2,39 +2,46 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
-// Cloudinary-backed uploaded-original tarot regression.
 const require = createRequire(import.meta.url);
 const composite = require('../tarot-composite.js');
 const data = require('../tarot-data.js');
 const root = new URL('../', import.meta.url);
 const read = path => fs.readFileSync(new URL(path, root), 'utf8');
 
-const CLOUDINARY_BASE = 'https://res.cloudinary.com/lyppgyei/image/upload/chunbong-fansite/tarot-original';
+const DELIVERY = 'https://res.cloudinary.com/lyppgyei/image/upload';
+const cardUrl = (sheet, slot) =>
+  `${DELIVERY}/c_crop,g_north_west,h_1488,w_898,x_${slot * 898},y_0/q_100/f_avif/chunbong-fansite/tarot-original/sheet-${sheet}.avif`;
 
-assert.equal(typeof composite.originalArtworkDescriptor, 'function', 'composite renderer should expose original artwork mapping');
+assert.equal(typeof composite.originalArtworkDescriptor, 'function');
+assert.equal(typeof composite.originalCardCropUrl, 'function');
 assert.deepEqual(composite.originalArtworkDescriptor(data.cards[0]), {
   cardIndex: 0,
   sheet: 0,
   slot: 0,
-  url: `${CLOUDINARY_BASE}/sheet-0.avif`,
+  url: cardUrl(0, 0),
   sourceX: 0,
-  sheetWidth: 11674,
+  sheetWidth: 898,
   sheetHeight: 1488,
   cellWidth: 898,
   cellHeight: 1488
-}, 'first card should use the first uploaded-original Cloudinary sheet slot');
-assert.equal(composite.originalArtworkDescriptor(data.cards[1]).sourceX, -898, 'second card should advance by one exact uploaded-original card width');
+});
 assert.deepEqual(composite.originalArtworkDescriptor(data.cards[77]), {
   cardIndex: 77,
   sheet: 5,
   slot: 12,
-  url: `${CLOUDINARY_BASE}/sheet-5.avif`,
-  sourceX: -(12 * 898),
-  sheetWidth: 11674,
+  url: cardUrl(5, 12),
+  sourceX: 0,
+  sheetWidth: 898,
   sheetHeight: 1488,
   cellWidth: 898,
   cellHeight: 1488
-}, 'last card should map to sheet 5 slot 12');
+});
+
+const parsed = composite.descriptorFromLegacyImage(cardUrl(5, 12), '0');
+assert.equal(parsed.cardIndex, 77);
+assert.equal(parsed.url, cardUrl(5, 12));
+assert.equal(parsed.sheetWidth, 898);
+assert.equal(parsed.sheetHeight, 1488);
 
 const svg = composite.buildCompositeSvg(
   data.cards[0],
@@ -42,10 +49,10 @@ const svg = composite.buildCompositeSvg(
   false,
   'uploaded-original-test'
 );
-assert.match(svg, /href="https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/chunbong-fansite\/tarot-original\/sheet-0\.avif"/, 'composite should render the uploaded-original Cloudinary sheet instead of the old super-resolution pair');
-assert.match(svg, /viewBox="0 0 898 1488"/, 'one original 898×1488 card must be isolated before it is scaled into the vector frame');
-assert.match(svg, /class="tarot-composite-art-viewport"/, 'the selected source cell must be clipped before direction rotation');
-assert.match(svg, /width="11674" height="1488"/, 'the full 13-card original sheet must preserve its native pixel geometry');
+assert.match(svg, /c_crop,g_north_west,h_1488,w_898,x_0,y_0\/q_100\/f_avif/, 'composite should render a server-cropped original card');
+assert.match(svg, /viewBox="0 0 898 1488"/, 'one original 898×1488 card must be isolated before vector compositing');
+assert.match(svg, /width="898" height="1488"/, 'the raster layer should contain one card instead of the full 13-card sheet');
+assert.doesNotMatch(svg, /width="11674" height="1488"/, 'full source sheets must not be downloaded by result cards');
 
 const reversed = composite.buildCompositeSvg(
   data.cards[0],
@@ -53,13 +60,13 @@ const reversed = composite.buildCompositeSvg(
   true,
   'uploaded-original-reversed'
 );
-assert.match(reversed, /class="tarot-composite-art-rotation" transform="rotate\(180 480 656\)"/, 'reversed readings should rotate the isolated uploaded illustration only');
-assert.doesNotMatch(reversed, /class="tarot-vector-title"[^>]*transform=/, 'vector labels must remain upright');
+assert.match(reversed, /class="tarot-composite-art-rotation" transform="rotate\(180 480 656\)"/);
+assert.doesNotMatch(reversed, /class="tarot-vector-title"[^>]*transform=/);
 
 const compositeCss = read('tarot-composite.css');
-assert.match(compositeCss, /#tarot-deck \.tarot-card-back\{[^}]*display:grid[^}]*place-items:center/, 'direct-selection card numbers must be centered by the card button itself');
-assert.match(compositeCss, /#tarot-deck \.tarot-card-back-number\{[^}]*display:grid[^}]*place-items:center[^}]*width:44px[^}]*height:44px/, 'direct-selection number should use one consistent centered circular DOM badge');
-assert.match(compositeCss, /#tarot-deck \.tarot-card-back\.selected\{[^}]*opacity:1/, 'selected card must keep the center number legible');
-assert.match(compositeCss, /\.tarot-composite-art-image\{filter:none/, 'uploaded original artwork should not be reprocessed by a CSS clarity filter');
+assert.match(compositeCss, /#tarot-deck \.tarot-card-back\{[^}]*display:grid[^}]*place-items:center/);
+assert.match(compositeCss, /#tarot-deck \.tarot-card-back-number\{[^}]*display:grid[^}]*place-items:center[^}]*width:44px[^}]*height:44px/);
+assert.match(compositeCss, /#tarot-deck \.tarot-card-back\.selected\{[^}]*opacity:1/);
+assert.match(compositeCss, /\.tarot-composite-art-image\{filter:none/);
 
-console.log('tarot uploaded original art and centered-number regression test passed');
+console.log('tarot cropped original art and centered-number regression test passed');

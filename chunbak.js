@@ -53,6 +53,7 @@
   const modalPanels = [...document.querySelectorAll('[data-chunbak-panel]')];
 
   const images = new Map();
+  const imageLoads = new Map();
   let engine = null;
   let world = null;
   let gameState = 'start';
@@ -299,6 +300,9 @@
     const img = document.createElement('img');
     img.src = meta.image;
     img.alt = `${nextStage}단계`;
+    img.decoding = 'async';
+    img.fetchPriority = 'high';
+    void ensureStageImage(nextStage);
     nextNode.appendChild(img);
   }
 
@@ -309,6 +313,9 @@
       const img = document.createElement('img');
       img.src = meta.image;
       img.alt = '';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.fetchPriority = 'low';
       const caption = document.createElement('figcaption');
       caption.textContent = `${meta.id}단계`;
       figure.append(img, caption);
@@ -437,7 +444,11 @@
     const stage = body.plugin?.chunbak?.stage;
     const meta = Core.STAGES[stage - 1];
     const img = images.get(stage);
-    if (!img || !meta) return;
+    if (!meta) return;
+    if (!img) {
+      void ensureStageImage(stage);
+      return;
+    }
     const size = meta.radius * 2;
     ctx.save();
     ctx.translate(body.position.x, body.position.y);
@@ -450,7 +461,11 @@
     if (!playing) return;
     const meta = Core.STAGES[currentStage - 1];
     const img = images.get(currentStage);
-    if (!meta || !img) return;
+    if (!meta) return;
+    if (!img) {
+      void ensureStageImage(currentStage);
+      return;
+    }
     const radius = meta.radius;
     const x = Math.min(WIDTH - radius, Math.max(radius, pointerX));
     ctx.save();
@@ -616,19 +631,54 @@
   });
   comboNode?.addEventListener('animationend', () => comboNode.classList.remove('is-visible'));
 
+  function loadStageImage(meta) {
+    if (!meta) return Promise.reject(new Error('missing_stage_image'));
+    if (images.has(meta.id)) return Promise.resolve(images.get(meta.id));
+    if (imageLoads.has(meta.id)) return imageLoads.get(meta.id);
+
+    const task = new Promise((resolve, reject) => {
+      const img = new Image();
+      img.decoding = 'async';
+      img.onload = () => {
+        images.set(meta.id, img);
+        imageLoads.delete(meta.id);
+        resolve(img);
+      };
+      img.onerror = () => {
+        imageLoads.delete(meta.id);
+        reject(new Error(`failed_stage_image_${meta.id}`));
+      };
+      img.src = meta.image;
+    });
+    imageLoads.set(meta.id, task);
+    return task;
+  }
+
+  function ensureStageImage(stage) {
+    const meta = Core.STAGES[Number(stage) - 1];
+    if (!meta) return Promise.resolve(null);
+    return loadStageImage(meta).catch(() => null);
+  }
+
+  function warmRemainingImages() {
+    const warm = () => {
+      void Promise.allSettled(Core.STAGES.slice(5).map(meta => loadStageImage(meta)));
+    };
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(warm, { timeout: 1800 });
+    } else {
+      setTimeout(warm, 350);
+    }
+  }
+
   async function preloadImages() {
     try {
-      await Promise.all(Core.STAGES.map(meta => new Promise((resolve, reject) => {
-        const img = new Image();
-        img.decoding = 'async';
-        img.onload = () => { images.set(meta.id, img); resolve(); };
-        img.onerror = reject;
-        img.src = meta.image;
-      })));
+      await Promise.all(Core.STAGES.slice(0, 5).map(meta => loadStageImage(meta)));
       startButton.disabled = false;
       if (restartButton) restartButton.disabled = false;
       buildLegend();
       renderNext();
+      warmRemainingImages();
     } catch (_) {
       startButton.disabled = true;
       if (restartButton) restartButton.disabled = true;

@@ -252,21 +252,25 @@ async function handler(req,res) {
   if(type==='minigame-multiplayer') return handleMinigameMultiplayer(req,res);
   if(type==='changelog-history') return handleChangelogHistory(req,res);
   const forceDataRefresh=type==='data'&&String(req.query?.refresh||'')==='1';
-  res.setHeader('Cache-Control',forceDataRefresh?'no-store, max-age=0':'s-maxage=180, stale-while-revalidate=600');
+  const send=(status,payload)=>{
+    const noStore=forceDataRefresh||status>=400||Boolean(payload?.fallback);
+    res.setHeader('Cache-Control',noStore?'no-store, max-age=0':'s-maxage=180, stale-while-revalidate=600');
+    return res.status(status).json(payload);
+  };
   try {
-    if(type==='vod'){const items=await fetchVod();return res.status(200).json({items,source:type,fallback:!items.length});}
-    if(type==='notice'){const items=await fetchNotice();return res.status(200).json({items,source:type,fallback:!items.length});}
-    if(type==='notice-detail'){const id=String(req.query?.id||'');const item=id==='203015477'?await fetchScheduleDetail(id):await fetchNoticeDetail(id);return res.status(200).json({item,source:type,fallback:!item?.content&&!item?.html&&!item?.images?.length});}
-    if(type==='clips'){const groups=await fetchClips();return res.status(200).json({items:groups.items,groups:{catch:groups.catch,clip:groups.clip},source:type,fallback:!groups.items.length});}
-    if(type==='fanart'){const items=await fetchFanart();return res.status(200).json({items,source:type,fallback:!items.length});}
-    if(type==='fanart-detail'){const id=String(req.query?.id||'');const item=await fetchFanartDetail(id);return res.status(200).json({item,source:type,fallback:!item?.images?.length});}
-    if(type==='youtube'){const groups=await fetchYoutube();return res.status(200).json({items:groups.items,groups:{videos:groups.videos,shorts:groups.shorts},source:type,fallback:!groups.items.length});}
-    if(type==='schedule'){const items=await fetchSchedule();return res.status(200).json({items,source:type,fallback:!items.length});}
-    if(type==='catch-detail'){const id=String(req.query?.id||'');const item=await fetchCatchDetail(id);return res.status(200).json({item,source:type,fallback:!item?.stream});}
-    if(type==='activity'){const payload=await fetchActivity();return res.status(200).json({...payload,source:type,fallback:!payload.items.length});}
-    if(type==='data'){const payload=compactDataPayload(await fetchChunbongData());return res.status(200).json(payload);}
-    return res.status(400).json({error:'unknown content type'});
-  } catch(error){return res.status(200).json({items:[],source:type,fallback:true,reason:error.message});}
+    if(type==='vod'){const items=await fetchVod();return send(200,{items,source:type,fallback:!items.length});}
+    if(type==='notice'){const items=await fetchNotice();return send(200,{items,source:type,fallback:!items.length});}
+    if(type==='notice-detail'){const id=String(req.query?.id||'');const item=id==='203015477'?await fetchScheduleDetail(id):await fetchNoticeDetail(id);return send(200,{item,source:type,fallback:!item?.content&&!item?.html&&!item?.images?.length});}
+    if(type==='clips'){const groups=await fetchClips();return send(200,{items:groups.items,groups:{catch:groups.catch,clip:groups.clip},source:type,fallback:!groups.items.length});}
+    if(type==='fanart'){const items=await fetchFanart();return send(200,{items,source:type,fallback:!items.length});}
+    if(type==='fanart-detail'){const id=String(req.query?.id||'');const item=await fetchFanartDetail(id);return send(200,{item,source:type,fallback:!item?.images?.length});}
+    if(type==='youtube'){const groups=await fetchYoutube();return send(200,{items:groups.items,groups:{videos:groups.videos,shorts:groups.shorts},source:type,fallback:!groups.items.length});}
+    if(type==='schedule'){const items=await fetchSchedule();return send(200,{items,source:type,fallback:!items.length});}
+    if(type==='catch-detail'){const id=String(req.query?.id||'');const item=await fetchCatchDetail(id);return send(200,{item,source:type,fallback:!item?.stream});}
+    if(type==='activity'){const payload=await fetchActivity();return send(200,{...payload,source:type,fallback:!payload.items.length});}
+    if(type==='data'){const payload=compactDataPayload(await fetchChunbongData());return send(200,payload);}
+    return send(400,{error:'unknown content type'});
+  } catch(error){return send(200,{items:[],source:type,fallback:true,reason:error.message});}
 }
 
 module.exports = handler;
