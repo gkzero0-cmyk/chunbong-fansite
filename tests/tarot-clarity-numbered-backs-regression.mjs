@@ -29,9 +29,17 @@ assert.match(
 assert.doesNotMatch(compositeCss, /content:counter\(tarot-card-back\)/, 'visible card numbers must not depend on CSS counter pseudo-content');
 assert.match(
   compositeCss,
-  /#tarot-deck \.tarot-card-back-number\{[^}]*display:grid[^}]*place-items:center[^}]*width:44px[^}]*height:44px/,
-  'desktop card-back number badge must be one stable centered DOM element'
+  /#tarot-deck \.tarot-card-back-number\{[^}]*display:grid[^}]*place-items:center[^}]*width:46px[^}]*height:46px/,
+  'desktop card-back number badge must be one stable centered celestial medallion'
 );
+assert.match(compositeCss, /v1789845157\/chunbong-fansite\/tarot-card-back\.png/, '78-card deck must use the exact uploaded tarot back');
+assert.match(compositeCss, /font-family:Georgia,"Times New Roman",serif/, 'deck numbers must use the matching classic tarot serif');
+assert.match(compositeCss, /color:#ffd75f/, 'deck numbers must use the uploaded card back gold tone');
+assert.match(compositeCss, /background:radial-gradient\(circle at 50% 36%,#243a68/, 'deck number medallions must use the matching deep navy');
+assert.match(svg, /stop-color="#0b1b3a"/, 'revealed tarot outer frame must use deep navy from the uploaded back');
+assert.match(svg, /fill="#07142d"/, 'revealed tarot frame must keep a navy inner border');
+assert.match(svg, /fill="#ffd75b"/, 'revealed tarot frame must include gold celestial star ornaments');
+assert.match(svg, /fill="#fff0ae"/, 'revealed tarot title must use the matching warm gold/ivory color');
 
 const tarotSource = fs.readFileSync(new URL('tarot.js', root), 'utf8');
 assert.match(
