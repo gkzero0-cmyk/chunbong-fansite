@@ -96,6 +96,28 @@ jobs:
           await page.waitForSelector('[data-achievement-grid]');
           assert.ok(await page.locator('[data-achievement-grid] .minigame-achievement').count()>=6,'achievement badges missing');
 
+          await page.goto(process.env.BASE_URL+'/tarot.html',{waitUntil:'domcontentloaded'});
+          await page.waitForSelector('[data-tarot-journal]');
+          await page.evaluate(()=>{
+            document.getElementById('tarot-question').value='테스트 타로 질문';
+            const results=document.getElementById('tarot-results');
+            const grid=document.getElementById('tarot-reading-grid');
+            grid.innerHTML='<article class="tarot-card-result"><p class="tarot-position">현재</p><div class="tarot-card-copy"><small>정방향 · DECK 1</small><h2>광대</h2><p>테스트</p></div></article>';
+            results.hidden=false;
+            results.classList.add('is-complete');
+          });
+          await page.waitForFunction(()=>document.querySelectorAll('[data-tarot-journal] .tarot-journal-grid article').length>0);
+          assert.ok(await page.getByText('테스트 타로 질문',{exact:true}).count(),'tarot journal did not save completed reading');
+          const tarotStore=await page.evaluate(()=>JSON.parse(localStorage.getItem('chunbong-personal-hub-v1')||'{}'));
+          assert.ok(Array.isArray(tarotStore.tarot)&&tarotStore.tarot.length>0,'tarot journal local storage missing');
+
+          await page.goto(process.env.BASE_URL+'/?source=pwa',{waitUntil:'domcontentloaded'});
+          await page.waitForSelector('[data-dashboard-alert]');
+          await page.locator('[data-dashboard-alert]').click();
+          await page.waitForFunction(()=>JSON.parse(localStorage.getItem('chunbong-broadcast-alert-v1')||'{}').enabled===true);
+          const alertPrefs=await page.evaluate(()=>JSON.parse(localStorage.getItem('chunbong-broadcast-alert-v1')||'{}'));
+          assert.equal(alertPrefs.enabled,true,'broadcast alert preference was not saved');
+
           await page.goto(process.env.BASE_URL+'/timeline.html',{waitUntil:'domcontentloaded'});
           await page.waitForSelector('.timeline-row');
           assert.ok(await page.getByText('테스트 방송 기록',{exact:true}).count(),'broadcast history missing from timeline');
