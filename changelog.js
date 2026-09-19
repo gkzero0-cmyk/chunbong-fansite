@@ -9,7 +9,7 @@
     .filter(group=>group&&/^20\d{2}-\d{2}-\d{2}$/.test(String(group.date||'')))
     .map(group=>({date:group.date,items:Array.isArray(group.items)?group.items:[]}))
     .sort((a,b)=>b.date.localeCompare(a.date));
-  const latestCuratedDate=groups[0]?.date||'';
+  const AUTO_SYNC_BASE_SHA='af3bb1f6ecb4308b06ab27e850ec149e0d42a0fa';
 
   const titleKey=(value='')=>String(value)
     .toLowerCase()
@@ -17,14 +17,31 @@
     .replace(/[^0-9a-z가-힣]+/g,'')
     .trim();
 
+  function automaticUpdatesSinceBaseline(automaticGroups=[]){
+    const recent=[];
+    let reachedBaseline=false;
+    for(const group of Array.isArray(automaticGroups)?automaticGroups:[]){
+      const items=[];
+      for(const item of Array.isArray(group?.items)?group.items:[]){
+        if(String(item?.sha||'')===AUTO_SYNC_BASE_SHA){
+          reachedBaseline=true;
+          break;
+        }
+        items.push(item);
+      }
+      if(items.length)recent.push({date:group?.date,items});
+      if(reachedBaseline)break;
+    }
+    return recent;
+  }
+
   function mergeAutomaticGroups(automaticGroups=[]){
     const byDate=new Map(groups.map(group=>[group.date,{date:group.date,items:[...group.items]}]));
     const seenTitles=new Set(groups.flatMap(group=>group.items.map(item=>titleKey(item?.title||''))).filter(Boolean));
 
-    for(const automaticGroup of Array.isArray(automaticGroups)?automaticGroups:[]){
+    for(const automaticGroup of automaticUpdatesSinceBaseline(automaticGroups)){
       const date=String(automaticGroup?.date||'');
       if(!/^20\d{2}-\d{2}-\d{2}$/.test(date))continue;
-      if(latestCuratedDate&&date<latestCuratedDate)continue;
       if(!byDate.has(date))byDate.set(date,{date,items:[]});
       const target=byDate.get(date);
       for(const item of Array.isArray(automaticGroup?.items)?automaticGroup.items:[]){
