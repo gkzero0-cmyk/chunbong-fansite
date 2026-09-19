@@ -62,8 +62,9 @@ jobs:
             stamp=$(date +%s)
             version="$(curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/api/version?_ts=$stamp" || true)"
             home="$(curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/index.html?_ts=$stamp" || true)"
+            improvements="$(curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/site-improvements.js?_ts=$stamp" || true)"
             actual="$(printf '%s' "$version" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(JSON.parse(s).sha||'')}catch{}})")"
-            if [[ "$actual" == "$GITHUB_SHA" ]] && grep -Fq 'TODAY · CHUNBONG' <<<"$home"; then
+            if [[ "$actual" == "$GITHUB_SHA" ]] && grep -Fq 'CHUNBONG FAN HUB' <<<"$home" && grep -Fq 'TODAY AT CHUNBONG' <<<"$improvements"; then
               echo "Production synced to $GITHUB_SHA"
               exit 0
             fi
