@@ -4,7 +4,7 @@
     "active": true,
     "sessionId": "2026-09-06T06:59:44.000Z",
     "startedAt": "2026-09-06T06:59:44.000Z",
-    "title": "마이크 테스트 도와주실 봉봉이 구해요",
+    "title": "그냥서버:적자생존 설명회",
     "samples": [
       {
         "capturedAt": "2026-09-06T07:02:51.052Z",
@@ -6693,12 +6693,23 @@
         "categoryName": "버추얼",
         "followerCount": 30290,
         "fanclubCount": 7672
+      },
+      {
+        "capturedAt": "2026-09-19T08:58:34.465Z",
+        "live": true,
+        "startedAt": "2026-09-19T08:55:57.000Z",
+        "title": "그냥서버:적자생존 설명회",
+        "viewerCount": 24,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30268,
+        "fanclubCount": 7672
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-19T08:51:46.022Z",
-    "followerCount": 30271,
+    "capturedAt": "2026-09-19T08:58:34.465Z",
+    "followerCount": 30268,
     "fanclubCount": 7672
   }
 }
