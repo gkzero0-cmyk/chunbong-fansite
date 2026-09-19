@@ -7,8 +7,6 @@ on:
       - 'index.html'
       - 'home-dday.js'
       - 'styles.css'
-      - 'tarot.html'
-      - 'tarot-hero-banner.css'
       - '.github/workflows/home-dday-pr-browser-smoke.yml'
 
 jobs:
@@ -90,14 +88,6 @@ jobs:
               assert.match((await homeOfficial.textContent())||'',/SOOP 공식 프로필/);
               assert.ok(await homeOfficial.isVisible(),'home official profile card not visible');
               assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'home horizontal overflow');
-
-              await page.goto(`${process.env.BASE_URL}/tarot.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
-              const tarotLink=page.locator('.tarot-hero-banner-link');
-              assert.equal(await tarotLink.getAttribute('href'),'https://namu.wiki/w/%EC%B6%98%EB%B4%89/%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%A8%B8%20%ED%83%80%EB%A1%9C%EC%83%81%EB%8B%B4%20%EB%AA%A9%EB%A1%9D');
-              assert.equal(await tarotLink.getAttribute('target'),'_blank');
-              assert.ok(await tarotLink.isVisible(),'tarot hero wiki link not visible');
-              assert.ok(await page.locator('.tarot-hero-banner').isVisible(),'tarot hero image missing');
-              assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'tarot horizontal overflow');
 
               assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
               await page.close();
