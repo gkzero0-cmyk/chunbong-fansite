@@ -62,6 +62,7 @@ assert.match(chuntrisUiCss, /\.chuntris-board-overlay[\s\S]*backdrop-filter:blur
 console.log('minigame layout follow-up regression: ok');
 
 
-assert.match(minigamesHtml, /<img src="assets\/minigames-hero\.svg\?v=20260919b"/);
-assert.doesNotMatch(minigamesHtml, /minigames-hero\.webp\?v=20260919/);
+assert.match(minigamesHtml, /<img src="assets\/minigames-hero-hq\.webp\?v=20260919c"/);
+assert.match(minigamesHtml, /data-fallback-src="assets\/minigames-hero\.svg\?v=20260919b"/);
+assert.match(minigamesHtml, /width="1440" height="810"/);
 assert.match(minigamesCss, /background:#0b0908 url\('assets\/minigames-hero\.svg\?v=20260919b'\) center\/cover no-repeat/);

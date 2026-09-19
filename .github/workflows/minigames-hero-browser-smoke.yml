@@ -6,7 +6,8 @@ on:
     paths:
       - 'minigames.html'
       - 'minigames.css'
-      - 'assets/minigames-hero.webp'
+      - 'assets/minigames-hero-hq.webp'
+      - 'assets/minigames-hero.svg'
       - 'tests/minigames-hero-regression.mjs'
       - '.github/workflows/minigames-hero-browser-smoke.yml'
 
@@ -51,7 +52,10 @@ jobs:
             assert.ok(copy.x+copy.width<art.x,'artwork must sit to the right of hero copy');
             assert.ok(art.width>=420,'desktop artwork is too small');
             assert.ok(Math.abs(art.width/art.height-(16/9))<0.03,'desktop artwork lost 16:9 ratio');
-            assert.equal(await img.evaluate(el=>el.complete&&el.naturalWidth>0),true,'hero image failed to load');
+            const natural=await img.evaluate(el=>({complete:el.complete,width:el.naturalWidth,height:el.naturalHeight,src:el.currentSrc}));
+            assert.equal(natural.complete,true,'hero image failed to load');
+            assert.ok(natural.width>=1200&&natural.height>=675,`hero source resolution too small: ${natural.width}x${natural.height}`);
+            assert.match(natural.src,/minigames-hero-hq\.webp/,'desktop must render the high-resolution hero source');
             assert.ok(art.x>=0&&art.x+art.width<=1440&&art.y>=0&&art.y+art.height<=900,'desktop artwork clips viewport');
             await desktop.close();
 
