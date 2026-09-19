@@ -18,6 +18,12 @@ assert.match(css,/regular cells only, no 5-cell helper grid/,'grid tuning must e
 assert.match(css,/#DDDAD2/i,'comfortable off-white board surface missing');
 assert.match(css,/#F2421B/i,'requested red-orange number color missing');
 assert.match(css,/content:attr\(data-value\)/,'number overlay must render from each fruit data value');
+assert.match(css,/Visual discrimination pass: 2026-09-20/,'visual discrimination override missing');
+for(const value of ['1','2','3','4','5','6','7','8','9'])assert.match(css,new RegExp(`\\.cg-fruit-shape\\[data-value="${value}"\\]\\{--cg-value-accent:`),`missing unique value accent ${value}`);
+assert.match(css,/\.cg-drag::after\{[\s\S]*content:"합계 " attr\(data-sum\) " \/ 10"/,'floating drag sum label missing');
+assert.match(css,/\.cg-drag\.over/,'over-10 visual state missing');
+assert.match(js,/e\.dragRect\.dataset\.sum=String\(sum\)/,'drag sum dataset missing');
+assert.match(js,/dataset\.state=state/,'drag semantic state missing');
 assert.match(css,/grid-template-columns:150px minmax\(0,760px\) 104px/,'compact desktop layout missing');
 assert.match(css,/max-height:calc\(100svh - 205px\)/,'short viewport board guard missing');
 assert.match(html,/id="cg-time-fill"/,'time gauge missing');
