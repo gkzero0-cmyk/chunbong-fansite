@@ -4,7 +4,7 @@
   if (!core || core.page !== 'notice') return;
   const { data, esc, loadContent, errorState, bindRetry, setupReveal, requestedOpenId } = core;
   const q = core.$;
-  const qa = core['
+  const qa = (selector, root = document) => [...root.querySelectorAll(selector)];
   const NOTICE_REFRESH_MS = 5 * 60 * 1000;
   const noticeDetailCache = new Map();
   let noticeRefreshTimer = null;
