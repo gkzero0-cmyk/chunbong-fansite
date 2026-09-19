@@ -1,0 +1,168 @@
+/* Shared minigame layout system.
+   Game-specific visuals stay in each game stylesheet; viewport sizing lives here. */
+
+:root{
+  --game-shell-gutter:36px;
+  --game-shell-gutter-wide:44px
+}
+
+/* Keep Chuntris and Chunbak at their existing visual sizes. */
+@media(min-width:1600px) and (min-height:901px){
+  .chuntris-page .content-section>.page-shell{width:min(96%,1760px)!important;max-width:1760px!important}
+  .chuntris-game.chuntris-immersive{
+    --chuntris-stage-height:min(980px,76svh)!important;
+    --chuntris-board-width:min(490px,38svh,calc(var(--chuntris-stage-height)/2),calc(100vw - 56px))!important;
+    --chuntris-toolbar-height:64px!important;
+    --chuntris-board-gap:10px!important;
+    padding:12px!important
+  }
+  .chuntris-layout.chuntris-layout-immersive{
+    grid-template-columns:minmax(210px,255px) minmax(360px,calc(var(--chuntris-stage-height)/2)) minmax(210px,255px)!important;
+    gap:16px!important
+  }
+  .chuntris-play-top{padding:8px 12px!important}
+  .chuntris-play-top .chuntris-status{font-size:1rem!important}
+  .chuntris-utility-cluster button{width:46px!important;height:46px!important;font-size:1.05rem!important}
+  .chuntris-panel,.chuntris-stats,.chuntris-reaction-card{padding:13px!important}
+  .chuntris-panel h2{font-size:.84rem!important}
+  .chuntris-stats span{font-size:.72rem!important}
+  .chuntris-stats strong{font-size:1.05rem!important}
+  .chuntris-reaction-card figcaption{font-size:.78rem!important}
+
+  .chunbak-play-top{max-width:1320px!important}
+  .chunbak-layout,.chunbak-layout-immersive{
+    grid-template-columns:minmax(250px,330px) minmax(0,560px) minmax(250px,330px)!important;
+    gap:22px!important
+  }
+  .chunbak-stage{width:min(100%,560px)!important}
+  .chunbak-start-card{width:min(100%,660px)!important;padding:40px!important}
+  .chunbak-rail>section,.chunbak-stats{padding:19px!important}
+}
+
+/* Sum / color games share the same 3-column sizing model. */
+@media(min-width:1101px) and (min-height:901px){
+  .chungwagame-page{
+    --game-shell-max:1450px;--game-left:190px;--game-board:1040px;--game-right:118px;--game-gap:14px;
+    padding:6px 0 12px
+  }
+  .chuncortile-page{
+    --game-shell-max:1460px;--game-left:210px;--game-board:1000px;--game-right:122px;--game-gap:14px
+  }
+  .chungwagame-shell,.ct-shell{width:min(var(--game-shell-max),calc(100vw - var(--game-shell-gutter)));max-width:none}
+  .chungwagame-layout,.ct-layout{
+    grid-template-columns:var(--game-left) minmax(0,var(--game-board)) var(--game-right)!important;
+    gap:var(--game-gap)!important
+  }
+  .chungwagame-navline{margin-bottom:3px}
+  .chungwagame-topbar{min-height:62px;margin-bottom:5px}
+  .cg-mascot-card{padding:13px 11px 14px}
+  .cg-ten-mascot{width:132px;height:118px}
+  .cg-speech{padding:10px 8px;font-size:12px;line-height:1.5}
+  .cg-speech b{font-size:19px}
+  .cg-howto{padding:16px}
+  .cg-howto h2{font-size:16px;margin-bottom:10px}
+  .cg-howto ol{font-size:12px;line-height:1.5;gap:8px}
+  .cg-board-card{padding:9px;border-radius:24px}
+  .cg-board-head{min-height:39px;padding:0 6px 7px}
+  .cg-selection span{font-size:10px}.cg-selection strong{font-size:20px}.cg-message{font-size:11px}
+  .cg-utility{min-height:82px;border-radius:17px}.cg-utility span{font-size:22px}.cg-utility b{font-size:11px}.cg-utility small{font-size:9px}
+
+  .ct-shell{padding:10px 0 26px}
+  .ct-navline{padding-bottom:6px}.ct-topbar{margin-bottom:6px;gap:18px}
+  .ct-brand-icon{width:54px;height:54px}.ct-brand-icon .ct-face{width:48px;height:48px}
+  .ct-brand h1{font-size:31px}.ct-brand p{font-size:12px}
+  .ct-stat{min-width:96px;padding:8px 12px}.ct-stat span{font-size:10px}.ct-stat strong{font-size:20px}
+  .ct-side{gap:11px}.ct-panel{padding:18px;border-radius:19px}.ct-kicker{font-size:10px}
+  .ct-panel h2{font-size:20px;margin:8px 0 12px}.ct-panel ol{font-size:13px;line-height:1.6;padding-left:20px}
+  .ct-panel li+li{margin-top:9px}.ct-warning strong{font-size:12px}.ct-warning p{font-size:12px;line-height:1.65}
+  .ct-board-card{padding:9px;border-radius:20px}
+  .ct-board-head{grid-template-columns:118px minmax(0,1fr) 88px;min-height:38px;padding:2px 7px 7px}
+  .ct-board-head span{font-size:10px}.ct-board-head strong{font-size:16px}.ct-board-head p{font-size:11px}
+  .ct-tile{inset:5%;border-width:1px;border-radius:17%}.ct-face{width:100%;height:100%}
+  .ct-board-note{font-size:10px;margin-top:6px}
+  .ct-tool{min-height:82px;border-radius:17px}.ct-tool span{font-size:23px}.ct-tool b{font-size:11px}.ct-tool small{font-size:9px}
+}
+
+@media(min-width:1500px) and (min-height:901px){
+  .chungwagame-page{--game-shell-max:1520px;--game-left:205px;--game-board:1080px;--game-right:126px;--game-gap:16px}
+  .chuncortile-page{--game-shell-max:1540px;--game-left:225px;--game-board:1040px;--game-right:130px;--game-gap:16px}
+  .chungwagame-shell,.ct-shell{width:min(var(--game-shell-max),calc(100vw - var(--game-shell-gutter-wide)))!important}
+  .cg-ten-mascot{width:145px;height:128px}.cg-howto ol{font-size:12.5px}.cg-utility{min-height:88px}
+  .ct-panel{padding:20px}.ct-panel ol{font-size:13.5px}.ct-warning p{font-size:12.5px}.ct-tool{min-height:88px}
+}
+
+@media(min-width:1600px) and (min-height:901px){
+  .chungwagame-page{--game-shell-max:1520px;--game-left:205px;--game-board:1080px;--game-right:126px;--game-gap:16px}
+  .chuncortile-page{--game-shell-max:1520px;--game-left:225px;--game-board:1040px;--game-right:130px;--game-gap:16px}
+  .chungwagame-shell,.ct-shell{width:min(var(--game-shell-max),96vw)!important}
+}
+@media(min-width:2400px) and (min-height:1300px){
+  .chuntris-page .content-section>.page-shell{width:min(96%,2200px)!important;max-width:2200px!important}
+  .chuntris-game.chuntris-immersive{
+    --chuntris-stage-height:min(1280px,78svh)!important;
+    --chuntris-board-width:min(640px,39svh,calc(var(--chuntris-stage-height)/2),calc(100vw - 72px))!important;
+    --chuntris-toolbar-height:72px!important;--chuntris-board-gap:12px!important;padding:14px!important
+  }
+  .chuntris-layout.chuntris-layout-immersive{
+    grid-template-columns:minmax(250px,310px) minmax(470px,calc(var(--chuntris-stage-height)/2)) minmax(250px,310px)!important;
+    gap:20px!important
+  }
+  .chuntris-play-top .chuntris-status{font-size:1.08rem!important}
+  .chuntris-utility-cluster button{width:52px!important;height:52px!important;font-size:1.15rem!important}
+  .chuntris-panel h2{font-size:.92rem!important}.chuntris-stats strong{font-size:1.15rem!important}
+
+  .chunbak-play-top{max-width:1540px!important}
+  .chunbak-layout,.chunbak-layout-immersive{
+    grid-template-columns:minmax(290px,380px) minmax(0,660px) minmax(290px,380px)!important;gap:26px!important
+  }
+  .chunbak-stage{width:min(100%,660px)!important}
+
+  .chungwagame-page{--game-shell-max:1840px;--game-left:240px;--game-board:1260px;--game-right:150px;--game-gap:20px}
+  .chuncortile-page{--game-shell-max:1840px;--game-left:250px;--game-board:1280px;--game-right:150px;--game-gap:20px}
+  .chungwagame-shell,.ct-shell{width:min(var(--game-shell-max),94vw)!important}
+}
+
+/* Short-height desktop mode has priority over width-based enlargement. */
+@media(min-width:900px) and (max-height:900px){
+  .chungwagame-page{
+    --game-shell-max:1320px;--game-left:160px;--game-board:min(1040px,calc(170svh - 323px));--game-right:104px;--game-gap:10px;
+    padding:4px 0 8px
+  }
+  .chuncortile-page{
+    --game-shell-max:1320px;--game-left:180px;--game-board:min(1000px,calc(138.8889svh - 236px));--game-right:108px;--game-gap:10px
+  }
+  .chungwagame-shell,.ct-shell{width:min(var(--game-shell-max),96vw)!important;max-width:none}
+  .chungwagame-layout,.ct-layout{
+    grid-template-columns:var(--game-left) minmax(0,var(--game-board)) var(--game-right)!important;
+    gap:var(--game-gap)!important
+  }
+  .chungwagame-navline{height:22px;margin-bottom:2px}
+  .chungwagame-topbar{min-height:52px!important;margin-bottom:3px}
+  .chungwagame-brand-mark{width:46px!important;height:46px!important}
+  .chungwagame-brand h1{font-size:27px}.chungwagame-brand p{margin-top:4px;font-size:10px}
+  .chungwagame-stats{gap:5px}.cg-stat{min-width:78px!important;padding:5px 8px!important}.cg-stat strong{font-size:17px}
+  .cg-time-track{height:6px;margin-bottom:5px}.cg-board-wrap{max-height:calc(100svh - 190px)!important}
+  .cg-mascot-card{padding:8px}.cg-ten-mascot{width:102px;height:88px}.cg-speech{padding:7px 5px;font-size:10px}.cg-speech b{font-size:16px}
+  .cg-howto{padding:10px}.cg-howto h2{font-size:13px;margin-bottom:7px}.cg-howto ol{font-size:10px;line-height:1.4;gap:5px}
+  .cg-board-card{padding:6px;border-radius:18px}.cg-board-head{min-height:30px;padding:0 4px 4px}
+  .cg-selection strong{font-size:16px}.cg-message{font-size:9px}
+  .cg-utility{min-height:60px;border-radius:14px}.cg-utility span{font-size:18px}.cg-utility b{font-size:9px}.cg-utility small{font-size:8px}
+
+  .ct-shell{padding:6px 0 12px!important}.ct-navline{padding-bottom:4px}.ct-topbar{margin-bottom:4px!important;gap:14px}
+  .ct-brand-icon{width:46px!important;height:46px!important}.ct-brand-icon .ct-face{width:41px;height:41px}
+  .ct-brand h1{font-size:27px}.ct-brand p{margin-top:4px;font-size:10px}.ct-stats{gap:5px}
+  .ct-stat{min-width:78px!important;padding:5px 8px!important}.ct-stat strong{font-size:17px}.ct-stat strong b{font-size:19px}
+  .ct-time-track{height:6px;margin-bottom:5px}.ct-panel{padding:13px!important;border-radius:16px}
+  .ct-kicker{font-size:9px}.ct-panel h2{font-size:17px;margin:6px 0 9px}.ct-panel ol{font-size:11px;line-height:1.48;padding-left:18px}
+  .ct-panel li+li{margin-top:6px}.ct-warning strong{font-size:10px}.ct-warning p{font-size:10px;line-height:1.5}
+  .ct-board-card{padding:6px;border-radius:16px}.ct-board-head{grid-template-columns:105px minmax(0,1fr) 76px;min-height:30px;padding:0 5px 5px}
+  .ct-board-head p{font-size:9px}.ct-board-head strong{font-size:13px}.ct-tile{inset:4%}.ct-face{width:100%;height:100%}
+  .ct-board-note{font-size:8px;margin-top:4px}.ct-tool{min-height:58px;border-radius:14px}.ct-tool span{font-size:18px}.ct-tool b{font-size:9px}.ct-tool small{font-size:8px}
+}
+@media(min-width:900px) and (max-height:700px){
+  .chungwagame-page{--game-shell-max:1120px;--game-left:140px;--game-board:min(820px,calc(170svh - 300px));--game-right:94px;--game-gap:8px}
+  .chuncortile-page{--game-shell-max:1120px;--game-left:150px;--game-board:min(800px,calc(138.8889svh - 215px));--game-right:94px;--game-gap:8px}
+  .chungwagame-shell,.ct-shell{width:min(var(--game-shell-max),96vw)!important}
+  .cg-howto{padding:8px}.cg-howto ol{font-size:9px;gap:4px}.cg-ten-mascot{width:88px;height:72px}.cg-utility{min-height:52px}.cg-shortcuts{display:none}
+  .ct-panel{padding:10px!important}.ct-panel h2{font-size:15px}.ct-panel ol{font-size:9.5px;line-height:1.4}.ct-warning p{font-size:9px}.ct-tool{min-height:50px}.ct-tool small{display:none}
+}

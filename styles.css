@@ -130,62 +130,8 @@
   .minigame-grid{gap:18px}
   .minigame-card{min-height:260px}
 
-  /* Chuntris */
-  .chuntris-page .content-section>.page-shell{
-    width:min(96%,1760px)!important;
-    max-width:1760px!important
-  }
-  .chuntris-game.chuntris-immersive{
-    --chuntris-stage-height:min(980px,76svh)!important;
-    --chuntris-board-width:min(490px,38svh,calc(var(--chuntris-stage-height)/2),calc(100vw - 56px))!important;
-    --chuntris-toolbar-height:64px!important;
-    --chuntris-board-gap:10px!important;
-    padding:12px!important
-  }
-  .chuntris-layout.chuntris-layout-immersive{
-    grid-template-columns:minmax(210px,255px) minmax(360px,calc(var(--chuntris-stage-height)/2)) minmax(210px,255px)!important;
-    gap:16px!important
-  }
-  .chuntris-play-top{padding:8px 12px!important}
-  .chuntris-play-top .chuntris-status{font-size:1rem!important}
-  .chuntris-utility-cluster button{width:46px!important;height:46px!important;font-size:1.05rem!important}
-  .chuntris-panel,.chuntris-stats,.chuntris-reaction-card{padding:13px!important}
-  .chuntris-panel h2{font-size:.84rem!important}
-  .chuntris-stats span{font-size:.72rem!important}
-  .chuntris-stats strong{font-size:1.05rem!important}
-  .chuntris-reaction-card figcaption{font-size:.78rem!important}
+  /* Minigame viewport sizing moved to game-layout.css. */
 
-  /* Chunbak */
-  .chunbak-play-top{max-width:1320px!important}
-  .chunbak-layout,.chunbak-layout-immersive{
-    grid-template-columns:minmax(250px,330px) minmax(0,560px) minmax(250px,330px)!important;
-    gap:22px!important
-  }
-  .chunbak-stage{width:min(100%,560px)!important}
-  .chunbak-start-card{width:min(100%,660px)!important;padding:40px!important}
-  .chunbak-rail>section,.chunbak-stats{padding:19px!important}
-
-  /* Chungwagame */
-  .chungwagame-shell{width:min(1520px,96vw)!important}
-  .chungwagame-layout{
-    grid-template-columns:205px minmax(0,1080px) 126px!important;
-    gap:16px!important
-  }
-  .chungwagame-topbar{min-height:68px!important}
-  .chungwagame-brand-mark{width:58px!important;height:58px!important}
-  .cg-board-wrap{max-height:calc(100svh - 220px)!important}
-  .cg-stat{min-width:100px!important;padding:9px 12px!important}
-
-  /* Chuncortile: same footprint as Chungwagame */
-  .ct-shell{width:min(1520px,96vw)!important;padding-top:16px!important}
-  .ct-layout{
-    grid-template-columns:225px minmax(0,1040px) 130px!important;
-    gap:16px!important
-  }
-  .ct-topbar{margin-bottom:10px!important}
-  .ct-brand-icon{width:58px!important;height:58px!important}
-  .ct-stat{min-width:100px!important;padding:9px 12px!important}
-  .ct-panel{padding:16px!important}
 }
 
 @media(min-width:2400px) and (min-height:1300px){
@@ -214,42 +160,5 @@
   .tarot-card-art{max-width:420px}
   .data-calendar-grid{min-height:600px}
 
-  .chuntris-page .content-section>.page-shell{
-    width:min(96%,2200px)!important;
-    max-width:2200px!important
-  }
-  .chuntris-game.chuntris-immersive{
-    --chuntris-stage-height:min(1280px,78svh)!important;
-    --chuntris-board-width:min(640px,39svh,calc(var(--chuntris-stage-height)/2),calc(100vw - 72px))!important;
-    --chuntris-toolbar-height:72px!important;
-    --chuntris-board-gap:12px!important;
-    padding:14px!important
-  }
-  .chuntris-layout.chuntris-layout-immersive{
-    grid-template-columns:minmax(250px,310px) minmax(470px,calc(var(--chuntris-stage-height)/2)) minmax(250px,310px)!important;
-    gap:20px!important
-  }
-  .chuntris-play-top .chuntris-status{font-size:1.08rem!important}
-  .chuntris-utility-cluster button{width:52px!important;height:52px!important;font-size:1.15rem!important}
-  .chuntris-panel h2{font-size:.92rem!important}
-  .chuntris-stats strong{font-size:1.15rem!important}
-
-  .chunbak-play-top{max-width:1540px!important}
-  .chunbak-layout,.chunbak-layout-immersive{
-    grid-template-columns:minmax(290px,380px) minmax(0,660px) minmax(290px,380px)!important;
-    gap:26px!important
-  }
-  .chunbak-stage{width:min(100%,660px)!important}
-
-  .chungwagame-shell{width:min(1840px,94vw)!important}
-  .chungwagame-layout{
-    grid-template-columns:240px minmax(0,1260px) 150px!important;
-    gap:20px!important
-  }
-
-  .ct-shell{width:min(1840px,94vw)!important}
-  .ct-layout{
-    grid-template-columns:250px minmax(0,1280px) 150px!important;
-    gap:20px!important
-  }
+  /* Minigame viewport sizing moved to game-layout.css. */
 }

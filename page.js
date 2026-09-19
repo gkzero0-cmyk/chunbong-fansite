@@ -23,11 +23,11 @@
 
   const proxiedImage = (url = '') => url ? `/api/image?url=${encodeURIComponent(url)}` : '';
 
-  async function loadContent(type) {
+  async function loadContent(type, force = false) {
     try {
-      const response = await fetch(API_ENDPOINTS[type], { headers: { accept: 'application/json' } });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const payload = await response.json();
+      const payload = window.ChunbongCache
+        ? await window.ChunbongCache.fetchJson('content:'+type, API_ENDPOINTS[type], { ttl: 3 * 60 * 1000, force })
+        : await (async()=>{const response=await fetch(API_ENDPOINTS[type],{headers:{accept:'application/json'}});if(!response.ok)throw new Error(`HTTP ${response.status}`);return response.json()})();
       return payload && typeof payload === 'object' ? payload : { items: [], fallback: true, reason: 'invalid response' };
     } catch (error) {
       return { items: [], fallback: true, reason: error?.message || 'network error' };
@@ -42,9 +42,10 @@
   async function loadNoticeDetail(id) {
     if (!id) return { item: null, fallback: true, reason: '공지 글 번호가 없습니다.' };
     try {
-      const response = await fetch(`/api/content?type=notice-detail&id=${encodeURIComponent(id)}`, { headers: { accept: 'application/json' } });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const payload = await response.json();
+      const url=`/api/content?type=notice-detail&id=${encodeURIComponent(id)}`;
+      const payload = window.ChunbongCache
+        ? await window.ChunbongCache.fetchJson('notice-detail:'+id,url,{ttl:10*60*1000})
+        : await (async()=>{const response=await fetch(url,{headers:{accept:'application/json'}});if(!response.ok)throw new Error(`HTTP ${response.status}`);return response.json()})();
       return payload && typeof payload === 'object' ? payload : { item: null, fallback: true, reason: 'invalid response' };
     } catch (error) {
       return { item: null, fallback: true, reason: error?.message || 'network error' };
@@ -119,7 +120,7 @@
     if (!button) return;
     const update = () => button.classList.toggle('visible', window.scrollY > 500);
     window.addEventListener('scroll', update, { passive: true });
-    button.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    button.addEventListener('click', () => window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));
     update();
   }
 
@@ -169,6 +170,9 @@
       return end >= kstDateKey(cutoff);
     });
     const statusLabel = { today: 'TODAY', upcoming: 'UPCOMING', recent: 'RECENT' };
+    const updatedAt = data.notionScheduleUpdatedAt ? new Date(data.notionScheduleUpdatedAt) : null;
+    const staleDays = updatedAt && !Number.isNaN(updatedAt.getTime()) ? Math.floor((Date.now() - updatedAt.getTime()) / 86400000) : null;
+    const scheduleStale = Number.isFinite(staleDays) && staleDays > 14;
     grid.innerHTML = visibleItems.length ? visibleItems.map((item, index) => {
       const status = scheduleStatus(item, today);
       const tags = (item.tags || []).map(tag => `<span class="schedule-tag" data-tag="${esc(tag)}">${esc(tag)}</span>`).join('');
@@ -181,10 +185,19 @@
           <p>${status === 'today' ? '오늘 예정된 방송 일정입니다.' : status === 'upcoming' ? '예정된 방송 일정입니다.' : '최근 진행된 일정입니다.'}</p>
           <a class="inline-link" href="${esc(item.link || data.sources?.notion)}" target="_blank" rel="noreferrer">Notion 일정 원본 ↗</a>
         </article>`;
-    }).join('') : '<div class="loading-card">등록된 일정이 없습니다.</div>';
+    }).join('') : scheduleStale
+      ? `<div class="loading-card"><strong>저장된 일정 정보가 오래되었습니다.</strong><br>마지막 동기화 후 ${staleDays}일이 지나 현재 일정은 원본에서 확인해 주세요.<br><a class="inline-link" href="${esc(data.sources?.notion || '#')}" target="_blank" rel="noreferrer">Notion 일정 원본 ↗</a></div>`
+      : '<div class="loading-card">등록된 일정이 없습니다.</div>';
 
     const updated = $('#schedule-updated');
-    if (updated) updated.textContent = 'Notion 일정 · 한국 시간(KST) 기준';
+    if (updated) {
+      const stamp = updatedAt && !Number.isNaN(updatedAt.getTime())
+        ? new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'numeric',day:'numeric'}).format(updatedAt)
+        : '';
+      updated.textContent = scheduleStale
+        ? `마지막 일정 동기화 ${stamp || '확인 필요'} · 최신 일정은 원본 확인 권장`
+        : `Notion 일정 · 한국 시간(KST) 기준${stamp ? ' · '+stamp+' 동기화' : ''}`;
+    }
     setupReveal();
   }
 
@@ -322,6 +335,7 @@
     meta.textContent = [platformLabel, item?.date || item?.meta || (item?.platform === 'youtube' ? 'YouTube' : 'SOOP')].filter(Boolean).join(' · ');
     if (source) source.href = item?.link || sourceFor(item?.kind || (kind === 'vod' ? 'vod' : kind === 'youtube' ? 'youtube' : 'catch'));
     if (item?.embed) {
+      frame.loading = 'lazy';
       frame.src = item.embed;
       frame.hidden = false;
       if (empty) empty.hidden = true;

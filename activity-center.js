@@ -163,13 +163,13 @@
     list.hidden = false;
   }
 
-  async function refresh() {
-    if (state.loading) return;
+  async function refresh(force = false) {
+    if (state.loading || (document.hidden && !force)) return;
     state.loading = true;
     try {
-      const response = await fetch('/api/content?type=activity', { headers:{ accept:'application/json' } });
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      const payload = await response.json();
+      const payload = window.ChunbongCache
+        ? await window.ChunbongCache.fetchJson('activity','/api/content?type=activity',{ttl:REFRESH_MS,force})
+        : await (async()=>{const response=await fetch('/api/content?type=activity',{headers:{accept:'application/json'}});if(!response.ok)throw new Error('HTTP '+response.status);return response.json()})();
       state.items = Array.isArray(payload.items) ? payload.items : [];
       state.loaded = true;
       render();
@@ -180,7 +180,7 @@
         status.hidden = false;
         list.hidden = true;
         status.innerHTML = '새 소식을 불러오지 못했습니다.<br><button type="button" class="activity-retry">다시 시도</button>';
-        status.querySelector('.activity-retry')?.addEventListener('click', refresh, { once:true });
+        status.querySelector('.activity-retry')?.addEventListener('click', () => refresh(true), { once:true });
       }
     } finally {
       state.loading = false;
@@ -226,7 +226,7 @@
   });
 
   refresh();
-  const timer = window.setInterval(refresh, REFRESH_MS);
+  const timer = window.setInterval(() => { if (!document.hidden) refresh(); }, REFRESH_MS);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
   window.addEventListener('pagehide', () => window.clearInterval(timer), { once:true });
 })();
