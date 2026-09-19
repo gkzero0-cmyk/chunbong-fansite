@@ -414,7 +414,11 @@ if (typeof document !== 'undefined') {
       try { alreadyOpened = window.sessionStorage.getItem(DAILY_TAROT_SESSION_KEY) === todayKey; } catch (_) {}
       if (!alreadyOpened) {
         try { window.sessionStorage.setItem(DAILY_TAROT_SESSION_KEY, todayKey); } catch (_) {}
-        setTimeout(openDialog, prefersReducedMotion() ? 80 : 650);
+        setTimeout(() => {
+          const otherDialogOpen = Array.from(document.querySelectorAll('dialog[open]'))
+            .some(element => element !== dialog);
+          if (!otherDialogOpen) openDialog();
+        }, prefersReducedMotion() ? 80 : 650);
       }
     }
     scheduleMidnightReset();
