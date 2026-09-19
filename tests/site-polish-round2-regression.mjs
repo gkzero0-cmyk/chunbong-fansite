@@ -9,6 +9,7 @@ const youtube = read('youtube.html');
 const homeOverview = read('home-overview.js');
 const serviceWorker = read('service-worker.js');
 const workflow = read('.github/workflows/production-version-sync.yml');
+const recoveryWorkflow = read('.github/workflows/production-prebuilt-recovery.yml');
 const versionApi = read('api/version.js');
 
 assert.match(history, /09 \/ BROADCAST HISTORY/, 'history portal number must be 09');
@@ -22,9 +23,13 @@ assert.doesNotMatch(youtube, /data-youtube-count="videos">0</, 'video count must
 assert.doesNotMatch(youtube, /data-youtube-count="shorts">0</, 'shorts count must not flash zero before load');
 assert.match(youtube, /data-youtube-count="videos" aria-live="polite">…</);
 assert.match(versionApi, /VERCEL_GIT_COMMIT_SHA/, 'version endpoint must expose deployment commit');
+assert.match(versionApi, /DEPLOY_COMMIT_SHA/, 'version endpoint must support prebuilt deployment commit');
 assert.match(versionApi, /no-store/, 'version endpoint must not be cached');
 assert.match(workflow, /api\/version/, 'production sync workflow must query version endpoint');
 assert.match(workflow, /git rev-parse HEAD/, 'production sync workflow must compare against checked-out main');
+assert.match(recoveryWorkflow, /vercel@latest build --prod/, 'recovery must build locally');
+assert.match(recoveryWorkflow, /deploy --prebuilt --prod/, 'recovery must upload prebuilt output');
+assert.match(recoveryWorkflow, /DEPLOY_COMMIT_SHA=\$GITHUB_SHA/, 'recovery must stamp the deployed commit');
 assert.match(serviceWorker, /home-overview\.css/);
 assert.match(serviceWorker, /home-overview\.js/);
 
