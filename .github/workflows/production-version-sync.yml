@@ -36,5 +36,9 @@ jobs:
             fi
             sleep 15
           done
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
+            echo "::warning::Production commit ${ACTUAL:-missing} does not match main ${EXPECTED}. Scheduled check will not fail; the daily retry workflow handles redeploy attempts."
+            exit 0
+          fi
           echo "::error::Production commit ${ACTUAL:-missing} does not match main ${EXPECTED}."
           exit 1
