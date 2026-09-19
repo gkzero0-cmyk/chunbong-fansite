@@ -219,7 +219,7 @@ jobs:
             assert.equal(badgeState[0].text, '1');
             assert.equal(badgeState[1].text, '78');
             assert.ok(badgeState.every(item => item.dx < 1 && item.dy < 1), JSON.stringify(badgeState));
-            assert.ok(badgeState.every(item => /v1789845157\/chunbong-fansite\/tarot-card-back\.png/.test(item.backgroundImage)), JSON.stringify(badgeState));
+            assert.ok(badgeState.every(item => /f_auto,q_auto:good,c_limit,w_768\/v1789845157\/chunbong-fansite\/tarot-card-back\.png/.test(item.backgroundImage)), JSON.stringify(badgeState));
             assert.ok(badgeState.every(item => Math.abs(item.ratio - (2 / 3)) < 0.02), JSON.stringify(badgeState));
             assert.ok(badgeState.every(item => /Georgia/i.test(item.font)), JSON.stringify(badgeState));
             assert.ok(badgeState.every(item => item.color === 'rgb(255, 215, 95)'), JSON.stringify(badgeState));
