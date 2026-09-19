@@ -2,6 +2,10 @@
   'use strict';
 
   const TECHNICAL_PREFIXES = new Set(['ci','test','tests','data','chore','build','docs','deps','dependabot','diag','temp','cleanup']);
+  const CURATED_RELEASE_PATTERNS = [
+    /^팬사이트\s*사용성[·ㆍ,\s]*모바일\s*앱[·ㆍ,\s]*가로\s*게임\s*모드\s*개선(?:\s*\(#\d+\))?$/i
+  ];
+
   const INTERNAL_MAINTENANCE_PATTERNS = [
     /\b(?:unused|obsolete|dead code|legacy cleanup|internal cleanup|regression test|syntax check|test-only)\b/i,
     /(?:미사용|사용하지 않는).*(?:정리|제거|삭제)/i,
@@ -109,6 +113,11 @@
     return INTERNAL_MAINTENANCE_PATTERNS.some(pattern=>pattern.test(text));
   }
 
+  function isAlreadyCuratedRelease(item={}) {
+    const title=firstLine(item.rawTitle||item.title||'');
+    return CURATED_RELEASE_PATTERNS.some(pattern=>pattern.test(title));
+  }
+
   function areaFor(item={}) {
     const text=combinedText(item);
     return AREAS.find(area=>area.match.test(text))||{
@@ -128,7 +137,7 @@
   function summarizeGroup(group={}) {
     const buckets=new Map();
     for(const item of Array.isArray(group.items)?group.items:[]) {
-      if(!item||isTechnical(item)||isInternalMaintenance(item)) continue;
+      if(!item||isTechnical(item)||isInternalMaintenance(item)||isAlreadyCuratedRelease(item)) continue;
       const area=areaFor(item);
       if(!buckets.has(area.id)) buckets.set(area.id,{area,items:[]});
       buckets.get(area.id).items.push(item);
@@ -177,7 +186,7 @@
       .filter(group=>/^20\d{2}-\d{2}-\d{2}$/.test(group.date)&&group.items.length);
   }
 
-  const api={TECHNICAL_PREFIXES,INTERNAL_MAINTENANCE_PATTERNS,AREAS,firstLine,prefixOf,isTechnical,isInternalMaintenance,areaFor,mergedType,summarizeGroup,afterCheckpoint,summarizeSince};
+  const api={TECHNICAL_PREFIXES,CURATED_RELEASE_PATTERNS,INTERNAL_MAINTENANCE_PATTERNS,AREAS,firstLine,prefixOf,isTechnical,isInternalMaintenance,isAlreadyCuratedRelease,areaFor,mergedType,summarizeGroup,afterCheckpoint,summarizeSince};
   if(typeof window!=='undefined') window.CHUNBONG_CHANGELOG_AUTO=api;
   if(typeof module!=='undefined'&&module.exports) module.exports=api;
 })();
