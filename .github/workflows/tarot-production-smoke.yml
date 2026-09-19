@@ -13,7 +13,6 @@ on:
       - 'tarot-composite.js'
       - 'tarot-data.js'
       - 'api/tarot-reading.js'
-      - 'assets/tarot/hd/**'
       - '.github/workflows/tarot-production-smoke.yml'
 
 jobs:
