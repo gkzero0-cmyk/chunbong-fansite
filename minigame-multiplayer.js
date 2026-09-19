@@ -24,6 +24,32 @@
     if(!response.ok){const error=new Error(data.error||'multiplayer_request_failed');error.code=data.error||'multiplayer_request_failed';error.status=response.status;throw error;}
     return data;
   }
+  function normalizeRoomCode(value){
+    const raw=String(value||'').trim();
+    if(!raw)return '';
+
+    let roomParam='';
+    const queryMatch=raw.match(/[?&#]room=([^&#\s]+)/i);
+    if(queryMatch){
+      try{roomParam=decodeURIComponent(queryMatch[1]);}catch{roomParam=queryMatch[1];}
+    }
+    if(!roomParam){
+      try{
+        const url=new URL(raw,location.origin);
+        roomParam=url.searchParams.get('room')||'';
+      }catch{}
+    }
+
+    const clean=value=>String(value||'').toUpperCase().replace(/[^A-Z2-9]/g,'');
+    if(roomParam)return clean(roomParam).slice(0,6);
+
+    const token=raw.toUpperCase().match(/(?:^|[^A-Z2-9])([A-Z2-9]{6})(?=$|[^A-Z2-9])/);
+    if(token)return token[1];
+
+    if(/^(?:https?:\/\/|www\.)/i.test(raw))return '';
+    return clean(raw).slice(0,6);
+  }
+
   function createClient(game){
     let code='';
     let token='';
@@ -33,10 +59,10 @@
       get code(){return code;},
       get token(){return token;},
       get room(){return room;},
-      restore(nextCode,nextToken){code=String(nextCode||'').toUpperCase();token=String(nextToken||'');},
+      restore(nextCode,nextToken){code=normalizeRoomCode(nextCode);token=String(nextToken||'');},
       clear(){code='';token='';room=null;},
       async create(nickname,mode,difficulty){const data=await post({action:'create',game,nickname,...(mode?{mode}:{}),...(difficulty?{difficulty}:{})});code=data.room.code;token=data.token;room=data.room;return data;},
-      async join(nextCode,nickname){const data=await post({action:'join',code:String(nextCode||'').toUpperCase(),nickname});code=data.room.code;token=data.token;room=data.room;return data;},
+      async join(nextCode,nickname){const data=await post({action:'join',code:normalizeRoomCode(nextCode),nickname});code=data.room.code;token=data.token;room=data.room;return data;},
       async refresh(){const data=await get(code,token);room=data.room;return data;},
       async ready(value=true){const data=await post({action:'ready',code,token,ready:value});room=data.room;return data;},
       async progress(progress){const data=await post({action:'progress',code,token,...progress});room=data.room;return data;},
@@ -59,5 +85,5 @@
     url.searchParams.set('room',String(code||'').toUpperCase());
     return url.toString();
   }
-  root.MinigameMultiplayer={createClient,seededRandom,roomInviteUrl};
+  root.MinigameMultiplayer={createClient,seededRandom,roomInviteUrl,normalizeRoomCode};
 })(typeof globalThis!=='undefined'?globalThis:window);
