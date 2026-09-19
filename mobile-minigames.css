@@ -364,3 +364,327 @@ body[data-game] .game-mobile-only{display:none}
   body[data-game="chungwagame"] .cg-utility,
   body[data-game="chuncortile"] .ct-tool{min-height:58px}
 }
+
+
+/* =========================
+   MOBILE LANDSCAPE GAME MODE
+   Applies only to Chungwagame + Chuncortile sessions.
+   ========================= */
+.mobile-landscape-gate{
+  position:fixed;z-index:520;inset:0;
+  display:grid;place-items:center;
+  padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
+  background:rgba(8,10,8,.96);
+  backdrop-filter:blur(14px);
+}
+.mobile-landscape-gate[hidden]{display:none!important}
+.mobile-landscape-card{
+  width:min(92vw,430px);
+  padding:24px 20px;
+  border:1px solid #4A5142;
+  border-radius:22px;
+  background:#252A22;
+  color:#F0F1EC;
+  text-align:center;
+  box-shadow:0 24px 70px rgba(0,0,0,.48)
+}
+.mobile-landscape-rotate{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  min-height:54px;margin-bottom:8px;
+  color:#D8E4AE
+}
+.mobile-landscape-rotate span{font-size:32px;line-height:1}
+.mobile-landscape-rotate b{
+  display:inline-grid;place-items:center;
+  width:62px;height:36px;
+  border:2px solid #D8E4AE;border-radius:8px;
+  font-size:0
+}
+.mobile-landscape-kicker{
+  margin:0 0 6px;color:#AFC47C;font-size:9px;font-weight:1000;letter-spacing:.18em
+}
+.mobile-landscape-card h2{margin:0;font-size:24px;letter-spacing:-.04em}
+.mobile-landscape-card p:not(.mobile-landscape-kicker){
+  margin:10px auto 0;max-width:330px;color:#C9CCC4;font-size:13px;line-height:1.6
+}
+.mobile-landscape-card small{display:block;margin-top:8px;color:#8E9489;font-size:10px}
+.mobile-landscape-resume,.mobile-landscape-exit{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;min-height:46px;margin-top:14px;
+  border-radius:13px;font-weight:900;text-decoration:none
+}
+.mobile-landscape-resume{
+  border:1px solid #8EA863;background:#748A50;color:#fff;cursor:pointer
+}
+.mobile-landscape-exit{
+  border:1px solid #4A5142;background:#30362C;color:#DFE2DA
+}
+body.mobile-landscape-game-session{
+  overscroll-behavior:none!important;
+  background:#171B16!important
+}
+body.mobile-landscape-game-session .site-header,
+body.mobile-landscape-game-session footer,
+body.mobile-landscape-game-session .to-top{
+  display:none!important
+}
+
+@media(orientation:landscape) and (max-height:600px){
+  body.mobile-landscape-game-ready{
+    width:100%!important;
+    min-width:0!important;
+    height:var(--mobile-landscape-height,100svh)!important;
+    min-height:0!important;
+    overflow:hidden!important
+  }
+
+  /* Chungwagame: left HUD + large center board + right tools */
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .chungwagame-page{
+    width:100%!important;height:var(--mobile-landscape-height,100svh)!important;min-height:0!important;
+    padding:0!important;overflow:hidden!important;background:#252A22!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .chungwagame-shell{
+    position:relative!important;
+    width:100%!important;max-width:none!important;height:100%!important;
+    margin:0!important;padding:6px 7px!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .chungwagame-navline{display:none!important}
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .chungwagame-game{
+    position:relative!important;height:100%!important;min-height:0!important;padding-left:108px!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .chungwagame-topbar{
+    position:absolute!important;z-index:3;left:0;top:0;
+    display:block!important;width:100px!important;height:calc(100% - 14px)!important;
+    margin:0!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .chungwagame-brand{display:none!important}
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .chungwagame-stats{
+    display:grid!important;grid-template-columns:1fr!important;gap:5px!important;width:100%!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-stat{
+    min-width:0!important;min-height:54px!important;
+    padding:7px 5px!important;border:1px solid #59614F!important;border-radius:11px!important;
+    background:#30362CF2!important;box-shadow:none!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-stat span{font-size:8px!important;color:#C1C5BC!important}
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-stat strong{font-size:18px!important;color:#FFF!important}
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-timer strong{color:#FFD27A!important}
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-time-track{
+    position:absolute!important;left:0!important;bottom:0!important;
+    width:100px!important;height:8px!important;margin:0!important;
+    border:1px solid #59614F!important;background:#171B16!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .chungwagame-layout{
+    display:grid!important;grid-template-columns:minmax(0,1fr) 72px!important;
+    align-items:center!important;gap:6px!important;
+    width:100%!important;height:100%!important;margin:0!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-left{display:none!important}
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-board-card{
+    order:1!important;display:grid!important;grid-template-rows:auto 1fr auto!important;
+    align-content:center!important;min-width:0!important;height:100%!important;
+    padding:4px!important;border:1px solid #59614F!important;border-radius:12px!important;
+    background:#30362CF5!important;box-shadow:none!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-board-head{
+    min-height:28px!important;padding:2px 5px 4px!important;gap:6px!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-selection{
+    padding:3px 8px!important;border-color:#59614F!important;background:#1C211AF7!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-selection span{display:none!important}
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-selection strong{font-size:17px!important}
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-message{
+    color:#E0E3DC!important;font-size:10px!important;font-weight:800!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-board-wrap{
+    justify-self:center!important;align-self:center!important;
+    width:auto!important;
+    height:min(calc(var(--mobile-landscape-height,100svh) - 42px),calc((100vw - 198px)*10/17))!important;
+    max-width:100%!important;max-height:none!important;
+    aspect-ratio:17/10!important;
+    border:2px solid #626A58!important;border-radius:9px!important;
+    background:
+      linear-gradient(to right,rgba(238,240,232,.20) 1px,transparent 1px),
+      linear-gradient(to bottom,rgba(238,240,232,.20) 1px,transparent 1px),
+      #282E25!important;
+    background-size:5.8823529% 100%,100% 10%,100% 100%!important;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)!important;
+    touch-action:none!important;overflow:hidden!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-fruit-shape::before{
+    width:44%!important;height:52%!important;
+    background:#10130FF5!important;border-width:2px!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-fruit-shape::after{
+    font-size:clamp(14px,4.2vh,19px)!important;
+    -webkit-text-stroke:.75px rgba(0,0,0,.92)!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-fruit.selected{
+    background:rgba(255,255,255,.14)!important;
+    box-shadow:inset 0 0 0 2px rgba(255,255,255,.26)!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-drag{
+    border-width:3px!important;background:rgba(43,137,205,.16)!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-drag::after{
+    font-size:11px!important;padding:4px 7px!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-shortcuts{display:none!important}
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-side.cg-right{
+    order:2!important;display:grid!important;
+    grid-template-columns:1fr!important;grid-template-rows:repeat(6,minmax(0,1fr))!important;
+    gap:4px!important;height:100%!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-utility{
+    min-height:0!important;padding:2px!important;border:1px solid #59614F!important;
+    border-radius:10px!important;background:#30362CF5!important;color:#F1F2ED!important;
+    box-shadow:none!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-utility span{font-size:17px!important}
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-utility b{font-size:9px!important}
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-utility small{display:none!important}
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-overlay{background:rgba(10,12,9,.92)!important}
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-overlay-inner{
+    width:min(390px,88%)!important;max-height:92%!important;overflow:auto!important;
+    background:#20251EF7!important;border-color:#5A624F!important
+  }
+
+  /* Chuncortile: left HUD + high-contrast board + right tools */
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .chuncortile-page{
+    width:100%!important;height:var(--mobile-landscape-height,100svh)!important;min-height:0!important;
+    padding:0!important;overflow:hidden!important;background:#0B0E12!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-shell{
+    position:relative!important;
+    width:100%!important;max-width:none!important;height:100%!important;
+    margin:0!important;padding:6px 7px!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-navline{display:none!important}
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-game{
+    position:relative!important;height:100%!important;min-height:0!important;padding-left:108px!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-topbar{
+    position:absolute!important;z-index:3;left:0;top:0;
+    display:block!important;width:100px!important;height:calc(100% - 14px)!important;
+    margin:0!important;padding:0!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-brand{display:none!important}
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-stats{
+    display:grid!important;grid-template-columns:1fr!important;gap:4px!important;width:100%!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-stat{
+    min-width:0!important;min-height:43px!important;
+    padding:5px 4px!important;border:1px solid #46515D!important;border-radius:10px!important;
+    background:#111820F5!important;box-shadow:none!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-stat span{font-size:7px!important;color:#AEB7C1!important}
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-stat strong{font-size:14px!important;color:#F7FAFC!important}
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-stat strong b{font-size:17px!important;color:#FF8E6E!important}
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-timer strong{color:#FFE083!important}
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-time-track{
+    position:absolute!important;left:0!important;bottom:0!important;
+    width:100px!important;height:8px!important;margin:0!important;
+    border:1px solid #46515D!important;background:#0A0E13!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-layout{
+    display:grid!important;grid-template-columns:minmax(0,1fr) 68px!important;
+    align-items:center!important;gap:6px!important;
+    width:100%!important;height:100%!important;margin:0!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-howto{display:none!important}
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-board-card{
+    order:1!important;display:grid!important;grid-template-rows:auto 1fr auto!important;
+    align-content:center!important;min-width:0!important;height:100%!important;
+    padding:4px!important;border:1px solid #46515D!important;border-radius:12px!important;
+    background:#111820F7!important;box-shadow:none!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-board-head{
+    min-height:28px!important;padding:2px 5px 4px!important;
+    grid-template-columns:78px minmax(0,1fr) 54px!important;gap:4px!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-board-head span{font-size:7px!important;color:#AEB7C1!important}
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-board-head strong{font-size:13px!important;color:#FFF!important}
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-board-head p{
+    color:#D7DEE6!important;font-size:9px!important;font-weight:800!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-board-wrap{
+    justify-self:center!important;align-self:center!important;
+    width:auto!important;
+    height:min(calc(var(--mobile-landscape-height,100svh) - 34px),calc((100vw - 194px)*18/25))!important;
+    min-height:0!important;max-width:100%!important;max-height:none!important;
+    aspect-ratio:25/18!important;
+    overflow:hidden!important;border:2px solid #4F6070!important;border-radius:9px!important;
+    background:#111A26!important;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)!important;
+    touch-action:manipulation!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-board{
+    width:100%!important;height:100%!important;min-width:0!important;
+    aspect-ratio:25/18!important;touch-action:manipulation!important;
+    background:
+      repeating-linear-gradient(0deg,transparent 0 calc(100% / 18 - 1px),rgba(255,255,255,.075) calc(100% / 18 - 1px) calc(100% / 18)),
+      repeating-linear-gradient(90deg,transparent 0 calc(100% / 25 - 1px),rgba(255,255,255,.075) calc(100% / 25 - 1px) calc(100% / 25))!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-cell{
+    min-width:0!important;min-height:0!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-cell.is-empty{
+    box-shadow:inset 0 0 0 1px rgba(147,189,220,.07)
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-tile{
+    inset:2%!important;border-width:2px!important;
+    box-shadow:inset 0 1px 2px rgba(255,255,255,.45),0 2px 5px rgba(0,0,0,.72)!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-tile .ct-face{
+    width:108%!important;height:108%!important;transform:scale(1.08)!important;
+    filter:contrast(1.24) saturate(1.18) brightness(1.06) drop-shadow(0 1px 0 rgba(255,255,255,.28))!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-tile::after{
+    min-width:13px!important;height:13px!important;padding:0 2px!important;
+    background:#07090CF2!important;border-color:rgba(255,255,255,.86)!important;
+    font-size:8px!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-cell.is-preview-origin{
+    background:rgba(78,183,255,.20)!important;
+    box-shadow:inset 0 0 0 2px rgba(151,221,255,.9)!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-cell.is-preview-match .ct-tile{
+    transform:scale(1.12)!important;
+    box-shadow:0 0 0 2px #fff,0 0 18px var(--tile-edge,#fff),0 4px 10px #000d!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-cell.is-hint{
+    background:rgba(255,216,86,.18)!important;
+    box-shadow:inset 0 0 0 2px rgba(255,222,112,.9)!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-fx-layer,
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-flash{
+    width:100%!important;height:100%!important;right:0!important;bottom:0!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-board-note{display:none!important}
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-tools{
+    order:2!important;display:grid!important;
+    grid-template-columns:1fr!important;grid-template-rows:repeat(5,minmax(0,1fr))!important;
+    gap:4px!important;height:100%!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-tool{
+    min-height:0!important;padding:2px!important;border:1px solid #46515D!important;
+    border-radius:10px!important;background:#111820F5!important;color:#F1F5F8!important;
+    box-shadow:none!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-tool span{font-size:17px!important}
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-tool b{font-size:9px!important}
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-tool small{display:none!important}
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-overlay{
+    position:absolute!important;inset:0!important;min-height:0!important;padding:7px!important;
+    background:rgba(6,9,13,.93)!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-overlay-card{
+    width:min(390px,88%)!important;max-height:92%!important;overflow:auto!important;
+    background:#111820FA!important;border-color:#4B5A68!important
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .mobile-landscape-rotate span{animation:none!important}
+}
