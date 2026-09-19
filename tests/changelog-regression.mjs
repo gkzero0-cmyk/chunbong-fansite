@@ -8,6 +8,7 @@ const js=fs.readFileSync(new URL('../changelog.js',import.meta.url),'utf8');
 const dataSource=fs.readFileSync(new URL('../changelog-data.js',import.meta.url),'utf8');
 const autoSource=fs.readFileSync(new URL('../changelog-auto-summary.js',import.meta.url),'utf8');
 const content=fs.readFileSync(new URL('../content.js',import.meta.url),'utf8');
+const shell=fs.readFileSync(new URL('../site-shell.js',import.meta.url),'utf8');
 const activity=fs.readFileSync(new URL('../activity-center.js',import.meta.url),'utf8');
 const theme=fs.readFileSync(new URL('../theme.css',import.meta.url),'utf8');
 const styles=fs.readFileSync(new URL('../styles.css',import.meta.url),'utf8');
@@ -33,7 +34,7 @@ assert.match(js,/historyUrl='\/api\/content\?type=changelog-history'/,'runtime s
 assert.match(js,/checkpoint=window\.CHUNBONG_CHANGELOG_META/,'runtime must use the curated changelog checkpoint');
 assert.match(js,/autoSummarizer\?\.summarizeSince/,'runtime must create user-facing automatic summaries');
 assert.match(js,/mergeAutomaticGroups/,'runtime must merge automatic summaries into curated entries');
-assert.match(js,/item=>item\?\.auto/,'sync status should report automatically merged entries');
+assert.doesNotMatch(js,/main의 새 변경사항을 사용자용 한글 요약/,'technical automatic-sync wording must stay hidden from the changelog UI');
 assert.match(js,/type=changelog-history&summary=1/,'runtime should retain summary fallback when archive loading fails');
 assert.doesNotMatch(js,/changelog-commit-meta|is-commit/,'developer commit metadata must not render in the changelog');
 assert.match(js,/chunbong:changelog-ready/,'changelog must publish its latest seen key');
@@ -98,13 +99,13 @@ assert.match(historyApi,/SITE_STARTED_AT='2026-08-30'/,'history API must preserv
 assert.match(historyApi,/per_page=100/,'history API must page through the repository history');
 assert.match(historyApi,/TECHNICAL_PREFIXES/,'technical automation commits should stay filtered from repository history metadata');
 
-assert.match(content,/className = 'changelog-button'/,'shared header bootstrap must create changelog button');
-assert.match(content,/link\.href = 'changelog\.html'/);
-assert.match(content,/업데이트 일지/);
-assert.match(content,/changelog-unread-dot/,'gear needs a new-update red indicator');
-assert.match(content,/chunbong-changelog-seen-v2/,'changelog read state must persist locally');
-assert.match(content,/type=changelog-history&summary=1/,'gear must compare against latest automatic update');
-assert.match(content,/chunbong:changelog-ready/,'opening changelog must clear the unread state');
+assert.match(shell,/className = 'changelog-button'/,'shared header bootstrap must create changelog button');
+assert.match(shell,/link\.href = 'changelog\.html'/);
+assert.match(shell,/업데이트 일지/);
+assert.match(shell,/changelog-unread-dot/,'gear needs a new-update red indicator');
+assert.match(shell,/chunbong-changelog-seen-v2/,'changelog read state must persist locally');
+assert.match(shell,/type=changelog-history&summary=1/,'gear must compare against latest automatic update');
+assert.match(shell,/chunbong:changelog-ready/,'opening changelog must clear the unread state');
 assert.match(theme,/\.changelog-unread-dot\{/,'red-dot styling missing');
 assert.match(activity,/changelogButton/,'activity bell must position itself after changelog button');
 assert.match(theme,/\.changelog-button\{/);
@@ -112,8 +113,8 @@ assert.match(theme,/\.changelog-button\{[^}]*width:42px/,'changelog control shou
 assert.match(theme,/\.changelog-button span\{display:none\}/,'changelog label should always be hidden');
 assert.match(theme,/@media\(min-width:761px\) and \(max-width:1500px\)/,'desktop header compact breakpoint missing');
 assert.match(theme,/\.site-header \.main-nav a\{[^}]*white-space:nowrap/,'desktop navigation labels must stay on one line');
-assert.match(content,/nav-minigames-submenu/,'shared header must create a minigames submenu');
-for(const href of ['chuntris.html','chunbak.html','chungwagame.html','chuncortile.html']) assert.match(content,new RegExp('href="'+href.replace('.','\\.')+'"'),'minigames submenu link missing: '+href);
+assert.match(shell,/nav-minigames-submenu/,'shared header must create a minigames submenu');
+for(const href of ['chuntris.html','chunbak.html','chungwagame.html','chuncortile.html']) assert.match(shell,new RegExp('href="'+href.replace('.','\\.')+'"'),'minigames submenu link missing: '+href);
 assert.match(styles,/\.nav-minigames:hover \.nav-minigames-submenu/,'desktop minigames submenu must open on hover');
 assert.match(styles,/\.nav-minigames:focus-within \.nav-minigames-submenu/,'minigames submenu must support keyboard focus');
 assert.match(styles,/@media\(max-width:760px\)[\s\S]*?\.nav-minigames-submenu\{display:none!important\}/,'mobile hamburger menu must keep the hover submenu hidden');
