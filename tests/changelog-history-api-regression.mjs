@@ -84,7 +84,7 @@ try{
   const fullRes=makeRes();
   await handler({method:'GET',query:{}},fullRes);
   assert.equal(fullRes.statusCode,200);
-  assert.match(fullRes.headers['cache-control'],/s-maxage=300/);
+  assert.match(fullRes.headers['cache-control'],/s-maxage=60/,'full automatic changelog archive should refresh every minute');
   assert.equal(fullRes.payload.siteStartedAt,'2026-08-30');
   assert.ok(fullRes.payload.total>=90,'full archive should retain meaningful historical commits');
   assert.equal(fullRes.payload.groups[0].date,'2026-09-19');
