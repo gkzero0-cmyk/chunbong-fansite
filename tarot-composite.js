@@ -133,28 +133,29 @@ function buildCompositeSvg(card, descriptor, reversed = false, uid = 'tarot-comp
   return `<svg class="tarot-composite-svg" viewBox="0 0 960 1440" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${title}">
     <defs>
       <linearGradient id="${safeUid}-frame-gold" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#fff0aa"/>
-        <stop offset="0.18" stop-color="#c78c24"/>
-        <stop offset="0.5" stop-color="#f8d978"/>
-        <stop offset="0.78" stop-color="#9d6418"/>
-        <stop offset="1" stop-color="#ffe7a0"/>
+        <stop offset="0" stop-color="#fff1a0"/>
+        <stop offset="0.16" stop-color="#e4a72e"/>
+        <stop offset="0.43" stop-color="#ffd95d"/>
+        <stop offset="0.72" stop-color="#a96d15"/>
+        <stop offset="1" stop-color="#ffe783"/>
       </linearGradient>
       <linearGradient id="${safeUid}-plate" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#fff4c3"/>
-        <stop offset="0.5" stop-color="#e8c46e"/>
-        <stop offset="1" stop-color="#b67a24"/>
+        <stop offset="0" stop-color="#1a315b"/>
+        <stop offset="0.48" stop-color="#0c1d3d"/>
+        <stop offset="1" stop-color="#061128"/>
       </linearGradient>
       <linearGradient id="${safeUid}-shadow" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#3a220b"/>
-        <stop offset="0.5" stop-color="#0d0905"/>
-        <stop offset="1" stop-color="#4a2e0e"/>
+        <stop offset="0" stop-color="#0b1b3a"/>
+        <stop offset="0.5" stop-color="#030916"/>
+        <stop offset="1" stop-color="#10264a"/>
       </linearGradient>
       <clipPath id="${safeUid}-art-clip"><rect x="88" y="126" width="784" height="1060" rx="34"/></clipPath>
     </defs>
 
     <rect class="tarot-vector-frame" x="18" y="18" width="924" height="1404" rx="58" fill="url(#${safeUid}-shadow)" stroke="url(#${safeUid}-frame-gold)" stroke-width="18"/>
-    <rect class="tarot-vector-frame" x="45" y="45" width="870" height="1350" rx="43" fill="#120d07" stroke="#f7d77a" stroke-width="5"/>
-    <rect x="68" y="102" width="824" height="1110" rx="38" fill="#080604" stroke="url(#${safeUid}-frame-gold)" stroke-width="11"/>
+    <rect class="tarot-vector-frame" x="45" y="45" width="870" height="1350" rx="43" fill="#07142d" stroke="#f8d65e" stroke-width="5"/>
+    <rect class="tarot-vector-frame" x="56" y="56" width="848" height="1328" rx="37" fill="none" stroke="#9e6917" stroke-width="3"/>
+    <rect x="68" y="102" width="824" height="1110" rx="38" fill="#020817" stroke="url(#${safeUid}-frame-gold)" stroke-width="11"/>
 
     <g class="tarot-composite-art-layer" clip-path="url(#${safeUid}-art-clip)">
       <g class="tarot-composite-art-rotation"${artTransform}>
@@ -167,23 +168,42 @@ function buildCompositeSvg(card, descriptor, reversed = false, uid = 'tarot-comp
     <rect x="78" y="116" width="804" height="1080" rx="35" fill="none" stroke="#f8da7e" stroke-width="8"/>
     <rect x="87" y="125" width="786" height="1062" rx="29" fill="none" stroke="#7d4c12" stroke-width="3"/>
 
-    <g aria-hidden="true" fill="url(#${safeUid}-frame-gold)" stroke="#5f370d" stroke-width="3">
-      <circle cx="86" cy="86" r="25"/><circle cx="874" cy="86" r="25"/>
-      <circle cx="86" cy="1354" r="25"/><circle cx="874" cy="1354" r="25"/>
-      <path d="M111 75h145l24 11-24 11H111l-16-11z"/><path d="M849 75H704l-24 11 24 11h145l16-11z"/>
-      <path d="M111 1343h145l24 11-24 11H111l-16-11z"/><path d="M849 1343H704l-24 11 24 11h145l16-11z"/>
+    <g aria-hidden="true" stroke="url(#${safeUid}-frame-gold)">
+      <g fill="#07142d" stroke-width="5">
+        <circle cx="86" cy="86" r="27"/><circle cx="874" cy="86" r="27"/>
+        <circle cx="86" cy="1354" r="27"/><circle cx="874" cy="1354" r="27"/>
+      </g>
+      <g fill="#ffd75b" stroke="#9b6415" stroke-width="2">
+        <path d="M86 66l5 15 15 5-15 5-5 15-5-15-15-5 15-5z"/>
+        <path d="M874 66l5 15 15 5-15 5-5 15-5-15-15-5 15-5z"/>
+        <path d="M86 1334l5 15 15 5-15 5-5 15-5-15-15-5 15-5z"/>
+        <path d="M874 1334l5 15 15 5-15 5-5 15-5-15-15-5 15-5z"/>
+      </g>
+      <g fill="url(#${safeUid}-frame-gold)" stroke="#71470f" stroke-width="2">
+        <path d="M116 78h128l26 8-26 8H116l-17-8z"/><path d="M844 78H716l-26 8 26 8h128l17-8z"/>
+        <path d="M116 1346h128l26 8-26 8H116l-17-8z"/><path d="M844 1346H716l-26 8 26 8h128l17-8z"/>
+      </g>
+      <g fill="#f7c94c" stroke="none">
+        <circle cx="292" cy="86" r="4"/><circle cx="314" cy="86" r="3"/><circle cx="336" cy="86" r="4"/>
+        <circle cx="624" cy="86" r="4"/><circle cx="646" cy="86" r="3"/><circle cx="668" cy="86" r="4"/>
+        <circle cx="292" cy="1354" r="4"/><circle cx="314" cy="1354" r="3"/><circle cx="336" cy="1354" r="4"/>
+        <circle cx="624" cy="1354" r="4"/><circle cx="646" cy="1354" r="3"/><circle cx="668" cy="1354" r="4"/>
+      </g>
     </g>
 
     <g class="tarot-vector-rank-medallion">
-      <ellipse cx="480" cy="82" rx="76" ry="52" fill="url(#${safeUid}-plate)" stroke="#9a6117" stroke-width="7"/>
-      <ellipse cx="480" cy="82" rx="66" ry="43" fill="none" stroke="#fff0a5" stroke-width="3"/>
-      <text class="tarot-vector-rank" x="480" y="98" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="${rankMark.length > 4 ? 28 : 48}" font-weight="700" fill="#281607" stroke="#fff3bd" stroke-width="1" paint-order="stroke">${rankMark}</text>
+      <ellipse cx="480" cy="82" rx="76" ry="52" fill="url(#${safeUid}-plate)" stroke="#e9b538" stroke-width="7"/>
+      <ellipse cx="480" cy="82" rx="66" ry="43" fill="none" stroke="#ffe374" stroke-width="3"/>
+      <path d="M480 49l5 15 15 5-15 5-5 15-5-15-15-5 15-5z" fill="#ffd75b" opacity=".22"/>
+      <text class="tarot-vector-rank" x="480" y="98" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="${rankMark.length > 4 ? 28 : 48}" font-weight="700" fill="#ffe27a" stroke="#201000" stroke-width="1.4" paint-order="stroke">${rankMark}</text>
     </g>
 
     <g class="tarot-vector-title-plate">
-      <path d="M112 1222H848Q881 1222 881 1255V1340Q881 1374 848 1374H112Q79 1374 79 1340V1255Q79 1222 112 1222Z" fill="url(#${safeUid}-plate)" stroke="#87500f" stroke-width="8"/>
-      <path d="M105 1240H855V1356H105Z" fill="#f8e6aa" fill-opacity=".34" stroke="#fff0b0" stroke-width="3"/>
-      <text class="tarot-vector-title" x="480" y="1322" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="${fontSize}" font-weight="700" letter-spacing="2" fill="#241407" stroke="#fff4c4" stroke-width="1.6" paint-order="stroke">${title}</text>
+      <path d="M112 1222H848Q881 1222 881 1255V1340Q881 1374 848 1374H112Q79 1374 79 1340V1255Q79 1222 112 1222Z" fill="url(#${safeUid}-plate)" stroke="#dca52c" stroke-width="8"/>
+      <path d="M105 1240H855V1356H105Z" fill="#081832" fill-opacity=".72" stroke="#f4ce56" stroke-width="3"/>
+      <path d="M134 1298h112M714 1298h112" stroke="#dca62f" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="264" cy="1298" r="4" fill="#f5cd4f"/><circle cx="696" cy="1298" r="4" fill="#f5cd4f"/>
+      <text class="tarot-vector-title" x="480" y="1322" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="${fontSize}" font-weight="700" letter-spacing="2" fill="#fff0ae" stroke="#1a0d00" stroke-width="1.8" paint-order="stroke">${title}</text>
     </g>
   </svg>`;
 }
