@@ -282,5 +282,9 @@
   ensureAssets();
   buildSearch();
   addLoadingGuards();
-  checkDeploymentSync();
+  const scheduleIdle=callback=>{
+    if('requestIdleCallback' in window) window.requestIdleCallback(callback,{timeout:1500});
+    else setTimeout(callback,500);
+  };
+  scheduleIdle(()=>{ void checkDeploymentSync(); });
 })();
