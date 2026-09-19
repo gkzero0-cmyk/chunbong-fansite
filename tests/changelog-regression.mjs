@@ -43,8 +43,8 @@ vm.runInNewContext(dataSource,sandbox);
 const groups=sandbox.window.CHUNBONG_CHANGELOG;
 const meta=sandbox.window.CHUNBONG_CHANGELOG_META;
 assert.ok(Array.isArray(groups)&&groups.length>=2,'changelog needs dated groups');
-assert.equal(meta.throughSha,'d995917165b259f262fa3af6a47e56cefb0019a0','curated checkpoint must cover the latest audited update');
-assert.equal(meta.throughTime,'2026-09-19T14:20:38Z','curated checkpoint time missing');
+assert.equal(meta.throughSha,'67cb629e2fa145b53a30d576b860bcbe11e4d28d','curated checkpoint must cover the latest audited update');
+assert.equal(meta.throughTime,'2026-09-19T14:33:31Z','curated checkpoint time missing');
 for(const group of groups){
   assert.match(group.date,/^20\d{2}-\d{2}-\d{2}$/);
   assert.ok(Array.isArray(group.items)&&group.items.length>0,'each date must contain updates');
@@ -60,6 +60,7 @@ assert.ok(groups.some(group=>group.date==='2026-09-18'&&group.items.some(item=>i
 assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='오늘의 운세 메이저 아르카나 22장 추가')),'daily fortune backfill missing');
 assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='PWA 앱 아이콘 호환성 보강')),'PWA icon backfill missing');
 assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='타로 효과음 구조 안정화')),'Tarot SFX backfill missing');
+assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='업데이트 일지 전체 기록 보완·한글 자동 요약')),'complete changelog audit entry missing');
 const expectedMilestones=[
   ['2026-08-30','춘봉 팬사이트 프로젝트 시작'],
   ['2026-08-31','78장 타로 리딩 기능 추가'],
