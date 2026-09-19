@@ -7,6 +7,7 @@ const token=process.env.GITHUB_TOKEN||'';
 const attempts=Math.max(1,Number(process.env.VERCEL_STATUS_ATTEMPTS||6));
 const delayMs=Math.max(0,Number(process.env.VERCEL_STATUS_DELAY_MS||5000));
 const cooldownSeconds=Math.max(0,Number(process.env.VERCEL_RATE_LIMIT_COOLDOWN_SECONDS||90000));
+const scanWindowSeconds=cooldownSeconds+7200;
 
 if(!sha){
   console.log('No GITHUB_SHA available; skip Vercel status preflight.');
@@ -46,10 +47,12 @@ async function readStatuses(commitSha){
 }
 
 async function findRecentRateLimit(){
-  const response=await fetch(`https://api.github.com/repos/${repo}/commits?sha=main&per_page=20`,{headers});
+  const response=await fetch(`https://api.github.com/repos/${repo}/commits?sha=main&per_page=100`,{headers});
   if(!response.ok)throw new Error(`GitHub commits HTTP ${response.status}`);
   const commits=await response.json();
   for(const commit of Array.isArray(commits)?commits:[]){
+    const commitTime=Date.parse(String(commit?.commit?.committer?.date||commit?.commit?.author?.date||''));
+    if(Number.isFinite(commitTime)&&Math.max(0,Math.floor((Date.now()-commitTime)/1000))>scanWindowSeconds)break;
     const commitSha=String(commit?.sha||'');
     if(!commitSha)continue;
     const statuses=await readStatuses(commitSha);
