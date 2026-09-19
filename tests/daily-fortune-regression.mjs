@@ -39,7 +39,7 @@ assert.match(css, /\.daily-fortune-stage\.is-prism-active \.daily-fortune-card/,
 assert.match(css, /--glow-x/, 'pointer-follow prism glow variables missing');
 assert.match(css, /dailyFortuneParticle/, 'fortune reveal particles missing');
 assert.match(css, /@media\(prefers-reduced-motion:reduce\)/, 'reduced-motion fallback missing');
-assert.match(sw, /chunbong-pwa-20260920-v14/, 'daily fortune service worker revision missing');
+assert.match(sw, /chunbong-pwa-20260920-v15/, 'daily fortune service worker revision missing');
 assert.match(sw, /'\/daily-fortune\.css'/);
 assert.match(sw, /'\/daily-fortune\.js'/);
 
