@@ -25,7 +25,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   smoke:
@@ -33,8 +33,6 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: main
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -220,21 +218,16 @@ jobs:
             && youtubeChannelOk
             && youtubeEngagementOk
             && !result.apiSummary.trackify.excludedDonorRankingPresent;
-          fs.writeFileSync('data/production-smoke-latest.json', JSON.stringify(result, null, 2) + '\n');
+          fs.writeFileSync('.smoke/production-smoke-latest.json', JSON.stringify(result, null, 2) + '\n');
           console.log(JSON.stringify(result, null, 2));
           NODE
-      - name: Commit smoke result
-        shell: bash
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/production-smoke-latest.json
-          if git diff --cached --quiet; then
-            echo 'No smoke result change'
-          else
-            git commit -m 'ci: record production data smoke result'
-            git pull --rebase origin main
-            git push
-          fi
+      - name: Upload smoke result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-data-smoke-${{ github.run_id }}
+          path: .smoke/production-smoke-latest.json
+          if-no-files-found: warn
+          retention-days: 7
       - name: Require successful production smoke
-        run: node -e "const r=require('./data/production-smoke-latest.json'); if(!r.ok){console.error(r); process.exit(1)}"
+        run: node -e "const r=require('./.smoke/production-smoke-latest.json'); if(!r.ok){console.error(r); process.exit(1)}"
