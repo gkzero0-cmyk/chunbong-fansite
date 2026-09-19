@@ -4,12 +4,14 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - '*.html'
+      - 'index.html'
+      - 'offline.html'
       - 'page.js'
       - 'site-quality.css'
       - 'manifest.webmanifest'
       - 'service-worker.js'
-      - 'assets/app-icon.svg'
+      - 'assets/app-icon.*'
+      - 'vercel.json'
       - 'tests/pwa-regression.mjs'
       - '.github/workflows/pwa-browser-smoke.yml'
 

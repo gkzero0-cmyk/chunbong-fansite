@@ -11,7 +11,6 @@ on:
       - 'chungwagame-ranking-core.js'
       - 'chungwagame-postgame-ranking.js'
       - 'assets/chungwagame/**'
-      - 'minigames.html'
       - '.github/workflows/chungwagame-pr-browser-smoke.yml'
 
 jobs:
