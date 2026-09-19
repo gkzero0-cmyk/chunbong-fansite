@@ -2,7 +2,7 @@
   'use strict';
   const core = window.ChunbongPageCore;
   if (!core || core.page !== 'notice') return;
-  const { data, $, $$, esc, errorState, bindRetry, setupReveal, requestedOpenId } = core;
+  const { data, $, $, esc, loadContent, errorState, bindRetry, setupReveal, requestedOpenId } = core;
   const NOTICE_REFRESH_MS = 5 * 60 * 1000;
   const noticeDetailCache = new Map();
   let noticeRefreshTimer = null;
