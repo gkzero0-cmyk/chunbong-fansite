@@ -51,8 +51,8 @@ vm.runInNewContext(dataSource,sandbox);
 const groups=sandbox.window.CHUNBONG_CHANGELOG;
 const meta=sandbox.window.CHUNBONG_CHANGELOG_META;
 assert.ok(Array.isArray(groups)&&groups.length>=2,'changelog needs dated groups');
-assert.equal(meta.throughSha,'4288a684b68ae9a2c0cefe6d6b7057335c5225aa','curated checkpoint must cover the latest audited update');
-assert.equal(meta.throughTime,'2026-09-19T18:02:24Z','curated checkpoint time missing');
+assert.equal(meta.throughSha,'a62ea1dbbe156748c521b3757c1747008c3fae6c','curated checkpoint must cover the latest audited update');
+assert.equal(meta.throughTime,'2026-09-19T18:34:33Z','curated checkpoint time missing');
 for(const group of groups){
   assert.match(group.date,/^20\d{2}-\d{2}-\d{2}$/);
   assert.ok(Array.isArray(group.items)&&group.items.length>0,'each date must contain updates');
@@ -102,6 +102,7 @@ assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>i
 assert.ok(groups.some(group=>group.date==='2026-09-20'&&group.items.some(item=>item.title==='오늘의 운세 카드 연출 강화')),'2026-09-20 daily fortune animation entry missing');
 assert.ok(groups.some(group=>group.date==='2026-09-20'&&group.items.some(item=>item.title==='춘과게임·춘컬타일 화면과 플레이 성능 개선')),'2026-09-20 minigame UX/performance entry missing');
 assert.ok(groups.some(group=>group.date==='2026-09-20'&&group.items.some(item=>item.title==='미니게임 개인 최고기록 프로필 추가')),'2026-09-20 minigame profile entry missing');
+assert.ok(groups.some(group=>group.date==='2026-09-20'&&group.items.some(item=>item.title==='춘과 숫자·춘컬타일 종류 구분성 강화')),'2026-09-20 minigame visibility entry missing');
 
 assert.match(apiEntry,/handleChangelogHistory/,'content API must import changelog history handler');
 assert.match(apiEntry,/type==='changelog-history'/,'content API must route changelog history');
