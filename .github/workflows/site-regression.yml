@@ -80,6 +80,8 @@ jobs:
           node --check scripts/update-trackify-soop-cache.mjs
           node --check scripts/update-soop-follower-history.mjs
           node --check scripts/update-youtube-engagement-cache.mjs
+          node --check .github/scripts/vercel-ignore-build.mjs
+          node --check .github/scripts/vercel-rate-limit-fast-fail.mjs
       - name: Run all regression tests
         run: |
           set -e
