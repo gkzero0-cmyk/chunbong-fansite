@@ -38,11 +38,11 @@ const SUIT_TITLES = {
   pentacles: 'PENTACLES'
 };
 
-const ORIGINAL_CLOUDINARY_BASE = 'https://res.cloudinary.com/lyppgyei/image/upload/chunbong-fansite/tarot-original';
+const ORIGINAL_CLOUDINARY_ROOT = 'https://res.cloudinary.com/lyppgyei/image/upload';
+const ORIGINAL_CLOUDINARY_PUBLIC_ID = 'chunbong-fansite/tarot-original';
 const ORIGINAL_SHEET_CELL_WIDTH = 898;
 const ORIGINAL_SHEET_HEIGHT = 1488;
 const ORIGINAL_SHEET_CARD_COUNT = 13;
-const ORIGINAL_SHEET_WIDTH = ORIGINAL_SHEET_CELL_WIDTH * ORIGINAL_SHEET_CARD_COUNT;
 
 function escapeXml(value) {
   return String(value ?? '').replace(/[&<>"']/g, character => ({
@@ -85,13 +85,16 @@ function originalArtworkDescriptor(card) {
   if (!Number.isInteger(cardIndex) || cardIndex < 0 || cardIndex > 77) return null;
   const sheet = Math.floor(cardIndex / ORIGINAL_SHEET_CARD_COUNT);
   const slot = cardIndex % ORIGINAL_SHEET_CARD_COUNT;
+  const cropX = slot * ORIGINAL_SHEET_CELL_WIDTH;
+  const transform = `c_crop,g_north_west,h_${ORIGINAL_SHEET_HEIGHT},w_${ORIGINAL_SHEET_CELL_WIDTH},x_${cropX},y_0/f_auto/q_auto`;
   return {
     cardIndex,
     sheet,
     slot,
-    url: `${ORIGINAL_CLOUDINARY_BASE}/sheet-${sheet}.avif`,
-    sourceX: slot === 0 ? 0 : -(slot * ORIGINAL_SHEET_CELL_WIDTH),
-    sheetWidth: ORIGINAL_SHEET_WIDTH,
+    cropX,
+    url: `${ORIGINAL_CLOUDINARY_ROOT}/${transform}/${ORIGINAL_CLOUDINARY_PUBLIC_ID}/sheet-${sheet}.avif`,
+    sourceX: 0,
+    sheetWidth: ORIGINAL_SHEET_CELL_WIDTH,
     sheetHeight: ORIGINAL_SHEET_HEIGHT,
     cellWidth: ORIGINAL_SHEET_CELL_WIDTH,
     cellHeight: ORIGINAL_SHEET_HEIGHT
