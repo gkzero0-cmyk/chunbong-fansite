@@ -53,7 +53,7 @@ async function runHandler(query, fetchImpl) {
 }
 
 const root = new URL('../', import.meta.url);
-const pageJs = fs.readFileSync(new URL('page.js', root), 'utf8');
+const pageJs = fs.readFileSync(new URL('page-notice.js', root), 'utf8');
 assert.ok(pageJs.includes("type=notice-detail&id="), 'notice page should request individual notice details');
 assert.ok(pageJs.includes('loadNoticeDetail'), 'notice page should have lazy detail loading');
 
