@@ -18,6 +18,7 @@ const vercel = JSON.parse(read('vercel.json'));
 assert.equal(manifest.name, '춘봉 팬허브');
 assert.equal(manifest.display, 'standalone');
 assert.equal(manifest.scope, '/');
+assert.equal(manifest.start_url, '/?source=pwa', 'installed app should open the canonical root URL');
 assert.ok(Array.isArray(manifest.icons) && manifest.icons.some(icon => icon.src === '/assets/app-icon.svg'));
 assert.match(page, /setupPwaExperience/);
 assert.match(page, /serviceWorker\.register\('\/service-worker\.js'/);

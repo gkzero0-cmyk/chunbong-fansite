@@ -1,8 +1,9 @@
 (() => {
   'use strict';
   const BASE='https://chunbong-fansite.vercel.app';
-  const path=location.pathname.endsWith('/')?location.pathname+'index.html':location.pathname;
-  const canonical=BASE+(path||'/index.html');
+  const rawPath=location.pathname||'/';
+  const path=rawPath==='/'||rawPath==='/index.html'?'/':rawPath;
+  const canonical=BASE+path;
   const title=document.title||'춘봉 팬사이트';
   const description=document.querySelector('meta[name="description"]')?.content||'춘봉의 방송과 팬 콘텐츠를 한곳에서 만나는 비공식 팬사이트';
   const image=BASE+'/assets/chunbong-main.webp';
