@@ -355,3 +355,17 @@
 .cg-hint{border-color:#C97868;background:rgba(201,120,104,.07)}
 
 /* Desktop and short-viewport sizing moved to game-layout.css. */
+
+
+/* Grid readability pass: 2026-09-20 — regular cells only, no 5-cell helper grid. */
+.cg-board-wrap{
+  background:
+    linear-gradient(to right,rgba(226,228,221,.16) 1px,transparent 1px),
+    linear-gradient(to bottom,rgba(226,228,221,.16) 1px,transparent 1px),
+    #282E25!important;
+  background-size:5.8823529% 100%,100% 10%,100% 100%!important;
+}
+.cg-fruit.selected{
+  background:rgba(222,226,211,.055);
+  border-radius:12%;
+}
