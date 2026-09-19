@@ -31,7 +31,7 @@ assert.match(js,/window\.addEventListener\('storage',render\)/,'profile must ref
 assert.match(js,/visibilitychange/,'profile must refresh when returning from a game');
 assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/,'desktop record grid must show four games');
 assert.match(css,/@media\(max-width:640px\)/,'record profile must have a mobile layout');
-assert.match(sw,/chunbong-pwa-20260920-v14/,'PWA cache must advance for minigame profile');
+assert.match(sw,/chunbong-pwa-20260920-v15/,'PWA cache must advance for minigame profile');
 assert.match(sw,/minigame-profile\.js/,'PWA must cache profile runtime');
 assert.match(sw,/minigame-profile\.css/,'PWA must cache profile styles');
 
