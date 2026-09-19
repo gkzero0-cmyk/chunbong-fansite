@@ -8,6 +8,9 @@ const cssPath = new URL('data-soop-periods-v2.css', root);
 
 assert.ok(fs.existsSync(v3Path), 'single-owner SOOP period controller must exist');
 assert.ok(fs.existsSync(cssPath), 'compact SOOP period styles must exist');
+for (const legacy of ['data-soop-periods.js','data-soop-periods-v2.js','data-soop-periods-v2-persistence.js']) {
+  assert.equal(fs.existsSync(new URL(legacy, root)), false, `obsolete SOOP period runtime must stay removed: ${legacy}`);
+}
 const v3 = fs.readFileSync(v3Path, 'utf8');
 const css = fs.readFileSync(cssPath, 'utf8');
 
