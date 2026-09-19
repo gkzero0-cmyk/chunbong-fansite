@@ -178,7 +178,7 @@
       }
       results.innerHTML=rows.length ? rows.map((row,i)=>{
         const id='site-search-option-'+i;
-        return `<a id="${id}" role="option" aria-selected="${i===active}" class="${i===active?'is-active':''}" href="${escapeHtml(row.href)}"><span class="site-search-result-copy"><strong>${escapeHtml(row.label)}</strong><small>${escapeHtml(row.kind+(row.meta?' · '+row.meta:''))}</small></span><span aria-hidden="true">→</span></a>`;
+        return `<a id="${id}" role="option" aria-selected="${i===active}" class="${i===active?'is-active':''}" href="${escapeHtml(row.href)}"><span class="site-search-result-copy"><strong>${escapeHtml(row.label)}</strong><small>${escapeHtml(row.kind+(row.meta?' · '+row.meta:''))}</small></span><span class="site-search-go" aria-hidden="true">→</span></a>`;
       }).join('') : '<div class="site-search-empty">'+(q?'일치하는 콘텐츠가 없습니다.':'검색어를 입력해 주세요.')+'</div>';
       const selected=results.querySelector('a.is-active');
       if(selected)input.setAttribute('aria-activedescendant',selected.id);
