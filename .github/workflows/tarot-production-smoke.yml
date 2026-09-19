@@ -202,10 +202,16 @@ jobs:
                 const span = card.querySelector('span');
                 const cardRect = card.getBoundingClientRect();
                 const spanRect = span.getBoundingClientRect();
+                const cardStyle = getComputedStyle(card);
+                const spanStyle = getComputedStyle(span);
                 return {
                   text: span.textContent.trim(),
                   dx: Math.abs((cardRect.left + cardRect.width / 2) - (spanRect.left + spanRect.width / 2)),
-                  dy: Math.abs((cardRect.top + cardRect.height / 2) - (spanRect.top + spanRect.height / 2))
+                  dy: Math.abs((cardRect.top + cardRect.height / 2) - (spanRect.top + spanRect.height / 2)),
+                  backgroundImage: cardStyle.backgroundImage,
+                  ratio: cardRect.width / cardRect.height,
+                  font: spanStyle.fontFamily,
+                  color: spanStyle.color
                 };
               };
               return [read(cards[0]), read(cards[77])];
@@ -213,6 +219,10 @@ jobs:
             assert.equal(badgeState[0].text, '1');
             assert.equal(badgeState[1].text, '78');
             assert.ok(badgeState.every(item => item.dx < 1 && item.dy < 1), JSON.stringify(badgeState));
+            assert.ok(badgeState.every(item => /v1789845157\/chunbong-fansite\/tarot-card-back\.png/.test(item.backgroundImage)), JSON.stringify(badgeState));
+            assert.ok(badgeState.every(item => Math.abs(item.ratio - (2 / 3)) < 0.02), JSON.stringify(badgeState));
+            assert.ok(badgeState.every(item => /Georgia/i.test(item.font)), JSON.stringify(badgeState));
+            assert.ok(badgeState.every(item => item.color === 'rgb(255, 215, 95)'), JSON.stringify(badgeState));
 
             const card0 = page.locator('#tarot-deck [data-card-index]').nth(0);
             const card1 = page.locator('#tarot-deck [data-card-index]').nth(1);
@@ -243,6 +253,10 @@ jobs:
             assert.equal(await page.locator('#tarot-reading-grid .tarot-vector-rank').count(), 3);
             assert.equal(await page.locator('#tarot-reading-grid .tarot-composite-art-image').count(), 3);
             assert.equal(await page.locator('#tarot-reading-grid feConvolveMatrix').count(), 0, 'legacy raster-text sharpening must disappear after composite upgrade');
+            const revealedFrame = await page.locator('#tarot-reading-grid .tarot-composite-svg').first().evaluate(svg => svg.outerHTML);
+            assert.match(revealedFrame, /stop-color="#0b1b3a"/, 'revealed tarot frame must use the matching celestial navy');
+            assert.match(revealedFrame, /fill="#07142d"/, 'revealed tarot frame must use the matching deep-navy inner border');
+            assert.match(revealedFrame, /fill="#ffd75b"/, 'revealed tarot frame must include gold celestial ornaments');
             const titles = await page.locator('#tarot-reading-grid .tarot-vector-title').allTextContents();
             assert.ok(titles.every(title => title.trim().length > 0), JSON.stringify(titles));
             const originalHrefs = await page.locator('#tarot-reading-grid .tarot-composite-art-image').evaluateAll(images =>
@@ -262,7 +276,9 @@ jobs:
             await page.waitForFunction(() => document.querySelector('#tarot-card-zoom')?.open === false);
 
             console.log('PROD_CHROMIUM_DIRECT_RESELECT=PASS');
+            console.log('PROD_CHROMIUM_CELESTIAL_CARD_BACK=PASS');
             console.log('PROD_CHROMIUM_CENTERED_DECK_NUMBERS=PASS');
+            console.log('PROD_CHROMIUM_CELESTIAL_REVEALED_FRAME=PASS');
             console.log('PROD_CHROMIUM_EXPLICIT_CONFIRM=PASS');
             console.log('PROD_CHROMIUM_VECTOR_COMPOSITE=PASS');
             console.log('PROD_CHROMIUM_UPLOADED_ORIGINAL_ART=PASS');
