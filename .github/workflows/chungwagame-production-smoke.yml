@@ -10,6 +10,7 @@ on:
       - 'chungwagame.js'
       - 'game-layout.css'
       - 'mobile-minigames.css'
+      - 'mobile-minigames.js'
       - 'chungwagame-ranking-core.js'
       - 'chungwagame-postgame-ranking.js'
       - 'assets/chungwagame/**'
@@ -49,6 +50,7 @@ jobs:
             chungwagame.js
             game-layout.css
             mobile-minigames.css
+            mobile-minigames.js
             chungwagame-ranking-core.js
             chungwagame-postgame-ranking.js
             assets/chungwagame/numbers.webp
@@ -171,7 +173,15 @@ jobs:
               assert.ok(layout.y+layout.height<=viewport.height+3,`desktop bottom clipped: ${layout.y+layout.height} > ${viewport.height}`);
             }
 
-            await page.locator('#cg-start').click();
+            if(mobile){
+              await page.locator('#cg-start').click();
+              assert.ok(await page.locator('[data-mobile-landscape-gate]').isVisible(),'production portrait start must show landscape guide');
+              await page.setViewportSize({width:844,height:390});
+              await page.waitForFunction(()=>document.querySelector('#chungwagame')?.dataset.gameStatus==='playing',{timeout:5000});
+              assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('mobile-landscape-game-ready')),true,'production landscape class missing');
+            }else{
+              await page.locator('#cg-start').click();
+            }
             await page.waitForFunction(()=>document.querySelectorAll('.cg-fruit-shape').length===170);
             assert.equal(await page.locator('.cg-fruit-shape').count(),170,'board must render 170 fruits');
             const bg=await page.locator('.cg-fruit-shape').first().evaluate(el=>getComputedStyle(el).backgroundImage);
@@ -184,6 +194,16 @@ jobs:
             const timeAfter=(await page.locator('#cg-timer').textContent())?.trim();
             assert.notEqual(fillAfter,fillBefore,'time gauge did not shrink');
             assert.notEqual(timeAfter,timeBefore,'timer did not advance');
+
+            if(mobile){
+              await page.setViewportSize({width:390,height:844});
+              await page.waitForFunction(()=>document.querySelector('#chungwagame')?.dataset.gameStatus==='paused',{timeout:3000});
+              assert.ok(await page.locator('[data-mobile-landscape-gate]').isVisible(),'production portrait transition must pause and show guide');
+              await page.setViewportSize({width:844,height:390});
+              await page.waitForFunction(()=>!document.querySelector('[data-mobile-landscape-resume]')?.hidden,{timeout:3000});
+              await page.locator('[data-mobile-landscape-resume]').click();
+              await page.waitForFunction(()=>document.querySelector('#chungwagame')?.dataset.gameStatus==='playing',{timeout:3000});
+            }
 
             await page.keyboard.press('Escape');
             assert.ok(await page.locator('#cg-pause-overlay').isVisible(),'ESC pause overlay missing');
@@ -225,6 +245,10 @@ jobs:
 
             await page.evaluate(()=>window.ChungwagameApp.setGameOver());
             await page.waitForFunction(()=>document.querySelector('#chungwagame')?.dataset.gameStatus==='gameover');
+            if(mobile){
+              await page.waitForFunction(()=>!document.body.classList.contains('mobile-landscape-game-session'));
+              assert.ok(await page.locator('.site-header').isVisible(),'production game over must restore normal fan-site UI');
+            }
             assert.ok(await page.locator('#cg-ranking-register').isVisible(),'postgame ranking register missing');
             await page.locator('#cg-ranking-register').click();
             assert.ok(await page.locator('#cg-ranking-submit-panel').isVisible(),'postgame nickname panel missing');
