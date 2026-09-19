@@ -84,6 +84,9 @@ jobs:
           assert.equal(boundary.after, '2026-09-20', 'KST date must roll over exactly at midnight');
 
           await page.locator('[data-daily-fortune-card]').click();
+          await page.waitForFunction(() => document.querySelector('[data-daily-fortune-stage]')?.classList.contains('is-spinning'));
+          assert.equal(await page.locator('[data-daily-fortune-result]').isHidden(), true, 'result must remain hidden during the high-speed back spin');
+          assert.equal(await page.locator('[data-daily-fortune-card]').isDisabled(), true, 'draw must lock immediately while the card is spinning');
           await page.waitForFunction(() => {
             const key = window.CHUNBONG_DAILY_FORTUNE?.STORAGE_KEY;
             const raw = key ? localStorage.getItem(key) : '';
@@ -99,8 +102,24 @@ jobs:
           assert.equal(await page.locator('[data-daily-fortune-card]').isDisabled(), true, 'same result dialog must not allow a second draw');
           assert.match((await page.locator('[data-daily-fortune-image]').getAttribute('src')) || '', /res\.cloudinary\.com\/.*c_crop.*f_auto\/q_auto/, 'drawn card must use the optimized card crop URL');
 
+          assert.equal(await page.locator('[data-daily-fortune-card]').evaluate(el=>el.classList.contains('is-revealed')), true, 'card must finish on the revealed front side');
           const firstTitle = (await page.locator('[data-daily-fortune-result-title]').textContent())?.trim();
           assert.ok(firstTitle && /오늘의 운세/.test(firstTitle), 'fortune result title must render');
+
+          const stageBox = await page.locator('[data-daily-fortune-stage]').boundingBox();
+          assert.ok(stageBox, 'fortune prism stage bounding box missing');
+          await page.mouse.move(stageBox.x + stageBox.width * 0.78, stageBox.y + stageBox.height * 0.28);
+          await page.waitForFunction(() => document.querySelector('[data-daily-fortune-stage]')?.classList.contains('is-prism-active'));
+          const prism = await page.locator('[data-daily-fortune-stage]').evaluate(el=>({
+            x:el.style.getPropertyValue('--tilt-x'),
+            y:el.style.getPropertyValue('--tilt-y'),
+            gx:el.style.getPropertyValue('--glow-x'),
+            gy:el.style.getPropertyValue('--glow-y')
+          }));
+          assert.notEqual(prism.x,'0deg','pointer hover must tilt the result card on X');
+          assert.notEqual(prism.y,'0deg','pointer hover must tilt the result card on Y');
+          assert.ok(prism.gx && prism.gy,'pointer hover must move prism glow coordinates');
+          await page.mouse.move(20,20);
 
           await page.locator('[data-daily-fortune-close]').click();
           await page.waitForFunction(() => document.querySelector('#daily-fortune-dialog')?.open === false);
