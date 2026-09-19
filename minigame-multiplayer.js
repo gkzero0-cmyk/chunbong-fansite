@@ -43,10 +43,11 @@
     const clean=value=>String(value||'').toUpperCase().replace(/[^A-Z2-9]/g,'');
     if(roomParam)return clean(roomParam).slice(0,6);
 
+    if(/^(?:https?:\/\/|www\.)/i.test(raw)||/https?:\/\//i.test(raw))return '';
+
     const token=raw.toUpperCase().match(/(?:^|[^A-Z2-9])([A-Z2-9]{6})(?=$|[^A-Z2-9])/);
     if(token)return token[1];
 
-    if(/^(?:https?:\/\/|www\.)/i.test(raw))return '';
     return clean(raw).slice(0,6);
   }
 
