@@ -43,6 +43,11 @@ jobs:
           try{
             for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
               const page=await browser.newPage({viewport,isMobile:viewport.width<=390,hasTouch:viewport.width<=390});
+              await page.addInitScript(()=>{
+                const formatter=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'});
+                const parts=Object.fromEntries(formatter.formatToParts(new Date()).filter(part=>part.type!=='literal').map(part=>[part.type,part.value]));
+                sessionStorage.setItem('chunbongDailyTarotAutoOpenV1',`${parts.year}-${parts.month}-${parts.day}`);
+              });
               const errors=[];
               page.on('pageerror',error=>errors.push(error.message));
 
