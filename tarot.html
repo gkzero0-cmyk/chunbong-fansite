@@ -22,8 +22,13 @@
 <main id="main-content" class="tarot-page">
   <section class="page-hero tarot-hero"><div class="page-shell reveal"><div class="tarot-hero-grid"><div class="tarot-hero-copy"><p class="kicker">07 / TAROT</p><h1>춘봉 타로</h1><p>메이저 22장과 마이너 56장, 총 78장 풀덱으로 주제에 맞는 전용 스프레드를 선택해 숫자 입력 또는 직접 카드 선택으로 나만의 흐름을 확인해 보세요.</p></div><figure class="tarot-hero-media"><a class="tarot-hero-banner-link" href="https://namu.wiki/w/%EC%B6%98%EB%B4%89/%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%A8%B8%20%ED%83%80%EB%A1%9C%EC%83%81%EB%8B%B4%20%EB%AA%A9%EB%A1%9D" target="_blank" rel="noreferrer" aria-label="춘봉 스트리머 타로상담 목록 나무위키 열기"><img class="tarot-hero-banner" src="assets/tarot-consult-banner.jpg" width="960" height="540" alt="춘봉의 타로상담소 배너" loading="eager" decoding="async" fetchpriority="high"></a></figure></div></div></section>
   <section class="content-section"><div class="page-shell tarot-shell">
-    <form id="tarot-setup" class="tarot-setup reveal">
-      <fieldset class="tarot-choice-group"><legend>무엇을 볼까요?</legend>
+    <form id="tarot-setup" class="tarot-setup reveal" data-tarot-mode="quick">
+      <div class="tarot-mode-switch" role="group" aria-label="타로 설정 방식">
+        <button type="button" class="is-active" data-tarot-mode-button="quick" aria-pressed="true"><strong>빠른 타로</strong><span>질문 · 1장/3장 · 직접 선택</span></button>
+        <button type="button" data-tarot-mode-button="detail" aria-pressed="false"><strong>상세 설정</strong><span>주제 · 스프레드 · 선택 방식</span></button>
+      </div>
+      <p class="tarot-mode-help" id="tarot-mode-help">질문을 적고 1장 또는 3장을 선택한 뒤 바로 카드를 골라보세요.</p>
+      <fieldset class="tarot-choice-group tarot-detail-only"><legend>무엇을 볼까요?</legend>
         <label><input type="radio" name="topic" value="general" checked><span>종합타로</span></label>
         <label><input type="radio" name="topic" value="love"><span>연애</span></label>
         <label><input type="radio" name="topic" value="partner"><span>상대방 마음</span></label>
@@ -43,7 +48,7 @@
           <label><input type="radio" name="spread" value="twelveCompass"><span>12장 종합</span></label>
         </div>
       </fieldset>
-      <fieldset class="tarot-choice-group"><legend>카드 선택 방식</legend>
+      <fieldset class="tarot-choice-group tarot-detail-only"><legend>카드 선택 방식</legend>
         <label><input type="radio" name="selection-mode" value="number" checked><span>숫자 직접 입력</span></label>
         <label><input type="radio" name="selection-mode" value="cards"><span>카드 직접 선택</span></label>
       </fieldset>
