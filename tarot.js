@@ -354,10 +354,27 @@ if (typeof document !== 'undefined') {
     updateDirectSelectionUI();
   }
 
-  function renderCardSvg(card, filterId) {
+  function renderCardSvg(card, filterId, reversed = false) {
+    const composite = window.CHUNBONG_TAROT_COMPOSITE;
+    const original = composite?.originalArtworkDescriptor?.(card);
+    if (composite?.buildCompositeSvg && original) {
+      return {
+        html: composite.buildCompositeSvg(card, original, reversed, filterId),
+        composite: true
+      };
+    }
+
     const descriptor = cardArtworkDescriptor(card);
-    if (!descriptor) return '<span class="tarot-card-art-missing">카드 이미지를 불러오지 못했습니다.</span>';
-    return `<svg class="tarot-card-art-svg" viewBox="0 0 960 1440" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><defs><filter id="${filterId}" x="-3%" y="-3%" width="106%" height="106%" color-interpolation-filters="sRGB"><feConvolveMatrix order="3" kernelMatrix="0 -0.08 0 -0.08 1.32 -0.08 0 -0.08 0" divisor="1" bias="0" edgeMode="duplicate" preserveAlpha="true"/></filter></defs><image href="${descriptor.url}" x="${descriptor.sourceX}" y="0" width="1920" height="1440" preserveAspectRatio="none" filter="url(#${filterId})"/></svg>`;
+    if (!descriptor) {
+      return {
+        html: '<span class="tarot-card-art-missing">카드 이미지를 불러오지 못했습니다.</span>',
+        composite: false
+      };
+    }
+    return {
+      html: `<svg class="tarot-card-art-svg" viewBox="0 0 960 1440" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><defs><filter id="${filterId}" x="-3%" y="-3%" width="106%" height="106%" color-interpolation-filters="sRGB"><feConvolveMatrix order="3" kernelMatrix="0 -0.08 0 -0.08 1.32 -0.08 0 -0.08 0" divisor="1" bias="0" edgeMode="duplicate" preserveAlpha="true"/></filter></defs><image href="${descriptor.url}" x="${descriptor.sourceX}" y="0" width="1920" height="1440" preserveAspectRatio="none" filter="url(#${filterId})"/></svg>`,
+      composite: false
+    };
   }
 
   function appendTextElement(parent, tag, className, text) {
@@ -464,8 +481,9 @@ if (typeof document !== 'undefined') {
       const reversed = selection.orientation === 'reversed';
       const direction = reversed ? '역방향' : '정방향';
       const meaning = buildCardInterpretation(selection, state.topic, selection.position);
-      const artwork = renderCardSvg(selection.card, `tarot-sharp-${index}`);
-      return `<article class="tarot-card-result" data-position="${escapeHtml(selection.position)}"><p class="tarot-position">${escapeHtml(selection.position)}</p><button class="tarot-card-art-button" type="button" data-tarot-zoom data-selection-index="${index}" aria-label="${escapeHtml(selection.card.nameKo)} ${direction} 카드 크게 보기"><span class="tarot-card-art ${reversed ? 'is-reversed' : ''}">${artwork}</span><span class="tarot-card-zoom-label" aria-hidden="true">크게 보기</span></button><div class="tarot-card-copy"><small>${direction} · DECK ${selection.deckNumber}</small><h2>${escapeHtml(selection.card.nameKo)}</h2><p>${escapeHtml(meaning)}</p></div></article>`;
+      const artwork = renderCardSvg(selection.card, `tarot-sharp-${index}`, reversed);
+      const artClass = `tarot-card-art ${artwork.composite ? 'tarot-card-composite ' : ''}${reversed ? 'is-reversed' : ''}`.trim();
+      return `<article class="tarot-card-result" data-position="${escapeHtml(selection.position)}"><p class="tarot-position">${escapeHtml(selection.position)}</p><button class="tarot-card-art-button" type="button" data-tarot-zoom data-selection-index="${index}" aria-label="${escapeHtml(selection.card.nameKo)} ${direction} 카드 크게 보기"><span class="${artClass}">${artwork.html}</span><span class="tarot-card-zoom-label" aria-hidden="true">크게 보기</span></button><div class="tarot-card-copy"><small>${direction} · DECK ${selection.deckNumber}</small><h2>${escapeHtml(selection.card.nameKo)}</h2><p>${escapeHtml(meaning)}</p></div></article>`;
     }).join('');
     const summary = byId('tarot-summary');
     summary.replaceChildren();
@@ -561,7 +579,9 @@ if (typeof document !== 'undefined') {
     const reversed = selection.orientation === 'reversed';
     const direction = reversed ? '역방향' : '정방향';
     caption.textContent = `${selection.card.nameKo} · ${direction}`;
-    art.innerHTML = `<div class="tarot-card-art ${reversed ? 'is-reversed' : ''}">${renderCardSvg(selection.card, 'tarot-sharp-zoom')}</div>`;
+    const artwork = renderCardSvg(selection.card, 'tarot-sharp-zoom', reversed);
+    const artClass = `tarot-card-art ${artwork.composite ? 'tarot-card-composite ' : ''}${reversed ? 'is-reversed' : ''}`.trim();
+    art.innerHTML = `<div class="${artClass}">${artwork.html}</div>`;
     if (typeof dialog.showModal === 'function') dialog.showModal();
     else dialog.setAttribute('open', '');
   }

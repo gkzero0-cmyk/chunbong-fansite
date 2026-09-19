@@ -9,6 +9,7 @@ const htmlPaths = [
 const manifest = JSON.parse(read('manifest.webmanifest'));
 const sw = read('service-worker.js');
 const page = read('page.js');
+const content = read('content.js');
 const css = read('site-quality.css');
 const offline = read('offline.html');
 const vercel = JSON.parse(read('vercel.json'));
@@ -28,6 +29,12 @@ assert.match(sw, /CHUNBONG_PWA/);
 assert.match(sw, /\/offline\.html/);
 assert.match(sw, /url\.pathname\.startsWith\('\/api\/'\)/);
 assert.match(sw, /networkFirst/);
+assert.match(sw, /request\.destination === 'document'/, 'documents should remain network-first');
+assert.match(sw, /\['script','style','worker','image','font'\]/, 'static assets should use stale-while-revalidate');
+assert.match(content, /chunbong-cache-v2:/, 'cross-page session cache namespace missing');
+assert.match(content, /sessionStorage\.setItem/, 'content cache should persist within the tab');
+assert.match(page, /schedule: '\/api\/content\?type=schedule'/, 'schedule page must use live content API');
+assert.match(page, /await loadContent\('schedule'\)/, 'schedule renderer must request live schedule data');
 assert.match(offline, /오프라인 상태입니다/);
 
 for (const html of htmlPaths) {
