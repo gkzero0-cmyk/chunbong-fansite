@@ -189,7 +189,7 @@
 
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape'){
-      if(!moreBackdrop?.hidden){
+      if(moreBackdrop&&!moreBackdrop.hidden){
         closeAppMore();
         return;
       }
