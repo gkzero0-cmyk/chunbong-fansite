@@ -362,7 +362,7 @@
   .chungwagame-navline{margin-bottom:3px}
   .chungwagame-topbar{min-height:62px;margin-bottom:5px}
   .chungwagame-layout{
-    grid-template-columns:190px minmax(0,min(1040px,calc((100svh - 155px) * 1.7))) 118px;
+    grid-template-columns:190px minmax(0,min(1040px,calc(170svh - 263.5px))) 118px;
     gap:14px
   }
   .cg-mascot-card{padding:13px 11px 14px}
