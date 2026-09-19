@@ -8,6 +8,8 @@ on:
       - 'offline.html'
       - 'page.js'
       - 'site-quality.css'
+      - 'mobile-site.css'
+      - 'mobile-site.js'
       - 'manifest.webmanifest'
       - 'service-worker.js'
       - 'assets/app-icon.*'
@@ -66,6 +68,16 @@ jobs:
 
           const scope = await page.evaluate(async () => (await navigator.serviceWorker.ready).scope);
           assert.ok(scope.endsWith('/'));
+
+          await page.goto(process.env.BASE_URL + '/?source=pwa', { waitUntil: 'networkidle' });
+          await page.waitForSelector('[data-pwa-app-tabbar]');
+          assert.equal(await page.locator('[data-pwa-app-tabbar] > *').count(),5,'installed app bottom navigation missing');
+          assert.equal(await page.locator('[data-pwa-app-tab="home"]').getAttribute('aria-current'),'page','installed app home tab should be active');
+          await page.locator('[data-pwa-app-more-toggle]').click();
+          assert.ok(await page.locator('[data-pwa-app-more]').isVisible(),'installed app more sheet did not open');
+          assert.ok(await page.locator('[data-pwa-app-more] a').count()>=8,'installed app more sheet is missing destinations');
+          await page.keyboard.press('Escape');
+          assert.equal(await page.locator('[data-pwa-app-more]').isVisible(),false,'installed app more sheet did not close with Escape');
 
           await context.setOffline(true);
           await page.goto(process.env.BASE_URL + '/offline-check-not-cached.html', { waitUntil: 'domcontentloaded' });
