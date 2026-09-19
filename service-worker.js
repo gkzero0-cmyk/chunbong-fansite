@@ -14,6 +14,8 @@ const APP_SHELL = [
   '/content.js',
   '/daily-fortune.css',
   '/daily-fortune.js',
+  '/home-overview.css',
+  '/home-overview.js',
   '/manifest.webmanifest',
   '/assets/app-icon.svg',
   '/assets/app-icon-192.png',

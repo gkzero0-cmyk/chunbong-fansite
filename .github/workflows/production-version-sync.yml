@@ -1,0 +1,40 @@
+name: Production version sync
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Compare main and production commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXPECTED="$(git rev-parse HEAD)"
+          BASE='https://chunbong-fansite.vercel.app'
+          ACTUAL=''
+          for attempt in 1 2 3 4 5 6 7 8; do
+            BODY="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'cache-control: no-cache' "${BASE}/api/version?_ts=$(date +%s)" || true)"
+            ACTUAL="$(printf '%s' "$BODY" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(JSON.parse(s).sha||'')}catch{}})")"
+            echo "attempt=${attempt} expected=${EXPECTED} actual=${ACTUAL:-missing}"
+            if [ "$ACTUAL" = "$EXPECTED" ]; then
+              echo 'Production is synced with main.'
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::Production commit ${ACTUAL:-missing} does not match main ${EXPECTED}."
+          exit 1
