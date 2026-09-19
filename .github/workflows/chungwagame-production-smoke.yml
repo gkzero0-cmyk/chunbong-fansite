@@ -50,7 +50,7 @@ jobs:
           for attempt in $(seq 1 60); do
             stamp=$(date +%s)
             matched=1
-            for file in "\${files[@]}"; do
+            for file in "${files[@]}"; do
               mkdir -p "/tmp/production/$(dirname "$file")"
               if ! curl -fsS -H 'cache-control: no-cache' "$BASE_URL/$file?_smoke=$stamp" -o "/tmp/production/$file"; then
                 matched=0
