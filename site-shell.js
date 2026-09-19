@@ -64,6 +64,13 @@
     }
   };
 
+  if (!document.querySelector('link[data-personal-hub-styles]')) {
+    const personalStyles = document.createElement('link');
+    personalStyles.rel = 'stylesheet';
+    personalStyles.href = 'personal-hub.css';
+    personalStyles.dataset.personalHubStyles = 'true';
+    document.head.appendChild(personalStyles);
+  }
   if (!document.querySelector('link[data-site-quality]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -71,7 +78,7 @@
     link.dataset.siteQuality = 'true';
     document.head.appendChild(link);
   }
-  for (const src of ['site-meta.js', 'site-health.js', 'site-improvements.js']) {
+  for (const src of ['site-meta.js', 'site-health.js', 'site-improvements.js', 'personal-hub.js']) {
     if (document.querySelector('script[src="' + src + '"]')) continue;
     const script = document.createElement('script');
     script.src = src;
