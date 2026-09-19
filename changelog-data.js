@@ -1,9 +1,20 @@
 window.CHUNBONG_CHANGELOG_META = {
-  throughSha: '67cb629e2fa145b53a30d576b860bcbe11e4d28d',
-  throughTime: '2026-09-19T14:33:31Z'
+  throughSha: '4288a684b68ae9a2c0cefe6d6b7057335c5225aa',
+  throughTime: '2026-09-19T18:02:24Z'
 };
 
 window.CHUNBONG_CHANGELOG = [
+  {
+    date: '2026-09-20',
+    items: [
+      { type: 'improved', title: '실제 콘텐츠 통합검색·홈 화면 정리', description: '상단 검색에서 일정·공지·영상·방송 이력·업데이트 기록까지 실제 콘텐츠를 찾을 수 있게 하고 홈의 중복 영역을 정리했습니다.' },
+      { type: 'new', title: '미니게임 개인 최고기록 프로필 추가', description: '미니게임 허브에서 춘트리스·춘박게임·춘과게임·춘컬타일의 브라우저 저장 최고기록과 플레이 진행도를 한눈에 확인할 수 있도록 추가했습니다.' },
+      { type: 'improved', title: '새 소식에 방송 일정 통합', description: '날짜별 새 소식 화면에서 최근·예정 방송 일정도 공지와 영상, 팬아트와 함께 한 흐름으로 확인할 수 있도록 개선했습니다.' },
+      { type: 'improved', title: '팬사이트 키보드·로딩 접근성 보강', description: '현재 메뉴 표시, 로딩 상태 알림, 검색 키보드 이동과 새 소식 필터 탭 조작을 보강해 키보드와 보조기기 사용성을 높였습니다.' },
+      { type: 'improved', title: '오늘의 운세 카드 연출 강화', description: '카드를 고르면 뒷면이 고속 회전한 뒤 감속·정지하고 결과가 공개되도록 바꾸고, 단계별 효과음·파티클·프리즘 글로우와 마우스 위치 기반 3D 기울기 효과를 추가했습니다.' },
+      { type: 'improved', title: '춘과게임·춘컬타일 화면과 플레이 성능 개선', description: '춘과게임 기본 격자를 더 잘 보이게 하고 짧은 화면에서 두 게임의 UI 크기를 정리했으며, 춘컬타일 제거 효과의 DOM·파티클·보드 렌더링을 줄여 끊김을 완화하고 제거 개수 표시 시간을 늘렸습니다.' }
+    ]
+  },
   {
     date: '2026-09-19',
     items: [

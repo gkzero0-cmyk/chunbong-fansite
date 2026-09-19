@@ -12,7 +12,8 @@ on:
       - 'chuncortile-postgame-ranking.js'
       - 'lib/chuncortile-ranking-api.js'
       - 'api/content.js'
-      - 'assets/chuncortile/tiles.png'
+      - 'assets/chuncortile/tiles-user.webp'
+      - 'mobile-minigames.css'
       - '.github/workflows/chuncortile-browser-smoke.yml'
   push:
     branches: [main]
@@ -26,7 +27,8 @@ on:
       - 'chuncortile-postgame-ranking.js'
       - 'lib/chuncortile-ranking-api.js'
       - 'api/content.js'
-      - 'assets/chuncortile/tiles.png'
+      - 'assets/chuncortile/tiles-user.webp'
+      - 'mobile-minigames.css'
 jobs:
   browser-smoke:
     runs-on: ubuntu-latest
@@ -81,13 +83,18 @@ jobs:
               let move=await page.evaluate(()=>window.ChuncortileApp.debugFindMove());
               assert.ok(move&&move.matches.length>=2);
               let before=await page.evaluate(()=>window.ChuncortileApp.getSnapshot().score);
+              const firstRemoved=move.matches.length;
               await page.locator('.ct-cell').nth(move.index).click();
               await page.waitForFunction(before=>window.ChuncortileApp.getSnapshot().score>before,before);
               let state=await page.evaluate(()=>window.ChuncortileApp.getSnapshot());
               assert.equal(state.combo,1);
-              assert.ok(await page.locator('.ct-score-pop').count()>0,'clear score effect missing');
-
-              await page.waitForTimeout(400);
+              const firstPop=page.locator('.ct-score-pop').last();
+              assert.ok(await firstPop.count()>0,'clear score effect missing');
+              assert.match(await firstPop.innerText(),new RegExp(firstRemoved+'개 제거'),'clear popup must show removed tile count');
+              const burstCount=await page.locator('.ct-burst').count();
+              assert.ok(burstCount>0&&burstCount<=firstRemoved*4,'clear particles exceeded performance cap');
+              await page.waitForTimeout(950);
+              assert.ok(await firstPop.isVisible(),'clear count must remain readable for about one second');
               move=await page.evaluate(()=>window.ChuncortileApp.debugFindMove());
               assert.ok(move&&move.matches.length>=2);
               before=state.score;

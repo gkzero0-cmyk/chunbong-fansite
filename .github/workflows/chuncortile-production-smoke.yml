@@ -1,0 +1,131 @@
+name: Chuncortile production smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'chuncortile.html'
+      - 'chuncortile.css'
+      - 'chuncortile.js'
+      - 'chuncortile-core.js'
+      - 'chuncortile-ranking-core.js'
+      - 'chuncortile-postgame-ranking.js'
+      - 'game-layout.css'
+      - 'mobile-minigames.css'
+      - 'assets/chuncortile/tiles-user.webp'
+      - 'api/content.js'
+      - 'lib/chuncortile-ranking-api.js'
+      - '.github/workflows/chuncortile-production-smoke.yml'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Wait for exact Chuncortile production assets
+        env:
+          BASE_URL: https://chunbong-fansite.vercel.app
+        run: |
+          set -euo pipefail
+          files=(
+            chuncortile.html
+            chuncortile.css
+            chuncortile.js
+            chuncortile-core.js
+            chuncortile-ranking-core.js
+            chuncortile-postgame-ranking.js
+            game-layout.css
+            mobile-minigames.css
+            assets/chuncortile/tiles-user.webp
+          )
+
+          for attempt in $(seq 1 60); do
+            stamp=$(date +%s)
+            matched=1
+            for file in "${files[@]}"; do
+              mkdir -p "/tmp/production/$(dirname "$file")"
+              if ! curl -fsS -H 'cache-control: no-cache' "$BASE_URL/$file?_smoke=$stamp" -o "/tmp/production/$file"; then
+                matched=0
+                break
+              fi
+              expected="$(sha256sum "$file" | awk '{print $1}')"
+              actual="$(sha256sum "/tmp/production/$file" | awk '{print $1}')"
+              if [ "$actual" != "$expected" ]; then
+                echo "attempt=$attempt stale=$file expected=$expected actual=$actual"
+                matched=0
+                break
+              fi
+            done
+
+            if [ "$matched" = "1" ] &&
+               curl -fsS "$BASE_URL/api/content?type=chuncortile-ranking&mode=classic&_smoke=$stamp" -o /tmp/chuncortile-ranking.json &&
+               node -e "const p=require('/tmp/chuncortile-ranking.json');if(p.mode!=='classic'||!Array.isArray(p.entries))process.exit(1)"; then
+              echo 'Exact Chuncortile production assets match main.'
+              exit 0
+            fi
+
+            test "$attempt" != "60"
+            sleep 5
+          done
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Verify production clear FX and responsive fit
+        env:
+          BASE_URL: https://chunbong-fansite.vercel.app
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import assert from 'node:assert/strict';
+          import { chromium } from 'playwright';
+
+          const browser=await chromium.launch({headless:true});
+          try{
+            for(const viewport of [{width:1440,height:900},{width:1280,height:720},{width:390,height:844}]){
+              const page=await browser.newPage({viewport});
+              const errors=[];
+              page.on('pageerror',error=>errors.push(error.message));
+              await page.goto(process.env.BASE_URL+'/chuncortile.html?_smoke='+Date.now(),{waitUntil:'networkidle'});
+              await page.waitForFunction(()=>Boolean(window.ChuncortileApp?.debugFindMove));
+
+              assert.equal(await page.locator('.ct-cell').count(),450);
+              assert.equal(await page.locator('.ct-cell.is-tile').count(),200);
+              assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),true,'horizontal overflow');
+
+              if(viewport.width>=900){
+                const layout=await page.locator('.ct-layout').boundingBox();
+                assert.ok(layout,'layout missing');
+                assert.ok(layout.x>=-1&&layout.x+layout.width<=viewport.width+1,'desktop layout clips horizontally');
+                assert.ok(layout.y+layout.height<=viewport.height+3,'desktop layout clips vertically');
+              }
+
+              await page.locator('#ct-start').click();
+              await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='playing',{timeout:5000});
+              const move=await page.evaluate(()=>window.ChuncortileApp.debugFindMove());
+              assert.ok(move&&move.matches.length>=2,'no playable clear found');
+              const removed=move.matches.length;
+              const before=await page.evaluate(()=>window.ChuncortileApp.getSnapshot().score);
+              await page.locator('.ct-cell').nth(move.index).click();
+              await page.waitForFunction(before=>window.ChuncortileApp.getSnapshot().score>before,before);
+
+              const pop=page.locator('.ct-score-pop').last();
+              assert.match(await pop.innerText(),new RegExp(removed+'개 제거'),'removed count popup missing');
+              const burstCount=await page.locator('.ct-burst').count();
+              assert.ok(burstCount>0&&burstCount<=removed*4,'particle cap regressed');
+              await page.waitForTimeout(950);
+              assert.ok(await pop.isVisible(),'removed count disappeared too quickly');
+              assert.deepEqual(errors,[]);
+              await page.close();
+            }
+          }finally{
+            await browser.close();
+          }
+          EOF_NODE
