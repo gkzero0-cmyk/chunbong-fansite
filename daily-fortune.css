@@ -141,3 +141,44 @@
   .daily-fortune-result{animation:none}
   .btn-fortune{transition:none}
 }
+
+.daily-fortune-floating{
+  position:fixed;right:22px;bottom:82px;z-index:65;
+  width:50px;height:72px;padding:0;border:0;background:transparent;
+  cursor:pointer;filter:drop-shadow(0 10px 20px #000b);
+  transition:transform .2s ease,filter .2s ease,opacity .2s ease;
+}
+.daily-fortune-floating[hidden]{display:none}
+.daily-fortune-floating:hover{transform:translateY(-4px) rotate(-2deg);filter:drop-shadow(0 14px 25px #000d) drop-shadow(0 0 13px #b96fff45)}
+.daily-fortune-floating:focus-visible{outline:2px solid #e3b7ff;outline-offset:5px;border-radius:10px}
+.daily-fortune-floating-card{
+  position:absolute;inset:0;display:grid;place-items:center;overflow:hidden;border-radius:9px;
+  border:1px solid #e1c6ff70;
+  background:
+    radial-gradient(circle at center,#c98bff22 0 8%,transparent 8.5%),
+    repeating-conic-gradient(from 22.5deg at center,#f0dcff15 0 10deg,transparent 10deg 20deg),
+    radial-gradient(circle at center,#2b173a 0 42%,#120b19 43% 58%,#3b2051 59% 62%,#0b080f 63%);
+  box-shadow:inset 0 0 0 3px #09070c,inset 0 0 0 4px #d3acff55,0 0 24px #8846d528;
+}
+.daily-fortune-floating-card:before,.daily-fortune-floating-card:after{
+  content:"";position:absolute;inset:6px;border:1px solid #e1bdff55;border-radius:6px;transform:rotate(2deg)
+}
+.daily-fortune-floating-card:after{inset:10px;border-color:#ffc96c40;transform:rotate(-2deg)}
+.daily-fortune-floating-card i{font-style:normal;font-size:22px;color:#ffe09a;text-shadow:0 0 12px #c78cff;z-index:1}
+.daily-fortune-floating-tip{
+  position:absolute;right:60px;top:50%;transform:translateY(-50%) translateX(5px);
+  opacity:0;pointer-events:none;white-space:nowrap;
+  padding:7px 9px;border:1px solid #ffffff1f;border-radius:9px;
+  background:#100c15ef;color:#f2e8f7;font-size:10px;font-weight:900;
+  box-shadow:0 8px 25px #0008;transition:.18s
+}
+.daily-fortune-floating:hover .daily-fortune-floating-tip,
+.daily-fortune-floating:focus-visible .daily-fortune-floating-tip{opacity:1;transform:translateY(-50%) translateX(0)}
+@media(max-width:720px){
+  .daily-fortune-floating{right:14px;bottom:76px;width:45px;height:65px}
+  .daily-fortune-floating-tip{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .daily-fortune-floating{transition:none}
+  .daily-fortune-floating:hover{transform:none}
+}

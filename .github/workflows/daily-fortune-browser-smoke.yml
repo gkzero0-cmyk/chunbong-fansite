@@ -85,9 +85,22 @@ jobs:
               assert.ok(first.value.cardIndex>=0&&first.value.cardIndex<22,'draw must use Major Arcana only');
               assert.match(first.direction,/정방향|역방향/);
               assert.equal(first.overflow,false,'fortune UI caused horizontal overflow');
+              assert.equal(await page.locator('#daily-fortune-floating').isVisible(),false,'floating card must stay hidden while fortune dialog is open');
+
+              await page.locator('[data-daily-fortune-close]').click();
+              await page.waitForFunction(()=>document.querySelector('#daily-fortune-dialog')?.open===false);
+              assert.ok(await page.locator('#daily-fortune-floating').isVisible(),'floating card shortcut must appear after closing a drawn fortune');
+              const floatingBox=await page.locator('#daily-fortune-floating').boundingBox();
+              assert.ok(floatingBox,'floating card shortcut box missing');
+              assert.ok(floatingBox.x>=0&&floatingBox.y>=0&&floatingBox.x+floatingBox.width<=viewport.width&&floatingBox.y+floatingBox.height<=viewport.height,'floating card shortcut clips viewport');
+              await page.locator('#daily-fortune-floating').click();
+              await page.waitForFunction(()=>document.querySelector('#daily-fortune-dialog')?.open===true);
+              assert.equal(await page.locator('#daily-fortune-floating').isVisible(),false,'floating shortcut must hide while reopened dialog is open');
+              await page.locator('[data-daily-fortune-close]').click();
 
               await page.reload({waitUntil:'networkidle'});
-              await page.locator('#daily-fortune-open').click();
+              assert.ok(await page.locator('#daily-fortune-floating').isVisible(),'stored same-day fortune should restore floating shortcut');
+              await page.locator('#daily-fortune-floating').click();
               await page.waitForFunction(()=>document.querySelector('#daily-fortune-dialog')?.open===true);
               const second=await page.evaluate(()=>JSON.parse(localStorage.getItem('chunbongDailyTarotFortuneV1')||'null'));
               assert.equal(second.cardIndex,first.value.cardIndex,'same day must keep the same card');
