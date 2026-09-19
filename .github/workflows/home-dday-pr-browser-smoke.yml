@@ -49,6 +49,12 @@ jobs:
               await page.goto(`${process.env.BASE_URL}/index.html?_smoke=${Date.now()}`,{waitUntil:'networkidle'});
               await page.waitForFunction(()=>Boolean(window.HomeBroadcastDday));
 
+              const fortuneDialog=page.locator('#daily-fortune-dialog');
+              if(await fortuneDialog.count() && await fortuneDialog.evaluate(el=>el.open)){
+                await page.locator('[data-daily-fortune-close]').click();
+                await page.waitForFunction(()=>document.querySelector('#daily-fortune-dialog')?.open===false);
+              }
+
               const values=await page.evaluate(()=>{
                 const api=window.HomeBroadcastDday;
                 const now=api.calculate(api.kstParts());
