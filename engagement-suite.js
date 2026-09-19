@@ -135,10 +135,16 @@
     const profile=window.ChunbongMinigameProfile?.readProfile?.();
     if(profile)return profile;
     const get=key=>{try{return Number(localStorage.getItem(key)||0)||0}catch(_){return 0}};
-    return {
-      completed:0,classic:get('chuntris.bestScore.classic.v1'),score180:get('chuntris.bestScore.score180.normal.v1'),
-      chunbak:get('chunbak:best:v1'),chungwa:get('chungwagame-best-v2'),chuncortile:get('chuncortile.best.v1')
-    };
+    const max=(...keys)=>Math.max(0,...keys.map(get));
+    const min=(...keys)=>{const values=keys.map(get).filter(Boolean);return values.length?Math.min(...values):0};
+    const classic=max('chuntris.bestScore.classic.v1','chuntris.bestScore.hard.v1','chuntris.bestScore.classic.extreme.v1');
+    const sprint=min('chuntris.bestTime.sprint40.v1','chuntris.bestTime.sprint40.hard.v1','chuntris.bestTime.sprint40.extreme.v1');
+    const score180=max('chuntris.bestScore.score180.normal.v1','chuntris.bestScore.score180.hard.v1','chuntris.bestScore.score180.extreme.v1');
+    const chunbak=max('chunbak:best:v1');
+    const chungwa=max('chungwagame-best-v2');
+    const chuncortile=max('chuncortile.best.v1');
+    const completed=[classic||sprint||score180,chunbak,chungwa,chuncortile].filter(Boolean).length;
+    return {completed,classic,sprint,score180,chunbak,chungwa,chuncortile};
   }
   function achievements(){
     const profile=readGameProfile();
@@ -376,6 +382,10 @@
   document.addEventListener('chunbong:personal-hub-updated',updateHubCount);
 
   ensureHubButton();
+  if(window.ChunbongCurrentMedia){
+    currentMedia=normalizeMedia(window.ChunbongCurrentMedia);
+    updateMediaFavoriteButton(currentMedia);
+  }
   enhanceMinigameProfile();
   createHubDrawer();
   renderHubDrawer();
