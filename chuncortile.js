@@ -7,6 +7,7 @@
   const COMBO_WINDOW=2800;
   const CLEAR_PARTICLES_PER_TILE=4;
   const CLEAR_RESOLVE_MS=300;
+  const TILE_MARKS=['●','▲','◆','★','＋','✦','■','⬟','≡','♥','✿'];
   const COLORS=['#16c931','#2377ee','#ef254f','#ffc51f','#ff6b24','#982fe8','#16c4c8','#8e531d','#969ca1','#ef4a9d','#49b856'];
 
   const e={
@@ -27,6 +28,7 @@
   let board=Core.createBoard(),score=0,best=Number(localStorage.getItem(BEST_KEY)||0),misses=0,combo=0,maxCombo=0,lastClearAt=0;
   let remainingMs=Core.GAME_MS,endAt=0,running=false,paused=false,resolving=false,raf=0,soundOn=true,audioCtx=null,hintIndex=-1,seed=0;
   let modalPaused=false,modalFromPause=false;
+  let previewIndex=-1,previewMatches=[];
 
   const cells=[];
 
@@ -44,14 +46,15 @@
 
   function faceClass(type){return 'ct-face ct-face-'+(type+1);}
   function renderBoard(clearSet=null){
+    previewIndex=-1;previewMatches=[];
     cells.forEach((cell,index)=>{
       const type=board[index];
       cell.className='ct-cell '+(type===null?'is-empty':'is-tile');
       if(index===hintIndex)cell.classList.add('is-hint');
       cell.replaceChildren();
-      cell.setAttribute('aria-label',type===null?'빈 칸':`춘봉 타일 ${type+1}`);
+      cell.setAttribute('aria-label',type===null?'빈 칸':`춘봉 타일 ${type+1}, ${TILE_MARKS[type]||type+1} 표식`);
       if(type!==null){
-        const tile=document.createElement('span');tile.className='ct-tile type-'+type;tile.style.setProperty('--tile-color',COLORS[type]);
+        const tile=document.createElement('span');tile.className='ct-tile type-'+type;tile.style.setProperty('--tile-color',COLORS[type]);tile.dataset.mark=TILE_MARKS[type]||String(type+1);
         const face=document.createElement('i');face.className=faceClass(type);tile.append(face);cell.append(tile);
         if(clearSet?.has(index))cell.classList.add('is-clearing');
       }
@@ -239,8 +242,28 @@
     paused=false;e.pauseOverlay.classList.add('hidden');endAt=performance.now()+remainingMs;setStatus('playing');setMessage('다시 시작! 같은 춘봉 타일을 찾아보세요.');sound.resume();tick();return true;
   }
 
+  function clearPreview(){
+    if(previewIndex>=0)cells[previewIndex]?.classList.remove('is-preview-origin','is-preview-valid','is-preview-miss');
+    previewMatches.forEach(index=>cells[index]?.classList.remove('is-preview-match'));
+    previewIndex=-1;previewMatches=[];
+  }
+  function previewCell(index,{announce=true}={}){
+    clearPreview();
+    if(!running||paused||resolving||!Number.isInteger(index)||board[index]!==null)return;
+    previewIndex=index;
+    const matches=Core.findMatch(board,index);
+    previewMatches=matches;
+    const origin=cells[index];
+    origin?.classList.add('is-preview-origin',matches.length>=2?'is-preview-valid':'is-preview-miss');
+    matches.forEach(matchIndex=>cells[matchIndex]?.classList.add('is-preview-match'));
+    if(announce){
+      setMessage(matches.length>=2?`${matches.length}개 제거 가능 · 클릭하면 사라져요!`:'이 빈 칸은 같은 타일이 2개 이상 연결되지 않아요.');
+    }
+  }
+
   function handleCell(index){
     if(!running||paused||resolving)return;
+    clearPreview();
     if(board[index]!==null){setMessage('타일이 아니라 빈 칸을 눌러주세요.');return;}
     if(hintIndex>=0)cells[hintIndex]?.classList.remove('is-hint');
     hintIndex=-1;
@@ -265,7 +288,7 @@
   function showHint(){
     if(!running||paused)return;
     const move=Core.findAnyMove(board);hintIndex=move?.index??-1;renderBoard();
-    if(move){setMessage('파랗게 빛나는 빈 칸을 눌러보세요.');sound.hint();setTimeout(()=>{if(hintIndex===move.index){hintIndex=-1;renderBoard();}},1800);}
+    if(move){previewCell(move.index,{announce:false});setMessage(`${move.matches.length}개가 강조됐어요 · 빛나는 빈 칸을 눌러보세요.`);sound.hint();setTimeout(()=>{if(hintIndex===move.index){clearPreview();hintIndex=-1;renderBoard();}},1800);}
     else setMessage('현재 가능한 매치가 없어요. 새 게임을 시작해 주세요.');
   }
 
@@ -312,6 +335,10 @@
   function snapshot(){return{status:e.game.dataset.gameStatus,score,best,misses,combo,maxCombo,remainingMs,remaining:Core.remainingTiles(board),seed,board:[...board]};}
 
   buildCells();renderBoard();updateHud();void loadRanking();
+  e.board.addEventListener('pointerover',event=>{const cell=event.target.closest?.('.ct-cell');if(cell&&e.board.contains(cell))previewCell(Number(cell.dataset.index));});
+  e.board.addEventListener('pointerleave',()=>{clearPreview();if(running&&!paused)setMessage('빈 칸에 마우스를 올리면 제거될 타일을 미리 볼 수 있어요.');});
+  e.board.addEventListener('focusin',event=>{const cell=event.target.closest?.('.ct-cell');if(cell)previewCell(Number(cell.dataset.index));});
+  e.board.addEventListener('focusout',event=>{if(!e.board.contains(event.relatedTarget)){clearPreview();}});
   e.start.addEventListener('click',newBoard);e.again.addEventListener('click',newBoard);e.restart.addEventListener('click',newBoard);e.pauseRestart.addEventListener('click',newBoard);
   e.pause.addEventListener('click',()=>paused?resumeGame():pauseGame(true));e.resume.addEventListener('click',resumeGame);e.hint.addEventListener('click',showHint);e.sound.addEventListener('click',toggleSound);
   e.ranking.addEventListener('click',openRanking);e.pauseRanking.addEventListener('click',openRanking);e.overRanking.addEventListener('click',openRanking);e.rankingClose.addEventListener('click',closeRanking);e.rankingModal.querySelector('[data-ct-ranking-close]')?.addEventListener('click',closeRanking);

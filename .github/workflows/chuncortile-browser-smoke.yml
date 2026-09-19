@@ -76,12 +76,17 @@ jobs:
               assert.equal(await page.locator('.ct-cell').count(),450);
               assert.equal(await page.locator('.ct-cell.is-tile').count(),200);
               assert.equal(await page.locator('.ct-face').count()>=200,true);
+              const markerCount=await page.locator('.ct-tile').evaluateAll(nodes=>new Set(nodes.map(node=>node.dataset.mark).filter(Boolean)).size);
+              assert.equal(markerCount,11,'all 11 tile types need a unique non-color marker');
 
               await page.locator('#ct-start').click();
               await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='playing',{timeout:5000});
 
               let move=await page.evaluate(()=>window.ChuncortileApp.debugFindMove());
               assert.ok(move&&move.matches.length>=2);
+              await page.locator('.ct-cell').nth(move.index).hover();
+              assert.ok(await page.locator('.ct-cell').nth(move.index).evaluate(el=>el.classList.contains('is-preview-valid')),'valid empty cell preview missing');
+              assert.equal(await page.locator('.ct-cell.is-preview-match').count(),move.matches.length,'hover preview must highlight the exact removal targets');
               let before=await page.evaluate(()=>window.ChuncortileApp.getSnapshot().score);
               const firstRemoved=move.matches.length;
               await page.locator('.ct-cell').nth(move.index).click();
