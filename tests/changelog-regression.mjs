@@ -102,6 +102,7 @@ assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>i
 assert.ok(groups.some(group=>group.date==='2026-09-20'&&group.items.some(item=>item.title==='오늘의 운세 카드 연출 강화')),'2026-09-20 daily fortune animation entry missing');
 assert.ok(groups.some(group=>group.date==='2026-09-20'&&group.items.some(item=>item.title==='타로 카드 디자인 통일')),'2026-09-20 tarot design unification entry missing');
 assert.ok(groups.some(group=>group.date==='2026-09-20'&&group.items.some(item=>item.title==='춘과게임·춘컬타일 화면과 플레이 성능 개선')),'2026-09-20 minigame UX/performance entry missing');
+assert.ok(groups.some(group=>group.date==='2026-09-20'&&group.items.some(item=>item.title==='모바일 앱 모드 탐색 개선')),'2026-09-20 mobile app mode entry missing');
 assert.ok(groups.some(group=>group.date==='2026-09-20'&&group.items.some(item=>item.title==='팬사이트 사용성 개선: 홈·타로·데이터 간소화')),'2026-09-20 UX simplification entry missing');
 assert.ok(groups.some(group=>group.date==='2026-09-20'&&group.items.some(item=>item.title==='미니게임 개인 최고기록 프로필 추가')),'2026-09-20 minigame profile entry missing');
 assert.ok(groups.some(group=>group.date==='2026-09-20'&&group.items.some(item=>item.title==='춘과 숫자·춘컬타일 종류 구분성 강화')),'2026-09-20 minigame visibility entry missing');
