@@ -78,6 +78,7 @@ jobs:
                 {sha:firstSha,shortSha:'1234567',date:'2026-09-20',time:'2026-09-20T01:00:00Z',title:'add tarot card journal',rawTitle:'feat: add tarot card journal',type:'new',url:'#'},
                 {sha:'fix-tarot',shortSha:'fix-tar',date:'2026-09-20',time:'2026-09-20T00:50:00Z',title:'repair tarot reveal',rawTitle:'fix: repair tarot reveal',type:'fixed',url:'#'},
                 {sha:'pwa-new',shortSha:'pwa-new',date:'2026-09-20',time:'2026-09-20T00:40:00Z',title:'improve PWA offline cache',rawTitle:'perf: improve PWA offline cache',type:'improved',url:'#'},
+                {sha:'internal-cleanup',shortSha:'internal',date:'2026-09-20',time:'2026-09-20T00:35:00Z',title:'미사용 데이터 런타임·중복 히어로 자산 정리',rawTitle:'perf: 미사용 데이터 런타임·중복 히어로 자산 정리',description:'구버전 파일 제거 · 회귀 테스트 정리',type:'improved',url:'#'},
                 {sha:'test-only',shortSha:'test-on',date:'2026-09-20',time:'2026-09-20T00:30:00Z',title:'tarot regression only',rawTitle:'test: tarot regression only',type:'improved',url:'#'}
               ]},
               {date:'2026-09-19',items:[
@@ -109,6 +110,7 @@ jobs:
           assert.ok(await page.getByText('PWA·앱 설치 경험 개선',{exact:true}).count(),'automatic PWA summary missing from timeline');
           assert.equal(await page.getByText('add tarot card journal',{exact:true}).count(),0,'raw developer title must not render');
           assert.equal(await page.getByText('repair tarot reveal',{exact:true}).count(),0,'raw fix title must not render');
+          assert.equal(await page.getByText('미사용 데이터 런타임·중복 히어로 자산 정리',{exact:true}).count(),0,'internal maintenance perf cleanup must not render');
           assert.ok(await page.getByText('미니게임 콘텐츠 확장',{exact:true}).count(),'curated Korean changelog item missing');
           assert.equal(((await page.locator('#changelog-sync-status').textContent())||'').trim(),'사용자에게 중요한 변경사항만 한글로 간단하게 정리했습니다.','technical automatic-sync status wording must stay hidden');
           assert.equal(await page.locator('.changelog-card.is-commit').count(),0,'developer commit cards must not render');

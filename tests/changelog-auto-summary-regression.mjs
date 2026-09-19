@@ -15,6 +15,7 @@ const groups=[
       {sha:'new-tarot-1',time:'2026-09-20T01:00:00Z',rawTitle:'feat: add tarot card journal',title:'add tarot card journal',type:'new'},
       {sha:'new-tarot-2',time:'2026-09-20T00:30:00Z',rawTitle:'fix: repair tarot reveal',title:'repair tarot reveal',type:'fixed'},
       {sha:'new-pwa-1',time:'2026-09-20T00:20:00Z',rawTitle:'perf: improve PWA offline cache',title:'improve PWA offline cache',type:'improved'},
+      {sha:'internal-cleanup-1',time:'2026-09-20T00:15:00Z',rawTitle:'perf: 미사용 데이터 런타임·중복 히어로 자산 정리',title:'미사용 데이터 런타임·중복 히어로 자산 정리',description:'구버전 파일 제거 · 회귀 테스트 정리',type:'improved'},
       {sha:'tech-1',time:'2026-09-20T00:10:00Z',rawTitle:'test: tarot regression only',title:'tarot regression only',type:'improved'}
     ]
   },
@@ -27,7 +28,8 @@ const groups=[
   }
 ];
 
-assert.equal(auto.isTechnical(groups[0].items[3]),true,'test-only updates must stay hidden');
+assert.equal(auto.isInternalMaintenance(groups[0].items[3]),true,'internal maintenance perf commits must stay hidden');
+assert.equal(auto.isTechnical(groups[0].items[4]),true,'test-only updates must stay hidden');
 assert.equal(auto.areaFor(groups[0].items[0]).id,'tarot');
 assert.equal(auto.areaFor(groups[0].items[2]).id,'pwa');
 
@@ -41,6 +43,7 @@ assert.ok(summarized[0].items.some(item=>item.title==='타로 기능 추가'&&it
 assert.ok(summarized[0].items.some(item=>item.title==='PWA·앱 설치 경험 개선'),'PWA commit must become a Korean PWA summary');
 assert.ok(summarized[0].items.every(item=>item.auto===true));
 assert.ok(!JSON.stringify(summarized).includes('regression only'),'technical commit leaked into automatic summaries');
+assert.ok(!JSON.stringify(summarized).includes('미사용 데이터 런타임'),'internal maintenance cleanup leaked into automatic summaries');
 
 const unknown=auto.summarizeGroup({date:'2026-09-20',items:[
   {sha:'unknown',time:'2026-09-20T02:00:00Z',rawTitle:'refactor: reorganize navigation internals',title:'reorganize navigation internals',type:'improved'}

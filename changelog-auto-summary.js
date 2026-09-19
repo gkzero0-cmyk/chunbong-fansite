@@ -2,6 +2,12 @@
   'use strict';
 
   const TECHNICAL_PREFIXES = new Set(['ci','test','tests','data','chore','build','docs','deps','dependabot','diag','temp','cleanup']);
+  const INTERNAL_MAINTENANCE_PATTERNS = [
+    /\b(?:unused|obsolete|dead code|legacy cleanup|internal cleanup|regression test|syntax check|test-only)\b/i,
+    /(?:미사용|사용하지 않는).*(?:정리|제거|삭제)/i,
+    /(?:중복|구버전|레거시).*(?:자산|파일|런타임|코드|스크립트).*(?:정리|제거|삭제)/i,
+    /회귀\s*테스트|문법\s*검사|테스트\s*정리/i
+  ];
 
   const AREAS = [
     {
@@ -96,6 +102,11 @@
     return [item.rawTitle,item.title,item.description].filter(Boolean).join(' ');
   }
 
+  function isInternalMaintenance(item={}) {
+    const text=combinedText(item);
+    return INTERNAL_MAINTENANCE_PATTERNS.some(pattern=>pattern.test(text));
+  }
+
   function areaFor(item={}) {
     const text=combinedText(item);
     return AREAS.find(area=>area.match.test(text))||{
@@ -115,7 +126,7 @@
   function summarizeGroup(group={}) {
     const buckets=new Map();
     for(const item of Array.isArray(group.items)?group.items:[]) {
-      if(!item||isTechnical(item)) continue;
+      if(!item||isTechnical(item)||isInternalMaintenance(item)) continue;
       const area=areaFor(item);
       if(!buckets.has(area.id)) buckets.set(area.id,{area,items:[]});
       buckets.get(area.id).items.push(item);
@@ -164,7 +175,7 @@
       .filter(group=>/^20\d{2}-\d{2}-\d{2}$/.test(group.date)&&group.items.length);
   }
 
-  const api={TECHNICAL_PREFIXES,AREAS,firstLine,prefixOf,isTechnical,areaFor,mergedType,summarizeGroup,afterCheckpoint,summarizeSince};
+  const api={TECHNICAL_PREFIXES,INTERNAL_MAINTENANCE_PATTERNS,AREAS,firstLine,prefixOf,isTechnical,isInternalMaintenance,areaFor,mergedType,summarizeGroup,afterCheckpoint,summarizeSince};
   if(typeof window!=='undefined') window.CHUNBONG_CHANGELOG_AUTO=api;
   if(typeof module!=='undefined'&&module.exports) module.exports=api;
 })();
