@@ -377,3 +377,88 @@
     height:min(88%,40px);
   }
 }
+
+
+/* Visual discrimination pass: 2026-09-20 */
+.cg-fruit-shape[data-value="1"]{--cg-value-accent:#0072B2}
+.cg-fruit-shape[data-value="2"]{--cg-value-accent:#D55E00}
+.cg-fruit-shape[data-value="3"]{--cg-value-accent:#009E73}
+.cg-fruit-shape[data-value="4"]{--cg-value-accent:#CC79A7}
+.cg-fruit-shape[data-value="5"]{--cg-value-accent:#E69F00}
+.cg-fruit-shape[data-value="6"]{--cg-value-accent:#6F5BD3}
+.cg-fruit-shape[data-value="7"]{--cg-value-accent:#008C95}
+.cg-fruit-shape[data-value="8"]{--cg-value-accent:#9B5A2E}
+.cg-fruit-shape[data-value="9"]{--cg-value-accent:#B91C3C}
+
+.cg-fruit-shape{
+  filter:saturate(1.12) contrast(1.08) drop-shadow(0 1.5px 1px rgba(20,22,18,.25))!important;
+}
+.cg-fruit-shape::before{
+  width:36%!important;
+  height:43%!important;
+  border-radius:42%!important;
+  background:#171a16!important;
+  border:2px solid var(--cg-value-accent,#fff)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.16),0 2px 5px rgba(0,0,0,.35)!important;
+}
+.cg-fruit-shape::after{
+  color:#fff!important;
+  font-size:clamp(13px,1.42vw,18px)!important;
+  -webkit-text-stroke:.6px rgba(0,0,0,.78)!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.7)!important;
+}
+.cg-fruit.selected{
+  background:rgba(255,255,255,.09)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);
+}
+.cg-fruit.selected .cg-fruit-shape{
+  transform:scale(1.06);
+}
+.cg-drag{
+  overflow:visible;
+  border-width:3px!important;
+  background:rgba(39,130,196,.10)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.42) inset,0 0 18px rgba(39,130,196,.18)!important;
+}
+.cg-drag::after{
+  content:"합계 " attr(data-sum) " / 10";
+  position:absolute;
+  left:50%;
+  top:0;
+  transform:translate(-50%,calc(-100% - 7px));
+  min-width:max-content;
+  padding:5px 9px;
+  border-radius:999px;
+  background:#111511f2;
+  color:#f4f6f1;
+  border:1px solid #5f6b5a;
+  box-shadow:0 6px 16px rgba(0,0,0,.34);
+  font-size:12px;
+  font-weight:1000;
+  line-height:1;
+  letter-spacing:-.02em;
+}
+.cg-drag.valid{
+  border-color:#8DD35F!important;
+  background:rgba(112,187,68,.17)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.5) inset,0 0 24px rgba(104,194,58,.34)!important;
+}
+.cg-drag.valid::after{
+  content:"✓ 합계 10";
+  background:#183512f2;
+  border-color:#9DE86B;
+  color:#F2FFE9;
+}
+.cg-drag.over{
+  border-color:#FF6B5E!important;
+  background:rgba(220,67,58,.16)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.36) inset,0 0 20px rgba(220,67,58,.28)!important;
+}
+.cg-drag.over::after{
+  background:#421A18F2;
+  border-color:#FF7A6E;
+  color:#FFF0ED;
+}
+@media(max-width:600px){
+  .cg-drag::after{font-size:10px;padding:4px 7px;transform:translate(-50%,calc(-100% - 4px))}
+}
