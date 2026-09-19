@@ -195,6 +195,7 @@ jobs:
 
             await page.locator('#tarot-shuffle').click();
             await page.waitForFunction(() => document.querySelectorAll('#tarot-deck [data-card-index]').length === 78);
+            await page.waitForTimeout(750);
             assert.equal(await page.locator('#tarot-deck [data-card-index]').count(), 78);
 
             const badgeState = await page.locator('#tarot-deck .tarot-card-back').evaluateAll(cards => {
