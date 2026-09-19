@@ -1,0 +1,117 @@
+name: Tarot PR browser smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tarot.html'
+      - 'tarot.js'
+      - 'tarot.css'
+      - 'tarot-quality.css'
+      - 'tarot-composite.css'
+      - 'tarot-composite.js'
+      - 'tarot-data.js'
+      - 'tests/tarot-clarity-numbered-backs-regression.mjs'
+      - '.github/workflows/tarot-pr-browser-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Static celestial tarot regression
+        run: node tests/tarot-clarity-numbered-backs-regression.mjs
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start local site
+        run: |
+          python3 -m http.server 4174 --bind 127.0.0.1 >/tmp/tarot-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4174/tarot.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/tarot-http.log
+          exit 1
+
+      - name: Verify uploaded backs, matching numbers and revealed frame
+        env:
+          BASE_URL: http://127.0.0.1:4174
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import assert from 'node:assert/strict';
+          import { chromium } from 'playwright';
+
+          const browser=await chromium.launch({headless:true});
+          try{
+            const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
+            const errors=[];
+            page.on('pageerror',error=>errors.push(error.message));
+            await page.route('https://res.cloudinary.com/**',route=>route.fulfill({
+              status:200,
+              contentType:'image/svg+xml',
+              body:'<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1536"><rect width="1024" height="1536" fill="#08152f"/><circle cx="512" cy="768" r="230" fill="#f0b934"/></svg>'
+            }));
+
+            await page.goto(process.env.BASE_URL+'/tarot.html?_celestial='+Date.now(),{waitUntil:'domcontentloaded'});
+            await page.locator('input[name="spread"][value="threeFlow"]').check();
+            await page.locator('input[name="selection-mode"][value="cards"]').check();
+            await page.locator('#tarot-shuffle').click();
+            await page.waitForFunction(()=>document.querySelectorAll('#tarot-deck [data-card-index]').length===78);
+
+            const deckState=await page.locator('#tarot-deck .tarot-card-back').evaluateAll(cards=>{
+              const read=card=>{
+                const number=card.querySelector('.tarot-card-back-number');
+                const cardStyle=getComputedStyle(card);
+                const numberStyle=getComputedStyle(number);
+                const rect=card.getBoundingClientRect();
+                return {
+                  backgroundImage:cardStyle.backgroundImage,
+                  ratio:rect.width/rect.height,
+                  text:number.textContent.trim(),
+                  font:numberStyle.fontFamily,
+                  color:numberStyle.color,
+                  numberBackground:numberStyle.backgroundImage
+                };
+              };
+              return [read(cards[0]),read(cards[77])];
+            });
+
+            for(const item of deckState){
+              assert.match(item.backgroundImage,/v1789845157\/chunbong-fansite\/tarot-card-back\.png/,'deck card must use the exact uploaded back');
+              assert.ok(Math.abs(item.ratio-(2/3))<0.02,'deck card back must preserve the 2:3 uploaded-art ratio');
+              assert.match(item.font,/Georgia/i,'deck number must use celestial serif typography');
+              assert.equal(item.color,'rgb(255, 215, 95)','deck number must use matching gold');
+              assert.match(item.numberBackground,/radial-gradient/,'deck number must use the navy celestial medallion');
+            }
+            assert.equal(deckState[0].text,'1');
+            assert.equal(deckState[1].text,'78');
+
+            const cards=page.locator('#tarot-deck [data-card-index]');
+            await cards.nth(0).click();
+            await cards.nth(1).click();
+            await cards.nth(2).click();
+            await page.locator('#tarot-confirm-selection').click();
+            await page.waitForFunction(()=>document.querySelectorAll('#tarot-reading-grid .tarot-composite-svg').length===3);
+
+            const revealed=await page.locator('#tarot-reading-grid .tarot-composite-svg').first().evaluate(svg=>svg.outerHTML);
+            assert.match(revealed,/stop-color="#0b1b3a"/,'revealed frame needs celestial navy');
+            assert.match(revealed,/fill="#07142d"/,'revealed frame needs deep navy inner border');
+            assert.match(revealed,/fill="#ffd75b"/,'revealed frame needs gold star ornaments');
+            assert.match(revealed,/fill="#fff0ae"/,'revealed title needs matching warm gold');
+            assert.deepEqual(errors,[]);
+          }finally{
+            await browser.close();
+          }
+          EOF_NODE
