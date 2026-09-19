@@ -9,12 +9,15 @@ const ctJs = read('chuncortile.js');
 const chuntrisHtml = read('chuntris.html');
 const chuntrisJs = read('chuntris.js');
 const chuntrisUiCss = read('chuntris-board-start-ui.css');
+const siteCss = read('styles.css');
 
 assert.match(chungwaCss, /Expanded desktop game footprint: 2026-09-19/);
 assert.match(chungwaCss, /width:min\(1450px,calc\(100vw - 36px\)\)/);
 assert.match(chungwaCss, /grid-template-columns:190px minmax\(0,min\(1040px,calc\(170svh - 263\.5px\)\)\) 118px/);
 assert.match(chungwaCss, /\.cg-howto ol\{font-size:12px/);
 assert.match(chungwaCss, /\.cg-utility\{min-height:82px/);
+assert.match(siteCss, /\.chungwagame-shell\{width:min\(1520px,96vw\)!important/);
+assert.match(siteCss, /grid-template-columns:205px minmax\(0,1080px\) 126px!important/);
 
 assert.match(ctCss, /Readable Chuncortile desktop \+ match-path FX: 2026-09-19/);
 assert.match(ctCss, /width:min\(1460px,calc\(100vw - 36px\)\)/);
@@ -25,6 +28,8 @@ assert.match(ctCss, /\.ct-panel ol\{font-size:13px/);
 assert.match(ctCss, /\.ct-match-line[\s\S]*border-top:5px dashed var\(--match-color/);
 assert.match(ctCss, /@keyframes ctTileClearStrong/);
 assert.match(ctCss, /@keyframes ctClearRing/);
+assert.match(siteCss, /\.ct-shell\{width:min\(1520px,96vw\)!important/);
+assert.match(siteCss, /grid-template-columns:225px minmax\(0,1040px\) 130px!important/);
 
 assert.match(ctJs, /if\(!running\|\|paused\|\|resolving\)return/);
 assert.match(ctJs, /line\.className='ct-match-line'/);
@@ -40,6 +45,7 @@ assert.ok(startPos >= 0 && backPos > startPos, 'difficulty back button must be b
 assert.match(chuntrisHtml, /id="chuntris-back-mode"[\s\S]*게임 모드 선택으로 돌아가기/);
 assert.match(chuntrisHtml, /id="chuntris-overlay-difficulty"[\s\S]*난이도 재선택/);
 assert.match(chuntrisHtml, /id="chuntris-pause-new"[\s\S]*난이도 재선택/);
+assert.match(chuntrisHtml, /chuntris-state-eyebrow">CHUNTRIS/);
 assert.match(chuntrisHtml, /chuntris-terminal-actions chuntris-state-actions/);
 assert.match(chuntrisHtml, /chuntris-pause-actions chuntris-state-actions/);
 
