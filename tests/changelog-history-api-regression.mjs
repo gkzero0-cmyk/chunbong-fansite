@@ -13,7 +13,7 @@ const makeCommit=(sha,message,date,login='gkzero0-cmyk')=>({
 });
 
 const commits=[
-  makeCommit('aaaaaaa111','feat: add multiplayer','2026-09-18T17:10:00Z'),
+  makeCommit('aaaaaaa111','feat: add multiplayer\n\n멀티플레이 기능을 추가했습니다.\n매칭 흐름을 개선했습니다.','2026-09-18T17:10:00Z'),
   makeCommit('bbbbbbb222','fix: repair image loading','2026-09-18T10:00:00Z'),
   makeCommit('ccccccc333','ci: record production smoke','2026-09-18T09:00:00Z','github-actions[bot]'),
   makeCommit('ddddddd444','test: update regression','2026-09-18T08:00:00Z'),
@@ -22,6 +22,7 @@ const commits=[
 
 assert.equal(_internals.SITE_STARTED_AT,'2026-08-30');
 assert.equal(_internals.normalizeTitle('feat: add multiplayer'),'add multiplayer');
+assert.equal(_internals.summaryOf('perf: title\n\n첫 번째 설명\n두 번째 설명\n세 번째 설명'),'첫 번째 설명 · 두 번째 설명');
 assert.equal(_internals.commitType('feat: add multiplayer'),'new');
 assert.equal(_internals.commitType('fix: repair'),'fixed');
 assert.equal(_internals.kstDate('2026-09-18T17:10:00Z'),'2026-09-19');
@@ -34,6 +35,7 @@ assert.equal(_internals.isMeaningfulCommit(commits[4]),true,'initial site commit
 const groups=_internals.groupCommits(commits);
 assert.deepEqual(groups.map(group=>group.date),['2026-09-19','2026-09-18','2026-08-30']);
 assert.equal(groups[0].items[0].shortSha,'aaaaaaa');
+assert.equal(groups[0].items[0].description,'멀티플레이 기능을 추가했습니다. · 매칭 흐름을 개선했습니다.');
 assert.equal(groups.at(-1).items[0].title,'춘봉 팬사이트 프로젝트 시작');
 
 function makeRes(){
