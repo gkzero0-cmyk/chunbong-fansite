@@ -309,7 +309,10 @@ if (typeof document !== 'undefined') {
       const checked=setup.querySelector('input[name="spread"]:checked');
       if(Number(checked?.dataset.count||0)>3){
         const fallback=setup.querySelector('input[name="spread"][data-count="1"]')||setup.querySelector('input[name="spread"]');
-        if(fallback) fallback.checked=true;
+        if(fallback){
+          fallback.checked=true;
+          renderNumberInputs(Number(fallback.dataset.count||1));
+        }
       }
     }
     setup.querySelectorAll('#tarot-spread-options label').forEach(label=>{
