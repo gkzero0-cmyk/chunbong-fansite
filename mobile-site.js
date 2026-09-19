@@ -112,6 +112,8 @@
           <a href="history.html" data-more-page="history"><span>방송 이력</span><small>방송 기록</small></a>
           <a href="data.html" data-more-page="data"><span>춘봉 데이터</span><small>통계 · 분석</small></a>
           <a href="changelog.html" data-more-page="changelog"><span>업데이트</span><small>변경 기록</small></a>
+          <a href="myhub.html" data-more-page="myhub"><span>내 팬허브</span><small>보관함 · 기록</small></a>
+          <a href="timeline.html" data-more-page="timeline"><span>타임라인</span><small>춘봉 주요 기록</small></a>
         </div>
       </section>`;
 
