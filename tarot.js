@@ -221,7 +221,10 @@ if (typeof window !== 'undefined') window.CHUNBONG_TAROT = TAROT_API;
 if (typeof module !== 'undefined' && module.exports) module.exports = TAROT_API;
 
 if (typeof document !== 'undefined') {
-  const soundController = createTarotSoundController();
+  const enhancedSoundFactory = window.CHUNBONG_TAROT_SFX_V2?.createEnhancedTarotSoundController;
+  const soundController = typeof enhancedSoundFactory === 'function'
+    ? enhancedSoundFactory()
+    : createTarotSoundController();
   const state = {
     topic: 'general',
     spreadId: 'single',
@@ -591,7 +594,7 @@ if (typeof document !== 'undefined') {
     state.structuredReading = null;
     state.readingPromise = null;
     byId('tarot-results').hidden = true;
-    byId('tarot-results').classList.remove('is-complete');
+    byId('tarot-results').classList.remove('is-complete', 'is-revealing');
     byId('tarot-reading-grid').innerHTML = '';
     byId('tarot-summary').replaceChildren();
     closeCardZoom();
@@ -604,9 +607,16 @@ if (typeof document !== 'undefined') {
     if (confirm) confirm.hidden = true;
     byId('tarot-selection-status').textContent = '카드를 순서대로 펼치고 있어요.';
     renderResults();
+    const results = byId('tarot-results');
     const cards = [...byId('tarot-reading-grid').querySelectorAll('.tarot-card-result')];
     const step = state.count >= 12 ? 70 : state.count >= 6 ? 90 : 130;
     cards.forEach((card, index) => card.style.setProperty('--reveal-delay', `${index * step}ms`));
+    if (!prefersReducedMotion() && results) {
+      results.classList.remove('is-revealing');
+      void results.offsetWidth;
+      results.classList.add('is-revealing');
+      setTimeout(() => results.classList.remove('is-revealing'), 2200);
+    }
     soundController.play('reveal');
     const finish = () => {
       state.phase = 'results';
