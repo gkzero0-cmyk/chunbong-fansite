@@ -8,6 +8,8 @@ on:
       - 'chungwagame.html'
       - 'chungwagame.css'
       - 'chungwagame.js'
+      - 'game-layout.css'
+      - 'mobile-minigames.css'
       - 'chungwagame-ranking-core.js'
       - 'chungwagame-postgame-ranking.js'
       - 'assets/chungwagame/**'
@@ -26,40 +28,51 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Wait for current Chungwagame production and verify HTTP/API
+      - name: Wait for exact Chungwagame production assets and verify API
         env:
           BASE_URL: https://chunbong-fansite.vercel.app
         run: |
           set -euo pipefail
+
+          files=(
+            chungwagame.html
+            chungwagame.css
+            chungwagame.js
+            game-layout.css
+            mobile-minigames.css
+            chungwagame-ranking-core.js
+            chungwagame-postgame-ranking.js
+            assets/chungwagame/numbers.webp
+            assets/chungwagame/mascot-header.webp
+            assets/chungwagame/mascot-ten.webp
+          )
+
           for attempt in $(seq 1 60); do
             stamp=$(date +%s)
-            if curl -fsS -H 'cache-control: no-cache' "$BASE_URL/minigames.html?_smoke=$stamp" -o /tmp/minigames.html && \
-               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chungwagame.html?_smoke=$stamp" -o /tmp/chungwagame.html && \
-               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chungwagame.css?_smoke=$stamp" -o /tmp/chungwagame.css && \
-               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chungwagame.js?_smoke=$stamp" -o /tmp/chungwagame.js && \
-               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chungwagame-ranking-core.js?_smoke=$stamp" -o /tmp/chungwagame-ranking-core.js && \
-               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/chungwagame-postgame-ranking.js?_smoke=$stamp" -o /tmp/chungwagame-postgame-ranking.js && \
-               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/assets/chungwagame/numbers.webp?_smoke=$stamp" -o /tmp/numbers.webp && \
-               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/assets/chungwagame/mascot-header.webp?_smoke=$stamp" -o /tmp/mascot-header.webp && \
-               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/assets/chungwagame/mascot-ten.webp?_smoke=$stamp" -o /tmp/mascot-ten.webp && \
-               grep -q 'href="chungwagame.html"' /tmp/minigames.html && \
-               grep -q 'id="cg-time-fill"' /tmp/chungwagame.html && \
-               grep -q 'id="cg-pause-restart"' /tmp/chungwagame.html && \
-               grep -q 'id="cg-ranking-register"' /tmp/chungwagame.html && \
-               grep -q 'assets/chungwagame/mascot-header.webp' /tmp/chungwagame.html && \
-               grep -q 'assets/chungwagame/mascot-ten.webp' /tmp/chungwagame.html && \
-               grep -q 'grid-template-columns:150px minmax(0,760px) 104px' /tmp/chungwagame.css && \
-               grep -q 'max-height:calc(100svh - 205px)' /tmp/chungwagame.css && \
-               grep -q 'COMBO_WINDOW=2400' /tmp/chungwagame.js && \
-               grep -q 'showSuccessEffect' /tmp/chungwagame.js && \
-               grep -q 'submitTerminalRanking' /tmp/chungwagame-postgame-ranking.js; then
-              curl -fsS "$BASE_URL/api/content?type=chungwagame-ranking&mode=classic&_smoke=$stamp" -o /tmp/chungwagame-ranking.json || true
-              if node -e "const p=require('/tmp/chungwagame-ranking.json');if(p.mode!=='classic'||!Array.isArray(p.entries))process.exit(1)" 2>/dev/null; then
-                file /tmp/numbers.webp /tmp/mascot-header.webp /tmp/mascot-ten.webp | grep -qi webp
-                echo 'Current compact/ranking Chungwagame production is ready.'
+            matched=1
+            for file in "\${files[@]}"; do
+              mkdir -p "/tmp/production/$(dirname "$file")"
+              if ! curl -fsS -H 'cache-control: no-cache' "$BASE_URL/$file?_smoke=$stamp" -o "/tmp/production/$file"; then
+                matched=0
+                break
+              fi
+              expected="$(sha256sum "$file" | awk '{print $1}')"
+              actual="$(sha256sum "/tmp/production/$file" | awk '{print $1}')"
+              if [ "$actual" != "$expected" ]; then
+                echo "attempt=$attempt stale=$file expected=$expected actual=$actual"
+                matched=0
+                break
+              fi
+            done
+
+            if [ "$matched" = "1" ]; then
+              if curl -fsS "$BASE_URL/api/content?type=chungwagame-ranking&mode=classic&_smoke=$stamp" -o /tmp/chungwagame-ranking.json &&
+                 node -e "const p=require('/tmp/chungwagame-ranking.json');if(p.mode!=='classic'||!Array.isArray(p.entries))process.exit(1)"; then
+                echo 'Exact Chungwagame production assets match main.'
                 break
               fi
             fi
+
             test "$attempt" != "60"
             sleep 5
           done
