@@ -22,6 +22,7 @@ assert.match(multiplayerCss, /\.chunbak-multiplayer-main/);
 
 assert.match(ctHtml, /minigame-multiplayer\.css/);
 assert.match(ctHtml, /data-score-multiplayer="chuncortile"/);
+assert.ok(!ctHtml.includes('\\n'), 'Chuncortile HTML must not contain literal escaped newlines');
 assert.match(ctHtml, /minigame-multiplayer\.js[\s\S]*chuncortile\.js[\s\S]*score-race-multiplayer\.js/);
 assert.match(apiSource, /chuncortile:\s*'score120'/);
 assert.match(scoreRace, /chuncortile:\s*\{/);
