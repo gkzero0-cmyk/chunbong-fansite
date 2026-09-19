@@ -76,7 +76,7 @@ jobs:
           assert.equal(await page.locator('[data-daily-fortune-result]').isHidden(), true, 'result must stay hidden before the draw');
           assert.equal(await page.locator('[data-daily-fortune-image]').getAttribute('src'), null, 'card artwork must not load before the draw');
           const backImage = await page.locator('.daily-fortune-back').evaluate(el => getComputedStyle(el).backgroundImage);
-          assert.match(backImage, /v1789845157\/chunbong-fansite\/tarot-card-back\.png/, 'daily fortune back must render the uploaded artwork');
+          assert.match(backImage, /f_auto,q_auto:good,c_limit,w_768\/v1789845157\/chunbong-fansite\/tarot-card-back\.png/, 'daily fortune back must render the uploaded artwork');
 
           const boundary = await page.evaluate(() => ({
             before: window.CHUNBONG_DAILY_FORTUNE.kstDate(new Date('2026-09-19T14:59:59Z')),
@@ -127,7 +127,7 @@ jobs:
           await page.waitForFunction(() => document.querySelector('#daily-fortune-dialog')?.open === false);
           assert.equal(await page.locator('[data-daily-fortune-launcher]').isVisible(), true, 'closing result must show the bottom-right launcher');
           const launcherImage = await page.locator('[data-daily-fortune-launcher] > span').evaluate(el => getComputedStyle(el).backgroundImage);
-          assert.match(launcherImage, /v1789845157\/chunbong-fansite\/tarot-card-back\.png/, 'saved-result launcher must reuse the uploaded card back');
+          assert.match(launcherImage, /f_auto,q_auto:good,c_limit,w_768\/v1789845157\/chunbong-fansite\/tarot-card-back\.png/, 'saved-result launcher must reuse the uploaded card back');
           const frontTheme = await page.locator('.daily-fortune-front').evaluate(el => ({
             background: getComputedStyle(el).backgroundImage,
             border: getComputedStyle(el).borderTopColor
