@@ -31,6 +31,8 @@ assert.equal(_internals.kstDate('2026-08-30T18:48:19Z'),'2026-08-31');
 assert.equal(_internals.isMeaningfulCommit(commits[0]),true);
 assert.equal(_internals.isMeaningfulCommit(commits[2]),false,'bot CI commit must not trigger update history');
 assert.equal(_internals.isMeaningfulCommit(commits[3]),false,'test-only commit must not trigger user-facing update history');
+assert.equal(_internals.TECHNICAL_PREFIXES.has('diag'),true,'diagnostic commits must stay internal');
+assert.equal(_internals.TECHNICAL_PREFIXES.has('cleanup'),true,'cleanup commits must stay internal');
 assert.equal(_internals.isMeaningfulCommit(commits[4]),true,'initial site commit must be retained');
 
 const groups=_internals.groupCommits(commits);
@@ -62,8 +64,10 @@ const pageTwo=[
   makeCommit('initial000001','Initial commit','2026-08-30T18:48:19Z')
 ];
 
+let lastSince='';
 global.fetch=async url=>{
   const parsed=new URL(String(url));
+  lastSince=parsed.searchParams.get('since')||lastSince;
   const page=Number(parsed.searchParams.get('page')||1);
   const payload=page===1?pageOne:page===2?pageTwo:[];
   return {ok:true,status:200,json:async()=>payload};
@@ -80,12 +84,21 @@ try{
   const fullRes=makeRes();
   await handler({method:'GET',query:{}},fullRes);
   assert.equal(fullRes.statusCode,200);
-  assert.match(fullRes.headers['cache-control'],/s-maxage=900/);
+  assert.match(fullRes.headers['cache-control'],/s-maxage=300/);
   assert.equal(fullRes.payload.siteStartedAt,'2026-08-30');
   assert.ok(fullRes.payload.total>=90,'full archive should retain meaningful historical commits');
   assert.equal(fullRes.payload.groups[0].date,'2026-09-19');
   assert.ok(fullRes.payload.groups.some(group=>group.items.some(item=>item.title==='춘봉 팬사이트 프로젝트 시작')),'first commit missing from archive');
   assert.ok(!JSON.stringify(fullRes.payload).includes('telemetry update'),'technical bot commit leaked into user-facing history');
+  
+  const filteredRes=makeRes();
+  await handler({method:'GET',query:{since:'2026-09-19T14:20:38Z'}},filteredRes);
+  assert.equal(filteredRes.statusCode,200);
+  assert.equal(lastSince,'2026-09-19T14:20:38.000Z','archive request must forward the curation checkpoint as GitHub since');
+  
+  const fastSummaryRes=makeRes();
+  await handler({method:'GET',query:{summary:'1'}},fastSummaryRes);
+  assert.match(fastSummaryRes.headers['cache-control'],/s-maxage=60/,'unread summary should refresh quickly');
 }finally{
   global.fetch=originalFetch;
 }
