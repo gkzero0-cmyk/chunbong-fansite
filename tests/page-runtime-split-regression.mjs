@@ -21,7 +21,7 @@ for (const [htmlFile, runtime] of Object.entries(runtimeByPage)) {
   const html = read(htmlFile);
   assert.match(
     html,
-    new RegExp('<script src="page\\.js"></script><script src="' + runtime.replace('.', '\\.') + '"></script>'),
+    new RegExp('<script src="page\\.js\\?v=2"></script><script src="' + runtime.replace('.', '\\.') + '\\?v=1"></script>'),
     htmlFile + ' must load its runtime after page.js'
   );
 }
