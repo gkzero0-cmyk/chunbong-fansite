@@ -14,7 +14,7 @@ assert.doesNotMatch(retry,/VERCEL_TOKEN/,'Git-based retry must not require a Ver
 assert.match(retry,/AGE_SECONDS.*72000/s,'scheduled retry must wait at least 20 hours after the latest main commit');
 assert.match(retry,/GITHUB_EVENT_NAME.*workflow_dispatch/s,'manual retry must bypass the age guard');
 assert.match(sync,/GITHUB_EVENT_NAME.*schedule/s,'scheduled sync checks should be non-failing warnings while pending');
-assert.match(sw,/chunbong-pwa-20260920-v8/,'PWA cache version must advance');
+assert.match(sw,/chunbong-pwa-20260920-v9/,'PWA cache version must advance');
 assert.match(sw,/site-improvements\.js/,'PWA shell must cache shared improvement runtime');
 assert.match(sw,/site-improvements\.css/,'PWA shell must cache shared improvement styles');
 
