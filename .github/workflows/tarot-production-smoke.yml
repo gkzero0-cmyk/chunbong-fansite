@@ -9,6 +9,7 @@ on:
       - 'tarot.css'
       - 'tarot-quality.css'
       - 'tarot-composite.css'
+      - 'tarot-card-theme.css'
       - 'tarot.js'
       - 'tarot-composite.js'
       - 'tarot-data.js'
@@ -36,10 +37,11 @@ jobs:
             CSS_HTTP=$(curl -L -sS -o /tmp/tarot-quality-css -w '%{http_code}' "$BASE/tarot-quality.css" || true)
             COMPOSITE_JS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-js -w '%{http_code}' "$BASE/tarot-composite.js" || true)
             COMPOSITE_CSS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-css -w '%{http_code}' "$BASE/tarot-composite.css" || true)
+            THEME_CSS_HTTP=$(curl -L -sS -o /tmp/tarot-theme-css -w '%{http_code}' "$BASE/tarot-card-theme.css" || true)
             ORIGINAL_ASSET_HTTP=$(curl -L -sS -o /tmp/tarot-original-asset -w '%{http_code}' "$ORIGINAL_BASE/sheet-0.avif" || true)
 
             if [ "$PAGE_HTTP" = '200' ] && [ "$JS_HTTP" = '200' ] && [ "$CSS_HTTP" = '200' ] \
-              && [ "$COMPOSITE_JS_HTTP" = '200' ] && [ "$COMPOSITE_CSS_HTTP" = '200' ] && [ "$ORIGINAL_ASSET_HTTP" = '200' ] \
+              && [ "$COMPOSITE_JS_HTTP" = '200' ] && [ "$COMPOSITE_CSS_HTTP" = '200' ] && [ "$THEME_CSS_HTTP" = '200' ] && [ "$ORIGINAL_ASSET_HTTP" = '200' ] \
               && grep -q 'toggleDirectSelection' /tmp/tarot-js \
               && grep -q 'tarot-confirm-selection' /tmp/tarot-page \
               && grep -q 'tarot-composite.js' /tmp/tarot-page \
@@ -47,7 +49,10 @@ jobs:
               && grep -q 'tarot-vector-title' /tmp/tarot-composite-js \
               && grep -q 'originalArtworkDescriptor' /tmp/tarot-composite-js \
               && grep -q 'res.cloudinary.com/lyppgyei/image/upload/chunbong-fansite/tarot-original' /tmp/tarot-composite-js \
-              && grep -q 'tarot-card-composite' /tmp/tarot-composite-css; then
+              && grep -q 'tarot-card-composite' /tmp/tarot-composite-css \
+              && grep -q 'chunbong-tarot-back-image' /tmp/tarot-theme-css \
+              && grep -q 'data:image/avif;base64' /tmp/tarot-theme-css \
+              && grep -q 'tarot-vector-celestial' /tmp/tarot-composite-js; then
               if node <<'NODE'
           const fs = require('fs');
           const bytes = fs.readFileSync('/tmp/tarot-original-asset');
@@ -64,7 +69,7 @@ jobs:
               fi
             fi
 
-            echo "PROD_WAIT_ATTEMPT=$attempt PAGE=$PAGE_HTTP JS=$JS_HTTP CSS=$CSS_HTTP COMPOSITE_JS=$COMPOSITE_JS_HTTP COMPOSITE_CSS=$COMPOSITE_CSS_HTTP ORIGINAL_ASSET=$ORIGINAL_ASSET_HTTP"
+            echo "PROD_WAIT_ATTEMPT=$attempt PAGE=$PAGE_HTTP JS=$JS_HTTP CSS=$CSS_HTTP COMPOSITE_JS=$COMPOSITE_JS_HTTP COMPOSITE_CSS=$COMPOSITE_CSS_HTTP THEME_CSS=$THEME_CSS_HTTP ORIGINAL_ASSET=$ORIGINAL_ASSET_HTTP"
             sleep 5
           done
 
