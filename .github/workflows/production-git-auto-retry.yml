@@ -1,0 +1,62 @@
+name: Production Git auto retry
+
+on:
+  schedule:
+    # 02:10 KST. Retry only once per day so Vercel's daily deployment quota is not spammed.
+    - cron: '10 17 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: production-git-auto-retry
+  cancel-in-progress: false
+
+jobs:
+  retry-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Check production commit
+        id: sync
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main --depth=1
+          git reset --hard origin/main
+          EXPECTED="$(git rev-parse HEAD)"
+          BASE='https://chunbong-fansite.vercel.app'
+          BODY="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'cache-control: no-cache' "${BASE}/api/version?_ts=$(date +%s)" || true)"
+          ACTUAL="$(printf '%s' "$BODY" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(JSON.parse(s).sha||'')}catch{}})")"
+          echo "expected=$EXPECTED"
+          echo "actual=${ACTUAL:-missing}"
+          if [ "$ACTUAL" = "$EXPECTED" ]; then
+            echo "needs_retry=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "needs_retry=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger a fresh Vercel Git deployment
+        if: steps.sync.outputs.needs_retry == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit --allow-empty -m 'chore: retry Vercel production deployment'
+          git push origin HEAD:main
+          echo 'Created one empty main commit to retrigger the Vercel Git integration.'
+
+      - name: Already synced
+        if: steps.sync.outputs.needs_retry != 'true'
+        run: echo 'Production already matches main; no retry commit was created.'
