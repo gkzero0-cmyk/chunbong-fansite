@@ -21,5 +21,11 @@ assert.equal(headers['x-content-type-options'], 'nosniff');
 assert.equal(headers['referrer-policy'], 'strict-origin-when-cross-origin');
 assert.equal(headers['x-frame-options'], 'SAMEORIGIN');
 assert.equal(headers['permissions-policy'], 'camera=(), microphone=(), geolocation=(), payment=(), usb=()');
+assert.equal(headers['strict-transport-security'], 'max-age=31536000; includeSubDomains');
+
+const assets = (vercel.headers || []).find(item => item.source === '/assets/(.*)');
+assert.ok(assets, 'asset cache header rule missing');
+const assetHeaders = Object.fromEntries((assets.headers || []).map(row => [row.key.toLowerCase(), row.value]));
+assert.equal(assetHeaders['cache-control'], 'public, max-age=86400, stale-while-revalidate=604800');
 
 console.log('home layout reservation and baseline security headers regression passed');
