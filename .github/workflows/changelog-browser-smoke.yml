@@ -147,13 +147,13 @@ jobs:
               ...archive.groups.slice(1)
             ]
           };
-          await page.evaluate(()=>{const base=Date.now();Date.now=()=>base+61_000;window.dispatchEvent(new Event('focus'));});
+          await page.evaluate(()=>{const base=Date.now();Date.now=()=>base+122_000;window.dispatchEvent(new Event('focus'));});
           await page.waitForFunction(()=>document.querySelector('.changelog-unread-dot')?.hidden===false);
           assert.match(await page.locator('.changelog-button').getAttribute('aria-label'),/새 업데이트 있음/,'header red dot must refresh after returning to the tab');
 
           await page.setViewportSize({width:390,height:844});
           await page.goto(process.env.BASE_URL+'/changelog.html?_mobile='+Date.now(),{waitUntil:'domcontentloaded'});
-          await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-20');
+          await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-21');
           assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),true,'mobile changelog must not overflow horizontally');
           assert.ok(await page.locator('#changelog-index-list').isVisible(),'mobile date index missing');
 
