@@ -166,6 +166,29 @@ function createTarotSoundController(storage = globalThis.localStorage, AudioCont
   };
 }
 
+function createTarotSoundBridge(storage = globalThis.localStorage) {
+  const readEnabled = () => {
+    try { return storage?.getItem?.('chunbongTarotSound') !== 'off'; }
+    catch (_) { return true; }
+  };
+  const readVolume = () => {
+    try {
+      const stored = Number(storage?.getItem?.('chunbongTarotVolume'));
+      return Number.isFinite(stored) ? Math.min(1, Math.max(0, stored)) : 0.7;
+    } catch (_) {
+      return 0.7;
+    }
+  };
+  return {
+    enabled: readEnabled,
+    volume: readVolume,
+    unlock() {},
+    setEnabled() {},
+    setVolume() {},
+    play() {}
+  };
+}
+
 function mappedHintTopic(topicId) {
   if (topicId === 'partner') return 'love';
   if (topicId === 'choice') return 'general';
@@ -213,6 +236,7 @@ const TAROT_API = {
   toggleDirectSelection,
   cardArtworkDescriptor,
   createTarotSoundController,
+  createTarotSoundBridge,
   buildCardInterpretation,
   buildSummary,
   buildAiRequestPayload
@@ -221,7 +245,9 @@ if (typeof window !== 'undefined') window.CHUNBONG_TAROT = TAROT_API;
 if (typeof module !== 'undefined' && module.exports) module.exports = TAROT_API;
 
 if (typeof document !== 'undefined') {
-  const soundController = createTarotSoundController();
+  const soundController = globalThis.__CHUNBONG_TAROT_ENHANCED_SFX__ === true
+    ? createTarotSoundBridge()
+    : createTarotSoundController();
   const state = {
     topic: 'general',
     spreadId: 'single',
