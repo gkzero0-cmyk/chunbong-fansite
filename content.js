@@ -2,10 +2,15 @@
   'use strict';
   const memory = new Map();
   const CACHE_PREFIX = 'chunbong-cache-v2:';
+  const shouldPersist = key =>
+    String(key).startsWith('content:') ||
+    String(key).startsWith('notice-detail:') ||
+    String(key) === 'changelog-summary';
 
   const read = key => {
     const cached = memory.get(key);
     if (cached) return cached;
+    if (!shouldPersist(key)) return null;
     try {
       const stored = sessionStorage.getItem(CACHE_PREFIX + key);
       if (!stored) return null;
@@ -21,15 +26,19 @@
   const write = (key, value) => {
     const row = { at: Date.now(), value };
     memory.set(key, row);
-    try {
-      sessionStorage.setItem(CACHE_PREFIX + key, JSON.stringify(row));
-    } catch (_) {}
+    if (shouldPersist(key)) {
+      try {
+        sessionStorage.setItem(CACHE_PREFIX + key, JSON.stringify(row));
+      } catch (_) {}
+    }
     return value;
   };
 
   const clear = key => {
     memory.delete(key);
-    try { sessionStorage.removeItem(CACHE_PREFIX + key); } catch (_) {}
+    if (shouldPersist(key)) {
+      try { sessionStorage.removeItem(CACHE_PREFIX + key); } catch (_) {}
+    }
   };
 
   window.ChunbongCache = {
