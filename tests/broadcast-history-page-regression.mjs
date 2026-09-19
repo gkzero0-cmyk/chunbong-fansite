@@ -6,7 +6,7 @@ assert.equal(fs.existsSync('history.js'), true, 'history.js must load the SOOP b
 
 const html = fs.readFileSync('history.html', 'utf8');
 const js = fs.readFileSync('history.js', 'utf8');
-const shared = fs.readFileSync('content.js', 'utf8');
+const shared = fs.readFileSync('site-shell.js', 'utf8');
 
 assert.match(html, /data-page=["']history["']/, 'history page must participate in the shared navigation state');
 assert.match(html, /춘봉 방송 이력/, 'history page must be clearly titled');
