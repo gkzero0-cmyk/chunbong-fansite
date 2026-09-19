@@ -1,0 +1,371 @@
+/* Mobile-first minigame layer.
+   Desktop game sizing remains owned by game-layout.css and each game stylesheet. */
+
+body[data-game]{
+  --mobile-game-gutter:8px;
+  overscroll-behavior-y:contain;
+}
+body[data-game] .game-mobile-only{display:none}
+
+@media(max-width:760px){
+  body[data-game]{
+    min-width:0;
+    -webkit-tap-highlight-color:transparent;
+  }
+  body[data-game] .site-header{
+    height:56px!important;
+    min-height:56px;
+    gap:7px!important;
+    padding:0 9px!important;
+  }
+  body[data-game] .brand{margin-right:auto!important}
+  body[data-game] .brand-mark{
+    width:38px!important;height:38px!important;border-radius:12px!important;
+    font-size:14px!important
+  }
+  body[data-game] .nav-toggle,
+  body[data-game] .theme-toggle,
+  body[data-game] .changelog-button,
+  body[data-game] .activity-bell{
+    width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;
+    padding:8px!important;border-radius:12px!important
+  }
+  body[data-game] .main-nav{top:56px!important}
+  body[data-game] .content-section{padding-top:8px!important;padding-bottom:calc(18px + env(safe-area-inset-bottom))!important}
+  body[data-game] footer{display:none!important}
+  body[data-game] .to-top{display:none!important}
+  body[data-game] button,
+  body[data-game] a{touch-action:manipulation}
+  body[data-game] .game-mobile-only{display:block}
+}
+
+/* =========================
+   CHUNTRIS
+   ========================= */
+@media(max-width:760px){
+  body[data-game="chuntris"] .chuntris-page>.page-hero{display:none!important}
+  body[data-game="chuntris"] .chuntris-page .content-section>.page-shell{
+    width:100%!important;max-width:none!important;padding:0 6px!important
+  }
+  body[data-game="chuntris"] .chuntris-game{
+    width:100%!important;
+    --chuntris-stage-height:min(56dvh,620px)!important;
+    padding:7px!important;
+    border-radius:14px!important
+  }
+  body[data-game="chuntris"] .minigame-back-link{
+    margin:0 0 6px auto!important;
+    min-height:34px;padding:6px 11px!important;font-size:11px!important
+  }
+  body[data-game="chuntris"] .chuntris-play-top{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    align-items:center!important;
+    gap:6px!important;
+    margin-bottom:7px!important;
+    padding:6px 7px!important
+  }
+  body[data-game="chuntris"] .chuntris-play-status{min-width:0!important}
+  body[data-game="chuntris"] .chuntris-play-status .eyebrow{display:none!important}
+  body[data-game="chuntris"] .chuntris-play-status strong{
+    display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    font-size:12px!important
+  }
+  body[data-game="chuntris"] .chuntris-utility-cluster{
+    width:auto!important;gap:4px!important;justify-content:flex-end!important
+  }
+  body[data-game="chuntris"] .chuntris-utility-cluster button{
+    flex:0 0 40px!important;width:40px!important;height:40px!important;min-height:40px!important;
+    padding:0!important;border-radius:11px!important;font-size:16px!important
+  }
+  body[data-game="chuntris"] .chuntris-layout,
+  body[data-game="chuntris"] .chuntris-layout.chuntris-layout-immersive{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-template-areas:"score" "board"!important;
+    gap:7px!important;
+    width:100%!important;max-width:100%!important;height:auto!important
+  }
+  body[data-game="chuntris"] .chuntris-left-panel,
+  body[data-game="chuntris"] .chuntris-right-panel{display:contents!important}
+  body[data-game="chuntris"] .chuntris-stats{
+    grid-area:score!important;
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    gap:4px!important;width:100%!important;
+    padding:5px!important;border-radius:11px!important
+  }
+  body[data-game="chuntris"] .chuntris-stats div{padding:5px 3px!important;text-align:center}
+  body[data-game="chuntris"] .chuntris-stats .is-wide{grid-column:auto!important}
+  body[data-game="chuntris"] .chuntris-stats span{font-size:8px!important;letter-spacing:.03em!important}
+  body[data-game="chuntris"] .chuntris-stats strong{font-size:12px!important;white-space:nowrap}
+  body[data-game="chuntris"] .chuntris-board-wrap{
+    grid-area:board!important;
+    width:min(calc(var(--chuntris-stage-height)/2),calc(100vw - 28px))!important;
+    max-width:100%!important;
+    justify-self:center!important;
+    border-width:2px!important;
+    border-radius:12px!important;
+    touch-action:none!important
+  }
+  body[data-game="chuntris"] .chuntris-next-panel,
+  body[data-game="chuntris"] .chuntris-reaction-card,
+  body[data-game="chuntris"] .chuntris-hold-panel,
+  body[data-game="chuntris"] .chuntris-ranking-rail,
+  body[data-game="chuntris"] .chuntris-help-rail{display:none!important}
+  body[data-game="chuntris"] .chuntris-mobile-controls{
+    display:grid!important;
+    position:sticky!important;
+    bottom:max(6px,env(safe-area-inset-bottom))!important;
+    z-index:30!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:5px!important;
+    width:100%!important;
+    margin-top:7px!important;
+    padding:6px!important;
+    border-radius:14px!important;
+    background:rgba(8,8,8,.96)!important;
+    box-shadow:0 -8px 26px rgba(0,0,0,.38)!important
+  }
+  body[data-game="chuntris"] .chuntris-mobile-controls button{
+    min-height:46px!important;
+    border-radius:11px!important;
+    font-size:15px!important;
+    font-weight:900!important
+  }
+  body[data-game="chuntris"] .chuntris-mobile-controls button[data-chuntris-action="hold"]{font-size:11px!important}
+  body[data-game="chuntris"] .chuntris-mobile-controls button[data-chuntris-action="hard-drop"]{
+    grid-column:span 2!important;font-size:12px!important
+  }
+  body[data-game="chuntris"] .chuntris-start-view{min-height:calc(100dvh - 74px)!important;padding:8px 0!important}
+  body[data-game="chuntris"] .chuntris-start-card{width:100%!important;max-width:520px!important;padding:18px!important}
+}
+
+/* =========================
+   CHUNBAK
+   ========================= */
+@media(max-width:760px){
+  body[data-game="chunbak"] .chunbak-page>.page-hero{display:none!important}
+  body[data-game="chunbak"] .chunbak-page .content-section>.page-shell{
+    width:100%!important;max-width:none!important;padding:0 8px!important
+  }
+  body[data-game="chunbak"] .chunbak-game{padding-top:2px!important}
+  body[data-game="chunbak"] .minigame-back-link{
+    margin:0 0 6px auto!important;min-height:34px;padding:6px 11px!important;font-size:11px!important
+  }
+  body[data-game="chunbak"] .chunbak-play-top{
+    display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+    gap:6px!important;align-items:center!important;width:100%!important;max-width:520px!important;
+    margin-bottom:7px!important;padding:6px 7px!important;border:1px solid rgba(255,255,255,.08);border-radius:13px
+  }
+  body[data-game="chunbak"] .chunbak-play-status{min-width:0!important}
+  body[data-game="chunbak"] .chunbak-play-status .eyebrow{font-size:9px!important}
+  body[data-game="chunbak"] .chunbak-play-status strong{
+    font-size:12px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+  }
+  body[data-game="chunbak"] .chunbak-utility-cluster{
+    width:auto!important;display:grid!important;grid-template-columns:repeat(4,40px)!important;gap:4px!important
+  }
+  body[data-game="chunbak"] .chunbak-utility-cluster button{
+    flex:none!important;width:40px!important;height:40px!important;min-height:40px!important;
+    padding:0!important;border-radius:11px!important;font-size:16px!important
+  }
+  body[data-game="chunbak"] .chunbak-layout,
+  body[data-game="chunbak"] .chunbak-layout-immersive{
+    display:flex!important;flex-direction:column!important;gap:7px!important;
+    width:100%!important;max-width:520px!important;margin-inline:auto!important
+  }
+  body[data-game="chunbak"] .chunbak-left,
+  body[data-game="chunbak"] .chunbak-right{display:contents!important}
+  body[data-game="chunbak"] .chunbak-stats{
+    order:0!important;display:grid!important;grid-template-columns:repeat(3,1fr)!important;
+    gap:5px!important;width:100%!important;padding:7px!important;border-radius:12px!important
+  }
+  body[data-game="chunbak"] .chunbak-stats div{text-align:center!important;gap:1px!important}
+  body[data-game="chunbak"] .chunbak-stats span{font-size:9px!important}
+  body[data-game="chunbak"] .chunbak-stats strong{font-size:15px!important}
+  body[data-game="chunbak"] .chunbak-next-card{
+    order:1!important;display:flex!important;align-items:center!important;justify-content:center!important;
+    gap:10px!important;width:100%!important;padding:6px 10px!important;min-height:46px!important;border-radius:12px!important
+  }
+  body[data-game="chunbak"] .chunbak-next-card .eyebrow{margin:0!important;font-size:9px!important}
+  body[data-game="chunbak"] .chunbak-next{min-height:0!important}
+  body[data-game="chunbak"] .chunbak-center{order:2!important;width:100%!important}
+  body[data-game="chunbak"] .chunbak-stage{
+    width:min(calc(100vw - 24px),calc((100dvh - 260px)*420/680),420px)!important;
+    max-width:100%!important;
+    border-radius:15px!important;
+    touch-action:none!important
+  }
+  body[data-game="chunbak"] .chunbak-ranking,
+  body[data-game="chunbak"] .chunbak-evolution{display:none!important}
+  body[data-game="chunbak"] .chunbak-start-view{min-height:calc(100dvh - 74px)!important;padding:8px 0!important}
+  body[data-game="chunbak"] .chunbak-start-card{width:100%!important;max-width:520px!important;padding:18px!important}
+  body[data-game="chunbak"] .chunbak-start-utils{grid-template-columns:repeat(3,1fr)!important}
+  body[data-game="chunbak"] .chunbak-start-utils button{min-height:44px!important;padding:7px!important;font-size:11px!important}
+}
+
+/* =========================
+   CHUNGWA GAME
+   ========================= */
+@media(max-width:760px){
+  body[data-game="chungwagame"] .chungwagame-page{padding-top:2px!important}
+  body[data-game="chungwagame"] .chungwagame-shell{width:100%!important;padding:4px 5px 18px!important}
+  body[data-game="chungwagame"] .chungwagame-navline{height:30px!important;padding:0 2px!important;margin:0 0 3px!important}
+  body[data-game="chungwagame"] .chungwagame-navline .minigame-back-link{font-size:11px!important}
+  body[data-game="chungwagame"] .chungwagame-topbar{
+    display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+    gap:4px!important;margin-bottom:4px!important
+  }
+  body[data-game="chungwagame"] .chungwagame-brand{
+    justify-content:flex-start!important;gap:7px!important;padding-inline:3px!important
+  }
+  body[data-game="chungwagame"] .chungwagame-brand-mark{width:36px!important;height:36px!important}
+  body[data-game="chungwagame"] .chungwagame-brand h1{font-size:21px!important}
+  body[data-game="chungwagame"] .chungwagame-brand p{display:none!important}
+  body[data-game="chungwagame"] .chungwagame-stats{
+    display:grid!important;grid-template-columns:repeat(3,1fr)!important;
+    gap:5px!important;width:100%!important
+  }
+  body[data-game="chungwagame"] .cg-stat{
+    min-width:0!important;padding:5px 4px!important;border-radius:11px!important;text-align:center!important
+  }
+  body[data-game="chungwagame"] .cg-stat span{font-size:8px!important}
+  body[data-game="chungwagame"] .cg-stat strong{font-size:16px!important}
+  body[data-game="chungwagame"] .cg-time-track{height:6px!important;margin-bottom:5px!important}
+  body[data-game="chungwagame"] .chungwagame-layout{
+    display:grid!important;grid-template-columns:1fr!important;gap:6px!important
+  }
+  body[data-game="chungwagame"] .cg-left{display:none!important}
+  body[data-game="chungwagame"] .cg-board-card{order:1!important;padding:4px!important;border-radius:14px!important}
+  body[data-game="chungwagame"] .cg-board-head{
+    min-height:34px!important;padding:3px 4px 5px!important;gap:5px!important
+  }
+  body[data-game="chungwagame"] .cg-selection{padding:3px 7px!important}
+  body[data-game="chungwagame"] .cg-selection span{display:none!important}
+  body[data-game="chungwagame"] .cg-selection strong{font-size:17px!important}
+  body[data-game="chungwagame"] .cg-message{font-size:10px!important;line-height:1.25!important}
+  body[data-game="chungwagame"] .cg-board-wrap{
+    width:100%!important;max-height:none!important;aspect-ratio:17/10!important;
+    border-radius:10px!important;touch-action:none!important;overscroll-behavior:contain!important
+  }
+  body[data-game="chungwagame"] .cg-board{padding:1px!important}
+  body[data-game="chungwagame"] .cg-fruit-shape{width:94%!important;height:94%!important}
+  body[data-game="chungwagame"] .cg-drag,
+  body[data-game="chungwagame"] .cg-hint{border-width:2px!important}
+  body[data-game="chungwagame"] .cg-shortcuts{display:block!important;margin:4px 0 0!important;font-size:9px!important}
+  body[data-game="chungwagame"] .cg-side.cg-right{
+    order:2!important;display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;
+    gap:4px!important
+  }
+  body[data-game="chungwagame"] .cg-utility{
+    min-height:48px!important;padding:4px 1px!important;border-radius:11px!important
+  }
+  body[data-game="chungwagame"] .cg-utility span{font-size:17px!important}
+  body[data-game="chungwagame"] .cg-utility b{font-size:9px!important}
+  body[data-game="chungwagame"] .cg-utility small{display:none!important}
+  body[data-game="chungwagame"] .cg-overlay{padding:7px!important}
+  body[data-game="chungwagame"] .cg-overlay-inner{width:min(330px,94%)!important;padding:15px!important}
+  body[data-game="chungwagame"] .cg-overlay-inner h2{font-size:24px!important}
+}
+
+/* =========================
+   CHUNCORTILE
+   ========================= */
+@media(max-width:760px){
+  body[data-game="chuncortile"] .ct-shell{width:100%!important;padding:4px 5px 20px!important}
+  body[data-game="chuncortile"] .ct-navline{height:30px!important;padding:0 3px!important;margin:0!important}
+  body[data-game="chuncortile"] .ct-navline .minigame-back-link{font-size:11px!important}
+  body[data-game="chuncortile"] .ct-topbar{
+    display:grid!important;grid-template-columns:1fr!important;gap:4px!important;
+    padding:0 3px!important;margin-bottom:4px!important
+  }
+  body[data-game="chuncortile"] .ct-brand{gap:7px!important}
+  body[data-game="chuncortile"] .ct-brand-icon{width:38px!important;height:38px!important}
+  body[data-game="chuncortile"] .ct-brand-icon .ct-face{width:34px!important;height:34px!important}
+  body[data-game="chuncortile"] .ct-brand h1{font-size:21px!important}
+  body[data-game="chuncortile"] .ct-brand p{display:none!important}
+  body[data-game="chuncortile"] .ct-stats{
+    display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:4px!important;width:100%!important
+  }
+  body[data-game="chuncortile"] .ct-stat{
+    min-width:0!important;padding:5px 2px!important;border-radius:10px!important;text-align:center!important
+  }
+  body[data-game="chuncortile"] .ct-stat span{font-size:7px!important}
+  body[data-game="chuncortile"] .ct-stat strong{font-size:12px!important}
+  body[data-game="chuncortile"] .ct-stat strong b{font-size:15px!important}
+  body[data-game="chuncortile"] .ct-time-track{height:6px!important;margin-bottom:5px!important}
+  body[data-game="chuncortile"] .ct-layout{
+    display:grid!important;grid-template-columns:1fr!important;gap:6px!important
+  }
+  body[data-game="chuncortile"] .ct-board-card{order:1!important;padding:4px!important;border-radius:13px!important}
+  body[data-game="chuncortile"] .ct-board-head{
+    grid-template-columns:78px minmax(0,1fr) 55px!important;
+    min-height:34px!important;padding:3px 4px 5px!important;gap:4px!important
+  }
+  body[data-game="chuncortile"] .ct-board-head span{font-size:7px!important}
+  body[data-game="chuncortile"] .ct-board-head strong{font-size:12px!important}
+  body[data-game="chuncortile"] .ct-board-head p{font-size:9px!important;line-height:1.25!important}
+  body[data-game="chuncortile"] .ct-board-wrap{
+    position:relative!important;
+    width:100%!important;
+    height:min(58dvh,500px)!important;
+    min-height:360px!important;
+    overflow:auto!important;
+    border-radius:10px!important;
+    overscroll-behavior:contain!important;
+    touch-action:pan-x pan-y pinch-zoom!important;
+    scrollbar-width:thin!important;
+    scrollbar-color:#ff765066 #151c27!important
+  }
+  body[data-game="chuncortile"] .ct-board{
+    width:640px!important;
+    height:461px!important;
+    min-width:640px!important;
+    aspect-ratio:auto!important;
+    touch-action:pan-x pan-y pinch-zoom!important
+  }
+  body[data-game="chuncortile"] .ct-cell{min-width:25.6px!important;min-height:25.6px!important}
+  body[data-game="chuncortile"] .ct-tile{inset:4%!important;border-radius:15%!important}
+  body[data-game="chuncortile"] .ct-face{width:100%!important;height:100%!important}
+  body[data-game="chuncortile"] .ct-cell.is-empty:active{
+    background:#75d4ff2b!important;box-shadow:inset 0 0 0 2px #75d4ff88!important
+  }
+  body[data-game="chuncortile"] .ct-fx-layer,
+  body[data-game="chuncortile"] .ct-flash{
+    width:640px!important;height:461px!important;right:auto!important;bottom:auto!important
+  }
+  body[data-game="chuncortile"] .ct-match-line{border-top-width:6px!important}
+  body[data-game="chuncortile"] .ct-clear-ring{width:22px!important;height:22px!important;border-width:4px!important}
+  body[data-game="chuncortile"] .ct-board-note{
+    margin:5px 0 0!important;font-size:9px!important;line-height:1.35!important
+  }
+  body[data-game="chuncortile"] .ct-board-note::after{
+    content:" · 모바일: 확대 보드 좌우로 밀어서 이동";
+    color:#ff9f7c
+  }
+  body[data-game="chuncortile"] .ct-tools{
+    order:2!important;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:4px!important
+  }
+  body[data-game="chuncortile"] .ct-tool{
+    min-height:48px!important;padding:4px 1px!important;border-radius:11px!important
+  }
+  body[data-game="chuncortile"] .ct-tool span{font-size:17px!important}
+  body[data-game="chuncortile"] .ct-tool b{font-size:9px!important}
+  body[data-game="chuncortile"] .ct-tool small{display:none!important}
+  body[data-game="chuncortile"] .ct-howto{order:3!important;display:none!important}
+  body[data-game="chuncortile"] .ct-overlay{position:sticky!important;left:0!important;width:100%!important;min-height:100%!important;padding:8px!important}
+  body[data-game="chuncortile"] .ct-overlay-card{width:min(330px,94vw)!important;padding:15px!important}
+  body[data-game="chuncortile"] .ct-overlay-card h2{font-size:23px!important}
+}
+
+/* Slightly roomier touch targets on small tablets without changing desktop. */
+@media(min-width:761px) and (max-width:1024px) and (pointer:coarse){
+  body[data-game] .site-header{height:64px}
+  body[data-game] .main-nav{top:64px}
+  body[data-game="chuntris"] .chuntris-mobile-controls{display:grid}
+  body[data-game="chuntris"] .chuntris-mobile-controls button{min-height:52px}
+  body[data-game="chungwagame"] .cg-utility,
+  body[data-game="chuncortile"] .ct-tool{min-height:58px}
+}
