@@ -238,21 +238,42 @@
     markSeen(event.detail?.latestKey || '');
   });
 
-  (async () => {
-    try {
-      const payload = window.ChunbongCache
-        ? await window.ChunbongCache.fetchJson('changelog-summary','/api/content?type=changelog-history&summary=1',{ttl:5*60*1000})
-        : await (async()=>{const response=await fetch('/api/content?type=changelog-history&summary=1',{headers:{accept:'application/json'}});if(!response.ok)throw new Error('HTTP '+response.status);return response.json()})();
-      const latestKey = payload.latest?.sha || payload.latest?.shortSha || '';
-      if (!latestKey) return setUnread(false);
-      if (document.body.dataset.page === 'changelog') return markSeen(latestKey);
-      let seen = '';
-      try { seen = localStorage.getItem(CHANGELOG_SEEN_KEY) || ''; } catch (_) {}
-      setUnread(seen !== latestKey);
-    } catch (_) {
-      setUnread(false);
+  const CHANGELOG_REFRESH_MS = 60 * 1000;
+  let changelogCheckAt = 0;
+  let changelogCheckPromise = null;
+
+  const checkChangelogUnread = ({ force = false } = {}) => {
+    const now = Date.now();
+    if (!force && changelogCheckAt && now - changelogCheckAt < CHANGELOG_REFRESH_MS) {
+      return changelogCheckPromise || Promise.resolve();
     }
-  })();
+    if (changelogCheckPromise) return changelogCheckPromise;
+    changelogCheckAt = now;
+    changelogCheckPromise = (async () => {
+      try {
+        const payload = window.ChunbongCache
+          ? await window.ChunbongCache.fetchJson('changelog-summary','/api/content?type=changelog-history&summary=1',{ttl:CHANGELOG_REFRESH_MS,force})
+          : await (async()=>{const response=await fetch('/api/content?type=changelog-history&summary=1',{headers:{accept:'application/json'},cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);return response.json()})();
+        const latestKey = payload.latest?.sha || payload.latest?.shortSha || '';
+        if (!latestKey) return setUnread(false);
+        if (document.body.dataset.page === 'changelog') return markSeen(latestKey);
+        let seen = '';
+        try { seen = localStorage.getItem(CHANGELOG_SEEN_KEY) || ''; } catch (_) {}
+        setUnread(seen !== latestKey);
+      } catch (_) {
+        setUnread(false);
+      } finally {
+        changelogCheckPromise = null;
+      }
+    })();
+    return changelogCheckPromise;
+  };
+
+  void checkChangelogUnread();
+  window.addEventListener('focus', () => { void checkChangelogUnread(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') void checkChangelogUnread();
+  });
 })();
 
 (() => {
