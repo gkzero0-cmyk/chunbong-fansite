@@ -215,14 +215,19 @@
     createMarkup();
     const dialog = document.getElementById('daily-fortune-dialog');
     const cardButton = document.querySelector('[data-daily-fortune-card]');
+    const stage = document.querySelector('[data-daily-fortune-stage]');
+    const fx = document.querySelector('[data-daily-fortune-fx]');
     const closeButton = document.querySelector('[data-daily-fortune-close]');
     const launcher = document.querySelector('[data-daily-fortune-launcher]');
     const result = document.querySelector('[data-daily-fortune-result]');
-    if (!dialog || !cardButton || !closeButton || !launcher || !result) return;
+    if (!dialog || !cardButton || !stage || !fx || !closeButton || !launcher || !result) return;
 
+    const SPIN_MS = 2150;
+    const RESULT_MS = 2820;
     let state = readState();
     let drawing = false;
     let autoOpenTimer = 0;
+    let animationRun = 0;
     const reducedMotion = () => Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 
     const showLauncher = () => {
@@ -232,15 +237,51 @@
 
     const hideLauncher = () => { launcher.hidden = true; };
 
-    const renderState = (animate = false) => {
-      if (!state) {
-        dialog.classList.remove('has-result','is-bursting');
-        cardButton.classList.remove('is-revealed');
-        result.hidden = true;
-        cardButton.disabled = false;
-        cardButton.setAttribute('aria-label','오늘의 타로 카드 한 장 뽑기');
-        return;
+    const resetPrism = () => {
+      stage.classList.remove('is-prism-active');
+      stage.style.setProperty('--tilt-x', '0deg');
+      stage.style.setProperty('--tilt-y', '0deg');
+      stage.style.setProperty('--glow-x', '50%');
+      stage.style.setProperty('--glow-y', '50%');
+    };
+
+    const spawnBurst = (kind = 'reveal') => {
+      if (reducedMotion()) return;
+      const stageBox = stage.getBoundingClientRect();
+      const fxBox = fx.getBoundingClientRect();
+      const originX = stageBox.left - fxBox.left + stageBox.width / 2;
+      const originY = stageBox.top - fxBox.top + stageBox.height / 2;
+      const count = kind === 'stop' ? 14 : 30;
+      const distanceBase = kind === 'stop' ? 70 : 125;
+
+      const ring = document.createElement('i');
+      ring.className = 'daily-fortune-ring ' + (kind === 'stop' ? 'is-stop' : 'is-reveal');
+      ring.style.left = originX + 'px';
+      ring.style.top = originY + 'px';
+      fx.appendChild(ring);
+
+      for (let index = 0; index < count; index += 1) {
+        const particle = document.createElement('i');
+        particle.className = 'daily-fortune-particle ' + (kind === 'stop' ? 'is-stop' : 'is-reveal');
+        const angle = (Math.PI * 2 * index) / count + (Math.random() - 0.5) * 0.18;
+        const distance = distanceBase * (0.58 + Math.random() * 0.75);
+        particle.style.left = originX + 'px';
+        particle.style.top = originY + 'px';
+        particle.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
+        particle.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
+        particle.style.setProperty('--delay', (Math.random() * 90) + 'ms');
+        particle.style.setProperty('--particle-scale', String(0.7 + Math.random() * 1.4));
+        fx.appendChild(particle);
       }
+
+      setTimeout(() => {
+        ring.remove();
+        fx.querySelectorAll('.daily-fortune-particle').forEach(node => node.remove());
+      }, kind === 'stop' ? 850 : 1450);
+    };
+
+    const fillResult = () => {
+      if (!state) return;
       const [name, keywords, caution, message] = CARDS[state.card];
       const image = document.querySelector('[data-daily-fortune-image]');
       image.src = artworkUrl(state.card);
@@ -253,25 +294,84 @@
       document.querySelector('[data-daily-fortune-message]').textContent = message;
       document.querySelector('[data-daily-fortune-caution]').textContent = caution;
       cardButton.disabled = true;
-      cardButton.setAttribute('aria-label',`오늘의 카드 ${name}`);
-      if (animate && !reducedMotion()) {
-        dialog.classList.add('is-bursting');
-        requestAnimationFrame(() => cardButton.classList.add('is-revealed'));
-        setTimeout(() => {
-          result.hidden = false;
-          dialog.classList.add('has-result');
-        }, 720);
-        setTimeout(() => dialog.classList.remove('is-bursting'), 1900);
-      } else {
+      cardButton.setAttribute('aria-label', `오늘의 카드 ${name}`);
+    };
+
+    const renderState = (animate = false, audioCtx = null) => {
+      animationRun += 1;
+      const run = animationRun;
+      resetPrism();
+
+      if (!state) {
+        dialog.classList.remove('has-result','is-bursting','is-spinning','is-revealing');
+        stage.classList.remove('is-spinning','is-interactive');
+        cardButton.classList.remove('is-revealed');
+        result.hidden = true;
+        cardButton.disabled = false;
+        cardButton.setAttribute('aria-label','오늘의 타로 카드 한 장 뽑기');
+        return;
+      }
+
+      fillResult();
+
+      if (!animate || reducedMotion()) {
+        dialog.classList.remove('is-spinning','is-revealing');
+        stage.classList.remove('is-spinning');
         cardButton.classList.add('is-revealed');
         result.hidden = false;
         dialog.classList.add('has-result');
+        stage.classList.add('is-interactive');
+        if (animate && audioCtx) playRevealSound(audioCtx);
+        if (animate) drawing = false;
+        if (audioCtx) setTimeout(() => { try { audioCtx.close?.(); } catch (_) {} }, 1200);
+        return;
       }
+
+      result.hidden = true;
+      dialog.classList.remove('has-result','is-bursting','is-revealing');
+      cardButton.classList.remove('is-revealed');
+      stage.classList.remove('is-interactive');
+      stage.classList.add('is-spinning');
+      dialog.classList.add('is-spinning');
+      playSpinSound(audioCtx);
+      try { navigator.vibrate?.([12, 28, 12, 35, 16]); } catch (_) {}
+
+      setTimeout(() => {
+        if (run !== animationRun) return;
+        playStopSound(audioCtx);
+        spawnBurst('stop');
+        dialog.classList.add('is-revealing');
+      }, 1620);
+
+      setTimeout(() => {
+        if (run !== animationRun) return;
+        stage.classList.remove('is-spinning');
+        dialog.classList.remove('is-spinning');
+        dialog.classList.add('is-bursting','is-revealing');
+        requestAnimationFrame(() => cardButton.classList.add('is-revealed'));
+        playRevealSound(audioCtx);
+        spawnBurst('reveal');
+        try { navigator.vibrate?.([28, 30, 60]); } catch (_) {}
+      }, SPIN_MS);
+
+      setTimeout(() => {
+        if (run !== animationRun) return;
+        result.hidden = false;
+        dialog.classList.add('has-result');
+        stage.classList.add('is-interactive');
+        drawing = false;
+      }, RESULT_MS);
+
+      setTimeout(() => {
+        if (run !== animationRun) return;
+        dialog.classList.remove('is-bursting','is-revealing');
+        try { audioCtx?.close?.(); } catch (_) {}
+      }, 3900);
     };
 
     const openDialog = () => {
       hideLauncher();
-      renderState(false);
+      if (!drawing) renderState(false);
       if (!dialog.open) dialog.showModal();
     };
 
@@ -285,11 +385,23 @@
       drawing = true;
       const card = randomInt(CARDS.length);
       state = writeState(card);
-      playRevealSound();
-      try { navigator.vibrate?.([20, 25, 45]); } catch (_) {}
-      renderState(true);
-      setTimeout(() => { drawing = false; }, reducedMotion() ? 0 : 900);
+      const audioCtx = createFortuneAudio();
+      renderState(true, audioCtx);
     });
+
+    stage.addEventListener('pointermove', event => {
+      if (!state || drawing || reducedMotion() || event.pointerType === 'touch' || !cardButton.classList.contains('is-revealed')) return;
+      const rect = stage.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      const px = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+      const py = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+      stage.style.setProperty('--tilt-x', ((0.5 - py) * 9).toFixed(2) + 'deg');
+      stage.style.setProperty('--tilt-y', ((px - 0.5) * 11).toFixed(2) + 'deg');
+      stage.style.setProperty('--glow-x', (px * 100).toFixed(1) + '%');
+      stage.style.setProperty('--glow-y', (py * 100).toFixed(1) + '%');
+      stage.classList.add('is-prism-active');
+    });
+    stage.addEventListener('pointerleave', resetPrism);
 
     closeButton.addEventListener('click', closeDialog);
     launcher.addEventListener('click', openDialog);
