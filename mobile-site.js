@@ -111,7 +111,7 @@
           <a href="youtube.html" data-more-page="youtube"><span>유튜브</span><small>춘봉TV</small></a>
           <a href="history.html" data-more-page="history"><span>방송 이력</span><small>방송 기록</small></a>
           <a href="data.html" data-more-page="data"><span>춘봉 데이터</span><small>통계 · 분석</small></a>
-          <a href="changelog.html" data-more-page="changelog"><span>업데이트</span><small>변경 기록</small></a>
+          <a href="changelog.html" data-more-page="changelog"><span>업데이트</span><small>변경 기록</small></a>\n          <a href="timeline.html" data-more-page="timeline"><span>타임라인</span><small>방송 · 팬사이트 기록</small></a>
         </div>
       </section>`;
 
