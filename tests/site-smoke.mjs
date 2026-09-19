@@ -29,7 +29,13 @@ assert.match(content, /CHUNBONG_CONTENT/);
 assert.match(content, /schedule:/);
 assert.match(content, /notices:/);
 
-const script = read('page.js');
+const script = [
+  read('page.js'),
+  read('page-schedule.js'),
+  read('page-notice.js'),
+  read('page-media.js'),
+  read('page-fanart.js')
+].join('\n');
 for (const fn of ['renderSchedulePage','renderNoticePage','renderVideoPage','renderFanartPage']) {
   assert.ok(script.includes(fn), `missing ${fn}`);
 }
