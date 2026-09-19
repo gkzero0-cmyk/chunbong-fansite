@@ -5,10 +5,12 @@ const read = file => fs.readFileSync(new URL('../' + file, import.meta.url), 'ut
 const home = read('index.html');
 const js = read('daily-fortune.js');
 const css = read('daily-fortune.css');
+const themeCss = read('tarot-card-theme.css');
 const sw = read('service-worker.js');
 
 assert.doesNotThrow(() => new Function(js), 'daily fortune runtime must remain valid JavaScript');
 assert.match(home, /href="daily-fortune\.css"/, 'home daily fortune CSS missing');
+assert.match(home, /href="tarot-card-theme\.css"/, 'shared tarot card theme CSS missing from home');
 assert.match(home, /src="daily-fortune\.js"/, 'home daily fortune runtime missing');
 assert.match(js, /timeZone: SEOUL_TZ/, 'daily fortune must use the Seoul timezone');
 assert.match(js, /const STORAGE_KEY = 'chunbong-daily-fortune-v1'/, 'daily fortune storage key missing');
@@ -33,8 +35,14 @@ assert.match(css, /\.daily-fortune-stage\.is-prism-active \.daily-fortune-card/,
 assert.match(css, /--glow-x/, 'pointer-follow prism glow variables missing');
 assert.match(css, /dailyFortuneParticle/, 'fortune reveal particles missing');
 assert.match(css, /@media\(prefers-reduced-motion:reduce\)/, 'reduced-motion fallback missing');
-assert.match(sw, /chunbong-pwa-20260920-v13/, 'daily fortune service worker revision missing');
+assert.match(themeCss, /--chunbong-tarot-back-image:url\("data:image\/avif;base64,/, 'uploaded card-back artwork must be embedded as optimized AVIF');
+assert.match(themeCss, /\.daily-fortune-back\{[\s\S]*background-image:var\(--chunbong-tarot-back-image\)/, 'daily fortune back must use shared uploaded artwork');
+assert.match(themeCss, /\.daily-fortune-launcher\{[\s\S]*background-image:var\(--chunbong-tarot-back-image\)/, 'reopen launcher must use the same uploaded artwork');
+assert.match(themeCss, /\.daily-fortune-front\{[\s\S]*#06152f/, 'daily fortune front frame must use the navy celestial theme');
+assert.match(themeCss, /\.daily-fortune-front-frame\{[\s\S]*--chunbong-tarot-gold-light/, 'daily fortune front frame must use celestial gold');
+assert.match(sw, /chunbong-pwa-20260920-v14/, 'daily fortune service worker revision missing');
 assert.match(sw, /'\/daily-fortune\.css'/);
+assert.match(sw, /'\/tarot-card-theme\.css'/);
 assert.match(sw, /'\/daily-fortune\.js'/);
 
 console.log('home daily fortune regression passed');
