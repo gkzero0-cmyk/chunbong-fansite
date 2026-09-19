@@ -21,9 +21,6 @@ jobs:
           node --check theme-init.js
           node --check data.js
           node --check data-core.js
-          node --check data-soop-periods.js
-          node --check data-soop-periods-v2.js
-          node --check data-soop-periods-v2-persistence.js
           node --check data-soop-periods-v3.js
           node --check data-enhancements.js
           node --check chuntris-engine.js
