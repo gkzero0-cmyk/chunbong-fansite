@@ -5,6 +5,7 @@ const read = file => fs.readFileSync(new URL('../' + file, import.meta.url), 'ut
 const core = read('page.js');
 
 assert.match(core, /window\.ChunbongPageCore/, 'shared page core must be exposed');
+assert.ok(core.length < 12000, `shared page core should stay lightweight: ${core.length} chars`);
 for (const token of ['renderSchedulePage','renderNoticePage','renderClipsPage','renderYoutubePage','renderFanartPage']) {
   assert.doesNotMatch(core, new RegExp(token), token + ' must not ship in the shared home runtime');
 }
