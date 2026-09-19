@@ -26,8 +26,11 @@ assert.match(css,/\.changelog-layout\{[^}]*grid-template-columns:238px minmax\(0
 assert.match(css,/\.changelog-index-inner\{[^}]*position:sticky/,'date index must stay visible while scrolling');
 assert.match(css,/@media\(max-width:760px\)[\s\S]*?\.changelog-index nav\{display:flex/,'mobile date index should become horizontally scrollable');
 assert.match(js,/sort\(\(a,b\)=>b\.date\.localeCompare\(a\.date\)\)/,'latest date must sort first');
-assert.match(js,/type=changelog-history&summary=1/,'runtime should use repository history only for the unread summary key');
-assert.doesNotMatch(js,/changelog-commit-meta|is-commit/,'developer commit details must not render in the curated changelog');
+assert.match(js,/type=changelog-history'\}/,'runtime should fetch the full repository history for automatic changelog sync');
+assert.match(js,/mergeAutomaticGroups/,'runtime must merge automatic main updates into curated entries');
+assert.match(js,/item=>item\?\.auto/,'sync status should report automatically merged entries');
+assert.match(js,/type=changelog-history&summary=1/,'runtime should retain summary fallback when archive loading fails');
+assert.doesNotMatch(js,/changelog-commit-meta|is-commit/,'developer commit metadata must not render in the changelog');
 assert.match(js,/chunbong:changelog-ready/,'changelog must publish its latest seen key');
 
 const sandbox={window:{}};
