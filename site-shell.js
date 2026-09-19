@@ -71,12 +71,27 @@
     link.dataset.siteQuality = 'true';
     document.head.appendChild(link);
   }
-  for (const src of ['site-meta.js', 'site-health.js', 'site-improvements.js']) {
+  if (!document.body?.dataset?.game && !document.querySelector('link[data-engagement-suite]')) {
+    const engagementStyles = document.createElement('link');
+    engagementStyles.rel = 'stylesheet';
+    engagementStyles.href = 'engagement-suite.css';
+    engagementStyles.dataset.engagementSuite = 'true';
+    document.head.appendChild(engagementStyles);
+  }
+
+    for (const src of ['site-meta.js', 'site-health.js', 'site-improvements.js']) {
     if (document.querySelector('script[src="' + src + '"]')) continue;
     const script = document.createElement('script');
     script.src = src;
     script.defer = true;
     document.head.appendChild(script);
+  }
+  if (!document.body?.dataset?.game && !document.querySelector('script[data-engagement-suite-runtime]')) {
+    const engagementScript = document.createElement('script');
+    engagementScript.src = 'engagement-suite.js';
+    engagementScript.defer = true;
+    engagementScript.dataset.engagementSuiteRuntime = 'true';
+    document.head.appendChild(engagementScript);
   }
 })();
 
