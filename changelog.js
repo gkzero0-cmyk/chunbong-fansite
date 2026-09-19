@@ -5,10 +5,11 @@
   const indexRoot=document.getElementById('changelog-index-list');
   if(!root||!indexRoot) return;
 
-  let groups=(Array.isArray(window.CHUNBONG_CHANGELOG)?window.CHUNBONG_CHANGELOG:[])
+  const curatedGroups=(Array.isArray(window.CHUNBONG_CHANGELOG)?window.CHUNBONG_CHANGELOG:[])
     .filter(group=>group&&/^20\d{2}-\d{2}-\d{2}$/.test(String(group.date||'')))
     .map(group=>({date:group.date,items:Array.isArray(group.items)?group.items:[]}))
     .sort((a,b)=>b.date.localeCompare(a.date));
+  let groups=curatedGroups.map(group=>({date:group.date,items:[...group.items]}));
   const checkpoint=window.CHUNBONG_CHANGELOG_META||{};
   const autoSummarizer=window.CHUNBONG_CHANGELOG_AUTO;
 
@@ -19,9 +20,9 @@
     .trim();
 
   function mergeAutomaticGroups(automaticGroups=[]){
-    const byDate=new Map(groups.map(group=>[group.date,{date:group.date,items:[...group.items]}]));
+    const byDate=new Map(curatedGroups.map(group=>[group.date,{date:group.date,items:[...group.items]}]));
     const seenByDate=new Map();
-    for(const group of groups){
+    for(const group of curatedGroups){
       seenByDate.set(group.date,new Set(group.items.map(item=>titleKey(item?.title||'')).filter(Boolean)));
     }
 
@@ -147,27 +148,48 @@
   render();
 
   // 수동 한글 요약을 먼저 보여준 뒤 GitHub main의 새 유효 변경사항만 자동으로 합칩니다.
-  (async()=>{
-    try{
-      const since=String(checkpoint.throughTime||'').trim();
-      const historyUrl='/api/content?type=changelog-history'+(since?'&since='+encodeURIComponent(since):'');
-      const response=await fetch(historyUrl,{headers:{accept:'application/json'}});
-      if(!response.ok)throw new Error('changelog_history_unavailable');
-      const payload=await response.json();
-      const summarized=autoSummarizer?.summarizeSince
-        ? autoSummarizer.summarizeSince(payload.groups,checkpoint)
-        : [];
-      mergeAutomaticGroups(summarized);
-      const latestKey=payload.latest?.sha||payload.latest?.shortSha||'';
-      render(latestKey);
-    }catch(_){
-      try{
-        const response=await fetch('/api/content?type=changelog-history&summary=1',{headers:{accept:'application/json'}});
-        if(!response.ok)return;
-        const payload=await response.json();
-        const latestKey=payload.latest?.sha||payload.latest?.shortSha||'';
-        if(latestKey)render(latestKey);
-      }catch(_){}
+  const CHANGELOG_SYNC_INTERVAL_MS=60*1000;
+  let changelogSyncAt=0;
+  let changelogSyncPromise=null;
+
+  function refreshAutomaticChangelog({force=false}={}){
+    const now=Date.now();
+    if(!force&&changelogSyncAt&&now-changelogSyncAt<CHANGELOG_SYNC_INTERVAL_MS){
+      return changelogSyncPromise||Promise.resolve();
     }
-  })();
+    if(changelogSyncPromise)return changelogSyncPromise;
+    changelogSyncAt=now;
+    changelogSyncPromise=(async()=>{
+      try{
+        const since=String(checkpoint.throughTime||'').trim();
+        const historyUrl='/api/content?type=changelog-history'+(since?'&since='+encodeURIComponent(since):'');
+        const response=await fetch(historyUrl,{headers:{accept:'application/json'},cache:'no-store'});
+        if(!response.ok)throw new Error('changelog_history_unavailable');
+        const payload=await response.json();
+        const summarized=autoSummarizer?.summarizeSince
+          ? autoSummarizer.summarizeSince(payload.groups,checkpoint)
+          : [];
+        mergeAutomaticGroups(summarized);
+        const latestKey=payload.latest?.sha||payload.latest?.shortSha||'';
+        render(latestKey);
+      }catch(_){
+        try{
+          const response=await fetch('/api/content?type=changelog-history&summary=1',{headers:{accept:'application/json'},cache:'no-store'});
+          if(!response.ok)return;
+          const payload=await response.json();
+          const latestKey=payload.latest?.sha||payload.latest?.shortSha||'';
+          if(latestKey)render(latestKey);
+        }catch(_){}
+      }finally{
+        changelogSyncPromise=null;
+      }
+    })();
+    return changelogSyncPromise;
+  }
+
+  void refreshAutomaticChangelog();
+  window.addEventListener('focus',()=>{void refreshAutomaticChangelog();});
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible')void refreshAutomaticChangelog();
+  });
 })();
