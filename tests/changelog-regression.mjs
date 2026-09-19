@@ -38,6 +38,13 @@ assert.doesNotMatch(js,/main의 새 변경사항을 사용자용 한글 요약/,
 assert.match(js,/type=changelog-history&summary=1/,'runtime should retain summary fallback when archive loading fails');
 assert.doesNotMatch(js,/changelog-commit-meta|is-commit/,'developer commit metadata must not render in the changelog');
 assert.match(js,/chunbong:changelog-ready/,'changelog must publish its latest seen key');
+assert.match(js,/CHANGELOG_SYNC_INTERVAL_MS=60\*1000/,'changelog body refresh interval must stay at one minute');
+assert.match(js,/window\.addEventListener\('focus'/,'changelog page must refresh when the tab regains focus');
+assert.match(js,/visibilitychange/,'changelog page must refresh when it becomes visible again');
+assert.match(js,/curatedGroups/,'automatic refresh must rebuild from curated groups to avoid duplicate cards');
+assert.match(shell,/CHANGELOG_REFRESH_MS = 60 \* 1000/,'header unread refresh interval must stay at one minute');
+assert.match(shell,/window\.addEventListener\('focus'/,'header unread state must refresh on focus');
+assert.match(shell,/visibilitychange/,'header unread state must refresh when the tab becomes visible');
 
 const sandbox={window:{}};
 vm.runInNewContext(dataSource,sandbox);
