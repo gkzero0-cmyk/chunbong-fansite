@@ -5,6 +5,8 @@
   const BEST_KEY='chuncortile.best.v1';
   const RANKING_ENDPOINT='/api/content?type=chuncortile-ranking&mode=classic';
   const COMBO_WINDOW=2800;
+  const CLEAR_PARTICLES_PER_TILE=4;
+  const CLEAR_RESOLVE_MS=300;
   const COLORS=['#16c931','#2377ee','#ef254f','#ffc51f','#ff6b24','#982fe8','#16c4c8','#8e531d','#969ca1','#ef4a9d','#49b856'];
 
   const e={
@@ -113,44 +115,47 @@
     const matchColor=COLORS[Number.isInteger(matchType)?matchType:0]||'#ff7650';
     const burstColors=[matchColor,'#fff4cf','#ffffff','#ffb36d'];
 
-    matches.forEach((index,mIndex)=>{
+    // Read every layout value first. DOM writes happen afterwards in one batch,
+    // preventing repeated style/layout recalculation during a clear.
+    const geometry=matches.map(index=>{
       const rect=cells[index].getBoundingClientRect();
       const x=rect.left-wrapRect.left+rect.width/2;
       const y=rect.top-wrapRect.top+rect.height/2;
       const dx=x-origin.x,dy=y-origin.y;
-      const distance=Math.hypot(dx,dy);
-      const angle=Math.atan2(dy,dx)*180/Math.PI;
+      return {x,y,distance:Math.hypot(dx,dy),angle:Math.atan2(dy,dx)*180/Math.PI};
+    });
 
+    const fragment=document.createDocumentFragment();
+    const transient=[];
+
+    geometry.forEach((point,mIndex)=>{
       const line=document.createElement('i');
       line.className='ct-match-line';
       line.style.left=`${origin.x}px`;
       line.style.top=`${origin.y}px`;
-      line.style.width=`${distance}px`;
-      line.style.transform=`rotate(${angle}deg)`;
+      line.style.width=`${point.distance}px`;
+      line.style.transform=`rotate(${point.angle}deg)`;
       line.style.setProperty('--match-color',matchColor);
-      e.fx.append(line);
-      setTimeout(()=>line.remove(),520);
+      fragment.append(line);transient.push(line);
 
       const ring=document.createElement('i');
       ring.className='ct-clear-ring';
-      ring.style.left=`${x}px`;
-      ring.style.top=`${y}px`;
+      ring.style.left=`${point.x}px`;
+      ring.style.top=`${point.y}px`;
       ring.style.setProperty('--match-color',matchColor);
-      e.fx.append(ring);
-      setTimeout(()=>ring.remove(),560);
+      fragment.append(ring);transient.push(ring);
 
-      for(let p=0;p<8;p+=1){
+      for(let p=0;p<CLEAR_PARTICLES_PER_TILE;p+=1){
         const particle=document.createElement('i');
         particle.className='ct-burst';
-        particle.style.left=`${x}px`;
-        particle.style.top=`${y}px`;
+        particle.style.left=`${point.x}px`;
+        particle.style.top=`${point.y}px`;
         particle.style.setProperty('--burst',burstColors[(mIndex+p+chain)%burstColors.length]);
-        const burstAngle=(Math.PI*2*(p/8))+(mIndex*.27);
-        const distancePx=30+Math.random()*38;
+        const burstAngle=(Math.PI*2*(p/CLEAR_PARTICLES_PER_TILE))+(mIndex*.27);
+        const distancePx=26+Math.random()*28;
         particle.style.setProperty('--dx',`${Math.cos(burstAngle)*distancePx}px`);
         particle.style.setProperty('--dy',`${Math.sin(burstAngle)*distancePx}px`);
-        e.fx.append(particle);
-        setTimeout(()=>particle.remove(),760);
+        fragment.append(particle);transient.push(particle);
       }
     });
 
@@ -159,16 +164,18 @@
     originRing.style.left=`${origin.x}px`;
     originRing.style.top=`${origin.y}px`;
     originRing.style.setProperty('--match-color',matchColor);
-    e.fx.append(originRing);
-    setTimeout(()=>originRing.remove(),560);
+    fragment.append(originRing);transient.push(originRing);
 
     const pop=document.createElement('b');
     pop.className='ct-score-pop';
-    pop.textContent=`+${removed}${chain>=2?` · COMBO x${chain}`:''}`;
+    pop.textContent=`${removed}개 제거 · +${removed}점${chain>=2?` · COMBO x${chain}`:''}`;
     pop.style.left=`${origin.x}px`;
     pop.style.top=`${origin.y}px`;
-    e.fx.append(pop);
-    setTimeout(()=>pop.remove(),900);
+    fragment.append(pop);
+
+    e.fx.append(fragment);
+    setTimeout(()=>transient.forEach(node=>node.remove()),720);
+    setTimeout(()=>pop.remove(),1650);
     showCombo(chain);
   }
 
@@ -235,19 +242,20 @@
   function handleCell(index){
     if(!running||paused||resolving)return;
     if(board[index]!==null){setMessage('타일이 아니라 빈 칸을 눌러주세요.');return;}
+    if(hintIndex>=0)cells[hintIndex]?.classList.remove('is-hint');
     hintIndex=-1;
     const result=Core.applyClick(board,index);
     if(result.removed>=2){
       const now=performance.now();
       combo=lastClearAt&&now-lastClearAt<=COMBO_WINDOW?combo+1:1;lastClearAt=now;maxCombo=Math.max(maxCombo,combo);
-      resolving=true;const clearing=new Set(result.matches);renderBoard(clearing);score+=result.removed;best=Math.max(best,score);updateHud();
+      resolving=true;result.matches.forEach(matchIndex=>cells[matchIndex]?.classList.add('is-clearing'));score+=result.removed;best=Math.max(best,score);updateHud();
       setMessage(combo>=2?`${result.removed}개 제거! COMBO x${combo}`:`${result.removed}개 제거! +${result.removed}점`);
       flash('good');showClearFx(result.matches,index,result.removed,combo);sound.clear(result.removed,combo);
       setTimeout(()=>{
         board=result.board;resolving=false;renderBoard();updateHud();
         if(Core.remainingTiles(board)===0)finishGame('clear');
         else if(!Core.findAnyMove(board))setMessage('가능한 매치가 없어요. 다시 시작으로 새 보드를 만들어 주세요.');
-      },360);
+      },CLEAR_RESOLVE_MS);
       return;
     }
     combo=0;lastClearAt=0;misses+=1;endAt-=Core.MISS_PENALTY_MS;remainingMs=Math.max(0,endAt-performance.now());updateHud();

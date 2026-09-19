@@ -11,7 +11,10 @@ assert.match(html,/assets\/chungwagame\/mascot-ten\.webp/,'instruction 10 mascot
 assert.match(css,/assets\/chungwagame\/numbers\.webp/,'number sprite missing');
 assert.match(css,/saturate\(\.82\)/,'eye-comfort sprite saturation guard missing');
 assert.match(css,/#080a08/i,'dark game page background missing');
-assert.match(css,/background-size:5\.8823529% 100%,100% 10%/,'faint board grid lines missing');
+assert.match(css,/background-size:5\.8823529% 100%,100% 10%/,'regular board grid lines missing');
+assert.match(css,/Grid readability pass: 2026-09-20/,'grid readability override missing');
+assert.match(css,/rgba\(226,228,221,\.16\)/,'regular cell grid must remain clearly visible');
+assert.match(css,/regular cells only, no 5-cell helper grid/,'grid tuning must explicitly stay single-scale');
 assert.match(css,/#DDDAD2/i,'comfortable off-white board surface missing');
 assert.match(css,/#F2421B/i,'requested red-orange number color missing');
 assert.match(css,/content:attr\(data-value\)/,'number overlay must render from each fruit data value');

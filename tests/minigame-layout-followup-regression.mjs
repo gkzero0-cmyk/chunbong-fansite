@@ -31,14 +31,19 @@ assert.match(ctCss, /@keyframes ctTileClearStrong/);
 assert.match(ctCss, /@keyframes ctClearRing/);
 assert.match(gameLayout, /--game-shell-max:1320px;--game-left:180px;--game-board:min\(1000px,calc\(138\.8889svh - 236px\)\)/);
 assert.match(gameLayout, /\.chuncortile-page\{--game-shell-max:1520px;--game-left:225px;--game-board:1040px/);
+assert.match(gameLayout, /Viewport comfort pass: 2026-09-20/,'short-height viewport comfort override missing');
+assert.match(gameLayout, /--game-shell-max:1240px;[\s\S]*--game-board:clamp\(760px,calc\(170svh - 280\.5px\),930px\)/,'Chungwagame short-height board sizing missing');
+assert.match(gameLayout, /--game-shell-max:1180px;[\s\S]*--game-board:clamp\(650px,calc\(138\.8889svh - 229\.1667px\),800px\)/,'Chuncortile short-height board sizing missing');
+assert.match(gameLayout, /\.cg-board-wrap\{max-height:none!important\}/,'start and play board footprint must stay stable');
 
 assert.match(ctJs, /if\(!running\|\|paused\|\|resolving\)return/);
 assert.match(ctJs, /line\.className='ct-match-line'/);
 assert.match(ctJs, /ring\.className='ct-clear-ring'/);
 assert.match(ctJs, /line\.style\.setProperty\('--match-color',matchColor\)/);
-assert.match(ctJs, /resolving=true;const clearing=new Set\(result\.matches\)/);
+assert.match(ctJs, /resolving=true;result\.matches\.forEach\(matchIndex=>cells\[matchIndex\]\?\.classList\.add\('is-clearing'\)\)/);
+assert.doesNotMatch(ctJs, /renderBoard\(clearing\)/,'pre-clear full-board repaint must stay removed');
 assert.match(ctJs, /board=result\.board;resolving=false;renderBoard\(\)/);
-assert.match(ctJs, /\},360\);/);
+assert.match(ctJs, /\},CLEAR_RESOLVE_MS\);/);
 
 const startPos = chuntrisHtml.indexOf('id="chuntris-start"');
 const backPos = chuntrisHtml.indexOf('id="chuntris-back-mode"');
