@@ -7,7 +7,7 @@ const featuredPattern = /<a class="portal-card reveal" href="([^"]+)"><small>(\d
 const featured = [...index.matchAll(featuredPattern)].map(match => ({ href: match[1], number: match[2], label: match[3], title: match[4] }));
 assert.deepEqual(featured.map(card => [card.number, card.href, card.title]), [
   ['03', 'vod.html', '다시보기'],
-  ['07', 'tarot.html', '춘봉 타로'],
+  ['07', 'tarot.html', '타로 보기'],
   ['08', 'minigames.html', '미니게임'],
   ['10', 'data.html', '춘봉 데이터']
 ], 'home must emphasize the four primary destinations');
