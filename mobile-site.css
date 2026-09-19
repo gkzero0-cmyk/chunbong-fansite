@@ -497,12 +497,12 @@
   body.pwa-app-mode.pwa-app-more-open,
   body.pwa-ios-guide-open{overflow:hidden!important}
 
-  body.pwa-app-mode .nav-toggle{display:none!important}
-  body.pwa-app-mode .site-header{
+  body[data-page].pwa-app-mode:not([data-game]) .nav-toggle{display:none!important}
+  body[data-page].pwa-app-mode:not([data-game]) .site-header{
     padding-left:max(11px,env(safe-area-inset-left))!important;
     padding-right:max(11px,env(safe-area-inset-right))!important
   }
-  body.pwa-app-mode .brand-mark{width:40px!important;height:40px!important}
+  body[data-page].pwa-app-mode:not([data-game]) .brand-mark{width:40px!important;height:40px!important}
 
   .pwa-app-tabbar{
     position:fixed;z-index:275;left:0;right:0;bottom:0;
