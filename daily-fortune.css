@@ -1,0 +1,143 @@
+.btn-fortune{
+  border:1px solid #bd8cff66;
+  background:linear-gradient(135deg,#241436,#4b235f 48%,#6e3e1f);
+  color:#fff3d8;
+  cursor:pointer;
+  box-shadow:0 8px 30px #6d36a22a,inset 0 0 0 1px #ffd98c1c;
+}
+.btn-fortune:hover{transform:translateY(-2px);border-color:#f5c76d99;box-shadow:0 12px 34px #7b42c83d}
+.btn-fortune[data-drawn="true"]{border-color:#d4ad5c66;background:linear-gradient(135deg,#241b12,#3f2b17)}
+
+.daily-fortune-dialog{
+  width:min(94vw,820px);
+  max-height:min(94vh,940px);
+  margin:auto;
+  padding:0;
+  border:1px solid #b888ff45;
+  border-radius:30px;
+  overflow:hidden;
+  color:#fff;
+  background:
+    radial-gradient(circle at 50% 0%,#6d3cbf2f,transparent 36%),
+    radial-gradient(circle at 84% 80%,#ff9d2e18,transparent 35%),
+    linear-gradient(160deg,#130d1b 0%,#09080d 54%,#100c08 100%);
+  box-shadow:0 45px 130px #000d,0 0 70px #693ca52b;
+}
+.daily-fortune-dialog::backdrop{background:#020205dc;backdrop-filter:blur(14px) saturate(.85)}
+.daily-fortune-shell{position:relative;padding:26px 30px 28px;overflow:auto;max-height:min(94vh,940px)}
+.daily-fortune-shell:before,.daily-fortune-shell:after{
+  content:"";position:absolute;pointer-events:none;border-radius:50%;filter:blur(1px)
+}
+.daily-fortune-shell:before{width:210px;height:210px;right:-80px;top:-90px;border:1px solid #d6b4ff20;box-shadow:0 0 70px #8745c62a inset}
+.daily-fortune-shell:after{width:130px;height:130px;left:-60px;bottom:40px;border:1px solid #ffc66f19}
+.daily-fortune-header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;position:relative;z-index:2}
+.daily-fortune-kicker{margin:0 0 4px;color:#d7a8ff;font-size:10px;font-weight:950;letter-spacing:.22em}
+.daily-fortune-header h2{margin:0;font-size:clamp(28px,5vw,42px);line-height:1;letter-spacing:-.045em}
+.daily-fortune-date{display:block;margin-top:8px;color:#8f8798;font-size:11px}
+.daily-fortune-close{width:42px;height:42px;flex:0 0 auto;border-radius:50%;border:1px solid #ffffff24;background:#ffffff0a;color:#fff;font-size:24px;line-height:1;cursor:pointer}
+.daily-fortune-close:hover{background:#ffffff14;border-color:#d9b8ff55}
+
+.daily-fortune-layout{display:grid;grid-template-columns:minmax(260px,.83fr) minmax(280px,1.17fr);gap:28px;align-items:center;margin-top:14px;position:relative;z-index:1}
+.daily-fortune-stage{position:relative;display:grid;place-items:center;min-height:478px;isolation:isolate}
+.daily-fortune-stage:before{
+  content:"";position:absolute;width:330px;height:330px;border-radius:50%;
+  background:radial-gradient(circle,#8f4fe331 0%,#d797ff13 34%,transparent 70%);
+  filter:blur(10px);animation:fortuneAura 4s ease-in-out infinite alternate;z-index:-2
+}
+.daily-fortune-stage:after{
+  content:"";position:absolute;width:292px;height:292px;border-radius:50%;border:1px solid #e0bdff24;
+  box-shadow:0 0 0 18px #b275ff08,0 0 0 44px #f1ccff05;z-index:-1;transition:.7s
+}
+.daily-fortune-stage.is-celebrating:after{transform:scale(1.24) rotate(90deg);border-color:#ffe39c72;box-shadow:0 0 0 28px #c986ff10,0 0 95px #ffcb5c32}
+
+.daily-fortune-card{
+  width:min(255px,68vw);aspect-ratio:898/1488;padding:0;border:0;background:transparent;
+  perspective:1700px;cursor:pointer;position:relative;z-index:4;filter:drop-shadow(0 24px 34px #000c);
+  -webkit-tap-highlight-color:transparent
+}
+.daily-fortune-card:disabled{opacity:1;cursor:default}
+.daily-fortune-card-inner{
+  position:absolute;inset:0;transform-style:preserve-3d;
+  transition:transform 1.25s cubic-bezier(.12,.72,.12,1.05),filter .8s;
+  will-change:transform
+}
+.daily-fortune-card:not(.is-locked):hover .daily-fortune-card-inner{transform:translateY(-8px) rotateZ(-1.5deg)}
+.daily-fortune-card.is-revealing .daily-fortune-card-inner,
+.daily-fortune-card.is-revealed .daily-fortune-card-inner{
+  transform:rotateY(900deg) rotateZ(1.2deg) scale(1.035);
+  filter:drop-shadow(0 0 26px #e6c0ff57) drop-shadow(0 0 46px #ffca6150)
+}
+.daily-fortune-face{
+  position:absolute;inset:0;border-radius:20px;overflow:hidden;backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;border:1px solid #ead7ff4f
+}
+.daily-fortune-back{
+  display:grid;place-items:center;
+  background:
+    radial-gradient(circle at center,#bd75ff18 0 5%,transparent 5.5%),
+    repeating-conic-gradient(from 22.5deg at center,#e3c5ff12 0 9deg,transparent 9deg 18deg),
+    radial-gradient(circle at center,#221330 0 38%,#100a18 39% 57%,#2b173a 58% 61%,#0a080d 62%);
+  box-shadow:inset 0 0 0 7px #09070c,inset 0 0 0 9px #c69cff4f,inset 0 0 0 15px #120b19
+}
+.daily-fortune-back:before,.daily-fortune-back:after{content:"";position:absolute;inset:18px;border:1px solid #d5adff4a;border-radius:13px;transform:rotate(2deg)}
+.daily-fortune-back:after{inset:31px;border-color:#ffc86b3e;transform:rotate(-2deg)}
+.daily-fortune-back-mark{display:grid;place-items:center;width:116px;height:116px;border-radius:50%;border:1px solid #f1d3ff66;color:#ffe6a7;font-size:56px;text-shadow:0 0 22px #c38cff;box-shadow:0 0 35px #8b4fd828,inset 0 0 24px #dba5ff14}
+.daily-fortune-back-copy{position:absolute;bottom:28px;font-size:9px;font-weight:950;letter-spacing:.22em;color:#bda7c9}
+.daily-fortune-front{transform:rotateY(180deg);background:#09070b;box-shadow:inset 0 0 0 5px #d8b364}
+.daily-fortune-front img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .35s}
+.daily-fortune-front img.is-reversed{transform:rotate(180deg)}
+.daily-fortune-front-overlay{position:absolute;inset:auto 9px 9px;display:flex;align-items:end;justify-content:space-between;gap:7px;padding:35px 10px 9px;background:linear-gradient(transparent,#060409e8);border-radius:0 0 13px 13px;pointer-events:none}
+.daily-fortune-front-overlay strong{font-size:14px;text-shadow:0 2px 9px #000}
+.daily-fortune-direction{padding:4px 7px;border-radius:999px;background:#f2c86f;color:#261605;font-size:9px;font-weight:950;white-space:nowrap}
+.daily-fortune-direction[data-direction="reversed"]{background:#a777d9;color:#fff}
+
+.daily-fortune-burst{position:absolute;left:50%;top:50%;width:1px;height:1px;z-index:3;pointer-events:none}
+.daily-fortune-burst i{position:absolute;width:8px;height:8px;border-radius:50%;background:#ffd979;box-shadow:0 0 16px #ffd363;opacity:0}
+.daily-fortune-burst i.is-star{width:11px;height:11px;border-radius:2px;background:#d9b1ff;box-shadow:0 0 18px #bd7fff}
+.daily-fortune-burst.is-active i{animation:fortuneBurst 1.2s cubic-bezier(.08,.63,.2,1) var(--delay) both}
+
+.daily-fortune-copy{align-self:center;padding:8px 4px 8px 0}
+.daily-fortune-status{margin:0 0 14px;color:#c6bdca;font-size:13px;line-height:1.65}
+.daily-fortune-result[hidden]{display:none}
+.daily-fortune-result{animation:fortuneResultIn .55s ease both}
+.daily-fortune-result-label{margin:0;color:#d4a7ff;font-size:10px;font-weight:950;letter-spacing:.18em}
+.daily-fortune-result h3{margin:6px 0 10px;font-size:clamp(25px,4vw,34px);letter-spacing:-.04em}
+.daily-fortune-keywords{display:inline-flex;margin:0 0 15px;padding:7px 10px;border:1px solid #dfb6ff32;border-radius:999px;background:#b26aff0c;color:#f0d9ff;font-size:11px;font-weight:850}
+.daily-fortune-meaning,.daily-fortune-advice{margin:0;color:#d4ced7;font-size:13px;line-height:1.78}
+.daily-fortune-advice{margin-top:12px;padding:13px 14px;border-left:3px solid #d39dff;border-radius:0 12px 12px 0;background:linear-gradient(90deg,#a75fe311,transparent);color:#f3e8f6}
+.daily-fortune-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:18px}
+.daily-fortune-sound,.daily-fortune-more{border:1px solid #ffffff20;border-radius:11px;background:#ffffff08;color:#ddd1e3;padding:9px 11px;font-size:10px;font-weight:900;cursor:pointer}
+.daily-fortune-more{color:#ffd98d;border-color:#dcae5a3c}
+.daily-fortune-sound:hover,.daily-fortune-more:hover{background:#ffffff11}
+.daily-fortune-note{margin:17px 0 0;padding-top:14px;border-top:1px solid #ffffff12;color:#716b76;font-size:10px;line-height:1.55}
+
+@keyframes fortuneAura{from{transform:scale(.9);opacity:.65}to{transform:scale(1.08);opacity:1}}
+@keyframes fortuneBurst{0%{opacity:0;transform:translate(0,0) scale(.3) rotate(0)}16%{opacity:1}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(0) rotate(var(--spin))}}
+@keyframes fortuneResultIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+@media(max-width:720px){
+  .daily-fortune-dialog{width:min(96vw,520px);border-radius:24px}
+  .daily-fortune-shell{padding:20px 18px 22px}
+  .daily-fortune-layout{grid-template-columns:1fr;gap:8px;margin-top:4px}
+  .daily-fortune-stage{min-height:390px}
+  .daily-fortune-card{width:min(210px,58vw)}
+  .daily-fortune-stage:before{width:270px;height:270px}
+  .daily-fortune-stage:after{width:245px;height:245px}
+  .daily-fortune-copy{padding:0}
+  .daily-fortune-status{text-align:center;margin-top:0}
+  .daily-fortune-result{text-align:left}
+  .daily-fortune-header h2{font-size:29px}
+}
+@media(max-width:420px){
+  .daily-fortune-stage{min-height:350px}
+  .daily-fortune-card{width:185px}
+  .daily-fortune-header{gap:10px}
+  .daily-fortune-shell{padding-left:15px;padding-right:15px}
+}
+@media(prefers-reduced-motion:reduce){
+  .daily-fortune-stage:before{animation:none}
+  .daily-fortune-card-inner{transition:none!important}
+  .daily-fortune-burst{display:none}
+  .daily-fortune-result{animation:none}
+  .btn-fortune{transition:none}
+}
