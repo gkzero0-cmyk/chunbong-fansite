@@ -18,6 +18,14 @@
     const platformLabel = item?.platform === 'youtube' ? (item?.kind === 'shorts' ? 'SHORTS' : 'YOUTUBE') : item?.kind === 'catch' ? 'CATCH' : item?.kind === 'clip' ? 'CLIP' : '';
     meta.textContent = [platformLabel, item?.date || item?.meta || (item?.platform === 'youtube' ? 'YouTube' : 'SOOP')].filter(Boolean).join(' · ');
     if (source) source.href = item?.link || sourceFor(item?.kind || (kind === 'vod' ? 'vod' : kind === 'youtube' ? 'youtube' : 'catch'));
+    if (item) document.dispatchEvent(new CustomEvent('chunbong:media-selected',{detail:{
+      id:String(item.id||item.videoId||item.link||item.title||''),
+      type:kind==='youtube'?'youtube':String(item.kind||kind||'vod'),
+      title:String(item.title||''),
+      meta:[platformLabel,item.date||item.meta||''].filter(Boolean).join(' · '),
+      href:(kind==='youtube'?'youtube.html':kind==='clips'?'clips.html':'vod.html')+'?'+(item.kind?'kind='+encodeURIComponent(item.kind)+'&':'')+'open='+encodeURIComponent(String(item.id||item.videoId||'')),
+      sourceHref:item.link||'',thumb:item.thumb||''
+    }}));
     if (item?.embed) {
       frame.loading = 'lazy';
       frame.src = item.embed;
