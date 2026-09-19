@@ -14,6 +14,7 @@ on:
       - 'api/content.js'
       - 'assets/chuncortile/tiles-user.webp'
       - 'mobile-minigames.css'
+      - 'mobile-minigames.js'
       - '.github/workflows/chuncortile-browser-smoke.yml'
   push:
     branches: [main]
@@ -79,8 +80,19 @@ jobs:
               const markerCount=await page.locator('.ct-tile').evaluateAll(nodes=>new Set(nodes.map(node=>node.dataset.mark).filter(Boolean)).size);
               assert.equal(markerCount,11,'all 11 tile types need a unique non-color marker');
 
-              await page.locator('#ct-start').click();
-              await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='playing',{timeout:5000});
+              if(viewport.width<=390){
+                await page.locator('#ct-start').click();
+                assert.ok(await page.locator('[data-mobile-landscape-gate]').isVisible(),'portrait start must show the landscape rotation guide');
+                assert.equal(await page.locator('#chuncortile').getAttribute('data-game-status'),'start','portrait start must wait for landscape');
+                await page.setViewportSize({width:844,height:390});
+                await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='playing',{timeout:5000});
+                assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('mobile-landscape-game-ready')),true,'Chuncortile landscape class missing');
+                const boardBox=await page.locator('#ct-board-wrap').boundingBox();
+                assert.ok(boardBox&&boardBox.width>=460&&boardBox.height>=320,'landscape Chuncortile board is too small');
+              }else{
+                await page.locator('#ct-start').click();
+                await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='playing',{timeout:5000});
+              }
 
               let move=await page.evaluate(()=>window.ChuncortileApp.debugFindMove());
               assert.ok(move&&move.matches.length>=2);
@@ -109,6 +121,20 @@ jobs:
               assert.ok(state.combo>=2,'quick consecutive clears must create combo');
               assert.match(await page.locator('#ct-combo-pop').innerText(),/COMBO/);
 
+              if(viewport.width<=390){
+                await page.setViewportSize({width:390,height:844});
+                await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='paused',{timeout:3000});
+                assert.ok(await page.locator('[data-mobile-landscape-gate]').isVisible(),'portrait transition must show the rotation guide');
+                const orientationPaused=await page.evaluate(()=>window.ChuncortileApp.getSnapshot().remainingMs);
+                await page.waitForTimeout(500);
+                const orientationStill=await page.evaluate(()=>window.ChuncortileApp.getSnapshot().remainingMs);
+                assert.ok(Math.abs(orientationStill-orientationPaused)<120,'orientation pause must freeze the timer');
+                await page.setViewportSize({width:844,height:390});
+                await page.waitForFunction(()=>!document.querySelector('[data-mobile-landscape-resume]')?.hidden,{timeout:3000});
+                await page.locator('[data-mobile-landscape-resume]').click();
+                await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='playing',{timeout:3000});
+              }
+
               const beforePause=state.remainingMs;
               await page.locator('#ct-pause').click();
               await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='paused');
@@ -122,6 +148,11 @@ jobs:
 
               await page.evaluate(()=>window.ChuncortileApp.debugFinishGame());
               await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='gameover');
+              if(viewport.width<=390){
+                await page.waitForFunction(()=>!document.body.classList.contains('mobile-landscape-game-session'));
+                assert.equal(await page.locator('[data-mobile-landscape-gate]').isVisible(),false,'game over must restore the normal page');
+                assert.ok(await page.locator('.site-header').isVisible(),'normal fan-site header must return after game over');
+              }
               assert.ok(await page.locator('#ct-over-overlay .ct-return-minigames').isVisible());
               assert.ok(await page.locator('#ct-ranking-register').isVisible());
               await page.locator('#ct-ranking-register').click();
