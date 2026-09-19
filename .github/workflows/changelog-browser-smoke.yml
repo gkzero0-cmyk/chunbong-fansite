@@ -10,6 +10,7 @@ on:
       - 'changelog-data.js'
       - 'changelog-auto-summary.js'
       - 'content.js'
+      - 'site-shell.js'
       - 'theme.css'
       - 'lib/changelog-history-api.js'
       - 'api/content.js'
@@ -23,6 +24,7 @@ on:
       - 'changelog-data.js'
       - 'changelog-auto-summary.js'
       - 'content.js'
+      - 'site-shell.js'
       - 'theme.css'
       - 'lib/changelog-history-api.js'
       - 'api/content.js'
@@ -106,7 +108,7 @@ jobs:
           assert.equal(await page.getByText('add tarot card journal',{exact:true}).count(),0,'raw developer title must not render');
           assert.equal(await page.getByText('repair tarot reveal',{exact:true}).count(),0,'raw fix title must not render');
           assert.ok(await page.getByText('미니게임 콘텐츠 확장',{exact:true}).count(),'curated Korean changelog item missing');
-          assert.match((await page.locator('#changelog-sync-status').textContent())||'',/한글 요약 2개/,'automatic Korean summary status missing');
+          assert.equal(((await page.locator('#changelog-sync-status').textContent())||'').trim(),'사용자에게 중요한 변경사항만 한글로 간단하게 정리했습니다.','technical automatic-sync status wording must stay hidden');
           assert.equal(await page.locator('.changelog-card.is-commit').count(),0,'developer commit cards must not render');
           assert.equal(await page.getByText(/GitHub/).count(),0,'GitHub source text must not render in changelog');
           await page.waitForFunction(key=>localStorage.getItem('chunbong-changelog-seen-v2')===key,latestSha);
