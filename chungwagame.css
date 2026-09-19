@@ -369,3 +369,11 @@
   background:rgba(222,226,211,.055);
   border-radius:12%;
 }
+
+/* Prevent number sprite upscaling on wider desktop boards. */
+@media(min-width:900px){
+  .cg-fruit-shape{
+    width:min(88%,40px);
+    height:min(88%,40px);
+  }
+}
