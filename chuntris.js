@@ -58,6 +58,7 @@
     rankingList:document.getElementById('chuntris-ranking-list'), modal:document.getElementById('chuntris-modal'),
     modalTitle:document.getElementById('chuntris-modal-title'), modalBody:document.getElementById('chuntris-modal-body'),
     pauseContinue:document.getElementById('chuntris-pause-continue'), pauseNew:document.getElementById('chuntris-pause-new'),
+    overlayDifficulty:document.getElementById('chuntris-overlay-difficulty'),
     newConfirm:document.getElementById('chuntris-new-confirm'), newCancel:document.getElementById('chuntris-new-cancel'),
     clearLabel:document.getElementById('chuntris-clear-label'), hardDropFx:document.getElementById('chuntris-harddrop-fx'),
     lineFx:document.getElementById('chuntris-line-fx'), gimmickAlert:document.getElementById('chuntris-gimmick-alert'),
@@ -490,7 +491,7 @@
   rankingDifficultyButtons.forEach(button=>button.addEventListener('click',()=>void loadRanking(rankingMode,button.dataset.chuntrisRankingDifficulty)));
   document.querySelectorAll('[data-chuntris-open]').forEach(button=>button.addEventListener('click',event=>openUtilityModal(button.dataset.chuntrisOpen,event.currentTarget)));
   document.querySelectorAll('[data-chuntris-modal-close]').forEach(button=>button.addEventListener('click',()=>{if(['ranking','sound','controls'].includes(activeModal))closeUtilityModal();else if(activeModal==='pause')continueGame();else closeModalShell();}));
-  els.start?.addEventListener('click',start);els.pause?.addEventListener('click',openPauseMenu);els.pauseContinue?.addEventListener('click',continueGame);els.pauseNew?.addEventListener('click',()=>showModalPanel('new-game-confirm'));els.newConfirm?.addEventListener('click',returnToStartForNewGame);els.newCancel?.addEventListener('click',()=>showModalPanel('pause'));
+  els.start?.addEventListener('click',start);els.pause?.addEventListener('click',openPauseMenu);els.pauseContinue?.addEventListener('click',continueGame);els.pauseNew?.addEventListener('click',returnToStartForNewGame);els.overlayDifficulty?.addEventListener('click',returnToStartForNewGame);els.newConfirm?.addEventListener('click',returnToStartForNewGame);els.newCancel?.addEventListener('click',()=>showModalPanel('pause'));
   els.nickname?.addEventListener('change',()=>{const nickname=currentNickname();if(nickname&&nickname!==false)storageSet(NICKNAME_KEY,nickname.displayName);});
   if(els.sound&&root.ChuntrisAudio){const settings=root.ChuntrisAudio.getSettings();els.sound.setAttribute('aria-pressed',String(settings.enabled));els.sound.textContent=settings.enabled?'효과음 ON':'효과음 OFF';els.volume.value=String(Math.round(settings.volume*100));els.sound.addEventListener('click',()=>{const next=els.sound.getAttribute('aria-pressed')!=='true';root.ChuntrisAudio.setEnabled(next);els.sound.setAttribute('aria-pressed',String(next));els.sound.textContent=next?'효과음 ON':'효과음 OFF';root.ChuntrisAudio.resume();});els.volume.addEventListener('input',()=>root.ChuntrisAudio.setVolume(Number(els.volume.value)/100));}
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&game.getSnapshot().status==='playing'){game.pause(Date.now());setViewState('paused');showModalPanel('pause');}render();});
