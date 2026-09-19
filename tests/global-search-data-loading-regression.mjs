@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 const read = file => fs.readFileSync(new URL('../' + file, import.meta.url), 'utf8');
 const shell = read('site-shell.js');
+const activityCenter = read('activity-center.js');
 const search = read('site-search.js');
 const searchCss = read('site-search.css');
 const sw = read('service-worker.js');
@@ -10,8 +11,9 @@ const dataHtml = read('data.html');
 const dataCss = read('data.css');
 const dataCore = read('data-core.js');
 
-assert.match(shell, /site-search\.css/);
-assert.match(shell, /site-search\.js/);
+assert.doesNotMatch(shell, /site-search\.css/, 'shared shell size must stay bounded');
+assert.match(activityCenter, /site-search\.css/);
+assert.match(activityCenter, /site-search\.js/);
 assert.match(search, /event\.ctrlKey\|\|event\.metaKey/);
 assert.match(search, /fetchJson\('activity'\)/);
 assert.match(search, /fetchJson\('schedule'\)/);
