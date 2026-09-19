@@ -12,6 +12,7 @@ const tarotCss=read('tarot-quality.css');
 const dataHtml=read('data.html');
 const dataEnh=read('data-enhancements.js');
 const dataCss=read('data.css');
+const serviceWorker=read('service-worker.js');
 
 for(const [name,source] of [
   ['api/version.js',version],
@@ -55,5 +56,6 @@ assert.match(dataEnh,/chunbong-data-view-v1/,'data view preference must be remem
 assert.match(dataEnh,/document\.body\.dataset\.dataView=view/,'data view mode must update body state');
 assert.match(dataCss,/body\[data-data-view="summary"\]/,'summary-mode visibility rules missing');
 assert.match(dataCss,/content-visibility:auto/,'detailed data sections should use offscreen rendering optimization');
+assert.match(serviceWorker,/chunbong-pwa-20260920-v15/,'UX asset changes must advance the PWA cache version');
 
 console.log('UX simplification regression passed');
