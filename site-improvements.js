@@ -126,6 +126,7 @@
     trigger.type='button';
     trigger.className='site-search-trigger';
     trigger.setAttribute('aria-label','사이트 통합검색 열기');
+    trigger.setAttribute('aria-keyshortcuts','Control+K Meta+K');
     trigger.title='통합검색 (Ctrl/⌘ + K)';
     trigger.innerHTML='<span aria-hidden="true">⌕</span><b>검색</b><kbd>⌘K</kbd>';
 
@@ -188,9 +189,15 @@
     const loadContent=async()=>{
       if(contentReady||contentLoading)return;
       contentLoading=true;
+      results.setAttribute('aria-busy','true');
       render();
       try{contentRows=await loadSearchRows();}
-      finally{contentLoading=false;contentReady=true;render();}
+      finally{
+        contentLoading=false;
+        contentReady=true;
+        results.setAttribute('aria-busy','false');
+        render();
+      }
     };
 
     const open=()=>{

@@ -53,6 +53,14 @@ jobs:
             {id:'fanart:8001',type:'fanart',group:'fanart',label:'팬아트',title:'가을 팬아트',publishedAt:'2026-09-18T07:10:00.000Z',timestamp:1789715400000,precision:'datetime',originalDate:'2026-09-18',href:'fanart.html?open=8001',sourceHref:'https://example.com/fanart',thumb:'',meta:'팬작가'}
           ];
 
+          const closeFortuneIfOpen=async target=>{
+            const dialog=target.locator('#daily-fortune-dialog');
+            if(await dialog.count()){
+              const open=await dialog.evaluate(el=>Boolean(el.open));
+              if(open)await dialog.evaluate(el=>el.close());
+            }
+          };
+
           const page=await context.newPage();
           const errors=[];
           page.on('pageerror',error=>errors.push(error.message));
@@ -60,6 +68,7 @@ jobs:
 
           await page.goto(process.env.BASE_URL+'/index.html?_smoke='+Date.now(),{waitUntil:'networkidle'});
           await page.waitForSelector('.activity-bell');
+          await closeFortuneIfOpen(page);
           assert.equal(await page.locator('.header-live[href*="sooplive.com"]').count(),0,'SOOP header shortcut still visible');
           assert.ok(await page.locator('.theme-toggle').isVisible(),'theme toggle missing');
           assert.ok(await page.locator('.changelog-button').isVisible(),'changelog button missing');
@@ -115,6 +124,7 @@ jobs:
           await mobile.setViewportSize({width:390,height:844});
           await mobile.route('**/api/content?type=activity',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:activityItems})}));
           await mobile.goto(process.env.BASE_URL+'/index.html?_mobile='+Date.now(),{waitUntil:'networkidle'});
+          await closeFortuneIfOpen(mobile);
           assert.ok(await mobile.locator('.changelog-button').isVisible(),'mobile changelog gear missing');
           assert.equal(await mobile.locator('.changelog-button span').isVisible(),false,'mobile changelog text should collapse to icon only');
           await mobile.locator('.activity-bell').click();
