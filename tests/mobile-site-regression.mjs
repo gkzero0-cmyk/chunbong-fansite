@@ -30,7 +30,7 @@ assert.match(css,/body\[data-page="fanart"\] \.fanart-modal\{[\s\S]*height:100dv
 assert.match(css,/body\[data-page="tarot"\] \.tarot-choice-group\{[\s\S]*repeat\(2,minmax\(0,1fr\)\)/,'tarot choices must be touch-friendly');
 assert.match(css,/body\[data-page="history"\] \.history-layout\{[\s\S]*grid-template-columns:1fr!important/,'history layout must stack on mobile');
 assert.match(css,/body\[data-page="data"\] \.data-detail-table\{[\s\S]*overflow-x:auto!important/,'data tables must scroll without overflowing the page');
-assert.match(css,/body\[data-page="changelog"\] \.changelog-index\{display:none!important/,'changelog desktop index should not consume phone width');
+assert.match(css,/body\[data-page="changelog"\] #changelog-index-list\{[\s\S]*overflow-x:auto!important/,'changelog mobile date index must stay available as a horizontal scroller');
 assert.match(css,/\.activity-panel\{[\s\S]*bottom:max\(8px,env\(safe-area-inset-bottom\)\)!important/,'activity center must become a mobile bottom sheet');
 
 assert.match(js,/mobile-site-nav-open/);
