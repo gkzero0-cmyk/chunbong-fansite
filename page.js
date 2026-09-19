@@ -523,7 +523,134 @@
     setupReveal();
   }
 
+  function setupPwaExperience() {
+    if (!document.querySelector('link[rel="manifest"]')) {
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = '/manifest.webmanifest';
+      document.head.appendChild(link);
+    }
+
+    const standalone = window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    let deferredInstallPrompt = null;
+    let reloadOnControllerChange = false;
+    let statusTimer = null;
+
+    const ensureStatus = () => {
+      let node = document.querySelector('[data-pwa-status]');
+      if (node) return node;
+      node = document.createElement('div');
+      node.className = 'pwa-status-toast';
+      node.dataset.pwaStatus = '';
+      node.setAttribute('role', 'status');
+      node.setAttribute('aria-live', 'polite');
+      node.hidden = true;
+      document.body.appendChild(node);
+      return node;
+    };
+
+    const showStatus = (message, sticky = false) => {
+      const node = ensureStatus();
+      node.textContent = message;
+      node.hidden = false;
+      node.classList.add('is-visible');
+      clearTimeout(statusTimer);
+      if (!sticky) {
+        statusTimer = setTimeout(() => {
+          node.classList.remove('is-visible');
+          setTimeout(() => { node.hidden = true; }, 180);
+        }, 3200);
+      }
+    };
+
+    const ensureInstallButton = () => {
+      if (document.body.dataset.game || standalone) return null;
+      let button = document.querySelector('[data-pwa-install]');
+      if (button) return button;
+      button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'pwa-install-chip';
+      button.dataset.pwaInstall = '';
+      button.innerHTML = '<span aria-hidden="true">＋</span><strong>앱으로 설치</strong>';
+      button.hidden = true;
+      button.addEventListener('click', async () => {
+        if (!deferredInstallPrompt) return;
+        const prompt = deferredInstallPrompt;
+        deferredInstallPrompt = null;
+        button.hidden = true;
+        try {
+          await prompt.prompt();
+          const choice = await prompt.userChoice;
+          if (choice?.outcome === 'accepted') showStatus('춘봉 팬허브를 앱으로 설치했습니다.');
+        } catch {}
+      });
+      document.body.appendChild(button);
+      return button;
+    };
+
+    const showUpdate = registration => {
+      if (!navigator.serviceWorker.controller || document.querySelector('[data-pwa-update]')) return;
+      const toast = document.createElement('div');
+      toast.className = 'pwa-update-toast';
+      toast.dataset.pwaUpdate = '';
+      toast.setAttribute('role', 'status');
+      toast.innerHTML = '<div><strong>새 버전 준비 완료</strong><span>최신 팬사이트로 바로 바꿀 수 있어요.</span></div><button type="button">새로고침</button>';
+      toast.querySelector('button')?.addEventListener('click', () => {
+        reloadOnControllerChange = true;
+        registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+      });
+      document.body.appendChild(toast);
+    };
+
+    window.addEventListener('beforeinstallprompt', event => {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      const button = ensureInstallButton();
+      if (button) button.hidden = false;
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      const button = document.querySelector('[data-pwa-install]');
+      if (button) button.hidden = true;
+      showStatus('춘봉 팬허브 설치가 완료됐습니다.');
+    });
+
+    window.addEventListener('offline', () => showStatus('오프라인 상태입니다. 저장된 기본 화면은 계속 사용할 수 있어요.', true));
+    window.addEventListener('online', () => showStatus('인터넷 연결이 복구됐습니다.'));
+    if (!navigator.onLine) showStatus('오프라인 상태입니다. 저장된 기본 화면은 계속 사용할 수 있어요.', true);
+
+    if (!('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol)) return;
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloadOnControllerChange) window.location.reload();
+    });
+
+    const register = async () => {
+      try {
+        const registration = await navigator.serviceWorker.register('/service-worker.js', {
+          scope: '/',
+          updateViaCache: 'none'
+        });
+        if (registration.waiting) showUpdate(registration);
+        registration.addEventListener('updatefound', () => {
+          const worker = registration.installing;
+          if (!worker) return;
+          worker.addEventListener('statechange', () => {
+            if (worker.state === 'installed' && navigator.serviceWorker.controller) showUpdate(registration);
+          });
+        });
+      } catch (error) {
+        console.warn('[PWA] service worker registration failed', error);
+      }
+    };
+
+    if (document.readyState === 'complete') register();
+    else window.addEventListener('load', register, { once: true });
+  }
+
   async function init() {
+    setupPwaExperience();
     setupNavigation();
     setupToTop();
     setupNoticeImageModal();
