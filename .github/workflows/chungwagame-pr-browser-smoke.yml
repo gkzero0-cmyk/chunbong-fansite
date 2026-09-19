@@ -8,6 +8,7 @@ on:
       - 'chungwagame.css'
       - 'game-layout.css'
       - 'mobile-minigames.css'
+      - 'mobile-minigames.js'
       - 'chungwagame.js'
       - 'chungwagame-ranking-core.js'
       - 'chungwagame-postgame-ranking.js'
@@ -117,12 +118,39 @@ jobs:
               assert.ok(layout.y+layout.height<=viewport.height+3,`desktop bottom clipped: ${layout.y+layout.height} > ${viewport.height}`);
             }
 
-            await page.locator('#cg-start').click();
+            if(viewport.width<=390){
+              await page.locator('#cg-start').click();
+              assert.ok(await page.locator('[data-mobile-landscape-gate]').isVisible(),'portrait start must show the landscape rotation guide');
+              assert.equal(await page.locator('#chungwagame').getAttribute('data-game-status'),'start','portrait start must not begin gameplay before rotation');
+              await page.setViewportSize({width:844,height:390});
+              await page.waitForFunction(()=>document.querySelector('#chungwagame')?.dataset.gameStatus==='playing',{timeout:5000});
+              assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('mobile-landscape-game-ready')),true,'landscape gameplay class missing');
+              assert.equal(await page.locator('[data-mobile-landscape-gate]').isVisible(),false,'rotation guide must close in landscape');
+              const boardBox=await page.locator('#cg-board-wrap').boundingBox();
+              assert.ok(boardBox&&boardBox.width>=500&&boardBox.height>=280,'landscape Chungwagame board is too small');
+            }else{
+              await page.locator('#cg-start').click();
+            }
             await page.waitForFunction(()=>document.querySelectorAll('.cg-fruit-shape').length===170);
             const fillBefore=await page.locator('#cg-time-fill').evaluate(el=>getComputedStyle(el).transform);
             await page.waitForTimeout(1100);
             const fillAfter=await page.locator('#cg-time-fill').evaluate(el=>getComputedStyle(el).transform);
             assert.notEqual(fillAfter,fillBefore,'time gauge did not shrink');
+
+            if(viewport.width<=390){
+              await page.setViewportSize({width:390,height:844});
+              await page.waitForFunction(()=>document.querySelector('#chungwagame')?.dataset.gameStatus==='paused',{timeout:3000});
+              assert.ok(await page.locator('[data-mobile-landscape-gate]').isVisible(),'portrait during play must show the rotation guide');
+              const orientationPausedTime=(await page.locator('#cg-timer').textContent())?.trim();
+              await page.waitForTimeout(600);
+              assert.equal((await page.locator('#cg-timer').textContent())?.trim(),orientationPausedTime,'timer advanced during orientation pause');
+              await page.setViewportSize({width:844,height:390});
+              await page.waitForFunction(()=>!document.querySelector('[data-mobile-landscape-resume]')?.hidden,{timeout:3000});
+              assert.ok(await page.locator('[data-mobile-landscape-resume]').isVisible(),'landscape return must require an explicit resume');
+              await page.locator('[data-mobile-landscape-resume]').click();
+              await page.waitForFunction(()=>document.querySelector('#chungwagame')?.dataset.gameStatus==='playing',{timeout:3000});
+              assert.equal(await page.locator('[data-mobile-landscape-gate]').isVisible(),false,'resume must close the landscape guide');
+            }
 
             await page.keyboard.press('Escape');
             assert.ok(await page.locator('#cg-pause-overlay').isVisible(),'ESC pause overlay missing');
@@ -167,6 +195,11 @@ jobs:
 
             await page.evaluate(()=>window.ChungwagameApp.setGameOver());
             await page.waitForFunction(()=>document.querySelector('#chungwagame')?.dataset.gameStatus==='gameover');
+            if(viewport.width<=390){
+              await page.waitForFunction(()=>!document.body.classList.contains('mobile-landscape-game-session'));
+              assert.equal(await page.locator('[data-mobile-landscape-gate]').isVisible(),false,'game over must restore the normal page');
+              assert.ok(await page.locator('.site-header').isVisible(),'normal fan-site header must return after game over');
+            }
             assert.ok(await page.locator('#cg-ranking-register').isVisible(),'gameover ranking registration missing');
             await page.locator('#cg-ranking-register').click();
             assert.ok(await page.locator('#cg-ranking-submit-panel').isVisible(),'postgame nickname panel missing');
