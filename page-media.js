@@ -18,7 +18,17 @@
     const platformLabel = item?.platform === 'youtube' ? (item?.kind === 'shorts' ? 'SHORTS' : 'YOUTUBE') : item?.kind === 'catch' ? 'CATCH' : item?.kind === 'clip' ? 'CLIP' : '';
     meta.textContent = [platformLabel, item?.date || item?.meta || (item?.platform === 'youtube' ? 'YouTube' : 'SOOP')].filter(Boolean).join(' · ');
     if (source) source.href = item?.link || sourceFor(item?.kind || (kind === 'vod' ? 'vod' : kind === 'youtube' ? 'youtube' : 'catch'));
-    if (item?.embed) {
+    document.dispatchEvent(new CustomEvent('chunbong:media-selected',{detail:{
+      page:kind,
+      id:String(item?.id||''),
+      title:item?.title||'',
+      kind:item?.kind||kind,
+      date:item?.date||item?.meta||'',
+      thumb:item?.thumb||'',
+      link:item?.link||'',
+      embed:item?.embed||''
+    }}));
+        if (item?.embed) {
       frame.loading = 'lazy';
       frame.src = item.embed;
       frame.hidden = false;
