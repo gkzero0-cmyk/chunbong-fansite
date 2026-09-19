@@ -20,6 +20,9 @@ assert.equal(manifest.display, 'standalone');
 assert.equal(manifest.scope, '/');
 assert.equal(manifest.start_url, '/?source=pwa', 'installed app should open the canonical root URL');
 assert.ok(Array.isArray(manifest.icons) && manifest.icons.some(icon => icon.src === '/assets/app-icon.svg'));
+assert.ok(manifest.icons.some(icon => icon.src === 'https://res.cloudinary.com/lyppgyei/image/upload/c_fill,w_192,h_192,f_png/v1789825375/chunbong-fansite/app-icons/app-icon.png' && icon.sizes === '192x192' && icon.type === 'image/png'), '192px PNG PWA icon missing');
+assert.ok(manifest.icons.some(icon => icon.src === 'https://res.cloudinary.com/lyppgyei/image/upload/c_fill,w_512,h_512,f_png/v1789825375/chunbong-fansite/app-icons/app-icon.png' && icon.sizes === '512x512' && icon.type === 'image/png' && icon.purpose === 'any'), '512px PNG PWA icon missing');
+assert.ok(manifest.icons.some(icon => icon.src === 'https://res.cloudinary.com/lyppgyei/image/upload/c_fill,w_512,h_512,f_png/v1789825375/chunbong-fansite/app-icons/app-icon.png' && icon.sizes === '512x512' && icon.type === 'image/png' && icon.purpose === 'maskable'), 'maskable PWA icon missing');
 assert.match(page, /setupPwaExperience/);
 assert.match(page, /serviceWorker\.register\('\/service-worker\.js'/);
 assert.match(page, /beforeinstallprompt/);
@@ -43,6 +46,7 @@ for (const html of htmlPaths) {
   const source = read(html);
   assert.match(source, /rel="manifest" href="\/manifest\.webmanifest"/, html + ' manifest link missing');
   assert.match(source, /rel="icon" type="image\/svg\+xml" href="\/assets\/app-icon\.svg"/, html + ' app icon missing');
+  assert.ok(source.includes('rel="apple-touch-icon" sizes="180x180" href="https://res.cloudinary.com/lyppgyei/image/upload/c_fill,w_180,h_180,f_png/v1789825375/chunbong-fansite/app-icons/app-icon.png"'), html + ' apple touch icon missing');
 }
 
 const swHeaders = (vercel.headers || []).find(item => item.source === '/service-worker.js');
