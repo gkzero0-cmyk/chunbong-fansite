@@ -6,7 +6,9 @@
     /\b(?:unused|obsolete|dead code|legacy cleanup|internal cleanup|regression test|syntax check|test-only)\b/i,
     /(?:미사용|사용하지 않는).*(?:정리|제거|삭제)/i,
     /(?:중복|구버전|레거시).*(?:자산|파일|런타임|코드|스크립트).*(?:정리|제거|삭제)/i,
-    /회귀\s*테스트|문법\s*검사|테스트\s*정리/i
+    /회귀\s*테스트|문법\s*검사|테스트\s*정리/i,
+    /(?:업데이트\s*일지|변경\s*내역|changelog).*(?:정리|기록|보완|체크포인트|curat|backfill|checkpoint)/i,
+    /(?:정리|기록|보완|curat|backfill|checkpoint).*(?:업데이트\s*일지|변경\s*내역|changelog)/i
   ];
 
   const AREAS = [
