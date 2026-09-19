@@ -1,5 +1,5 @@
 /* CHUNBONG_PWA v1 */
-const CACHE_NAME = 'chunbong-pwa-20260920-v9';
+const CACHE_NAME = 'chunbong-pwa-20260920-v10';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -24,7 +24,9 @@ const APP_SHELL = [
   '/assets/app-icon-512.png',
   '/assets/apple-touch-icon.png',
   '/minigames.html',
-  '/minigames.css'
+  '/minigames.css',
+  '/minigame-profile.css',
+  '/minigame-profile.js'
 ];
 
 self.addEventListener('install', event => {
