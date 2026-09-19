@@ -5,10 +5,63 @@
   const indexRoot=document.getElementById('changelog-index-list');
   if(!root||!indexRoot) return;
 
-  const groups=(Array.isArray(window.CHUNBONG_CHANGELOG)?window.CHUNBONG_CHANGELOG:[])
+  let groups=(Array.isArray(window.CHUNBONG_CHANGELOG)?window.CHUNBONG_CHANGELOG:[])
     .filter(group=>group&&/^20\d{2}-\d{2}-\d{2}$/.test(String(group.date||'')))
     .map(group=>({date:group.date,items:Array.isArray(group.items)?group.items:[]}))
     .sort((a,b)=>b.date.localeCompare(a.date));
+  const AUTO_SYNC_BASE_SHA='af3bb1f6ecb4308b06ab27e850ec149e0d42a0fa';
+
+  const titleKey=(value='')=>String(value)
+    .toLowerCase()
+    .replace(/\s*\(#\d+\)\s*$/,'')
+    .replace(/[^0-9a-z가-힣]+/g,'')
+    .trim();
+
+  function automaticUpdatesSinceBaseline(automaticGroups=[]){
+    const recent=[];
+    let reachedBaseline=false;
+    for(const group of Array.isArray(automaticGroups)?automaticGroups:[]){
+      const items=[];
+      for(const item of Array.isArray(group?.items)?group.items:[]){
+        if(String(item?.sha||'')===AUTO_SYNC_BASE_SHA){
+          reachedBaseline=true;
+          break;
+        }
+        items.push(item);
+      }
+      if(items.length)recent.push({date:group?.date,items});
+      if(reachedBaseline)break;
+    }
+    return recent;
+  }
+
+  function mergeAutomaticGroups(automaticGroups=[]){
+    const byDate=new Map(groups.map(group=>[group.date,{date:group.date,items:[...group.items]}]));
+    const seenTitles=new Set(groups.flatMap(group=>group.items.map(item=>titleKey(item?.title||''))).filter(Boolean));
+
+    for(const automaticGroup of automaticUpdatesSinceBaseline(automaticGroups)){
+      const date=String(automaticGroup?.date||'');
+      if(!/^20\d{2}-\d{2}-\d{2}$/.test(date))continue;
+      if(!byDate.has(date))byDate.set(date,{date,items:[]});
+      const target=byDate.get(date);
+      for(const item of Array.isArray(automaticGroup?.items)?automaticGroup.items:[]){
+        const title=String(item?.title||'').trim();
+        const key=titleKey(title);
+        if(!title||!key||seenTitles.has(key))continue;
+        seenTitles.add(key);
+        target.items.push({
+          type:['new','improved','fixed'].includes(item?.type)?item.type:'improved',
+          title,
+          description:String(item?.description||'').trim(),
+          auto:true
+        });
+      }
+    }
+
+    groups=[...byDate.values()]
+      .filter(group=>group.items.length)
+      .sort((a,b)=>b.date.localeCompare(a.date));
+  }
 
   const labels={new:'신규',improved:'개선',fixed:'수정'};
   const esc=(value='')=>String(value)
@@ -77,7 +130,10 @@
     if(latest)latest.textContent=groups[0]?.date||'LATEST';
     if(count)count.textContent=total+'개의 주요 업데이트 · '+groups.length+'일 기록';
     if(status){
-      status.textContent='사용자에게 중요한 변경사항만 한글로 간단하게 정리했습니다.';
+      const automaticCount=groups.reduce((sum,group)=>sum+group.items.filter(item=>item?.auto).length,0);
+      status.textContent=automaticCount
+        ? `직접 정리한 주요 업데이트를 우선 표시하고, main의 새 변경사항 ${automaticCount}개를 자동 동기화했습니다.`
+        : '사용자에게 중요한 변경사항만 한글로 간단하게 정리했습니다.';
       status.className='changelog-sync-status is-live';
     }
 
@@ -104,14 +160,23 @@
 
   render();
 
-  // 최신 여부 판정용 키만 확인하며 개발 기록의 제목·링크·출처는 화면에 표시하지 않습니다.
+  // 수동 한글 요약을 먼저 보여준 뒤 GitHub main의 새 유효 변경사항만 자동으로 합칩니다.
   (async()=>{
     try{
-      const response=await fetch('/api/content?type=changelog-history&summary=1',{headers:{accept:'application/json'}});
-      if(!response.ok)return;
+      const response=await fetch('/api/content?type=changelog-history',{headers:{accept:'application/json'}});
+      if(!response.ok)throw new Error('changelog_history_unavailable');
       const payload=await response.json();
+      mergeAutomaticGroups(payload.groups);
       const latestKey=payload.latest?.sha||payload.latest?.shortSha||'';
-      if(latestKey)render(latestKey);
-    }catch(_){}
+      render(latestKey);
+    }catch(_){
+      try{
+        const response=await fetch('/api/content?type=changelog-history&summary=1',{headers:{accept:'application/json'}});
+        if(!response.ok)return;
+        const payload=await response.json();
+        const latestKey=payload.latest?.sha||payload.latest?.shortSha||'';
+        if(latestKey)render(latestKey);
+      }catch(_){}
+    }
   })();
 })();
