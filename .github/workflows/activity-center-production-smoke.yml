@@ -19,6 +19,10 @@ on:
       - 'lib/activity-feed.js'
       - '.github/workflows/activity-center-production-smoke.yml'
 
+permissions:
+  contents: read
+  statuses: read
+
 jobs:
   smoke:
     runs-on: ubuntu-latest
@@ -28,6 +32,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Stop early on Vercel build-rate-limit
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .github/scripts/vercel-rate-limit-fast-fail.mjs
+
 
       - name: Wait for current activity-center production
         env:
