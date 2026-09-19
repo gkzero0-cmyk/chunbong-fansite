@@ -1,43 +1,43 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-18T06:27:32.997Z",
+  "capturedAt": "2026-09-19T06:26:24.987Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 30340,
-    "fanclubCount": 7670,
-    "subscriberCount": 48,
+    "followerCount": 30287,
+    "fanclubCount": 7672,
+    "subscriberCount": 49,
     "supporterCount": 24,
-    "averageViewers": 58,
+    "averageViewers": 57,
     "maxViewers": 153,
-    "airtimeMinutes": 9545,
-    "viewershipHours": 9155,
-    "cumulativeUpCount": 80414,
-    "totalAirtimeMinutes": 624755,
-    "monthlyStarCount": 82774,
-    "starsPerHour": 520,
-    "monthlySupporterCount": 187,
-    "monthlyChatCount": 38418,
+    "airtimeMinutes": 9852,
+    "viewershipHours": 9330,
+    "cumulativeUpCount": 80449,
+    "totalAirtimeMinutes": 625062,
+    "monthlyStarCount": 83546,
+    "starsPerHour": 509,
+    "monthlySupporterCount": 192,
+    "monthlyChatCount": 39779,
     "monthlyMuteCount": 6,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-09-18T01:39:09",
+    "latestBroadcastDate": "2026-09-19T01:25:33",
     "categories": [
       {
         "name": "버추얼",
-        "minutes": 8534,
-        "streamCount": 20,
-        "sharePercent": 37.8
-      },
-      {
-        "name": "마인크래프트",
-        "minutes": 6506,
-        "streamCount": 11,
-        "sharePercent": 28.8
+        "minutes": 8841,
+        "streamCount": 22,
+        "sharePercent": 39.5
       },
       {
         "name": "오버워치",
         "minutes": 6114,
         "streamCount": 12,
-        "sharePercent": 27
+        "sharePercent": 27.3
+      },
+      {
+        "name": "마인크래프트",
+        "minutes": 5990,
+        "streamCount": 10,
+        "sharePercent": 26.7
       },
       {
         "name": "PUBG: 배틀그라운드",
@@ -11681,6 +11681,74 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/297201379"
+    },
+    {
+      "id": "trackify-297215703",
+      "broadcastId": "297215703",
+      "date": "2026-09-18",
+      "startedAt": "2026-09-18T19:08:20+09:00",
+      "endedAt": "2026-09-18T23:21:59+09:00",
+      "durationMinutes": 254,
+      "averageViewers": 36,
+      "maxViewers": 52,
+      "viewerSampleCount": 51,
+      "uniqueViewers": null,
+      "starCount": 772,
+      "supporterCount": 7,
+      "chatCount": 821,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "그냥서버:적자생존 궁금한거 물어보세요 (작업방송)",
+      "categories": [
+        {
+          "id": "00810000",
+          "name": "버추얼",
+          "minutes": 254,
+          "sampleCount": 51,
+          "averageViewers": 36,
+          "maxViewers": 52
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297215703"
+    },
+    {
+      "id": "trackify-297226767",
+      "broadcastId": "297226767",
+      "date": "2026-09-19",
+      "startedAt": "2026-09-19T01:25:33+09:00",
+      "endedAt": "2026-09-19T02:19:06+09:00",
+      "durationMinutes": 54,
+      "averageViewers": 26,
+      "maxViewers": 32,
+      "viewerSampleCount": 11,
+      "uniqueViewers": null,
+      "starCount": null,
+      "supporterCount": null,
+      "chatCount": 540,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "마이크 테스트 도와주실 봉봉이 구해요",
+      "categories": [
+        {
+          "id": "00810000",
+          "name": "버추얼",
+          "minutes": 54,
+          "sampleCount": 11,
+          "averageViewers": 26,
+          "maxViewers": 32
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297226767"
     }
   ]
 }
