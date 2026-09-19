@@ -6,6 +6,8 @@ on:
     paths:
       - 'index.html'
       - 'home-dday.js'
+      - 'daily-fortune.js'
+      - 'daily-fortune.css'
       - 'styles.css'
       - '.github/workflows/home-dday-pr-browser-smoke.yml'
 
@@ -31,7 +33,7 @@ jobs:
           done
           cat /tmp/home-dday-http.log
           exit 1
-      - name: Verify D-day dialog and NamuWiki links
+      - name: Verify D-day and daily fortune home experiences
         env:
           BASE_URL: http://127.0.0.1:4173
         run: |
@@ -47,7 +49,46 @@ jobs:
               page.on('pageerror',error=>errors.push(error.message));
 
               await page.goto(`${process.env.BASE_URL}/index.html?_smoke=${Date.now()}`,{waitUntil:'networkidle'});
-              await page.waitForFunction(()=>Boolean(window.HomeBroadcastDday));
+              await page.waitForFunction(()=>Boolean(window.HomeBroadcastDday&&window.CHUNBONG_DAILY_FORTUNE));
+
+              await page.waitForFunction(()=>document.querySelector('#daily-fortune-dialog')?.open===true);
+              assert.equal(await page.locator('[data-daily-fortune-image]').getAttribute('src'),null,'fortune artwork must not load before the draw');
+              await page.locator('[data-daily-fortune-card]').click();
+              await page.waitForFunction(()=>document.querySelector('[data-daily-fortune-card]')?.classList.contains('is-revealed'));
+              await page.waitForFunction(()=>document.querySelector('[data-daily-fortune-result]')?.hidden===false);
+              const fortuneTitle=(await page.locator('[data-daily-fortune-result-title]').textContent())?.trim();
+              assert.match(fortuneTitle||'',/오늘의 운세$/,'daily fortune result title missing');
+              assert.match((await page.locator('[data-daily-fortune-image]').getAttribute('src'))||'',/res\.cloudinary\.com\/.*c_crop/,'daily fortune must load one cropped card artwork after selection');
+              const stored=await page.evaluate(()=>{
+                const api=window.CHUNBONG_DAILY_FORTUNE;
+                const raw=localStorage.getItem(api.STORAGE_KEY);
+                return {today:api.kstDate(),state:raw?JSON.parse(raw):null};
+              });
+              assert.equal(stored.state?.date,stored.today,'daily fortune must persist against the current KST date');
+              assert.ok(Number.isInteger(stored.state?.card),'daily fortune stored card missing');
+
+              await page.locator('[data-daily-fortune-close]').click();
+              assert.equal(await page.locator('#daily-fortune-dialog').evaluate(el=>el.open),false,'daily fortune dialog did not close');
+              assert.ok(await page.locator('[data-daily-fortune-launcher]').isVisible(),'daily fortune reopen launcher missing after close');
+
+              await page.locator('[data-daily-fortune-launcher]').click();
+              assert.ok(await page.locator('#daily-fortune-dialog').evaluate(el=>el.open),'daily fortune did not reopen');
+              assert.equal((await page.locator('[data-daily-fortune-result-title]').textContent())?.trim(),fortuneTitle,'reopened daily fortune must keep the same result');
+              await page.locator('[data-daily-fortune-close]').click();
+
+              await page.reload({waitUntil:'networkidle'});
+              await page.waitForFunction(()=>Boolean(window.CHUNBONG_DAILY_FORTUNE));
+              await page.waitForTimeout(650);
+              assert.equal(await page.locator('#daily-fortune-dialog').evaluate(el=>el.open),false,'saved daily fortune should not auto-open again on the same KST day');
+              assert.ok(await page.locator('[data-daily-fortune-launcher]').isVisible(),'saved daily fortune launcher must remain visible after reload');
+              await page.evaluate(()=>{
+                const api=window.CHUNBONG_DAILY_FORTUNE;
+                localStorage.setItem(api.STORAGE_KEY,JSON.stringify({date:'2000-01-01',card:0,drawnAt:''}));
+              });
+              await page.reload({waitUntil:'networkidle'});
+              await page.waitForFunction(()=>document.querySelector('#daily-fortune-dialog')?.open===true);
+              assert.equal(await page.locator('[data-daily-fortune-card]').getAttribute('class'),'daily-fortune-card','stale daily fortune must reset for a new KST day');
+              await page.locator('[data-daily-fortune-close]').click();
 
               const values=await page.evaluate(()=>{
                 const api=window.HomeBroadcastDday;
