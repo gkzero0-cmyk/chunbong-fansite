@@ -162,6 +162,7 @@
 
     let state = readState();
     let drawing = false;
+    let autoOpenTimer = 0;
     const reducedMotion = () => Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 
     const showLauncher = () => {
@@ -244,9 +245,27 @@
       showLauncher();
     } else {
       renderState(false);
-      setTimeout(() => {
+      const openIfIdle = () => {
+        autoOpenTimer = 0;
+        document.removeEventListener('pointerdown', cancelAutoOpen, true);
+        document.removeEventListener('keydown', cancelAutoOpen, true);
         if (!dialog.open) openDialog();
-      }, reducedMotion() ? 0 : 450);
+      };
+      const cancelAutoOpen = event => {
+        if (!autoOpenTimer || dialog.open) return;
+        if (event.target?.closest?.('#daily-fortune-dialog,[data-daily-fortune-launcher]')) return;
+        clearTimeout(autoOpenTimer);
+        autoOpenTimer = 0;
+        document.removeEventListener('pointerdown', cancelAutoOpen, true);
+        document.removeEventListener('keydown', cancelAutoOpen, true);
+        showLauncher();
+      };
+      if (reducedMotion()) openIfIdle();
+      else {
+        autoOpenTimer = setTimeout(openIfIdle, 900);
+        document.addEventListener('pointerdown', cancelAutoOpen, true);
+        document.addEventListener('keydown', cancelAutoOpen, true);
+      }
     }
   }
 
