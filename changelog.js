@@ -9,6 +9,7 @@
     .filter(group=>group&&/^20\d{2}-\d{2}-\d{2}$/.test(String(group.date||'')))
     .map(group=>({date:group.date,items:Array.isArray(group.items)?group.items:[]}))
     .sort((a,b)=>b.date.localeCompare(a.date));
+  const latestCuratedDate=groups[0]?.date||'';
 
   const titleKey=(value='')=>String(value)
     .toLowerCase()
@@ -23,6 +24,7 @@
     for(const automaticGroup of Array.isArray(automaticGroups)?automaticGroups:[]){
       const date=String(automaticGroup?.date||'');
       if(!/^20\d{2}-\d{2}-\d{2}$/.test(date))continue;
+      if(latestCuratedDate&&date<latestCuratedDate)continue;
       if(!byDate.has(date))byDate.set(date,{date,items:[]});
       const target=byDate.get(date);
       for(const item of Array.isArray(automaticGroup?.items)?automaticGroup.items:[]){
