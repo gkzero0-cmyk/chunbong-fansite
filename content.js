@@ -1,21 +1,10 @@
 (() => {
   'use strict';
-  const PREFIX='chunbong-cache-v1:';
   const memory=new Map();
-  const read=key=>{
-    if(memory.has(key)) return memory.get(key);
-    try{
-      const raw=sessionStorage.getItem(PREFIX+key);
-      if(!raw) return null;
-      const parsed=JSON.parse(raw);
-      memory.set(key,parsed);
-      return parsed;
-    }catch(_){return null}
-  };
+  const read=key=>memory.get(key)||null;
   const write=(key,value)=>{
     const row={at:Date.now(),value};
     memory.set(key,row);
-    try{sessionStorage.setItem(PREFIX+key,JSON.stringify(row))}catch(_){}
     return value;
   };
   window.ChunbongCache={
@@ -24,10 +13,7 @@
       return row&&Date.now()-Number(row.at||0)<ttl?row.value:null;
     },
     set:write,
-    clear(key){
-      memory.delete(key);
-      try{sessionStorage.removeItem(PREFIX+key)}catch(_){}
-    },
+    clear(key){ memory.delete(key); },
     async fetchJson(key,url,{ttl=180000,force=false,headers={accept:'application/json'}}={}){
       if(!force){
         const cached=this.get(key,ttl);

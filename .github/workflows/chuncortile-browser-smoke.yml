@@ -5,6 +5,7 @@ on:
     paths:
       - 'chuncortile.html'
       - 'chuncortile.css'
+      - 'game-layout.css'
       - 'chuncortile.js'
       - 'chuncortile-core.js'
       - 'chuncortile-ranking-core.js'
@@ -20,6 +21,7 @@ on:
     paths:
       - 'chuncortile.html'
       - 'chuncortile.css'
+      - 'game-layout.css'
       - 'chuncortile.js'
       - 'chuncortile-core.js'
       - 'chuncortile-ranking-core.js'
@@ -89,7 +91,7 @@ jobs:
               assert.equal(state.combo,1);
               assert.ok(await page.locator('.ct-score-pop').count()>0,'clear score effect missing');
 
-              await page.waitForTimeout(220);
+              await page.waitForTimeout(400);
               move=await page.evaluate(()=>window.ChuncortileApp.debugFindMove());
               assert.ok(move&&move.matches.length>=2);
               before=state.score;

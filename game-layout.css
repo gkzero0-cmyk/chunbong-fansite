@@ -125,7 +125,7 @@
 /* Short-height desktop mode has priority over width-based enlargement. */
 @media(min-width:900px) and (max-height:900px){
   .chungwagame-page{
-    --game-shell-max:1320px;--game-left:160px;--game-board:min(1040px,calc(170svh - 323px));--game-right:104px;--game-gap:10px;
+    --game-shell-max:1040px;--game-left:160px;--game-board:min(680px,calc(170svh - 323px));--game-right:104px;--game-gap:10px;
     padding:4px 0 8px
   }
   .chuncortile-page{

@@ -81,17 +81,14 @@ jobs:
               assert.ok(await page.locator('#home-dday-dialog').evaluate(el=>el.open),'D-day dialog did not open');
               assert.equal((await page.locator('#home-dday-first-years').textContent())?.trim(),values.expected.firstYears);
               assert.equal((await page.locator('#home-dday-soop-years').textContent())?.trim(),values.expected.soopYears);
-              assert.equal(await page.locator('a[title="2020년"]').getAttribute('href'),'https://namu.wiki/w/2020%EB%85%84');
-              assert.equal(await page.locator('a[title="7월 3일"]').getAttribute('href'),'https://namu.wiki/w/7%EC%9B%94%203%EC%9D%BC');
-              assert.equal(await page.locator('a[title="2023년"]').getAttribute('href'),'https://namu.wiki/w/2023%EB%85%84');
-              assert.equal(await page.locator('a[title="11월 30일"]').getAttribute('href'),'https://namu.wiki/w/11%EC%9B%94%2030%EC%9D%BC');
               await page.locator('[data-home-dday-close]').click();
               assert.equal(await page.locator('#home-dday-dialog').evaluate(el=>el.open),false,'D-day dialog did not close');
 
-              const homeWiki=page.locator('.status-card-link');
-              assert.equal(await homeWiki.getAttribute('href'),'https://namu.wiki/w/%EC%B6%98%EB%B4%89');
-              assert.equal(await homeWiki.getAttribute('target'),'_blank');
-              assert.ok(await homeWiki.isVisible(),'home wiki card not visible');
+              const homeOfficial=page.locator('.status-card-link');
+              assert.equal(await homeOfficial.getAttribute('href'),'https://www.sooplive.com/station/chunbongtv');
+              assert.equal(await homeOfficial.getAttribute('target'),'_blank');
+              assert.match((await homeOfficial.textContent())||'',/SOOP 공식 프로필/);
+              assert.ok(await homeOfficial.isVisible(),'home official profile card not visible');
               assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'home horizontal overflow');
 
               await page.goto(`${process.env.BASE_URL}/tarot.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
