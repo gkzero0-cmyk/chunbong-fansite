@@ -12,7 +12,8 @@ on:
       - 'chuncortile-postgame-ranking.js'
       - 'lib/chuncortile-ranking-api.js'
       - 'api/content.js'
-      - 'assets/chuncortile/tiles.png'
+      - 'assets/chuncortile/tiles-user.webp'
+      - 'mobile-minigames.css'
       - '.github/workflows/chuncortile-browser-smoke.yml'
   push:
     branches: [main]
@@ -26,7 +27,8 @@ on:
       - 'chuncortile-postgame-ranking.js'
       - 'lib/chuncortile-ranking-api.js'
       - 'api/content.js'
-      - 'assets/chuncortile/tiles.png'
+      - 'assets/chuncortile/tiles-user.webp'
+      - 'mobile-minigames.css'
 jobs:
   browser-smoke:
     runs-on: ubuntu-latest
