@@ -5,6 +5,19 @@ const READING_CONFIG = typeof module !== 'undefined' && module.exports
   ? require('./tarot-reading-config.js')
   : window.CHUNBONG_TAROT_READING_CONFIG;
 
+const TAROT_ORIGINAL_DELIVERY = 'https://res.cloudinary.com/lyppgyei/image/upload';
+const TAROT_ORIGINAL_PUBLIC_ID = 'chunbong-fansite/tarot-original';
+const TAROT_ORIGINAL_CELL_WIDTH = 898;
+const TAROT_ORIGINAL_CARD_HEIGHT = 1488;
+
+function originalCardCropUrl(sheet, slot) {
+  const safeSheet = Number(sheet);
+  const safeSlot = Number(slot);
+  if (!Number.isInteger(safeSheet) || safeSheet < 0 || safeSheet > 5 || !Number.isInteger(safeSlot) || safeSlot < 0 || safeSlot > 12) return '';
+  const cropX = safeSlot * TAROT_ORIGINAL_CELL_WIDTH;
+  return `${TAROT_ORIGINAL_DELIVERY}/c_crop,g_north_west,h_${TAROT_ORIGINAL_CARD_HEIGHT},w_${TAROT_ORIGINAL_CELL_WIDTH},x_${cropX},y_0/f_auto/q_auto/${TAROT_ORIGINAL_PUBLIC_ID}/sheet-${safeSheet}.avif`;
+}
+
 function random01() {
   if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
     const value = new Uint32Array(1);
@@ -112,8 +125,13 @@ function cardArtworkDescriptor(card) {
   return {
     pair,
     pairSlot,
-    url: `assets/tarot/hd/pair-${String(pair).padStart(2, '0')}.avif`,
-    sourceX: pairSlot === 0 ? 0 : -960
+    cardIndex: globalIndex,
+    url: originalCardCropUrl(sheet, slot),
+    sourceX: 0,
+    sheetWidth: TAROT_ORIGINAL_CELL_WIDTH,
+    sheetHeight: TAROT_ORIGINAL_CARD_HEIGHT,
+    cellWidth: TAROT_ORIGINAL_CELL_WIDTH,
+    cellHeight: TAROT_ORIGINAL_CARD_HEIGHT
   };
 }
 
@@ -398,7 +416,7 @@ if (typeof document !== 'undefined') {
       };
     }
     return {
-      html: `<svg class="tarot-card-art-svg" viewBox="0 0 960 1440" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><defs><filter id="${filterId}" x="-3%" y="-3%" width="106%" height="106%" color-interpolation-filters="sRGB"><feConvolveMatrix order="3" kernelMatrix="0 -0.08 0 -0.08 1.32 -0.08 0 -0.08 0" divisor="1" bias="0" edgeMode="duplicate" preserveAlpha="true"/></filter></defs><image href="${descriptor.url}" x="${descriptor.sourceX}" y="0" width="1920" height="1440" preserveAspectRatio="none" filter="url(#${filterId})"/></svg>`,
+      html: `<svg class="tarot-card-art-svg" viewBox="0 0 898 1488" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><defs><filter id="${filterId}" x="-3%" y="-3%" width="106%" height="106%" color-interpolation-filters="sRGB"><feConvolveMatrix order="3" kernelMatrix="0 -0.08 0 -0.08 1.32 -0.08 0 -0.08 0" divisor="1" bias="0" edgeMode="duplicate" preserveAlpha="true"/></filter></defs><image href="${descriptor.url}" x="0" y="0" width="898" height="1488" preserveAspectRatio="none" filter="url(#${filterId})"/></svg>`,
       composite: false
     };
   }

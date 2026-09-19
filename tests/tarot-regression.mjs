@@ -76,10 +76,12 @@ assert.ok(script.includes('textContent'), 'counseling output must be rendered as
 assert.ok(!script.includes('OPENAI_API_KEY'), 'client code must never contain the OpenAI API key name');
 assert.ok(script.includes('window.CHUNBONG_TAROT_COMPOSITE'), 'tarot results should prefer the final composite renderer directly');
 assert.ok(script.includes('tarot-card-composite'), 'direct composite output must receive the composite styling class');
-assert.ok(script.includes('assets/tarot/hd/pair-${String(pair).padStart(2, \'0\')}.avif'), 'legacy HD pair rendering must remain as a safe fallback');
-assert.ok(script.includes('globalIndex = sheet * 13 + slot'), 'tarot renderer must map all 78 legacy slots into HD pairs');
-assert.ok(script.includes('viewBox="0 0 960 1440"'), 'tarot renderer must crop one exact 960x1440 card region from a pair');
-assert.ok(script.includes('width="1920" height="1440"'), 'SVG crop must preserve the pair asset pixel geometry');
+assert.ok(script.includes('c_crop,g_north_west'), 'fallback rendering must request an individual Cloudinary card crop');
+assert.ok(script.includes('f_auto/q_auto'), 'fallback card delivery must use automatic format and quality');
+assert.ok(script.includes('globalIndex = sheet * 13 + slot'), 'tarot renderer must map all 78 source slots into individual card crops');
+assert.ok(script.includes('viewBox="0 0 898 1488"'), 'fallback renderer must preserve one uploaded original card geometry');
+assert.ok(script.includes('width="898" height="1488"'), 'fallback SVG must preserve the original card pixel geometry');
+assert.ok(!script.includes('assets/tarot/hd/'), 'runtime must not depend on obsolete local HD pair assets');
 assert.ok(script.includes('feConvolveMatrix'), 'tarot artwork must use the mild sharpening pass');
 assert.ok(!script.includes("backgroundSize = '200% 100%'"), 'result rendering must not rely on CSS background sprite scaling');
 assert.ok(script.includes('toggleDirectSelection'), 'direct selection must support cancel and reselect');
@@ -97,4 +99,4 @@ for (const token of ['.tarot-card-art-button', '.tarot-card-art-svg', '.tarot-ca
 assert.ok(qualityCss.includes('max-width:320px'), 'normal result cards should remain within the detail-preserving display width');
 assert.ok(qualityCss.includes('width:min(72vw,600px)'), 'zoom view should provide a substantially larger inspection view');
 
-console.log('tarot expanded data, exact HD crop, reselect UI, page and styling regression test passed');
+console.log('tarot expanded data, Cloudinary fallback crop, reselect UI, page and styling regression test passed');
