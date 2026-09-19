@@ -14,12 +14,21 @@ const content = read('content.js');
 const css = read('site-quality.css');
 const offline = read('offline.html');
 const vercel = JSON.parse(read('vercel.json'));
+for (const iconPath of ['assets/app-icon-192.png','assets/app-icon-512.png','assets/apple-touch-icon.png']) {
+  const stat = fs.statSync(iconPath);
+  assert.ok(stat.size > 1000, iconPath + ' must be a real PNG asset');
+  const signature = fs.readFileSync(iconPath).subarray(0, 8).toString('hex');
+  assert.equal(signature, '89504e470d0a1a0a', iconPath + ' must have a PNG signature');
+}
 
 assert.equal(manifest.name, '춘봉 팬허브');
 assert.equal(manifest.display, 'standalone');
 assert.equal(manifest.scope, '/');
 assert.equal(manifest.start_url, '/?source=pwa', 'installed app should open the canonical root URL');
 assert.ok(Array.isArray(manifest.icons) && manifest.icons.some(icon => icon.src === '/assets/app-icon.svg'));
+assert.ok(manifest.icons.some(icon => icon.src === '/assets/app-icon-192.png' && icon.sizes === '192x192' && icon.type === 'image/png'), '192px PNG PWA icon missing');
+assert.ok(manifest.icons.some(icon => icon.src === '/assets/app-icon-512.png' && icon.sizes === '512x512' && icon.type === 'image/png' && icon.purpose === 'any'), '512px PNG PWA icon missing');
+assert.ok(manifest.icons.some(icon => icon.src === '/assets/app-icon-512.png' && icon.sizes === '512x512' && icon.type === 'image/png' && icon.purpose === 'maskable'), 'maskable PWA icon missing');
 assert.match(page, /setupPwaExperience/);
 assert.match(page, /serviceWorker\.register\('\/service-worker\.js'/);
 assert.match(page, /beforeinstallprompt/);
@@ -43,6 +52,7 @@ for (const html of htmlPaths) {
   const source = read(html);
   assert.match(source, /rel="manifest" href="\/manifest\.webmanifest"/, html + ' manifest link missing');
   assert.match(source, /rel="icon" type="image\/svg\+xml" href="\/assets\/app-icon\.svg"/, html + ' app icon missing');
+  assert.ok(source.includes('rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png"'), html + ' apple touch icon missing');
 }
 
 const swHeaders = (vercel.headers || []).find(item => item.source === '/service-worker.js');
