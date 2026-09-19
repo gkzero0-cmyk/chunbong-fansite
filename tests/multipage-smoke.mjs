@@ -57,8 +57,15 @@ assert.ok(tarot.includes('id="tarot-results"'), 'TAROT page should have a result
 
 assert.ok(fs.existsSync(new URL('page.js', root)), 'shared page behavior should exist');
 const pageScript = read('page.js');
+assert.ok(pageScript.includes('ChunbongPageCore'), 'page.js should expose the shared runtime core');
+const splitRuntime = [
+  read('page-schedule.js'),
+  read('page-notice.js'),
+  read('page-media.js'),
+  read('page-fanart.js')
+].join('\n');
 for (const token of ['renderSchedulePage', 'renderNoticePage', 'renderVideoPage', 'renderFanartPage', 'setVideoPlayer', 'showModal']) {
-  assert.ok(pageScript.includes(token), `page.js should include ${token}`);
+  assert.ok(splitRuntime.includes(token), `split page runtimes should include ${token}`);
 }
 
 const api = ['api/content.js','api/_shared.js','api/vod.js','api/notice.js','api/clips.js','api/fanart.js'].map(read).join('\n');

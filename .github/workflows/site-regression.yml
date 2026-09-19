@@ -52,6 +52,10 @@ jobs:
           node --check api/fanart.js
           node --check activity-center.js
           node --check page.js
+          node --check page-schedule.js
+          node --check page-notice.js
+          node --check page-media.js
+          node --check page-fanart.js
           node --check content.js
           node --check changelog.js
           node --check changelog-data.js

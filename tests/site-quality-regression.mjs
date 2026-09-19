@@ -5,6 +5,7 @@ const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
 
 const content=read('content.js');
 const page=read('page.js');
+const schedulePage=read('page-schedule.js');
 const activity=read('activity-center.js');
 const styles=read('styles.css');
 const gameLayout=read('game-layout.css');
@@ -21,7 +22,7 @@ const htmlPages = [
 assert.match(content,/ChunbongCache/);
 assert.match(content,/nav-group/);
 assert.match(content,/minigames:\s*\[/);
-assert.match(page,/notionScheduleUpdatedAt/);
+assert.match(schedulePage,/notionScheduleUpdatedAt/);
 assert.match(page,/ChunbongCache/);
 assert.match(activity,/document\.hidden/);
 assert.match(activity,/ChunbongCache/);
