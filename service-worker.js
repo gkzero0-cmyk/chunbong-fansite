@@ -1,5 +1,5 @@
 /* CHUNBONG_PWA v1 */
-const CACHE_NAME = 'chunbong-pwa-20260919-v2';
+const CACHE_NAME = 'chunbong-pwa-20260919-v3';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -69,12 +69,12 @@ self.addEventListener('fetch', event => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/api/')) return;
 
-  if (request.mode === 'navigate' || ['document','script','style','worker'].includes(request.destination)) {
+  if (request.mode === 'navigate' || request.destination === 'document') {
     event.respondWith(networkFirst(request, event));
     return;
   }
 
-  if (['image','font'].includes(request.destination)) {
+  if (['script','style','worker','image','font'].includes(request.destination)) {
     event.respondWith(staleWhileRevalidate(request));
   }
 });
