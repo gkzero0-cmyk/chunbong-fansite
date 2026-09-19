@@ -1,0 +1,74 @@
+name: Production prebuilt recovery
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/production-prebuilt-recovery.yml'
+      - 'api/version.js'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-prebuilt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VERCEL_SCOPE: gkzero0-9465
+      VERCEL_PROJECT: chunbong-fansite
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      PROD_URL: https://chunbong-fansite.vercel.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Require Vercel token
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${VERCEL_TOKEN:-}" ]]; then
+            echo 'VERCEL_TOKEN repository secret is not configured.' >&2
+            exit 2
+          fi
+
+      - name: Link Vercel project
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes vercel@latest link --yes --project "$VERCEL_PROJECT" --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
+          npx --yes vercel@latest pull --yes --environment=production --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
+
+      - name: Build production output locally
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes vercel@latest build --prod --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
+
+      - name: Deploy prebuilt output to production
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes vercel@latest deploy --prebuilt --prod --yes --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN" --env "DEPLOY_COMMIT_SHA=$GITHUB_SHA"
+
+      - name: Verify production commit and new home
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 24); do
+            stamp=$(date +%s)
+            version="$(curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/api/version?_ts=$stamp" || true)"
+            home="$(curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/index.html?_ts=$stamp" || true)"
+            actual="$(printf '%s' "$version" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(JSON.parse(s).sha||'')}catch{}})")"
+            if [[ "$actual" == "$GITHUB_SHA" ]] && grep -Fq 'TODAY · CHUNBONG' <<<"$home"; then
+              echo "Production synced to $GITHUB_SHA"
+              exit 0
+            fi
+            echo "attempt=$attempt expected=$GITHUB_SHA actual=${actual:-missing}"
+            sleep 5
+          done
+          echo 'Production prebuilt deploy verification failed.' >&2
+          exit 1
