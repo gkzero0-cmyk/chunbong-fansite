@@ -23,6 +23,7 @@ permissions:
 
 jobs:
   score-race-preview:
+    if: ${{ !startsWith(github.head_ref, 'ci-') && !startsWith(github.head_ref, 'internal-') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

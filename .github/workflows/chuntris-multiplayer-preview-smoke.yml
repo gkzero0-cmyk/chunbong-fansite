@@ -21,6 +21,7 @@ permissions:
 
 jobs:
   multiplayer-preview:
+    if: ${{ !startsWith(github.head_ref, 'ci-') && !startsWith(github.head_ref, 'internal-') }}
     runs-on: ubuntu-latest
     timeout-minutes: 18
     steps:
