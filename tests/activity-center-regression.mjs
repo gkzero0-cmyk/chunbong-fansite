@@ -50,6 +50,8 @@ const activityCss=fs.readFileSync(new URL('../activity-center.css',import.meta.u
 const pageJs=fs.readFileSync(new URL('../page.js',import.meta.url),'utf8');
 const apiContent=fs.readFileSync(new URL('../api/content.js',import.meta.url),'utf8');
 const activityLib=fs.readFileSync(new URL('../lib/activity.js',import.meta.url),'utf8');
+const activityBrowserWorkflow=fs.readFileSync(new URL('../.github/workflows/activity-center-browser-smoke.yml',import.meta.url),'utf8');
+const activityProductionWorkflow=fs.readFileSync(new URL('../.github/workflows/activity-center-production-smoke.yml',import.meta.url),'utf8');
 
 assert.match(shell,/header-live\[href\*="sooplive\.com"\]/,'SOOP header shortcut must be removed at bootstrap');
 assert.match(shell,/activity-center\.css/);
@@ -78,6 +80,11 @@ assert.match(activityCss,/\.activity-panel\{position:fixed;top:76px;left:8px;rig
 assert.match(apiContent,/type==='activity'/,'content API must expose activity feed');
 assert.match(pageJs,/requestedOpenId/,'content pages must understand activity deep links');
 assert.match(pageJs,/requestedKind/,'video pages must understand activity kind deep links');
+assert.match(activityBrowserWorkflow,/changelog-data\.js/,'activity browser smoke must rerun when curated changelog data changes');
+assert.doesNotMatch(activityBrowserWorkflow,/latest changelog date must render first'\);\s*assert\.equal[\s\S]*2026-09-19/,'activity browser smoke must not hardcode an obsolete latest changelog date');
+assert.doesNotMatch(activityProductionWorkflow,/production changelog latest date is not first[\s\S]*2026-09-19/,'production smoke must not hardcode an obsolete latest changelog date');
+assert.match(activityProductionWorkflow,/sort\(\(a,b\)=>b\.localeCompare\(a\)\)/,'production smoke must verify changelog date ordering dynamically');
+assert.match(activityProductionWorkflow,/팬사이트 사용성 개선: 홈·타로·데이터 간소화/,'production smoke must verify the current user-facing changelog entry');
 
 const htmlFiles=fs.readdirSync(new URL('..',import.meta.url)).filter(name=>name.endsWith('.html'));
 for(const name of htmlFiles){
