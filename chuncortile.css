@@ -53,7 +53,7 @@
   .ct-stat span{font-size:9px}
   .ct-stat strong{font-size:20px}
   .ct-layout{
-    grid-template-columns:210px minmax(0,min(1000px,calc((100svh - 135px) * 1.3888889))) 122px;
+    grid-template-columns:210px minmax(0,min(1000px,calc(138.8889svh - 187.5px))) 122px;
     gap:14px
   }
   .ct-side{gap:11px}
