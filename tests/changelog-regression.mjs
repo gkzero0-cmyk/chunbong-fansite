@@ -60,7 +60,6 @@ assert.ok(groups.some(group=>group.date==='2026-09-18'&&group.items.some(item=>i
 assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='오늘의 운세 메이저 아르카나 22장 추가')),'daily fortune backfill missing');
 assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='PWA 앱 아이콘 호환성 보강')),'PWA icon backfill missing');
 assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='타로 효과음 구조 안정화')),'Tarot SFX backfill missing');
-assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='업데이트 일지 전체 기록 보완·한글 자동 요약')),'complete changelog audit entry missing');
 const expectedMilestones=[
   ['2026-08-30','춘봉 팬사이트 프로젝트 시작'],
   ['2026-08-31','78장 타로 리딩 기능 추가'],
@@ -119,3 +118,5 @@ assert.match(styles,/\.nav-minigames:focus-within \.nav-minigames-submenu/,'mini
 assert.match(styles,/@media\(max-width:760px\)[\s\S]*?\.nav-minigames-submenu\{display:none!important\}/,'mobile hamburger menu must keep the hover submenu hidden');
 
 console.log('changelog regression passed');
+
+assert.ok(!groups.some(group=>group.items.some(item=>item.title==='업데이트 일지 전체 기록 보완·한글 자동 요약')),'internal changelog maintenance entry must stay hidden');
