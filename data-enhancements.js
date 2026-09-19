@@ -333,6 +333,29 @@
     });
   }
 
+  function initDataViewMode() {
+    const buttons=[...document.querySelectorAll('[data-data-view-button]')];
+    if(!buttons.length) return;
+    const key='chunbong-data-view-v1';
+    let view='summary';
+    try{
+      const saved=localStorage.getItem(key);
+      if(saved==='detail'||saved==='summary') view=saved;
+    }catch(_){}
+    const apply=next=>{
+      view=next==='detail'?'detail':'summary';
+      document.body.dataset.dataView=view;
+      buttons.forEach(button=>{
+        const active=button.dataset.dataViewButton===view;
+        button.classList.toggle('is-active',active);
+        button.setAttribute('aria-pressed',String(active));
+      });
+      try{localStorage.setItem(key,view);}catch(_){}
+    };
+    buttons.forEach(button=>button.addEventListener('click',()=>apply(button.dataset.dataViewButton)));
+    apply(view);
+  }
+
   function refreshPresentation() {
     renderYoutubeEngagement();
     hideUnavailableSoopCards();
@@ -340,6 +363,7 @@
   }
 
   installDataFetchTransform();
+  initDataViewMode();
   const observer = new MutationObserver(refreshPresentation);
   observer.observe(document.documentElement, { childList: true, subtree: true });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refreshPresentation, { once: true });
