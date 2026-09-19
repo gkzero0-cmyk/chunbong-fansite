@@ -4,21 +4,24 @@ import vm from 'node:vm';
 
 const html = fs.readFileSync(new URL('../data.html', import.meta.url), 'utf8');
 const js = fs.readFileSync(new URL('../data.js', import.meta.url), 'utf8');
-const periods = fs.readFileSync(new URL('../data-soop-periods.js', import.meta.url), 'utf8');
+const periods = fs.readFileSync(new URL('../data-soop-periods-v3.js', import.meta.url), 'utf8');
 const enhancements = fs.readFileSync(new URL('../data-enhancements.js', import.meta.url), 'utf8');
 const productionSmoke = fs.readFileSync(new URL('../.github/workflows/soop-dashboard-production-smoke.yml', import.meta.url), 'utf8');
 
 assert.ok(html.includes('id="data-daily-periods"'), 'daily view must expose rolling-week controls');
 assert.ok(html.includes('id="data-month-periods"'), 'monthly view must expose data-driven month controls');
 for (const marker of ['buildRollingWeekOptions','filterDailyByWeek','availableMonthKeys','formatRollingWeekLabel','formatMonthLabel','dailyWeekOffset','selectedMonth']) assert.ok(js.includes(marker), `data loader should include ${marker}`);
-for (const marker of ['data-soop-week-index','data-soop-month-value','최근 3개월 분석','streamCount','sharePercent','XMLHttpRequest','팬클럽 수','팬클럽 증감','누적 방송시간']) assert.ok(periods.includes(marker), `SOOP period controller should include ${marker}`);
-assert.ok(!periods.includes("kpi('이번 달 후원자'"), 'removed monthly supporter KPI must not be rendered');
-assert.ok(periods.includes("label==='이번 달 후원자'"), 'controller must remove stale cached monthly supporter cards');
-assert.ok(!periods.includes('slice(-10)'), 'period controller must operate on full daily API history');
-assert.ok(periods.includes("key:'fanclubCount'"), 'daily/monthly charts must render absolute fanclub counts');
-assert.ok(periods.includes("key:'cumulativeMinutes'"), 'monthly chart must render cumulative broadcast time');
-assert.ok(periods.includes("row.fanclubCount"), 'detail rows must render absolute fanclub counts');
-assert.ok(periods.includes("row.fanclubDelta"), 'detail rows must keep fanclub deltas separately');
+for (const marker of [
+  'mergeDailyHistory','mergeMonthlyHistory','data-period-select','data-daily-month-select',
+  'data-daily-week-select','data-month-year-select','data-month-month-select',
+  'followerCombinedChart','fanclubCombinedChart','countDeltaText',
+  'fanclubCount','followerCount','fanclubDelta','followerDelta','cumulativeMinutes','MutationObserver'
+]) assert.ok(periods.includes(marker), `active SOOP v3 period controller should include ${marker}`);
+assert.ok(!periods.includes('slice(-10)'), 'active period controller must operate on full daily API history');
+assert.ok(!periods.includes('retry.click()'), 'active period controller must not use retry recursion to restore its UI');
+assert.ok(js.includes("load('data-soop-periods-v3.js')"), 'data loader must load only the active v3 period controller');
+assert.ok(!js.includes("load('data-soop-periods-v2.js')"), 'legacy v2 period controller must remain inactive');
+assert.ok(!js.includes("load('data-soop-periods-v2-persistence.js')"), 'legacy v2 persistence workaround must remain inactive');
 
 const limitDailyStart = enhancements.indexOf('function limitDailyRows');
 const limitDailyEnd = enhancements.indexOf('\n  function normalizeDailyTrendRows', limitDailyStart);
