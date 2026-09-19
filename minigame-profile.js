@@ -71,6 +71,15 @@
     setText('[data-record="chuncortile"]',formatScore(data.chuncortile));
     setText('[data-record-meta="chuncortile"]',data.chuncortile?'120초 로컬 최고 점수':'춘컬타일 첫 기록을 만들어보세요.');
 
+    const personal=window.ChunbongPersonal?.gameSnapshot?.()||{totalPlays:0,achievements:[],lastPlayed:null};
+    setText('[data-profile-total-plays]',Number(personal.totalPlays||0).toLocaleString('ko-KR')+'회');
+    const earned=(personal.achievements||[]).filter(row=>row.earned);
+    setText('[data-profile-achievements]',earned.length+'개');
+    const recentKey=personal.lastPlayed?.game||'';
+    const gameNames={chuntris:'춘트리스',chunbak:'춘박게임',chungwagame:'춘과게임',chuncortile:'춘컬타일'};
+    setText('[data-profile-recent]',gameNames[recentKey]||'기록 없음');
+    const achievementRoot=root.querySelector('[data-profile-achievement-list]');
+    if(achievementRoot)achievementRoot.innerHTML=(personal.achievements||[]).map(row=>'<span class="'+(row.earned?'is-earned':'')+'" title="'+row.desc+'">'+(row.earned?'✓ ':'○ ')+row.title+'</span>').join('');
     root.classList.toggle('is-complete',data.completed===4);
     const badge=root.querySelector('[data-profile-badge]');
     if(badge)badge.textContent=data.completed===4?'4종 기록 완료':'이 기기에 저장된 기록';
@@ -79,6 +88,7 @@
   render();
   window.addEventListener('storage',render);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)render();});
+  document.addEventListener('chunbong:personal-updated',render);
   window.addEventListener('pageshow',render);
   window.ChunbongMinigameProfile={readProfile,render};
 })();
