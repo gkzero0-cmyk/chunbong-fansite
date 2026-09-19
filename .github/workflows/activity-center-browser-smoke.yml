@@ -47,6 +47,11 @@ jobs:
 
           const browser=await chromium.launch({headless:true});
           const context=await browser.newContext({viewport:{width:1440,height:900}});
+          await context.addInitScript(()=>{
+            const formatter=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'});
+            const parts=Object.fromEntries(formatter.formatToParts(new Date()).filter(part=>part.type!=='literal').map(part=>[part.type,part.value]));
+            sessionStorage.setItem('chunbongDailyTarotAutoOpenV1',`${parts.year}-${parts.month}-${parts.day}`);
+          });
           let activityItems=[
             {id:'notice:9001',type:'notice',group:'notice',label:'공지',title:'휴방 공지 (세팅 이슈)',publishedAt:'2026-09-18T09:19:00.000Z',timestamp:1789723140000,precision:'datetime',originalDate:'2026-09-18',href:'notice.html?open=9001',sourceHref:'https://example.com/notice',thumb:'',meta:''},
             {id:'youtube:lmnopqrstuv',type:'shorts',group:'media',label:'Shorts',title:'오늘의 쇼츠',publishedAt:'2026-09-18T08:05:00.000Z',timestamp:1789718700000,precision:'datetime',originalDate:'2026-09-18',href:'youtube.html?kind=shorts&open=lmnopqrstuv',sourceHref:'https://youtube.com/shorts/lmnopqrstuv',thumb:'',meta:''},
