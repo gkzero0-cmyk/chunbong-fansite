@@ -16,6 +16,7 @@ const tarot=read('tarot.js');
 const minigames=read('minigames.html');
 const minProfile=read('minigame-profile.js');
 const sw=read('service-worker.js');
+const api=read('api/content.js');
 
 for(const [name,source] of [['personal-hub.js',hub],['timeline.js',timelineJs]]){
   assert.doesNotThrow(()=>new Function(source),name+' must remain valid JavaScript');
@@ -38,6 +39,8 @@ assert.match(hub,/Notification\.requestPermission/,'broadcast reminder must ask 
 assert.match(hub,/\/api\/content\?type=schedule/,'broadcast reminder must use the live schedule');
 assert.match(hub,/\/api\/content\?type=live/,'broadcast reminder must also monitor actual SOOP live state');
 assert.match(hub,/춘봉 방송이 시작됐어요/,'actual live-start notification copy missing');
+assert.match(api,/type==='live'/,'content API must expose lightweight live state');
+assert.match(api,/fetchSoopStructuredLive/,'live endpoint must reuse the structured SOOP live-state fetcher');
 assert.match(hub,/now>=at-5\*60000&&now<=at\+15\*60000/,'schedule reminder window missing');
 assert.doesNotMatch(hub,/fetch\([^)]*(favorite|tarot|personal|profile)/i,'personal records must not be uploaded to a server');
 
