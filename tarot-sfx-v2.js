@@ -140,114 +140,15 @@ function createEnhancedTarotSoundController(storage = globalThis.localStorage, A
         if (name === 'shuffle') cardShuffle();
         if (name === 'select') cardSlap();
         if (name === 'reveal') cardSpread();
+        if (name === 'complete') {
+          tone(659, 0.18, 0.10, 0, 'sine');
+          tone(880, 0.24, 0.07, 0.055, 'triangle');
+        }
       } catch (_) {}
     }
   };
 }
 
-function hasRenderedTarotCards(results) {
-  return Boolean(results?.querySelector?.('.tarot-card-result'));
-}
-
-function installEnhancedTarotSfx(root = globalThis) {
-  const documentRef = root.document;
-  if (!documentRef) return null;
-
-  const storage = root.localStorage;
-  const controller = createEnhancedTarotSoundController(storage, root.AudioContext || root.webkitAudioContext);
-  const preserved = root.__CHUNBONG_TAROT_SFX_PREF__;
-  if (preserved && typeof preserved.enabled === 'boolean') controller.setEnabled(preserved.enabled);
-
-  const byId = id => documentRef.getElementById(id);
-  const setup = byId('tarot-setup');
-  const deck = byId('tarot-deck');
-  const results = byId('tarot-results');
-  const soundButton = byId('tarot-sound-toggle');
-  const volumeRange = byId('tarot-volume-range');
-  const volumeButton = byId('tarot-volume-toggle');
-  const volumeOutput = byId('tarot-volume-value');
-  let revealTimer = null;
-
-  const updateSoundUi = () => {
-    if (!soundButton) return;
-    const enabled = controller.enabled();
-    soundButton.setAttribute('aria-pressed', String(enabled));
-    soundButton.textContent = enabled ? '효과음 ON' : '효과음 OFF';
-  };
-
-  const updateVolumeUi = () => {
-    const percent = Math.round(controller.volume() * 100);
-    if (volumeRange) {
-      volumeRange.value = String(percent);
-      volumeRange.setAttribute('aria-valuetext', `${percent}%`);
-    }
-    if (volumeOutput) volumeOutput.textContent = `${percent}%`;
-    if (volumeButton) volumeButton.textContent = `${percent === 0 ? '🔇' : '🔊'} 음량 ${percent}%`;
-  };
-
-  const triggerRevealFx = () => {
-    if (!results || results.hidden || !hasRenderedTarotCards(results)) return;
-    results.classList.remove('is-revealing');
-    void results.offsetWidth;
-    results.classList.add('is-revealing');
-    controller.unlock();
-    controller.play('reveal');
-    if (revealTimer) root.clearTimeout(revealTimer);
-    revealTimer = root.setTimeout(() => results.classList.remove('is-revealing'), 2200);
-  };
-
-  soundButton?.addEventListener('click', event => {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    controller.unlock();
-    controller.setEnabled(!controller.enabled());
-    updateSoundUi();
-  }, true);
-
-  volumeRange?.addEventListener('input', event => {
-    event.stopImmediatePropagation();
-    controller.unlock();
-    controller.setVolume(Number(event.target.value) / 100);
-    updateVolumeUi();
-  }, true);
-
-  setup?.addEventListener('submit', () => {
-    const mode = setup.querySelector('input[name="selection-mode"]:checked')?.value;
-    if (mode === 'cards') {
-      controller.unlock();
-      controller.play('shuffle');
-    }
-  }, true);
-
-  deck?.addEventListener('click', event => {
-    const card = event.target.closest?.('[data-card-index]');
-    if (!card || card.disabled) return;
-    controller.unlock();
-    controller.play('select');
-  }, true);
-
-  if (results && typeof root.MutationObserver === 'function') {
-    const observer = new root.MutationObserver(mutations => {
-      for (const mutation of mutations) {
-        if (mutation.type !== 'attributes' || mutation.attributeName !== 'hidden') continue;
-        if (results.hidden) {
-          results.classList.remove('is-revealing');
-        } else {
-          triggerRevealFx();
-        }
-      }
-    });
-    observer.observe(results, { attributes: true, attributeFilter: ['hidden'] });
-  }
-
-  updateSoundUi();
-  updateVolumeUi();
-  return controller;
-}
-
-const TAROT_SFX_V2 = { createEnhancedTarotSoundController, installEnhancedTarotSfx, hasRenderedTarotCards };
-if (typeof window !== 'undefined') {
-  window.CHUNBONG_TAROT_SFX_V2 = TAROT_SFX_V2;
-  installEnhancedTarotSfx(window);
-}
+const TAROT_SFX_V2 = { createEnhancedTarotSoundController };
+if (typeof window !== 'undefined') window.CHUNBONG_TAROT_SFX_V2 = TAROT_SFX_V2;
 if (typeof module !== 'undefined' && module.exports) module.exports = TAROT_SFX_V2;
