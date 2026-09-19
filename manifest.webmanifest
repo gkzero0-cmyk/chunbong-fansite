@@ -4,10 +4,13 @@
   "short_name": "춘봉",
   "description": "춘봉의 방송 일정, 공지, 영상, 타로와 미니게임을 한곳에서 보는 비공식 팬사이트",
   "lang": "ko-KR",
-  "start_url": "/index.html?source=pwa",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "any",
   "background_color": "#080808",
   "theme_color": "#ff6b18",
@@ -24,19 +27,37 @@
       "name": "미니게임",
       "short_name": "게임",
       "url": "/minigames.html",
-      "icons": [{"src": "/assets/app-icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+      "icons": [
+        {
+          "src": "/assets/app-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
     },
     {
       "name": "타로 보기",
       "short_name": "타로",
       "url": "/tarot.html",
-      "icons": [{"src": "/assets/app-icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+      "icons": [
+        {
+          "src": "/assets/app-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
     },
     {
       "name": "방송 일정",
       "short_name": "일정",
       "url": "/schedule.html",
-      "icons": [{"src": "/assets/app-icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+      "icons": [
+        {
+          "src": "/assets/app-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
     }
   ]
 }
