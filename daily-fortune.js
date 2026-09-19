@@ -233,6 +233,11 @@
 
     closeButton.addEventListener('click', closeDialog);
     launcher.addEventListener('click', openDialog);
+    document.querySelector('[data-home-overview-fortune]')?.addEventListener('click', event => {
+      event.preventDefault();
+      openDialog();
+    });
+    document.addEventListener('chunbong:daily-fortune-open', openDialog);
     dialog.addEventListener('cancel', event => {
       event.preventDefault();
       closeDialog();
