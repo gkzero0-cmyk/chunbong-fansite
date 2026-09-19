@@ -1,38 +1,73 @@
 (() => {
   'use strict';
-  const memory=new Map();
-  const read=key=>memory.get(key)||null;
-  const write=(key,value)=>{
-    const row={at:Date.now(),value};
-    memory.set(key,row);
-    return value;
-  };
-  window.ChunbongCache={
-    get(key,ttl=180000){
-      const row=read(key);
-      return row&&Date.now()-Number(row.at||0)<ttl?row.value:null;
-    },
-    set:write,
-    clear(key){ memory.delete(key); },
-    async fetchJson(key,url,{ttl=180000,force=false,headers={accept:'application/json'}}={}){
-      if(!force){
-        const cached=this.get(key,ttl);
-        if(cached) return cached;
-      }
-      const response=await fetch(url,{headers});
-      if(!response.ok) throw new Error('HTTP '+response.status);
-      return write(key,await response.json());
+  const memory = new Map();
+  const CACHE_PREFIX = 'chunbong-cache-v2:';
+
+  const read = key => {
+    const cached = memory.get(key);
+    if (cached) return cached;
+    try {
+      const stored = sessionStorage.getItem(CACHE_PREFIX + key);
+      if (!stored) return null;
+      const row = JSON.parse(stored);
+      if (!row || typeof row.at !== 'number' || !('value' in row)) return null;
+      memory.set(key, row);
+      return row;
+    } catch (_) {
+      return null;
     }
   };
 
-  if(!document.querySelector('link[data-site-quality]')){
-    const link=document.createElement('link');
-    link.rel='stylesheet';link.href='site-quality.css';link.dataset.siteQuality='true';
+  const write = (key, value) => {
+    const row = { at: Date.now(), value };
+    memory.set(key, row);
+    try {
+      sessionStorage.setItem(CACHE_PREFIX + key, JSON.stringify(row));
+    } catch (_) {}
+    return value;
+  };
+
+  const clear = key => {
+    memory.delete(key);
+    try { sessionStorage.removeItem(CACHE_PREFIX + key); } catch (_) {}
+  };
+
+  window.ChunbongCache = {
+    get(key, ttl = 180000) {
+      const row = read(key);
+      if (!row) return null;
+      if (Date.now() - Number(row.at || 0) >= ttl) {
+        clear(key);
+        return null;
+      }
+      return row.value;
+    },
+    set: write,
+    clear,
+    async fetchJson(key, url, { ttl = 180000, force = false, headers = { accept: 'application/json' } } = {}) {
+      if (!force) {
+        const cached = this.get(key, ttl);
+        if (cached) return cached;
+      }
+      const response = await fetch(url, { headers });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return write(key, await response.json());
+    }
+  };
+
+  if (!document.querySelector('link[data-site-quality]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'site-quality.css';
+    link.dataset.siteQuality = 'true';
     document.head.appendChild(link);
   }
-  for(const src of ['site-meta.js','site-health.js']){
-    if(document.querySelector('script[src="'+src+'"]')) continue;
-    const script=document.createElement('script');script.src=src;script.defer=true;document.head.appendChild(script);
+  for (const src of ['site-meta.js', 'site-health.js']) {
+    if (document.querySelector('script[src="' + src + '"]')) continue;
+    const script = document.createElement('script');
+    script.src = src;
+    script.defer = true;
+    document.head.appendChild(script);
   }
 })();
 
