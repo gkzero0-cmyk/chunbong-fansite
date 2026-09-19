@@ -322,7 +322,7 @@
   /* Minigames portal only */
   body[data-page="minigames"] .minigames-hero{padding-top:20px!important}
   body[data-page="minigames"] .minigames-hero-layout{grid-template-columns:1fr!important}
-  body[data-page="minigames"] .minigames-hero-art{order:-1!important}
+  body[data-page="minigames"] .minigames-hero-art{order:initial!important}
   body[data-page="minigames"] .minigames-hero-art img{aspect-ratio:16/9!important}
   body[data-page="minigames"] .minigame-grid{grid-template-columns:1fr!important;gap:8px!important}
   body[data-page="minigames"] .minigame-card{
