@@ -5,6 +5,8 @@ const html=fs.readFileSync(new URL('../minigames.html',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../minigames.css',import.meta.url),'utf8');
 const assetPath=new URL('../assets/minigames-hero-hq.webp',import.meta.url);
 const assetStat=fs.statSync(assetPath);
+assert.equal(fs.existsSync(new URL('../assets/minigames-hero.webp',import.meta.url)),false,'obsolete low-resolution minigames hero must stay removed');
+assert.equal(fs.existsSync(new URL('../assets/minigames/minigames-hero.webp',import.meta.url)),false,'duplicate nested minigames hero must stay removed');
 
 assert.match(html,/class="page-shell minigames-hero-layout reveal"/,'minigames hero must use a two-column layout shell');
 assert.match(html,/class="minigames-hero-copy"/);
