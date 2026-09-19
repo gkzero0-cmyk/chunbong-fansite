@@ -96,7 +96,9 @@ for (const marker of [
 ]) {
   assert.ok(productionSmoke.includes(marker), `production smoke should verify ${marker}`);
 }
-assert.ok(productionSmoke.includes('git pull --rebase origin main'), 'production smoke result commit must rebase before push to survive concurrent snapshot updates');
+assert.ok(!/git\s+(?:commit|push|pull)/.test(productionSmoke), 'production smoke must never mutate main');
+assert.ok(productionSmoke.includes('actions/upload-artifact@v4'), 'production smoke result should be kept as an Actions artifact');
+assert.ok(productionSmoke.includes('.smoke/production-smoke-latest.json'), 'production smoke result should stay in the job workspace');
 
 assert.ok(dataJs.includes('createSvgChart'), 'existing shared SOOP/YouTube interactive chart renderer must remain in use');
 
