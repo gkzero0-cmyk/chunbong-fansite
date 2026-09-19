@@ -18,7 +18,8 @@ const commits=[
   makeCommit('ccccccc333','ci: record production smoke','2026-09-18T09:00:00Z','github-actions[bot]'),
   makeCommit('ddddddd444','test: update regression','2026-09-18T08:00:00Z'),
   makeCommit('eeeeeee555','Initial commit','2026-08-30T18:48:19Z'),
-  makeCommit('ffffffff666','9월 20일 타로 디자인 업데이트 일지 정리 (#168)','2026-09-19T21:17:34Z')
+  makeCommit('ffffffff666','9월 20일 타로 디자인 업데이트 일지 정리 (#168)','2026-09-19T21:17:34Z'),
+  makeCommit('ggggggg777','업데이트 일지 자동 요약 중복 방지 (#169)','2026-09-19T21:24:00Z')
 ];
 
 assert.equal(_internals.SITE_STARTED_AT,'2026-08-30');
@@ -37,6 +38,8 @@ assert.equal(_internals.TECHNICAL_PREFIXES.has('cleanup'),true,'cleanup commits 
 assert.equal(_internals.isMeaningfulCommit(commits[4]),true,'initial site commit must be retained');
 assert.equal(_internals.isInternalCommit(commits[5].commit.message),true,'changelog curation commits must be recognized as internal');
 assert.equal(_internals.isMeaningfulCommit(commits[5]),false,'changelog curation commits must not trigger update history or unread state');
+assert.equal(_internals.isInternalCommit(commits[6].commit.message),true,'changelog automatic-summary maintenance must be recognized as internal');
+assert.equal(_internals.isMeaningfulCommit(commits[6]),false,'changelog maintenance fixes must not create a new unread update');
 
 const groups=_internals.groupCommits(commits);
 assert.deepEqual(groups.map(group=>group.date),['2026-09-19','2026-09-18','2026-08-30']);

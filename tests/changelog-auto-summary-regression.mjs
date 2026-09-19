@@ -17,7 +17,8 @@ const groups=[
       {sha:'new-pwa-1',time:'2026-09-20T00:20:00Z',rawTitle:'perf: improve PWA offline cache',title:'improve PWA offline cache',type:'improved'},
       {sha:'internal-cleanup-1',time:'2026-09-20T00:15:00Z',rawTitle:'perf: 미사용 데이터 런타임·중복 히어로 자산 정리',title:'미사용 데이터 런타임·중복 히어로 자산 정리',description:'구버전 파일 제거 · 회귀 테스트 정리',type:'improved'},
       {sha:'tech-1',time:'2026-09-20T00:10:00Z',rawTitle:'test: tarot regression only',title:'tarot regression only',type:'improved'},
-      {sha:'curation-1',time:'2026-09-20T00:05:00Z',rawTitle:'9월 20일 타로 디자인 업데이트 일지 정리 (#168)',title:'9월 20일 타로 디자인 업데이트 일지 정리',type:'improved'}
+      {sha:'curation-1',time:'2026-09-20T00:05:00Z',rawTitle:'9월 20일 타로 디자인 업데이트 일지 정리 (#168)',title:'9월 20일 타로 디자인 업데이트 일지 정리',type:'improved'},
+      {sha:'curation-2',time:'2026-09-20T00:04:00Z',rawTitle:'업데이트 일지 자동 요약 중복 방지 (#169)',title:'업데이트 일지 자동 요약 중복 방지',type:'improved'}
     ]
   },
   {
@@ -32,6 +33,7 @@ const groups=[
 assert.equal(auto.isInternalMaintenance(groups[0].items[3]),true,'internal maintenance perf commits must stay hidden');
 assert.equal(auto.isTechnical(groups[0].items[4]),true,'test-only updates must stay hidden');
 assert.equal(auto.isInternalMaintenance(groups[0].items[5]),true,'changelog curation commits must stay hidden from automatic summaries');
+assert.equal(auto.isInternalMaintenance(groups[0].items[6]),true,'changelog automatic-summary maintenance must stay hidden');
 assert.equal(auto.areaFor(groups[0].items[0]).id,'tarot');
 assert.equal(auto.areaFor(groups[0].items[2]).id,'pwa');
 
@@ -47,6 +49,7 @@ assert.ok(summarized[0].items.every(item=>item.auto===true));
 assert.ok(!JSON.stringify(summarized).includes('regression only'),'technical commit leaked into automatic summaries');
 assert.ok(!JSON.stringify(summarized).includes('미사용 데이터 런타임'),'internal maintenance cleanup leaked into automatic summaries');
 assert.ok(!JSON.stringify(summarized).includes('업데이트 일지 정리'),'changelog curation commit leaked back into automatic summaries');
+assert.ok(!JSON.stringify(summarized).includes('중복 방지'),'changelog maintenance fix leaked back into automatic summaries');
 
 const unknown=auto.summarizeGroup({date:'2026-09-20',items:[
   {sha:'unknown',time:'2026-09-20T02:00:00Z',rawTitle:'refactor: reorganize navigation internals',title:'reorganize navigation internals',type:'improved'}
