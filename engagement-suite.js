@@ -244,7 +244,20 @@
     if(!scheduleItems.length)await loadSchedule();
     if(!alertTimer)alertTimer=setInterval(checkBroadcastAlert,60*1000);
     renderDashboard();
+    renderHubDrawer();
     checkBroadcastAlert();
+  }
+  function disableAlerts(){
+    const prefs=getAlertPrefs();
+    prefs.enabled=false;
+    setAlertPrefs(prefs);
+    if(alertTimer){clearInterval(alertTimer);alertTimer=0;}
+    renderDashboard();
+    renderHubDrawer();
+  }
+  async function toggleAlerts(){
+    if(getAlertPrefs().enabled)disableAlerts();
+    else await enableAlerts();
   }
   function checkBroadcastAlert(){
     const prefs=getAlertPrefs();
@@ -321,7 +334,9 @@
     const favHtml=favs.length?favs.map(item=>'<a class="personal-hub-row" href="'+esc(mediaHref(item))+'"><span>★</span><div><strong>'+esc(item.title)+'</strong><small>'+esc(item.date||item.kind||item.page)+'</small></div></a>').join(''):'<div class="personal-empty">즐겨찾기에 저장한 콘텐츠가 없습니다.</div>';
     const recentHtml=recents.length?recents.map(item=>'<a class="personal-hub-row" href="'+esc(mediaHref(item))+'"><span>▶</span><div><strong>'+esc(item.title)+'</strong><small>'+esc(item.date||'최근 본 콘텐츠')+'</small></div></a>').join(''):'<div class="personal-empty">최근 본 콘텐츠가 없습니다.</div>';
     const tarotHtml=tarot.length?tarot.map(item=>'<a class="personal-hub-row" href="tarot.html"><span>✦</span><div><strong>'+esc(item.question)+'</strong><small>'+esc(item.cards.map(card=>card.name).join(' · '))+'</small></div></a>').join(''):'<div class="personal-empty">저장된 타로 기록이 없습니다.</div>';
-    root.innerHTML='<section><h3>즐겨찾기 · 나중에 보기</h3>'+favHtml+'</section><section><h3>이어보기</h3>'+recentHtml+'</section><section><h3>최근 타로</h3>'+tarotHtml+'</section><a class="personal-hub-timeline" href="timeline.html">춘봉 타임라인 보기 →</a>';
+    const alertPrefs=getAlertPrefs();
+    root.innerHTML='<section><h3>즐겨찾기 · 나중에 보기</h3>'+favHtml+'</section><section><h3>이어보기</h3>'+recentHtml+'</section><section><h3>최근 타로</h3>'+tarotHtml+'</section><section><h3>방송 일정 알림</h3><button type="button" class="personal-hub-alert-toggle '+(alertPrefs.enabled?'is-active':'')+'" data-hub-alert-toggle>'+(alertPrefs.enabled?'🔔 알림 ON · 끄기':'🔕 알림 켜기')+'</button><p class="personal-hub-alert-note">팬사이트 또는 설치 앱이 열려 있을 때 예정 방송을 확인해 알려줍니다.</p></section><a class="personal-hub-timeline" href="timeline.html">춘봉 타임라인 보기 →</a>';
+    root.querySelector('[data-hub-alert-toggle]')?.addEventListener('click',()=>{void toggleAlerts()});
   }
 
   async function renderDashboard(){
@@ -334,7 +349,8 @@
       section.className='personal-dashboard-section';
       section.dataset.personalDashboard='';
       const hero=main.querySelector('.home-hero,.hero,.page-hero');
-      if(hero?.nextSibling)main.insertBefore(section,hero.nextSibling);
+      if(standalone&&hero)main.insertBefore(section,hero);
+      else if(hero?.nextSibling)main.insertBefore(section,hero.nextSibling);
       else main.prepend(section);
     }
     const next=upcomingSchedule();
@@ -352,7 +368,7 @@
       '<button type="button" class="personal-dashboard-card is-button" data-open-personal-hub><small>MY HUB</small><strong>보관함 '+store.favorites.length+'개</strong><span>즐겨찾기 · 타로 · 최근 콘텐츠</span></button>'+
       '<a class="personal-dashboard-card" href="timeline.html"><small>TIMELINE</small><strong>춘봉 타임라인</strong><span>방송과 팬사이트 기록을 날짜순으로 보기</span></a>'+
       '</div></div>';
-    section.querySelector('[data-dashboard-alert]')?.addEventListener('click',enableAlerts);
+    section.querySelector('[data-dashboard-alert]')?.addEventListener('click',()=>{void toggleAlerts()});
     section.querySelector('[data-open-personal-hub]')?.addEventListener('click',openHubDrawer);
   }
 
