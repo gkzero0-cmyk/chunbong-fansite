@@ -18,7 +18,7 @@
     const platformLabel = item?.platform === 'youtube' ? (item?.kind === 'shorts' ? 'SHORTS' : 'YOUTUBE') : item?.kind === 'catch' ? 'CATCH' : item?.kind === 'clip' ? 'CLIP' : '';
     meta.textContent = [platformLabel, item?.date || item?.meta || (item?.platform === 'youtube' ? 'YouTube' : 'SOOP')].filter(Boolean).join(' · ');
     if (source) source.href = item?.link || sourceFor(item?.kind || (kind === 'vod' ? 'vod' : kind === 'youtube' ? 'youtube' : 'catch'));
-    document.dispatchEvent(new CustomEvent('chunbong:media-selected',{detail:{
+    const mediaDetail={
       page:kind,
       id:String(item?.id||''),
       title:item?.title||'',
@@ -28,7 +28,9 @@
       link:item?.link||'',
       embed:item?.embed||'',
       trackRecent:Boolean(trackRecent)
-    }}));
+    };
+    window.ChunbongCurrentMedia=mediaDetail;
+    document.dispatchEvent(new CustomEvent('chunbong:media-selected',{detail:mediaDetail}));
         if (item?.embed) {
       frame.loading = 'lazy';
       frame.src = item.embed;
