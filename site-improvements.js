@@ -143,7 +143,7 @@
           <button type="button" data-site-search-close aria-label="검색 닫기">×</button>
         </div>
         <div class="site-search-results" id="site-search-results" role="listbox" aria-label="검색 결과"></div>
-        <p class="site-search-help">실제 콘텐츠와 메뉴를 함께 검색합니다. <kbd>↑</kbd><kbd>↓</kbd> 이동 · <kbd>Enter</kbd> 열기 · <kbd>Esc</kbd> 닫기</p>
+        <p class="site-search-help">두 글자 이상 입력하면 실제 콘텐츠와 메뉴를 함께 검색합니다. <kbd>↑</kbd><kbd>↓</kbd> 이동 · <kbd>Enter</kbd> 열기 · <kbd>Esc</kbd> 닫기</p>
       </div>`;
     document.body.appendChild(dialog);
 
@@ -196,13 +196,13 @@
     const open=()=>{
       if(typeof dialog.showModal==='function'&&!dialog.open) dialog.showModal();
       else dialog.setAttribute('open','');
-      active=0; render(); void loadContent(); requestAnimationFrame(()=>input.focus());
+      active=0; render(); requestAnimationFrame(()=>input.focus());
     };
     const close=()=>{ if(dialog.open&&dialog.close) dialog.close(); else dialog.removeAttribute('open'); };
     trigger.addEventListener('click',open);
     dialog.querySelector('[data-site-search-close]').addEventListener('click',close);
     dialog.addEventListener('click',e=>{if(e.target===dialog)close()});
-    input.addEventListener('input',()=>{active=0;render();if(input.value.trim())void loadContent();});
+    input.addEventListener('input',()=>{active=0;render();if(normalize(input.value).length>=2)void loadContent();});
     input.addEventListener('keydown',e=>{
       const links=[...results.querySelectorAll('a')];
       if(e.key==='ArrowDown'){e.preventDefault();active=Math.min(active+1,Math.max(0,links.length-1));render();}
