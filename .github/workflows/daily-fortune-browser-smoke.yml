@@ -7,6 +7,7 @@ on:
       - 'index.html'
       - 'daily-fortune.js'
       - 'daily-fortune.css'
+      - 'tarot-card-theme.css'
       - 'service-worker.js'
       - 'tests/daily-fortune-regression.mjs'
       - '.github/workflows/daily-fortune-browser-smoke.yml'
@@ -16,6 +17,7 @@ on:
       - 'index.html'
       - 'daily-fortune.js'
       - 'daily-fortune.css'
+      - 'tarot-card-theme.css'
       - 'service-worker.js'
       - 'tests/daily-fortune-regression.mjs'
       - '.github/workflows/daily-fortune-browser-smoke.yml'
@@ -75,6 +77,8 @@ jobs:
           assert.equal(await page.locator('#daily-fortune-dialog').isVisible(), true, 'first visit should auto-open daily fortune');
           assert.equal(await page.locator('[data-daily-fortune-result]').isHidden(), true, 'result must stay hidden before the draw');
           assert.equal(await page.locator('[data-daily-fortune-image]').getAttribute('src'), null, 'card artwork must not load before the draw');
+          const backStyle=await page.locator('.daily-fortune-back').evaluate(el=>getComputedStyle(el).backgroundImage);
+          assert.match(backStyle,/data:image\/avif;base64,/,'daily fortune back must use the uploaded celestial artwork');
 
           const boundary = await page.evaluate(() => ({
             before: window.CHUNBONG_DAILY_FORTUNE.kstDate(new Date('2026-09-19T14:59:59Z')),
@@ -103,6 +107,9 @@ jobs:
           assert.match((await page.locator('[data-daily-fortune-image]').getAttribute('src')) || '', /res\.cloudinary\.com\/.*c_crop.*f_auto\/q_auto/, 'drawn card must use the optimized card crop URL');
 
           assert.equal(await page.locator('[data-daily-fortune-card]').evaluate(el=>el.classList.contains('is-revealed')), true, 'card must finish on the revealed front side');
+          const frontFrame=await page.locator('.daily-fortune-front').evaluate(el=>({border:getComputedStyle(el).borderTopColor,background:getComputedStyle(el).backgroundImage}));
+          assert.equal(frontFrame.border,'rgb(246, 200, 79)','daily fortune front must use celestial gold border');
+          assert.match(frontFrame.background,/linear-gradient/,'daily fortune front must use the navy celestial frame treatment');
           const firstTitle = (await page.locator('[data-daily-fortune-result-title]').textContent())?.trim();
           assert.ok(firstTitle && /오늘의 운세/.test(firstTitle), 'fortune result title must render');
 
@@ -124,6 +131,8 @@ jobs:
           await page.locator('[data-daily-fortune-close]').click();
           await page.waitForFunction(() => document.querySelector('#daily-fortune-dialog')?.open === false);
           assert.equal(await page.locator('[data-daily-fortune-launcher]').isVisible(), true, 'closing result must show the bottom-right launcher');
+          const launcherStyle=await page.locator('[data-daily-fortune-launcher]').evaluate(el=>getComputedStyle(el).backgroundImage);
+          assert.match(launcherStyle,/data:image\/avif;base64,/,'reopen launcher must use the same uploaded celestial artwork');
 
           await page.locator('[data-daily-fortune-launcher]').click();
           await page.waitForFunction(() => document.querySelector('#daily-fortune-dialog')?.open === true);
