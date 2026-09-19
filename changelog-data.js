@@ -1,6 +1,6 @@
 window.CHUNBONG_CHANGELOG_META = {
-  throughSha: 'd995917165b259f262fa3af6a47e56cefb0019a0',
-  throughTime: '2026-09-19T14:20:38Z'
+  throughSha: '67cb629e2fa145b53a30d576b860bcbe11e4d28d',
+  throughTime: '2026-09-19T14:33:31Z'
 };
 
 window.CHUNBONG_CHANGELOG = [
@@ -22,7 +22,8 @@ window.CHUNBONG_CHANGELOG = [
       { type: 'improved', title: '팬사이트 런타임·캐시 최적화', description: '실시간 일정 API, 안전한 탭 내 콘텐츠 캐시, 정적 자산 재검증 캐시와 타로 최종 이미지 직접 렌더링을 적용했습니다.' },
       { type: 'improved', title: '페이지 런타임 분리 및 타로 카드 전송량 최적화', description: '공통 페이지 스크립트를 페이지별로 분리하고, 타로는 전체 시트 대신 카드 단위 Cloudinary crop을 사용해 전송량을 줄였습니다.' },
       { type: 'improved', title: 'PWA·SEO·정적 자산 캐시 마무리', description: '홈 canonical과 sitemap을 루트 URL로 통일하고 PWA 시작 주소, HSTS, 정적 자산 캐시 정책을 정리했습니다.' },
-      { type: 'improved', title: '업데이트 일지 자동 동기화', description: '기존 한글 요약을 우선 유지하면서 main의 새 유효 변경사항을 업데이트 일지에 자동으로 합쳐 표시하도록 개선했습니다.' }
+      { type: 'improved', title: '업데이트 일지 자동 동기화', description: '기존 한글 요약을 우선 유지하면서 main의 새 유효 변경사항을 업데이트 일지에 자동으로 합쳐 표시하도록 개선했습니다.' },
+      { type: 'improved', title: '업데이트 일지 전체 기록 보완·한글 자동 요약', description: '8월 30일 프로젝트 시작 이후 누락된 주요 기록을 날짜별로 보완하고, 앞으로는 새 main 변경을 기능군별 사용자용 한글 요약으로 자동 정리하도록 개선했습니다.' }
     ]
   },
   {
