@@ -32,7 +32,7 @@ assert.match(
   /#tarot-deck \.tarot-card-back-number\{[^}]*display:grid[^}]*place-items:center[^}]*width:46px[^}]*height:46px/,
   'desktop card-back number badge must be one stable centered celestial medallion'
 );
-assert.match(compositeCss, /v1789845157\/chunbong-fansite\/tarot-card-back\.png/, '78-card deck must use the exact uploaded tarot back');
+assert.match(compositeCss, /f_auto,q_auto:good,c_limit,w_768\/v1789845157\/chunbong-fansite\/tarot-card-back\.png/, '78-card deck must use the exact uploaded tarot back');
 assert.match(compositeCss, /font-family:Georgia,"Times New Roman",serif/, 'deck numbers must use the matching classic tarot serif');
 assert.match(compositeCss, /color:#ffd75f/, 'deck numbers must use the uploaded card back gold tone');
 assert.match(compositeCss, /background:radial-gradient\(circle at 50% 36%,#243a68/, 'deck number medallions must use the matching deep navy');
