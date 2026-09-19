@@ -13,6 +13,7 @@ on:
       - 'tarot-composite.js'
       - 'tarot-data.js'
       - 'api/tarot-reading.js'
+      - 'assets/tarot/hd/**'
       - '.github/workflows/tarot-production-smoke.yml'
 
 jobs:
@@ -24,10 +25,11 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Wait for production tarot deployment and cropped originals
+      - name: Wait for production tarot deployment
         run: |
           set -euo pipefail
           BASE='https://chunbong-fansite.vercel.app'
+          ORIGINAL_BASE='https://res.cloudinary.com/lyppgyei/image/upload/chunbong-fansite/tarot-original'
           DELIVERY='https://res.cloudinary.com/lyppgyei/image/upload'
           CARD0="$DELIVERY/c_crop,g_north_west,h_1488,w_898,x_0,y_0/q_100/f_avif/chunbong-fansite/tarot-original/sheet-0.avif"
           CARD77="$DELIVERY/c_crop,g_north_west,h_1488,w_898,x_10776,y_0/q_100/f_avif/chunbong-fansite/tarot-original/sheet-5.avif"
@@ -35,72 +37,276 @@ jobs:
           for attempt in $(seq 1 60); do
             PAGE_HTTP=$(curl -L -sS -o /tmp/tarot-page -w '%{http_code}' "$BASE/tarot.html" || true)
             JS_HTTP=$(curl -L -sS -o /tmp/tarot-js -w '%{http_code}' "$BASE/tarot.js" || true)
-            COMPOSITE_HTTP=$(curl -L -sS -o /tmp/tarot-composite-js -w '%{http_code}' "$BASE/tarot-composite.js" || true)
+            CSS_HTTP=$(curl -L -sS -o /tmp/tarot-quality-css -w '%{http_code}' "$BASE/tarot-quality.css" || true)
+            COMPOSITE_JS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-js -w '%{http_code}' "$BASE/tarot-composite.js" || true)
+            COMPOSITE_CSS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-css -w '%{http_code}' "$BASE/tarot-composite.css" || true)
+            ORIGINAL_ASSET_HTTP=$(curl -L -sS -o /tmp/tarot-original-asset -w '%{http_code}' "$ORIGINAL_BASE/sheet-0.avif" || true)
             CARD0_HTTP=$(curl -L -sS -o /tmp/tarot-card-0 -w '%{http_code}' "$CARD0" || true)
             CARD77_HTTP=$(curl -L -sS -o /tmp/tarot-card-77 -w '%{http_code}' "$CARD77" || true)
 
-            if [ "$PAGE_HTTP" = 200 ] && [ "$JS_HTTP" = 200 ] && [ "$COMPOSITE_HTTP" = 200 ]               && [ "$CARD0_HTTP" = 200 ] && [ "$CARD77_HTTP" = 200 ]               && grep -q 'q_100/f_avif' /tmp/tarot-js               && grep -q 'originalCardCropUrl' /tmp/tarot-composite-js; then
-              node <<'NODE'
-          const fs=require('fs');
-          function size(path){
-            const b=fs.readFileSync(path);
-            if(b.subarray(4,12).toString('ascii')!=='ftypavif') throw new Error('not avif');
-            const o=b.indexOf(Buffer.from('ispe'));
-            return {w:b.readUInt32BE(o+8),h:b.readUInt32BE(o+12),bytes:b.length};
+            if [ "$PAGE_HTTP" = '200' ] && [ "$JS_HTTP" = '200' ] && [ "$CSS_HTTP" = '200' ] \
+              && [ "$COMPOSITE_JS_HTTP" = '200' ] && [ "$COMPOSITE_CSS_HTTP" = '200' ] && [ "$ORIGINAL_ASSET_HTTP" = '200' ] \
+              && [ "$CARD0_HTTP" = '200' ] && [ "$CARD77_HTTP" = '200' ] \
+              && grep -q 'toggleDirectSelection' /tmp/tarot-js \
+              && grep -q 'q_100/f_avif' /tmp/tarot-js \
+              && grep -q 'originalCardCropUrl' /tmp/tarot-composite-js \
+              && grep -q 'tarot-confirm-selection' /tmp/tarot-page \
+              && grep -q 'tarot-composite.js' /tmp/tarot-page \
+              && grep -q 'tarot-composite.css' /tmp/tarot-page \
+              && grep -q 'tarot-vector-title' /tmp/tarot-composite-js \
+              && grep -q 'originalArtworkDescriptor' /tmp/tarot-composite-js \
+              && grep -q 'res.cloudinary.com/lyppgyei/image/upload/chunbong-fansite/tarot-original' /tmp/tarot-composite-js \
+              && grep -q 'tarot-card-composite' /tmp/tarot-composite-css; then
+              if node <<'NODE'
+          const fs = require('fs');
+          function avifSize(path) {
+            const bytes = fs.readFileSync(path);
+            const offset = bytes.indexOf(Buffer.from('ispe'));
+            if (bytes.subarray(4, 12).toString('ascii') !== 'ftypavif' || offset < 0) throw new Error(path + ': invalid AVIF');
+            return { width: bytes.readUInt32BE(offset + 8), height: bytes.readUInt32BE(offset + 12), bytes: bytes.length };
           }
-          for(const p of ['/tmp/tarot-card-0','/tmp/tarot-card-77']){
-            const s=size(p);
-            if(s.w!==898||s.h!==1488||s.bytes>=1024*1024) throw new Error(JSON.stringify(s));
+          const source = avifSize('/tmp/tarot-original-asset');
+          if (source.width !== 11674 || source.height !== 1488) process.exit(1);
+          for (const path of ['/tmp/tarot-card-0', '/tmp/tarot-card-77']) {
+            const s = avifSize(path);
+            if (s.width !== 898 || s.height !== 1488 || s.bytes >= 1024 * 1024) process.exit(1);
           }
           NODE
-              echo "PROD_READY=1"
-              exit 0
+              then
+                echo "PROD_READY=1"
+                echo "PROD_URL=$BASE"
+                exit 0
+              fi
             fi
-            echo "PROD_WAIT_ATTEMPT=$attempt PAGE=$PAGE_HTTP JS=$JS_HTTP COMPOSITE=$COMPOSITE_HTTP CARD0=$CARD0_HTTP CARD77=$CARD77_HTTP"
+
+            echo "PROD_WAIT_ATTEMPT=$attempt PAGE=$PAGE_HTTP JS=$JS_HTTP CSS=$CSS_HTTP COMPOSITE_JS=$COMPOSITE_JS_HTTP COMPOSITE_CSS=$COMPOSITE_CSS_HTTP ORIGINAL_ASSET=$ORIGINAL_ASSET_HTTP CARD0=$CARD0_HTTP CARD77=$CARD77_HTTP"
             sleep 5
           done
+
+          echo 'PROD_READY=0'
           exit 1
 
-      - name: Verify 12-card API
+      - name: Verify production HTTP, vector composite, original assets and 12-card API
         run: |
           set -euo pipefail
           BASE='https://chunbong-fansite.vercel.app'
-          cat > /tmp/payload.json <<'JSON'
-          {"question":"앞으로의 방향","topic":"direction","spreadId":"twelveCompass","cards":[
-            {"id":"major-00","orientation":"upright","position":"현재 상태"},{"id":"major-01","orientation":"reversed","position":"내면"},
-            {"id":"major-02","orientation":"upright","position":"외부 환경"},{"id":"major-03","orientation":"reversed","position":"관계"},
-            {"id":"major-04","orientation":"upright","position":"강점"},{"id":"major-05","orientation":"reversed","position":"약점"},
-            {"id":"major-06","orientation":"upright","position":"기회"},{"id":"major-07","orientation":"reversed","position":"장애물"},
-            {"id":"major-08","orientation":"upright","position":"조언"},{"id":"major-09","orientation":"reversed","position":"가까운 흐름"},
-            {"id":"major-10","orientation":"upright","position":"장기 흐름"},{"id":"major-11","orientation":"reversed","position":"최종 방향"}]}
-          JSON
-          curl -fsS -X POST "$BASE/api/tarot-reading" -H 'content-type: application/json' --data-binary @/tmp/payload.json >/tmp/tarot-response
-          node -e "const p=require('/tmp/tarot-response');if(!p.reading||p.reading.cards.length!==12)process.exit(1)"
+          ORIGINAL_BASE='https://res.cloudinary.com/lyppgyei/image/upload/chunbong-fansite/tarot-original'
+          DELIVERY='https://res.cloudinary.com/lyppgyei/image/upload'
+          CARD0="$DELIVERY/c_crop,g_north_west,h_1488,w_898,x_0,y_0/q_100/f_avif/chunbong-fansite/tarot-original/sheet-0.avif"
+          CARD77="$DELIVERY/c_crop,g_north_west,h_1488,w_898,x_10776,y_0/q_100/f_avif/chunbong-fansite/tarot-original/sheet-5.avif"
+          HOME_HTTP=$(curl -L -sS -o /tmp/home -w '%{http_code}' "$BASE/")
+          TAROT_PAGE_HTTP=$(curl -L -sS -o /tmp/tarot-page -w '%{http_code}' "$BASE/tarot.html")
+          QUALITY_CSS_HTTP=$(curl -L -sS -o /tmp/tarot-quality-css -w '%{http_code}' "$BASE/tarot-quality.css")
+          COMPOSITE_JS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-js -w '%{http_code}' "$BASE/tarot-composite.js")
+          COMPOSITE_CSS_HTTP=$(curl -L -sS -o /tmp/tarot-composite-css -w '%{http_code}' "$BASE/tarot-composite.css")
+          ORIGINAL_0_HTTP=$(curl -L -sS -o /tmp/tarot-original-0 -w '%{http_code}' "$ORIGINAL_BASE/sheet-0.avif")
+          ORIGINAL_5_HTTP=$(curl -L -sS -o /tmp/tarot-original-5 -w '%{http_code}' "$ORIGINAL_BASE/sheet-5.avif")
+          CARD0_HTTP=$(curl -L -sS -o /tmp/tarot-card-0 -w '%{http_code}' "$CARD0")
+          CARD77_HTTP=$(curl -L -sS -o /tmp/tarot-card-77 -w '%{http_code}' "$CARD77")
 
-      - name: Verify cropped original artwork in Chromium
+          cat > /tmp/payload.json <<'JSON'
+          {
+            "question":"앞으로의 방향을 12장으로 종합해서 보고 싶습니다.",
+            "topic":"direction",
+            "spreadId":"twelveCompass",
+            "cards":[
+              {"id":"major-00","orientation":"upright","position":"현재 상태"},
+              {"id":"major-01","orientation":"reversed","position":"내면"},
+              {"id":"major-02","orientation":"upright","position":"외부 환경"},
+              {"id":"major-03","orientation":"reversed","position":"관계"},
+              {"id":"major-04","orientation":"upright","position":"강점"},
+              {"id":"major-05","orientation":"reversed","position":"약점"},
+              {"id":"major-06","orientation":"upright","position":"기회"},
+              {"id":"major-07","orientation":"reversed","position":"장애물"},
+              {"id":"major-08","orientation":"upright","position":"조언"},
+              {"id":"major-09","orientation":"reversed","position":"가까운 흐름"},
+              {"id":"major-10","orientation":"upright","position":"장기 흐름"},
+              {"id":"major-11","orientation":"reversed","position":"최종 방향"}
+            ]
+          }
+          JSON
+
+          TAROT_HTTP=$(curl -L -sS -o /tmp/tarot-response -w '%{http_code}' \
+            -X POST "$BASE/api/tarot-reading" \
+            -H 'content-type: application/json' \
+            --data-binary @/tmp/payload.json)
+
+          echo "HOME_HTTP=$HOME_HTTP"
+          echo "TAROT_PAGE_HTTP=$TAROT_PAGE_HTTP"
+          echo "QUALITY_CSS_HTTP=$QUALITY_CSS_HTTP"
+          echo "COMPOSITE_JS_HTTP=$COMPOSITE_JS_HTTP"
+          echo "COMPOSITE_CSS_HTTP=$COMPOSITE_CSS_HTTP"
+          echo "ORIGINAL_0_HTTP=$ORIGINAL_0_HTTP"
+          echo "ORIGINAL_5_HTTP=$ORIGINAL_5_HTTP"
+          echo "CARD0_HTTP=$CARD0_HTTP"
+          echo "CARD77_HTTP=$CARD77_HTTP"
+          echo "TAROT_HTTP=$TAROT_HTTP"
+
+          [ "$HOME_HTTP" = '200' ]
+          [ "$TAROT_PAGE_HTTP" = '200' ]
+          [ "$QUALITY_CSS_HTTP" = '200' ]
+          [ "$COMPOSITE_JS_HTTP" = '200' ]
+          [ "$COMPOSITE_CSS_HTTP" = '200' ]
+          [ "$ORIGINAL_0_HTTP" = '200' ]
+          [ "$ORIGINAL_5_HTTP" = '200' ]
+          [ "$CARD0_HTTP" = '200' ]
+          [ "$CARD77_HTTP" = '200' ]
+          [ "$TAROT_HTTP" = '200' ]
+          grep -q '12장' /tmp/tarot-page
+          grep -q 'tarot-composite.css' /tmp/tarot-page
+          grep -q 'tarot-composite.js' /tmp/tarot-page
+          grep -q 'tarot-vector-title' /tmp/tarot-composite-js
+          grep -q 'tarot-vector-frame' /tmp/tarot-composite-js
+          grep -q 'originalArtworkDescriptor' /tmp/tarot-composite-js
+          grep -q 'res.cloudinary.com/lyppgyei/image/upload/chunbong-fansite/tarot-original' /tmp/tarot-composite-js
+          grep -q 'tarot-card-composite' /tmp/tarot-composite-css
+
+          node <<'NODE'
+          const fs = require('fs');
+
+          function avifSize(path) {
+            const bytes = fs.readFileSync(path);
+            if (bytes.subarray(4, 12).toString('ascii') !== 'ftypavif') throw new Error(`${path}: not AVIF`);
+            const offset = bytes.indexOf(Buffer.from('ispe'));
+            if (offset < 0) throw new Error(`${path}: missing ispe`);
+            return {
+              width: bytes.readUInt32BE(offset + 8),
+              height: bytes.readUInt32BE(offset + 12)
+            };
+          }
+
+          for (const path of ['/tmp/tarot-original-0', '/tmp/tarot-original-5']) {
+            const size = avifSize(path);
+            if (size.width !== 11674 || size.height !== 1488) throw new Error(`${path}: ${size.width}x${size.height}`);
+            console.log(`TAROT_ORIGINAL_ASSET_SIZE=${size.width}x${size.height}`);
+          }
+          for (const path of ['/tmp/tarot-card-0', '/tmp/tarot-card-77']) {
+            const bytes = fs.readFileSync(path);
+            const size = avifSize(path);
+            if (size.width !== 898 || size.height !== 1488 || bytes.length >= 1024 * 1024) {
+              throw new Error(`${path}: ${size.width}x${size.height} bytes=${bytes.length}`);
+            }
+            console.log(`TAROT_CARD_CROP_SIZE=${size.width}x${size.height} bytes=${bytes.length}`);
+          }
+
+          const payload = JSON.parse(fs.readFileSync('/tmp/tarot-response', 'utf8'));
+          if (payload.provider !== 'local-tarot-engine') throw new Error(`provider=${payload.provider}`);
+          if (payload.model !== 'rule-based-v2') throw new Error(`model=${payload.model}`);
+          if (!payload.reading || !Array.isArray(payload.reading.cards) || payload.reading.cards.length !== 12) throw new Error('invalid reading cards');
+          if (payload.reading.cards[11].position !== '최종 방향') throw new Error('invalid final position');
+          if (!payload.reading.overall || !payload.reading.summary) throw new Error('missing reading text');
+          console.log(`TAROT_PROVIDER=${payload.provider}`);
+          console.log(`TAROT_MODEL=${payload.model}`);
+          console.log(`TAROT_TITLE=${payload.reading.title}`);
+          console.log(`TAROT_CARDS=${payload.reading.cards.length}`);
+          NODE
+
+      - name: Install Chromium browser test dependency
         run: |
           npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install chromium
-          node --input-type=module <<'NODE'
-          import assert from 'node:assert/strict';
-          import { chromium } from 'playwright';
-          const browser=await chromium.launch({headless:true});
-          const page=await browser.newPage({viewport:{width:1280,height:1000},deviceScaleFactor:2});
-          await page.goto('https://chunbong-fansite.vercel.app/tarot.html',{waitUntil:'networkidle'});
-          await page.locator('input[name="spread"][value="threeFlow"]').check();
-          await page.locator('input[name="selection-mode"][value="cards"]').check();
-          await page.locator('#tarot-shuffle').click();
-          await page.locator('#tarot-deck [data-card-index]').nth(0).click();
-          await page.locator('#tarot-deck [data-card-index]').nth(1).click();
-          await page.locator('#tarot-deck [data-card-index]').nth(2).click();
-          await page.locator('#tarot-confirm-selection').click();
-          await page.waitForFunction(()=>document.querySelectorAll('#tarot-reading-grid .tarot-composite-svg').length===3);
-          const hrefs=await page.locator('#tarot-reading-grid .tarot-composite-art-image').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')||''));
-          assert.ok(hrefs.every(h=>h.includes('/c_crop,')&&h.includes('/q_100/f_avif/')&&h.includes('/tarot-original/sheet-')),JSON.stringify(hrefs));
-          assert.ok(hrefs.every(h=>!h.includes('/image/upload/chunbong-fansite/tarot-original/')),JSON.stringify(hrefs));
-          await page.locator('#tarot-reading-grid .tarot-card-art-button').first().click();
-          await page.waitForFunction(()=>document.querySelector('#tarot-card-zoom')?.open===true);
-          const zoom=await page.locator('#tarot-card-zoom .tarot-composite-art-image').getAttribute('href');
-          assert.ok(zoom.includes('/c_crop,')&&zoom.includes('/q_100/f_avif/'),zoom);
-          await browser.close();
+
+      - name: Verify direct card reselect, centered numbers, original artwork and zoom in production Chromium
+        run: |
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const { chromium } = require('playwright');
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage({ viewport: { width: 1280, height: 1000 }, deviceScaleFactor: 2 });
+            await page.goto('https://chunbong-fansite.vercel.app/tarot.html', { waitUntil: 'networkidle' });
+            await page.locator('input[name="spread"][value="threeFlow"]').check();
+            await page.locator('input[name="selection-mode"][value="cards"]').check();
+
+            const constraints = await page.locator('#tarot-number-inputs input').evaluateAll(inputs =>
+              inputs.map(input => ({ disabled: input.disabled, required: input.required }))
+            );
+            assert.equal(constraints.length, 3);
+            assert.ok(constraints.every(input => input.disabled && !input.required), JSON.stringify(constraints));
+
+            await page.locator('#tarot-shuffle').click();
+            await page.waitForFunction(() => document.querySelectorAll('#tarot-deck [data-card-index]').length === 78);
+            assert.equal(await page.locator('#tarot-deck [data-card-index]').count(), 78);
+
+            const badgeState = await page.locator('#tarot-deck .tarot-card-back').evaluateAll(cards => {
+              const read = card => {
+                const span = card.querySelector('span');
+                const cardRect = card.getBoundingClientRect();
+                const spanRect = span.getBoundingClientRect();
+                return {
+                  text: span.textContent.trim(),
+                  dx: Math.abs((cardRect.left + cardRect.width / 2) - (spanRect.left + spanRect.width / 2)),
+                  dy: Math.abs((cardRect.top + cardRect.height / 2) - (spanRect.top + spanRect.height / 2))
+                };
+              };
+              return [read(cards[0]), read(cards[77])];
+            });
+            assert.equal(badgeState[0].text, '1');
+            assert.equal(badgeState[1].text, '78');
+            assert.ok(badgeState.every(item => item.dx < 1 && item.dy < 1), JSON.stringify(badgeState));
+
+            const card0 = page.locator('#tarot-deck [data-card-index]').nth(0);
+            const card1 = page.locator('#tarot-deck [data-card-index]').nth(1);
+            const card2 = page.locator('#tarot-deck [data-card-index]').nth(2);
+            const card3 = page.locator('#tarot-deck [data-card-index]').nth(3);
+            const confirm = page.locator('#tarot-confirm-selection');
+
+            await card0.click();
+            await card1.click();
+            await card2.click();
+            assert.equal(await page.locator('#tarot-deck .tarot-card-back.selected').count(), 3);
+            assert.equal(await confirm.isDisabled(), false);
+            assert.equal(await page.locator('#tarot-results').isHidden(), true, 'full selection must wait for explicit confirmation');
+
+            await card0.click();
+            assert.equal(await page.locator('#tarot-deck .tarot-card-back.selected').count(), 2, 'clicking selected card must cancel it');
+            assert.equal(await confirm.isDisabled(), true, 'confirm must disable after a cancellation');
+            await card3.click();
+            assert.equal(await page.locator('#tarot-deck .tarot-card-back.selected').count(), 3);
+            assert.equal(await confirm.isDisabled(), false);
+
+            await confirm.click();
+            await page.waitForFunction(() => document.querySelector('#tarot-results')?.hidden === false);
+            await page.waitForFunction(() => document.querySelectorAll('#tarot-reading-grid .tarot-composite-svg').length === 3);
+            assert.equal(await page.locator('#tarot-reading-grid .tarot-card-result').count(), 3);
+            assert.equal(await page.locator('#tarot-reading-grid .tarot-composite-svg').count(), 3);
+            assert.equal(await page.locator('#tarot-reading-grid .tarot-vector-title').count(), 3);
+            assert.equal(await page.locator('#tarot-reading-grid .tarot-vector-rank').count(), 3);
+            assert.equal(await page.locator('#tarot-reading-grid .tarot-composite-art-image').count(), 3);
+            assert.equal(await page.locator('#tarot-reading-grid feConvolveMatrix').count(), 0, 'legacy raster-text sharpening must disappear after composite upgrade');
+            const titles = await page.locator('#tarot-reading-grid .tarot-vector-title').allTextContents();
+            assert.ok(titles.every(title => title.trim().length > 0), JSON.stringify(titles));
+            const originalHrefs = await page.locator('#tarot-reading-grid .tarot-composite-art-image').evaluateAll(images =>
+              images.map(image => image.getAttribute('href') || image.getAttribute('xlink:href') || '')
+            );
+            assert.ok(originalHrefs.every(href => href.includes('/c_crop,') && href.includes('/q_100/f_avif/') && href.includes('/chunbong-fansite/tarot-original/sheet-')), JSON.stringify(originalHrefs));
+
+            await page.locator('#tarot-reading-grid .tarot-card-art-button').first().click();
+            await page.waitForFunction(() => document.querySelector('#tarot-card-zoom')?.open === true);
+            await page.waitForFunction(() => document.querySelectorAll('#tarot-card-zoom .tarot-composite-svg').length === 1);
+            assert.equal(await page.locator('#tarot-card-zoom .tarot-composite-svg').count(), 1);
+            assert.equal(await page.locator('#tarot-card-zoom .tarot-vector-title').count(), 1);
+            assert.equal(await page.locator('#tarot-card-zoom feConvolveMatrix').count(), 0);
+            const zoomHref = await page.locator('#tarot-card-zoom .tarot-composite-art-image').getAttribute('href');
+            assert.ok(zoomHref.includes('/c_crop,') && zoomHref.includes('/q_100/f_avif/') && zoomHref.includes('/chunbong-fansite/tarot-original/sheet-'), zoomHref);
+            await page.locator('#tarot-card-zoom-close').click();
+            await page.waitForFunction(() => document.querySelector('#tarot-card-zoom')?.open === false);
+
+            console.log('PROD_CHROMIUM_DIRECT_RESELECT=PASS');
+            console.log('PROD_CHROMIUM_CENTERED_DECK_NUMBERS=PASS');
+            console.log('PROD_CHROMIUM_EXPLICIT_CONFIRM=PASS');
+            console.log('PROD_CHROMIUM_VECTOR_COMPOSITE=PASS');
+            console.log('PROD_CHROMIUM_UPLOADED_ORIGINAL_ART=PASS');
+            console.log('PROD_CHROMIUM_LIVE_VECTOR_TEXT=PASS');
+            console.log('PROD_CHROMIUM_CARD_ZOOM=PASS');
+            console.log('PROD_CHROMIUM_DECK_COUNT=78');
+            console.log('PROD_CHROMIUM_RESULT_COUNT=3');
+            await browser.close();
+          })().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
           NODE
+
+# deployment retry: 2026-09-03T14:47:00+09:00
