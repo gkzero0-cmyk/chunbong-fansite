@@ -16,6 +16,8 @@ assert.doesNotMatch(retry,/VERCEL_TOKEN/,'Git-based retry must not require a Ver
 assert.match(retry,/AGE_SECONDS.*72000/s,'scheduled retry must wait at least 20 hours after the latest main commit');
 assert.match(retry,/RATE_LIMIT_AGE_SECONDS.*90000/s,'scheduled retry must wait 25 hours after the latest Vercel rate-limit status');
 assert.match(retry,/rate limited/i,'daily retry must inspect recent Vercel rate-limit status text');
+assert.match(retry,/commits\?sha=main&per_page=100/,'daily retry must scan enough recent main commits to survive high commit volume');
+assert.match(retry,/scanWindowMs = \(90000 \+ 7200\) \* 1000/,'daily retry must stop scanning after the cooldown window plus deployment-delay margin');
 assert.match(retry,/GITHUB_EVENT_NAME.*workflow_dispatch/s,'manual retry must bypass the age and cooldown guards');
 
 assert.match(prebuilt,/on:\s*\n\s*workflow_dispatch:/,'prebuilt recovery must be manual-only while a repository token is required');
