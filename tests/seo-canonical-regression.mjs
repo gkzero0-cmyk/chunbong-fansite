@@ -13,5 +13,10 @@ assert.doesNotMatch(home, /canonical" href="[^"]+\/index\.html"/, 'home canonica
 assert.match(sitemap, /<loc>https:\/\/chunbong-fansite\.vercel\.app\/<\/loc>/, 'sitemap must contain canonical root URL');
 assert.doesNotMatch(sitemap, /<loc>https:\/\/chunbong-fansite\.vercel\.app\/index\.html<\/loc>/, 'sitemap must not list /index.html as home');
 assert.match(siteMeta, /rawPath==='\/'\|\|rawPath==='\/index\.html'\?'\/':rawPath/, 'runtime metadata must normalize /index.html to root');
+assert.match(siteMeta, /application\/ld\+json/, 'runtime metadata must publish JSON-LD');
+assert.match(siteMeta, /'@type':'WebSite'/, 'WebSite structured data missing');
+assert.match(siteMeta, /'@type':'WebPage'/, 'WebPage structured data missing');
+assert.match(siteMeta, /'@type':'BreadcrumbList'/, 'subpages must expose breadcrumb structured data');
+assert.match(siteMeta, /inLanguage:'ko-KR'/, 'structured data language must remain Korean');
 
 console.log('SEO canonical and metadata hardening regression passed');
