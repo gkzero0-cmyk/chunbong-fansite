@@ -8,6 +8,8 @@ on:
       - '*.html'
       - 'page.js'
       - 'site-quality.css'
+      - 'mobile-site.css'
+      - 'mobile-site.js'
       - 'manifest.webmanifest'
       - 'service-worker.js'
       - 'daily-fortune.js'
@@ -41,9 +43,13 @@ jobs:
           EXPECTED_SW="$(sha256sum service-worker.js | awk '{print $1}')"
           EXPECTED_FORTUNE_JS="$(sha256sum daily-fortune.js | awk '{print $1}')"
           EXPECTED_FORTUNE_CSS="$(sha256sum daily-fortune.css | awk '{print $1}')"
+          EXPECTED_MOBILE_JS="$(sha256sum mobile-site.js | awk '{print $1}')"
+          EXPECTED_MOBILE_CSS="$(sha256sum mobile-site.css | awk '{print $1}')"
           echo "expected_service_worker=$EXPECTED_SW"
           echo "expected_daily_fortune_js=$EXPECTED_FORTUNE_JS"
           echo "expected_daily_fortune_css=$EXPECTED_FORTUNE_CSS"
+          echo "expected_mobile_site_js=$EXPECTED_MOBILE_JS"
+          echo "expected_mobile_site_css=$EXPECTED_MOBILE_CSS"
 
           for attempt in $(seq 1 60); do
             stamp=$(date +%s)
@@ -51,17 +57,23 @@ jobs:
             curl -fsS -H 'cache-control: no-cache' "$BASE_URL/service-worker.js?_smoke=$stamp" -o /tmp/service-worker.js || true
             curl -fsS -H 'cache-control: no-cache' "$BASE_URL/daily-fortune.js?_smoke=$stamp" -o /tmp/daily-fortune.js || true
             curl -fsS -H 'cache-control: no-cache' "$BASE_URL/daily-fortune.css?_smoke=$stamp" -o /tmp/daily-fortune.css || true
+            curl -fsS -H 'cache-control: no-cache' "$BASE_URL/mobile-site.js?_smoke=$stamp" -o /tmp/mobile-site.js || true
+            curl -fsS -H 'cache-control: no-cache' "$BASE_URL/mobile-site.css?_smoke=$stamp" -o /tmp/mobile-site.css || true
 
             ACTUAL_SW="$(sha256sum /tmp/service-worker.js 2>/dev/null | awk '{print $1}' || true)"
             ACTUAL_FORTUNE_JS="$(sha256sum /tmp/daily-fortune.js 2>/dev/null | awk '{print $1}' || true)"
             ACTUAL_FORTUNE_CSS="$(sha256sum /tmp/daily-fortune.css 2>/dev/null | awk '{print $1}' || true)"
+            ACTUAL_MOBILE_JS="$(sha256sum /tmp/mobile-site.js 2>/dev/null | awk '{print $1}' || true)"
+            ACTUAL_MOBILE_CSS="$(sha256sum /tmp/mobile-site.css 2>/dev/null | awk '{print $1}' || true)"
 
-            echo "attempt=$attempt sw=$ACTUAL_SW fortune_js=$ACTUAL_FORTUNE_JS fortune_css=$ACTUAL_FORTUNE_CSS"
+            echo "attempt=$attempt sw=$ACTUAL_SW fortune_js=$ACTUAL_FORTUNE_JS fortune_css=$ACTUAL_FORTUNE_CSS mobile_js=$ACTUAL_MOBILE_JS mobile_css=$ACTUAL_MOBILE_CSS"
             if grep -q '"name": "춘봉 팬허브"' /tmp/manifest.webmanifest 2>/dev/null &&
                [ "$ACTUAL_SW" = "$EXPECTED_SW" ] &&
                [ "$ACTUAL_FORTUNE_JS" = "$EXPECTED_FORTUNE_JS" ] &&
-               [ "$ACTUAL_FORTUNE_CSS" = "$EXPECTED_FORTUNE_CSS" ]; then
-              echo 'Production exact PWA + daily fortune assets match main.'
+               [ "$ACTUAL_FORTUNE_CSS" = "$EXPECTED_FORTUNE_CSS" ] &&
+               [ "$ACTUAL_MOBILE_JS" = "$EXPECTED_MOBILE_JS" ] &&
+               [ "$ACTUAL_MOBILE_CSS" = "$EXPECTED_MOBILE_CSS" ]; then
+              echo 'Production exact PWA + daily fortune + mobile app assets match main.'
               exit 0
             fi
             sleep 5
