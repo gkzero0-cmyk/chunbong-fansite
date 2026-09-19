@@ -56,3 +56,45 @@
   html{scroll-behavior:auto!important}
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
+
+
+/* Installable PWA / offline status */
+.pwa-install-chip{
+  position:fixed;left:18px;bottom:18px;z-index:238;display:flex;align-items:center;gap:8px;
+  min-height:44px;padding:0 15px;border:1px solid rgba(255,126,52,.46);border-radius:999px;
+  background:rgba(14,14,14,.92);color:#fff;font:inherit;cursor:pointer;
+  box-shadow:0 12px 36px rgba(0,0,0,.34),0 0 0 1px rgba(255,107,24,.08) inset;
+  backdrop-filter:blur(12px)
+}
+.pwa-install-chip[hidden]{display:none!important}
+.pwa-install-chip span{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#ff6b18;font-size:18px;line-height:1}
+.pwa-install-chip strong{font-size:.82rem;letter-spacing:.02em}
+.pwa-install-chip:focus-visible{outline:3px solid rgba(255,139,74,.48);outline-offset:3px}
+.pwa-status-toast{
+  position:fixed;left:50%;top:max(76px,calc(env(safe-area-inset-top) + 66px));z-index:320;
+  max-width:min(92vw,560px);padding:11px 15px;border:1px solid rgba(255,255,255,.14);
+  border-radius:999px;background:rgba(15,15,15,.94);color:#fff;font-size:.82rem;font-weight:700;
+  box-shadow:0 14px 42px rgba(0,0,0,.36);backdrop-filter:blur(14px);
+  opacity:0;transform:translate(-50%,-8px);transition:opacity .18s ease,transform .18s ease
+}
+.pwa-status-toast.is-visible{opacity:1;transform:translate(-50%,0)}
+.pwa-update-toast{
+  position:fixed;right:18px;bottom:18px;z-index:245;display:flex;align-items:center;gap:14px;
+  width:min(calc(100vw - 36px),390px);padding:14px;border:1px solid rgba(255,126,52,.38);
+  border-radius:16px;background:rgba(12,12,12,.96);color:#fff;box-shadow:0 18px 54px rgba(0,0,0,.42);
+  backdrop-filter:blur(14px)
+}
+.pwa-update-toast div{display:grid;gap:3px;min-width:0}
+.pwa-update-toast strong{font-size:.88rem}
+.pwa-update-toast span{font-size:.74rem;opacity:.7}
+.pwa-update-toast button{
+  flex:0 0 auto;min-height:40px;padding:0 12px;border:0;border-radius:10px;
+  background:#ff6b18;color:#fff;font:inherit;font-size:.76rem;font-weight:800;cursor:pointer
+}
+body[data-game] .pwa-install-chip{display:none!important}
+@media (max-width:760px){
+  .pwa-install-chip{left:10px;bottom:max(10px,env(safe-area-inset-bottom));min-height:42px;padding:0 12px}
+  .pwa-update-toast{left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));width:auto;border-radius:14px;padding:12px}
+  .pwa-status-toast{top:max(66px,calc(env(safe-area-inset-top) + 58px));font-size:.76rem;text-align:center}
+}
+@media (prefers-reduced-motion:reduce){.pwa-status-toast{transition:none}}
