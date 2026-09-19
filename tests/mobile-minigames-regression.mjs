@@ -35,7 +35,7 @@ assert.match(js,/centerChuncortile/);
 assert.match(js,/scrollLeft=Math\.round\(max\/2\)/,'Chuncortile enlarged mobile board should start centered');
 assert.match(js,/scrollIntoView\(\{block:'start'/,'mobile play should bring the game viewport into focus');
 assert.match(js,/new Set\(\['chungwagame','chuncortile'\]\)/,'landscape mode must be limited to Chungwagame and Chuncortile');
-assert.match(js,/data-mobile-landscape-gate/,'mobile landscape rotation gate missing');
+assert.match(js,/dataset\.mobileLandscapeGate/,'mobile landscape rotation gate missing');
 assert.match(js,/screen\.orientation\?\.lock/,'landscape orientation lock attempt missing');
 assert.match(js,/pauseGame\(false\)/,'portrait transition must pause without opening the native pause overlay');
 assert.match(js,/orientationPaused/,'orientation pause state missing');
