@@ -63,6 +63,7 @@ jobs:
           node --check content.js
           node --check changelog.js
           node --check changelog-data.js
+          node --check changelog-auto-summary.js
           node --check lib/chuntris-ranking-api.js
           node --check lib/minigame-multiplayer-api.js
           node --check lib/chunbak-ranking-api.js
