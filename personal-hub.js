@@ -5,7 +5,7 @@
   const MAX_FAVORITES=80,MAX_TAROT=40;
   const GAME_LABELS={chuntris:'춘트리스',chunbak:'춘박게임',chungwagame:'춘과게임',chuncortile:'춘컬타일'};
 
-  const blank=()=>({version:1,favorites:[],recent:null,tarot:[],games:{plays:{},lastPlayed:null},alerts:{enabled:false,lastNotified:''}});
+  const blank=()=>({version:1,favorites:[],recent:null,tarot:[],games:{plays:{},lastPlayed:null},alerts:{enabled:false,lastNotified:'',lastLiveBroadcastId:''}});
   const safeParse=value=>{try{return JSON.parse(value)}catch(_){return null}};
   function read(){
     try{
@@ -159,6 +159,26 @@
       else if('Notification'in window&&Notification.permission==='granted')new Notification(title,options);
     }catch(_){}
   }
+  async function checkLiveReminder(){
+    const state=read();if(!state.alerts.enabled)return;
+    try{
+      const payload=window.ChunbongCache
+        ?await window.ChunbongCache.fetchJson('personal:live','/api/content?type=live',{ttl:30000,force:true})
+        :await fetch('/api/content?type=live',{headers:{accept:'application/json'},cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject());
+      if(payload?.live!==true)return;
+      const broadcastId=String(payload.broadcastId||payload.startedAt||payload.title||'live');
+      if(state.alerts.lastLiveBroadcastId===broadcastId)return;
+      const title='춘봉 방송이 시작됐어요';
+      const options={body:payload.title||'SOOP에서 방송이 시작됐습니다.',icon:'/assets/app-icon-192.png',badge:'/assets/app-icon-192.png',tag:'chunbong-live-'+broadcastId,data:{url:'/'}};
+      try{
+        const reg=await navigator.serviceWorker?.ready;
+        if(reg?.showNotification)await reg.showNotification(title,options);
+        else if('Notification'in window&&Notification.permission==='granted')new Notification(title,options);
+      }catch(_){}
+      state.alerts.lastLiveBroadcastId=broadcastId;write(state);
+    }catch(_){}
+  }
+
   async function checkBroadcastReminder(){
     const state=read();if(!state.alerts.enabled)return;
     try{
@@ -195,7 +215,7 @@
         <section class="personal-panel"><header><div><small>DAILY CHALLENGE</small><h2>오늘의 도전</h2></div></header>
           <a class="personal-challenge" href="${challenge.href}"><strong>${esc(challenge.title)}</strong><span>${esc(challenge.desc)}</span><b>도전하기 →</b></a>
         </section>
-        <section class="personal-panel personal-alert-panel"><header><div><small>BROADCAST REMINDER</small><h2>방송 예정 알림</h2></div><button type="button" data-personal-alert-toggle aria-pressed="${String(state.alerts.enabled)}">${state.alerts.enabled?'ON':'OFF'}</button></header><p>팬사이트나 설치한 앱이 실행 중일 때 예정된 방송 시작 시간에 브라우저 알림을 표시합니다.</p></section>
+        <section class="personal-panel personal-alert-panel"><header><div><small>LIVE & SCHEDULE ALERT</small><h2>방송 알림</h2></div><button type="button" data-personal-alert-toggle aria-pressed="${String(state.alerts.enabled)}">${state.alerts.enabled?'ON':'OFF'}</button></header><p>팬사이트나 설치한 앱이 실행 중일 때 실제 LIVE 시작 또는 예정된 방송 시간에 브라우저 알림을 표시합니다.</p></section>
         <section class="personal-panel"><header><div><small>TAROT JOURNAL</small><h2>최근 타로</h2></div><a href="tarot.html">타로 보기 →</a></header>
           ${latestTarot?`<article class="personal-tarot-latest"><strong>${esc(latestTarot.question||'질문 없는 리딩')}</strong><span>${latestTarot.cards.map(c=>esc(c.name)).join(' · ')}</span><small>${esc(formatDate(latestTarot.createdAt))}</small></article>`:'<p class="personal-empty">타로를 보면 자동으로 기록됩니다.</p>'}
         </section>
@@ -240,9 +260,9 @@
     });
     document.addEventListener('chunbong:personal-updated',()=>{renderDashboard();renderAppHome();syncSaveButton()});
     setTimeout(()=>document.dispatchEvent(new CustomEvent('chunbong:personal-updated',{detail:read()})),0);
-    void checkBroadcastReminder();
-    const timer=setInterval(checkBroadcastReminder,60000);
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden)void checkBroadcastReminder()});
+    void checkBroadcastReminder();void checkLiveReminder();
+    const timer=setInterval(()=>{void checkBroadcastReminder();void checkLiveReminder()},60000);
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden){void checkBroadcastReminder();void checkLiveReminder()}});
     window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});
   }
 
