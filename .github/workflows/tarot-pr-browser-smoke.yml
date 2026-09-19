@@ -69,6 +69,7 @@ jobs:
             await page.locator('input[name="selection-mode"][value="cards"]').check();
             await page.locator('#tarot-shuffle').click();
             await page.waitForFunction(()=>document.querySelectorAll('#tarot-deck [data-card-index]').length===78);
+            await page.waitForTimeout(750);
 
             const deckState=await page.locator('#tarot-deck .tarot-card-back').evaluateAll(cards=>{
               const read=card=>{
