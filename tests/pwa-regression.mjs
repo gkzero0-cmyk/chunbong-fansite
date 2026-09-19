@@ -3,9 +3,8 @@ import fs from 'node:fs';
 
 const read = path => fs.readFileSync(path, 'utf8');
 const htmlPaths = [
-  'changelog.html','chunbak.html','chuncortile.html','chungwagame.html','chuntris.html',
-  'clips.html','data.html','fanart.html','history.html','index.html','minigames.html',
-  'notice.html','schedule.html','tarot.html','vod.html','youtube.html'
+  'changelog.html','clips.html','data.html','fanart.html','history.html','index.html',
+  'minigames.html','notice.html','schedule.html','tarot.html','vod.html','youtube.html'
 ];
 const manifest = JSON.parse(read('manifest.webmanifest'));
 const sw = read('service-worker.js');
@@ -21,6 +20,7 @@ assert.ok(Array.isArray(manifest.icons) && manifest.icons.some(icon => icon.src 
 assert.match(page, /setupPwaExperience/);
 assert.match(page, /serviceWorker\.register\('\/service-worker\.js'/);
 assert.match(page, /beforeinstallprompt/);
+assert.match(page, /link\.href = '\/manifest\.webmanifest'/);
 assert.match(page, /새 버전 준비 완료/);
 assert.match(css, /\.pwa-install-chip/);
 assert.match(css, /\.pwa-update-toast/);
