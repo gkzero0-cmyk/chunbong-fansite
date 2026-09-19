@@ -37,6 +37,18 @@ assert.match(js,/mobile-site-nav-open/);
 assert.match(js,/event\.key==='Escape'/);
 assert.match(js,/visualViewport/);
 assert.match(js,/mobileScrollable/);
+assert.match(js,/display-mode: standalone/,'installed-app detection missing');
+assert.match(js,/source'\)===\'pwa\'/,'PWA launch-source detection missing');
+assert.match(js,/data-pwa-app-tabbar/,'installed app bottom tabbar missing');
+assert.match(js,/data-pwa-app-more-toggle/,'installed app more menu control missing');
+assert.match(js,/data-pwa-ios-install/,'iOS Safari install helper missing');
+assert.match(js,/pwa-app-keyboard-open/,'app tabbar must react to the mobile keyboard');
+assert.match(css,/\.pwa-app-tabbar\{/,'installed app tabbar styles missing');
+assert.match(css,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/,'app tabbar must expose five primary controls');
+assert.match(css,/\.pwa-app-more-sheet\{/,'installed app more sheet styles missing');
+assert.match(css,/\.pwa-ios-install-chip\{/,'iOS home-screen install helper styles missing');
+assert.match(css,/body\.pwa-app-mode \.daily-fortune-launcher\{/,'daily fortune launcher must clear the app tabbar');
+assert.match(css,/body\.pwa-app-mode \.activity-panel\{/,'activity panel must clear the app tabbar');
 new Function(js);
 
 console.log('Mobile site regression passed');
