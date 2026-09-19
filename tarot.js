@@ -686,6 +686,13 @@ if (typeof document !== 'undefined') {
     if (confirm) confirm.hidden = true;
     byId('tarot-selection-status').textContent = '카드를 순서대로 펼치고 있어요.';
     renderResults();
+    document.dispatchEvent(new CustomEvent('chunbong:tarot-reading',{detail:{
+      question:state.question,topic:state.topic,spreadId:state.spreadId,
+      cards:state.selected.map(selection=>({
+        name:selection.card?.nameKo||selection.card?.name||'',
+        orientation:selection.orientation,position:selection.position,deckNumber:selection.deckNumber
+      }))
+    }}));
     const cards = [...byId('tarot-reading-grid').querySelectorAll('.tarot-card-result')];
     const step = state.count >= 12 ? 70 : state.count >= 6 ? 90 : 130;
     cards.forEach((card, index) => card.style.setProperty('--reveal-delay', `${index * step}ms`));
