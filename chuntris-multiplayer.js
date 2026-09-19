@@ -39,7 +39,7 @@
         <p class="mp-mode-description" data-mp-mode-description></p>
         <div class="mp-actions"><button class="mp-btn mp-btn-primary" data-mp-create type="button">선택 조합으로 방 만들기</button><button class="mp-btn" data-mp-show-join type="button">방 코드로 입장</button></div>
         <div data-mp-join-box hidden>
-          <label class="mp-field"><span>6자리 방 코드</span><input class="mp-room-input" data-mp-code maxlength="6" placeholder="ABC234"></label>
+          <label class="mp-field"><span>6자리 방 코드 또는 초대 링크</span><input class="mp-room-input" data-mp-code autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABC234 또는 초대 링크"></label>
           <p class="mp-join-note">참가자는 방장이 정한 게임 모드와 난이도를 그대로 적용받습니다.</p>
           <button class="mp-btn mp-btn-primary" data-mp-join type="button" style="width:100%;margin-top:8px">입장하기</button>
         </div>
@@ -141,17 +141,25 @@
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!shell.hidden){event.preventDefault();close();}});
   modeButtons.forEach(button=>button.addEventListener('click',()=>setSelectedMode(button.dataset.mpChuntrisMode)));
   difficultyButtons.forEach(button=>button.addEventListener('click',()=>setSelectedDifficulty(button.dataset.mpChuntrisDifficulty)));
+  const normalizeCodeInput=value=>root.MinigameMultiplayer.normalizeRoomCode(value);
   els.showJoin.addEventListener('click',()=>{els.joinBox.hidden=!els.joinBox.hidden;if(!els.joinBox.hidden)els.code.focus();});
-  els.code.addEventListener('input',()=>{els.code.value=els.code.value.toUpperCase().replace(/[^A-Z2-9]/g,'').slice(0,6);});
+  els.code.addEventListener('input',()=>{els.code.value=normalizeCodeInput(els.code.value);});
+  els.code.addEventListener('paste',event=>{
+    const text=event.clipboardData?.getData('text')||'';
+    if(!text)return;
+    event.preventDefault();
+    els.code.value=normalizeCodeInput(text);
+    message(els.code.value.length===6?'초대 링크에서 방 코드를 가져왔습니다.':'6자리 방 코드 또는 초대 링크를 확인해 주세요.',els.code.value.length!==6);
+  });
   els.create.addEventListener('click',async()=>{try{message('방 만드는 중…');const data=await client.create(normalizeName(),selectedMode,selectedDifficulty);saveSession();render(data.room);startPolling();message(`${modeMeta(data.room.mode).label} · ${difficultyMeta(data.room.difficulty).label} 방을 만들었습니다.`);}catch(error){message(errorMessage(error),true);}});
-  els.join.addEventListener('click',async()=>{try{message('입장 중…');const data=await client.join(els.code.value,normalizeName());saveSession();render(data.room);startPolling();message(`${modeMeta(data.room.mode).label} · ${difficultyMeta(data.room.difficulty).label} 방에 입장했습니다. 두 명 모두 READY를 눌러 주세요.`);}catch(error){message(errorMessage(error),true);}});
+  els.join.addEventListener('click',async()=>{try{const roomCode=normalizeCodeInput(els.code.value);if(roomCode.length!==6)throw new Error('6자리 방 코드 또는 초대 링크를 입력해 주세요.');els.code.value=roomCode;message('입장 중…');const data=await client.join(roomCode,normalizeName());saveSession();render(data.room);startPolling();message(`${modeMeta(data.room.mode).label} · ${difficultyMeta(data.room.difficulty).label} 방에 입장했습니다. 두 명 모두 READY를 눌러 주세요.`);}catch(error){message(errorMessage(error),true);}});
   els.ready.addEventListener('click',async()=>{try{const me=currentPlayers(client.room||{players:[]}).me;const data=await client.ready(!me?.ready);render(data.room);message(data.room.state==='countdown'?`${modeMeta(data.room.mode).label} · ${difficultyMeta(data.room.difficulty).label} 대결이 곧 시작됩니다!`:'READY 상태를 변경했습니다.');handleRoom(data.room);}catch(error){message(errorMessage(error),true);}});
   els.leave.addEventListener('click',async()=>{try{await client.leave();saveSession();stopTimers();render(null);hud.hidden=true;message('방에서 나왔습니다.');}catch(error){message(errorMessage(error),true);}});
   els.copy.addEventListener('click',async()=>{const text=root.MinigameMultiplayer.roomInviteUrl(client.code);try{await navigator.clipboard.writeText(text);message('초대 링크를 복사했습니다.');}catch{message(`방 코드: ${client.code}`);}});
 
   setSelectedMode(selectedMode);setSelectedDifficulty(selectedDifficulty);
   const params=new URLSearchParams(location.search),invite=params.get('room');
-  if(invite){open();els.showJoin.click();els.code.value=invite.toUpperCase().replace(/[^A-Z2-9]/g,'').slice(0,6);message('닉네임을 입력하고 입장해 주세요. 모드와 난이도는 방 설정을 따릅니다.');}
+  if(invite){open();els.showJoin.click();els.code.value=normalizeCodeInput(invite);message('닉네임을 입력하고 입장해 주세요. 모드와 난이도는 방 설정을 따릅니다.');}
   try{const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');if(saved?.code&&saved?.token&&!invite){client.restore(saved.code,saved.token);open();startPolling();message('이전 멀티플레이 방을 다시 연결하는 중…');}}catch{}
   root.addEventListener('beforeunload',stopTimers);
 })(typeof globalThis!=='undefined'?globalThis:window);
