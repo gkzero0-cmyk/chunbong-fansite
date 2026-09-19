@@ -21,14 +21,14 @@
     '<section class="activity-panel" id="activity-panel" hidden aria-label="팬사이트 새 소식">' +
       '<header class="activity-panel-head"><div><small>CHUNBONG FAN HUB</small><strong>최근 업데이트</strong></div><button class="activity-close" type="button" aria-label="알림 닫기">×</button></header>' +
       '<div class="activity-tabs" role="tablist" aria-label="업데이트 종류">' +
-        '<button type="button" class="active" data-activity-filter="all" role="tab" aria-selected="true">전체</button>' +
-        '<button type="button" data-activity-filter="schedule" role="tab" aria-selected="false">일정</button>' +
-        '<button type="button" data-activity-filter="notice" role="tab" aria-selected="false">공지</button>' +
-        '<button type="button" data-activity-filter="media" role="tab" aria-selected="false">영상</button>' +
-        '<button type="button" data-activity-filter="fanart" role="tab" aria-selected="false">팬아트</button>' +
+        '<button type="button" class="active" data-activity-filter="all" role="tab" aria-selected="true" aria-controls="activity-list" tabindex="0">전체</button>' +
+        '<button type="button" data-activity-filter="schedule" role="tab" aria-selected="false" aria-controls="activity-list" tabindex="-1">일정</button>' +
+        '<button type="button" data-activity-filter="notice" role="tab" aria-selected="false" aria-controls="activity-list" tabindex="-1">공지</button>' +
+        '<button type="button" data-activity-filter="media" role="tab" aria-selected="false" aria-controls="activity-list" tabindex="-1">영상</button>' +
+        '<button type="button" data-activity-filter="fanart" role="tab" aria-selected="false" aria-controls="activity-list" tabindex="-1">팬아트</button>' +
       '</div>' +
       '<div class="activity-status" aria-live="polite">새 소식을 불러오는 중...</div>' +
-      '<div class="activity-list" hidden></div>' +
+      '<div class="activity-list" id="activity-list" hidden></div>' +
     '</section>';
 
   const themeToggle = header.querySelector('.theme-toggle');
@@ -207,8 +207,21 @@
       const active = node === tab;
       node.classList.toggle('active', active);
       node.setAttribute('aria-selected', String(active));
+      node.tabIndex = active ? 0 : -1;
     });
     render();
+  }));
+  tabs.forEach(tab => tab.addEventListener('keydown', event => {
+    const current = tabs.indexOf(tab);
+    let next = current;
+    if (event.key === 'ArrowRight') next = (current + 1) % tabs.length;
+    else if (event.key === 'ArrowLeft') next = (current - 1 + tabs.length) % tabs.length;
+    else if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = tabs.length - 1;
+    else return;
+    event.preventDefault();
+    tabs[next]?.focus();
+    tabs[next]?.click();
   }));
   document.addEventListener('click', event => {
     if (!panel.hidden && !wrapper.contains(event.target) && !panel.contains(event.target)) setOpen(false);
