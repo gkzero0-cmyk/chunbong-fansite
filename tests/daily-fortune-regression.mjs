@@ -24,7 +24,7 @@ assert.match(js, /data-daily-fortune-launcher/, 'persistent bottom-right reopen 
 assert.match(css, /\.daily-fortune-launcher\{position:fixed/, 'launcher must remain fixed on screen');
 assert.match(css, /\.daily-fortune-card\.is-revealed \.daily-fortune-card-inner\{transform:rotateY\(180deg\) rotateZ\(1turn\)\}/, 'card flip animation missing');
 assert.match(css, /@media\(prefers-reduced-motion:reduce\)/, 'reduced-motion fallback missing');
-assert.match(sw, /chunbong-pwa-20260919-v7/, 'daily fortune service worker revision missing');
+assert.match(sw, /chunbong-pwa-20260920-v8/, 'daily fortune service worker revision missing');
 assert.match(sw, /'\/daily-fortune\.css'/);
 assert.match(sw, /'\/daily-fortune\.js'/);
 
