@@ -1,0 +1,123 @@
+name: Materialize tarot back asset
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/materialize-tarot-back-asset.yml'
+      - 'daily-fortune.css'
+      - 'tarot-composite.css'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'feat/tarot-card-back-unification-20260920'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Skip when asset already exists
+        id: asset
+        run: |
+          if [ -f assets/tarot-card-back.webp ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.asset.outputs.exists != 'true'
+        with:
+          node-version: '24'
+
+      - name: Download attached source from temporary handoff
+        if: steps.asset.outputs.exists != 'true'
+        env:
+          SOURCE_SHARE_URL: https://firestorage.ai/ja/f/Y9oWifrmrlLl
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+          node --input-type=module <<'EOF_NODE'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage();
+          const candidates=[];
+          const capture=async response=>{
+            try{
+              const headers=response.headers();
+              const type=String(headers['content-type']||'');
+              if(!/^image\/(png|webp|jpeg)/i.test(type))return;
+              const body=await response.body();
+              if(body.length<150000)return;
+              candidates.push({body,type,url:response.url()});
+            }catch{}
+          };
+          page.on('response',capture);
+          await page.goto(process.env.SOURCE_SHARE_URL,{waitUntil:'networkidle',timeout:60000});
+          await page.waitForTimeout(2500);
+
+          if(!candidates.length){
+            const buttons=page.getByRole('button');
+            const count=await buttons.count();
+            for(let i=0;i<count;i+=1){
+              const text=(await buttons.nth(i).innerText().catch(()=>''))||'';
+              if(/download|ダウンロード|다운로드|保存/i.test(text)){
+                await buttons.nth(i).click().catch(()=>{});
+                await page.waitForTimeout(2500);
+                if(candidates.length)break;
+              }
+            }
+          }
+
+          if(!candidates.length){
+            const links=page.locator('a');
+            const count=await links.count();
+            for(let i=0;i<count;i+=1){
+              const href=await links.nth(i).getAttribute('href');
+              const text=(await links.nth(i).innerText().catch(()=>''))||'';
+              if(href&&(/download/i.test(href)||/download|ダウンロード|다운로드|保存/i.test(text))){
+                const url=new URL(href,page.url()).href;
+                const response=await page.request.get(url);
+                const type=response.headers()['content-type']||'';
+                const body=await response.body();
+                if(/^image\//i.test(type)&&body.length>150000)candidates.push({body,type,url});
+              }
+            }
+          }
+
+          if(!candidates.length)throw new Error('Could not capture the uploaded tarot-back source image from the share page.');
+          candidates.sort((a,b)=>b.body.length-a.body.length);
+          const best=candidates[0];
+          fs.writeFileSync('/tmp/tarot-card-back-source',best.body);
+          console.log('Captured source bytes='+best.body.length+' type='+best.type+' url='+best.url);
+          await browser.close();
+          EOF_NODE
+
+      - name: Optimize attached image for site delivery
+        if: steps.asset.outputs.exists != 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq webp
+          mkdir -p assets
+          cwebp -quiet -resize 512 768 -q 84 /tmp/tarot-card-back-source -o assets/tarot-card-back.webp
+          test -s assets/tarot-card-back.webp
+          bytes=$(wc -c < assets/tarot-card-back.webp)
+          test "$bytes" -lt 300000
+          echo "Optimized tarot back bytes=$bytes"
+
+      - name: Commit optimized uploaded card back
+        if: steps.asset.outputs.exists != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/tarot-card-back.webp
+          git commit -m "assets: add uploaded celestial tarot card back"
+          git push origin "HEAD:${{ github.head_ref }}"
