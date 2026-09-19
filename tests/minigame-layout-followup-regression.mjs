@@ -19,7 +19,7 @@ assert.match(chungwaCss, /grid-template-columns:190px minmax\(0,min\(1040px,calc
 assert.match(chungwaCss, /\.cg-howto ol\{font-size:12px/);
 assert.match(chungwaCss, /\.cg-utility\{min-height:82px/);
 assert.match(chungwaCss, /Final viewport-height fit: keep full Chungwagame board visible/);
-assert.match(chungwaCss, /@media\(min-width:900px\) and \(max-height:900px\)[\s\S]*calc\(170svh - 323px\)/);
+assert.match(chungwaCss, /@media\(min-width:900px\) and \(max-height:900px\)[\s\S]*\.chungwagame-shell\{width:min\(1320px,96vw\)!important[\s\S]*calc\(170svh - 323px\)/);
 assert.match(siteCss, /\.chungwagame-shell\{width:min\(1520px,96vw\)!important/);
 assert.match(siteCss, /grid-template-columns:205px minmax\(0,1080px\) 126px!important/);
 
@@ -33,7 +33,7 @@ assert.match(ctCss, /\.ct-match-line[\s\S]*border-top:5px dashed var\(--match-co
 assert.match(ctCss, /@keyframes ctTileClearStrong/);
 assert.match(ctCss, /@keyframes ctClearRing/);
 assert.match(ctCss, /Final viewport-height fit: keep full Chuncortile board visible/);
-assert.match(ctCss, /@media\(min-width:900px\) and \(max-height:900px\)[\s\S]*calc\(138\.8889svh - 236px\)/);
+assert.match(ctCss, /@media\(min-width:900px\) and \(max-height:900px\)[\s\S]*\.ct-shell\{width:min\(1320px,96vw\)!important[\s\S]*calc\(138\.8889svh - 236px\)/);
 assert.match(siteCss, /\.ct-shell\{width:min\(1520px,96vw\)!important/);
 assert.match(siteCss, /grid-template-columns:225px minmax\(0,1040px\) 130px!important/);
 
