@@ -151,3 +151,55 @@
   42%{opacity:1;background:#ffffff0a;box-shadow:inset 0 0 70px #6dffae38}
   100%{opacity:0;background:transparent}
 }
+
+
+/* Final viewport-height fit: keep full Chuncortile board visible */
+@media(min-width:900px) and (max-height:900px){
+  .ct-shell{width:min(1320px,96vw);max-width:none;padding:6px 0 12px}
+  .ct-navline{padding-bottom:4px}
+  .ct-topbar{margin-bottom:4px;gap:14px}
+  .ct-brand-icon{width:46px;height:46px}
+  .ct-brand-icon .ct-face{width:41px;height:41px}
+  .ct-brand h1{font-size:27px}
+  .ct-brand p{margin-top:4px;font-size:10px}
+  .ct-stats{gap:5px}
+  .ct-stat{min-width:78px;padding:5px 8px}
+  .ct-stat strong{font-size:17px}
+  .ct-stat strong b{font-size:19px}
+  .ct-time-track{height:6px;margin-bottom:5px}
+  .ct-layout{
+    grid-template-columns:180px minmax(0,min(1000px,calc(138.8889svh - 236px))) 108px!important;
+    gap:10px!important
+  }
+  .ct-panel{padding:13px;border-radius:16px}
+  .ct-kicker{font-size:8px}
+  .ct-panel h2{font-size:17px;margin:6px 0 9px}
+  .ct-panel ol{font-size:11px;line-height:1.48;padding-left:18px}
+  .ct-panel li+li{margin-top:6px}
+  .ct-warning strong{font-size:10px}
+  .ct-warning p{font-size:10px;line-height:1.5}
+  .ct-board-card{padding:6px;border-radius:16px}
+  .ct-board-head{grid-template-columns:105px minmax(0,1fr) 76px;min-height:30px;padding:0 5px 5px}
+  .ct-board-head p{font-size:9px}
+  .ct-board-head strong{font-size:13px}
+  .ct-tile{inset:4%}
+  .ct-face{width:100%;height:100%}
+  .ct-board-note{font-size:8px;margin-top:4px}
+  .ct-tool{min-height:58px;border-radius:14px}
+  .ct-tool span{font-size:18px}
+  .ct-tool b{font-size:9px}
+  .ct-tool small{font-size:7px}
+}
+@media(min-width:900px) and (max-height:700px){
+  .ct-shell{width:min(1120px,96vw)}
+  .ct-layout{
+    grid-template-columns:150px minmax(0,min(800px,calc(138.8889svh - 215px))) 94px!important;
+    gap:8px!important
+  }
+  .ct-panel{padding:10px}
+  .ct-panel h2{font-size:15px}
+  .ct-panel ol{font-size:9.5px;line-height:1.4}
+  .ct-warning p{font-size:9px}
+  .ct-tool{min-height:50px}
+  .ct-tool small{display:none}
+}
