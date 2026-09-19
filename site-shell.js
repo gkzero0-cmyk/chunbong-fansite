@@ -71,7 +71,7 @@
     link.dataset.siteQuality = 'true';
     document.head.appendChild(link);
   }
-  for (const src of ['site-meta.js', 'site-health.js']) {
+  for (const src of ['site-meta.js', 'site-health.js', 'site-improvements.js']) {
     if (document.querySelector('script[src="' + src + '"]')) continue;
     const script = document.createElement('script');
     script.src = src;
@@ -297,3 +297,4 @@
     document.body.appendChild(script);
   }
 })();
+
