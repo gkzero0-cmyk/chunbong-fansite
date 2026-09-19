@@ -1,0 +1,108 @@
+name: Engagement suite browser smoke
+
+on:
+  push:
+    branches:
+      - feat/engagement-suite-20260920
+    paths:
+      - 'engagement-suite.js'
+      - 'engagement-suite.css'
+      - 'timeline.html'
+      - 'timeline.css'
+      - 'timeline.js'
+      - 'page-media.js'
+      - 'site-shell.js'
+      - 'mobile-site.js'
+      - 'service-worker.js'
+      - 'changelog-data.js'
+      - 'tests/engagement-suite-regression.mjs'
+      - '.github/workflows/engagement-suite-browser-smoke.yml'
+  workflow_dispatch:
+
+jobs:
+  engagement-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Static regression
+        run: |
+          node --check engagement-suite.js
+          node --check timeline.js
+          node tests/engagement-suite-regression.mjs
+          node tests/changelog-regression.mjs
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local site
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/engagement-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:4173/index.html >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/engagement-http.log
+          exit 1
+      - name: Verify personal hub, watch-later, achievements, and timeline
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import assert from 'node:assert/strict';
+          import { chromium } from 'playwright';
+
+          const browser=await chromium.launch({headless:true});
+          const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+          const page=await context.newPage();
+          const errors=[];
+          page.on('pageerror',error=>errors.push(String(error)));
+
+          const schedulePayload={items:[{id:'schedule-1',title:'테스트 방송',startAt:new Date(Date.now()+20*60*1000).toISOString()}]};
+          const vodPayload={items:[{id:'vod-1',title:'테스트 다시보기',date:'2026-09-20',thumb:'',link:'https://example.com/vod-1',embed:'https://example.com/embed/vod-1'}]};
+          const dataPayload={soop:{recentSessions:[{startedAt:'2026-09-19T12:00:00+09:00',title:'테스트 방송 기록',category:'소통'}]}};
+
+          await page.route('**/api/content?type=schedule',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(schedulePayload)}));
+          await page.route('**/api/content?type=vod',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(vodPayload)}));
+          await page.route('**/api/content?type=data',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(dataPayload)}));
+          await page.route('**/api/content?type=changelog-history**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({latest:null,groups:[]})}));
+
+          await page.goto(process.env.BASE_URL+'/?source=pwa',{waitUntil:'domcontentloaded'});
+          await page.waitForSelector('[data-personal-dashboard]');
+          assert.ok(await page.locator('[data-personal-dashboard]').evaluate(el=>el.classList.contains('is-app-home')),'PWA home must use app-home dashboard');
+          assert.ok(await page.getByText('오늘의 춘봉',{exact:true}).count(),'today dashboard missing');
+          assert.ok(await page.getByText('테스트 방송',{exact:true}).count(),'upcoming schedule missing from dashboard');
+          assert.ok(await page.locator('[data-personal-hub-toggle]').isVisible(),'personal hub header control missing');
+          await page.locator('[data-personal-hub-toggle]').click();
+          assert.ok(await page.locator('[data-personal-hub]').isVisible(),'personal hub drawer did not open');
+          await page.keyboard.press('Escape');
+          assert.equal(await page.locator('[data-personal-hub]').isVisible(),false,'personal hub drawer did not close');
+
+          await page.goto(process.env.BASE_URL+'/vod.html',{waitUntil:'domcontentloaded'});
+          await page.waitForSelector('[data-video-index]');
+          await page.locator('[data-video-index]').first().click();
+          await page.waitForSelector('[data-media-favorite]');
+          await page.locator('[data-media-favorite]').click();
+          assert.equal(await page.locator('[data-media-favorite]').getAttribute('aria-pressed'),'true','watch-later toggle failed');
+
+          await page.goto(process.env.BASE_URL+'/index.html',{waitUntil:'domcontentloaded'});
+          await page.waitForSelector('[data-personal-dashboard]');
+          assert.ok(await page.getByText('테스트 다시보기',{exact:true}).count(),'continue watching did not surface selected media');
+
+          await page.goto(process.env.BASE_URL+'/minigames.html',{waitUntil:'domcontentloaded'});
+          await page.waitForSelector('[data-achievement-grid]');
+          assert.ok(await page.locator('[data-achievement-grid] .minigame-achievement').count()>=6,'achievement badges missing');
+
+          await page.goto(process.env.BASE_URL+'/timeline.html',{waitUntil:'domcontentloaded'});
+          await page.waitForSelector('.timeline-row');
+          assert.ok(await page.getByText('테스트 방송 기록',{exact:true}).count(),'broadcast history missing from timeline');
+          await page.locator('[data-timeline-filter="site"]').click();
+          assert.ok(await page.locator('.timeline-row[data-kind="site"]').count()>0,'site timeline filter has no entries');
+          assert.equal(await page.locator('.timeline-row[data-kind="broadcast"]').count(),0,'site-only timeline filter leaked broadcast entries');
+
+          assert.deepEqual(errors,[],'engagement suite page errors: '+errors.join(' | '));
+          await browser.close();
+          EOF_NODE
