@@ -47,6 +47,12 @@
           modalImage.hidden = true;
         }
         dialog.showModal();
+        document.dispatchEvent(new CustomEvent('chunbong:fanart-selected',{detail:{
+          id:String(item.id||item.link||item.title||''),
+          type:'fanart',title:String(item.title||item.caption||'춘봉 팬아트'),
+          meta:String(item.author||'CHUNBONG FAN ART'),href:'fanart.html?open='+encodeURIComponent(String(item.id||'')),
+          sourceHref:item.link||'',thumb:item.thumb||''
+        }}));
       });
     });
     $$('[data-dialog-close]', dialog).forEach(button => button.addEventListener('click', () => dialog.close()));
