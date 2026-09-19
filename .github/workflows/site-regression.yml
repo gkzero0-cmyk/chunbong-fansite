@@ -51,6 +51,7 @@ jobs:
           node --check lib/changelog-history-api.js
           node --check api/fanart.js
           node --check activity-center.js
+          node --check daily-fortune.js
           node --check page.js
           node --check page-schedule.js
           node --check page-notice.js
