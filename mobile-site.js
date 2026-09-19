@@ -188,19 +188,20 @@
   }
 
   document.addEventListener('keydown',event=>{
-    if(event.key!=='Escape')return;
-    if(!moreBackdrop?.hidden){
-      closeAppMore();
-      return;
-    }
-    const iosGuide=document.querySelector('[data-pwa-ios-guide]');
-    if(iosGuide&&!iosGuide.hidden){
-      iosGuide.querySelector('.pwa-ios-guide-close')?.click();
-      return;
-    }
-    if(mobile.matches&&nav?.classList.contains('open')){
-      closeNav();
-      toggle?.focus();
+    if(event.key==='Escape'){
+      if(!moreBackdrop?.hidden){
+        closeAppMore();
+        return;
+      }
+      const iosGuide=document.querySelector('[data-pwa-ios-guide]');
+      if(iosGuide&&!iosGuide.hidden){
+        iosGuide.querySelector('.pwa-ios-guide-close')?.click();
+        return;
+      }
+      if(mobile.matches&&nav?.classList.contains('open')){
+        closeNav();
+        toggle?.focus();
+      }
     }
   });
 
