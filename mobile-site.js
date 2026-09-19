@@ -86,7 +86,7 @@
 
     moreButton=document.createElement('button');
     moreButton.type='button';
-    moreButton.dataset.pwaAppMoreToggle='';
+    moreButton.setAttribute('data-pwa-app-more-toggle','');
     moreButton.setAttribute('aria-expanded','false');
     moreButton.setAttribute('aria-controls','pwa-app-more-sheet');
     moreButton.innerHTML=`${ICONS.more}<span>더보기</span>`;
