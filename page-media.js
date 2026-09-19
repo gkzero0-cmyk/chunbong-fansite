@@ -7,7 +7,7 @@
     errorState, bindRetry, setupReveal, requestedOpenId, requestedKind
   } = core;
 
-  function setVideoPlayer(kind, item) {
+  function setVideoPlayer(kind, item, { trackRecent = false } = {}) {
     const frame = $(`#${kind}-player`);
     const title = $(`#${kind}-player-title`);
     const meta = $(`#${kind}-player-meta`);
@@ -26,7 +26,8 @@
       date:item?.date||item?.meta||'',
       thumb:item?.thumb||'',
       link:item?.link||'',
-      embed:item?.embed||''
+      embed:item?.embed||'',
+      trackRecent:Boolean(trackRecent)
     }}));
         if (item?.embed) {
       frame.loading = 'lazy';
@@ -55,12 +56,12 @@
         </span>
         <span class="video-copy"><small>${esc((item.kind || '').toUpperCase() || item.date || (kind === 'vod' ? 'REPLAY' : 'HOT CLIP'))}${item.date ? ` · ${esc(item.date)}` : ''}</small><strong>${esc(item.title)}</strong></span>
       </button>`).join('');
-    if (items[selectedIndex]) setVideoPlayer(kind, items[selectedIndex]);
+    if (items[selectedIndex]) setVideoPlayer(kind, items[selectedIndex], { trackRecent: Boolean(selectedId) });
     $$('[data-video-index]', list).forEach(button => {
       button.addEventListener('click', () => {
         $$('[data-video-index]', list).forEach(node => node.classList.remove('selected'));
         button.classList.add('selected');
-        setVideoPlayer(kind, items[Number(button.dataset.videoIndex)]);
+        setVideoPlayer(kind, items[Number(button.dataset.videoIndex)], { trackRecent: true });
         window.scrollTo({ top: Math.max(0, $(`#${kind}-viewer`).offsetTop - 90), behavior: 'smooth' });
       });
     });
