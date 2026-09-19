@@ -2,22 +2,27 @@
   'use strict';
 
   const ROUTES = [
-    {href:'index.html',label:'홈',keywords:'home 메인 춘봉 팬사이트'},
-    {href:'schedule.html',label:'방송 일정',keywords:'schedule 오늘 방송 일정 스케줄'},
-    {href:'notice.html',label:'공지',keywords:'notice 공지사항 소식'},
-    {href:'vod.html',label:'다시보기',keywords:'vod replay 다시보기 방송'},
-    {href:'clips.html',label:'핫클립',keywords:'clip catch 핫클립 클립'},
-    {href:'fanart.html',label:'팬아트',keywords:'fanart 팬아트 그림'},
-    {href:'youtube.html',label:'유튜브',keywords:'youtube shorts 춘봉tv 영상'},
-    {href:'tarot.html',label:'타로',keywords:'tarot 오늘의 운세 카드'},
-    {href:'minigames.html',label:'미니게임',keywords:'game 춘트리스 춘박 춘과 춘컬타일'},
-    {href:'history.html',label:'방송 이력',keywords:'history 방송 이력 기록'},
-    {href:'data.html',label:'춘봉 데이터',keywords:'data 통계 soop youtube 시청자'},
-    {href:'changelog.html',label:'업데이트 일지',keywords:'update changelog 업데이트 변경사항'}
+    {href:'index.html',label:'홈',kind:'메뉴',keywords:'home 메인 춘봉 팬사이트'},
+    {href:'schedule.html',label:'방송 일정',kind:'메뉴',keywords:'schedule 오늘 방송 일정 스케줄'},
+    {href:'notice.html',label:'공지',kind:'메뉴',keywords:'notice 공지사항 소식'},
+    {href:'vod.html',label:'다시보기',kind:'메뉴',keywords:'vod replay 다시보기 방송'},
+    {href:'clips.html',label:'핫클립',kind:'메뉴',keywords:'clip catch 핫클립 클립'},
+    {href:'fanart.html',label:'팬아트',kind:'메뉴',keywords:'fanart 팬아트 그림'},
+    {href:'youtube.html',label:'유튜브',kind:'메뉴',keywords:'youtube shorts 춘봉tv 영상'},
+    {href:'tarot.html',label:'타로',kind:'메뉴',keywords:'tarot 오늘의 운세 카드'},
+    {href:'minigames.html',label:'미니게임',kind:'메뉴',keywords:'game 춘트리스 춘박 춘과 춘컬타일'},
+    {href:'history.html',label:'방송 이력',kind:'메뉴',keywords:'history 방송 이력 기록'},
+    {href:'data.html',label:'춘봉 데이터',kind:'메뉴',keywords:'data 통계 soop youtube 시청자'},
+    {href:'changelog.html',label:'업데이트 일지',kind:'메뉴',keywords:'update changelog 업데이트 변경사항'}
   ];
 
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const normalize = value => String(value || '').toLowerCase().replace(/\s+/g,' ').trim();
+  const stripHtml = value => String(value || '').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+  const itemText = item => [
+    item?.title,item?.subject,item?.name,item?.description,item?.content,item?.meta,item?.date,item?.label,
+    ...(Array.isArray(item?.tags)?item.tags:[])
+  ].filter(Boolean).join(' ');
 
   function ensureAssets() {
     if (!document.querySelector('link[data-site-improvements]')) {
@@ -25,6 +30,92 @@
       link.rel='stylesheet'; link.href='site-improvements.css'; link.dataset.siteImprovements='true';
       document.head.appendChild(link);
     }
+  }
+
+  async function fetchJson(url,timeout=7000,key=''){
+    if(key&&window.ChunbongCache){
+      return window.ChunbongCache.fetchJson(key,url,{ttl:3*60*1000});
+    }
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),timeout);
+    try{
+      const res=await fetch(url,{headers:{accept:'application/json'},signal:controller.signal});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      return await res.json();
+    } finally { clearTimeout(timer); }
+  }
+
+  async function loadSearchRows(){
+    const rows=[];
+    const add=(kind,href,item,meta='')=>{
+      const label=String(item?.title||item?.subject||item?.name||item?.label||kind).trim();
+      if(!label)return;
+      rows.push({
+        kind,label,href,
+        meta:String(meta||item?.date||item?.meta||'').trim(),
+        keywords:itemText(item)
+      });
+    };
+    const jobs=[
+      fetchJson('/api/content?type=schedule',7000,'content:schedule').then(payload=>{
+        (Array.isArray(payload?.items)?payload.items:[]).slice(0,30).forEach(item=>add('일정','schedule.html',item,item?.start||item?.date||''));
+      }),
+      fetchJson('/api/content?type=notice',7000,'content:notice').then(payload=>{
+        (Array.isArray(payload?.items)?payload.items:[]).slice(0,40).forEach(item=>{
+          const id=String(item?.id||item?.bbsNo||item?.bbs_no||'');
+          add('공지',id?'notice.html?open='+encodeURIComponent(id):'notice.html',item);
+        });
+      }),
+      fetchJson('/api/content?type=vod',7000,'content:vod').then(payload=>{
+        (Array.isArray(payload?.items)?payload.items:[]).slice(0,30).forEach(item=>{
+          const id=String(item?.id||'');
+          add('다시보기',id?'vod.html?open='+encodeURIComponent(id):'vod.html',item);
+        });
+      }),
+      fetchJson('/api/content?type=clips',7000,'content:clips').then(payload=>{
+        (Array.isArray(payload?.items)?payload.items:[]).slice(0,40).forEach(item=>{
+          const id=String(item?.id||'');
+          const kind=item?.kind==='clip'?'clip':'catch';
+          const href='clips.html?kind='+kind+(id?'&open='+encodeURIComponent(id):'');
+          add(kind==='clip'?'클립':'CATCH',href,item);
+        });
+      }),
+      fetchJson('/api/content?type=youtube',7000,'content:youtube').then(payload=>{
+        (Array.isArray(payload?.items)?payload.items:[]).slice(0,30).forEach(item=>{
+          const id=String(item?.id||'');
+          const kind=item?.kind==='shorts'?'shorts':'videos';
+          const href='youtube.html?kind='+kind+(id?'&open='+encodeURIComponent(id):'');
+          add(kind==='shorts'?'YouTube Shorts':'YouTube',href,item);
+        });
+      }),
+      fetchJson('/api/content?type=notice-detail&id=202862381',7000,'notice-detail:202862381').then(payload=>{
+        const item=payload?.item;
+        if(item){
+          rows.push({
+            kind:'방송 이력',
+            label:item.title||'춘봉 방송 이력',
+            href:'history.html',
+            meta:item.date||'SOOP 공식 기록',
+            keywords:[item.title,item.content,stripHtml(item.html)].filter(Boolean).join(' ')
+          });
+        }
+      }),
+      fetchJson('/api/content?type=changelog-history&since=2026-08-30',9000,'search:changelog').then(payload=>{
+        (Array.isArray(payload?.groups)?payload.groups:[]).slice(0,45).forEach(group=>{
+          (Array.isArray(group?.items)?group.items:[]).forEach(item=>{
+            rows.push({
+              kind:'업데이트',
+              label:String(item?.title||'업데이트'),
+              href:'changelog.html#changelog-'+encodeURIComponent(group.date||''),
+              meta:group.date||'',
+              keywords:[item?.title,item?.description,item?.rawTitle,group?.date].filter(Boolean).join(' ')
+            });
+          });
+        });
+      })
+    ];
+    await Promise.allSettled(jobs);
+    return rows;
   }
 
   function buildSearch() {
@@ -48,23 +139,58 @@
       <div class="site-search-shell">
         <div class="site-search-head">
           <span aria-hidden="true">⌕</span>
-          <input type="search" autocomplete="off" spellcheck="false" placeholder="일정, 공지, 다시보기, 타로, 미니게임…" aria-label="검색어 입력">
+          <input type="search" autocomplete="off" spellcheck="false" placeholder="일정, 공지, 영상, 방송 이력, 업데이트…" aria-label="검색어 입력" aria-controls="site-search-results" aria-autocomplete="list">
           <button type="button" data-site-search-close aria-label="검색 닫기">×</button>
         </div>
-        <div class="site-search-results" role="listbox" aria-label="검색 결과"></div>
-        <p class="site-search-help">메뉴와 주요 기능을 한 번에 찾습니다. <kbd>↑</kbd><kbd>↓</kbd> 이동 · <kbd>Enter</kbd> 열기 · <kbd>Esc</kbd> 닫기</p>
+        <div class="site-search-results" id="site-search-results" role="listbox" aria-label="검색 결과"></div>
+        <p class="site-search-help">두 글자 이상 입력하면 실제 콘텐츠와 메뉴를 함께 검색합니다. <kbd>↑</kbd><kbd>↓</kbd> 이동 · <kbd>Enter</kbd> 열기 · <kbd>Esc</kbd> 닫기</p>
       </div>`;
     document.body.appendChild(dialog);
 
     const input=dialog.querySelector('input');
     const results=dialog.querySelector('.site-search-results');
     let active=0;
+    let contentRows=[];
+    let contentLoading=false;
+    let contentReady=false;
+
+    const score=(row,q)=>{
+      if(!q)return row.kind==='메뉴'?1:-1;
+      const label=normalize(row.label);
+      const hay=normalize([row.label,row.keywords,row.meta,row.kind].filter(Boolean).join(' '));
+      if(!hay.includes(q))return -1;
+      if(label===q)return 100;
+      if(label.startsWith(q))return 70;
+      if(label.includes(q))return 45;
+      return 20;
+    };
 
     const render=()=>{
       const q=normalize(input.value);
-      const rows=ROUTES.filter(row=>!q || normalize(row.label+' '+row.keywords).includes(q)).slice(0,10);
+      const source=q?[...ROUTES,...contentRows]:ROUTES;
+      const rows=source.map(row=>({row,rank:score(row,q)})).filter(entry=>entry.rank>=0)
+        .sort((a,b)=>b.rank-a.rank).slice(0,12).map(entry=>entry.row);
       active=Math.min(active,Math.max(0,rows.length-1));
-      results.innerHTML=rows.length ? rows.map((row,i)=>`<a role="option" aria-selected="${i===active}" class="${i===active?'is-active':''}" href="${row.href}"><strong>${escapeHtml(row.label)}</strong><small>${escapeHtml(row.keywords.split(' ').slice(0,4).join(' · '))}</small><span>→</span></a>`).join('') : '<div class="site-search-empty">일치하는 메뉴가 없습니다.</div>';
+      if(!rows.length&&q&&contentLoading){
+        results.innerHTML='<div class="site-search-empty">사이트 콘텐츠를 검색하는 중…</div>';
+        input.removeAttribute('aria-activedescendant');
+        return;
+      }
+      results.innerHTML=rows.length ? rows.map((row,i)=>{
+        const id='site-search-option-'+i;
+        return `<a id="${id}" role="option" aria-selected="${i===active}" class="${i===active?'is-active':''}" href="${escapeHtml(row.href)}"><span class="site-search-result-copy"><strong>${escapeHtml(row.label)}</strong><small>${escapeHtml(row.kind+(row.meta?' · '+row.meta:''))}</small></span><span class="site-search-go" aria-hidden="true">→</span></a>`;
+      }).join('') : '<div class="site-search-empty">'+(q?'일치하는 콘텐츠가 없습니다.':'검색어를 입력해 주세요.')+'</div>';
+      const selected=results.querySelector('a.is-active');
+      if(selected)input.setAttribute('aria-activedescendant',selected.id);
+      else input.removeAttribute('aria-activedescendant');
+    };
+
+    const loadContent=async()=>{
+      if(contentReady||contentLoading)return;
+      contentLoading=true;
+      render();
+      try{contentRows=await loadSearchRows();}
+      finally{contentLoading=false;contentReady=true;render();}
     };
 
     const open=()=>{
@@ -76,88 +202,24 @@
     trigger.addEventListener('click',open);
     dialog.querySelector('[data-site-search-close]').addEventListener('click',close);
     dialog.addEventListener('click',e=>{if(e.target===dialog)close()});
-    input.addEventListener('input',()=>{active=0;render()});
+    input.addEventListener('input',()=>{active=0;render();if(normalize(input.value).length>=2)void loadContent();});
     input.addEventListener('keydown',e=>{
       const links=[...results.querySelectorAll('a')];
-      if(e.key==='ArrowDown'){e.preventDefault();active=Math.min(active+1,Math.max(0,links.length-1));render()}
-      if(e.key==='ArrowUp'){e.preventDefault();active=Math.max(0,active-1);render()}
-      if(e.key==='Enter'&&links[active]){e.preventDefault();location.href=links[active].href}
+      if(e.key==='ArrowDown'){e.preventDefault();active=Math.min(active+1,Math.max(0,links.length-1));render();}
+      if(e.key==='ArrowUp'){e.preventDefault();active=Math.max(0,active-1);render();}
+      if(e.key==='Enter'&&links[active]){e.preventDefault();location.href=links[active].href;}
       if(e.key==='Escape')close();
     });
     document.addEventListener('keydown',e=>{
-      if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();open()}
+      if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();open();}
     });
     render();
-  }
-
-  async function fetchJson(url,timeout=7000){
-    const controller=new AbortController();
-    const timer=setTimeout(()=>controller.abort(),timeout);
-    try{
-      const res=await fetch(url,{headers:{accept:'application/json'},signal:controller.signal});
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      return await res.json();
-    } finally { clearTimeout(timer); }
-  }
-
-  const kstDate=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-
-  function firstUseful(items=[]){
-    return (Array.isArray(items)?items:[]).find(item=>item&&typeof item==='object')||null;
-  }
-  function titleOf(item,fallback='확인하기'){
-    return item?.title||item?.subject||item?.name||item?.text||fallback;
-  }
-
-  async function buildHomeDashboard(){
-    if(document.body.dataset.page!=='home'||document.querySelector('.home-today-dashboard')) return;
-    const portal=document.querySelector('.portal-section');
-    if(!portal) return;
-    const section=document.createElement('section');
-    section.className='home-today-dashboard';
-    section.innerHTML=`
-      <div class="home-today-head">
-        <div><p class="kicker">TODAY AT CHUNBONG</p><h2>오늘의 춘봉</h2></div>
-        <p>오늘 확인할 내용을 빠르게 모았습니다.</p>
-      </div>
-      <div class="home-today-grid" aria-live="polite">
-        <a class="home-today-card" href="schedule.html" data-home-card="schedule"><small>방송 일정</small><strong>일정을 불러오는 중…</strong><span>오늘 일정 확인 →</span></a>
-        <a class="home-today-card" href="notice.html" data-home-card="notice"><small>최신 공지</small><strong>공지를 불러오는 중…</strong><span>공지 보기 →</span></a>
-        <a class="home-today-card" href="youtube.html" data-home-card="youtube"><small>춘봉TV</small><strong>최신 영상을 불러오는 중…</strong><span>유튜브 보기 →</span></a>
-        <a class="home-today-card accent" href="tarot.html"><small>DAILY TAROT</small><strong>오늘의 운세</strong><span>오늘 카드 확인 →</span></a>
-      </div>`;
-    portal.parentNode.insertBefore(section,portal);
-
-    const update=(key,title,detail='')=>{
-      const card=section.querySelector('[data-home-card="'+key+'"]');
-      if(!card)return;
-      card.querySelector('strong').textContent=title;
-      if(detail) card.dataset.detail=detail;
-    };
-
-    const today=kstDate();
-    const jobs=[
-      fetchJson('/api/content?type=schedule').then(data=>{
-        const items=Array.isArray(data.items)?data.items:[];
-        const todayItem=items.find(item=>String(item?.date||item?.startDate||item?.datetime||'').includes(today))||firstUseful(items);
-        update('schedule',todayItem?titleOf(todayItem,'오늘 일정 확인'):'오늘 등록된 일정 없음');
-      }).catch(()=>update('schedule','일정 페이지에서 확인하기')),
-      fetchJson('/api/content?type=notice').then(data=>{
-        const item=firstUseful(data.items);
-        update('notice',item?titleOf(item,'최신 공지 확인'):'새 공지 확인하기');
-      }).catch(()=>update('notice','공지 페이지에서 확인하기')),
-      fetchJson('/api/content?type=youtube').then(data=>{
-        const item=firstUseful(data?.groups?.videos)||firstUseful(data.items);
-        update('youtube',item?titleOf(item,'최신 영상 확인'):'최신 영상 확인하기');
-      }).catch(()=>update('youtube','유튜브 페이지에서 확인하기'))
-    ];
-    await Promise.allSettled(jobs);
   }
 
   async function checkDeploymentSync(){
     const CACHE_KEY='chunbong-deploy-sync-v1';
     let cached=null;
-    try{cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'null')}catch(_){}
+    try{cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');}catch(_){}
     const now=Date.now();
     if(cached&&now-cached.at<10*60*1000) return applyDeploymentState(cached);
 
@@ -167,7 +229,7 @@
         fetchJson('https://api.github.com/repos/gkzero0-cmyk/chunbong-fansite/commits/main',5000)
       ]);
       const state={at:now,deployed:String(deployed?.sha||''),main:String(main?.sha||'')};
-      try{localStorage.setItem(CACHE_KEY,JSON.stringify(state))}catch(_){}
+      try{localStorage.setItem(CACHE_KEY,JSON.stringify(state));}catch(_){}
       applyDeploymentState(state);
     }catch(_){}
   }
@@ -215,7 +277,6 @@
 
   ensureAssets();
   buildSearch();
-  buildHomeDashboard();
   addLoadingGuards();
   checkDeploymentSync();
 })();
