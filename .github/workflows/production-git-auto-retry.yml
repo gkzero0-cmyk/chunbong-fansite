@@ -2,12 +2,13 @@ name: Production Git auto retry
 
 on:
   schedule:
-    # 02:10 KST. Retry only once per day so Vercel's daily deployment quota is not spammed.
-    - cron: '10 17 * * *'
+    # 05:20 KST. Retry once per day after the observed Vercel Hobby build-quota reset window.
+    - cron: '20 20 * * *'
   workflow_dispatch:
 
 permissions:
   contents: write
+  statuses: read
 
 concurrency:
   group: production-git-auto-retry
@@ -16,7 +17,7 @@ concurrency:
 jobs:
   retry-production:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,30 +28,77 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Check production commit
+      - name: Check production commit and Vercel cooldown
         id: sync
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           git fetch origin main --depth=1
           git reset --hard origin/main
+
           EXPECTED="$(git rev-parse HEAD)"
           COMMIT_TS="$(git show -s --format=%ct HEAD)"
           NOW_TS="$(date +%s)"
           AGE_SECONDS="$((NOW_TS - COMMIT_TS))"
           BASE='https://chunbong-fansite.vercel.app'
+
           BODY="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'cache-control: no-cache' "${BASE}/api/version?_ts=$(date +%s)" || true)"
           ACTUAL="$(printf '%s' "$BODY" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(JSON.parse(s).sha||'')}catch{}})")"
+
+          RATE_LIMIT_CREATED_AT="$(
+            node --input-type=module <<'NODE'
+          const headers = {
+            authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+            accept: 'application/vnd.github+json',
+            'x-github-api-version': '2022-11-28'
+          };
+          const repository = process.env.GITHUB_REPOSITORY;
+          const commitsResponse = await fetch(`https://api.github.com/repos/${repository}/commits?per_page=30`, { headers });
+          if (!commitsResponse.ok) throw new Error(`commit lookup failed: ${commitsResponse.status}`);
+          const commits = await commitsResponse.json();
+
+          for (const commit of commits) {
+            const statusResponse = await fetch(
+              `https://api.github.com/repos/${repository}/commits/${commit.sha}/status`,
+              { headers }
+            );
+            if (!statusResponse.ok) throw new Error(`status lookup failed: ${statusResponse.status}`);
+            const combined = await statusResponse.json();
+            const rateLimited = (combined.statuses || []).find(status =>
+              status.context === 'Vercel' &&
+              /rate limited/i.test(String(status.description || ''))
+            );
+            if (rateLimited?.created_at) {
+              process.stdout.write(rateLimited.created_at);
+              break;
+            }
+          }
+          NODE
+          )"
+
+          RATE_LIMIT_AGE_SECONDS=999999999
+          if [[ -n "$RATE_LIMIT_CREATED_AT" ]]; then
+            RATE_LIMIT_TS="$(date -d "$RATE_LIMIT_CREATED_AT" +%s)"
+            RATE_LIMIT_AGE_SECONDS="$((NOW_TS - RATE_LIMIT_TS))"
+          fi
+
           echo "expected=$EXPECTED"
           echo "actual=${ACTUAL:-missing}"
           echo "main_age_seconds=$AGE_SECONDS"
-          if [ "$ACTUAL" = "$EXPECTED" ]; then
+          echo "last_rate_limit_at=${RATE_LIMIT_CREATED_AT:-none}"
+          echo "rate_limit_age_seconds=$RATE_LIMIT_AGE_SECONDS"
+
+          if [[ "$ACTUAL" == "$EXPECTED" ]]; then
             echo "needs_retry=false" >> "$GITHUB_OUTPUT"
-          elif [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || [ "$AGE_SECONDS" -ge 72000 ]; then
+          elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            echo "needs_retry=true" >> "$GITHUB_OUTPUT"
+          elif [[ "$AGE_SECONDS" -ge 72000 && "$RATE_LIMIT_AGE_SECONDS" -ge 90000 ]]; then
             echo "needs_retry=true" >> "$GITHUB_OUTPUT"
           else
             echo "needs_retry=false" >> "$GITHUB_OUTPUT"
-            echo "Production is pending, but main is less than 20 hours old; skip this scheduled retry."
+            echo "Production is pending, but the main-age or Vercel 25-hour cooldown guard has not elapsed; skip this scheduled retry."
           fi
 
       - name: Trigger a fresh Vercel Git deployment
@@ -64,6 +112,6 @@ jobs:
           git push origin HEAD:main
           echo 'Created one empty main commit to retrigger the Vercel Git integration.'
 
-      - name: Already synced
+      - name: Already synced or cooling down
         if: steps.sync.outputs.needs_retry != 'true'
-        run: echo 'Production already matches main; no retry commit was created.'
+        run: echo 'Production already matches main or the safe retry window has not opened; no retry commit was created.'
