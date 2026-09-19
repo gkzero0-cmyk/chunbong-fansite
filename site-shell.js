@@ -297,3 +297,21 @@
     document.body.appendChild(script);
   }
 })();
+
+
+(() => {
+  if (!document.querySelector('link[data-site-improvements]')) {
+    const stylesheet=document.createElement('link');
+    stylesheet.rel='stylesheet';
+    stylesheet.href='site-improvements.css';
+    stylesheet.dataset.siteImprovements='true';
+    document.head.appendChild(stylesheet);
+  }
+  if (!document.querySelector('script[data-site-improvements-runtime]')) {
+    const script=document.createElement('script');
+    script.src='site-improvements.js';
+    script.defer=true;
+    script.dataset.siteImprovementsRuntime='true';
+    document.body.appendChild(script);
+  }
+})();
