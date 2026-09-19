@@ -60,9 +60,11 @@
     const list = $(`#${kind}-list`);
     if (!list) return;
     const fallback = data.fallback?.vod || [];
+    list.setAttribute('aria-busy','true');
     list.innerHTML = '<div class="loading-card">영상을 불러오는 중...</div>';
     const items = await loadItems('vod', fallback);
     renderVideoList(kind, items, list, requestedOpenId);
+    list.setAttribute('aria-busy','false');
   }
 
   async function renderClipsPage() {
@@ -70,8 +72,10 @@
     const tabs = $$('.clip-tab');
     const kindLabel = $('#clip-kind-label');
     if (!list || !tabs.length) return;
+    list.setAttribute('aria-busy','true');
     list.innerHTML = '<div class="loading-card">CATCH와 클립을 불러오는 중...</div>';
     const payload = await loadContent('clips');
+    list.setAttribute('aria-busy','false');
     const groups = {
       catch: Array.isArray(payload.groups?.catch) ? payload.groups.catch : [],
       clip: Array.isArray(payload.groups?.clip) ? payload.groups.clip : []
@@ -116,8 +120,10 @@
     const tabs = $$('.youtube-tab');
     const kindLabel = $('#youtube-kind-label');
     if (!list || !tabs.length) return;
+    list.setAttribute('aria-busy','true');
     list.innerHTML = '<div class="loading-card">유튜브 동영상과 Shorts를 불러오는 중...</div>';
     const payload = await loadContent('youtube');
+    list.setAttribute('aria-busy','false');
     const groups = {
       videos: Array.isArray(payload.groups?.videos) ? payload.groups.videos.slice(0, 12) : [],
       shorts: Array.isArray(payload.groups?.shorts) ? payload.groups.shorts.slice(0, 12) : []
