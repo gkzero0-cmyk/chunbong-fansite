@@ -8,7 +8,7 @@ const rankingCore=fs.readFileSync(new URL('../chuncortile-ranking-core.js',impor
 const postgame=fs.readFileSync(new URL('../chuncortile-postgame-ranking.js',import.meta.url),'utf8');
 const api=fs.readFileSync(new URL('../api/content.js',import.meta.url),'utf8');
 const hub=fs.readFileSync(new URL('../minigames.html',import.meta.url),'utf8');
-const content=fs.readFileSync(new URL('../content.js',import.meta.url),'utf8');
+const shell=fs.readFileSync(new URL('../site-shell.js',import.meta.url),'utf8');
 
 for(const source of [js,rankingCore,postgame])assert.doesNotThrow(()=>new Function(source));
 assert.match(html,/<h1>춘컬타일<\/h1>/);
@@ -40,5 +40,5 @@ assert.match(api,/handleChuncortileRanking/);
 assert.match(api,/type==='chuncortile-ranking'/);
 assert.match(hub,/href="chuncortile\.html"/,'minigames hub card missing');
 assert.match(hub,/>춘컬타일</);
-assert.match(content,/href="chuncortile\.html"/,'header submenu link missing');
+assert.match(shell,/href="chuncortile\.html"/,'header submenu link missing');
 console.log('chuncortile static regression passed');
