@@ -69,7 +69,6 @@ const expectedMilestones=[
   ['2026-09-01','SOOP CATCH 재생·공식 일정 정리'],
   ['2026-09-02','타로 고해상도 카드·직접 선택 개선'],
   ['2026-09-03','춘봉 데이터 대시보드 추가'],
-  ['2026-09-05','춘봉 데이터 Trackify 연동·로딩 안정화'],
   ['2026-09-06','SOOP 방송 이력·카테고리 제어 개선'],
   ['2026-09-07','타로 원본 이미지·벡터 카드 프레임 개선'],
   ['2026-09-08','방송 캘린더 팔로워·팬클럽 지표 수정'],
@@ -87,6 +86,7 @@ const expectedMilestones=[
 for(const [date,title] of expectedMilestones){
   assert.ok(groups.some(group=>group.date===date&&group.items.some(item=>item.title===title)),`missing audited changelog milestone: ${date} ${title}`);
 }
+assert.ok(!groups.some(group=>group.items.some(item=>item.title==='춘봉 데이터 Trackify 연동·로딩 안정화')),'removed Trackify changelog card must not return');
 assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>/멀티플레이/.test(item.title))),'latest multiplayer entry missing');
 assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='팬사이트 런타임·캐시 최적화')),'#127 curated optimization entry missing');
 assert.ok(groups.some(group=>group.date==='2026-09-19'&&group.items.some(item=>item.title==='페이지 런타임 분리 및 타로 카드 전송량 최적화')),'#128 curated optimization entry missing');
