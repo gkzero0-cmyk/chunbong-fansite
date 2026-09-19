@@ -26,8 +26,8 @@ assert.match(js, /pointermove/, 'daily fortune prism tilt pointer tracking missi
 assert.match(js, /showModal\(\)/, 'daily fortune must open as a dialog');
 assert.match(js, /data-daily-fortune-launcher/, 'persistent bottom-right reopen launcher missing');
 assert.match(css, /\.daily-fortune-launcher\{position:fixed/, 'launcher must remain fixed on screen');
-assert.match(css, /v1789845157\/chunbong-fansite\/tarot-card-back\.png/, 'daily fortune must use the exact uploaded celestial card-back asset');
-assert.match(css, /\.daily-fortune-back\{[\s\S]*background-image:url\("https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v1789845157\/chunbong-fansite\/tarot-card-back\.png"\)/, 'daily fortune back must use the uploaded image');
+assert.match(css, /f_auto,q_auto:good,c_limit,w_768\/v1789845157\/chunbong-fansite\/tarot-card-back\.png/, 'daily fortune must use the exact uploaded celestial card-back asset');
+assert.match(css, /\.daily-fortune-back\{[\s\S]*background-image:url\("https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/f_auto,q_auto:good,c_limit,w_768\/v1789845157\/chunbong-fansite\/tarot-card-back\.png"\)/, 'daily fortune back must use the uploaded image');
 assert.match(css, /\.daily-fortune-launcher>span\{[\s\S]*tarot-card-back\.png/, 'saved-fortune launcher must reuse the uploaded card back');
 assert.match(css, /\.daily-fortune-front\{[\s\S]*#08152f/, 'daily fortune front must use the matching deep-navy celestial frame');
 assert.match(css, /\.daily-fortune-front-frame::before,\.daily-fortune-front-frame::after/, 'daily fortune front must include matching celestial star medallions');
