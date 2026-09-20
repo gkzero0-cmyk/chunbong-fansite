@@ -13,6 +13,8 @@ const APP_SHELL = [
   '/mobile-site.js',
   '/page.js?v=2',
   '/site-shell.js',
+  '/site-meta.js',
+  '/site-health.js',
   '/site-improvements.js',
   '/activity-center.css',
   '/activity-center.js',

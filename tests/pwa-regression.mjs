@@ -46,6 +46,8 @@ assert.match(sw, /\['script','style','worker','image','font'\]/, 'static assets 
 assert.match(shell, /chunbong-cache-v2:/, 'cross-page session cache namespace missing');
 assert.match(shell, /sessionStorage\.setItem/, 'shared cache should persist within the tab');
 assert.match(sw, /\/site-shell\.js/, 'PWA app shell must cache site-shell.js');
+assert.match(sw, /\/site-meta\.js/, 'PWA app shell must cache runtime metadata loaded by site-shell.js');
+assert.match(sw, /\/site-health\.js/, 'PWA app shell must cache runtime health checks loaded by site-shell.js');
 assert.match(sw, /\/mobile-site\.js/, 'PWA app shell must cache mobile-site.js');
 assert.match(sw, /\/personal-hub\.js/, 'PWA app shell must cache personal hub runtime');
 assert.match(sw, /\/myhub\.html/, 'PWA app shell must cache My Fan Hub');
