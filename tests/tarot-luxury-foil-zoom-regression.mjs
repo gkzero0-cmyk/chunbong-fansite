@@ -18,7 +18,7 @@ assert.match(js,/__CHUNBONG_TAROT_SFX_CONTROLLER__/,'tarot foil must use shared 
 assert.match(js,/function fitTarotZoom\(/,'large-view viewport fitter missing');
 assert.match(js,/window\.visualViewport\?\.height/,'zoom fitter must use the visual viewport');
 assert.match(js,/widthByHeight = availableHeight \* \(898 \/ 1488\)/,'zoom card width must derive from the real tarot card aspect ratio');
-assert.match(js,/requestAnimationFrame\(\(\) => \{ fitTarotZoom\(\); requestAnimationFrame\(fitTarotZoom\); \}\)/,'zoom must fit after layout settles');
+assert.match(js,/fitTarotZoom\(\);\s*requestAnimationFrame\(fitTarotZoom\);/,'zoom must fit synchronously and recheck after layout settles');
 
 assert.match(css,/\.tarot-card-foil\{/,'shared result/zoom foil host missing');
 assert.match(css,/\.tarot-card-foil::after/,'subtle foil sheen layer missing');
