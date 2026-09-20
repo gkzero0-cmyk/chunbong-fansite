@@ -6,7 +6,7 @@
   const GAME_LABELS={chuntris:'춘트리스',chunbak:'춘박게임',chungwagame:'춘과게임',chuncortile:'춘컬타일'};
   const COLLECTIONS=Object.freeze({later:'나중에 보기',funny:'웃긴 방송',minecraft:'마크 명장면',favorite:'다시 보고 싶은 콘텐츠'});
   const ALERT_TYPE_LABELS=Object.freeze({live:'LIVE 시작',tarot:'타로 방송',minecraft:'마인크래프트',collab:'합방',special:'특별 콘텐츠',other:'기타 일정'});
-  const blank=()=>({version:2,favorites:[],recent:null,tarot:[],games:{plays:{},lastPlayed:null,daily:{}},alerts:{enabled:false,leadMinutes:10,types:{live:true,tarot:true,minecraft:true,collab:true,special:true,other:true},lastNotified:'',lastLiveBroadcastId:''}});
+  const blank=()=>({version:3,favorites:[],recent:null,tarot:[],games:{plays:{},lastPlayed:null,daily:{}},alerts:{enabled:false,leadMinutes:10,types:{live:true,tarot:true,minecraft:true,collab:true,special:true,other:true},lastNotified:'',lastLiveBroadcastId:''}});
   const safeParse=value=>{try{return JSON.parse(value)}catch(_){return null}};
   function read(){
     try{
@@ -15,7 +15,7 @@
       return {
         ...blank(),...parsed,
         favorites:(Array.isArray(parsed.favorites)?parsed.favorites:[]).map(row=>({...row,collection:COLLECTIONS[row?.collection]?row.collection:'later'})),
-        tarot:(Array.isArray(parsed.tarot)?parsed.tarot:[]).map(row=>({...row,pinned:Boolean(row?.pinned)})),
+        tarot:(Array.isArray(parsed.tarot)?parsed.tarot:[]).map(row=>({...row,pinned:Boolean(row?.pinned),note:String(row?.note||'').slice(0,1000),reading:row?.reading&&typeof row.reading==='object'?row.reading:null})),
         games:{...blank().games,...(parsed.games||{}),plays:{...(parsed.games?.plays||{})},daily:{...(parsed.games?.daily||{})}},
         alerts:{...blank().alerts,...(parsed.alerts||{}),types:{...blank().alerts.types,...(parsed.alerts?.types||{})}}
       };
@@ -68,12 +68,64 @@
       id:'tarot-'+Date.now(),createdAt:new Date().toISOString(),pinned:false,
       question:String(entry.question||'').slice(0,500),
       topic:String(entry.topic||'general'),spreadId:String(entry.spreadId||'single'),
+      note:String(entry.note||'').slice(0,1000),
+      reading:entry.reading&&typeof entry.reading==='object'?entry.reading:null,
       cards:cards.slice(0,12).map(card=>({
         name:String(card.name||''),orientation:card.orientation==='reversed'?'reversed':'upright',
         position:String(card.position||''),deckNumber:Number(card.deckNumber)||0
       }))
     };
     state.tarot.unshift(row);state.tarot=state.tarot.slice(0,MAX_TAROT);write(state);
+  }
+  function tarotSignature(entry={}){
+    const cards=Array.isArray(entry.cards)?entry.cards:[];
+    return [String(entry.spreadId||''),String(entry.question||'').trim(),cards.map(card=>String(card.name||card.nameKo||'')+'|'+String(card.orientation||'upright')).join('>')].join('::');
+  }
+  function recordTarotDetail(entry={}){
+    if(!entry?.reading||typeof entry.reading!=='object')return false;
+    const state=read(),signature=tarotSignature(entry);
+    let row=state.tarot.find(item=>tarotSignature(item)===signature);
+    if(!row&&state.tarot[0]){
+      const age=Date.now()-Date.parse(state.tarot[0].createdAt||0);
+      if(Number.isFinite(age)&&age>=0&&age<15*60*1000)row=state.tarot[0];
+    }
+    if(!row){
+      recordTarot(entry);
+      return true;
+    }
+    row.reading=entry.reading;
+    row.updatedAt=new Date().toISOString();
+    write(state);
+    return true;
+  }
+  function exportBackup(){
+    return JSON.stringify({
+      kind:'chunbong-fanhub-backup',
+      backupVersion:1,
+      exportedAt:new Date().toISOString(),
+      data:read()
+    },null,2);
+  }
+  function importBackup(value){
+    const parsed=typeof value==='string'?safeParse(value):value;
+    const source=parsed?.kind==='chunbong-fanhub-backup'?parsed.data:parsed?.data||parsed;
+    if(!source||typeof source!=='object'||(!Array.isArray(source.favorites)&&!Array.isArray(source.tarot)&&!source.games))return false;
+    const base=blank();
+    const next={
+      ...base,...source,version:3,
+      favorites:(Array.isArray(source.favorites)?source.favorites:[]).slice(0,MAX_FAVORITES).map(row=>({...row,collection:COLLECTIONS[row?.collection]?row.collection:'later'})),
+      tarot:(Array.isArray(source.tarot)?source.tarot:[]).slice(0,MAX_TAROT).map(row=>({...row,pinned:Boolean(row?.pinned),note:String(row?.note||'').slice(0,1000),reading:row?.reading&&typeof row.reading==='object'?row.reading:null})),
+      games:{...base.games,...(source.games||{}),plays:{...(source.games?.plays||{})},daily:{...(source.games?.daily||{})}},
+      alerts:{...base.alerts,...(source.alerts||{}),types:{...base.alerts.types,...(source.alerts?.types||{})}}
+    };
+    write(next);
+    return true;
+  }
+  function resetPersonalData(){
+    try{localStorage.removeItem(STORAGE_KEY)}catch(_){}
+    const next=blank();
+    document.dispatchEvent(new CustomEvent('chunbong:personal-updated',{detail:next}));
+    return next;
   }
   const kstDateKey=value=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(value instanceof Date?value:new Date(value));
   const shiftDate=(key,days)=>{const d=new Date(key+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10)};
@@ -142,6 +194,7 @@
     button.onclick=()=>{favoriteItem(item);render()};render();
   });
   document.addEventListener('chunbong:tarot-reading',event=>recordTarot(event.detail||{}));
+  document.addEventListener('chunbong:tarot-reading-detail',event=>recordTarotDetail(event.detail||{}));
 
   function watchGame(){
     const game=document.body.dataset.game;if(!GAME_LABELS[game])return;
@@ -164,7 +217,15 @@
         try{const nextPermission=await Notification.requestPermission();if(nextPermission!=='granted')enabled=false}catch(_){enabled=false}
       }else if(permission!=='granted')enabled=false;
     }
-    state.alerts.enabled=Boolean(enabled);write(state);return state.alerts.enabled;
+    state.alerts.enabled=Boolean(enabled);write(state);
+    try{
+      const reg=await navigator.serviceWorker?.ready;
+      if(reg?.periodicSync){
+        if(state.alerts.enabled)await reg.periodicSync.register('chunbong-live-background',{minInterval:15*60*1000});
+        else await reg.periodicSync.unregister('chunbong-live-background');
+      }
+    }catch(_){}
+    return state.alerts.enabled;
   }
   function setAlertType(type,enabled){if(!Object.prototype.hasOwnProperty.call(ALERT_TYPE_LABELS,type))return false;const state=read();state.alerts.types[type]=Boolean(enabled);write(state);return state.alerts.types[type]}
   function setAlertLead(value){const lead=[5,10,30].includes(Number(value))?Number(value):10;const state=read();state.alerts.leadMinutes=lead;write(state);return lead}
@@ -296,6 +357,6 @@
     window.addEventListener('pageshow',()=>{startReminderTimer();void checkBroadcastReminder();void checkLiveReminder()});
   }
 
-  window.ChunbongPersonal={read,write,favoriteItem,isFavorite,setFavoriteCollection,toggleTarotPinned,recordRecent,recordTarot,recordGameStart,gameSnapshot,dailyChallenge,setAlertEnabled,setAlertType,setAlertLead,renderDashboard};
+  window.ChunbongPersonal={read,write,favoriteItem,isFavorite,setFavoriteCollection,toggleTarotPinned,recordRecent,recordTarot,recordTarotDetail,recordGameStart,gameSnapshot,dailyChallenge,setAlertEnabled,setAlertType,setAlertLead,exportBackup,importBackup,resetPersonalData,renderDashboard};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
