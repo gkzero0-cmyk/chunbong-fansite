@@ -252,7 +252,7 @@
     }
     while(cells.length%7) cells.push('<span class="data-calendar-day is-empty"></span>');
     $('#data-soop-calendar').innerHTML=cells.join('');
-    $('[data-calendar-date]').forEach(button=>button.addEventListener('click',()=>{state.selectedCalendarDate=button.dataset.calendarDate;const url=new URL(location.href);url.searchParams.set('view','calendar');url.searchParams.set('date',state.selectedCalendarDate);history.replaceState(null,'',url);renderCalendarDetail(map.get(state.selectedCalendarDate))}));
+    document.querySelectorAll('[data-calendar-date]').forEach(button=>button.addEventListener('click',()=>{state.selectedCalendarDate=button.dataset.calendarDate;const url=new URL(location.href);url.searchParams.set('view','calendar');url.searchParams.set('date',state.selectedCalendarDate);history.replaceState(null,'',url);renderCalendarDetail(map.get(state.selectedCalendarDate))}));
     renderCalendarDetail(map.get(state.selectedCalendarDate)||rows.find(row=>row.date?.startsWith(`${state.calendarMonth}-`))||null);
   }
 
