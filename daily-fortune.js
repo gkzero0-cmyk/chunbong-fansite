@@ -132,14 +132,13 @@
     } catch (_) {}
   }
 
-  function playMagicRippleSound(ctx, strength = 'move') {
+  function playMagicRippleSound(ctx) {
     if (!ctx) return;
     const start = ctx.currentTime;
-    const strong = strength === 'enter';
-    playTone(ctx, strong ? 784 : 880, start, strong ? 0.32 : 0.22, strong ? 0.020 : 0.010, 'sine', strong ? 1318.5 : 1174.7);
-    playTone(ctx, strong ? 1318.5 : 1174.7, start + 0.025, strong ? 0.42 : 0.26, strong ? 0.014 : 0.007, 'triangle', strong ? 1975.5 : 1568);
-    playTone(ctx, strong ? 2093 : 1760, start + 0.07, strong ? 0.48 : 0.28, strong ? 0.008 : 0.0045, 'sine', strong ? 2637 : 2093);
-    if (strong) playTone(ctx, 196, start, 0.38, 0.006, 'sine', 293.7);
+    // Low, restrained magical resonance: one soft chord on entry, never on pointer-move.
+    playTone(ctx, 174.6, start, 0.64, 0.014, 'sine', 220);
+    playTone(ctx, 349.2, start + 0.035, 0.72, 0.010, 'triangle', 440);
+    playTone(ctx, 523.25, start + 0.10, 0.78, 0.006, 'sine', 659.25);
   }
 
   function playSpinSound(ctx) {
@@ -272,16 +271,10 @@
       return hoverAudioCtx;
     };
 
-    const spawnHoloRipple = (px, py, strength = 'move') => {
+    const spawnHoloRipple = (px, py) => {
       if (reducedMotion()) return;
       const now = performance.now();
-      const width = Math.max(1, stage.clientWidth);
-      const height = Math.max(1, stage.clientHeight);
-      const distance = lastRippleX < 0 ? Infinity : Math.hypot((px - lastRippleX) * width, (py - lastRippleY) * height);
-      const minDelay = strength === 'enter' ? 0 : 280;
-      if (strength !== 'enter' && now - lastRippleAt < minDelay && distance < 54) return;
-      if (strength !== 'enter' && distance < 42 && now - lastRippleAt < 520) return;
-
+      if (now - lastRippleAt < 2200) return;
       lastRippleAt = now;
       lastRippleX = px;
       lastRippleY = py;
@@ -290,27 +283,9 @@
       ripple.className = 'daily-fortune-holo-ripple';
       ripple.style.left = (px * 100).toFixed(1) + '%';
       ripple.style.top = (py * 100).toFixed(1) + '%';
-      ripple.style.setProperty('--ripple-hue', ((px - 0.5) * 42).toFixed(1) + 'deg');
-      ripple.style.setProperty('--ripple-scale', strength === 'enter' ? '1.12' : '0.92');
       holo.appendChild(ripple);
-
-      const sparkCount = strength === 'enter' ? 5 : 3;
-      for (let index = 0; index < sparkCount; index += 1) {
-        const spark = document.createElement('i');
-        spark.className = 'daily-fortune-holo-spark';
-        const angle = (Math.PI * 2 * index) / sparkCount + Math.random() * 0.55;
-        const radius = 12 + Math.random() * 28;
-        spark.style.left = (px * 100).toFixed(1) + '%';
-        spark.style.top = (py * 100).toFixed(1) + '%';
-        spark.style.setProperty('--spark-x', Math.cos(angle) * radius + 'px');
-        spark.style.setProperty('--spark-y', Math.sin(angle) * radius + 'px');
-        spark.style.setProperty('--spark-delay', Math.round(Math.random() * 90) + 'ms');
-        holo.appendChild(spark);
-        setTimeout(() => spark.remove(), 760);
-      }
-
-      playMagicRippleSound(ensureHoverAudio(), strength);
-      setTimeout(() => ripple.remove(), 900);
+      playMagicRippleSound(ensureHoverAudio());
+      setTimeout(() => ripple.remove(), 780);
     };
 
     const showLauncher = () => {
@@ -491,7 +466,7 @@
       stage.style.setProperty('--glow-x', (point.px * 100).toFixed(1) + '%');
       stage.style.setProperty('--glow-y', (point.py * 100).toFixed(1) + '%');
       stage.classList.add('is-prism-active');
-      spawnHoloRipple(point.px, point.py, 'enter');
+      spawnHoloRipple(point.px, point.py);
     });
 
     stage.addEventListener('pointermove', event => {
@@ -507,8 +482,7 @@
       stage.style.setProperty('--glow-x', (px * 100).toFixed(1) + '%');
       stage.style.setProperty('--glow-y', (py * 100).toFixed(1) + '%');
       stage.classList.add('is-prism-active');
-      spawnHoloRipple(px, py, 'move');
-    });
+        });
     stage.addEventListener('pointerleave', resetPrism);
 
     document.addEventListener('pointerdown', () => { ensureHoverAudio(); }, { once: true, capture: true });
