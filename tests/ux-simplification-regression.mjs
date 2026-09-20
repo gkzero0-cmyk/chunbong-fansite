@@ -47,11 +47,13 @@ assert.match(tarotHtml,/data-tarot-mode="quick"/,'tarot must default to quick se
 assert.match(tarotHtml,/data-tarot-mode-button="quick"/,'quick tarot mode control missing');
 assert.match(tarotHtml,/data-tarot-mode-button="detail"/,'detailed tarot mode control missing');
 assert.match(tarotHtml,/tarot-detail-only/,'advanced tarot controls must be marked as detail-only');
+assert.match(tarotHtml,/tarot-topic-group/,'quick tarot must expose the topic chooser');
+assert.match(tarotHtml,/tarot-question-field tarot-detail-only/,'question input must stay detailed-mode only');
 assert.match(tarotJs,/let setupMode = 'quick'/,'tarot JS must track quick/detail mode');
 assert.match(tarotJs,/input\[name="selection-mode"\]\[value="cards"\]/,'quick tarot must default to direct card selection');
 assert.match(tarotJs,/Number\(input\?\.dataset\.count\|\|0\)>3/,'quick tarot must hide spreads above three cards');
 assert.match(tarotJs,/renderNumberInputs\(Number\(fallback\.dataset\.count\|\|1\)\)/,'quick tarot fallback must keep inputs synchronized');
-assert.match(tarotJs,/질문과 1장\/3장을 정한 뒤 카드를 골라 주세요\./,'quick tarot stage guidance must match visible controls');
+assert.match(tarotJs,/주제와 1장\/3장을 정한 뒤 카드를 골라 주세요\./,'quick tarot stage guidance must match visible controls');
 assert.match(tarotJs,/주제와 스프레드, 카드 선택 방식을 정해 주세요\./,'detail tarot stage guidance must match detailed controls');
 assert.match(tarotCss,/Quick \/ detailed tarot setup/,'quick tarot styles missing');
 
