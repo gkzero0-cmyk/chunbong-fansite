@@ -323,6 +323,10 @@ if (typeof document !== 'undefined') {
     if(help) help.textContent=quick
       ? '질문을 적고 1장 또는 3장을 선택한 뒤 바로 카드를 골라보세요.'
       : '주제와 스프레드, 숫자 입력 또는 직접 선택 방식까지 세밀하게 설정할 수 있습니다.';
+    const stageStatus=byId('tarot-selection-status');
+    if(stageStatus&&state.phase==='setup') stageStatus.textContent=quick
+      ? '질문과 1장/3장을 정한 뒤 카드를 골라 주세요.'
+      : '주제와 스프레드, 카드 선택 방식을 정해 주세요.';
     syncSelectionModeUI();
   }
 
@@ -798,7 +802,7 @@ if (typeof document !== 'undefined') {
     byId('tarot-number-error').textContent = '';
     const confirm = byId('tarot-confirm-selection');
     if (confirm) { confirm.hidden = true; confirm.disabled = true; }
-    byId('tarot-selection-status').textContent = setupMode === 'quick' ? '질문과 카드 장수를 정한 뒤 카드를 골라 주세요.' : '주제와 리딩 방식, 카드 선택 방식을 정해 주세요.';
+    byId('tarot-selection-status').textContent = setupMode === 'quick' ? '질문과 1장/3장을 정한 뒤 카드를 골라 주세요.' : '주제와 스프레드, 카드 선택 방식을 정해 주세요.';
     scrollToElement(byId('tarot-setup'));
   }
 
