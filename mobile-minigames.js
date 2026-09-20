@@ -39,11 +39,11 @@
     return {width:visual?.width||window.innerWidth,height:visual?.height||window.innerHeight};
   };
   const isLandscape=()=>{
+    const {width,height}=viewportSize();
+    if(Math.abs(width-height)>2)return width>height;
     if(landscapeQuery.matches)return true;
     const orientationType=String(screen.orientation?.type||'');
-    if(orientationType.startsWith('landscape'))return true;
-    const {width,height}=viewportSize();
-    return width>height;
+    return orientationType.startsWith('landscape');
   };
   const isPortrait=()=>!isLandscape();
   const landscapeApi=()=>{
