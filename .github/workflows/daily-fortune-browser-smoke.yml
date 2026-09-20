@@ -124,6 +124,7 @@ jobs:
           assert.equal(await page.locator('[data-daily-fortune-holo]').count(),1,'hologram surface must exist');
           await page.waitForFunction(() => document.querySelectorAll('.daily-fortune-holo-ripple').length > 0);
           assert.ok(await page.locator('.daily-fortune-holo-spark').count() >= 1,'hover ripple should emit magical sparkles');
+          await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('.daily-fortune-holo-film')).opacity) > 0.5);
           const holoOpacity=await page.locator('.daily-fortune-holo-film').evaluate(el=>getComputedStyle(el).opacity);
           assert.ok(Number(holoOpacity)>0.5,'pointer hover must reveal the local hologram film');
           await page.mouse.move(20,20);
