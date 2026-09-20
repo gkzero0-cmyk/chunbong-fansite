@@ -1,7 +1,7 @@
 (() => {
   'use strict';
-  const memory = new Map();
-  const CACHE_PREFIX = 'chunbong-cache-v2:';
+  const memory=new Map();
+  const CACHE_PREFIX= 'chunbong-cache-v2:';
   const shouldPersist = key =>
     String(key).startsWith('content:') ||
     String(key).startsWith('notice-detail:') ||
