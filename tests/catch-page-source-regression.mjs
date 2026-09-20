@@ -7,7 +7,7 @@ for (const key of Object.keys(require.cache)) {
   if (key.includes('/api/')) delete require.cache[key];
 }
 
-const fetchClips = require('../api/clips.js');
+const fetchClips = require('../lib/content-api/clips.js');
 const calls = [];
 
 global.fetch = async (url) => {
