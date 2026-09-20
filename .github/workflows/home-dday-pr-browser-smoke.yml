@@ -45,6 +45,15 @@ jobs:
           try{
             for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
               const page=await browser.newPage({viewport,isMobile:viewport.width<=390,hasTouch:viewport.width<=390});
+              const fixedNow=Date.UTC(2026,8,20,3,0,0);
+              await page.addInitScript(now=>{
+                const NativeDate=Date;
+                class FixedDate extends NativeDate{
+                  constructor(...args){super(...(args.length?args:[now]));}
+                  static now(){return now;}
+                }
+                window.Date=FixedDate;
+              },fixedNow);
               const errors=[];
               page.on('pageerror',error=>errors.push(error.message));
 

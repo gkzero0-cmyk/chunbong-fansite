@@ -390,13 +390,16 @@
     });
 
     stage.addEventListener('pointermove', event => {
-      if (!state || drawing || reducedMotion() || event.pointerType === 'touch' || !cardButton.classList.contains('is-revealed')) return;
+      if (drawing || reducedMotion() || event.pointerType === 'touch') return;
       const rect = stage.getBoundingClientRect();
       if (!rect.width || !rect.height) return;
       const px = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
       const py = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
-      stage.style.setProperty('--tilt-x', ((0.5 - py) * 9).toFixed(2) + 'deg');
-      stage.style.setProperty('--tilt-y', ((px - 0.5) * 11).toFixed(2) + 'deg');
+      const revealed = cardButton.classList.contains('is-revealed');
+      const tiltX = revealed ? 6.5 : 5;
+      const tiltY = revealed ? 8 : 6.5;
+      stage.style.setProperty('--tilt-x', ((0.5 - py) * tiltX).toFixed(2) + 'deg');
+      stage.style.setProperty('--tilt-y', ((px - 0.5) * tiltY).toFixed(2) + 'deg');
       stage.style.setProperty('--glow-x', (px * 100).toFixed(1) + '%');
       stage.style.setProperty('--glow-y', (py * 100).toFixed(1) + '%');
       stage.classList.add('is-prism-active');

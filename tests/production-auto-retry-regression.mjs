@@ -27,7 +27,7 @@ assert.match(prebuilt,/steps\.token\.outputs\.can_deploy == 'true'/,'prebuilt de
 assert.match(prebuilt,/::warning::VERCEL_TOKEN repository secret is not configured/,'missing Vercel token should produce a visible warning instead of a failed recovery run');
 
 assert.match(sync,/GITHUB_EVENT_NAME.*schedule/s,'scheduled sync checks should be non-failing warnings while pending');
-assert.match(sw,/chunbong-pwa-20260920-v19/,'PWA cache version must advance');
+assert.match(sw,/chunbong-pwa-20260920-v20/,'PWA cache version must advance');
 assert.match(sw,/site-improvements\.js/,'PWA shell must cache shared improvement runtime');
 assert.match(sw,/site-improvements\.css/,'PWA shell must cache shared improvement styles');
 

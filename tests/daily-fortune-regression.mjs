@@ -22,7 +22,7 @@ assert.match(js, /playSpinSound/, 'daily fortune spin sound missing');
 assert.match(js, /playStopSound/, 'daily fortune stop sound missing');
 assert.match(js, /playRevealSound/, 'daily fortune reveal sound missing');
 assert.match(js, /data-daily-fortune-stage/, 'daily fortune interactive stage missing');
-assert.match(js, /pointermove/, 'daily fortune prism tilt pointer tracking missing');
+assert.match(js, /pointermove/, 'daily fortune pointer-follow tilt tracking missing');
 assert.match(js, /showModal\(\)/, 'daily fortune must open as a dialog');
 assert.match(js, /data-daily-fortune-launcher/, 'persistent bottom-right reopen launcher missing');
 assert.match(css, /\.daily-fortune-launcher\{position:fixed/, 'launcher must remain fixed on screen');
@@ -35,11 +35,16 @@ assert.match(css, /\.daily-fortune-front-title\{[\s\S]*#102344/, 'daily fortune 
 assert.match(css, /@keyframes dailyFortuneBackSpin/, 'high-speed card-back spin animation missing');
 assert.match(css, /\.daily-fortune-stage\.is-spinning \.daily-fortune-card-inner/, 'spin state styling missing');
 assert.match(css, /\.daily-fortune-card\.is-revealed \.daily-fortune-card-inner\{transform:rotateY\(180deg\) rotateZ\(1turn\)\}/, 'card flip animation missing');
-assert.match(css, /\.daily-fortune-stage\.is-prism-active \.daily-fortune-card/, 'prism tilt state missing');
-assert.match(css, /--glow-x/, 'pointer-follow prism glow variables missing');
+assert.match(css, /\.daily-fortune-stage\.is-prism-active \.daily-fortune-card/, 'pointer tilt state missing');
+assert.match(css, /--glow-x/, 'pointer-follow glow variables missing');
+assert.match(css, /\.daily-fortune-card:before\{[\s\S]*conic-gradient/, 'arcane gold-violet edge aura missing');
+assert.match(css, /mix-blend-mode:soft-light/, 'card sheen must stay subtle instead of screen blending');
+assert.doesNotMatch(css, /mix-blend-mode:screen/, 'white prism screen blend must stay removed');
+assert.doesNotMatch(css, /#fff 0 2%/, 'white pointer hotspot must stay removed');
+assert.match(js, /const revealed = cardButton\.classList\.contains\('is-revealed'\)/, 'hover effect must react before and after reveal');
 assert.match(css, /dailyFortuneParticle/, 'fortune reveal particles missing');
 assert.match(css, /@media\(prefers-reduced-motion:reduce\)/, 'reduced-motion fallback missing');
-assert.match(sw, /chunbong-pwa-20260920-v19/, 'daily fortune service worker revision missing');
+assert.match(sw, /chunbong-pwa-20260920-v20/, 'daily fortune service worker revision missing');
 assert.match(sw, /'\/daily-fortune\.css'/);
 assert.match(sw, /'\/daily-fortune\.js'/);
 
