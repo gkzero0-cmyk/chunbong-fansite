@@ -17,7 +17,7 @@ assert.match(
 
 assert.match(
   css,
-  /\.cg-fruit-shape\{[\s\S]*width:84%!important;[\s\S]*height:auto!important;[\s\S]*aspect-ratio:1\/1/,
+  /\.cg-fruit-shape\{[\s\S]*width:min\(84%,40px\)!important;[\s\S]*height:auto!important;[\s\S]*aspect-ratio:1\/1/,
   '춘과 이미지는 셀 정중앙의 정사각형 영역에 배치되어야 합니다.'
 );
 
