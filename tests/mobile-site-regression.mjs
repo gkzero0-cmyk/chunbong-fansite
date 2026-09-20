@@ -44,6 +44,9 @@ assert.match(js,/mobile-tabbar-mode/,'regular mobile browsers should receive the
 assert.match(js,/data-pwa-app-more-toggle/,'installed app more menu control missing');
 assert.match(js,/data-pwa-ios-install/,'iOS Safari install helper missing');
 assert.match(js,/pwa-app-keyboard-open/,'app tabbar must react to the mobile keyboard');
+assert.doesNotMatch(js,/mobile\.matches&&appMode&&window\.visualViewport/,'regular mobile keyboard must hide the bottom bar too');
+assert.match(css,/body\.mobile-tabbar-mode\.pwa-app-more-open/,'regular mobile More sheet must lock background scrolling');
+assert.match(css,/body\.mobile-tabbar-mode \.pwa-install-chip,[\s\S]*\.deploy-sync-chip/,'fixed mobile notices must clear the bottom navigation');
 assert.match(css,/\.pwa-app-tabbar\{/,'mobile tabbar styles missing');
 assert.match(css,/@media\(min-width:761px\)\{[\s\S]*\.pwa-app-tabbar,[\s\S]*display:none!important/,'mobile tabbar must disappear above the mobile breakpoint');
 assert.match(js,/모바일 빠른 메뉴/,'bottom navigation needs a browser-neutral accessible label');

@@ -504,7 +504,7 @@
   body.pwa-app-mode:not([data-game]){
     padding-bottom:calc(78px + env(safe-area-inset-bottom))!important;
   }
-  body.pwa-app-mode.pwa-app-more-open,
+  body.mobile-tabbar-mode.pwa-app-more-open,
   body.pwa-ios-guide-open{overflow:hidden!important}
 
   body[data-page].mobile-tabbar-mode:not([data-game]) .nav-toggle{display:none!important}
@@ -583,6 +583,11 @@
   }
 
   body.mobile-tabbar-mode .to-top{
+    bottom:calc(82px + env(safe-area-inset-bottom))!important
+  }
+  body.mobile-tabbar-mode .pwa-install-chip,
+  body.mobile-tabbar-mode .pwa-update-toast,
+  body.mobile-tabbar-mode .deploy-sync-chip{
     bottom:calc(82px + env(safe-area-inset-bottom))!important
   }
   body.pwa-app-mode .daily-fortune-launcher,

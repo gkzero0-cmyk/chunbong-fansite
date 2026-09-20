@@ -223,7 +223,7 @@
     const height=window.visualViewport?.height||window.innerHeight;
     document.documentElement.style.setProperty('--mobile-visual-height',height+'px');
     const keyboardOpen=Boolean(
-      mobile.matches&&appMode&&window.visualViewport&&
+      mobile.matches&&window.visualViewport&&
       (window.innerHeight-window.visualViewport.height)>120
     );
     body.classList.toggle('pwa-app-keyboard-open',keyboardOpen);
