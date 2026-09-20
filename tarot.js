@@ -549,6 +549,7 @@ if (typeof document !== 'undefined') {
       if (!response.ok || !payload.reading) throw new Error('tarot_reading_failed');
       if (version !== state.requestVersion) return null;
       state.structuredReading = payload.reading;
+      document.dispatchEvent(new CustomEvent('chunbong:tarot-reading-detail',{detail:{reading:payload.reading}}));
       renderGlance(payload.reading);
       const button = byId('tarot-ai-button');
       const status = byId('tarot-ai-status');

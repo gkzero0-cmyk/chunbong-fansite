@@ -4,6 +4,7 @@
   const RankingCore = globalThis.ChunbakRankingCore;
   const endpoint = '/api/content?type=chunbak-ranking';
   const nicknameKey = 'chunbak:nickname:v1';
+  const sharedNicknameKey='chunbong:player:nickname:v1';
   const root = document.getElementById('chunbak-game');
   const registerButton = document.getElementById('chunbak-ranking-register');
   const panel = document.getElementById('chunbak-ranking-submit-panel');
@@ -24,11 +25,11 @@
   let submitting = false;
 
   function readRememberedNickname() {
-    try { return localStorage.getItem(nicknameKey) || ''; } catch (_) { return ''; }
+    try { return localStorage.getItem(sharedNicknameKey) || localStorage.getItem(nicknameKey) || ''; } catch (_) { return ''; }
   }
 
   function rememberNickname(value) {
-    try { localStorage.setItem(nicknameKey, value); } catch (_) {}
+    try { localStorage.setItem(sharedNicknameKey, value); localStorage.setItem(nicknameKey, value); } catch (_) {}
   }
 
   function currentRecord() {

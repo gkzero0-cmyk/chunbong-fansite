@@ -674,3 +674,173 @@
   .pwa-app-tabbar,
   .pwa-app-more-backdrop{display:none!important}
 }
+
+
+/* ===== Mobile / installed PWA experience wave 1 ===== */
+@media(max-width:760px){
+  /* Readability pass: avoid ultra-small helper text on phones. */
+  body[data-page]:not([data-game]) :is(.section-head>p,.source-note,.footer-brand p){font-size:12px!important}
+  body[data-page]:not([data-game]) :is(.kicker,.eyebrow){font-size:11px!important}
+  body[data-page="home"] :is(.status-card small,.portal-card small,.home-quick-stats small){font-size:10px!important}
+  body[data-page="home"] :is(.portal-card p,.home-quick-stats span){font-size:12px!important}
+  body[data-page="history"] .history-guide dt{font-size:10px!important}
+  body[data-page="history"] .history-guide dd{font-size:11px!important}
+  .pwa-app-tabbar span{font-size:10.5px!important}
+  .pwa-app-more-head small,.pwa-app-more-grid a small{font-size:10px!important}
+
+  /* Installed app home: information first, marketing hero second. */
+  body.pwa-home-dashboard-mode main{
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  body.pwa-home-dashboard-mode .app-home-panel{
+    order:-5!important;
+    display:block!important;
+    margin:12px max(12px,env(safe-area-inset-right)) 8px max(12px,env(safe-area-inset-left))!important;
+    padding:0!important;
+    border:0!important;
+    background:transparent!important;
+  }
+  body.pwa-home-dashboard-mode .home-overview{order:-4!important;padding-top:8px!important}
+  body.pwa-home-dashboard-mode .hero{order:2!important;padding-top:14px!important}
+  body.pwa-home-dashboard-mode .portal-section{order:3!important}
+  body.pwa-home-dashboard-mode .home-dday-strip{display:none!important}
+  body.pwa-home-dashboard-mode .hero-art{height:150px!important;min-height:150px!important}
+  body.pwa-home-dashboard-mode .hero-character{max-height:150px!important;width:min(55vw,210px)!important}
+  body.pwa-home-dashboard-mode .hero-copy h1{font-size:38px!important;margin:8px 0 10px!important}
+  body.pwa-home-dashboard-mode .hero-description{display:none!important}
+  body.pwa-home-dashboard-mode .hero-tags{margin-top:8px!important}
+  body.pwa-home-dashboard-mode .hero-actions{margin-top:10px!important}
+
+  .pwa-dashboard-loading{
+    min-height:110px;display:grid;place-items:center;padding:18px;border:1px solid #2b2b2f;border-radius:18px;background:#111113;color:#9b938d;font-size:13px
+  }
+  .pwa-dashboard-head{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 2px 10px
+  }
+  .pwa-dashboard-head>div{display:flex;flex-direction:column;gap:2px}
+  .pwa-dashboard-head small{color:#ff8f49;font-size:10px;font-weight:950;letter-spacing:.12em}
+  .pwa-dashboard-head strong{font-size:24px;letter-spacing:-.05em}
+  .pwa-dashboard-head>a{color:#aaa29c;text-decoration:none;font-size:12px;font-weight:850}
+  .pwa-dashboard-live{
+    display:grid;grid-template-columns:12px minmax(0,1fr);gap:10px;
+    padding:16px;border:1px solid #333238;border-radius:20px;
+    background:linear-gradient(145deg,#18171a,#101012);color:#fff;text-decoration:none;
+    box-shadow:0 16px 42px #0004
+  }
+  .pwa-dashboard-live.is-live{
+    border-color:#ff536d70;background:radial-gradient(circle at 92% 15%,#ff284625,transparent 30%),linear-gradient(145deg,#211216,#111113)
+  }
+  .pwa-live-dot{
+    width:10px;height:10px;margin-top:4px;border-radius:50%;background:#666;box-shadow:0 0 0 4px #ffffff08
+  }
+  .pwa-dashboard-live.is-live .pwa-live-dot{background:#ff3d57;box-shadow:0 0 0 4px #ff3d5720,0 0 16px #ff3d5799}
+  .pwa-dashboard-live div{min-width:0}
+  .pwa-dashboard-live small{display:block;color:#ff8f49;font-size:10px;font-weight:950;letter-spacing:.12em}
+  .pwa-dashboard-live.is-live small{color:#ff7286}
+  .pwa-dashboard-live strong{display:block;margin-top:4px;font-size:19px;line-height:1.3;letter-spacing:-.03em}
+  .pwa-dashboard-live p{margin:5px 0 0;color:#aaa29c;font-size:12px;line-height:1.5}
+  .pwa-dashboard-live>b{grid-column:2;color:#ff9a5d;font-size:11px}
+  .pwa-dashboard-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px
+  }
+  .pwa-dashboard-grid>a{
+    min-width:0;min-height:110px;display:flex;flex-direction:column;justify-content:center;
+    padding:13px;border:1px solid #2d2d31;border-radius:16px;background:#121214;color:#f4efeb;text-decoration:none
+  }
+  .pwa-dashboard-grid small{color:#ff8d48;font-size:10px;font-weight:900}
+  .pwa-dashboard-grid strong{
+    margin:6px 0 5px;font-size:14px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden
+  }
+  .pwa-dashboard-grid span{margin-top:auto;color:#8f8781;font-size:11px}
+  [data-theme="light"] .pwa-dashboard-loading,
+  [data-theme="light"] .pwa-dashboard-live,
+  [data-theme="light"] .pwa-dashboard-grid>a{border-color:#e4dbd3;background:#fff;color:#2b211b}
+  [data-theme="light"] .pwa-dashboard-live.is-live{border-color:#ff859469;background:#fff5f6}
+  [data-theme="light"] .pwa-dashboard-live p,
+  [data-theme="light"] .pwa-dashboard-grid span{color:#746961}
+
+  /* Turn the secondary home cards into a swipe rail inside installed app mode. */
+  body.pwa-home-dashboard-mode .home-overview-head{display:none!important}
+  body.pwa-home-dashboard-mode .home-overview-grid{
+    display:flex!important;overflow-x:auto!important;gap:8px!important;
+    scroll-snap-type:x mandatory!important;overscroll-behavior-x:contain!important;
+    padding:2px 1px 8px!important;scrollbar-width:none!important
+  }
+  body.pwa-home-dashboard-mode .home-overview-grid::-webkit-scrollbar{display:none}
+  body.pwa-home-dashboard-mode .home-overview-card{
+    flex:0 0 min(78vw,300px)!important;scroll-snap-align:start!important;min-height:132px!important;padding:15px!important
+  }
+  body.pwa-home-dashboard-mode .home-overview-grid [data-home-overview-card="schedule"]{display:none!important}
+  body.pwa-home-dashboard-mode .home-quick-stats{display:none!important}
+
+  /* Floating controls: one clear layer above the tab bar. */
+  body.mobile-tabbar-mode .to-top{display:none!important}
+  body.mobile-tabbar-mode .deploy-sync-chip{display:none!important}
+  body.mobile-tabbar-mode .pwa-update-toast{left:10px!important;right:10px!important;width:auto!important}
+  body.mobile-tabbar-mode .daily-fortune-launcher{
+    right:10px!important;bottom:calc(76px + env(safe-area-inset-bottom))!important;
+    width:48px!important;height:68px!important;border-radius:10px!important
+  }
+  body.mobile-tabbar-mode .activity-panel{z-index:300!important}
+
+  /* Tarot direct-selection dock. */
+  .mobile-tarot-dock{
+    position:fixed;z-index:286;left:8px;right:8px;
+    bottom:calc(68px + env(safe-area-inset-bottom));
+    display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;
+    padding:8px;border:1px solid #3c332d;border-radius:17px;
+    background:#0c0c0cf4;box-shadow:0 18px 46px #000b;backdrop-filter:blur(14px)
+  }
+  .mobile-tarot-dock[hidden]{display:none!important}
+  .mobile-tarot-dock-summary{
+    display:flex!important;align-items:center!important;justify-content:space-between!important;
+    min-width:0!important;min-height:46px!important;padding:0 11px!important;
+    border:1px solid #2e2e32!important;border-radius:12px!important;background:#171719!important;color:#d9d1cb!important
+  }
+  .mobile-tarot-dock-summary span{font-size:11px;font-weight:850}
+  .mobile-tarot-dock-summary strong{color:#ff9c61;font-size:13px}
+  .mobile-tarot-dock-confirm{
+    min-width:132px;min-height:46px!important;padding:0 12px!important;border:0;border-radius:12px;
+    background:#ff6b18;color:#fff;font:inherit;font-size:11px;font-weight:950
+  }
+  .mobile-tarot-dock-confirm:disabled{background:#2b2928;color:#777;opacity:1}
+  .mobile-tarot-dock-cards{
+    grid-column:1/-1;display:flex;gap:6px;overflow-x:auto;padding:1px 1px 3px;scrollbar-width:none
+  }
+  .mobile-tarot-dock-cards[hidden]{display:none!important}
+  .mobile-tarot-dock-cards::-webkit-scrollbar{display:none}
+  .mobile-tarot-dock-cards>span{
+    flex:0 0 auto;display:flex;align-items:center;gap:6px;max-width:220px;
+    padding:7px 9px;border:1px solid #3a322e;border-radius:10px;background:#141313;color:#cfc7c1;font-size:10px
+  }
+  .mobile-tarot-dock-cards>span b{
+    display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:#ff6b1819;color:#ff9c61
+  }
+  body.mobile-tarot-dock-visible{padding-bottom:calc(138px + env(safe-area-inset-bottom))!important}
+  body.mobile-tarot-dock-visible .daily-fortune-launcher{display:none!important}
+  [data-theme="light"] .mobile-tarot-dock{border-color:#e1d6ce;background:#fffaf6f5}
+  [data-theme="light"] .mobile-tarot-dock-summary{border-color:#e4dbd3!important;background:#fff!important;color:#342820!important}
+
+  /* Mobile 7-day schedule strip. */
+  .mobile-schedule-week{
+    display:flex;gap:7px;overflow-x:auto;margin:0 0 12px;padding:1px 0 4px;scrollbar-width:none;
+    scroll-snap-type:x proximity;overscroll-behavior-x:contain
+  }
+  .mobile-schedule-week::-webkit-scrollbar{display:none}
+  .mobile-schedule-day{
+    flex:0 0 64px;min-height:68px!important;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;padding:7px!important;border:1px solid #303034;border-radius:14px;background:#141416;color:#c7c0ba
+  }
+  .mobile-schedule-day small{font-size:10px}
+  .mobile-schedule-day strong{font-size:16px}
+  .mobile-schedule-day i{width:5px;height:5px;border-radius:50%;background:transparent}
+  .mobile-schedule-day.has-event i{background:#ff7b32;box-shadow:0 0 9px #ff6b1875}
+  .mobile-schedule-day.is-selected{border-color:#ff784066;background:#22140e;color:#ffad79}
+  .mobile-schedule-day.is-today{box-shadow:inset 0 0 0 1px #ff6b182e}
+  [data-theme="light"] .mobile-schedule-day{border-color:#e4dbd3;background:#fff;color:#54483f}
+  [data-theme="light"] .mobile-schedule-day.is-selected{background:#fff3ea;color:#c85413}
+  .mobile-schedule-empty{
+    padding:16px;border:1px dashed #353539;border-radius:14px;color:#918982;font-size:12px;text-align:center
+  }
+}

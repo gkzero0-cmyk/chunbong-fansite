@@ -4,7 +4,7 @@
   const esc = (value = '') => String(value)
     .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
-  const state = { source: [], today: '', mode: 'upcoming', previousOffset: 1, calendarMonth: '' };
+  const state = { source: [], today: '', mode: 'upcoming', previousOffset: 1, calendarMonth: '', mobileDateFilter: '' };
 
   async function json(url) {
     const response = await fetch(url, { headers: { accept: 'application/json' } });
@@ -105,16 +105,66 @@
     return new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(item.start));
   }
 
+  function calendarPayload(item={}) {
+    return encodeURIComponent(JSON.stringify({
+      title:String(item.title||'춘봉 방송 일정'),
+      start:String(item.start||''),end:String(item.end||''),
+      isDateTime:Boolean(item.isDateTime),link:String(item.link||'')
+    }));
+  }
+  function parseCalendarPayload(value='') {
+    try{return JSON.parse(decodeURIComponent(value))}catch(_){return null}
+  }
+  function icsEscape(value='') {
+    return String(value).replaceAll('\\','\\\\').replaceAll(';','\\;').replaceAll(',','\\,').replace(/\r?\n/g,'\\n');
+  }
+  function utcStamp(value) {
+    const date=new Date(value);if(Number.isNaN(date.getTime()))return'';
+    return date.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z');
+  }
+  function dateStamp(value='') {return String(value).slice(0,10).replaceAll('-','')}
+  function downloadScheduleIcs(item) {
+    if(!item?.start)return;
+    const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//CHUNBONG FAN HUB//Schedule//KO','CALSCALE:GREGORIAN','BEGIN:VEVENT'];
+    lines.push('UID:chunbong-'+Date.now()+'@chunbong-fansite.vercel.app');
+    lines.push('DTSTAMP:'+utcStamp(new Date()));
+    if(item.isDateTime){
+      lines.push('DTSTART:'+utcStamp(item.start));
+      if(item.end)lines.push('DTEND:'+utcStamp(item.end));
+    }else{
+      lines.push('DTSTART;VALUE=DATE:'+dateStamp(item.start));
+      const inclusiveEnd=item.end||item.start;
+      lines.push('DTEND;VALUE=DATE:'+dateStamp(shiftDate(dateOnly(inclusiveEnd),1)));
+    }
+    lines.push('SUMMARY:'+icsEscape(item.title||'춘봉 방송 일정'));
+    if(item.link)lines.push('URL:'+icsEscape(item.link));
+    lines.push('DESCRIPTION:'+icsEscape('춘봉 팬허브에서 추가한 방송 일정'));
+    lines.push('END:VEVENT','END:VCALENDAR');
+    const blob=new Blob([lines.join('\r\n')],{type:'text/calendar;charset=utf-8'});
+    const url=URL.createObjectURL(blob),link=document.createElement('a');
+    link.href=url;link.download='chunbong-schedule-'+dateOnly(item.start)+'.ics';document.body.appendChild(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  async function shareSchedule(item) {
+    if(!item)return;
+    const text=(item.title||'춘봉 방송 일정')+' · '+formatWhen(item);
+    try{
+      if(navigator.share){await navigator.share({title:'춘봉 방송 일정',text,url:item.link||location.href});return}
+      if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text+' '+(item.link||location.href));alert('일정 내용을 클립보드에 복사했습니다.');}
+    }catch(_){}
+  }
+
   function scheduleCard(item, index, today) {
     const status = statusFor(item, today);
     const labels = { today: 'TODAY', upcoming: 'UPCOMING', recent: 'RECENT' };
     const tags = (item.tags || []).map(tag => `<span class="schedule-tag" data-tag="${esc(tag)}">${esc(tag)}</span>`).join('');
-    return `<article class="schedule-card schedule-${status} reveal visible">
+    return `<article class="schedule-card schedule-${status} reveal visible" data-schedule-date="${esc(itemStartDate(item))}">
       <div class="schedule-number">${String(index + 1).padStart(2, '0')}</div>
       <div class="schedule-card-top"><span class="badge">${labels[status]}</span><div class="schedule-tags">${tags}</div></div>
       <h2>${esc(item.title)}</h2>
       <div class="time">${esc(formatWhen(item))}</div>
       <p>${status === 'today' ? '오늘 예정된 방송 일정입니다.' : status === 'upcoming' ? '예정된 방송 일정입니다.' : '이전에 진행된 일정입니다.'}</p>
+      <div class="schedule-card-actions"><button type="button" data-schedule-calendar="${calendarPayload(item)}">캘린더 추가</button><button type="button" data-schedule-share="${calendarPayload(item)}">공유</button></div>
       <a class="inline-link" href="${esc(item.link || 'https://fire-space-8c8.notion.site/2c059c07cee480938952ffaf573b8c99?pvs=74')}" target="_blank" rel="noreferrer">Notion 일정 원본 ↗</a>
     </article>`;
   }
@@ -125,8 +175,53 @@
     grid.innerHTML = items.length ? items.map((item, index) => scheduleCard(item, index, state.today)).join('') : `<div class="loading-card">${esc(emptyText)}</div>`;
   }
 
+  function renderMobileWeekStrip() {
+    if (!window.matchMedia('(max-width:760px)').matches) return;
+    const toolbar = $('#schedule-view-upcoming')?.closest('.schedule-view-toolbar');
+    if (!toolbar) return;
+    let strip = $('#mobile-schedule-week');
+    if (!strip) {
+      strip = document.createElement('div');
+      strip.id = 'mobile-schedule-week';
+      strip.className = 'mobile-schedule-week';
+      strip.setAttribute('aria-label', '7일 방송 일정 빠른 보기');
+      toolbar.insertAdjacentElement('afterend', strip);
+    }
+    strip.hidden = state.mode !== 'upcoming';
+    if (strip.hidden) return;
+    const base = new Date(state.today + 'T00:00:00+09:00');
+    const days = Array.from({ length: 7 }, (_, index) => {
+      const key = shiftDate(state.today, index);
+      const date = new Date(base.getTime() + index * 86400000);
+      return {
+        key,
+        label: new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', weekday: 'short' }).format(date),
+        day: new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', day: 'numeric' }).format(date),
+        count: state.source.filter(item => intersectsDateRange(item, key, key)).length
+      };
+    });
+    const selected = state.mobileDateFilter || 'all';
+    strip.innerHTML =
+      '<button type="button" class="mobile-schedule-day mobile-schedule-all ' + (selected === 'all' ? 'is-selected' : '') + '" data-schedule-day="all" aria-pressed="' + String(selected === 'all') + '"><small>7일</small><strong>전체</strong><i aria-hidden="true"></i></button>' +
+      days.map(day => '<button type="button" class="mobile-schedule-day' +
+        (day.key === state.today ? ' is-today' : '') +
+        (day.count ? ' has-event' : '') +
+        (selected === day.key ? ' is-selected' : '') +
+        '" data-schedule-day="' + esc(day.key) + '" aria-pressed="' + String(selected === day.key) + '">' +
+        '<small>' + esc(day.label) + '</small><strong>' + esc(day.day) + '</strong><i aria-hidden="true"></i></button>').join('');
+    strip.querySelectorAll('[data-schedule-day]').forEach(button => button.addEventListener('click', () => {
+      state.mobileDateFilter = button.dataset.scheduleDay === 'all' ? '' : button.dataset.scheduleDay;
+      renderUpcoming();
+    }));
+  }
+
   function renderUpcoming() {
-    renderList(upcomingItems(state.source, state.today), '오늘 이후 등록된 일정이 없습니다.');
+    const upcoming = upcomingItems(state.source, state.today);
+    const filtered = state.mobileDateFilter
+      ? upcoming.filter(item => intersectsDateRange(item, state.mobileDateFilter, state.mobileDateFilter))
+      : upcoming;
+    renderList(filtered, state.mobileDateFilter ? '선택한 날짜에 등록된 일정이 없습니다.' : '오늘 이후 등록된 일정이 없습니다.');
+    renderMobileWeekStrip();
   }
 
   function renderPrevious() {
@@ -183,11 +278,17 @@
       button.setAttribute('aria-selected', String(active));
     });
     if (state.mode === 'upcoming') renderUpcoming();
-    else if (state.mode === 'previous') renderPrevious();
-    else renderCalendar();
+    else if (state.mode === 'previous') { renderPrevious(); renderMobileWeekStrip(); }
+    else { renderCalendar(); renderMobileWeekStrip(); }
   }
 
   function bindControls() {
+    document.getElementById('schedule-grid')?.addEventListener('click',event=>{
+      const calendarButton=event.target.closest('[data-schedule-calendar]');
+      if(calendarButton){downloadScheduleIcs(parseCalendarPayload(calendarButton.dataset.scheduleCalendar));return}
+      const shareButton=event.target.closest('[data-schedule-share]');
+      if(shareButton){void shareSchedule(parseCalendarPayload(shareButton.dataset.scheduleShare));}
+    });
     $('#schedule-view-upcoming')?.addEventListener('click', () => setMode('upcoming'));
     $('#schedule-view-previous')?.addEventListener('click', () => setMode('previous'));
     $('#schedule-view-calendar')?.addEventListener('click', () => setMode('calendar'));
