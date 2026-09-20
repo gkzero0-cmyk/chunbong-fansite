@@ -27,7 +27,7 @@ assert.match(index,/class="portal-feature-grid"/,'home must have a focused featu
 for(const href of ['vod.html','tarot.html','minigames.html','data.html']){
   assert.match(index,new RegExp('portal-card reveal" href="'+href.replace('.','\\.')+'"'),'featured home content missing '+href);
 }
-assert.match(index,/class="portal-compact-grid reveal"/,'secondary home destinations must use compact navigation');
+assert.match(index,/class="portal-compact-grid"/,'secondary home destinations must use compact navigation');
 assert.match(styles,/\.portal-feature-grid\{display:grid/,'featured home layout styles missing');
 assert.match(styles,/\.portal-compact-grid\{display:grid/,'compact home layout styles missing');
 assert.match(index,/class="home-all-links reveal"/,'secondary home links should be collapsed behind a single control');
