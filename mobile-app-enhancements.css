@@ -1,0 +1,217 @@
+/* Chunbong Fan Hub mobile/app experience upgrades — 2026-09-21 */
+
+.content-filter-bar{
+  display:flex;align-items:center;gap:10px;margin:0 0 18px;padding:10px 12px;
+  border:1px solid #303034;border-radius:15px;background:#101012
+}
+.content-filter-bar input{
+  flex:1;min-width:0;min-height:42px;border:0;outline:0;background:transparent;color:#f5f0eb;
+  font:inherit;font-size:13px
+}
+.content-filter-bar input::placeholder{color:#756f6a}
+.content-filter-bar span{flex:0 0 auto;color:#8c8580;font-size:11px;font-weight:850}
+[data-theme="light"] .content-filter-bar{border-color:#e4dad2;background:#fff}
+[data-theme="light"] .content-filter-bar input{color:#2b211b}
+
+.personal-backup-panel{
+  display:grid;gap:12px;margin-top:16px;padding:18px;border:1px solid #303034;border-radius:18px;
+  background:linear-gradient(145deg,#151517,#0f0f11)
+}
+.personal-backup-panel header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.personal-backup-panel header small{display:block;color:#ff8d47;font-size:9px;font-weight:950;letter-spacing:.13em}
+.personal-backup-panel h2{margin:4px 0 0;font-size:20px}
+.personal-backup-panel p{margin:0;color:#938b85;font-size:12px;line-height:1.6}
+.personal-backup-actions{display:flex;flex-wrap:wrap;gap:8px}
+.personal-backup-actions button,.personal-backup-actions label{
+  display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 13px;
+  border:1px solid #3b3734;border-radius:12px;background:#171719;color:#ddd5ce;
+  font:inherit;font-size:11px;font-weight:900;cursor:pointer
+}
+.personal-backup-actions button:hover,.personal-backup-actions label:hover{border-color:#ff7a32;color:#ff9e61}
+.personal-backup-actions .is-danger{border-color:#572e31;color:#e79b9f}
+.personal-backup-actions input{display:none}
+.personal-backup-status{min-height:1.4em;color:#ff9d62!important;font-size:11px!important}
+[data-theme="light"] .personal-backup-panel{border-color:#e4dad2;background:#fff}
+[data-theme="light"] .personal-backup-actions button,
+[data-theme="light"] .personal-backup-actions label{border-color:#e1d7cf;background:#fff;color:#493a30}
+
+.minigame-profile-edit{
+  display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:8px
+}
+.minigame-profile-edit input{
+  width:min(190px,100%);min-height:38px;padding:8px 10px;border:1px solid #343438;border-radius:10px;
+  background:#0f0f11;color:#fff;font:inherit;font-size:12px;outline:0
+}
+.minigame-profile-edit input:focus{border-color:#ff7b35;box-shadow:0 0 0 3px #ff6b1812}
+.minigame-profile-edit button{
+  min-height:38px;padding:8px 11px;border:1px solid #5a3a27;border-radius:10px;background:#21140d;
+  color:#ffac74;font:inherit;font-size:10px;font-weight:900;cursor:pointer
+}
+[data-theme="light"] .minigame-profile-edit input{border-color:#dfd5cc;background:#fff;color:#2b211b}
+
+.schedule-mobile-week-strip{display:none}
+.schedule-card-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+.schedule-card-actions button,.schedule-card-actions a{
+  display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 10px;
+  border:1px solid #3b3531;border-radius:10px;background:#121212;color:#cfc7c1;
+  font:inherit;font-size:10px;font-weight:900;text-decoration:none;cursor:pointer
+}
+.schedule-card-actions button:hover,.schedule-card-actions a:hover{border-color:#ff7c37;color:#ffad73}
+.schedule-share-status{display:block;min-height:1.2em;margin-top:6px;color:#8d8580;font-size:10px}
+
+.pwa-context-title{display:none}
+
+@media(max-width:760px){
+  /* Readability: avoid 8–10 px informational text on phones. */
+  body[data-page]:not([data-game]) .section-head>p,
+  body[data-page]:not([data-game]) .source-note{font-size:12px!important}
+  body[data-page="home"] .status-card small{font-size:10px!important}
+  body[data-page="home"] .status-card strong{font-size:12px!important}
+  body[data-page="home"] .portal-head p,
+  body[data-page="home"] .portal-card p{font-size:12px!important}
+  body[data-page="home"] .portal-card small{font-size:10px!important}
+  body[data-page="home"] .official-strip a{font-size:11px!important}
+  body[data-page] .pwa-app-tabbar span{font-size:10px!important}
+  .pwa-app-more-head small,.pwa-app-more-grid a small{font-size:10px!important}
+  .home-quick-stats small{font-size:9px!important}
+  .home-quick-stats span{font-size:11px!important}
+
+  /* Floating controls share one lane; low-value technical chips stay out of fan-facing mobile UI. */
+  body.mobile-tabbar-mode .to-top,
+  body.mobile-tabbar-mode .deploy-sync-chip{display:none!important}
+  body.mobile-tabbar-mode:not([data-page="home"]) .pwa-install-chip{display:none!important}
+  body.mobile-tabbar-mode .daily-fortune-launcher{
+    right:10px!important;bottom:calc(74px + env(safe-area-inset-bottom))!important;
+    width:48px!important;height:66px!important;border-radius:10px!important
+  }
+  body.mobile-tabbar-mode .pwa-update-toast{
+    left:8px!important;right:8px!important;bottom:calc(76px + env(safe-area-inset-bottom))!important
+  }
+
+  /* Mobile content cards become swipeable where repeated vertical cards were too long. */
+  body[data-page="home"] .home-overview-grid{
+    display:flex!important;grid-template-columns:none!important;gap:9px!important;
+    width:calc(100vw - 12px)!important;margin-right:-12px!important;
+    overflow-x:auto!important;overscroll-behavior-x:contain!important;
+    scroll-snap-type:x mandatory!important;scroll-padding-left:0!important;
+    padding:0 12px 7px 0!important;scrollbar-width:none!important
+  }
+  body[data-page="home"] .home-overview-grid::-webkit-scrollbar{display:none}
+  body[data-page="home"] .home-overview-card{
+    flex:0 0 min(82vw,330px)!important;scroll-snap-align:start!important;
+    min-height:155px!important;padding:17px!important
+  }
+  body[data-page="home"] .home-overview-card:first-child{flex-basis:min(88vw,360px)!important}
+  body[data-page="home"] .home-overview-card small{font-size:10px!important}
+  body[data-page="home"] .home-overview-card p{font-size:13px!important;line-height:1.55!important}
+  body[data-page="home"] .home-overview-card .home-overview-time{font-size:11px!important}
+
+  /* Installed PWA gets an app-first home instead of the large marketing hero. */
+  body.pwa-app-mode[data-page="home"] .hero{display:none!important}
+  body.pwa-app-mode[data-page="home"] .app-home-panel{display:none!important}
+  body.pwa-app-mode[data-page="home"] .home-dday-strip{opacity:.8}
+  .pwa-priority-home{
+    display:grid;gap:10px;padding:14px max(12px,env(safe-area-inset-right)) 8px max(12px,env(safe-area-inset-left));
+    background:linear-gradient(180deg,#101012,#09090a)
+  }
+  .pwa-priority-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+  .pwa-priority-head small{display:block;color:#ff914c;font-size:10px;font-weight:950;letter-spacing:.14em}
+  .pwa-priority-head strong{display:block;margin-top:3px;font-size:24px;letter-spacing:-.045em}
+  .pwa-priority-head a{color:#a39a94;font-size:11px;font-weight:850;text-decoration:none}
+  .pwa-priority-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .pwa-priority-card{
+    min-width:0;min-height:94px;padding:13px;border:1px solid #2d2d31;border-radius:16px;
+    background:#141416;color:#f4efea;text-decoration:none
+  }
+  .pwa-priority-card small{display:block;color:#8e8781;font-size:10px;font-weight:900}
+  .pwa-priority-card strong{
+    display:-webkit-box;margin-top:5px;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+    font-size:14px;line-height:1.35
+  }
+  .pwa-priority-card span{display:block;margin-top:7px;color:#ff9b5b;font-size:10px;font-weight:850}
+  .pwa-priority-card.is-live{
+    grid-column:1/-1;min-height:112px;border-color:#e64a4469;
+    background:radial-gradient(circle at 92% 8%,#ff4a3b24,transparent 42%),linear-gradient(145deg,#211110,#121214)
+  }
+  .pwa-priority-card.is-live small{color:#ff6e66}
+  .pwa-priority-live-dot{
+    display:inline-block;width:7px;height:7px;margin-right:5px;border-radius:50%;background:#ff3d48;
+    box-shadow:0 0 12px #ff3d48a0;vertical-align:1px
+  }
+
+  /* Contextual app header for installed PWA. */
+  body.pwa-app-mode:not([data-page="home"]) .pwa-context-title{
+    display:block;min-width:0;margin-right:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    font-size:15px;font-weight:900;letter-spacing:-.03em
+  }
+  body.pwa-app-mode:not([data-page="home"]) .brand{margin-right:0!important}
+  body.pwa-app-mode:not([data-page="home"]) .brand-copy{display:none!important}
+
+  /* Tarot: persistent selection status/action immediately above the bottom tab bar. */
+  .mobile-tarot-selection-bar{
+    position:fixed;z-index:274;left:8px;right:8px;
+    bottom:calc(69px + env(safe-area-inset-bottom));
+    display:flex;align-items:center;gap:10px;padding:9px 10px;
+    border:1px solid #5b402e;border-radius:15px;background:#12100ff2;color:#f6efe9;
+    box-shadow:0 16px 44px #000b;backdrop-filter:blur(12px);
+    transform:translateY(18px);opacity:0;pointer-events:none;transition:.18s
+  }
+  .mobile-tarot-selection-bar.is-visible{transform:none;opacity:1;pointer-events:auto}
+  .mobile-tarot-selection-bar div{min-width:0;flex:1}
+  .mobile-tarot-selection-bar small{display:block;color:#ff9d61;font-size:10px;font-weight:950}
+  .mobile-tarot-selection-bar strong{
+    display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px
+  }
+  .mobile-tarot-selection-bar button{
+    flex:0 0 auto;min-height:42px!important;padding:9px 12px!important;border:0;border-radius:11px;
+    background:linear-gradient(135deg,#ff6b18,#ff9d2e);color:#1d0d04;font:inherit;font-size:11px;font-weight:950
+  }
+  .mobile-tarot-selection-bar button:disabled{opacity:.5}
+  body.tarot-mobile-selecting{padding-bottom:calc(140px + env(safe-area-inset-bottom))!important}
+
+  /* Schedule: a real phone-first seven-day strip replaces horizontal month scanning for daily use. */
+  .schedule-mobile-week-strip{
+    display:flex;gap:7px;margin:0 0 15px;padding:2px 0 6px;overflow-x:auto;
+    scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:none
+  }
+  .schedule-mobile-week-strip::-webkit-scrollbar{display:none}
+  .schedule-mobile-week-strip button{
+    flex:0 0 62px;min-height:66px!important;padding:7px 5px;border:1px solid #303034;border-radius:14px;
+    background:#111113;color:#9d9690;font:inherit;text-align:center;scroll-snap-align:start;cursor:pointer
+  }
+  .schedule-mobile-week-strip button small{display:block;font-size:10px}
+  .schedule-mobile-week-strip button strong{display:block;margin-top:4px;font-size:15px;color:#f1ebe5}
+  .schedule-mobile-week-strip button.is-active{
+    border-color:#ff7c3770;background:#22140d;color:#ff9d61
+  }
+  .schedule-mobile-week-strip button.is-active strong{color:#ffb27d}
+  body[data-page="schedule"] .schedule-card{min-height:0!important}
+  body[data-page="schedule"] .schedule-card h2{margin:28px 0 3px!important}
+  body[data-page="schedule"] .schedule-calendar-scroll>div{min-width:620px!important}
+  .schedule-card-actions{margin-top:12px}
+  .schedule-card-actions button,.schedule-card-actions a{flex:1 1 30%;min-height:42px;font-size:11px}
+
+  .content-filter-bar{position:sticky;z-index:12;top:64px;margin-bottom:12px;background:#101012ee;backdrop-filter:blur(10px)}
+  .content-filter-bar input{font-size:14px}
+  .content-filter-bar span{font-size:11px}
+
+  .personal-backup-panel{padding:15px;border-radius:16px}
+  .personal-backup-panel header{display:block}
+  .personal-backup-actions{display:grid;grid-template-columns:1fr 1fr}
+  .personal-backup-actions button,.personal-backup-actions label{width:100%;font-size:11px}
+  .personal-backup-actions .is-danger{grid-column:1/-1}
+
+  .minigame-profile-edit{justify-content:stretch}
+  .minigame-profile-edit input{flex:1;width:auto;font-size:13px}
+}
+
+@media(max-width:390px){
+  .pwa-priority-grid{grid-template-columns:1fr}
+  .pwa-priority-card.is-live{grid-column:auto}
+  .personal-backup-actions{grid-template-columns:1fr}
+  .personal-backup-actions .is-danger{grid-column:auto}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .mobile-tarot-selection-bar{transition:none!important}
+}
