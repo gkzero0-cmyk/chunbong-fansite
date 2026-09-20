@@ -77,8 +77,11 @@ jobs:
           assert.ok(await page.locator('.changelog-button').isVisible(),'changelog button missing');
           assert.equal((await page.locator('.changelog-button span').textContent())?.trim(),'업데이트 일지');
           assert.ok(await page.locator('.activity-bell').isVisible(),'activity bell missing');
-          const headerOrder=await page.locator('.theme-toggle').evaluate(el=>({changelog:el.nextElementSibling?.classList.contains('changelog-button'),activity:el.nextElementSibling?.nextElementSibling?.classList.contains('activity-center')}));
-          assert.deepEqual(headerOrder,{changelog:true,activity:true},'header controls must be theme → changelog → activity bell');
+          const headerOrder=await page.locator('.site-header').evaluate(el=>[...el.children].map(node=>node.className||node.tagName));
+          const themeIndex=headerOrder.findIndex(value=>String(value).includes('theme-toggle'));
+          const changelogIndex=headerOrder.findIndex(value=>String(value).includes('changelog-button'));
+          const activityIndex=headerOrder.findIndex(value=>String(value).includes('activity-center'));
+          assert.ok(themeIndex>=0&&changelogIndex>themeIndex&&activityIndex>changelogIndex,'header controls must preserve theme → changelog → activity order even with MY entry');
           assert.equal(await page.locator('.activity-unread-dot').isVisible(),true,'new content must show red unread dot');
 
           await page.locator('.activity-bell').click();
