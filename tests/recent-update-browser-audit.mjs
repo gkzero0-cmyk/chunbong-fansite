@@ -97,15 +97,19 @@ async function quickTarot(browser,{mobile=false,pwa=false}={}){
     assert.equal(await page.locator('.tarot-question-field').isHidden(),true,'quick tarot must hide question input');
     await page.locator('input[name="topic"][value="love"]').check();
     assert.equal(await page.locator('input[name="topic"][value="love"]').isChecked(),true,'quick tarot must preserve selected topic');
+    const required=await page.locator('input[name="spread"]:checked').evaluate(input=>Number(input.dataset.count||1));
+    assert.ok(required>=1&&required<=3,'quick tarot must limit the chosen topic to a short spread');
     await page.locator('#tarot-shuffle').click();
     await page.waitForFunction(()=>document.querySelectorAll('#tarot-deck [data-card-index]').length===78);
-    const first=page.locator('#tarot-deck [data-card-index]').first();
-    if(mobile)await first.tap();else await first.click();
-    assert.equal(await first.getAttribute('aria-pressed'),'true','quick tarot card must select');
+    for(let i=0;i<required;i+=1){
+      const card=page.locator('#tarot-deck [data-card-index]').nth(i);
+      if(mobile)await card.tap();else await card.click();
+    }
+    assert.equal(await page.locator('#tarot-deck [data-card-index][aria-pressed="true"]').count(),required,'quick tarot must select the required card count');
     if(mobile){
       const dock=page.locator('[data-mobile-tarot-dock]');
       await dock.waitFor({state:'visible'});
-      assert.match((await dock.locator('.mobile-tarot-dock-summary strong').textContent()).trim(),/1\s*\/\s*1/);
+      assert.match((await dock.locator('.mobile-tarot-dock-summary strong').textContent()).trim(),new RegExp(required+'\\s*\\/\\s*'+required));
       await dock.locator('.mobile-tarot-dock-confirm').click();
     }else{
       const confirm=page.locator('#tarot-confirm-selection');
@@ -113,7 +117,7 @@ async function quickTarot(browser,{mobile=false,pwa=false}={}){
       await confirm.click();
     }
     await page.waitForFunction(()=>document.querySelector('#tarot-results')?.hidden===false);
-    assert.equal(await page.locator('#tarot-reading-grid .tarot-card-result').count(),1,'quick tarot must reveal one result');
+    assert.equal(await page.locator('#tarot-reading-grid .tarot-card-result').count(),required,'quick tarot must reveal the selected result count');
     assert.deepEqual(errors,[],'quick tarot page errors: '+errors.join(' | '));
   }finally{await context.close()}
 }
