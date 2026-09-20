@@ -94,6 +94,7 @@ assert.match(timelineJs,/2020-07-03/,'first broadcast milestone missing');
 assert.match(timelineJs,/2023-11-30/,'SOOP first broadcast milestone missing');
 assert.match(timelineJs,/2026-08-30/,'fan site launch milestone missing');
 assert.match(timelineJs,/CHUNBONG_CHANGELOG/,'timeline must extend from curated fan-site milestones');
+assert.match(timelineJs,/findIndex\(candidate=>candidate\.date===row\.date&&candidate\.title===row\.title\)===index/,'timeline must dedupe curated milestones already present in the fixed base milestones');
 
 assert.match(shell,/personal-hub\.css/,'shared shell must load personal hub styles');
 assert.match(shell,/personal-hub\.js/,'shared shell must load personal hub runtime');

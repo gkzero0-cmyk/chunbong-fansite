@@ -9,6 +9,8 @@
   ];
   const curated=Array.isArray(window.CHUNBONG_CHANGELOG)?window.CHUNBONG_CHANGELOG:[];
   const recent=curated.flatMap(group=>(group.items||[]).filter(item=>item.type==='new'||/추가|시작|모드/.test(item.title||'')).slice(0,4).map(item=>({date:group.date,label:item.type==='new'?'NEW':'MILESTONE',title:item.title,desc:item.description,href:'changelog.html'}))).slice(0,18);
-  const rows=[...base,...recent].sort((a,b)=>b.date.localeCompare(a.date));
+  const rows=[...base,...recent]
+    .filter((row,index,list)=>list.findIndex(candidate=>candidate.date===row.date&&candidate.title===row.title)===index)
+    .sort((a,b)=>b.date.localeCompare(a.date));
   root.innerHTML=rows.map((row,index)=>`<article class="timeline-row"><div class="timeline-date"><time datetime="${esc(row.date)}">${esc(row.date.replaceAll('-','.'))}</time><span>${esc(row.label)}</span></div><i aria-hidden="true"></i><a href="${esc(row.href||'#')}"><small>${String(rows.length-index).padStart(2,'0')}</small><strong>${esc(row.title)}</strong><p>${esc(row.desc||'')}</p></a></article>`).join('');
 })();
