@@ -42,3 +42,5 @@
 .personal-tarot-archive-meta h3{margin:0 0 2px;font-size:11px;letter-spacing:.08em;color:#ff9258}
 .personal-tarot-archive-meta p{margin:0;font-size:13px;line-height:1.55}
 @media(max-width:760px){.personal-tarot-question{font-size:11px}.personal-tarot-archive-meta{padding:12px}}
+
+.personal-push-retry{align-self:flex-start;margin-top:10px;min-height:36px;padding:0 12px;border:1px solid color-mix(in srgb,var(--orange-2) 42%,#3a3a3e);border-radius:11px;background:color-mix(in srgb,var(--orange-2) 10%,#151517);color:var(--text-primary,#eee);font:inherit;font-size:10px;font-weight:900;cursor:pointer}.personal-push-retry:hover{border-color:var(--orange-2);background:color-mix(in srgb,var(--orange-2) 15%,#151517)}.personal-push-retry:disabled{opacity:.6;cursor:wait}[data-theme="light"] .personal-push-retry{background:#fff6ee;border-color:#e3a77f;color:#8c3d09}
