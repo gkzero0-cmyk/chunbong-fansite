@@ -80,5 +80,17 @@
     }
   ],
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "node .github/scripts/vercel-ignore-build.mjs"
+  "ignoreCommand": "node .github/scripts/vercel-ignore-build.mjs",
+  "redirects": [
+    {
+      "source": "/timeline.html",
+      "destination": "/history.html",
+      "permanent": true
+    },
+    {
+      "source": "/timeline",
+      "destination": "/history.html",
+      "permanent": true
+    }
+  ]
 }
