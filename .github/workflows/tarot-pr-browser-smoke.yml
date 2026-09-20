@@ -12,6 +12,7 @@ on:
       - 'tarot-composite.js'
       - 'tarot-data.js'
       - 'tests/tarot-clarity-numbered-backs-regression.mjs'
+      - 'tests/tarot-selection-fortune-frame-regression.mjs'
       - '.github/workflows/tarot-pr-browser-smoke.yml'
 
 permissions:
@@ -28,7 +29,9 @@ jobs:
           node-version: '24'
 
       - name: Static celestial tarot regression
-        run: node tests/tarot-clarity-numbered-backs-regression.mjs
+        run: |
+          node tests/tarot-clarity-numbered-backs-regression.mjs
+          node tests/tarot-selection-fortune-frame-regression.mjs
 
       - name: Install Playwright Chromium
         run: |
@@ -101,6 +104,26 @@ jobs:
 
             const cards=page.locator('#tarot-deck [data-card-index]');
             await cards.nth(0).click();
+            const selectedState=await cards.nth(0).evaluate(card=>{
+              const style=getComputedStyle(card);
+              const badge=getComputedStyle(card,'::before');
+              return {
+                order:card.dataset.selectionOrder,
+                label:card.dataset.selectionLabel,
+                pressed:card.getAttribute('aria-pressed'),
+                transform:style.transform,
+                outline:style.outlineStyle,
+                badgeContent:badge.content
+              };
+            });
+            assert.equal(selectedState.order,'1','first pick must expose selection order');
+            assert.equal(selectedState.label,'✓ 1번째','first pick must expose visible selected label');
+            assert.equal(selectedState.pressed,'true');
+            assert.notEqual(selectedState.transform,'none','selected card must visibly lift/scale');
+            assert.equal(selectedState.outline,'solid','selected card must have an explicit rim');
+            assert.match(selectedState.badgeContent,/1번째/,'selected badge must show selection order');
+            assert.equal(await cards.nth(1).getAttribute('data-selection-order'),null,'unselected card must not receive selection order');
+
             await cards.nth(1).click();
             await cards.nth(2).click();
             await page.locator('#tarot-confirm-selection').click();
@@ -111,6 +134,10 @@ jobs:
             assert.match(revealed,/fill="#07142d"/,'revealed frame needs deep navy inner border');
             assert.match(revealed,/fill="#ffd75b"/,'revealed frame needs gold star ornaments');
             assert.match(revealed,/fill="#fff0ae"/,'revealed title needs matching warm gold');
+            assert.match(revealed,/class="tarot-composite-svg tarot-fortune-frame"/,'revealed card must use the daily-fortune frame shell');
+            assert.match(revealed,/class="tarot-fortune-art-shell"[^>]*stroke-width="4"/,'revealed artwork frame must stay thin');
+            assert.doesNotMatch(revealed,/stroke-width="18"/,'legacy thick outer frame must stay removed');
+            assert.doesNotMatch(revealed,/stroke-width="11"/,'legacy thick art border must stay removed');
             assert.deepEqual(errors,[]);
           }finally{
             await browser.close();
