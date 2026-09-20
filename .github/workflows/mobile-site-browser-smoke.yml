@@ -77,17 +77,14 @@ jobs:
                 assert.ok(metrics.scrollWidth<=metrics.clientWidth+1,`${path} horizontal overflow at ${viewport.width}: ${metrics.scrollWidth} > ${metrics.clientWidth}`);
                 assert.ok(metrics.headerHeight<=60,`${path} header too tall on mobile: ${metrics.headerHeight}`);
 
+                const tabbar=page.locator('[data-pwa-app-tabbar]');
+                await tabbar.waitFor({state:'visible'});
+                assert.equal(await tabbar.locator(':scope > *').count(),5,path+' mobile tabbar must expose five controls');
+                const tabBox=await tabbar.boundingBox();
+                assert.ok(tabBox&&tabBox.x>=0&&tabBox.x+tabBox.width<=viewport.width+1&&tabBox.y+tabBox.height<=viewport.height+1,path+' mobile tabbar clips viewport');
+
                 const toggle=page.locator('.nav-toggle');
-                if(await toggle.count()){
-                  await toggle.click();
-                  const nav=page.locator('#main-nav');
-                  assert.ok(await nav.isVisible(),path+' mobile nav did not open');
-                  const box=await nav.boundingBox();
-                  assert.ok(box&&box.x>=0&&box.x+box.width<=viewport.width+1,path+' mobile nav clips horizontally');
-                  assert.ok(box&&box.y>=0&&box.y+box.height<=viewport.height+1,path+' mobile nav clips vertically');
-                  await page.keyboard.press('Escape');
-                  assert.equal(await nav.isVisible(),false,path+' mobile nav did not close with Escape');
-                }
+                if(await toggle.count())assert.equal(await toggle.isVisible(),false,path+' hamburger should yield to the mobile bottom navigation');
 
                 if(path==='schedule.html'){
                   const shell=page.locator('.schedule-calendar-scroll');
