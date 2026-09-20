@@ -18,6 +18,10 @@ for (const marker of [
   'fanclubCount','followerCount','fanclubDelta','followerDelta','cumulativeMinutes','MutationObserver'
 ]) assert.ok(periods.includes(marker), `active SOOP v3 period controller should include ${marker}`);
 assert.ok(!periods.includes('slice(-10)'), 'active period controller must operate on full daily API history');
+assert.ok(!periods.includes('<title>'),'chart points must not emit native SVG title tooltips');
+assert.match(periods,/tabindex="0" aria-label=/,'chart points must keep keyboard labels');
+assert.match(periods,/data-chart-hover-card/,'custom chart tooltip must remain');
+assert.match(periods,/cardY|tooltipY/,'chart tooltip placement must account for vertical bounds');
 assert.ok(!periods.includes('retry.click()'), 'active period controller must not use retry recursion to restore its UI');
 assert.ok(js.includes("load('data-soop-periods-v3.js')"), 'data loader must load only the active v3 period controller');
 assert.ok(!js.includes("load('data-soop-periods-v2.js')"), 'legacy v2 period controller must remain inactive');
