@@ -6,6 +6,8 @@ on:
       - 'chuncortile.html'
       - 'chuncortile.css'
       - 'game-layout.css'
+      - 'game-layout.js'
+      - 'game-layout.js'
       - 'chuncortile.js'
       - 'chuncortile-core.js'
       - 'chuncortile-ranking-core.js'
@@ -59,7 +61,7 @@ jobs:
           import { chromium } from 'playwright';
           const browser=await chromium.launch({headless:true});
           try{
-            for(const viewport of [{width:1280,height:800},{width:390,height:844}]){
+            for(const viewport of [{width:1280,height:800},{width:1585,height:668},{width:390,height:844}]){
               const page=await browser.newPage({viewport});
               const errors=[];page.on('pageerror',e=>errors.push(e.message));
               const rankingEntries=[{rank:1,nickname:'테스트랭커',score:150,maxCombo:8,misses:1}];
@@ -172,6 +174,11 @@ jobs:
               assert.ok(await page.locator('#ct-ranking-list li').count()>=1);
               await page.locator('#ct-ranking-close').click();
 
+              if(viewport.width>=900){
+                const boardBottom=await page.locator('#ct-board-wrap').evaluate(el=>el.getBoundingClientRect().bottom);
+                const viewportHeight=await page.evaluate(()=>window.visualViewport?.height||window.innerHeight);
+                assert.ok(boardBottom<=viewportHeight-6,`Chuncortile board clips below viewport: ${boardBottom} > ${viewportHeight}`);
+              }
               assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),true,'horizontal overflow');
               assert.deepEqual(errors,[]);
               await page.close();
