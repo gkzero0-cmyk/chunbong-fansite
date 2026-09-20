@@ -217,6 +217,57 @@ async function calendarRelated(browser,{mobile=false}={}){
   }finally{await context.close()}
 }
 
+async function homeRefresh(browser){
+  const {context,page,errors}=await freshPage(browser,{mobile:false});
+  try{
+    await page.goto(BASE+'/index.html?_home_refresh='+Date.now(),{waitUntil:'domcontentloaded'});
+    await page.waitForTimeout(350);
+    await page.waitForFunction(()=>['live','offline'].includes(document.querySelector('[data-home-smart-status]')?.dataset.broadcastState),null,{timeout:12000});
+
+    const status=page.locator('[data-home-smart-status]');
+    assert.ok(await status.count(),'smart SOOP status card missing');
+    const state=await status.getAttribute('data-broadcast-state');
+    assert.ok(state==='live'||state==='offline','smart status must resolve to live/offline');
+    const href=await status.getAttribute('href');
+    assert.ok(/^https?:\/\//.test(href||''),'smart status link must be an absolute SOOP/VOD URL');
+    if(MOCK){
+      assert.equal(state,'offline','mock home must resolve to offline');
+      assert.equal(href,'https://example.com/vod-one','offline smart status must link the latest VOD');
+      assert.equal((await status.locator('[data-status-label]').textContent()).trim(),'OFFLINE');
+      assert.equal((await status.locator('[data-status-action]').textContent()).trim(),'최근 방송 다시보기');
+    }
+
+    const featureLabels=await page.locator('.portal-feature-grid .portal-card small').allTextContents();
+    assert.ok(featureLabels.length>=4,'home feature shortcuts missing');
+    assert.ok(featureLabels.every(text=>!/^\s*\d+\s*\//.test(text)),'feature shortcut numeric prefixes must be removed');
+    const compactLabels=await page.locator('.portal-compact-grid>a>small').allTextContents();
+    assert.ok(compactLabels.every(text=>!/^\s*\d+\s*$/.test(text)),'compact menu numeric labels must be removed');
+
+    const transform=await page.locator('.hero-character').evaluate(el=>getComputedStyle(el).transform);
+    assert.notEqual(transform,'none','desktop hero character should be shifted upward without shrinking');
+
+    const dday=page.locator('.home-dday-trigger');
+    const ddayStyle=await dday.evaluate(el=>({border:getComputedStyle(el).borderTopWidth,radius:getComputedStyle(el).borderRadius}));
+    assert.notEqual(ddayStyle.border,'0px','D-day should render as a floating card');
+    assert.notEqual(ddayStyle.radius,'0px','D-day floating card needs rounded shape');
+
+    const navControls=page.locator('.main-nav>a,.main-nav>.nav-minigames>a,.main-nav>.nav-group>.nav-group-trigger');
+    const navBoxes=await navControls.evaluateAll(nodes=>nodes.filter(n=>getComputedStyle(n).display!=='none').map(n=>n.getBoundingClientRect().height));
+    assert.ok(navBoxes.length>=5,'desktop grouped navigation controls missing');
+    assert.ok(Math.max(...navBoxes)-Math.min(...navBoxes)<=1.5,'desktop navigation control heights must be unified');
+
+    const utilitySelectors=['.site-search-trigger','.theme-toggle','.header-myhub','.changelog-button','.activity-bell'];
+    const utilityHeights=[];
+    for(const selector of utilitySelectors){
+      const node=page.locator(selector);
+      assert.ok(await node.count(),selector+' missing from desktop header');
+      utilityHeights.push((await node.boundingBox()).height);
+    }
+    assert.ok(Math.max(...utilityHeights)-Math.min(...utilityHeights)<=2,'desktop utility control heights must be unified');
+    assert.deepEqual(errors,[],'home refresh errors: '+errors.join(' | '));
+  }finally{await context.close()}
+}
+
 async function fanHubAndHeader(browser){
   const {context,page,errors}=await freshPage(browser,{mobile:false});
   try{
@@ -314,6 +365,7 @@ try{
   await tarotJournalMetadata(browser);
   await calendarRelated(browser,{mobile:false});
   await calendarRelated(browser,{mobile:true});
+  await homeRefresh(browser);
   await fanHubAndHeader(browser);
   await pwaHeader(browser);
   await contentFilter(browser);
