@@ -54,6 +54,9 @@ assert.doesNotMatch(hub,/fetch\([^)]*(favorite|tarot|personal|profile)/i,'person
 
 assert.match(myhub,/data-personal-dashboard/,'My Fan Hub dashboard root missing');
 assert.match(myhub,/현재 브라우저의 로컬 저장소/,'local-only privacy explanation missing');
+assert.match(hub,/function personalCategoryKind\(/,'My Hub saved content must normalize category identity');
+assert.match(hub,/data-kind=/,'My Hub saved content must expose shared category kinds');
+assert.match(hubCss,/var\(--category-accent\)/,'My Hub category labels must use shared category accents');
 assert.match(hub,/내 보관함/);
 assert.match(hub,/이어보기/);
 assert.match(hub,/타로 기록장/);
