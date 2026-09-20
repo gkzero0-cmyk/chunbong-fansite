@@ -732,7 +732,7 @@ if (typeof document !== 'undefined') {
     const noteVisible = note && getComputedStyle(note).display !== 'none';
     const reserved = padY + (head?.getBoundingClientRect().height || 52) + 26 + (noteVisible ? (note.getBoundingClientRect().height + 14) : 0);
     const availableHeight = Math.max(260, viewportHeight - 24 - reserved);
-    const widthByHeight = availableHeight * (2 / 3);
+    const widthByHeight = availableHeight * (898 / 1488);
     const widthByViewport = Math.max(220, viewportWidth - 64);
     const width = Math.floor(Math.min(640, widthByHeight, widthByViewport));
     dialog.style.setProperty('--tarot-zoom-width', width + 'px');
@@ -760,7 +760,7 @@ if (typeof document !== 'undefined') {
     art.innerHTML = `<div class="tarot-card-foil tarot-card-foil-dialog" data-tarot-foil><div class="${artClass}">${artwork.html}</div></div>`;
     if (typeof dialog.showModal === 'function') dialog.showModal();
     else dialog.setAttribute('open', '');
-    requestAnimationFrame(fitTarotZoom);
+    requestAnimationFrame(() => { fitTarotZoom(); requestAnimationFrame(fitTarotZoom); });
   }
 
   function clearResults() {
