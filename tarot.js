@@ -760,7 +760,8 @@ if (typeof document !== 'undefined') {
     art.innerHTML = `<div class="tarot-card-foil tarot-card-foil-dialog" data-tarot-foil><div class="${artClass}">${artwork.html}</div></div>`;
     if (typeof dialog.showModal === 'function') dialog.showModal();
     else dialog.setAttribute('open', '');
-    requestAnimationFrame(() => { fitTarotZoom(); requestAnimationFrame(fitTarotZoom); });
+    fitTarotZoom();
+    requestAnimationFrame(fitTarotZoom);
   }
 
   function clearResults() {
