@@ -27,8 +27,8 @@ assert.ok(schedule.includes('id="schedule-grid"'), 'schedule page should retain 
 assert.ok(!schedule.includes('id="schedule-official"'), 'removed official schedule section must not return');
 assert.ok(!page.includes("loadNoticeDetail('203015477')"), 'page runtime must not recreate the removed official schedule section');
 assert.ok(!schedule.includes('schedule-runtime.js'), 'schedule page must not load the obsolete official schedule snapshot runtime');
-assert.ok(liveFixes.includes('/api/content?type=schedule'), 'schedule page should refresh live Notion calendar data through the in-site runtime');
-assert.ok(!liveFixes.includes('data-official-snapshot'), 'live schedule override must not recreate the removed official snapshot');
+assert.ok(schedulePage.includes("await loadContent('schedule')"), 'schedule page should refresh live Notion calendar data through the primary renderer');\nassert.ok(liveFixes.includes('__CHUNBONG_SCHEDULE_HELPERS__'), 'legacy schedule helper file should remain pure helper coverage only');
+assert.ok(!liveFixes.includes('data-official-snapshot'), 'schedule helpers must not recreate the removed official snapshot');\nassert.ok(!liveFixes.includes('schedule-grid'), 'schedule helpers must not render the schedule UI a second time');
 assert.ok(content.includes('notionSchedule'), 'Notion calendar fallback entries should remain available for in-site schedule rendering');
 assert.ok(schedulePage.includes('Asia/Seoul'), 'scheduled datetimes should be rendered in Korea time');
 assert.ok(styles.includes('.schedule-tag'), 'schedule tags should have visible styling');
