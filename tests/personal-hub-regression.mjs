@@ -27,7 +27,7 @@ assert.match(hub,/alerts:\{enabled:false/,'broadcast reminder preference missing
 assert.match(hub,/lastLiveBroadcastId/,'live broadcast dedupe state missing');
 assert.match(hub,/function favoriteItem/);
 assert.match(hub,/function recordRecent/);
-assert.match(hub,/function recordTarot/);
+assert.match(hub,/function recordTarot/);\nassert.match(hub,/function recordTarotDetail/,'full tarot reading archive helper missing');\nassert.match(hub,/function exportBackup/,'personal backup export missing');\nassert.match(hub,/function importBackup/,'personal backup restore missing');\nassert.match(hub,/function resetPersonalData/,'personal reset helper missing');
 assert.match(hub,/function recordGameStart/);
 assert.match(hub,/function gameSnapshot/);
 assert.match(hub,/function dailyChallenge/);
@@ -90,11 +90,11 @@ for(const asset of ['/timeline.html','/timeline.css','/timeline.js']) assert.ok(
 
 assert.match(shell,/personal-hub\.css/,'shared shell must load personal hub styles');
 assert.match(shell,/personal-hub\.js/,'shared shell must load personal hub runtime');
-assert.match(sw,/chunbong-pwa-20260920-v20/,'timeline retirement must advance PWA cache');
+assert.match(sw,/chunbong-pwa-20260921-v21/,'timeline retirement must advance PWA cache');
 for(const asset of ['/personal-hub.css','/personal-hub.js','/myhub.html']){
   assert.ok(sw.includes("'"+asset+"'"),'PWA app shell missing '+asset);
 }
-assert.match(sw,/notificationclick/,'notification click routing missing');
+assert.match(sw,/notificationclick/,'notification click routing missing');\nassert.match(sw,/periodicsync/,'supported Android PWA background LIVE sync missing');
 
 
 const homeOverview=read('home-overview.js');
