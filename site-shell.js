@@ -89,10 +89,10 @@
 (() => {
   const nav=document.getElementById('main-nav');
   if(!nav||nav.querySelector('[data-nav="history"]'))return;
-  const link = document.createElement('a');
-  link.dataset.nav = 'history';
-  link.href = 'history.html';
-  link.textContent = '방송 이력';
+  const link=document.createElement('a');
+  link.dataset.nav='history';
+  link.href='history.html';
+  link.textContent='방송 이력';
   const dataLink = nav.querySelector('[data-nav="data"]');
   nav.insertBefore(link, dataLink || null);
 })();
