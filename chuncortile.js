@@ -28,8 +28,36 @@
   let remainingMs=Core.GAME_MS,endAt=0,running=false,paused=false,resolving=false,raf=0,soundOn=true,audioCtx=null,hintIndex=-1,seed=0;
   let modalPaused=false,modalFromPause=false;
   let previewIndex=-1,previewMatches=[];
+  let touchTargetIndex=-1;
+  const coarsePointer=window.matchMedia?.('(pointer: coarse)');
 
   const cells=[];
+
+  function touchAssistEnabled(){return Boolean(coarsePointer?.matches||navigator.maxTouchPoints>0);}
+  function clearTouchTarget(){
+    if(touchTargetIndex>=0)cells[touchTargetIndex]?.classList.remove('is-touch-target');
+    touchTargetIndex=-1;
+  }
+  function nearestEmptyIndex(index,clientX,clientY){
+    if(!touchAssistEnabled()||board[index]===null)return index;
+    const rect=e.board.getBoundingClientRect(),cellW=rect.width/Core.COLS,cellH=rect.height/Core.ROWS;
+    const row=Math.floor(index/Core.COLS),col=index%Core.COLS;
+    let best=-1,bestDistance=Infinity;
+    for(let dr=-2;dr<=2;dr+=1)for(let dc=-2;dc<=2;dc+=1){
+      const r=row+dr,c=col+dc;
+      if(r<0||r>=Core.ROWS||c<0||c>=Core.COLS)continue;
+      const candidate=r*Core.COLS+c;
+      if(board[candidate]!==null)continue;
+      const x=rect.left+(c+.5)*cellW,y=rect.top+(r+.5)*cellH;
+      const distance=Math.hypot(clientX-x,clientY-y);
+      if(distance<bestDistance){bestDistance=distance;best=candidate;}
+    }
+    return best>=0&&bestDistance<=Math.max(cellW,cellH)*1.65?best:index;
+  }
+  function resolveCellInput(index,event){
+    if(!touchAssistEnabled()||event?.detail===0)return index;
+    return nearestEmptyIndex(index,Number(event?.clientX)||0,Number(event?.clientY)||0);
+  }
 
   function buildCells(){
     if(cells.length)return;
@@ -37,7 +65,7 @@
     for(let i=0;i<Core.COLS*Core.ROWS;i+=1){
       const button=document.createElement('button');
       button.type='button';button.className='ct-cell';button.dataset.index=String(i);button.setAttribute('role','gridcell');
-      button.addEventListener('click',()=>handleCell(i));
+      button.addEventListener('click',event=>handleCell(resolveCellInput(i,event)));
       cells.push(button);frag.append(button);
     }
     e.board.replaceChildren(frag);
@@ -170,14 +198,14 @@
 
     const pop=document.createElement('b');
     pop.className='ct-score-pop';
-    pop.textContent=`${removed}개 제거 · +${removed}점${chain>=2?` · COMBO x${chain}`:''}`;
+    pop.textContent=`+${removed}`;
     pop.style.left=`${origin.x}px`;
     pop.style.top=`${origin.y}px`;
     fragment.append(pop);
 
     e.fx.append(fragment);
     setTimeout(()=>transient.forEach(node=>node.remove()),720);
-    setTimeout(()=>pop.remove(),1650);
+    setTimeout(()=>pop.remove(),820);
     showCombo(chain);
   }
 
@@ -335,7 +363,16 @@
 
   buildCells();renderBoard();updateHud();void loadRanking();
   // Normal hover/focus no longer reveals valid moves. Preview is reserved for the Hint button.
-  e.board.addEventListener('pointerleave',()=>{clearPreview();if(running&&!paused)setMessage('빈 칸을 눌러 같은 춘봉 표정을 찾아보세요.');});
+  e.board.addEventListener('pointerdown',event=>{
+    if(event.pointerType==='mouse'||!touchAssistEnabled())return;
+    const cell=event.target.closest?.('.ct-cell');if(!cell)return;
+    const index=Number(cell.dataset.index),target=nearestEmptyIndex(index,event.clientX,event.clientY);
+    clearTouchTarget();
+    if(target!==index&&board[target]===null){touchTargetIndex=target;cells[target]?.classList.add('is-touch-target');}
+  });
+  e.board.addEventListener('pointerup',()=>setTimeout(clearTouchTarget,120));
+  e.board.addEventListener('pointercancel',clearTouchTarget);
+  e.board.addEventListener('pointerleave',()=>{clearTouchTarget();clearPreview();if(running&&!paused)setMessage('빈 칸을 눌러 같은 춘봉 표정을 찾아보세요.');});
   e.board.addEventListener('focusout',event=>{if(!e.board.contains(event.relatedTarget)){clearPreview();}});
   e.start.addEventListener('click',newBoard);e.again.addEventListener('click',newBoard);e.restart.addEventListener('click',newBoard);e.pauseRestart.addEventListener('click',newBoard);
   e.pause.addEventListener('click',()=>paused?resumeGame():pauseGame(true));e.resume.addEventListener('click',resumeGame);e.hint.addEventListener('click',showHint);e.sound.addEventListener('click',toggleSound);

@@ -1,9 +1,12 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const js=fs.readFileSync(new URL('../chunbak.js',import.meta.url),'utf8');
-for(const token of ["const RANKING_ENDPOINT = '/api/content?type=chunbak-ranking'",'Matter.Engine.create','Matter.Bodies.circle','collisionStart','Core.mergeResult','Core.pickSpawnStage','Core.updateDangerTracker','requestAnimationFrame','pointermove','pointerdown','localStorage']) assert.ok(js.includes(token), `missing ${token}`);
+for(const token of ["const RANKING_ENDPOINT = '/api/content?type=chunbak-ranking'",'Matter.Engine.create','Matter.Bodies.circle','collisionStart','Core.mergeResult','Core.pickSpawnStage','Core.updateDangerTracker','requestAnimationFrame','pointermove','pointerdown','localStorage','measureVisibleCollisionScale','setStageCollisionScale','collisionScales']) assert.ok(js.includes(token), `missing ${token}`);
 assert.ok(js.includes('Matter.World.remove(world, a);'), 'merged body A must be removed individually');
 assert.ok(js.includes('Matter.World.remove(world, b);'), 'merged body B must be removed individually');
 assert.equal(js.includes('Matter.World.remove(world, [a, b]);'), false, 'Matter.World.remove does not accept an array of bodies');
 assert.ok(js.includes('.map(body => body.id)'), 'danger tracking must identify each body independently');
+assert.ok(js.includes('DEFAULT_COLLISION_RADIUS_SCALE = 0.78'), 'fallback collider scale should be tighter than the old global value');
+assert.equal(js.includes('const COLLISION_RADIUS_SCALE = 0.84'), false, 'single global collision radius scale must stay removed');
+assert.ok(js.includes('Math.min(MAX_COLLISION_RADIUS_SCALE,visibleSpan*.96)'), 'visible alpha bounds should calibrate each stage collider');
 console.log('chunbak runtime source regression passed');

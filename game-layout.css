@@ -224,7 +224,7 @@
   .chungwagame-page,.chuncortile-page{
     --game-shell-max:1260px;
     --game-left:150px;
-    --game-board:min(1040px,calc(170dvh - 272px),calc(100vw - 330px));
+    --game-board:min(1040px,calc(170dvh - 322px),calc(100vw - 330px));
     --game-right:100px;
     --game-gap:10px;
     min-height:calc(100dvh - 72px)!important;
@@ -264,7 +264,7 @@
   .cg-board-wrap,.ct-board-wrap{
     width:100%!important;
     max-width:none!important;
-    max-height:none!important;
+    max-height:calc(100dvh - 176px)!important;
     aspect-ratio:17/10!important;
     overflow:hidden!important
   }
@@ -297,7 +297,7 @@
     --game-left:140px;
     --game-right:94px;
     --game-gap:8px;
-    --game-board:min(900px,calc(170dvh - 250px),calc(100vw - 300px))
+    --game-board:min(900px,calc(170dvh - 340px),calc(100vw - 300px))
   }
   .cg-howto,.ct-howto{display:none!important}
   .cg-utility,.ct-tool{min-height:50px!important}

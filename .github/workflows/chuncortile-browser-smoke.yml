@@ -111,11 +111,13 @@ jobs:
               assert.equal(state.combo,1);
               const firstPop=page.locator('.ct-score-pop').last();
               assert.ok(await firstPop.count()>0,'clear score effect missing');
-              assert.match(await firstPop.innerText(),new RegExp(firstRemoved+'개 제거'),'clear popup must show removed tile count');
+              assert.equal(await firstPop.innerText(),'+'+firstRemoved,'clear popup must stay compact');
               const burstCount=await page.locator('.ct-burst').count();
               assert.ok(burstCount>0&&burstCount<=firstRemoved*4,'clear particles exceeded performance cap');
-              await page.waitForTimeout(950);
-              assert.ok(await firstPop.isVisible(),'clear count must remain readable for about one second');
+              await page.waitForTimeout(320);
+              assert.ok(await firstPop.isVisible(),'compact clear score should remain briefly readable');
+              await page.waitForTimeout(620);
+              assert.equal(await firstPop.count(),0,'compact clear score should leave the board quickly');
               move=await page.evaluate(()=>window.ChuncortileApp.debugFindMove());
               assert.ok(move&&move.matches.length>=2);
               before=state.score;

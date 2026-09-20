@@ -5,14 +5,26 @@ const css = fs.readFileSync(new URL('../chungwagame.css', import.meta.url), 'utf
 
 assert.match(
   css,
-  /\.cg-fruit\{[^}]*border-right:1px solid rgba\(91,116,25,\.16\);[^}]*border-bottom:1px solid rgba\(91,116,25,\.16\);[^}]*background:rgba\(248,252,232,\.24\)/s,
-  '춘과게임 각 칸의 경계선과 기본 셀 배경이 보여야 합니다.'
+  /\.cg-board\{[\s\S]*background-image:[\s\S]*linear-gradient\(to right,[\s\S]*linear-gradient\(to bottom,[\s\S]*background-size:calc\(100% \/ 17\) 100%,100% calc\(100% \/ 10\)/,
+  '춘과게임 격자는 보드 배경에서 정확한 17×10 간격으로 그려져야 합니다.'
 );
 
 assert.match(
   css,
-  /\.cg-fruit\.empty\{opacity:1;transform:none;background:rgba\(232,241,206,\.24\)\}/,
-  '제거된 빈 칸에서도 격자가 유지되어야 합니다.'
+  /\.cg-fruit\{[\s\S]*border:0!important;[\s\S]*background:transparent!important/,
+  '셀 테두리가 과일 중심을 밀어내지 않아야 합니다.'
+);
+
+assert.match(
+  css,
+  /\.cg-fruit-shape\{[\s\S]*width:min\(84%,40px\)!important;[\s\S]*height:auto!important;[\s\S]*aspect-ratio:1\/1/,
+  '춘과 이미지는 셀 정중앙의 정사각형 영역에 배치되어야 합니다.'
+);
+
+assert.match(
+  css,
+  /\.cg-fruit-shape::after\{[\s\S]*content:attr\(data-value\);[\s\S]*color:#fffdf2/,
+  '숫자는 단색의 간결한 오버레이로 표시되어야 합니다.'
 );
 
 assert.doesNotMatch(

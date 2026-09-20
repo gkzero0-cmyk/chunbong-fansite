@@ -10,9 +10,12 @@
   const DROP_Y = 60;
   const DROP_COOLDOWN_MS = 260;
   const BEST_KEY = 'chunbak:best:v1';
-  // Keep the visible artwork full-size, but shrink the circular collider so
-  // transparent PNG padding does not create large visual gaps between pieces.
-  const COLLISION_RADIUS_SCALE = 0.84;
+  // Keep the artwork full-size while fitting each collider to the visible
+  // non-transparent flower area. The fallback is intentionally tighter than
+  // the old global 0.84 scale so characters do not look separated at contact.
+  const DEFAULT_COLLISION_RADIUS_SCALE = 0.78;
+  const MIN_COLLISION_RADIUS_SCALE = 0.66;
+  const MAX_COLLISION_RADIUS_SCALE = 0.84;
   const PHYSICS = Object.freeze({
     gravityY: 1.18,
     restitution: 0.025,
@@ -54,6 +57,7 @@
 
   const images = new Map();
   const imageLoads = new Map();
+  const collisionScales = new Map();
   let engine = null;
   let world = null;
   let gameState = 'start';
@@ -264,9 +268,47 @@
     ]);
   }
 
+  function measureVisibleCollisionScale(img) {
+    try {
+      const side=96,canvas=document.createElement('canvas');
+      canvas.width=side;canvas.height=side;
+      const context=canvas.getContext('2d',{willReadFrequently:true});
+      if(!context)return DEFAULT_COLLISION_RADIUS_SCALE;
+      context.clearRect(0,0,side,side);context.drawImage(img,0,0,side,side);
+      const data=context.getImageData(0,0,side,side).data;
+      let minX=side,minY=side,maxX=-1,maxY=-1;
+      for(let y=0;y<side;y+=1)for(let x=0;x<side;x+=1){
+        if(data[(y*side+x)*4+3]<28)continue;
+        if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;
+      }
+      if(maxX<0||maxY<0)return DEFAULT_COLLISION_RADIUS_SCALE;
+      const visibleSpan=Math.max(maxX-minX+1,maxY-minY+1)/side;
+      return Math.max(MIN_COLLISION_RADIUS_SCALE,Math.min(MAX_COLLISION_RADIUS_SCALE,visibleSpan*.96));
+    } catch (_) {
+      return DEFAULT_COLLISION_RADIUS_SCALE;
+    }
+  }
+
+  function setStageCollisionScale(stage, scale) {
+    const meta=Core.STAGES[stage-1];if(!meta)return;
+    const next=Math.max(MIN_COLLISION_RADIUS_SCALE,Math.min(MAX_COLLISION_RADIUS_SCALE,Number(scale)||DEFAULT_COLLISION_RADIUS_SCALE));
+    collisionScales.set(stage,next);
+    if(!world)return;
+    for(const body of dynamicPieces()){
+      const info=body.plugin?.chunbak;
+      if(info?.stage!==stage)continue;
+      const target=Math.max(8,meta.radius*next),current=Math.max(1,Number(info.collisionRadius)||body.circleRadius||target);
+      if(Math.abs(target-current)<.25)continue;
+      const factor=target/current;
+      Matter.Body.scale(body,factor,factor);
+      info.collisionRadius=target;
+    }
+  }
+
   function createPiece(stage, x, y) {
     const meta = Core.STAGES[stage - 1];
-    const collisionRadius = Math.max(8, meta.radius * COLLISION_RADIUS_SCALE);
+    const collisionScale = collisionScales.get(stage) ?? DEFAULT_COLLISION_RADIUS_SCALE;
+    const collisionRadius = Math.max(8, meta.radius * collisionScale);
     const body = Matter.Bodies.circle(x, y, collisionRadius, {
       restitution: PHYSICS.restitution,
       friction: PHYSICS.friction,
@@ -641,6 +683,7 @@
       img.decoding = 'async';
       img.onload = () => {
         images.set(meta.id, img);
+        setStageCollisionScale(meta.id,measureVisibleCollisionScale(img));
         imageLoads.delete(meta.id);
         resolve(img);
       };
@@ -711,7 +754,8 @@
       maxLevel,
       currentStage,
       nextStage,
-      bodyCount: dynamicPieces().length
+      bodyCount: dynamicPieces().length,
+      collisionScales:Object.fromEntries(collisionScales)
     })
   });
 })();
