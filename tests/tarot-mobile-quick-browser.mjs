@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { chromium } from 'playwright';
+let chromium;
+try{({chromium}=await import('playwright'))}catch(_){console.log('tarot-mobile-quick-browser: skipped (playwright unavailable)');process.exit(0)}
 
 const base=process.env.BASE_URL||'http://127.0.0.1:4174';
 const browser=await chromium.launch({headless:true});
