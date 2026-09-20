@@ -86,10 +86,9 @@
     document.head.appendChild(script);
   }
 })();
-
 (() => {
-  const nav = document.getElementById('main-nav');
-  if (!nav || nav.querySelector('[data-nav="history"]')) return;
+  const nav=document.getElementById('main-nav');
+  if(!nav||nav.querySelector('[data-nav="history"]'))return;
   const link = document.createElement('a');
   link.dataset.nav = 'history';
   link.href = 'history.html';
@@ -97,7 +96,6 @@
   const dataLink = nav.querySelector('[data-nav="data"]');
   nav.insertBefore(link, dataLink || null);
 })();
-
 (() => {
   const nav = document.getElementById('main-nav');
   const link = nav?.querySelector('[data-nav="minigames"]');
@@ -129,7 +127,6 @@
     if (!wrapper.contains(event.relatedTarget)) setExpanded(false);
   });
 })();
-
 (() => {
   const nav=document.getElementById('main-nav');
   if(!nav||nav.querySelector('.nav-group')) return;
@@ -164,7 +161,6 @@
     document.addEventListener('keydown',event=>{if(event.key==='Escape'&&wrap.classList.contains('open')){setOpen(false);trigger.focus()}});
   });
 })();
-
 (() => {
   const STORAGE_KEY = 'chunbong-theme';
   const root = document.documentElement;
@@ -212,7 +208,6 @@
   header.insertBefore(button, live || null);
   applyTheme(saved);
 })();
-
 (() => {
   const header = document.querySelector('.site-header');
   if (!header || header.querySelector('.changelog-button')) return;
@@ -283,7 +278,6 @@
     if (document.visibilityState === 'visible') void checkChangelogUnread();
   });
 })();
-
 (() => {
   const header = document.querySelector('.site-header');
   if (!header) return;
