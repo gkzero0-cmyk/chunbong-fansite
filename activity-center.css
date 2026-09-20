@@ -37,3 +37,5 @@
 .activity-item[data-kind="clips"],.activity-type-icon[data-kind="clips"],.activity-thumb[data-kind="clips"]{--category-accent:var(--accent-clips)}
 .activity-item[data-kind="fanart"],.activity-type-icon[data-kind="fanart"],.activity-thumb[data-kind="fanart"]{--category-accent:var(--accent-fanart)}
 .activity-item[data-kind="youtube"],.activity-type-icon[data-kind="youtube"],.activity-thumb[data-kind="youtube"]{--category-accent:var(--accent-youtube)}
+
+[data-theme="light"] .activity-tabs button{color:var(--text-muted)}[data-theme="light"] .activity-tabs button:hover{color:var(--text-primary)}[data-theme="light"] .activity-tabs button.active{color:#c94f00}[data-theme="light"] .activity-tabs button.active:after{background:#e85d04}
