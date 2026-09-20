@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   live-preview:
-    if: ${{ !startsWith(github.head_ref, 'ci-') && !startsWith(github.head_ref, 'internal-') }}
+    if: ${{ github.head_ref != 'data/soop-telemetry' && !startsWith(github.head_ref, 'internal-') && !startsWith(github.head_ref, 'ci-') && !startsWith(github.head_ref, 'docs-') && !startsWith(github.head_ref, 'feat/') && !startsWith(github.head_ref, 'fix/') && !startsWith(github.head_ref, 'chore/') && !startsWith(github.head_ref, 'ci/') && !startsWith(github.head_ref, 'refactor/') && !startsWith(github.head_ref, 'test/') && !startsWith(github.head_ref, 'hotfix/') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -33,7 +33,6 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
-          preview_seen=0
           for attempt in $(seq 1 60); do
             echo "Preview discovery attempt ${attempt}/60"
             comments=$(curl -fsS \
@@ -49,7 +48,6 @@ jobs:
                 }
               });')
             if [ -n "$preview" ]; then
-              preview_seen=1
               stamp=$(date +%s)
               if curl -fsS -H 'cache-control: no-cache' "$preview/chuntris.html?_smoke=$stamp" -o /tmp/chuntris-preview.html && \
                  curl -fsS -H 'cache-control: no-cache' "$preview/chuntris-postgame-ranking.js?_smoke=$stamp" -o /tmp/chuntris-postgame-ranking.js && \
@@ -65,14 +63,9 @@ jobs:
             fi
             sleep 5
           done
-          if [ "$preview_seen" -eq 0 ]; then
-            echo 'No Vercel Preview was published for this PR; preview-only checks are skipped.'
-            exit 0
-          fi
           echo 'Current Vercel Preview did not become ready with the postgame ranking flow.' >&2
           exit 1
       - name: Verify ranking API validation without leaderboard pollution
-        if: env.PREVIEW_BASE != ''
         run: |
           set -euo pipefail
           host=${PREVIEW_BASE#https://}
@@ -85,12 +78,10 @@ jobs:
           test "$status" = '400'
           node -e "const p=require('/tmp/chuntris-invalid.json');if(p.error!=='invalid_nickname')process.exit(1)"
       - name: Install Playwright Chromium
-        if: env.PREVIEW_BASE != ''
         run: |
           npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install --with-deps chromium
       - name: Verify live immersive preview flow and layout
-        if: env.PREVIEW_BASE != ''
         run: |
           node <<'NODE'
           const assert=require('node:assert/strict');

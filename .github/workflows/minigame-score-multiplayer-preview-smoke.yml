@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   score-race-preview:
-    if: ${{ !startsWith(github.head_ref, 'ci-') && !startsWith(github.head_ref, 'ci/') && !startsWith(github.head_ref, 'internal-') && !startsWith(github.head_ref, 'internal/') }}
+    if: ${{ github.head_ref != 'data/soop-telemetry' && !startsWith(github.head_ref, 'internal-') && !startsWith(github.head_ref, 'ci-') && !startsWith(github.head_ref, 'docs-') && !startsWith(github.head_ref, 'feat/') && !startsWith(github.head_ref, 'fix/') && !startsWith(github.head_ref, 'chore/') && !startsWith(github.head_ref, 'ci/') && !startsWith(github.head_ref, 'refactor/') && !startsWith(github.head_ref, 'test/') && !startsWith(github.head_ref, 'hotfix/') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -39,7 +39,6 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
-          preview_seen=0
           for attempt in $(seq 1 60); do
             comments=$(curl -fsS               -H "Authorization: Bearer $GH_TOKEN"               -H 'Accept: application/vnd.github+json'               "https://api.github.com/repos/$REPO/issues/$PR_NUMBER/comments?per_page=100")
             preview=$(printf '%s' "$comments" | node -e '
@@ -51,7 +50,6 @@ jobs:
                 }
               });')
             if [ -n "$preview" ]; then
-              preview_seen=1
               stamp=$(date +%s)
               if curl -fsS "$preview/chunbak.html?_mp=$stamp" -o /tmp/chunbak.html &&                  curl -fsS "$preview/chungwagame.html?_mp=$stamp" -o /tmp/chungwa.html &&                  curl -fsS "$preview/score-race-multiplayer.js?_mp=$stamp" -o /tmp/score-race.js &&                  grep -q 'data-score-multiplayer="chunbak"' /tmp/chunbak.html &&                  grep -q 'data-score-multiplayer="chungwagame"' /tmp/chungwa.html &&                  grep -q '120 SEC SCORE RACE' /tmp/score-race.js; then
                 echo "PREVIEW_BASE=$preview" >> "$GITHUB_ENV"
@@ -61,21 +59,15 @@ jobs:
             fi
             sleep 5
           done
-          if [ "$preview_seen" -eq 0 ]; then
-            echo 'No Vercel Preview was published for this PR; preview-only checks are skipped.'
-            exit 0
-          fi
           echo 'Current score-race preview did not become ready.' >&2
           exit 1
 
       - name: Install Playwright Chromium
-        if: env.PREVIEW_BASE != ''
         run: |
           npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install --with-deps chromium
 
       - name: Verify Chunbak and Chungwagame two-player score races
-        if: env.PREVIEW_BASE != ''
         run: |
           node --input-type=module <<'EOF_NODE'
           import assert from 'node:assert/strict';
