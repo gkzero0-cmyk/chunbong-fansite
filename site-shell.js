@@ -85,7 +85,14 @@
     link.dataset.siteQuality = 'true';
     document.head.appendChild(link);
   }
-  for (const src of ['site-meta.js', 'site-health.js', 'site-improvements.js', 'personal-hub.js']) {
+  if (!document.querySelector('link[data-mobile-app-enhancements]')) {
+    const mobileEnhancements = document.createElement('link');
+    mobileEnhancements.rel = 'stylesheet';
+    mobileEnhancements.href = 'mobile-app-enhancements.css';
+    mobileEnhancements.dataset.mobileAppEnhancements = 'true';
+    document.head.appendChild(mobileEnhancements);
+  }
+  for (const src of ['site-meta.js', 'site-health.js', 'site-improvements.js', 'personal-hub.js', 'mobile-app-enhancements.js']) {
     if (document.querySelector('script[src="' + src + '"]')) continue;
     const script = document.createElement('script');
     script.src = src;
