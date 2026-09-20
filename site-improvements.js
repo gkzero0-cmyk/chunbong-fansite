@@ -20,6 +20,21 @@
 
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const normalize = value => String(value || '').toLowerCase().replace(/\s+/g,' ').trim();
+  function categoryKind(value='',href=''){
+    const text=(String(value)+' '+String(href)).toLowerCase();
+    if(/schedule|일정/.test(text))return'schedule';
+    if(/notice|공지/.test(text))return'notice';
+    if(/vod|replay|다시보기/.test(text))return'replay';
+    if(/clip|catch|핫클립/.test(text))return'clips';
+    if(/fanart|팬아트/.test(text))return'fanart';
+    if(/youtube|shorts|유튜브/.test(text))return'youtube';
+    if(/tarot|타로/.test(text))return'tarot';
+    if(/minigame|게임/.test(text))return'minigames';
+    if(/calendar|방송 기록/.test(text))return'calendar';
+    if(/history|방송 이력/.test(text))return'history';
+    if(/data|춘봉 데이터|통계|카테고리/.test(text))return'data';
+    return'notice';
+  }
   const stripHtml = value => String(value || '').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
   const contentKey=item=>String(item?.id||item?.videoId||item?.link||item?.sourceHref||item?.title||'').trim();
   const itemText = item => [
@@ -187,7 +202,8 @@
       }
       results.innerHTML=rows.length ? rows.map((row,i)=>{
         const id='site-search-option-'+i;
-        return `<a id="${id}" role="option" aria-selected="${i===active}" class="${i===active?'is-active':''}" href="${escapeHtml(row.href)}"><span class="site-search-result-copy"><strong>${escapeHtml(row.label)}</strong><small>${escapeHtml(row.kind+(row.meta?' · '+row.meta:''))}</small></span><span class="site-search-go" aria-hidden="true">→</span></a>`;
+        const kind=categoryKind(row.kind,row.href);
+        return `<a id="${id}" role="option" aria-selected="${i===active}" class="category-accent ${i===active?'is-active':''}" data-kind="${escapeHtml(kind)}" href="${escapeHtml(row.href)}"><span class="site-search-result-copy"><strong>${escapeHtml(row.label)}</strong><small>${escapeHtml(row.kind+(row.meta?' · '+row.meta:''))}</small></span><span class="site-search-go" aria-hidden="true">→</span></a>`;
       }).join('') : '<div class="site-search-empty">'+(q?'일치하는 콘텐츠가 없습니다.':'검색어를 입력해 주세요.')+'</div>';
       const selected=results.querySelector('a.is-active');
       if(selected)input.setAttribute('aria-activedescendant',selected.id);
