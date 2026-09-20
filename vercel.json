@@ -95,7 +95,7 @@
   ],
   "crons": [
     {
-      "path": "/api/content?type=push-dispatch",
+      "path": "/api/push-cron",
       "schedule": "* * * * *"
     }
   ]
