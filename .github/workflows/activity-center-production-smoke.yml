@@ -102,6 +102,14 @@ jobs:
               assert.equal(response.status,200);
               assert.ok(Array.isArray(response.payload.items)&&response.payload.items.length>0,'production activity feed empty');
 
+              const fortune=page.locator('#daily-fortune-dialog[open]');
+              if(await fortune.count()){
+                const fortuneClose=fortune.locator('[data-daily-fortune-close]');
+                if(await fortuneClose.count()) await fortuneClose.click();
+                else await fortune.evaluate(node=>node.close());
+                await fortune.waitFor({state:'hidden'});
+              }
+
               assert.equal(await page.locator('.activity-unread-dot').isVisible(),true,'fresh browser should show unread dot');
               await page.locator('.activity-bell').click();
               assert.ok(await page.locator('.activity-panel').isVisible(),'activity panel did not open');
