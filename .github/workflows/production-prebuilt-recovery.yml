@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  statuses: write
 
 jobs:
   deploy-prebuilt:
@@ -36,6 +37,21 @@ jobs:
           else
             echo 'can_deploy=true' >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Publish recovery availability
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ steps.token.outputs.can_deploy }}" == "true" ]]; then
+            state='pending'
+            description='VERCEL_TOKEN available; prebuilt recovery starting'
+          else
+            state='error'
+            description='VERCEL_TOKEN missing; prebuilt recovery unavailable'
+          fi
+          curl -fsS -X POST             -H "Authorization: Bearer $GH_TOKEN"             -H 'Accept: application/vnd.github+json'             "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA"             -d "$(node -e "process.stdout.write(JSON.stringify({state:process.argv[1],context:'Prebuilt Recovery',description:process.argv[2]}))" "$state" "$description")"
 
       - name: Link Vercel project
         if: steps.token.outputs.can_deploy == 'true'
@@ -79,6 +95,22 @@ jobs:
           done
           echo 'Production prebuilt deploy verification failed.' >&2
           exit 1
+
+      - name: Publish recovery success
+        if: success() && steps.token.outputs.can_deploy == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          curl -fsS -X POST             -H "Authorization: Bearer $GH_TOKEN"             -H 'Accept: application/vnd.github+json'             "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA"             -d '{"state":"success","context":"Prebuilt Recovery","description":"Production prebuilt recovery completed"}'
+
+      - name: Publish recovery failure
+        if: failure() && steps.token.outputs.can_deploy == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          curl -fsS -X POST             -H "Authorization: Bearer $GH_TOKEN"             -H 'Accept: application/vnd.github+json'             "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA"             -d '{"state":"failure","context":"Prebuilt Recovery","description":"Production prebuilt recovery failed"}'
 
       - name: Recovery unavailable without token
         if: steps.token.outputs.can_deploy != 'true'
