@@ -163,6 +163,13 @@
     }
     state.alerts.enabled=Boolean(enabled);write(state);return state.alerts.enabled;
   }
+  function alertPermissionGranted(){
+    return 'Notification'in window&&Notification.permission==='granted';
+  }
+  function disableUnavailableAlerts(state){
+    if(alertPermissionGranted())return false;
+    state.alerts.enabled=false;write(state);return true;
+  }
   async function showReminder(item){
     const title='춘봉 방송 예정 시간이에요';
     const options={body:item.title||'방송 일정을 확인해 보세요.',icon:'/assets/app-icon-192.png',badge:'/assets/app-icon-192.png',tag:'chunbong-schedule-'+String(item.start||''),data:{url:'/schedule.html'}};
@@ -174,6 +181,7 @@
   }
   async function checkLiveReminder(){
     const state=read();if(!state.alerts.enabled)return;
+    if(disableUnavailableAlerts(state))return;
     try{
       const payload=window.ChunbongCache
         ?await window.ChunbongCache.fetchJson('personal:live','/api/content?type=live',{ttl:30000,force:true})
@@ -194,6 +202,7 @@
 
   async function checkBroadcastReminder(){
     const state=read();if(!state.alerts.enabled)return;
+    if(disableUnavailableAlerts(state))return;
     try{
       const payload=window.ChunbongCache
         ?await window.ChunbongCache.fetchJson('personal:schedule','/api/content?type=schedule',{ttl:60000})
