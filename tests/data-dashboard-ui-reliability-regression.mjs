@@ -33,7 +33,7 @@ for (const marker of ['.data-chart-hover', '.data-chart-crosshair', '.data-kpi-s
   assert.ok(dataCss.includes(marker), `data.css should include ${marker}`);
 }
 
-assert.ok(contentApi.includes("req.query?.refresh"), 'content API should inspect refresh query');
+assert.ok(contentApi.includes("requestUrl.searchParams.get('refresh')"), 'content API should inspect refresh query with URLSearchParams');
 assert.ok(contentApi.includes("no-store, max-age=0"), 'forced data refresh should disable CDN caching');
 assert.ok(contentApi.includes("type==='data'"), 'refresh cache policy should remain scoped to data endpoint');
 
