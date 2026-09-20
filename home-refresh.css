@@ -160,11 +160,11 @@ body[data-page="home"] .home-overview-card::after{
   pointer-events:none;
 }
 body[data-page="home"] .home-overview-card small{color:var(--home-card-accent)}
-body[data-page="home"] [data-home-overview-card="schedule"]{--home-card-accent:#58dda1;--home-card-glow:rgba(88,221,161,.12)}
-body[data-page="home"] [data-home-overview-card="notice"]{--home-card-accent:#ff9a55;--home-card-glow:rgba(255,154,85,.12)}
-body[data-page="home"] [data-home-overview-card="media"]{--home-card-accent:#70bfff;--home-card-glow:rgba(112,191,255,.12)}
-body[data-page="home"] .home-overview-fortune{--home-card-accent:#d9a7ff;--home-card-glow:rgba(217,167,255,.12)}
-body[data-page="home"] [data-home-overview-card="challenge"]{--home-card-accent:#ffd36b;--home-card-glow:rgba(255,211,107,.12)}
+body[data-page="home"] [data-home-overview-card="schedule"]{--home-card-accent:var(--accent-schedule);--home-card-glow:var(--accent-schedule-soft)}
+body[data-page="home"] [data-home-overview-card="notice"]{--home-card-accent:var(--accent-notice);--home-card-glow:var(--accent-notice-soft)}
+body[data-page="home"] [data-home-overview-card="media"]{--home-card-accent:var(--accent-replay);--home-card-glow:var(--accent-replay-soft)}
+body[data-page="home"] .home-overview-fortune{--home-card-accent:var(--accent-tarot);--home-card-glow:var(--accent-tarot-soft)}
+body[data-page="home"] [data-home-overview-card="challenge"]{--home-card-accent:var(--accent-minigames);--home-card-glow:var(--accent-minigames-soft)}
 body[data-page="home"] .home-overview-card:hover{
   border-color:color-mix(in srgb,var(--home-card-accent) 55%,#353535);
   background:linear-gradient(150deg,#1c1919,#111113);
@@ -196,10 +196,10 @@ body[data-page="home"] .portal-card::before{
   background:var(--portal-accent);
   box-shadow:0 0 18px var(--portal-soft);
 }
-body[data-page="home"] .portal-card[data-kind="replay"]{--portal-accent:#6bc8ff;--portal-soft:rgba(107,200,255,.13)}
-body[data-page="home"] .portal-card[data-kind="tarot"]{--portal-accent:#d4a7ff;--portal-soft:rgba(212,167,255,.13)}
-body[data-page="home"] .portal-card[data-kind="minigames"]{--portal-accent:#ffd061;--portal-soft:rgba(255,208,97,.13)}
-body[data-page="home"] .portal-card[data-kind="data"]{--portal-accent:#62ddb8;--portal-soft:rgba(98,221,184,.13)}
+body[data-page="home"] .portal-card[data-kind="replay"]{--portal-accent:var(--accent-replay);--portal-soft:var(--accent-replay-soft)}
+body[data-page="home"] .portal-card[data-kind="tarot"]{--portal-accent:var(--accent-tarot);--portal-soft:var(--accent-tarot-soft)}
+body[data-page="home"] .portal-card[data-kind="minigames"]{--portal-accent:var(--accent-minigames);--portal-soft:var(--accent-minigames-soft)}
+body[data-page="home"] .portal-card[data-kind="data"]{--portal-accent:var(--accent-data);--portal-soft:var(--accent-data-soft)}
 body[data-page="home"] .portal-card small{
   display:inline-flex;
   align-items:center;
@@ -215,11 +215,14 @@ body[data-page="home"] .portal-card small::before{
   font-size:11px;
 }
 body[data-page="home"] .portal-card[data-kind="replay"] small::before{content:"▶"}
-body[data-page="home"] .portal-card[data-kind="tarot"] small::before{content:"✦"}
+body[data-page="home"] .portal-card[data-kind="tarot"] small::before{content:"✧"}
 body[data-page="home"] .portal-card[data-kind="minigames"] small::before{content:"◆"}
 body[data-page="home"] .portal-card[data-kind="data"] small::before{content:"▥"}
 body[data-page="home"] .portal-card:hover{border-color:color-mix(in srgb,var(--portal-accent) 42%,#303030)}
 body[data-page="home"] .portal-card b{color:var(--portal-accent)}
+body[data-page="home"] .portal-card strong{color:var(--text-primary)}
+body[data-page="home"] .portal-card p{color:var(--text-secondary)}
+body[data-page="home"] .portal-card small{font-size:max(11px,.72rem);font-weight:900;letter-spacing:.09em}
 
 body[data-page="home"] .portal-compact-grid>a{
   --compact-accent:#ff9a55;
@@ -234,13 +237,15 @@ body[data-page="home"] .portal-compact-grid>a small{
   color:var(--compact-accent);
   font-size:13px;
 }
-body[data-page="home"] .portal-compact-grid>a[data-kind="schedule"]{--compact-accent:#58dda1}
-body[data-page="home"] .portal-compact-grid>a[data-kind="notice"]{--compact-accent:#ff9a55}
-body[data-page="home"] .portal-compact-grid>a[data-kind="clips"]{--compact-accent:#70bfff}
-body[data-page="home"] .portal-compact-grid>a[data-kind="fanart"]{--compact-accent:#f1a0d8}
-body[data-page="home"] .portal-compact-grid>a[data-kind="youtube"]{--compact-accent:#ff8077}
-body[data-page="home"] .portal-compact-grid>a[data-kind="history"]{--compact-accent:#c6a8ff}
-body[data-page="home"] .portal-compact-grid>a[data-kind="calendar"]{--compact-accent:#ffd36b}
+body[data-page="home"] .portal-compact-grid>a[data-kind="schedule"]{--compact-accent:var(--accent-schedule)}
+body[data-page="home"] .portal-compact-grid>a[data-kind="notice"]{--compact-accent:var(--accent-notice)}
+body[data-page="home"] .portal-compact-grid>a[data-kind="clips"]{--compact-accent:var(--accent-clips)}
+body[data-page="home"] .portal-compact-grid>a[data-kind="fanart"]{--compact-accent:var(--accent-fanart)}
+body[data-page="home"] .portal-compact-grid>a[data-kind="youtube"]{--compact-accent:var(--accent-youtube)}
+body[data-page="home"] .portal-compact-grid>a[data-kind="history"]{--compact-accent:var(--accent-history)}
+body[data-page="home"] .portal-compact-grid>a[data-kind="calendar"]{--compact-accent:var(--accent-calendar)}
+body[data-page="home"] .portal-compact-grid>a strong{color:var(--text-primary)}
+body[data-page="home"] .portal-compact-grid>a em{color:var(--text-muted)}
 body[data-page="home"] .portal-compact-grid>a:hover{
   border-color:color-mix(in srgb,var(--compact-accent) 36%,#303030);
   background:#141416;
