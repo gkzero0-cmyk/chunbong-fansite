@@ -1,0 +1,120 @@
+/* Luxury Tarot Foil — shared result + large-view hover, 2026-09-21 */
+.tarot-card-foil{
+  --foil-x:50%;
+  --foil-y:50%;
+  --foil-tilt-x:0deg;
+  --foil-tilt-y:0deg;
+  position:relative;
+  display:block;
+  width:100%;
+  border-radius:18px;
+  overflow:hidden;
+  isolation:isolate;
+  transform:perspective(1200px) rotateX(var(--foil-tilt-x)) rotateY(var(--foil-tilt-y));
+  transform-style:preserve-3d;
+  transition:transform .18s ease,filter .22s ease,box-shadow .22s ease;
+}
+.tarot-card-foil .tarot-card-art{
+  position:relative;
+  z-index:1;
+  display:block;
+  width:100%!important;
+  max-width:none!important;
+  filter:none!important;
+}
+.tarot-card-foil::after{
+  content:"";
+  position:absolute;
+  z-index:4;
+  inset:-5%;
+  pointer-events:none;
+  opacity:0;
+  background:linear-gradient(118deg,
+    transparent 27%,
+    rgba(71,187,219,.08) 35%,
+    rgba(118,96,213,.14) 42%,
+    rgba(220,104,178,.08) 48%,
+    rgba(239,201,96,.14) 55%,
+    rgba(80,176,217,.08) 62%,
+    transparent 71%);
+  background-size:190% 190%;
+  background-position:var(--foil-x) var(--foil-y);
+  mix-blend-mode:soft-light;
+  -webkit-mask-image:radial-gradient(ellipse 48% 40% at var(--foil-x) var(--foil-y),#000 0 32%,rgba(0,0,0,.75) 55%,transparent 80%);
+  mask-image:radial-gradient(ellipse 48% 40% at var(--foil-x) var(--foil-y),#000 0 32%,rgba(0,0,0,.75) 55%,transparent 80%);
+  transition:opacity .22s ease;
+}
+.tarot-card-foil::before{
+  content:"";
+  position:absolute;
+  z-index:5;
+  left:var(--foil-x);
+  top:var(--foil-y);
+  width:42px;
+  height:26px;
+  border:1px solid rgba(237,211,137,.32);
+  border-radius:50%;
+  box-shadow:0 0 0 1px rgba(111,103,205,.10),0 0 12px rgba(75,169,208,.09);
+  pointer-events:none;
+  opacity:0;
+  transform:translate(-50%,-50%) scale(.6);
+  mix-blend-mode:soft-light;
+}
+.tarot-card-foil.is-foil-active{
+  filter:saturate(1.025) contrast(1.015);
+  box-shadow:0 22px 60px #000c,0 0 0 1px rgba(236,195,87,.34),0 0 22px rgba(95,83,190,.15);
+}
+.tarot-card-foil.is-foil-active::after{opacity:.48}
+.tarot-card-foil.is-foil-rippling::before{animation:tarotLuxuryRipple .68s cubic-bezier(.16,.72,.2,1) forwards}
+@keyframes tarotLuxuryRipple{
+  0%{opacity:.48;transform:translate(-50%,-50%) scale(.55)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(7.1)}
+}
+.tarot-card-art-button:hover .tarot-card-art,
+.tarot-card-art-button:focus-visible .tarot-card-art{filter:none!important}
+.tarot-card-art-button:hover .tarot-card-foil{transform:perspective(1200px) rotateX(var(--foil-tilt-x)) rotateY(var(--foil-tilt-y)) scale(1.012)}
+
+/* Large card view must fit inside the current visual viewport without internal scrolling. */
+.tarot-card-dialog{
+  width:min(94vw,760px)!important;
+  max-height:calc(100dvh - 20px)!important;
+  overflow:hidden!important;
+}
+.tarot-card-dialog-inner{
+  box-sizing:border-box;
+  display:grid!important;
+  grid-template-rows:auto minmax(0,1fr) auto;
+  max-height:calc(100dvh - 22px);
+  overflow:hidden;
+}
+.tarot-card-dialog-head{margin-bottom:10px!important}
+.tarot-card-dialog-art{
+  min-height:0!important;
+  overflow:hidden!important;
+  display:grid!important;
+  place-items:center;
+}
+.tarot-card-dialog-art .tarot-card-foil-dialog{
+  width:var(--tarot-zoom-width,min(72vw,600px))!important;
+  max-width:calc(100vw - 48px)!important;
+  margin:auto;
+}
+.tarot-card-dialog-art .tarot-card-foil-dialog .tarot-card-art,
+.tarot-card-dialog-art .tarot-card-foil-dialog .tarot-card-art.tarot-card-composite{
+  width:100%!important;
+  max-width:none!important;
+}
+.tarot-card-dialog-note{margin-top:10px!important}
+@media(max-height:780px){
+  .tarot-card-dialog-note{display:none!important}
+  .tarot-card-dialog-inner{padding:12px 14px 14px!important}
+  .tarot-card-dialog-head{margin-bottom:8px!important}
+}
+@media(max-width:700px){
+  .tarot-card-dialog{width:min(96vw,720px)!important}
+  .tarot-card-dialog-art .tarot-card-foil-dialog{max-width:calc(100vw - 34px)!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .tarot-card-foil{transform:none!important;transition:none!important}
+  .tarot-card-foil::before,.tarot-card-foil::after{display:none!important}
+}
