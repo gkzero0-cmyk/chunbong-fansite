@@ -19,7 +19,9 @@
     catch (_) { return '업데이트 시간 확인 중'; }
   };
   const viewText = item => Number.isFinite(item?.viewCount) ? `조회수 ${number(item.viewCount)}` : (item?.meta || '조회수 확인 중');
-  const state = { payload: null, platform: location.hash === '#youtube' ? 'youtube' : 'soop', soopView: 'daily', calendarMonth: '', refreshing: false };
+  const query = new URLSearchParams(location.search);
+  const state = { payload: null, platform: location.hash === '#youtube' ? 'youtube' : 'soop', soopView: query.get('view')==='calendar'?'calendar':query.get('view')==='monthly'?'monthly':'daily', calendarMonth: String(query.get('date')||'').slice(0,7), selectedCalendarDate: String(query.get('date')||''), refreshing: false };
+  let calendarMediaPromise=null;
 
   const SOURCE_URLS = {
     trackify: 'https://www.trackify.kr/soop/chunbongtv',
@@ -205,16 +207,41 @@
     renderDetailTable('#data-soop-monthly-table',monthly,true);
   }
 
+  const mediaDateKey=item=>{
+    const raw=String(item?.date||item?.publishedAt||item?.createdAt||item?.start||'');
+    const match=raw.match(/(20\d{2})[-./](\d{1,2})[-./](\d{1,2})/);
+    if(match)return match[1]+'-'+String(match[2]).padStart(2,'0')+'-'+String(match[3]).padStart(2,'0');
+    const parsed=new Date(raw);return Number.isNaN(parsed.getTime())?'':new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(parsed);
+  };
+  const mediaLink=(type,item)=>{
+    const id=String(item?.id||item?.videoId||'');
+    if(type==='vod')return id?'vod.html?open='+encodeURIComponent(id):'vod.html';
+    if(type==='clips'){const kind=item?.kind==='clip'?'clip':'catch';return 'clips.html?kind='+kind+(id?'&open='+encodeURIComponent(id):'')}
+    if(type==='youtube'){const kind=item?.kind==='shorts'?'shorts':'videos';return 'youtube.html?kind='+kind+(id?'&open='+encodeURIComponent(id):'')}
+    return'#';
+  };
+  async function calendarMediaRows(){
+    if(calendarMediaPromise)return calendarMediaPromise;
+    calendarMediaPromise=Promise.allSettled(['vod','clips','youtube'].map(async type=>{const response=await fetch('/api/content?type='+type,{headers:{accept:'application/json'}});if(!response.ok)throw new Error('HTTP '+response.status);const payload=await response.json();return (Array.isArray(payload?.items)?payload.items:[]).map(item=>({type,item,date:mediaDateKey(item)}))})).then(results=>results.flatMap(result=>result.status==='fulfilled'?result.value:[]));
+    return calendarMediaPromise;
+  }
+  async function renderCalendarMedia(date){
+    const root=document.querySelector('[data-calendar-related]');if(!root)return;root.dataset.date=date;
+    const rows=(await calendarMediaRows()).filter(row=>row.date===date).slice(0,12);
+    if(!document.body.contains(root)||root.dataset.date!==date)return;
+    root.innerHTML=rows.length?'<small>RELATED CONTENT</small><div class="data-calendar-media-list">'+rows.map(row=>'<a href="'+esc(mediaLink(row.type,row.item))+'"><b>'+esc(row.item?.title||'관련 콘텐츠')+'</b><span>'+esc(row.type==='vod'?'다시보기':row.type==='clips'?(row.item?.kind==='clip'?'클립':'CATCH'):(row.item?.kind==='shorts'?'YouTube Shorts':'YouTube'))+' →</span></a>').join('')+'</div>':'<small>RELATED CONTENT</small><p>이 날짜와 연결된 다시보기·클립·YouTube 콘텐츠가 아직 없습니다.</p>';
+  }
   function renderCalendarDetail(row) {
     const root=$('#data-soop-calendar-detail');
     if(!row){root.innerHTML='<div class="data-empty">방송한 날짜를 선택하면 상세 기록을 보여줍니다.</div>';return;}
     const sessions=Array.isArray(row.sessions)?row.sessions:[];
-    root.innerHTML=`<small>${esc(row.date)}</small><h3>${number(row.streamCount)}회 방송 · ${esc(minutes(row.durationMinutes))}</h3><div class="data-calendar-stats"><span>평균 <b>${number(row.averageViewers)}</b></span><span>최대 <b>${number(row.maxViewers)}</b></span><span>애청자 <b>${signed(row.followerDelta)}</b></span><span>팬클럽 <b>${signed(row.fanclubDelta)}</b></span></div>${sessions.map(session=>`<article class="data-calendar-session"><strong>${esc(session.title||'춘봉 방송')}</strong><span>${esc(minutes(session.durationMinutes))} · 평균 ${number(session.averageViewers)} · 최대 ${number(session.maxViewers)}</span></article>`).join('')}`;
+    root.innerHTML=`<small>${esc(row.date)}</small><h3>${number(row.streamCount)}회 방송 · ${esc(minutes(row.durationMinutes))}</h3><div class="data-calendar-stats"><span>평균 <b>${number(row.averageViewers)}</b></span><span>최대 <b>${number(row.maxViewers)}</b></span><span>애청자 <b>${signed(row.followerDelta)}</b></span><span>팬클럽 <b>${signed(row.fanclubDelta)}</b></span></div>${sessions.map(session=>`<article class="data-calendar-session"><strong>${esc(session.title||'춘봉 방송')}</strong><span>${esc([session.categoryName||session.category,minutes(session.durationMinutes),'평균 '+number(session.averageViewers),'최대 '+number(session.maxViewers)].filter(Boolean).join(' · '))}</span></article>`).join('')}<section class="data-calendar-related" data-calendar-related data-date="${esc(row.date)}"><small>RELATED CONTENT</small><p>같은 날짜의 콘텐츠를 찾는 중...</p></section>`;
+    void renderCalendarMedia(row.date);
   }
 
   function renderSoopCalendar(payload) {
     const rows=payload?.soop?.calendar||[],map=new Map(rows.map(row=>[row.date,row]));
-    if(!state.calendarMonth) state.calendarMonth=(rows.at(-1)?.date||new Date().toISOString().slice(0,10)).slice(0,7);
+    if(!state.calendarMonth) state.calendarMonth=(state.selectedCalendarDate||rows.at(-1)?.date||new Date().toISOString().slice(0,10)).slice(0,7);
     const [year,month]=state.calendarMonth.split('-').map(Number);
     $('#data-calendar-month').textContent=`${year}년 ${month}월`;
     const first=new Date(Date.UTC(year,month-1,1)),lastDay=new Date(Date.UTC(year,month,0)).getUTCDate(),startWeekday=first.getUTCDay(),cells=[];
@@ -225,8 +252,8 @@
     }
     while(cells.length%7) cells.push('<span class="data-calendar-day is-empty"></span>');
     $('#data-soop-calendar').innerHTML=cells.join('');
-    $$('[data-calendar-date]').forEach(button=>button.addEventListener('click',()=>renderCalendarDetail(map.get(button.dataset.calendarDate))));
-    renderCalendarDetail(rows.find(row=>row.date?.startsWith(`${state.calendarMonth}-`))||null);
+    $('[data-calendar-date]').forEach(button=>button.addEventListener('click',()=>{state.selectedCalendarDate=button.dataset.calendarDate;const url=new URL(location.href);url.searchParams.set('view','calendar');url.searchParams.set('date',state.selectedCalendarDate);history.replaceState(null,'',url);renderCalendarDetail(map.get(state.selectedCalendarDate))}));
+    renderCalendarDetail(map.get(state.selectedCalendarDate)||rows.find(row=>row.date?.startsWith(`${state.calendarMonth}-`))||null);
   }
 
   function renderSoopCategories(payload) {
@@ -282,6 +309,7 @@
 
   function selectSoopView(view) {
     state.soopView=['daily','monthly','calendar'].includes(view)?view:'daily';
+    const url=new URL(location.href);if(state.soopView==='daily')url.searchParams.delete('view');else url.searchParams.set('view',state.soopView);history.replaceState(null,'',url);
     $$('[data-soop-view-tab]').forEach(button=>{const active=button.dataset.soopViewTab===state.soopView;button.classList.toggle('is-active',active);button.setAttribute('aria-selected',String(active));});
     $$('[data-soop-view]').forEach(panel=>{const active=panel.dataset.soopView===state.soopView;panel.classList.toggle('is-active',active);panel.hidden=!active;});
   }
