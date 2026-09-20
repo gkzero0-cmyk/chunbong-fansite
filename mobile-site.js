@@ -264,3 +264,120 @@
   createAppNavigation();
   createIosInstallHelp();
 })();
+
+/* Mobile/PWA experience wave 1 — installed-app dashboard, tarot dock, floating UI coordination. */
+(()=>{
+  'use strict';
+  const body=document.body;
+  if(!body?.dataset?.page||body.dataset.game)return;
+  const mobile=window.matchMedia('(max-width:760px)');
+  const appMode=Boolean(
+    window.matchMedia('(display-mode: standalone)').matches||
+    window.navigator.standalone===true||
+    new URLSearchParams(location.search).get('source')==='pwa'
+  );
+  const esc=value=>String(value??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#039;");
+  const kstKey=(value=new Date())=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(value);
+  const timeText=value=>{
+    if(!value||!String(value).includes('T'))return '시간 미정';
+    const date=new Date(value);
+    if(Number.isNaN(date.getTime()))return '시간 미정';
+    return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hour12:false}).format(date);
+  };
+  async function getJson(type,ttl=60000){
+    if(window.ChunbongCache)return window.ChunbongCache.fetchJson('mobile-wave1:'+type,'/api/content?type='+type,{ttl});
+    const response=await fetch('/api/content?type='+type,{headers:{accept:'application/json'}});
+    if(!response.ok)throw new Error('HTTP '+response.status);
+    return response.json();
+  }
+
+  async function renderInstalledHome(){
+    if(!mobile.matches||!appMode||body.dataset.page!=='home')return;
+    const root=document.querySelector('[data-app-home-panel]');
+    if(!root)return;
+    body.classList.add('pwa-home-dashboard-mode');
+    const personal=window.ChunbongPersonal?.read?.()||{};
+    const challenge=window.ChunbongPersonal?.dailyChallenge?.();
+    const recent=personal.recent||null;
+    root.setAttribute('aria-live','polite');
+    root.innerHTML='<div class="pwa-dashboard-loading">오늘의 팬허브를 준비하고 있어요.</div>';
+    const [liveResult,scheduleResult]=await Promise.allSettled([getJson('live',30000),getJson('schedule',60000)]);
+    const live=liveResult.status==='fulfilled'&&liveResult.value?.live===true?liveResult.value:null;
+    const items=scheduleResult.status==='fulfilled'&&Array.isArray(scheduleResult.value?.items)?scheduleResult.value.items:[];
+    const today=kstKey();
+    const todayItems=items.filter(item=>String(item?.start||'').slice(0,10)===today);
+    const next=todayItems[0]||items.find(item=>String(item?.start||'').slice(0,10)>=today);
+    const recentHref=recent?.href||recent?.sourceHref||'vod.html';
+    const recentTitle=recent?.title||'최근 영상 보기';
+    const tarotLatest=personal?.tarot?.[0]?.cards?.[0]?.name||'오늘의 카드 보기';
+    const liveBlock=live
+      ? '<a class="pwa-dashboard-live is-live" href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer"><span class="pwa-live-dot"></span><div><small>LIVE NOW</small><strong>'+esc(live.title||'춘봉 LIVE')+'</strong><p>'+esc([live.categoryName,Number(live.viewerCount)>0?Number(live.viewerCount).toLocaleString('ko-KR')+'명 시청 중':'지금 방송 중'].filter(Boolean).join(' · '))+'</p></div><b>SOOP에서 보기 →</b></a>'
+      : '<a class="pwa-dashboard-live" href="schedule.html"><span class="pwa-live-dot"></span><div><small>'+(next?'NEXT SCHEDULE':'TODAY')+'</small><strong>'+esc(next?.title||'오늘 등록된 방송 일정이 없습니다.')+'</strong><p>'+esc(next?((String(next.start||'').slice(0,10)===today?'오늘 ':'')+timeText(next.start)):'새 일정이 등록되면 여기에 표시됩니다.')+'</p></div><b>일정 보기 →</b></a>';
+    root.innerHTML=
+      '<div class="pwa-dashboard-head"><div><small>CHUNBONG FAN HUB</small><strong>오늘의 팬허브</strong></div><a href="myhub.html">내 기록 →</a></div>'+
+      liveBlock+
+      '<div class="pwa-dashboard-grid">'+
+        '<a href="tarot.html"><small>오늘의 타로</small><strong>'+esc(tarotLatest)+'</strong><span>카드 보러가기 →</span></a>'+
+        '<a href="'+esc(challenge?.href||'minigames.html')+'"><small>오늘의 미션</small><strong>'+esc(challenge?.title||'미니게임 도전')+'</strong><span>'+esc(challenge?((challenge.completed?'완료 ✓':challenge.progress+'/'+challenge.goal+' 진행')):'도전 보기')+'</span></a>'+
+        '<a href="'+esc(recentHref)+'"><small>이어보기</small><strong>'+esc(recentTitle)+'</strong><span>계속 보기 →</span></a>'+
+        '<a href="myhub.html"><small>내 팬허브</small><strong>보관함 '+Number(personal?.favorites?.length||0)+' · 타로 '+Number(personal?.tarot?.length||0)+'</strong><span>기록 열기 →</span></a>'+
+      '</div>';
+  }
+
+  function setupTarotSelectionDock(){
+    if(!mobile.matches||body.dataset.page!=='tarot'||document.querySelector('[data-mobile-tarot-dock]'))return;
+    const stage=document.getElementById('tarot-stage');
+    const slots=document.getElementById('tarot-selected-slots');
+    const confirm=document.getElementById('tarot-confirm-selection');
+    if(!stage||!slots||!confirm)return;
+    const dock=document.createElement('aside');
+    dock.className='mobile-tarot-dock';
+    dock.dataset.mobileTarotDock='';
+    dock.hidden=true;
+    dock.innerHTML='<button type="button" class="mobile-tarot-dock-summary" aria-expanded="false"><span>선택한 카드</span><strong>0 / 0</strong></button><div class="mobile-tarot-dock-cards" hidden></div><button type="button" class="mobile-tarot-dock-confirm" disabled>선택 완료</button>';
+    document.body.appendChild(dock);
+    const summary=dock.querySelector('.mobile-tarot-dock-summary');
+    const list=dock.querySelector('.mobile-tarot-dock-cards');
+    const dockConfirm=dock.querySelector('.mobile-tarot-dock-confirm');
+    const sync=()=>{
+      const all=[...slots.querySelectorAll('.tarot-selected-slot')];
+      const filled=all.filter(node=>node.classList.contains('is-filled'));
+      const selecting=!confirm.hidden;
+      dock.hidden=!selecting||all.length===0;
+      summary.querySelector('strong').textContent=filled.length+' / '+all.length;
+      list.innerHTML=filled.length?filled.map((node,index)=>'<span><b>'+(index+1)+'</b>'+esc(node.textContent.trim())+'</span>').join(''):'<span class="is-empty">카드를 선택하면 여기에 표시됩니다.</span>';
+      dockConfirm.disabled=confirm.disabled;
+      dockConfirm.textContent=confirm.disabled?'카드를 '+all.length+'장 선택해 주세요':'선택 완료 · 카드 펼치기';
+      body.classList.toggle('mobile-tarot-dock-visible',!dock.hidden);
+    };
+    summary.addEventListener('click',()=>{
+      const open=summary.getAttribute('aria-expanded')!=='true';
+      summary.setAttribute('aria-expanded',String(open));
+      list.hidden=!open;
+    });
+    dockConfirm.addEventListener('click',()=>{if(!confirm.disabled)confirm.click();});
+    new MutationObserver(sync).observe(slots,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+    new MutationObserver(sync).observe(confirm,{attributes:true,attributeFilter:['hidden','disabled']});
+    document.addEventListener('chunbong:tarot-reading',()=>{dock.hidden=true;body.classList.remove('mobile-tarot-dock-visible')});
+    sync();
+  }
+
+  function coordinateFloatingUi(){
+    if(!mobile.matches)return;
+    const sync=()=>{
+      const launcher=document.querySelector('.daily-fortune-launcher:not([hidden])');
+      body.classList.toggle('has-mobile-fortune-launcher',Boolean(launcher));
+    };
+    const observer=new MutationObserver(sync);
+    observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
+    sync();
+  }
+
+  const boot=()=>{
+    void renderInstalledHome();
+    setupTarotSelectionDock();
+    coordinateFloatingUi();
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+  document.addEventListener('chunbong:personal-updated',()=>{void renderInstalledHome();});
+})();
