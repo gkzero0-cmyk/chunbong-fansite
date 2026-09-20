@@ -3,6 +3,7 @@ import fs from 'node:fs';
 const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const personal=read('personal-hub.js');
 const data=read('data-core.js');
+const dataPeriods=read('data-soop-periods-v3.js');
 const home=read('home-overview.js');
 const search=read('site-improvements.js');
 const changelog=read('changelog-data.js');
@@ -15,6 +16,9 @@ for(const lead of ['5분 전','10분 전','30분 전'])assert.ok(personal.includ
 assert.match(personal,/challengeProgress/);
 assert.match(personal,/dailyStreak/);
 assert.match(data,/data-calendar-related/,'broadcast calendar related-media block missing');
+assert.match(data,/__CHUNBONG_DATA_CALENDAR_MEDIA__/,'calendar media renderer must be shared with post-render modules');
+assert.match(dataPeriods,/data-calendar-related/,'final calendar renderer must preserve related-media block');
+assert.match(dataPeriods,/__CHUNBONG_DATA_CALENDAR_MEDIA__/,'final calendar renderer must re-run related-media rendering');
 assert.match(data,/query\.get\('date'\)/,'broadcast calendar date deep link missing');
 assert.match(data,/document\.querySelectorAll\('\[data-calendar-date\]'\)\.forEach/,'broadcast calendar must bind all date buttons');
 assert.match(data,/state\.selectedCalendarDate='';/,'calendar month navigation must clear stale selected date');
