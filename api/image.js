@@ -12,7 +12,8 @@ function allowed(url) {
 }
 
 module.exports = async function handler(req, res) {
-  const url = req.query?.url;
+  const requestUrl = new URL(req.url || '/', 'https://chunbong.local');
+  const url = requestUrl.searchParams.get('url') || '';
   if (!url || !allowed(url)) return res.status(400).send('invalid image url');
   try {
     const response = await fetch(url, { headers: { ...naverHeaders, accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8' } });

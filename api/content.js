@@ -245,7 +245,8 @@ function compactDataPayload(payload, options = {}) {
 
 // Vercel entry point for multiplexed content requests.
 async function handler(req,res) {
-  const type=req.query?.type;
+  const requestUrl=new URL(req.url||'/','https://chunbong.local');
+  const type=requestUrl.searchParams.get('type')||'';
   if(type==='chuntris-ranking') return handleChuntrisRanking(req,res);
   if(type==='chunbak-ranking') return handleChunbakRanking(req,res);
   if(type==='chungwagame-ranking') return handleChungwagameRanking(req,res);
@@ -270,18 +271,18 @@ async function handler(req,res) {
       return res.status(503).json({live:null,authoritative:false,error:'live_state_unavailable'});
     }
   }
-  const forceDataRefresh=type==='data'&&String(req.query?.refresh||'')==='1';
+  const forceDataRefresh=type==='data'&&requestUrl.searchParams.get('refresh')==='1';
   res.setHeader('Cache-Control',forceDataRefresh?'no-store, max-age=0':'s-maxage=180, stale-while-revalidate=600');
   try {
     if(type==='vod'){const items=await fetchVod();return res.status(200).json({items,source:type,fallback:!items.length});}
     if(type==='notice'){const items=await fetchNotice();return res.status(200).json({items,source:type,fallback:!items.length});}
-    if(type==='notice-detail'){const id=String(req.query?.id||'');const item=id==='203015477'?await fetchScheduleDetail(id):await fetchNoticeDetail(id);return res.status(200).json({item,source:type,fallback:!item?.content&&!item?.html&&!item?.images?.length});}
+    if(type==='notice-detail'){const id=String(requestUrl.searchParams.get('id')||'');const item=id==='203015477'?await fetchScheduleDetail(id):await fetchNoticeDetail(id);return res.status(200).json({item,source:type,fallback:!item?.content&&!item?.html&&!item?.images?.length});}
     if(type==='clips'){const groups=await fetchClips();return res.status(200).json({items:groups.items,groups:{catch:groups.catch,clip:groups.clip},source:type,fallback:!groups.items.length});}
     if(type==='fanart'){const items=await fetchFanart();return res.status(200).json({items,source:type,fallback:!items.length});}
-    if(type==='fanart-detail'){const id=String(req.query?.id||'');const item=await fetchFanartDetail(id);return res.status(200).json({item,source:type,fallback:!item?.images?.length});}
+    if(type==='fanart-detail'){const id=String(requestUrl.searchParams.get('id')||'');const item=await fetchFanartDetail(id);return res.status(200).json({item,source:type,fallback:!item?.images?.length});}
     if(type==='youtube'){const groups=await fetchYoutube();return res.status(200).json({items:groups.items,groups:{videos:groups.videos,shorts:groups.shorts},source:type,fallback:!groups.items.length});}
     if(type==='schedule'){const items=await fetchSchedule();return res.status(200).json({items,source:type,fallback:!items.length});}
-    if(type==='catch-detail'){const id=String(req.query?.id||'');const item=await fetchCatchDetail(id);return res.status(200).json({item,source:type,fallback:!item?.stream});}
+    if(type==='catch-detail'){const id=String(requestUrl.searchParams.get('id')||'');const item=await fetchCatchDetail(id);return res.status(200).json({item,source:type,fallback:!item?.stream});}
     if(type==='activity'){const payload=await fetchActivity();return res.status(200).json({...payload,source:type,fallback:!payload.items.length});}
     if(type==='data'){const payload=compactDataPayload(await fetchChunbongData());return res.status(200).json(payload);}
     return res.status(400).json({error:'unknown content type'});

@@ -19,7 +19,7 @@ async function runHandler(type, fetchImpl) {
     status(code) { statusCode = code; return this; },
     json(payload) { body = payload; return payload; }
   };
-  await handler({ query: { type } }, res);
+  await handler({ url: `/api/content?type=${encodeURIComponent(type)}` }, res);
   return { statusCode, body };
 }
 
