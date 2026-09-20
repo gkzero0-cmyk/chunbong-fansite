@@ -1,3 +1,4 @@
+// Production audit sync marker: activity smoke isolates the auto-open daily fortune dialog.
 window.CHUNBONG_CHANGELOG_META = {
   throughSha: '5ce4a0ca2c610e9bc46b151d28f2cded5fb6b436',
   throughTime: '2026-09-19T21:14:39Z'
