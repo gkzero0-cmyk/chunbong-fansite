@@ -106,8 +106,16 @@ body[data-game] .pwa-install-chip{display:none!important}
     gap:8px;
   }
   .site-header .brand{
+    order:0;
     margin-right:auto;
   }
+  .site-header .site-search-trigger{order:1}
+  .site-header .main-nav{order:2}
+  .site-header .theme-toggle{order:3}
+  .site-header .header-myhub{order:4}
+  .site-header .changelog-button{order:5}
+  .site-header .activity-center{order:6}
+  .site-header .nav-toggle{order:7}
   .site-header .main-nav{
     gap:6px;
     margin-right:8px;
