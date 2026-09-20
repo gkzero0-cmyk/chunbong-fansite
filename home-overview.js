@@ -5,6 +5,8 @@
   const scheduleRoot=root.querySelector('[data-home-overview-card="schedule"]');
   const noticeRoot=root.querySelector('[data-home-overview-card="notice"]');
   const mediaRoot=root.querySelector('[data-home-overview-card="media"]');
+  const challengeRoot=root.querySelector('[data-home-overview-card="challenge"]');
+  const statsRoot=root.querySelector('[data-home-quick-stats]');
   const esc=value=>String(value??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#039;");
   const todayKey=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   const timeText=value=>{
@@ -28,8 +30,26 @@
     if(!response.ok) throw new Error('HTTP '+response.status);
     return response.json();
   }
+  const minutesText=value=>{const total=Math.max(0,Math.round(Number(value)||0)),h=Math.floor(total/60),m=total%60;return h?(h+'시간'+(m?' '+m+'분':'')):(m+'분')};
+  function renderChallenge(){
+    const challenge=window.ChunbongPersonal?.dailyChallenge?.();
+    if(!challenge){setCard(challengeRoot,{label:'DAILY MISSION',title:'오늘의 미니게임 도전',desc:'미니게임에서 오늘의 도전을 확인해 보세요.',href:'minigames.html',time:'도전 보기'});return;}
+    setCard(challengeRoot,{label:challenge.completed?'DAILY MISSION · COMPLETE':'DAILY MISSION',title:challenge.title,desc:challenge.desc,href:challenge.href,time:challenge.completed?'완료 · 연속 '+challenge.streak+'일':challenge.progress+'/'+challenge.goal+' 진행'});
+  }
+  function renderQuickStats(payload){
+    if(!statsRoot)return;
+    const rows=Array.isArray(payload?.soop?.calendar)?payload.soop.calendar:[],today=todayKey(),month=today.slice(0,7);
+    const shift=days=>{const d=new Date(today+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10)};
+    const monthRows=rows.filter(row=>String(row?.date||'').startsWith(month)),last30=rows.filter(row=>String(row?.date||'')>=shift(-29)&&String(row?.date||'')<=today),week=rows.filter(row=>String(row?.date||'')>=shift(-6)&&String(row?.date||'')<=today);
+    const monthStreams=monthRows.reduce((sum,row)=>sum+(Number(row?.streamCount)||0),0),last30Minutes=last30.reduce((sum,row)=>sum+(Number(row?.durationMinutes)||0),0),weekMax=week.reduce((max,row)=>Math.max(max,Number(row?.maxViewers)||0),0);
+    const o=payload?.soop?.overview||{},top=Array.isArray(o.currentMonthCategories)&&o.currentMonthCategories[0]?.name?o.currentMonthCategories[0].name:(payload?.soop?.categories?.[0]?.name||'기록 없음');
+    const values=[['THIS MONTH',monthStreams.toLocaleString('ko-KR')+'회','이번 달 방송','data.html?view=monthly#soop'],['LAST 30 DAYS',minutesText(last30Minutes),'최근 30일 방송시간','data.html#soop'],['THIS WEEK',weekMax?weekMax.toLocaleString('ko-KR')+'명':'—','이번 주 최고 동시 시청','data.html#soop'],['TOP CATEGORY',top,'이번 달 최다 카테고리','data.html#soop']];
+    statsRoot.innerHTML=values.map(([label,value,desc,href])=>'<a href="'+href+'"><small>'+esc(label)+'</small><strong>'+esc(value)+'</strong><span>'+esc(desc)+'</span></a>').join('');
+  }
+  renderChallenge();
+  document.addEventListener('chunbong:personal-updated',renderChallenge);
   async function load(){
-    const [liveResult,scheduleResult,activityResult]=await Promise.allSettled([get('live'),get('schedule'),get('activity')]);
+    const [liveResult,scheduleResult,activityResult,dataResult]=await Promise.allSettled([get('live'),get('schedule'),get('activity'),get('data')]);
     const live=liveResult.status==='fulfilled'&&liveResult.value?.live===true?liveResult.value:null;
     if(live){
       const viewers=Number.isFinite(Number(live.viewerCount))&&Number(live.viewerCount)>0?Number(live.viewerCount).toLocaleString('ko-KR')+'명 시청 중':'지금 방송 중';
@@ -55,6 +75,7 @@
       setCard(noticeRoot,{label:'LATEST NOTICE',title:'최근 소식을 불러오지 못했습니다.',desc:'공지 페이지에서 확인해 주세요.',href:'notice.html'});
       setCard(mediaRoot,{label:'LATEST MEDIA',title:'최근 콘텐츠를 불러오지 못했습니다.',desc:'다시보기·핫클립·유튜브에서 확인해 주세요.',href:'vod.html'});
     }
+    if(dataResult.status==='fulfilled')renderQuickStats(dataResult.value);
   }
   void load();
 })();
