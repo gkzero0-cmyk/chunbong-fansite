@@ -50,7 +50,7 @@ assert.match(hub,/내 보관함/);
 assert.match(hub,/이어보기/);
 assert.match(hub,/타로 기록장/);
 assert.match(hub,/미니게임 업적/);
-assert.match(hub,/방송 예정 알림/);
+assert.match(hub,/방송 알림/,'combined LIVE and scheduled broadcast alert UI missing');
 assert.match(hub,/오늘의 도전/);
 
 assert.match(media,/chunbong:media-selected/,'media selection event missing');
