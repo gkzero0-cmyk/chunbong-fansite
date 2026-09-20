@@ -585,12 +585,14 @@
   body.mobile-tabbar-mode .to-top{
     bottom:calc(82px + env(safe-area-inset-bottom))!important
   }
+  body.pwa-app-mode .daily-fortune-launcher,
   body.mobile-tabbar-mode .daily-fortune-launcher{
     bottom:calc(78px + env(safe-area-inset-bottom))!important
   }
   body.pwa-app-mode .pwa-update-toast{
     bottom:calc(76px + env(safe-area-inset-bottom))!important
   }
+  body.pwa-app-mode .activity-panel,
   body.mobile-tabbar-mode .activity-panel{
     bottom:calc(74px + env(safe-area-inset-bottom))!important
   }
