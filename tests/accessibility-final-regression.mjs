@@ -12,6 +12,6 @@ assert.match(page,/setAttribute\('aria-current', 'page'\)/,'active primary navig
 assert.match(page,/removeAttribute\('aria-current'\)/,'inactive primary navigation must clear aria-current');
 assert.match(media,/setAttribute\('aria-busy','true'\)/,'media lists must announce loading');
 assert.match(media,/setAttribute\('aria-busy','false'\)/,'media lists must clear loading after content resolves');
-assert.match(sw,/chunbong-pwa-20260921-v22/,'PWA cache must advance for accessibility runtime changes');
+assert.match(sw,/chunbong-pwa-20260921-v23/,'PWA cache must advance for accessibility runtime changes');
 
 console.log('accessibility final-pass regression passed');

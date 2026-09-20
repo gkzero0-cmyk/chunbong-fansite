@@ -1,5 +1,5 @@
 /* CHUNBONG_PWA v1 */
-const CACHE_NAME = 'chunbong-pwa-20260921-v22';
+const CACHE_NAME = 'chunbong-pwa-20260921-v23';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -42,6 +42,20 @@ const APP_SHELL = [
   '/tarot.html',
   '/tarot.css',
   '/tarot.js',
+  '/tarot-quality.css',
+  '/tarot-composite.css',
+  '/tarot-luxury-foil.css',
+  '/tarot-data.js',
+  '/tarot-composite.js',
+  '/tarot-sfx-v2.js',
+  '/data.html',
+  '/data.css',
+  '/data.js',
+  '/data-core.js',
+  '/data-soop-periods-v3.js',
+  '/data-recent-session-metrics.js',
+  '/data-enhancements.js',
+  '/data-enhancements.css',
   '/vod.html',
   '/clips.html',
   '/youtube.html',
@@ -110,7 +124,12 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  if (['script','style','worker','image','font'].includes(request.destination)) {
+  if (['script','style','worker'].includes(request.destination)) {
+    event.respondWith(networkFirst(request, event));
+    return;
+  }
+
+  if (['image','font'].includes(request.destination)) {
     event.respondWith(staleWhileRevalidate(request));
   }
 });

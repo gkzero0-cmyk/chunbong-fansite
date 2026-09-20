@@ -24,11 +24,11 @@
   <section class="content-section"><div class="page-shell tarot-shell">
     <form id="tarot-setup" class="tarot-setup reveal" data-tarot-mode="quick">
       <div class="tarot-mode-switch" role="group" aria-label="타로 설정 방식">
-        <button type="button" class="is-active" data-tarot-mode-button="quick" aria-pressed="true"><strong>빠른 타로</strong><span>질문 · 1장/3장 · 직접 선택</span></button>
+        <button type="button" class="is-active" data-tarot-mode-button="quick" aria-pressed="true"><strong>빠른 타로</strong><span>주제 · 1장/3장 · 직접 선택</span></button>
         <button type="button" data-tarot-mode-button="detail" aria-pressed="false"><strong>상세 설정</strong><span>주제 · 스프레드 · 선택 방식</span></button>
       </div>
-      <p class="tarot-mode-help" id="tarot-mode-help">질문을 적고 1장 또는 3장을 선택한 뒤 바로 카드를 골라보세요.</p>
-      <fieldset class="tarot-choice-group tarot-detail-only"><legend>무엇을 볼까요?</legend>
+      <p class="tarot-mode-help" id="tarot-mode-help">보고 싶은 주제와 1장 또는 3장을 선택한 뒤 바로 카드를 골라보세요.</p>
+      <fieldset class="tarot-choice-group tarot-topic-group"><legend>무엇을 볼까요?</legend>
         <label><input type="radio" name="topic" value="general" checked><span>종합타로</span></label>
         <label><input type="radio" name="topic" value="love"><span>연애</span></label>
         <label><input type="radio" name="topic" value="partner"><span>상대방 마음</span></label>
@@ -57,12 +57,11 @@
         <div id="tarot-number-inputs" class="tarot-number-inputs"></div>
         <p id="tarot-number-error" class="tarot-number-error" role="alert"></p>
       </section>
-      <label class="tarot-question-label" for="tarot-question">질문 또는 고민 <span>선택 입력 · 최대 500자</span></label>
-      <textarea id="tarot-question" maxlength="500" placeholder="예: A와 B 중 어느 선택이 지금 나에게 더 맞을까?"></textarea>
+      <div class="tarot-question-field tarot-detail-only"><label class="tarot-question-label" for="tarot-question">질문 또는 고민 <span>선택 입력 · 최대 500자</span></label><textarea id="tarot-question" maxlength="500" placeholder="예: A와 B 중 어느 선택이 지금 나에게 더 맞을까?"></textarea></div>
       <div class="tarot-setup-actions"><button id="tarot-shuffle" class="btn btn-primary" type="submit">숫자로 카드 열기</button><button id="tarot-sound-toggle" class="tarot-sound-toggle" type="button" aria-pressed="true">효과음 ON</button><div class="tarot-volume-control"><button id="tarot-volume-toggle" class="tarot-volume-toggle" type="button" aria-expanded="false" aria-controls="tarot-volume-panel">🔊 음량 70%</button><div id="tarot-volume-panel" class="tarot-volume-panel" hidden><input id="tarot-volume-range" type="range" min="0" max="100" step="1" value="70" aria-label="효과음 음량"><output id="tarot-volume-value" for="tarot-volume-range">70%</output></div></div></div>
     </form>
     <section id="tarot-stage" class="tarot-stage reveal" aria-live="polite">
-      <p id="tarot-selection-status">질문과 1장/3장을 정한 뒤 카드를 골라 주세요.</p>
+      <p id="tarot-selection-status">주제와 1장/3장을 정한 뒤 카드를 골라 주세요.</p>
       <div id="tarot-selected-slots" class="tarot-selected-slots"></div>
       <div id="tarot-deck" class="tarot-deck"></div>
       <div class="tarot-stage-actions"><button id="tarot-confirm-selection" class="btn btn-primary" type="button" hidden disabled>선택 완료 · 카드 펼치기</button></div>

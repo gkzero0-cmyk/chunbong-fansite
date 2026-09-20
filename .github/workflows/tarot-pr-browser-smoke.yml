@@ -16,6 +16,7 @@ on:
       - 'tests/tarot-clarity-numbered-backs-regression.mjs'
       - 'tests/tarot-selection-fortune-frame-regression.mjs'
       - 'tests/tarot-luxury-foil-zoom-regression.mjs'
+      - 'tests/tarot-mobile-quick-browser.mjs'
       - '.github/workflows/tarot-pr-browser-smoke.yml'
 
 permissions:
@@ -180,3 +181,8 @@ jobs:
             await browser.close();
           }
           EOF_NODE
+
+      - name: Verify mobile quick tarot touch flow
+        env:
+          BASE_URL: http://127.0.0.1:4174
+        run: node tests/tarot-mobile-quick-browser.mjs

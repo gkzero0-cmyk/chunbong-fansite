@@ -1,0 +1,121 @@
+name: Recent update browser audit
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tarot.html'
+      - 'tarot.js'
+      - 'tarot.css'
+      - 'tarot-quality.css'
+      - 'mobile-site.js'
+      - 'mobile-site.css'
+      - 'data.html'
+      - 'data.js'
+      - 'data-core.js'
+      - 'data-soop-periods-v3.js'
+      - 'data-enhancements.js'
+      - 'personal-hub.js'
+      - 'personal-hub.css'
+      - 'myhub.html'
+      - 'content.js'
+      - 'content-filter.js'
+      - 'content-filter.css'
+      - 'page-media.js'
+      - 'live-fixes.js'
+      - 'schedule.html'
+      - 'site-improvements.js'
+      - 'site-shell.js'
+      - 'service-worker.js'
+      - 'tests/recent-update-browser-audit.mjs'
+      - '.github/workflows/recent-update-browser-audit.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tarot.html'
+      - 'tarot.js'
+      - 'tarot.css'
+      - 'tarot-quality.css'
+      - 'mobile-site.js'
+      - 'mobile-site.css'
+      - 'data.html'
+      - 'data.js'
+      - 'data-core.js'
+      - 'data-soop-periods-v3.js'
+      - 'data-enhancements.js'
+      - 'personal-hub.js'
+      - 'personal-hub.css'
+      - 'myhub.html'
+      - 'content.js'
+      - 'content-filter.js'
+      - 'content-filter.css'
+      - 'page-media.js'
+      - 'live-fixes.js'
+      - 'schedule.html'
+      - 'site-improvements.js'
+      - 'site-shell.js'
+      - 'service-worker.js'
+      - 'tests/recent-update-browser-audit.mjs'
+      - '.github/workflows/recent-update-browser-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start local site for PR
+        if: github.event_name == 'pull_request'
+        run: |
+          python3 -m http.server 4175 --bind 127.0.0.1 >/tmp/recent-audit-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4175/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/recent-audit-http.log
+          exit 1
+
+      - name: Run mocked PC/mobile audit on PR
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_URL: http://127.0.0.1:4175
+          MOCK_CONTENT: '1'
+        run: node tests/recent-update-browser-audit.mjs
+
+      - name: Wait for matching production on main
+        if: github.event_name != 'pull_request'
+        env:
+          EXPECTED_SHA: \${{ github.sha }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 72); do
+            body="$(curl -fsS --max-time 20 'https://chunbong-fansite.vercel.app/api/version' || true)"
+            sha="$(printf '%s' "$body" | node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{try{process.stdout.write(JSON.parse(s).sha||'')}catch{}})")"
+            synced="$(printf '%s' "$body" | node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{try{process.stdout.write(String(JSON.parse(s).synced===true))}catch{}})")"
+            if [ "$sha" = "$EXPECTED_SHA" ] && [ "$synced" = 'true' ]; then
+              echo "Production synced to $sha"
+              exit 0
+            fi
+            echo "Waiting for production: attempt=$attempt sha=$sha expected=$EXPECTED_SHA"
+            sleep 5
+          done
+          exit 1
+
+      - name: Run production PC/mobile audit
+        if: github.event_name != 'pull_request'
+        env:
+          BASE_URL: https://chunbong-fansite.vercel.app
+          MOCK_CONTENT: '0'
+        run: node tests/recent-update-browser-audit.mjs

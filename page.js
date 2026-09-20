@@ -229,7 +229,14 @@
           scope: '/',
           updateViaCache: 'none'
         });
-        if (registration.waiting) showUpdate(registration);
+        if (registration.waiting) {
+          if (standalone) {
+            reloadOnControllerChange = true;
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          } else {
+            showUpdate(registration);
+          }
+        }
         registration.addEventListener('updatefound', () => {
           const worker = registration.installing;
           if (!worker) return;
