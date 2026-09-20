@@ -47,12 +47,12 @@ jobs:
             stamp=$(date +%s)
             if curl -fsS -H 'cache-control: no-cache' "$BASE_URL/activity-center.js?_smoke=$stamp" -o /tmp/activity-center.js && \
                curl -fsS -H 'cache-control: no-cache' "$BASE_URL/activity-center.css?_smoke=$stamp" -o /tmp/activity-center.css && \
-               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/content.js?_smoke=$stamp" -o /tmp/content.js && \
+               curl -fsS -H 'cache-control: no-cache' "$BASE_URL/site-improvements.js?_smoke=$stamp" -o /tmp/site-improvements.js && \
                curl -fsS -H 'cache-control: no-cache' "$BASE_URL/api/content?type=activity&_smoke=$stamp" -o /tmp/activity.json && \
                curl -fsS -H 'cache-control: no-cache' "$BASE_URL/api/content?type=changelog-history&summary=1&_smoke=$stamp" -o /tmp/changelog-summary.json && \
                grep -q 'chunbong-activity-seen-v1' /tmp/activity-center.js && \
                grep -q 'activity-unread-dot' /tmp/activity-center.js && \
-               grep -q 'header-live\[href\*="sooplive.com"\]' /tmp/content.js && \
+               grep -q "link.innerHTML='<span aria-hidden=\"true\">MY</span>'" /tmp/site-improvements.js && \
                node -e "const p=require('/tmp/activity.json'); if(!Array.isArray(p.items)||!p.items.length) process.exit(1); for(const x of p.items){if(!x.id||!x.type||!x.title||!x.href)process.exit(1)}" && \
                node -e "const p=require('/tmp/changelog-summary.json'); if(p.siteStartedAt!=='2026-08-30'||!p.latest?.sha) process.exit(1)"; then
               echo 'Current activity center production is ready.'

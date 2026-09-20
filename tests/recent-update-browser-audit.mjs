@@ -141,7 +141,14 @@ async function tarotJournalMetadata(browser){
     const ai=page.locator('#tarot-ai-button');
     await page.waitForFunction(()=>!document.querySelector('#tarot-ai-button')?.disabled);
     await ai.click();
-    await page.waitForFunction(()=>document.querySelector('#tarot-ai-content')?.textContent?.includes('테스트'));
+    if(MOCK){
+      await page.waitForFunction(()=>document.querySelector('#tarot-ai-content')?.textContent?.includes('테스트'));
+    }else{
+      await page.waitForFunction(()=>{
+        const node=document.querySelector('#tarot-ai-content');
+        return Boolean(node&&!node.hidden&&String(node.textContent||'').trim().length>20);
+      },null,{timeout:45000});
+    }
     await page.goto(BASE+'/myhub.html?_journal='+Date.now(),{waitUntil:'domcontentloaded'});
     await page.waitForTimeout(220);
     const row=page.locator('.personal-tarot-list article').first();
