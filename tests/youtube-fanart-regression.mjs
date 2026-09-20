@@ -20,7 +20,7 @@ async function run(type, fetchImpl) {
   const handler = require(contentPath);
   let body;
   const res = { setHeader() {}, status() { return this; }, json(payload) { body = payload; return payload; } };
-  await handler({ query: { type } }, res);
+  await handler({ url: `/api/content?type=${encodeURIComponent(type)}` }, res);
   return body;
 }
 
