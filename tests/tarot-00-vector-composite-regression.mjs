@@ -29,7 +29,7 @@ assert.deepEqual(
 
 const upright = composite.buildCompositeSvg(wandsNine, { url: 'assets/tarot/hd/pair-22.avif', sourceX: 0 }, false, 'test-upright');
 assert.match(upright, /class="tarot-composite-svg tarot-fortune-frame"/, 'composite must render the shared daily-fortune frame shell');
-assert.match(upright, /class="tarot-vector-frame"/, 'frame must be vector markup, not inherited raster pixels');
+assert.match(upright, /class="tarot-vector-frame tarot-fortune-frame-outer"/, 'frame must be vector markup using the shared daily-fortune shell');
 assert.match(upright, /class="tarot-vector-title"[^>]*>NINE OF WANDS<\/text>/, 'English card title must be live SVG text');
 assert.match(upright, /class="tarot-vector-rank"[^>]*>IX<\/text>/, 'rank mark must be live SVG text');
 assert.match(upright, /clipPath id="test-upright-art-clip"><rect x="88" y="126" width="784" height="1060"/, 'illustration crop must exclude the vector rank/title regions');
