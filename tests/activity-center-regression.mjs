@@ -61,6 +61,11 @@ assert.match(activityJs,/type=activity/,'bell must load the unified activity API
 assert.match(activityJs,/activity-unread-dot/,'unread indicator must exist');
 assert.match(activityJs,/markCurrentSeen/,'opening the bell must mark current items seen');
 assert.match(activityJs,/data-activity-filter/,'activity categories must be filterable');
+assert.match(activityJs,/CATEGORY_META/,'activity center must normalize content categories');
+for(const icon of ['◷','!','▶','⚡','▷','✦']) assert.ok(activityJs.includes("icon:'"+icon+"'"),'activity category icon missing: '+icon);
+assert.match(activityJs,/data-kind=/,'activity rows must expose shared category kinds');
+assert.match(activityCss,/var\(--accent-schedule\)/,'activity schedule styling must use shared category color');
+assert.match(activityCss,/var\(--accent-clips\)/,'activity clips styling must use shared category color');
 assert.match(activityJs,/data-activity-filter="schedule"/,'activity center must expose a schedule filter');
 assert.match(activityJs,/aria-controls="activity-list"/,'activity tabs must identify the controlled result list');
 assert.match(activityJs,/event\.key === 'ArrowRight'/,'activity tabs must support right-arrow navigation');
