@@ -3,7 +3,8 @@
 
   const TECHNICAL_PREFIXES = new Set(['ci','test','tests','data','chore','build','docs','deps','dependabot','diag','temp','cleanup']);
   const CURATED_RELEASE_PATTERNS = [
-    /^팬사이트\s*사용성[·ㆍ,\s]*모바일\s*앱[·ㆍ,\s]*가로\s*게임\s*모드\s*개선(?:\s*\(#\d+\))?$/i
+    /^팬사이트\s*사용성[·ㆍ,\s]*모바일\s*앱[·ㆍ,\s]*가로\s*게임\s*모드\s*개선(?:\s*\(#\d+\))?$/i,
+    /^내\s*팬허브[·ㆍ,\s]*개인\s*기록[·ㆍ,\s]*타임라인\s*추가(?:\s*\(#\d+\))?$/i
   ];
 
   const INTERNAL_MAINTENANCE_PATTERNS = [

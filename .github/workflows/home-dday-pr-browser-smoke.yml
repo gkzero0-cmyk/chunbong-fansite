@@ -126,7 +126,8 @@ jobs:
               const homeOfficial=page.locator('.status-card-link');
               assert.equal(await homeOfficial.getAttribute('href'),'https://www.sooplive.com/station/chunbongtv');
               assert.equal(await homeOfficial.getAttribute('target'),'_blank');
-              assert.match((await homeOfficial.textContent())||'',/SOOP 공식 프로필/);
+              assert.match((await homeOfficial.locator('.status-service-mark').textContent())||'',/SOOP/);
+              assert.match((await homeOfficial.textContent())||'',/공식 프로필/);
               assert.ok(await homeOfficial.isVisible(),'home official profile card not visible');
               assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'home horizontal overflow');
 

@@ -1,5 +1,5 @@
 /* CHUNBONG_PWA v1 */
-const CACHE_NAME = 'chunbong-pwa-20260920-v16';
+const CACHE_NAME = 'chunbong-pwa-20260920-v18';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -13,6 +13,8 @@ const APP_SHELL = [
   '/mobile-site.js',
   '/page.js?v=2',
   '/site-shell.js',
+  '/site-meta.js',
+  '/site-health.js',
   '/site-improvements.js',
   '/activity-center.css',
   '/activity-center.js',
@@ -29,7 +31,14 @@ const APP_SHELL = [
   '/minigames.html',
   '/minigames.css',
   '/minigame-profile.css',
-  '/minigame-profile.js'
+  '/minigame-profile.js',
+  '/personal-hub.css',
+  '/personal-hub.js',
+  '/myhub.html',
+  '/timeline.html',
+  '/timeline.css',
+  '/timeline.js',
+  '/changelog-data.js'
 ];
 
 self.addEventListener('install', event => {
@@ -92,4 +101,15 @@ self.addEventListener('fetch', event => {
   if (['script','style','worker','image','font'].includes(request.destination)) {
     event.respondWith(staleWhileRevalidate(request));
   }
+});
+
+self.addEventListener('notificationclick',event=>{
+  event.notification?.close();
+  const target=new URL(event.notification?.data?.url||'/schedule.html',self.location.origin).href;
+  event.waitUntil((async()=>{
+    const clientsList=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    const existing=clientsList.find(client=>client.url.startsWith(self.location.origin));
+    if(existing){await existing.focus();if('navigate'in existing)await existing.navigate(target);return;}
+    if(self.clients.openWindow)await self.clients.openWindow(target);
+  })());
 });

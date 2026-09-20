@@ -20,6 +20,7 @@
     more:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="19" cy="12" r="1.5"></circle></svg>'
   };
 
+  if(mobile.matches)body.classList.add('mobile-tabbar-mode');
   if(appMode){
     body.classList.add('pwa-app-mode');
     body.dataset.pwaMode='standalone';
@@ -58,7 +59,7 @@
   }
 
   function createAppNavigation(){
-    if(!mobile.matches||!appMode||document.querySelector('[data-pwa-app-tabbar]'))return;
+    if(!mobile.matches||document.querySelector('[data-pwa-app-tabbar]'))return;
     const page=body.dataset.page||'home';
     const primaryPages=new Set(['home','schedule','tarot','minigames']);
     const tabs=[
@@ -71,7 +72,7 @@
     const bar=document.createElement('nav');
     bar.className='pwa-app-tabbar';
     bar.dataset.pwaAppTabbar='';
-    bar.setAttribute('aria-label','앱 빠른 메뉴');
+    bar.setAttribute('aria-label','모바일 빠른 메뉴');
     for(const item of tabs){
       const link=document.createElement('a');
       link.href=item.href;
@@ -112,6 +113,8 @@
           <a href="history.html" data-more-page="history"><span>방송 이력</span><small>방송 기록</small></a>
           <a href="data.html" data-more-page="data"><span>춘봉 데이터</span><small>통계 · 분석</small></a>
           <a href="changelog.html" data-more-page="changelog"><span>업데이트</span><small>변경 기록</small></a>
+          <a href="myhub.html" data-more-page="myhub"><span>내 팬허브</span><small>보관함 · 기록</small></a>
+          <a href="timeline.html" data-more-page="timeline"><span>타임라인</span><small>춘봉 주요 기록</small></a>
         </div>
       </section>`;
 
@@ -220,7 +223,7 @@
     const height=window.visualViewport?.height||window.innerHeight;
     document.documentElement.style.setProperty('--mobile-visual-height',height+'px');
     const keyboardOpen=Boolean(
-      mobile.matches&&appMode&&window.visualViewport&&
+      mobile.matches&&window.visualViewport&&
       (window.innerHeight-window.visualViewport.height)>120
     );
     body.classList.toggle('pwa-app-keyboard-open',keyboardOpen);
@@ -242,6 +245,7 @@
   }
 
   mobile.addEventListener?.('change',()=>{
+    body.classList.toggle('mobile-tabbar-mode',mobile.matches);
     syncNavLock();
     syncHeader();
     syncViewport();

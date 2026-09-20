@@ -6,6 +6,7 @@
     data, $, $$, esc, proxiedImage, loadContent,
     errorState, bindRetry, setupReveal, requestedOpenId
   } = core;
+  const itemKey=item=>String(item?.id||item?.link||item?.title||'');
 
   async function renderFanartPage() {
     const grid = $('#fanart-grid');
@@ -47,12 +48,18 @@
           modalImage.hidden = true;
         }
         dialog.showModal();
+        document.dispatchEvent(new CustomEvent('chunbong:fanart-selected',{detail:{
+          id:itemKey(item),
+          type:'fanart',title:String(item.title||item.caption||'춘봉 팬아트'),
+          meta:String(item.author||'CHUNBONG FAN ART'),href:'fanart.html?open='+encodeURIComponent(itemKey(item)),
+          sourceHref:item.link||'',thumb:item.thumb||''
+        }}));
       });
     });
     $$('[data-dialog-close]', dialog).forEach(button => button.addEventListener('click', () => dialog.close()));
     dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
     if (requestedOpenId) {
-      const targetIndex = items.findIndex(item => String(item?.id || '') === String(requestedOpenId));
+      const targetIndex = items.findIndex(item => itemKey(item) === String(requestedOpenId));
       if (targetIndex >= 0) requestAnimationFrame(() => $('[data-fanart-index="' + targetIndex + '"]', grid)?.click());
     }
     setupReveal();

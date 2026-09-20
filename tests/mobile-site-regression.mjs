@@ -5,7 +5,7 @@ const read=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const css=read('mobile-site.css');
 const js=read('mobile-site.js');
 
-const pages=['index.html','schedule.html','notice.html','vod.html','clips.html','fanart.html','youtube.html','tarot.html','minigames.html','history.html','data.html','changelog.html'];
+const pages=['index.html','schedule.html','notice.html','vod.html','clips.html','fanart.html','youtube.html','tarot.html','minigames.html','history.html','data.html','changelog.html','myhub.html','timeline.html'];
 for(const path of pages){
   const html=read(path);
   assert.match(html,/viewport-fit=cover/,`${path} missing mobile safe-area viewport`);
@@ -39,16 +39,25 @@ assert.match(js,/visualViewport/);
 assert.match(js,/mobileScrollable/);
 assert.match(js,/display-mode: standalone/,'installed-app detection missing');
 assert.match(js,/source'\)===\'pwa\'/,'PWA launch-source detection missing');
-assert.match(js,/data-pwa-app-tabbar/,'installed app bottom tabbar missing');
+assert.match(js,/data-pwa-app-tabbar/,'mobile bottom tabbar missing');
+assert.match(js,/mobile-tabbar-mode/,'regular mobile browsers should receive the bottom navigation mode');
 assert.match(js,/data-pwa-app-more-toggle/,'installed app more menu control missing');
 assert.match(js,/data-pwa-ios-install/,'iOS Safari install helper missing');
 assert.match(js,/pwa-app-keyboard-open/,'app tabbar must react to the mobile keyboard');
-assert.match(css,/\.pwa-app-tabbar\{/,'installed app tabbar styles missing');
+assert.doesNotMatch(js,/mobile\.matches&&appMode&&window\.visualViewport/,'regular mobile keyboard must hide the bottom bar too');
+assert.match(css,/body\.mobile-tabbar-mode\.pwa-app-more-open/,'regular mobile More sheet must lock background scrolling');
+assert.match(css,/body\.mobile-tabbar-mode \.pwa-install-chip,[\s\S]*\.pwa-ios-install-chip,[\s\S]*\.deploy-sync-chip/,'fixed mobile notices and iOS install help must clear the bottom navigation');
+assert.match(css,/\.pwa-app-tabbar\{/,'mobile tabbar styles missing');
+assert.match(css,/@media\(min-width:761px\)\{[\s\S]*\.pwa-app-tabbar,[\s\S]*display:none!important/,'mobile tabbar must disappear above the mobile breakpoint');
+assert.match(js,/모바일 빠른 메뉴/,'bottom navigation needs a browser-neutral accessible label');
+assert.match(css,/body\.mobile-tabbar-mode:not\(\[data-game\]\)/,'regular mobile browser bottom spacing missing');
+assert.match(css,/content-visibility:auto/,'long mobile card lists should defer off-screen painting');
+assert.match(css,/backdrop-filter:blur\(8px\)!important/,'mobile header/menu blur should be reduced');
 assert.match(css,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/,'app tabbar must expose five primary controls');
 assert.match(css,/\.pwa-app-more-sheet\{/,'installed app more sheet styles missing');
 assert.match(css,/\.pwa-ios-install-chip\{/,'iOS home-screen install helper styles missing');
-assert.match(css,/body\.pwa-app-mode \.daily-fortune-launcher\{/,'daily fortune launcher must clear the app tabbar');
-assert.match(css,/body\.pwa-app-mode \.activity-panel\{/,'activity panel must clear the app tabbar');
+assert.match(css,/body\.pwa-app-mode \.daily-fortune-launcher,[\s\S]*body\.mobile-tabbar-mode \.daily-fortune-launcher\{/,'daily fortune launcher must clear the mobile tabbar');
+assert.match(css,/body\.pwa-app-mode \.activity-panel,[\s\S]*body\.mobile-tabbar-mode \.activity-panel\{/,'activity panel must clear the mobile tabbar');
 new Function(js);
 
 console.log('Mobile site regression passed');

@@ -7,6 +7,11 @@
   const RankingCore = root.ChuntrisRankingCore;
   const DAS_MS = 150;
   const ARR_MS = 40;
+  const MOBILE_DAS_MS = 110;
+  const MOBILE_ARR_MS = 30;
+  const MOBILE_FRAME_MS = 32;
+  const mobileViewport = root.matchMedia?.('(max-width:760px)');
+  const coarsePointer = root.matchMedia?.('(pointer:coarse)');
   const CLASSIC_BEST_KEY = 'chuntris.bestScore.classic.v1';
   const SPRINT_BEST_KEY = 'chuntris.bestTime.sprint40.v1';
   const HARD_BEST_KEY = 'chuntris.bestScore.hard.v1';
@@ -98,6 +103,12 @@
   let startViewportY = 0;
   let lastGimmickSlot = 0;
   let gimmickTimer = 0;
+  let canvasMetrics = new WeakMap();
+  let lastFrameRenderAt = 0;
+
+  const isMobileViewport=()=>Boolean(mobileViewport?.matches);
+  const isMobileTouch=()=>Boolean(mobileViewport?.matches&&coarsePointer?.matches);
+  function invalidateCanvasMetrics(){canvasMetrics=new WeakMap();}
 
   function storageGet(key, fallback = null) { try { const value=localStorage.getItem(key); return value==null?fallback:value; } catch { return fallback; } }
   function storageSet(key, value) { try { localStorage.setItem(key,String(value)); } catch {} }
@@ -148,6 +159,7 @@
       ?`${modeLabel()} · 플레이할 난이도를 골라 주세요.`
       :'플레이할 모드를 먼저 골라 주세요.';
     if(start) closeModalShell(false);
+    invalidateCanvasMetrics();
   }
 
   function syncRankingButtons(){
@@ -193,7 +205,7 @@
     const fill=boardFillRatio(state);if(fill>=.85)return Math.floor(now/900)%2?'burnout':'cryA';if(fill>=.70)return Math.floor(now/900)%2?'alert':'sweat';if(now<bestFlashUntil)return'money';if(transientReaction&&now<transientReaction.until)return transientReaction.name;return state.status==='idle'?'idle':'calm';
   }
 
-  function prepareCanvas(canvas,ratio){const dpr=Math.max(1,root.devicePixelRatio||1);const cssWidth=Math.max(1,Math.round(canvas.getBoundingClientRect().width||canvas.width/ratio));const cssHeight=Math.round(cssWidth*ratio);const width=Math.round(cssWidth*dpr),height=Math.round(cssHeight*dpr);if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=true;return{ctx,width:cssWidth,height:cssHeight};}
+  function prepareCanvas(canvas,ratio){const rawDpr=Math.max(1,root.devicePixelRatio||1),dpr=isMobileViewport()?Math.min(rawDpr,2):rawDpr;let metrics=canvasMetrics.get(canvas);if(!metrics||metrics.ratio!==ratio||metrics.dpr!==dpr){const cssWidth=Math.max(1,Math.round(canvas.getBoundingClientRect().width||canvas.width/ratio));const cssHeight=Math.round(cssWidth*ratio);const width=Math.round(cssWidth*dpr),height=Math.round(cssHeight*dpr);if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=true;metrics={ctx,width:cssWidth,height:cssHeight,ratio,dpr};canvasMetrics.set(canvas,metrics);}return metrics;}
   function drawCell(ctx,x,y,size,color,alpha=1){const gap=Math.max(1,size*.055);ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle=color;ctx.fillRect(x*size+gap,y*size+gap,size-gap*2,size-gap*2);ctx.fillStyle='rgba(255,255,255,.22)';ctx.fillRect(x*size+gap*1.5,y*size+gap*1.5,size-gap*3,Math.max(2,size*.08));ctx.strokeStyle='rgba(0,0,0,.38)';ctx.lineWidth=Math.max(1,size*.045);ctx.strokeRect(x*size+gap,y*size+gap,size-gap*2,size-gap*2);ctx.restore();}
   function drawBoard(state){
     const {ctx,width,height}=prepareCanvas(els.board,2);ctx.clearRect(0,0,width,height);ctx.fillStyle='#080808';ctx.fillRect(0,0,width,height);const cell=width/Engine.BOARD_WIDTH;ctx.strokeStyle='rgba(255,255,255,.055)';ctx.lineWidth=1;
@@ -309,7 +321,7 @@
 
   function render(){
     const state=game.getSnapshot(),previousStatus=lastStatus;updateRecords(state,previousStatus);observeEvents(state);
-    if(!els.playView?.hidden){drawBoard(state);drawMini(els.hold,state.hold?[state.hold]:[],1);drawMini(els.next,state.next,5);}
+    if(!els.playView?.hidden){drawBoard(state);if(!isMobileViewport()){drawMini(els.hold,state.hold?[state.hold]:[],1);drawMini(els.next,state.next,5);}}
     if(els.score)els.score.textContent=state.score.toLocaleString('ko-KR');
     if(els.level)els.level.textContent=state.level;
     if(els.lines)els.lines.textContent=mode==='sprint40'?`${state.lines} / 40`:state.lines;
@@ -465,7 +477,7 @@
   }
 
   function stopRepeat(key){const item=repeats.get(key);if(!item)return;clearTimeout(item.timeout);clearInterval(item.interval);repeats.delete(key);}
-  function startRepeat(key,action){if(repeats.has(key))return;act(action);const item={timeout:0,interval:0};item.timeout=setTimeout(()=>{item.interval=setInterval(()=>act(action),ARR_MS);},DAS_MS);repeats.set(key,item);}
+  function startRepeat(key,action){if(repeats.has(key))return;act(action);const item={timeout:0,interval:0},mobile=isMobileTouch(),das=mobile?MOBILE_DAS_MS:DAS_MS,arr=mobile?MOBILE_ARR_MS:ARR_MS;item.timeout=setTimeout(()=>{item.interval=setInterval(()=>act(action),arr);},das);repeats.set(key,item);}
   function stopAllRepeats(){for(const key of [...repeats.keys()])stopRepeat(key);}
   const repeatKeys={ArrowLeft:'left',ArrowRight:'right',ArrowDown:'soft-drop'};
   const singleKeys={ArrowUp:'rotate-cw',KeyX:'rotate-cw',KeyZ:'rotate-ccw',Space:'hard-drop',KeyC:'hold',ShiftLeft:'hold',ShiftRight:'hold'};
@@ -495,9 +507,10 @@
   els.nickname?.addEventListener('change',()=>{const nickname=currentNickname();if(nickname&&nickname!==false)storageSet(NICKNAME_KEY,nickname.displayName);});
   if(els.sound&&root.ChuntrisAudio){const settings=root.ChuntrisAudio.getSettings();els.sound.setAttribute('aria-pressed',String(settings.enabled));els.sound.textContent=settings.enabled?'효과음 ON':'효과음 OFF';els.volume.value=String(Math.round(settings.volume*100));els.sound.addEventListener('click',()=>{const next=els.sound.getAttribute('aria-pressed')!=='true';root.ChuntrisAudio.setEnabled(next);els.sound.setAttribute('aria-pressed',String(next));els.sound.textContent=next?'효과음 ON':'효과음 OFF';root.ChuntrisAudio.resume();});els.volume.addEventListener('input',()=>root.ChuntrisAudio.setVolume(Number(els.volume.value)/100));}
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&game.getSnapshot().status==='playing'){game.pause(Date.now());setViewState('paused');showModalPanel('pause');}render();});
-  root.addEventListener('resize',render);root.addEventListener('orientationchange',()=>setTimeout(render,80));
+  root.addEventListener('resize',()=>{invalidateCanvasMetrics();render();});root.addEventListener('orientationchange',()=>setTimeout(()=>{invalidateCanvasMetrics();render();},80));
+  mobileViewport?.addEventListener?.('change',()=>{invalidateCanvasMetrics();lastFrameRenderAt=0;render();});
 
-  function frame(){if(game.getSnapshot().status==='playing')game.advance(Date.now());render();rafId=root.requestAnimationFrame(frame);}
+  function frame(timestamp=0){const playing=game.getSnapshot().status==='playing';if(playing)game.advance(Date.now());if(playing){if(!isMobileViewport()||timestamp-lastFrameRenderAt>=MOBILE_FRAME_MS){lastFrameRenderAt=timestamp;render();}}rafId=root.requestAnimationFrame(frame);}
   function ensureLoop(){if(!rafId)rafId=root.requestAnimationFrame(frame);}
 
   if(els.nickname)els.nickname.value=storageGet(NICKNAME_KEY,'');

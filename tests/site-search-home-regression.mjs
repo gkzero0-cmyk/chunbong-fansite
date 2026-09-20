@@ -13,7 +13,7 @@ assert.equal((home.match(/id="home-overview-title"/g)||[]).length,1,'home must k
 assert.doesNotMatch(improvements,/home-today-dashboard|buildHomeDashboard/,'shared improvements must not inject a duplicate Today dashboard');
 assert.match(home,/data-home-overview-fortune/,'existing Today overview must include daily fortune');
 assert.match(fortune,/data-home-overview-fortune/,'daily fortune runtime must open from the Today overview card');
-assert.match(overviewCss,/repeat\(3,minmax\(0,1fr\)\)/,'desktop Today overview must support four cards');
+assert.match(overviewCss,/repeat\(4,minmax\(0,1fr\)\)/,'desktop Today overview must support five cards');
 assert.match(overviewCss,/@media\(max-width:1050px\).*repeat\(2,minmax\(0,1fr\)\)/s,'Today overview must collapse to two columns on narrower screens');
 
 for(const type of ['schedule','notice','vod','clips','youtube']){
@@ -21,6 +21,13 @@ for(const type of ['schedule','notice','vod','clips','youtube']){
 }
 assert.match(improvements,/notice-detail&id=202862381/,'global search must index broadcast history text');
 assert.match(improvements,/changelog-history&since=2026-08-30/,'global search must index update history');
+assert.match(improvements,/href:'myhub\.html',label:'내 팬허브'/,'global search must expose My Fan Hub');
+assert.match(improvements,/href:'timeline\.html',label:'춘봉 타임라인'/,'global search must expose Chunbong timeline');
+assert.match(improvements,/href:'data\.html\?view=calendar#soop',label:'방송 기록 캘린더'/,'global search must expose broadcast calendar');
+assert.match(improvements,/\/api\/content\?type=data/,'global search must index measured broadcast records');
+assert.match(home,/data-home-overview-card="challenge"/,'Today overview must expose daily minigame challenge');
+assert.match(home,/data-home-quick-stats/,'home must expose simple broadcast statistics');
+assert.match(home,/data\.html\?view=calendar#soop/,'home must link to the broadcast archive calendar');
 assert.match(improvements,/aria-activedescendant/,'global search must expose keyboard selection to assistive technology');
 assert.match(improvements,/aria-keyshortcuts/,'global search trigger must expose its keyboard shortcut');
 assert.match(improvements,/aria-busy','true'/,'global search must announce content loading');

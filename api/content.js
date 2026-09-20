@@ -19,6 +19,7 @@ const handleChangelogHistory = require('../lib/changelog-history-api');
 const youtubeEngagementCache = require('../data/youtube-engagement-cache.json');
 const soopMetricHistory = require('../data/soop-follower-history.json');
 const { buildEngagementRankings } = require('../lib/youtube-engagement');
+const { fetchSoopStructuredLive } = require('../lib/soop-live-state');
 
 function compactCategory(row = {}) {
   return {
@@ -251,6 +252,24 @@ async function handler(req,res) {
   if(type==='chuncortile-ranking') return handleChuncortileRanking(req,res);
   if(type==='minigame-multiplayer') return handleMinigameMultiplayer(req,res);
   if(type==='changelog-history') return handleChangelogHistory(req,res);
+  if(type==='live'){
+    res.setHeader('Cache-Control','s-maxage=30, stale-while-revalidate=30');
+    try{
+      const state=await fetchSoopStructuredLive();
+      return res.status(200).json({
+        live:state.live===true?true:state.live===false?false:null,
+        authoritative:Boolean(state.authoritative),
+        broadcastId:String(state.broadcastId||''),
+        startedAt:String(state.startedAt||''),
+        title:String(state.title||''),
+        viewerCount:Number.isFinite(state.viewerCount)?state.viewerCount:null,
+        categoryName:String(state.categoryName||''),
+        source:'soop-channel'
+      });
+    }catch(error){
+      return res.status(503).json({live:null,authoritative:false,error:'live_state_unavailable'});
+    }
+  }
   const forceDataRefresh=type==='data'&&String(req.query?.refresh||'')==='1';
   res.setHeader('Cache-Control',forceDataRefresh?'no-store, max-age=0':'s-maxage=180, stale-while-revalidate=600');
   try {

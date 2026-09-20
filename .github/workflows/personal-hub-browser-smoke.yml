@@ -1,0 +1,116 @@
+name: Personal fan hub browser smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'personal-hub.js'
+      - 'personal-hub.css'
+      - 'myhub.html'
+      - 'timeline.html'
+      - 'timeline.js'
+      - 'timeline.css'
+      - 'index.html'
+      - 'home-overview.js'
+      - 'api/content.js'
+      - 'page-media.js'
+      - 'page-fanart.js'
+      - 'tarot.js'
+      - 'minigames.html'
+      - 'minigame-profile.js'
+      - 'minigame-profile.css'
+      - 'mobile-site.js'
+      - 'site-shell.js'
+      - 'service-worker.js'
+      - 'changelog-data.js'
+      - 'tests/personal-hub-regression.mjs'
+      - '.github/workflows/personal-hub-browser-smoke.yml'
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Static personal hub regression
+        run: node tests/personal-hub-regression.mjs
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local site
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/personal-hub-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:4173/myhub.html >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/personal-hub-http.log
+          exit 1
+      - name: Verify local persistence, app home and timeline
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import { chromium } from 'playwright';
+          import assert from 'node:assert/strict';
+
+          const browser=await chromium.launch({headless:true});
+          const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+          const page=await context.newPage();
+          const errors=[];
+          page.on('pageerror',error=>errors.push(error.message));
+
+          await page.goto(process.env.BASE_URL+'/myhub.html',{waitUntil:'domcontentloaded'});
+          await page.waitForFunction(()=>Boolean(window.ChunbongPersonal));
+          await page.evaluate(()=>{
+            const p=window.ChunbongPersonal;
+            p.favoriteItem({id:'video-1',type:'youtube',title:'저장 테스트 영상',meta:'YOUTUBE',href:'youtube.html?open=video-1'});
+            p.recordRecent({id:'video-1',type:'youtube',title:'이어보기 테스트 영상',meta:'YOUTUBE',href:'youtube.html?open=video-1',progress:93});
+            p.recordTarot({question:'오늘의 흐름은?',topic:'general',spreadId:'single',cards:[{name:'태양',orientation:'upright',position:'현재',deckNumber:20}]});
+            p.recordGameStart('chuntris');
+            localStorage.setItem('chuntris.bestScore.classic.v1','12000');
+            p.renderDashboard();
+          });
+
+          assert.match(await page.locator('[data-personal-dashboard]').innerText(),/저장 테스트 영상/);
+          assert.match(await page.locator('[data-personal-dashboard]').innerText(),/이어보기 테스트 영상/);
+          assert.match(await page.locator('[data-personal-dashboard]').innerText(),/오늘의 흐름은\?/);
+          assert.match(await page.locator('[data-personal-dashboard]').innerText(),/태양/);
+          assert.match(await page.locator('[data-personal-dashboard]').innerText(),/첫 발자국/);
+          assert.match(await page.locator('[data-personal-dashboard]').innerText(),/블록 러너/);
+
+          await page.reload({waitUntil:'domcontentloaded'});
+          await page.waitForFunction(()=>Boolean(window.ChunbongPersonal));
+          assert.match(await page.locator('[data-personal-dashboard]').innerText(),/저장 테스트 영상/,'favorites must persist after reload');
+          assert.match(await page.locator('[data-personal-dashboard]').innerText(),/1:33까지/,'native progress metadata must render in continue watching');
+
+          await page.route('**/api/content?type=live',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({live:true,authoritative:true,broadcastId:'test-live',title:'테스트 LIVE 방송',viewerCount:1234,categoryName:'Minecraft'})}));
+          await page.route('**/api/content?type=schedule',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:[]})}));
+          await page.route('**/api/content?type=activity',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:[]})}));
+
+          await page.goto(process.env.BASE_URL+'/?source=pwa',{waitUntil:'domcontentloaded'});
+          await page.waitForSelector('[data-pwa-app-tabbar]');
+          await page.waitForSelector('[data-app-home-panel] .app-home-grid');
+          assert.ok(await page.locator('[data-app-home-panel]').isVisible(),'personal app home must be visible in installed-app mode');
+          assert.match(await page.locator('[data-app-home-panel]').innerText(),/이어보기 테스트 영상/);
+          assert.match(await page.locator('[data-app-home-panel]').innerText(),/태양/);
+          await page.waitForFunction(()=>document.querySelector('[data-home-overview-card="schedule"]')?.textContent?.includes('LIVE NOW'));
+          const liveCard=await page.locator('[data-home-overview-card="schedule"]').innerText();
+          assert.match(liveCard,/LIVE NOW/,'LIVE NOW must replace the schedule card while SOOP is live');
+          assert.match(liveCard,/테스트 LIVE 방송/);
+          assert.match(liveCard,/1,234명 시청 중/);
+
+          await page.goto(process.env.BASE_URL+'/timeline.html',{waitUntil:'domcontentloaded'});
+          await page.waitForSelector('[data-chunbong-timeline] .timeline-row');
+          const timelineText=await page.locator('[data-chunbong-timeline]').innerText();
+          assert.match(timelineText,/춘봉 첫 방송/);
+          assert.match(timelineText,/SOOP 첫 방송/);
+          assert.match(timelineText,/춘봉 팬사이트 프로젝트 시작/);
+
+          assert.deepEqual(errors,[],errors.join(' | '));
+          await browser.close();
+          EOF_NODE

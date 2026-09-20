@@ -6,6 +6,7 @@
     data, $, $$, esc, loadContent, loadItems, sourceFor,
     errorState, bindRetry, setupReveal, requestedOpenId, requestedKind
   } = core;
+  const itemKey=item=>String(item?.id||item?.videoId||item?.link||item?.title||'');
 
   function setVideoPlayer(kind, item) {
     const frame = $(`#${kind}-player`);
@@ -18,6 +19,18 @@
     const platformLabel = item?.platform === 'youtube' ? (item?.kind === 'shorts' ? 'SHORTS' : 'YOUTUBE') : item?.kind === 'catch' ? 'CATCH' : item?.kind === 'clip' ? 'CLIP' : '';
     meta.textContent = [platformLabel, item?.date || item?.meta || (item?.platform === 'youtube' ? 'YouTube' : 'SOOP')].filter(Boolean).join(' · ');
     if (source) source.href = item?.link || sourceFor(item?.kind || (kind === 'vod' ? 'vod' : kind === 'youtube' ? 'youtube' : 'catch'));
+    if (item) {
+      const personalDetail={
+      id:itemKey(item),
+      type:kind==='youtube'?'youtube':String(item.kind||kind||'vod'),
+      title:String(item.title||''),
+      meta:[platformLabel,item.date||item.meta||''].filter(Boolean).join(' · '),
+      href:(kind==='youtube'?'youtube.html':kind==='clip'?'clips.html':'vod.html')+'?'+(item.kind?'kind='+encodeURIComponent(item.kind)+'&':'')+'open='+encodeURIComponent(itemKey(item)),
+      sourceHref:item.link||'',thumb:item.thumb||''
+      };
+      window.__CHUNBONG_CURRENT_MEDIA__=personalDetail;
+      document.dispatchEvent(new CustomEvent('chunbong:media-selected',{detail:personalDetail}));
+    }
     if (item?.embed) {
       frame.loading = 'lazy';
       frame.src = item.embed;
@@ -36,7 +49,7 @@
   }
 
   function renderVideoList(kind, items, list, selectedId = '') {
-    const selectedIndex = Math.max(0, items.findIndex(item => String(item?.id || '') === String(selectedId || '')));
+    const selectedIndex = Math.max(0, items.findIndex(item => itemKey(item) === String(selectedId || '')));
     list.innerHTML = items.map((item, index) => `
       <button class="video-list-card${index === selectedIndex ? ' selected' : ''}" type="button" data-video-index="${index}">
         <span class="video-thumb">
