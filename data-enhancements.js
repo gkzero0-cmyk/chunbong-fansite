@@ -336,8 +336,10 @@
   function initDataViewMode() {
     const buttons=[...document.querySelectorAll('[data-data-view-button]')];
     if(!buttons.length) return;
-    const key='chunbong-data-view-v1';
+    const isMobile=window.matchMedia('(max-width:760px)').matches;
+    const key=isMobile?'chunbong-data-view-mobile-v1':'chunbong-data-view-v1';
     let view='summary';
+    document.body.classList.toggle('data-mobile-summary-ui',isMobile);
     try{
       const saved=localStorage.getItem(key);
       if(saved==='detail'||saved==='summary') view=saved;
@@ -350,9 +352,13 @@
         button.classList.toggle('is-active',active);
         button.setAttribute('aria-pressed',String(active));
       });
+      document.body.classList.toggle('data-mobile-detail-open',isMobile&&view==='detail');
       try{localStorage.setItem(key,view);}catch(_){}
     };
-    buttons.forEach(button=>button.addEventListener('click',()=>apply(button.dataset.dataViewButton)));
+    buttons.forEach(button=>button.addEventListener('click',()=>{
+      apply(button.dataset.dataViewButton);
+      if(isMobile)document.querySelector('.data-platform-tabs')?.scrollIntoView({block:'nearest',behavior:'smooth'});
+    }));
     apply(view);
   }
 
