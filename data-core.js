@@ -231,6 +231,7 @@
     if(!document.body.contains(root)||root.dataset.date!==date)return;
     root.innerHTML=rows.length?'<small>RELATED CONTENT</small><div class="data-calendar-media-list">'+rows.map(row=>'<a href="'+esc(mediaLink(row.type,row.item))+'"><b>'+esc(row.item?.title||'관련 콘텐츠')+'</b><span>'+esc(row.type==='vod'?'다시보기':row.type==='clips'?(row.item?.kind==='clip'?'클립':'CATCH'):(row.item?.kind==='shorts'?'YouTube Shorts':'YouTube'))+' →</span></a>').join('')+'</div>':'<small>RELATED CONTENT</small><p>이 날짜와 연결된 다시보기·클립·YouTube 콘텐츠가 아직 없습니다.</p>';
   }
+  window.__CHUNBONG_DATA_CALENDAR_MEDIA__={render:renderCalendarMedia,rows:calendarMediaRows,dateKey:mediaDateKey,link:mediaLink};
   function renderCalendarDetail(row) {
     const root=$('#data-soop-calendar-detail');
     if(!row){root.innerHTML='<div class="data-empty">방송한 날짜를 선택하면 상세 기록을 보여줍니다.</div>';return;}
