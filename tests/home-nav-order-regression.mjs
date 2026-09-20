@@ -3,31 +3,31 @@ import assert from 'node:assert/strict';
 
 const index = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
-const featuredPattern = /<a class="portal-card reveal" href="([^"]+)"><small>(\d{2}) \/ ([^<]+)<\/small><strong>([^<]+)<\/strong>/g;
-const featured = [...index.matchAll(featuredPattern)].map(match => ({ href: match[1], number: match[2], label: match[3], title: match[4] }));
-assert.deepEqual(featured.map(card => [card.number, card.href, card.title]), [
-  ['03', 'vod.html', '다시보기'],
-  ['07', 'tarot.html', '타로 보기'],
-  ['08', 'minigames.html', '미니게임'],
-  ['10', 'data.html', '춘봉 데이터']
-], 'home must emphasize the four primary destinations');
+const featuredPattern = /<a class="portal-card reveal" data-kind="([^"]+)" href="([^"]+)"><small>([^<]+)<\/small><strong>([^<]+)<\/strong>/g;
+const featured = [...index.matchAll(featuredPattern)].map(match => ({ kind: match[1], href: match[2], label: match[3], title: match[4] }));
+assert.deepEqual(featured.map(card => [card.kind, card.href, card.label, card.title]), [
+  ['replay', 'vod.html', 'REPLAY', '다시보기'],
+  ['tarot', 'tarot.html', 'TAROT', '타로 보기'],
+  ['minigames', 'minigames.html', 'MINIGAMES', '미니게임'],
+  ['data', 'data.html', 'DATA', '춘봉 데이터']
+], 'home must emphasize the four primary destinations with semantic labels');
 
 const compactStart=index.indexOf('<nav class="portal-compact-grid');
 const compactEnd=index.indexOf('</nav>',compactStart);
 assert.ok(compactStart>=0&&compactEnd>compactStart,'home must include compact secondary navigation');
 const compact=index.slice(compactStart,compactEnd);
-for(const [number,href,title] of [
-  ['01','schedule.html','방송 일정'],
-  ['02','notice.html','공지'],
-  ['04','clips.html','핫클립'],
-  ['05','fanart.html','팬아트'],
-  ['06','youtube.html','유튜브'],
-  ['09','history.html','방송 이력']
+for(const [kind,href,title] of [
+  ['schedule','schedule.html','방송 일정'],
+  ['notice','notice.html','공지'],
+  ['clips','clips.html','핫클립'],
+  ['fanart','fanart.html','팬아트'],
+  ['youtube','youtube.html','유튜브'],
+  ['history','history.html','방송 이력']
 ]){
-  assert.ok(compact.includes(`href="${href}"`),`compact home navigation must include ${href}`);
-  assert.ok(compact.includes(`<small>${number}</small>`),`compact home navigation must preserve item ${number}`);
+  assert.ok(compact.includes(`href="${href}" data-kind="${kind}"`),`compact home navigation must include semantic ${kind} destination`);
   assert.ok(compact.includes(`<strong>${title}</strong>`),`compact home navigation must include ${title}`);
 }
+assert.doesNotMatch(compact, /<small>\d{2}<\/small>/, 'compact home navigation must not use fixed numeric ordering');
 
 const allHomeDestinations=['schedule.html','notice.html','vod.html','clips.html','fanart.html','youtube.html','tarot.html','minigames.html','history.html','data.html'];
 for(const href of allHomeDestinations){
