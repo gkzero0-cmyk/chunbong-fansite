@@ -289,6 +289,20 @@
 
 
 
+  function markHeaderNavigationState(){
+    const nav=document.getElementById('main-nav');if(!nav)return;
+    const aliases={chuntris:'minigames',chunbak:'minigames',chungwagame:'minigames',chuncortile:'minigames'};
+    const current=aliases[document.body.dataset.page]||document.body.dataset.page||'';
+    nav.querySelectorAll('[data-nav]').forEach(link=>{
+      const active=link.dataset.nav===current;
+      link.classList.toggle('active',active);
+      if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');
+    });
+    nav.querySelectorAll('.nav-group').forEach(group=>{
+      group.classList.toggle('is-current-section',Boolean(group.querySelector('[aria-current="page"]')));
+    });
+  }
+
   function addMyHubHeaderEntry(){
     const header=document.querySelector('.site-header');
     if(!header||header.querySelector('.header-myhub'))return;
@@ -301,6 +315,7 @@
   }
 
   ensureAssets();
+  markHeaderNavigationState();
   addMyHubHeaderEntry();
   buildSearch();
   addLoadingGuards();
