@@ -135,6 +135,7 @@
     const game=document.body.dataset.game;if(!GAME_LABELS[game])return;
     const root=document.querySelector('[data-game-status]');if(!root)return;
     let previous=root.dataset.gameStatus||'';
+    if(previous==='playing')recordGameStart(game);
     new MutationObserver(()=>{
       const next=root.dataset.gameStatus||'';
       if(next==='playing'&&previous!=='playing'&&previous!=='paused')recordGameStart(game);
