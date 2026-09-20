@@ -90,4 +90,9 @@ for(const asset of ['/personal-hub.css','/personal-hub.js','/myhub.html','/timel
 }
 assert.match(sw,/notificationclick/,'notification click routing missing');
 
+
+const homeOverview=read('home-overview.js');
+assert.match(homeOverview,/get\('live'\)/,'home overview must query actual SOOP LIVE state');
+assert.match(homeOverview,/LIVE NOW/,'home overview must prioritize actual SOOP LIVE state');
+
 console.log('personal fan hub regression passed');
