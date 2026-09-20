@@ -29,8 +29,12 @@
     return response.json();
   }
   async function load(){
-    const [scheduleResult,activityResult]=await Promise.allSettled([get('schedule'),get('activity')]);
-    if(scheduleResult.status==='fulfilled'){
+    const [liveResult,scheduleResult,activityResult]=await Promise.allSettled([get('live'),get('schedule'),get('activity')]);
+    const live=liveResult.status==='fulfilled'&&liveResult.value?.live===true?liveResult.value:null;
+    if(live){
+      const viewers=Number.isFinite(Number(live.viewerCount))&&Number(live.viewerCount)>0?Number(live.viewerCount).toLocaleString('ko-KR')+'명 시청 중':'지금 방송 중';
+      setCard(scheduleRoot,{label:'LIVE NOW',title:live.title||'춘봉 LIVE',desc:[live.categoryName,viewers].filter(Boolean).join(' · '),href:'https://www.sooplive.com/station/chunbongtv',time:'SOOP에서 바로 보기'});
+    } else if(scheduleResult.status==='fulfilled'){
       const items=Array.isArray(scheduleResult.value?.items)?scheduleResult.value.items:[];
       const today=items.filter(item=>String(item?.start||'').slice(0,10)===todayKey());
       const next=today[0]||items.find(item=>String(item?.start||'').slice(0,10)>=todayKey());
