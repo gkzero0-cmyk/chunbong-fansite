@@ -381,3 +381,40 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
   document.addEventListener('chunbong:personal-updated',()=>{void renderInstalledHome();});
 })();
+
+
+/* Installed PWA compact app header. */
+(()=>{
+  'use strict';
+  const mobile=window.matchMedia('(max-width:760px)');
+  const appMode=Boolean(
+    window.matchMedia('(display-mode: standalone)').matches||
+    window.navigator.standalone===true||
+    new URLSearchParams(location.search).get('source')==='pwa'
+  );
+  if(!mobile.matches||!appMode)return;
+  const body=document.body,header=document.querySelector('.site-header'),brand=header?.querySelector('.brand');
+  if(!header||!brand||header.dataset.pwaCompactHeader==='true')return;
+  header.dataset.pwaCompactHeader='true';
+  header.classList.add('pwa-compact-header');
+  const labels={
+    home:'홈',schedule:'방송 일정',notice:'공지',vod:'다시보기',clips:'핫클립',
+    fanart:'팬아트',youtube:'유튜브',tarot:'춘봉 타로',minigames:'미니게임',
+    history:'방송 이력',data:'춘봉 데이터',changelog:'업데이트',myhub:'내 팬허브'
+  };
+  const page=body.dataset.page||'home';
+  const copy=brand.querySelector('.brand-copy');
+  if(copy){
+    const strong=copy.querySelector('strong'),small=copy.querySelector('small');
+    if(strong)strong.textContent=labels[page]||'춘봉 팬허브';
+    if(small)small.textContent='CHUNBONG FAN HUB';
+  }
+  const action=document.createElement('a');
+  action.className='pwa-header-action';
+  action.href=page==='myhub'?'index.html':'myhub.html';
+  action.setAttribute('aria-label',page==='myhub'?'홈으로 이동':'내 팬허브 열기');
+  action.innerHTML=page==='myhub'
+    ? '<span aria-hidden="true">⌂</span><small>홈</small>'
+    : '<span aria-hidden="true">CB</span><small>MY</small>';
+  header.appendChild(action);
+})();
