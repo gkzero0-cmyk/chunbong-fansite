@@ -133,6 +133,9 @@ body[data-game] .game-mobile-only{display:none}
     border-radius:11px!important;
     font-size:15px!important;
     font-weight:900!important;
+    touch-action:none!important;
+    user-select:none!important;
+    -webkit-user-select:none!important;
     -webkit-tap-highlight-color:transparent!important
   }
   body[data-game="chuntris"] .chuntris-mobile-controls button[data-chuntris-action="hold"]{font-size:11px!important}

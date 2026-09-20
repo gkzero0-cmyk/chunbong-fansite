@@ -24,6 +24,7 @@ assert.match(css,/body\[data-game\] \.site-header\{[\s\S]*height:56px!important/
 assert.match(css,/body\[data-game="chuntris"\] \.chuntris-mobile-controls\{[\s\S]*display:grid!important/,'Chuntris touch controls must be visible');
 assert.match(css,/body\[data-game="chuntris"\] \.chuntris-mobile-controls\{[\s\S]*contain:layout paint!important/,'Chuntris touch control compositor work should be contained on mobile');
 assert.match(css,/box-shadow:0 -4px 14px/,'Chuntris mobile control shadow should stay lightweight');
+assert.match(css,/body\[data-game="chuntris"\] \.chuntris-mobile-controls button\{[\s\S]*touch-action:none!important/,'Chuntris touch buttons must bypass browser gesture arbitration');
 assert.match(css,/body\[data-game="chuntris"\] \.chuntris-layout[\s\S]*grid-template-areas:"score" "board"/,'Chuntris mobile layout must prioritize score and board');
 assert.match(css,/body\[data-game="chunbak"\] \.chunbak-stage\{[\s\S]*100dvh - 260px/,'Chunbak stage must fit the mobile viewport');
 assert.match(css,/body\[data-game="chunbak"\] \.chunbak-ranking,[\s\S]*\.chunbak-evolution\{display:none!important/,'Chunbak secondary rails must not push the mobile board below the fold');
