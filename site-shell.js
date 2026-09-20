@@ -9,7 +9,7 @@
 
   const read = key => {
     const cached=memory.get(key);
-    if (cached) return cached;
+    if(cached)return cached;
     if (!shouldPersist(key)) return null;
     try {
       const stored = sessionStorage.getItem(CACHE_PREFIX + key);
