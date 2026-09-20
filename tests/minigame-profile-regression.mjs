@@ -39,8 +39,11 @@ assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/,'desktop re
 assert.match(css,/\.minigame-profile-extra/,'unified profile extra stat styles missing');
 assert.match(css,/\.minigame-achievement-strip/,'achievement badge strip styles missing');
 assert.match(css,/@media\(max-width:640px\)/,'record profile must have a mobile layout');
-assert.match(sw,/chunbong-pwa-20260920-v17/,'PWA cache must advance for minigame profile');
+assert.match(sw,/chunbong-pwa-20260920-v18/,'PWA cache must advance for minigame profile');
 assert.match(sw,/minigame-profile\.js/,'PWA must cache profile runtime');
 assert.match(sw,/minigame-profile\.css/,'PWA must cache profile styles');
 
+assert.match(html,/data-profile-streak/,'daily challenge streak stat missing');
+assert.match(html,/data-profile-daily-challenge/,'daily challenge card missing');
+assert.match(js,/ChunbongPersonal\?\.dailyChallenge/,'profile must render the daily challenge');
 console.log('minigame local profile regression passed');
