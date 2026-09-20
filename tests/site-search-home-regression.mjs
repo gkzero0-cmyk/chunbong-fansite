@@ -34,6 +34,9 @@ assert.match(improvements,/aria-busy','true'/,'global search must announce conte
 assert.match(improvements,/aria-busy','false'/,'global search must clear loading state after indexing');
 assert.match(improvements,/normalize\(input\.value\)\.length>=2/,'content search must lazy-load only after two characters');
 assert.match(improvementCss,/site-search-result-copy/,'global search result layout styles missing');
+assert.match(improvements,/function categoryKind\(/,'global search must normalize category identity');
+assert.match(improvements,/data-kind=/,'search results must expose shared category kinds');
+assert.match(improvementCss,/var\(--category-accent\)/,'search result type labels must use shared category accents');
 assert.match(improvementCss,/\[data-theme="light"\] \.site-search-dialog/,'global search must support light theme');
 assert.doesNotMatch(improvementCss,/home-today-dashboard|home-today-card/,'duplicate dashboard styles must be removed');
 
