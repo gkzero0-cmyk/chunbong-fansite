@@ -78,6 +78,9 @@
     const recentKey=personal.lastPlayed?.game||'';
     const gameNames={chuntris:'춘트리스',chunbak:'춘박게임',chungwagame:'춘과게임',chuncortile:'춘컬타일'};
     setText('[data-profile-recent]',gameNames[recentKey]||'기록 없음');
+    setText('[data-profile-streak]',Number(personal.dailyStreak||0)+'일');
+    const challenge=window.ChunbongPersonal?.dailyChallenge?.(),dailyRoot=root.querySelector('[data-profile-daily-challenge]');
+    if(dailyRoot&&challenge){dailyRoot.href=challenge.href;dailyRoot.classList.toggle('is-complete',Boolean(challenge.completed));dailyRoot.querySelector('strong').textContent=challenge.title;dailyRoot.querySelector('span').textContent=challenge.completed?'오늘 미션 완료 · 내일 새로운 미션이 열립니다.':challenge.desc;dailyRoot.querySelector('b').textContent=challenge.completed?'완료 ✓':challenge.progress+' / '+challenge.goal;}
     const achievementRoot=root.querySelector('[data-profile-achievement-list]');
     if(achievementRoot)achievementRoot.innerHTML=(personal.achievements||[]).map(row=>'<span class="'+(row.earned?'is-earned':'')+'" title="'+row.desc+'">'+(row.earned?'✓ ':'○ ')+row.title+'</span>').join('');
     root.classList.toggle('is-complete',data.completed===4);
