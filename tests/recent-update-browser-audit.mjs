@@ -93,6 +93,10 @@ async function quickTarot(browser,{mobile=false,pwa=false}={}){
     assert.equal(await page.locator('[data-tarot-mode-button="quick"]').getAttribute('aria-pressed'),'true','quick tarot must start active');
     assert.equal(await page.locator('input[name="selection-mode"][value="cards"]').isChecked(),true,'quick tarot must force direct card mode');
     assert.equal(await page.locator('#tarot-number-panel').isHidden(),true,'quick tarot must hide number panel');
+    assert.equal(await page.locator('.tarot-topic-group').isVisible(),true,'quick tarot must show topic choices');
+    assert.equal(await page.locator('.tarot-question-field').isHidden(),true,'quick tarot must hide question input');
+    await page.locator('input[name="topic"][value="love"]').check();
+    assert.equal(await page.locator('input[name="topic"][value="love"]').isChecked(),true,'quick tarot must preserve selected topic');
     await page.locator('#tarot-shuffle').click();
     await page.waitForFunction(()=>document.querySelectorAll('#tarot-deck [data-card-index]').length===78);
     const first=page.locator('#tarot-deck [data-card-index]').first();
