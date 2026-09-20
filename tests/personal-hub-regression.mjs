@@ -81,7 +81,6 @@ for(const achievement of ['첫 발자국','게임 단골','4종 탐험가','블�
 
 assert.match(index,/data-app-home-panel/,'installed-app home panel missing');
 assert.match(index,/href="myhub\.html"/,'home My Hub shortcut missing');
-assert.match(index,/href="timeline\.html"/,'home timeline shortcut missing');
 assert.match(hubCss,/\.pwa-app-mode \.app-home-panel\{display:block/,'app-only personalized home rule missing');
 assert.match(mobile,/data-more-page="myhub"/,'mobile app More menu missing My Hub');
 assert.doesNotMatch(index,/timeline\\.html|춘봉 타임라인/,'retired timeline must not remain on home');
