@@ -44,9 +44,9 @@ const liveFixes = fs.readFileSync(new URL('../live-fixes.js', import.meta.url), 
 const pageJs = fs.readFileSync(new URL('../page-schedule.js', import.meta.url), 'utf8');
 
 assert.doesNotMatch(scheduleHtml, /schedule-runtime\.js/, 'obsolete official schedule snapshot runtime must stay detached');
-assert.match(scheduleHtml, /<script src="live-fixes\.js"><\/script>/, 'schedule page must keep the in-site live refresh runtime');
-assert.match(liveFixes, /\/api\/content\?type=schedule/, 'live schedule runtime must fetch the live schedule API');
-assert.match(liveFixes, /live\.length \? live : backup/, 'live schedule runtime must preserve the bundled snapshot as fallback');
+assert.match(scheduleHtml, /<script src="live-fixes\.js"><\/script>/, 'schedule page keeps pure schedule helper compatibility runtime');
+assert.doesNotMatch(liveFixes, /\/api\/content\?type=schedule/, 'schedule helper compatibility runtime must not issue duplicate live API requests');\nassert.match(pageJs, /await loadContent\('schedule'\)/, 'primary schedule renderer must fetch the live schedule API');
+assert.match(pageJs, /state\.usingLive \? liveItems : fallbackItems/, 'primary schedule renderer must preserve the bundled snapshot as fallback');
 assert.match(pageJs, /data\.notionSchedule/, 'static schedule snapshot must remain as the fallback renderer');
 
 console.log('schedule live refresh regression test passed');
