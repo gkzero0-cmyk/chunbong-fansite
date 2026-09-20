@@ -22,3 +22,8 @@
 
 .home-overview-fortune{background:linear-gradient(145deg,#21150f,#111113);border-color:#51331f}.home-overview-fortune:hover{border-color:#ff8b45;background:linear-gradient(145deg,#28170f,#151113)}[data-theme="light"] .home-overview-fortune{border-color:#ebc9b2;background:linear-gradient(145deg,#fff8f1,#fff)}
 .home-quick-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:10px}.home-quick-stats a{min-width:0;padding:13px 15px;border:1px solid #29292d;border-radius:15px;background:#101012;color:inherit;text-decoration:none}.home-quick-stats small{display:block;color:#77716c;font-size:8px;font-weight:900;letter-spacing:.1em}.home-quick-stats strong{display:block;margin:5px 0 3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:18px}.home-quick-stats span{display:block;color:#8b837e;font-size:10px}.home-quick-stats a:hover{border-color:#ff6b18}[data-theme="light"] .home-quick-stats a{border-color:#e5dbd3;background:#fff}@media(max-width:900px){.home-quick-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.home-quick-stats{grid-template-columns:1fr 1fr}.home-quick-stats a{padding:11px}.home-quick-stats strong{font-size:15px}}
+
+.home-overview-card.is-live-now{border-color:#c94c4980;background:radial-gradient(circle at 90% 10%,#ff413b20,transparent 44%),linear-gradient(145deg,#211110,#111113);box-shadow:0 16px 50px #0005,0 0 0 1px #ff4e4720}
+.home-overview-card.is-live-now small{color:#ff716c}
+.home-overview-card.is-live-now .home-overview-time{background:#ff4b4017;color:#ff8f89}
+[data-theme="light"] .home-overview-card.is-live-now{border-color:#eaa5a1;background:linear-gradient(145deg,#fff4f3,#fff)}
