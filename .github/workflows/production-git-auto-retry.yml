@@ -2,8 +2,8 @@ name: Production Git auto retry
 
 on:
   schedule:
-    # 05:20 KST. Retry once per day after the observed Vercel Hobby build-quota reset window.
-    - cron: '20 20 * * *'
+    # Check hourly. The job's 25-hour rate-limit guard still prevents premature redeploy attempts.
+    - cron: '17 * * * *'
   workflow_dispatch:
 
 permissions:
