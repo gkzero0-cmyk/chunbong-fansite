@@ -20,6 +20,7 @@
     more:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="19" cy="12" r="1.5"></circle></svg>'
   };
 
+  if(mobile.matches)body.classList.add('mobile-tabbar-mode');
   if(appMode){
     body.classList.add('pwa-app-mode');
     body.dataset.pwaMode='standalone';
@@ -58,7 +59,7 @@
   }
 
   function createAppNavigation(){
-    if(!mobile.matches||!appMode||document.querySelector('[data-pwa-app-tabbar]'))return;
+    if(!mobile.matches||document.querySelector('[data-pwa-app-tabbar]'))return;
     const page=body.dataset.page||'home';
     const primaryPages=new Set(['home','schedule','tarot','minigames']);
     const tabs=[
@@ -244,6 +245,7 @@
   }
 
   mobile.addEventListener?.('change',()=>{
+    body.classList.toggle('mobile-tabbar-mode',mobile.matches);
     syncNavLock();
     syncHeader();
     syncViewport();

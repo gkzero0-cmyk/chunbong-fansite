@@ -124,14 +124,16 @@ body[data-game] .game-mobile-only{display:none}
     margin-top:7px!important;
     padding:6px!important;
     border-radius:14px!important;
-    background:rgba(8,8,8,.96)!important;
-    box-shadow:0 -8px 26px rgba(0,0,0,.38)!important
+    background:#080808f5!important;
+    box-shadow:0 -4px 14px rgba(0,0,0,.28)!important;
+    contain:layout paint!important
   }
   body[data-game="chuntris"] .chuntris-mobile-controls button{
     min-height:46px!important;
     border-radius:11px!important;
     font-size:15px!important;
-    font-weight:900!important
+    font-weight:900!important;
+    -webkit-tap-highlight-color:transparent!important
   }
   body[data-game="chuntris"] .chuntris-mobile-controls button[data-chuntris-action="hold"]{font-size:11px!important}
   body[data-game="chuntris"] .chuntris-mobile-controls button[data-chuntris-action="hard-drop"]{
