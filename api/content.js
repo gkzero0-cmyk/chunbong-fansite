@@ -16,6 +16,7 @@ const handleChungwagameRanking = require('../lib/chungwagame-ranking-api');
 const handleChuncortileRanking = require('../lib/chuncortile-ranking-api');
 const handleMinigameMultiplayer = require('../lib/minigame-multiplayer-api');
 const handleChangelogHistory = require('../lib/changelog-history-api');
+const pushNotifications = require('../lib/push-notifications-api');
 const youtubeEngagementCache = require('../data/youtube-engagement-cache.json');
 const soopMetricHistory = require('../data/soop-follower-history.json');
 const { buildEngagementRankings } = require('../lib/youtube-engagement');
@@ -253,6 +254,9 @@ async function handler(req,res) {
   if(type==='chuncortile-ranking') return handleChuncortileRanking(req,res);
   if(type==='minigame-multiplayer') return handleMinigameMultiplayer(req,res);
   if(type==='changelog-history') return handleChangelogHistory(req,res);
+  if(type==='push-config') return pushNotifications.handleConfig(req,res);
+  if(type==='push-subscription') return pushNotifications.handleSubscription(req,res);
+  if(type==='push-dispatch') return pushNotifications.handleDispatch(req,res);
   if(type==='live'){
     res.setHeader('Cache-Control','s-maxage=30, stale-while-revalidate=30');
     try{

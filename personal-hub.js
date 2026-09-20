@@ -6,7 +6,7 @@
   const GAME_LABELS={chuntris:'춘트리스',chunbak:'춘박게임',chungwagame:'춘과게임',chuncortile:'춘컬타일'};
   const COLLECTIONS=Object.freeze({later:'나중에 보기',funny:'웃긴 방송',minecraft:'마크 명장면',favorite:'다시 보고 싶은 콘텐츠'});
   const ALERT_TYPE_LABELS=Object.freeze({live:'LIVE 시작',tarot:'타로 방송',minecraft:'마인크래프트',collab:'합방',special:'특별 콘텐츠',other:'기타 일정'});
-  const blank=()=>({version:2,favorites:[],recent:null,tarot:[],games:{plays:{},lastPlayed:null,daily:{}},alerts:{enabled:false,leadMinutes:10,types:{live:true,tarot:true,minecraft:true,collab:true,special:true,other:true},lastNotified:'',lastLiveBroadcastId:''}});
+  const blank=()=>({version:2,favorites:[],recent:null,tarot:[],games:{plays:{},lastPlayed:null,daily:{}},alerts:{enabled:false,pushEnabled:false,leadMinutes:10,types:{live:true,tarot:true,minecraft:true,collab:true,special:true,other:true},lastNotified:'',lastLiveBroadcastId:''}});
   const safeParse=value=>{try{return JSON.parse(value)}catch(_){return null}};
   function normalizeImportedState(payload){
     const parsed=payload?.state&&typeof payload.state==='object'?payload.state:payload;
@@ -196,6 +196,35 @@
     }).observe(root,{attributes:true,attributeFilter:['data-game-status']});
   }
 
+  function urlBase64ToUint8Array(value=''){
+    const padding='='.repeat((4-value.length%4)%4),base64=(value+padding).replace(/-/g,'+').replace(/_/g,'/');
+    const raw=atob(base64),output=new Uint8Array(raw.length);
+    for(let i=0;i<raw.length;i+=1)output[i]=raw.charCodeAt(i);
+    return output;
+  }
+  function pushPreferences(state=read()){return{types:{...(state.alerts?.types||{})},leadMinutes:Number(state.alerts?.leadMinutes)||10}}
+  async function syncPushSubscription(enable,state=read()){
+    if(!('serviceWorker'in navigator)||!('PushManager'in window))return false;
+    try{
+      const registration=await navigator.serviceWorker.ready;
+      let subscription=await registration.pushManager.getSubscription();
+      if(!enable){
+        if(subscription){
+          try{await fetch('/api/content?type=push-subscription',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'unsubscribe',subscription})})}catch(_){}
+          try{await subscription.unsubscribe()}catch(_){}
+        }
+        return false;
+      }
+      const config=await fetch('/api/content?type=push-config',{headers:{accept:'application/json'},cache:'no-store'}).then(response=>response.ok?response.json():null);
+      if(!config?.available||!config.publicKey)return false;
+      if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(config.publicKey)});
+      const response=await fetch('/api/content?type=push-subscription',{
+        method:'POST',headers:{'content-type':'application/json'},
+        body:JSON.stringify({action:'subscribe',subscription,preferences:pushPreferences(state)})
+      });
+      return response.ok;
+    }catch(_){return false}
+  }
   async function setAlertEnabled(enabled){
     const state=read();
     if(enabled&&(!('Notification'in window))) enabled=false;
@@ -205,17 +234,28 @@
         try{const nextPermission=await Notification.requestPermission();if(nextPermission!=='granted')enabled=false}catch(_){enabled=false}
       }else if(permission!=='granted')enabled=false;
     }
-    state.alerts.enabled=Boolean(enabled);write(state);return state.alerts.enabled;
+    state.alerts.enabled=Boolean(enabled);
+    state.alerts.pushEnabled=enabled?await syncPushSubscription(true,state):await syncPushSubscription(false,state);
+    write(state);return state.alerts.enabled;
   }
-  function setAlertType(type,enabled){if(!Object.prototype.hasOwnProperty.call(ALERT_TYPE_LABELS,type))return false;const state=read();state.alerts.types[type]=Boolean(enabled);write(state);return state.alerts.types[type]}
-  function setAlertLead(value){const lead=[5,10,30].includes(Number(value))?Number(value):10;const state=read();state.alerts.leadMinutes=lead;write(state);return lead}
+  function setAlertType(type,enabled){
+    if(!Object.prototype.hasOwnProperty.call(ALERT_TYPE_LABELS,type))return false;
+    const state=read();state.alerts.types[type]=Boolean(enabled);write(state);
+    if(state.alerts.enabled&&state.alerts.pushEnabled)void syncPushSubscription(true,state);
+    return state.alerts.types[type];
+  }
+  function setAlertLead(value){
+    const lead=[5,10,30].includes(Number(value))?Number(value):10;const state=read();state.alerts.leadMinutes=lead;write(state);
+    if(state.alerts.enabled&&state.alerts.pushEnabled)void syncPushSubscription(true,state);
+    return lead;
+  }
   function classifyScheduleItem(item={}){const text=[item.title,...(Array.isArray(item.tags)?item.tags:[])].filter(Boolean).join(' ').toLowerCase();if(/타로|tarot/.test(text))return'tarot';if(/마인크래프트|minecraft|마크|서버|엔더|광질/.test(text))return'minecraft';if(/합방|합동|콜라보|collab|with /.test(text))return'collab';if(/특별|콘텐츠|대회|원정대|춘타클|이벤트|배그|프로젝트/.test(text))return'special';return'other'}
   function alertPermissionGranted(){
     return 'Notification'in window&&Notification.permission==='granted';
   }
   function disableUnavailableAlerts(state){
     if(alertPermissionGranted())return false;
-    state.alerts.enabled=false;write(state);return true;
+    state.alerts.enabled=false;state.alerts.pushEnabled=false;void syncPushSubscription(false,state);write(state);return true;
   }
   async function deliverNotification(title,options){
     try{
@@ -271,7 +311,7 @@
     root.innerHTML=`<section class="personal-hero-card"><div><p class="kicker">MY CHUNBONG HUB</p><h1>내 팬허브</h1><p>즐겨찾기, 이어보기, 타로 기록과 미니게임 기록은 이 기기에만 저장됩니다.</p></div><div class="personal-summary"><span><b>${state.favorites.length}</b>보관함</span><span><b>${state.tarot.length}</b>타로 기록</span><span><b>${game.totalPlays}</b>게임 플레이</span><span><b>${earned.length}</b>업적</span></div></section>
     <div class="personal-grid"><section class="personal-panel"><header><div><small>CONTINUE</small><h2>이어보기</h2></div></header>${recent?`<a class="personal-recent" href="${esc(hrefFor(recent))}"><strong>${esc(recent.title||'최근 콘텐츠')}</strong><span>${esc(recent.meta||recent.type||'')} · ${esc(formatDate(recent.updatedAt))}${recent.progress?' · '+Math.floor(recent.progress/60)+':'+String(recent.progress%60).padStart(2,'0')+'까지':''}</span><b>이어보기 →</b></a>`:'<p class="personal-empty">아직 본 콘텐츠가 없습니다.</p>'}</section>
     <section class="personal-panel"><header><div><small>DAILY CHALLENGE</small><h2>오늘의 도전</h2></div><span>${challenge.completed?'완료 ✓':challenge.progress+'/'+challenge.goal}</span></header><a class="personal-challenge ${challenge.completed?'is-complete':''}" href="${challenge.href}"><strong>${esc(challenge.title)}</strong><span>${esc(challenge.desc)}</span><b>${challenge.completed?'오늘 도전 완료 · 연속 '+challenge.streak+'일':'도전하기 · '+challenge.progress+'/'+challenge.goal+' →'}</b></a></section>
-    <section class="personal-panel personal-alert-panel"><header><div><small>LIVE & SCHEDULE ALERT</small><h2>방송 알림</h2></div><button type="button" data-personal-alert-toggle aria-pressed="${String(state.alerts.enabled)}">${state.alerts.enabled?'ON':'OFF'}</button></header><p>원하는 방송 종류만 골라 알림을 받을 수 있습니다.</p><div class="personal-alert-options">${Object.entries(ALERT_TYPE_LABELS).map(([key,label])=>`<label><input type="checkbox" data-personal-alert-type="${key}" ${state.alerts.types?.[key]!==false?'checked':''}><span>${esc(label)}</span></label>`).join('')}</div><label class="personal-alert-lead"><span>예정 방송 미리 알림</span><select data-personal-alert-lead><option value="5" ${Number(state.alerts.leadMinutes)===5?'selected':''}>5분 전</option><option value="10" ${Number(state.alerts.leadMinutes)===10?'selected':''}>10분 전</option><option value="30" ${Number(state.alerts.leadMinutes)===30?'selected':''}>30분 전</option></select></label></section>
+    <section class="personal-panel personal-alert-panel ${state.alerts.enabled?'is-on':'is-off'}"><header><div><small>LIVE & SCHEDULE ALERT</small><h2>방송 알림</h2><span class="personal-alert-default">${state.alerts.enabled?(state.alerts.pushEnabled?'백그라운드 Push ON · 앱을 닫아도 알림':'알림 ON · 사이트가 열려 있을 때 확인'):'기본 설정 OFF · 직접 켠 경우에만 알림'}</span></div><button type="button" data-personal-alert-toggle aria-pressed="${String(state.alerts.enabled)}" aria-label="방송 알림 ${state.alerts.enabled?'끄기':'켜기'}"><span>${state.alerts.enabled?'ON':'OFF'}</span></button></header><p>${state.alerts.enabled?'알림이 켜져 있습니다. 원하는 방송 종류와 미리 알림 시간을 선택하세요.':'알림은 현재 꺼져 있습니다. ON으로 바꾸기 전까지 알림 권한 요청이나 방송 알림이 발생하지 않습니다.'}</p><fieldset class="personal-alert-settings" ${state.alerts.enabled?'':'disabled'}><legend class="sr-only">방송 알림 세부 설정</legend><div class="personal-alert-options">${Object.entries(ALERT_TYPE_LABELS).map(([key,label])=>`<label><input type="checkbox" data-personal-alert-type="${key}" ${state.alerts.types?.[key]!==false?'checked':''}><span>${esc(label)}</span></label>`).join('')}</div><label class="personal-alert-lead"><span>예정 방송 미리 알림</span><select data-personal-alert-lead><option value="5" ${Number(state.alerts.leadMinutes)===5?'selected':''}>5분 전</option><option value="10" ${Number(state.alerts.leadMinutes)===10?'selected':''}>10분 전</option><option value="30" ${Number(state.alerts.leadMinutes)===30?'selected':''}>30분 전</option></select></label></fieldset></section>
     <section class="personal-panel"><header><div><small>TAROT JOURNAL</small><h2>최근 타로</h2></div><a href="tarot.html">타로 보기 →</a></header>${latestTarot?`<article class="personal-tarot-latest"><strong>${esc(latestTarot.question||'질문 없는 리딩')}</strong><span>${latestTarot.cards.map(c=>esc(c.name)).join(' · ')}</span><small>${esc(formatDate(latestTarot.createdAt))}</small></article>`:'<p class="personal-empty">타로를 보면 자동으로 기록됩니다.</p>'}</section></div>
     <section class="personal-panel personal-wide"><header><div><small>SAVED COLLECTIONS</small><h2>내 보관함</h2></div><span>${state.favorites.length}개</span></header><div class="personal-collection-tabs"><button type="button" class="is-active" data-collection-filter="all">전체 <b>${state.favorites.length}</b></button>${collections.map(([key,label])=>`<button type="button" data-collection-filter="${key}">${esc(label)} <b>${counts[key]}</b></button>`).join('')}</div><div class="personal-saved-grid">${state.favorites.length?state.favorites.map(item=>`<article data-personal-collection="${esc(item.collection||'later')}"><a href="${esc(hrefFor(item))}"><small>${esc((item.type||'saved').toUpperCase())}</small><strong>${esc(item.title||'저장한 콘텐츠')}</strong><span>${esc(item.meta||'')}</span></a><select data-favorite-collection data-favorite-key="${esc(keyOf(item))}" data-favorite-type="${esc(item.type||'')}">${collections.map(([key,label])=>`<option value="${key}" ${(item.collection||'later')===key?'selected':''}>${esc(label)}</option>`).join('')}</select><button type="button" data-remove-favorite="${esc(keyOf(item))}" data-remove-type="${esc(item.type||'')}">삭제</button></article>`).join(''):'<p class="personal-empty">콘텐츠를 보관함에 저장해 보세요.</p>'}</div></section>
     <section class="personal-panel personal-wide"><header><div><small>ACHIEVEMENTS</small><h2>미니게임 업적</h2></div><a href="minigames.html">게임 기록 →</a></header><div class="personal-achievement-grid">${game.achievements.map(row=>`<article class="${row.earned?'is-earned':''}"><span>${row.earned?'✓':'○'}</span><div><strong>${esc(row.title)}</strong><small>${esc(row.desc)}</small></div></article>`).join('')}</div></section>
@@ -359,6 +399,10 @@
     });
     document.addEventListener('chunbong:personal-updated',()=>{renderDashboard();renderAppHome();syncSaveButton()});
     setTimeout(()=>document.dispatchEvent(new CustomEvent('chunbong:personal-updated',{detail:read()})),0);
+    const pushState=read();
+    if(pushState.alerts.enabled)void syncPushSubscription(true,pushState).then(enabled=>{
+      const latest=read();if(Boolean(latest.alerts.pushEnabled)!==Boolean(enabled)){latest.alerts.pushEnabled=Boolean(enabled);write(latest)}
+    });
     void checkBroadcastReminder();void checkLiveReminder();
     let timer=0;
     const startReminderTimer=()=>{

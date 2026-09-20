@@ -1,5 +1,5 @@
 /* CHUNBONG_PWA v1 */
-const CACHE_NAME = 'chunbong-pwa-20260921-v21';
+const CACHE_NAME = 'chunbong-pwa-20260921-v22';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -46,6 +46,9 @@ const APP_SHELL = [
   '/clips.html',
   '/youtube.html',
   '/fanart.html',
+  '/page-media.js',
+  '/fanart-gallery.js',
+  '/fanart-gallery.css',
   '/myhub.html',
   '/changelog-data.js'
 ];
@@ -110,6 +113,21 @@ self.addEventListener('fetch', event => {
   if (['script','style','worker','image','font'].includes(request.destination)) {
     event.respondWith(staleWhileRevalidate(request));
   }
+});
+
+self.addEventListener('push',event=>{
+  let payload={};
+  try{payload=event.data?.json?.()||{}}catch(_){try{payload={body:event.data?.text?.()||''}}catch{}}
+  const title=String(payload.title||'춘봉 팬허브');
+  const options={
+    body:String(payload.body||'새 알림이 도착했습니다.'),
+    icon:'/assets/app-icon-192.png',
+    badge:'/assets/app-icon-192.png',
+    tag:String(payload.tag||'chunbong-push'),
+    renotify:false,
+    data:{url:String(payload.url||'/')}
+  };
+  event.waitUntil(self.registration.showNotification(title,options));
 });
 
 self.addEventListener('notificationclick',event=>{

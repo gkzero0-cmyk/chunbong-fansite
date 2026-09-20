@@ -90,7 +90,7 @@ for(const asset of ['/timeline.html','/timeline.css','/timeline.js']) assert.ok(
 
 assert.match(shell,/personal-hub\.css/,'shared shell must load personal hub styles');
 assert.match(shell,/personal-hub\.js/,'shared shell must load personal hub runtime');
-assert.match(sw,/chunbong-pwa-20260920-v20/,'timeline retirement must advance PWA cache');
+assert.match(sw,/chunbong-pwa-20260921-v22/,'timeline retirement must advance PWA cache');
 for(const asset of ['/personal-hub.css','/personal-hub.js','/myhub.html']){
   assert.ok(sw.includes("'"+asset+"'"),'PWA app shell missing '+asset);
 }

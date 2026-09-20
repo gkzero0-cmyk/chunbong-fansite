@@ -1,6 +1,9 @@
 (() => {
   'use strict';
   const BASE='https://chunbong-fansite.vercel.app';
+  const appleTitle=document.querySelector('meta[name="apple-mobile-web-app-title"]')||document.createElement('meta');
+  appleTitle.name='apple-mobile-web-app-title';appleTitle.content='춘봉 팬허브';
+  if(!appleTitle.parentNode)document.head.appendChild(appleTitle);
   const rawPath=location.pathname||'/';
   const path=rawPath==='/'||rawPath==='/index.html'?'/':rawPath;
   const canonical=BASE+path;

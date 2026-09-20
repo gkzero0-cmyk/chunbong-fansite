@@ -81,3 +81,14 @@ window.CHUNBONG_CONTENT = {
     if(!img.hasAttribute('loading')) img.loading='lazy';
   });
 })();
+
+(() => {
+  const page=document.body.dataset.page||'';
+  if(!['vod','clips','youtube','fanart'].includes(page)) return;
+  if(!document.querySelector('link[data-content-filter-styles]')){
+    const link=document.createElement('link');link.rel='stylesheet';link.href='content-filter.css';link.dataset.contentFilterStyles='true';document.head.appendChild(link);
+  }
+  if(!document.querySelector('script[data-content-filter-runtime]')){
+    const script=document.createElement('script');script.src='content-filter.js';script.defer=true;script.dataset.contentFilterRuntime='true';document.body.appendChild(script);
+  }
+})();

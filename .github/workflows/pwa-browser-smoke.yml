@@ -76,7 +76,7 @@ jobs:
           await page.waitForSelector('[data-pwa-app-tabbar]');
           assert.equal(await page.locator('[data-pwa-app-tabbar] > *').count(),5,'installed app bottom navigation missing');
           assert.equal(await page.locator('[data-pwa-app-tab="home"]').getAttribute('aria-current'),'page','installed app home tab should be active');
-          await page.waitForSelector('[data-app-home-panel] .app-home-grid');
+          await page.waitForSelector('[data-app-home-panel] .pwa-dashboard-grid');
           assert.ok(await page.locator('[data-app-home-panel]').isVisible(),'installed app personal home missing');
           await page.locator('[data-pwa-app-more-toggle]').click();
           assert.ok(await page.locator('[data-pwa-app-more]').isVisible(),'installed app more sheet did not open');

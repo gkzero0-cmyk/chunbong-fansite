@@ -25,17 +25,22 @@
   const counter = document.createElement('span');
   counter.className = 'fanart-gallery-counter';
   counter.hidden = true;
+  const gestureHint = document.createElement('span');
+  gestureHint.className = 'fanart-gallery-gesture-hint';
+  gestureHint.textContent = '← 좌우 스와이프 · 아래로 닫기 ↓';
+  gestureHint.hidden = !window.matchMedia('(max-width:640px)').matches;
   const loading = document.createElement('span');
   loading.className = 'fanart-gallery-loading';
   loading.textContent = '원본 이미지 확인 중…';
   loading.hidden = true;
-  media.append(nav, counter, loading);
+  media.append(nav, counter, gestureHint, loading);
 
   const prev = nav.querySelector('.fanart-gallery-prev');
   const next = nav.querySelector('.fanart-gallery-next');
   let images = [];
   let index = 0;
   let requestId = 0;
+  let touchStartX = 0, touchStartY = 0, touchStartedAt = 0;
 
   const proxied = (url = '') => {
     const value = String(url || '');
@@ -139,6 +144,31 @@
       move(1);
     }
   });
+
+  media.addEventListener('touchstart', event => {
+    const touch = event.touches?.[0];
+    if (!touch) return;
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    touchStartedAt = Date.now();
+    media.classList.add('is-touching');
+  }, { passive:true });
+
+  media.addEventListener('touchend', event => {
+    const touch = event.changedTouches?.[0];
+    media.classList.remove('is-touching');
+    if (!touch || !touchStartedAt) return;
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+    const elapsed = Date.now() - touchStartedAt;
+    touchStartedAt = 0;
+    if (elapsed > 900) return;
+    if (Math.abs(dx) >= 54 && Math.abs(dx) > Math.abs(dy) * 1.15) {
+      move(dx < 0 ? 1 : -1);
+      return;
+    }
+    if (dy >= 88 && Math.abs(dy) > Math.abs(dx) * 1.2) dialog.close();
+  }, { passive:true });
 
   dialog.addEventListener('close', () => {
     requestId += 1;

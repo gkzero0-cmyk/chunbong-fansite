@@ -7,6 +7,36 @@
     errorState, bindRetry, setupReveal, requestedOpenId, requestedKind
   } = core;
   const itemKey=item=>String(item?.id||item?.videoId||item?.link||item?.title||'');
+  const miniState={kind:'',dismissed:false};
+  function setupMobileMiniPlayer(kind){
+    if(!window.matchMedia('(max-width:760px)').matches)return;
+    const viewer=$('#'+kind+'-viewer');
+    if(!viewer||viewer.dataset.mobileMiniReady==='true')return;
+    viewer.dataset.mobileMiniReady='true';
+    const close=document.createElement('button');
+    close.type='button';
+    close.className='mobile-mini-player-close';
+    close.setAttribute('aria-label','미니플레이어 닫기');
+    close.textContent='×';
+    viewer.appendChild(close);
+    close.addEventListener('click',event=>{
+      event.preventDefault();event.stopPropagation();
+      miniState.dismissed=true;
+      viewer.classList.remove('is-mobile-mini');
+    });
+    const sync=()=>{
+      if(!window.matchMedia('(max-width:760px)').matches){viewer.classList.remove('is-mobile-mini');return}
+      const frame=viewer.querySelector('iframe:not([hidden]),video:not([hidden])');
+      if(!frame||miniState.dismissed){viewer.classList.remove('is-mobile-mini');return}
+      const top=Number(viewer.dataset.mobileMiniOriginTop||viewer.offsetTop||0);
+      if(!viewer.dataset.mobileMiniOriginTop)viewer.dataset.mobileMiniOriginTop=String(top);
+      const active=window.scrollY>top+Math.min(260,viewer.offsetHeight*.7);
+      viewer.classList.toggle('is-mobile-mini',active);
+    };
+    window.addEventListener('scroll',sync,{passive:true});
+    window.addEventListener('resize',()=>{viewer.dataset.mobileMiniOriginTop='';sync()},{passive:true});
+    sync();
+  }
 
   function setVideoPlayer(kind, item) {
     const frame = $(`#${kind}-player`);
@@ -31,6 +61,7 @@
       window.__CHUNBONG_CURRENT_MEDIA__=personalDetail;
       document.dispatchEvent(new CustomEvent('chunbong:media-selected',{detail:personalDetail}));
     }
+    miniState.kind=kind;miniState.dismissed=false;setupMobileMiniPlayer(kind);
     if (item?.embed) {
       frame.loading = 'lazy';
       frame.src = item.embed;

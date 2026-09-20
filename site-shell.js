@@ -1,11 +1,4 @@
 (() => {
-  const appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]') || document.createElement('meta');
-  appleTitle.name = 'apple-mobile-web-app-title';
-  appleTitle.content = '춘봉 팬허브';
-  if (!appleTitle.parentNode) document.head.appendChild(appleTitle);
-})();
-
-(() => {
   'use strict';
   const memory = new Map();
   const CACHE_PREFIX = 'chunbong-cache-v2:';
@@ -78,13 +71,6 @@
     personalStyles.dataset.personalHubStyles = 'true';
     document.head.appendChild(personalStyles);
   }
-  if (!document.querySelector('link[data-content-filter-styles]')) {
-    const filterStyles = document.createElement('link');
-    filterStyles.rel = 'stylesheet';
-    filterStyles.href = 'content-filter.css';
-    filterStyles.dataset.contentFilterStyles = 'true';
-    document.head.appendChild(filterStyles);
-  }
   if (!document.querySelector('link[data-site-quality]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -92,7 +78,7 @@
     link.dataset.siteQuality = 'true';
     document.head.appendChild(link);
   }
-  for (const src of ['site-meta.js', 'site-health.js', 'site-improvements.js', 'personal-hub.js', 'content-filter.js']) {
+  for (const src of ['site-meta.js', 'site-health.js', 'site-improvements.js', 'personal-hub.js']) {
     if (document.querySelector('script[src="' + src + '"]')) continue;
     const script = document.createElement('script');
     script.src = src;
