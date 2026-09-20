@@ -71,13 +71,6 @@
     personalStyles.dataset.personalHubStyles = 'true';
     document.head.appendChild(personalStyles);
   }
-  if (!document.querySelector('link[data-site-design-system]')) {
-    const design = document.createElement('link');
-    design.rel = 'stylesheet';
-    design.href = 'site-design-system.css';
-    design.dataset.siteDesignSystem = 'true';
-    document.head.appendChild(design);
-  }
   if (!document.querySelector('link[data-site-quality]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -146,15 +139,7 @@
     {label:'팬존',items:['fanart','tarot']},
     {label:'기록',items:['history','data']}
   ];
-  const NAV_PAGE_ALIASES={chuntris:'minigames',chunbak:'minigames',chungwagame:'minigames',chuncortile:'minigames'};
-  const rawCurrent=document.body.dataset.page||'';
-  const current=NAV_PAGE_ALIASES[rawCurrent]||rawCurrent;
-  nav.querySelectorAll('[data-nav]').forEach(link=>{
-    const active=link.dataset.nav===current;
-    link.classList.toggle('active',active);
-    if(active)link.setAttribute('aria-current','page');
-    else link.removeAttribute('aria-current');
-  });
+  const current=document.body.dataset.page||'';
   NAV_GROUPS.forEach(group=>{
     const links=group.items.map(key=>nav.querySelector('[data-nav="'+key+'"]')).filter(Boolean);
     if(!links.length) return;
