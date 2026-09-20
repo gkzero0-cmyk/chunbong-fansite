@@ -155,8 +155,11 @@
   async function setAlertEnabled(enabled){
     const state=read();
     if(enabled&&(!('Notification'in window))) enabled=false;
-    if(enabled&&'Notification'in window&&Notification.permission==='default'){
-      try{const permission=await Notification.requestPermission();if(permission!=='granted')enabled=false}catch(_){enabled=false}
+    if(enabled&&'Notification'in window){
+      const permission=Notification.permission;
+      if(permission==='default'){
+        try{const nextPermission=await Notification.requestPermission();if(nextPermission!=='granted')enabled=false}catch(_){enabled=false}
+      }else if(permission!=='granted')enabled=false;
     }
     state.alerts.enabled=Boolean(enabled);write(state);return state.alerts.enabled;
   }
