@@ -78,6 +78,13 @@
     link.dataset.siteQuality = 'true';
     document.head.appendChild(link);
   }
+  if (!document.querySelector('link[data-site-design-system]')) {
+    const design = document.createElement('link');
+    design.rel = 'stylesheet';
+    design.href = 'site-design-system.css';
+    design.dataset.siteDesignSystem = 'true';
+    document.head.appendChild(design);
+  }
   for (const src of ['site-meta.js', 'site-health.js', 'site-improvements.js', 'personal-hub.js']) {
     if (document.querySelector('script[src="' + src + '"]')) continue;
     const script = document.createElement('script');
