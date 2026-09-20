@@ -879,3 +879,40 @@
   body[data-page="youtube"] .video-viewer.is-mobile-mini .mobile-mini-player-close{display:grid;place-items:center}
   body.mobile-tarot-dock-visible :is(.video-viewer.is-mobile-mini){bottom:calc(148px + env(safe-area-inset-bottom))!important}
 }
+
+
+/* ===== Installed PWA compact header ===== */
+@media(max-width:760px){
+  .pwa-app-mode .site-header.pwa-compact-header{
+    min-height:58px!important;height:58px!important;
+    padding:max(7px,env(safe-area-inset-top)) 10px 7px!important;
+    display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;
+    border-bottom:1px solid #27272b!important;background:#0c0c0df2!important;
+    backdrop-filter:blur(16px)!important
+  }
+  .pwa-app-mode .site-header.pwa-compact-header .brand{
+    min-width:0!important;display:flex!important;align-items:center!important;gap:9px!important;text-decoration:none!important
+  }
+  .pwa-app-mode .site-header.pwa-compact-header .brand-mark{
+    width:34px!important;height:34px!important;min-width:34px!important;border-radius:10px!important;font-size:10px!important
+  }
+  .pwa-app-mode .site-header.pwa-compact-header .brand-copy{min-width:0!important;display:flex!important;flex-direction:column!important}
+  .pwa-app-mode .site-header.pwa-compact-header .brand-copy strong{
+    overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+    font-size:14px!important;line-height:1.15!important;letter-spacing:-.02em!important
+  }
+  .pwa-app-mode .site-header.pwa-compact-header .brand-copy small{
+    margin-top:2px!important;color:#7e7771!important;font-size:8px!important;letter-spacing:.12em!important
+  }
+  .pwa-app-mode .site-header.pwa-compact-header .nav-toggle,
+  .pwa-app-mode .site-header.pwa-compact-header .main-nav,
+  .pwa-app-mode .site-header.pwa-compact-header .header-live{display:none!important}
+  .pwa-header-action{
+    width:38px;height:38px;display:grid;place-items:center;align-content:center;gap:0;
+    border:1px solid #333338;border-radius:12px;background:#171719;color:#d9d2cc;text-decoration:none
+  }
+  .pwa-header-action span{font-size:10px;font-weight:950;color:#ff9454}
+  .pwa-header-action small{font-size:7px;font-weight:900;color:#817a75}
+  [data-theme="light"] .pwa-app-mode .site-header.pwa-compact-header{border-bottom-color:#e7ddd5!important;background:#fffaf6f2!important}
+  [data-theme="light"] .pwa-header-action{border-color:#e4d9d0;background:#fff;color:#342820}
+}
