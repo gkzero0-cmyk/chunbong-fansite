@@ -10,8 +10,8 @@ const index = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 assert.match(index, /<meta name="application-name" content="춘봉 팬허브">/);
 assert.match(index, /<meta name="apple-mobile-web-app-title" content="춘봉 팬허브">/);
 
-const shell = await readFile(new URL('../site-shell.js', import.meta.url), 'utf8');
-assert.match(shell, /apple-mobile-web-app-title/);
-assert.match(shell, /춘봉 팬허브/);
+const meta = await readFile(new URL('../site-meta.js', import.meta.url), 'utf8');
+assert.match(meta, /apple-mobile-web-app-title/);
+assert.match(meta, /춘봉 팬허브/);
 
 console.log('pwa-name-regression: ok');
