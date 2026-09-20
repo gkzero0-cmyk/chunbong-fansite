@@ -409,7 +409,14 @@
     if(strong)strong.textContent=labels[page]||'춘봉 팬허브';
     if(small)small.textContent='CHUNBONG FAN HUB';
   }
-  // 하단 탭바의 더보기 → 내 팬허브 경로가 있어 모바일 상단 MY 버튼은 제거해 시야를 확보합니다.
+  const action=document.createElement('a');
+  action.className='pwa-header-action';
+  action.href=page==='myhub'?'index.html':'myhub.html';
+  action.setAttribute('aria-label',page==='myhub'?'홈으로 이동':'내 팬허브 열기');
+  action.innerHTML=page==='myhub'
+    ? '<span aria-hidden="true">⌂</span><small>홈</small>'
+    : '<span aria-hidden="true">CB</span><small>MY</small>';
+  header.appendChild(action);
 })();
 
 
@@ -464,7 +471,8 @@
     state.target='_blank';state.rel='noreferrer';
     state.hidden=true;
     state.innerHTML='<i aria-hidden="true"></i><span>LIVE</span>';
-    header.appendChild(state);
+    const action=header.querySelector('.pwa-header-action');
+    if(action)header.insertBefore(state,action);else header.appendChild(state);
     try{
       const response=await fetch('/api/content?type=live',{headers:{accept:'application/json'},cache:'no-store'});
       const payload=response.ok?await response.json():null;
@@ -477,4 +485,39 @@
 
   const run=()=>{setupHapticsControl();void setupLiveHeader();};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
+})();
+
+
+/* Keep mobile header UI intact, but auto-hide it while reading. */
+(()=>{
+  'use strict';
+  if(!window.matchMedia('(max-width:760px)').matches)return;
+  const header=document.querySelector('.site-header');
+  if(!header||header.dataset.mobileHeaderAutoHide==='true')return;
+  header.dataset.mobileHeaderAutoHide='true';
+  let lastY=Math.max(0,window.scrollY||0),ticking=false;
+  const sync=()=>{
+    ticking=false;
+    const y=Math.max(0,window.scrollY||0);
+    const delta=y-lastY;
+    const keepOpen=
+      y<24||
+      document.body.classList.contains('mobile-site-nav-open')||
+      document.body.classList.contains('pwa-app-more-open')||
+      document.body.classList.contains('pwa-ios-guide-open')||
+      Boolean(document.querySelector('dialog[open]'));
+    if(keepOpen){
+      header.classList.remove('mobile-header-hidden');
+    }else if(delta>6&&y>72){
+      header.classList.add('mobile-header-hidden');
+    }else if(delta<-4){
+      header.classList.remove('mobile-header-hidden');
+    }
+    lastY=y;
+  };
+  const onScroll=()=>{if(!ticking){ticking=true;requestAnimationFrame(sync)}};
+  window.addEventListener('scroll',onScroll,{passive:true});
+  document.addEventListener('focusin',()=>header.classList.remove('mobile-header-hidden'));
+  document.addEventListener('chunbong:nav-open',()=>header.classList.remove('mobile-header-hidden'));
+  sync();
 })();

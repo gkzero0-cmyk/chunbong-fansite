@@ -962,17 +962,31 @@
 .header-myhub:hover,.header-myhub[aria-current="page"]{border-color:#ff6b185f;background:#21140f;color:#ffb07d}
 @media(max-width:760px){
   .header-myhub{display:none!important}
-  body[data-page]:not([data-game]) .site-header{height:46px!important;min-height:46px!important;padding-top:max(4px,env(safe-area-inset-top))!important;padding-bottom:4px!important}
-  body[data-page]:not([data-game]) .brand-mark{width:30px!important;height:30px!important;border-radius:9px!important;font-size:10px!important}
-  body[data-page]:not([data-game]) :is(.nav-toggle,.theme-toggle,.changelog-button,.activity-bell){width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;flex-basis:34px!important;padding:6px!important;border-radius:10px!important}
-  .pwa-app-mode .site-header.pwa-compact-header{height:46px!important;min-height:46px!important;padding:max(4px,env(safe-area-inset-top)) 8px 4px!important}
-  .pwa-app-mode .site-header.pwa-compact-header .brand-mark{display:none!important}
-  .pwa-app-mode .site-header.pwa-compact-header .brand{gap:0!important}
-  .pwa-app-mode .site-header.pwa-compact-header .brand-copy strong{font-size:13px!important}
-  .pwa-app-mode .site-header.pwa-compact-header .brand-copy small{display:none!important}
-  .pwa-app-mode .site-header.pwa-compact-header{grid-template-columns:minmax(0,1fr) auto!important}
-  .pwa-app-mode .site-header.pwa-compact-header:has(.pwa-header-live-state:not([hidden])){grid-template-columns:minmax(0,1fr) auto!important}
-  .pwa-header-action{display:none!important}
-  .pwa-header-live-state{min-height:30px;padding:0 7px;border-radius:9px;font-size:8px}
 }
 [data-theme="light"] .header-myhub{border-color:#e2d8d0;background:#fff;color:#4a3e35}
+
+
+/* Mobile header stays full-size/full-layout, but gets out of the way while scrolling. */
+@media(max-width:760px){
+  body[data-page]:not([data-game]) .site-header,
+  .pwa-app-mode .site-header.pwa-compact-header{
+    transition:transform .2s ease,box-shadow .2s ease!important;
+    will-change:transform;
+  }
+  body[data-page]:not([data-game]) .site-header.mobile-header-hidden,
+  .pwa-app-mode .site-header.pwa-compact-header.mobile-header-hidden{
+    transform:translateY(calc(-100% - env(safe-area-inset-top)))!important;
+    box-shadow:none!important;
+  }
+  body.mobile-site-nav-open .site-header,
+  body.pwa-app-more-open .site-header,
+  body.pwa-ios-guide-open .site-header{
+    transform:translateY(0)!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  @media(max-width:760px){
+    body[data-page]:not([data-game]) .site-header,
+    .pwa-app-mode .site-header.pwa-compact-header{transition:none!important}
+  }
+}
