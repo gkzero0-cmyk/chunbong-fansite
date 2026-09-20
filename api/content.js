@@ -257,7 +257,7 @@ async function handler(req,res) {
     try{
       const state=await fetchSoopStructuredLive();
       return res.status(200).json({
-        live:state.live===true,
+        live:state.live===true?true:state.live===false?false:null,
         authoritative:Boolean(state.authoritative),
         broadcastId:String(state.broadcastId||''),
         startedAt:String(state.startedAt||''),
