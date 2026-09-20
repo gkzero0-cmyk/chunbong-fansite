@@ -586,6 +586,7 @@
     bottom:calc(82px + env(safe-area-inset-bottom))!important
   }
   body.mobile-tabbar-mode .pwa-install-chip,
+  body.mobile-tabbar-mode .pwa-ios-install-chip,
   body.mobile-tabbar-mode .pwa-update-toast,
   body.mobile-tabbar-mode .deploy-sync-chip{
     bottom:calc(82px + env(safe-area-inset-bottom))!important
