@@ -482,7 +482,8 @@
       stage.style.setProperty('--glow-x', (px * 100).toFixed(1) + '%');
       stage.style.setProperty('--glow-y', (py * 100).toFixed(1) + '%');
       stage.classList.add('is-prism-active');
-        });
+      if (lastRippleX < 0) spawnHoloRipple(px, py);
+    });
     stage.addEventListener('pointerleave', resetPrism);
 
     document.addEventListener('pointerdown', () => { ensureHoverAudio(); }, { once: true, capture: true });
