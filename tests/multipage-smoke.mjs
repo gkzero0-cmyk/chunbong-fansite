@@ -68,7 +68,7 @@ for (const token of ['renderSchedulePage', 'renderNoticePage', 'renderVideoPage'
   assert.ok(splitRuntime.includes(token), `split page runtimes should include ${token}`);
 }
 
-const api = ['api/content.js','lib/content-api/_shared.js','api/vod.js','api/notice.js','api/clips.js','api/fanart.js'].map(read).join('\n');
+const api = ['api/content.js','lib/content-api/_shared.js','lib/content-api/vod.js','lib/content-api/notice.js','lib/content-api/clips.js','lib/content-api/fanart.js'].map(read).join('\n');
 assert.ok(api.includes('embed'), 'content API should expose SOOP embed URLs');
 assert.ok(api.includes('content'), 'content API should expose notice content for in-site reading');
 
