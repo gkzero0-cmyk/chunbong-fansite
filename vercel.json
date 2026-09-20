@@ -92,5 +92,11 @@
       "destination": "/history.html",
       "permanent": true
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/content?type=push-dispatch",
+      "schedule": "* * * * *"
+    }
   ]
 }
