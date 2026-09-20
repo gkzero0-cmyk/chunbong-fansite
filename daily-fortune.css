@@ -243,3 +243,62 @@
   .daily-fortune-holo-ripple,
   .daily-fortune-holo-spark{display:none!important}
 }
+
+
+/* 2026-09-21 Luxury Tarot Foil: quiet, image-preserving hover */
+.daily-fortune-holo-film{
+  inset:-4%!important;
+  opacity:0!important;
+  transform:none!important;
+  background:
+    linear-gradient(118deg,
+      transparent 26%,
+      rgba(72,190,220,.08) 34%,
+      rgba(120,96,214,.13) 41%,
+      rgba(221,105,178,.08) 47%,
+      rgba(239,199,92,.13) 54%,
+      rgba(88,181,218,.08) 61%,
+      transparent 70%)!important;
+  background-size:190% 190%!important;
+  background-position:var(--glow-x) var(--glow-y)!important;
+  mix-blend-mode:soft-light!important;
+  filter:saturate(1.08) contrast(1.01)!important;
+  -webkit-mask-image:radial-gradient(ellipse 46% 38% at var(--glow-x) var(--glow-y),#000 0 34%,rgba(0,0,0,.72) 55%,transparent 78%)!important;
+  mask-image:radial-gradient(ellipse 46% 38% at var(--glow-x) var(--glow-y),#000 0 34%,rgba(0,0,0,.72) 55%,transparent 78%)!important;
+  animation:none!important;
+  transition:opacity .24s ease!important;
+}
+.daily-fortune-stage.is-prism-active .daily-fortune-holo-film{opacity:.48!important}
+.daily-fortune-stage.is-prism-active .daily-fortune-card:after{
+  opacity:.42!important;
+  background:linear-gradient(126deg,
+    transparent 30%,
+    rgba(84,190,221,.08) 39%,
+    rgba(127,103,217,.12) 47%,
+    rgba(239,204,104,.14) 54%,
+    transparent 65%)!important;
+  background-size:170% 170%!important;
+  background-position:var(--glow-x) var(--glow-y)!important;
+  mix-blend-mode:soft-light!important;
+}
+.daily-fortune-holo-ripple{
+  width:30px!important;
+  height:18px!important;
+  margin:-9px 0 0 -15px!important;
+  background:transparent!important;
+  border:1px solid rgba(236,210,132,.34)!important;
+  box-shadow:0 0 0 1px rgba(104,103,205,.13),0 0 12px rgba(82,171,211,.10)!important;
+  mix-blend-mode:soft-light!important;
+  filter:none!important;
+  animation:dailyFortuneLuxuryRipple .68s cubic-bezier(.16,.72,.2,1) forwards!important;
+}
+.daily-fortune-holo-ripple::after{
+  inset:24%!important;
+  border:1px solid rgba(117,102,211,.20)!important;
+  box-shadow:none!important;
+}
+.daily-fortune-holo-spark{display:none!important}
+@keyframes dailyFortuneLuxuryRipple{
+  0%{opacity:.55;transform:scale(.45)}
+  100%{opacity:0;transform:scale(7.6)}
+}

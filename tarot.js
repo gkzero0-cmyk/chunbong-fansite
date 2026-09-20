@@ -579,7 +579,7 @@ if (typeof document !== 'undefined') {
       const meaning = buildCardInterpretation(selection, state.topic, selection.position);
       const artwork = renderCardSvg(selection.card, `tarot-sharp-${index}`, reversed);
       const artClass = `tarot-card-art ${artwork.composite ? 'tarot-card-composite ' : ''}${reversed ? 'is-reversed' : ''}`.trim();
-      return `<article class="tarot-card-result" data-position="${escapeHtml(selection.position)}"><p class="tarot-position">${escapeHtml(selection.position)}</p><button class="tarot-card-art-button" type="button" data-tarot-zoom data-selection-index="${index}" aria-label="${escapeHtml(selection.card.nameKo)} ${direction} 카드 크게 보기"><span class="${artClass}">${artwork.html}</span><span class="tarot-card-zoom-label" aria-hidden="true">크게 보기</span></button><div class="tarot-card-copy"><small>${direction} · DECK ${selection.deckNumber}</small><h2>${escapeHtml(selection.card.nameKo)}</h2><p>${escapeHtml(meaning)}</p></div></article>`;
+      return `<article class="tarot-card-result" data-position="${escapeHtml(selection.position)}"><p class="tarot-position">${escapeHtml(selection.position)}</p><button class="tarot-card-art-button" type="button" data-tarot-zoom data-selection-index="${index}" aria-label="${escapeHtml(selection.card.nameKo)} ${direction} 카드 크게 보기"><span class="tarot-card-foil" data-tarot-foil><span class="${artClass}">${artwork.html}</span></span><span class="tarot-card-zoom-label" aria-hidden="true">크게 보기</span></button><div class="tarot-card-copy"><small>${direction} · DECK ${selection.deckNumber}</small><h2>${escapeHtml(selection.card.nameKo)}</h2><p>${escapeHtml(meaning)}</p></div></article>`;
     }).join('');
     const summary = byId('tarot-summary');
     summary.replaceChildren();
@@ -658,6 +658,86 @@ if (typeof document !== 'undefined') {
     button.hidden = true;
   }
 
+  let lastTarotHoverSoundAt = 0;
+
+  function tarotFoilPointer(host, event) {
+    if (!host || event.pointerType === 'touch') return;
+    const rect = host.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const px = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+    const py = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+    host.style.setProperty('--foil-x', (px * 100).toFixed(1) + '%');
+    host.style.setProperty('--foil-y', (py * 100).toFixed(1) + '%');
+    host.style.setProperty('--foil-tilt-x', ((0.5 - py) * 5).toFixed(2) + 'deg');
+    host.style.setProperty('--foil-tilt-y', ((px - 0.5) * 7).toFixed(2) + 'deg');
+  }
+
+  function triggerTarotFoilEntry(host, event) {
+    if (!host || prefersReducedMotion() || event.pointerType === 'touch') return;
+    tarotFoilPointer(host, event);
+    host.classList.add('is-foil-active');
+    host.classList.remove('is-foil-rippling');
+    void host.offsetWidth;
+    host.classList.add('is-foil-rippling');
+    const now = performance.now();
+    if (now - lastTarotHoverSoundAt > 1800) {
+      lastTarotHoverSoundAt = now;
+      const controller = globalThis.__CHUNBONG_TAROT_SFX_CONTROLLER__;
+      controller?.unlock?.();
+      controller?.play?.('hover');
+    }
+    setTimeout(() => host.classList.remove('is-foil-rippling'), 720);
+  }
+
+  function resetTarotFoil(host) {
+    if (!host) return;
+    host.classList.remove('is-foil-active','is-foil-rippling');
+    host.style.setProperty('--foil-tilt-x','0deg');
+    host.style.setProperty('--foil-tilt-y','0deg');
+  }
+
+  function installTarotFoilEvents(container) {
+    if (!container || container.dataset.foilEvents === '1') return;
+    container.dataset.foilEvents = '1';
+    container.addEventListener('pointerover', event => {
+      const host = event.target.closest?.('[data-tarot-foil]');
+      if (!host || !container.contains(host) || host.contains(event.relatedTarget)) return;
+      triggerTarotFoilEntry(host, event);
+    });
+    container.addEventListener('pointermove', event => {
+      const host = event.target.closest?.('[data-tarot-foil]');
+      if (!host || !container.contains(host)) return;
+      tarotFoilPointer(host, event);
+      host.classList.add('is-foil-active');
+    });
+    container.addEventListener('pointerout', event => {
+      const host = event.target.closest?.('[data-tarot-foil]');
+      if (!host || !container.contains(host) || host.contains(event.relatedTarget)) return;
+      resetTarotFoil(host);
+    });
+  }
+
+  function fitTarotZoom() {
+    const dialog = byId('tarot-card-zoom');
+    const art = byId('tarot-card-zoom-art');
+    const host = art?.querySelector?.('[data-tarot-foil]');
+    if (!dialog || !art || !host || !dialog.open) return;
+    const viewportWidth = window.visualViewport?.width || window.innerWidth || document.documentElement.clientWidth || 0;
+    const viewportHeight = window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 0;
+    const inner = dialog.querySelector('.tarot-card-dialog-inner');
+    const head = dialog.querySelector('.tarot-card-dialog-head');
+    const note = dialog.querySelector('.tarot-card-dialog-note');
+    const innerStyle = inner ? getComputedStyle(inner) : null;
+    const padY = innerStyle ? (parseFloat(innerStyle.paddingTop) || 0) + (parseFloat(innerStyle.paddingBottom) || 0) : 36;
+    const noteVisible = note && getComputedStyle(note).display !== 'none';
+    const reserved = padY + (head?.getBoundingClientRect().height || 52) + 26 + (noteVisible ? (note.getBoundingClientRect().height + 14) : 0);
+    const availableHeight = Math.max(260, viewportHeight - 24 - reserved);
+    const widthByHeight = availableHeight * (898 / 1488);
+    const widthByViewport = Math.max(220, viewportWidth - 64);
+    const width = Math.floor(Math.min(640, widthByHeight, widthByViewport));
+    dialog.style.setProperty('--tarot-zoom-width', width + 'px');
+  }
+
   function closeCardZoom() {
     const dialog = byId('tarot-card-zoom');
     if (!dialog) return;
@@ -677,9 +757,11 @@ if (typeof document !== 'undefined') {
     caption.textContent = `${selection.card.nameKo} · ${direction}`;
     const artwork = renderCardSvg(selection.card, 'tarot-sharp-zoom', reversed);
     const artClass = `tarot-card-art ${artwork.composite ? 'tarot-card-composite ' : ''}${reversed ? 'is-reversed' : ''}`.trim();
-    art.innerHTML = `<div class="${artClass}">${artwork.html}</div>`;
+    art.innerHTML = `<div class="tarot-card-foil tarot-card-foil-dialog" data-tarot-foil><div class="${artClass}">${artwork.html}</div></div>`;
     if (typeof dialog.showModal === 'function') dialog.showModal();
     else dialog.setAttribute('open', '');
+    fitTarotZoom();
+    requestAnimationFrame(fitTarotZoom);
   }
 
   function clearResults() {
@@ -851,10 +933,15 @@ if (typeof document !== 'undefined') {
     byId('tarot-confirm-selection')?.addEventListener('click', () => {
       if (state.phase === 'selecting' && selectionCanComplete(state.selected, state.count)) beginReveal();
     });
-    byId('tarot-reading-grid')?.addEventListener('click', event => {
+    const readingGrid = byId('tarot-reading-grid');
+    readingGrid?.addEventListener('click', event => {
       const trigger = event.target.closest('[data-tarot-zoom]');
       if (trigger) openCardZoom(trigger);
     });
+    installTarotFoilEvents(readingGrid);
+    installTarotFoilEvents(byId('tarot-card-zoom-art'));
+    window.addEventListener('resize', fitTarotZoom, { passive: true });
+    window.visualViewport?.addEventListener('resize', fitTarotZoom, { passive: true });
     byId('tarot-card-zoom-close')?.addEventListener('click', closeCardZoom);
     byId('tarot-card-zoom')?.addEventListener('click', event => { if (event.target === byId('tarot-card-zoom')) closeCardZoom(); });
     byId('tarot-sound-toggle')?.addEventListener('click', () => {
