@@ -4,7 +4,7 @@ import fs from 'node:fs';
 const read = path => fs.readFileSync(path, 'utf8');
 const htmlPaths = [
   'changelog.html','clips.html','data.html','fanart.html','history.html','index.html',
-  'minigames.html','myhub.html','notice.html','schedule.html','tarot.html','timeline.html','vod.html','youtube.html'
+  'minigames.html','myhub.html','notice.html','schedule.html','tarot.html','vod.html','youtube.html'
 ];
 const manifest = JSON.parse(read('manifest.webmanifest'));
 const sw = read('service-worker.js');
@@ -14,6 +14,7 @@ const shell = read('site-shell.js');
 const css = read('site-quality.css');
 const offline = read('offline.html');
 const vercel = JSON.parse(read('vercel.json'));
+const timelineRedirect=(vercel.redirects||[]).find(item=>item.source==='/timeline.html');
 for (const iconPath of ['assets/app-icon-192.png','assets/app-icon-512.png','assets/apple-touch-icon.png']) {
   const stat = fs.statSync(iconPath);
   assert.ok(stat.size > 1000, iconPath + ' must be a real PNG asset');
@@ -37,7 +38,7 @@ assert.match(page, /새 버전 준비 완료/);
 assert.match(css, /\.pwa-install-chip/);
 assert.match(css, /\.pwa-update-toast/);
 assert.match(sw, /CHUNBONG_PWA/);
-assert.match(sw, /chunbong-pwa-20260920-v18/,'mobile app mode release must advance the PWA cache');
+assert.match(sw, /chunbong-pwa-20260920-v19/,'timeline retirement must advance the PWA cache');
 assert.match(sw, /\/offline\.html/);
 assert.match(sw, /url\.pathname\.startsWith\('\/api\/'\)/);
 assert.match(sw, /networkFirst/);
@@ -56,6 +57,8 @@ assert.match(sw, /notificationclick/, 'PWA service worker must route reminder no
 assert.match(page, /schedule: '\/api\/content\?type=schedule'/, 'schedule page must use live content API');
 assert.match(schedulePage, /await loadContent\('schedule'\)/, 'schedule renderer must request live schedule data');
 assert.match(offline, /오프라인 상태입니다/);
+assert.equal(timelineRedirect?.destination,'/history.html','retired timeline must redirect to broadcast history');
+assert.equal(timelineRedirect?.permanent,true,'timeline redirect must be permanent');
 
 for (const html of htmlPaths) {
   const source = read(html);
