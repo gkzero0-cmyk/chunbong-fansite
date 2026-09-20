@@ -75,3 +75,10 @@ body[data-page="data"]{--page-accent:var(--accent-data)}
 .page-category-kicker,.page-hero .kicker{color:var(--page-accent,var(--orange-2))}
 .page-category-kicker{display:flex;align-items:center;gap:8px;font-weight:900;letter-spacing:.12em}
 .page-category-kicker>span[aria-hidden="true"]{display:inline-grid;place-items:center;min-width:22px;height:22px;border-radius:8px;background:color-mix(in srgb,var(--page-accent) 11%,transparent);border:1px solid color-mix(in srgb,var(--page-accent) 28%,transparent);color:var(--page-accent)}
+
+/* Shared readable text hierarchy */
+.page-hero h1,.section-head h2,.portal-card strong,.home-overview-card strong,.activity-item-copy>strong,.personal-panel h2{color:var(--text-primary)}
+.page-hero p,.section-head>p,.portal-card p,.home-overview-card p,.personal-hero-card>div>p:last-child,.personal-alert-panel p{color:var(--text-secondary)}
+.portal-compact-grid em,.home-all-links summary small,.activity-item-copy>small,.activity-item-meta time,.personal-panel header>a,.personal-panel header>span,.personal-recent span,.personal-challenge span,.personal-tarot-latest span,.personal-empty{color:var(--text-muted)}
+.site-search-results a strong{color:var(--text-primary)}
+.site-search-results a small,.site-search-help{color:var(--text-muted)}
