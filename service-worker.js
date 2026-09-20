@@ -46,6 +46,9 @@ const APP_SHELL = [
   '/clips.html',
   '/youtube.html',
   '/fanart.html',
+  '/page-media.js',
+  '/fanart-gallery.js',
+  '/fanart-gallery.css',
   '/myhub.html',
   '/changelog-data.js'
 ];
