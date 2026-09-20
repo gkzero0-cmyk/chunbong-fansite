@@ -411,10 +411,20 @@ if (typeof document !== 'undefined') {
   function syncDeckSelectionState() {
     byId('tarot-deck')?.querySelectorAll('[data-card-index]').forEach(button => {
       const index = Number(button.dataset.cardIndex);
-      const selected = state.selected.some(item => item.deckIndex === index);
+      const selectionOrder = state.selected.findIndex(item => item.deckIndex === index);
+      const selected = selectionOrder >= 0;
       button.classList.toggle('selected', selected);
       button.setAttribute('aria-pressed', String(selected));
-      button.setAttribute('aria-label', `뒤집힌 타로 카드 ${index + 1} ${selected ? '선택 취소' : '선택'}`);
+      if (selected) {
+        const order = selectionOrder + 1;
+        button.dataset.selectionOrder = String(order);
+        button.dataset.selectionLabel = `✓ ${order}번째`;
+        button.setAttribute('aria-label', `뒤집힌 타로 카드 ${index + 1}, ${order}번째로 선택됨 · 누르면 선택 취소`);
+      } else {
+        delete button.dataset.selectionOrder;
+        delete button.dataset.selectionLabel;
+        button.setAttribute('aria-label', `뒤집힌 타로 카드 ${index + 1} 선택`);
+      }
     });
   }
 
