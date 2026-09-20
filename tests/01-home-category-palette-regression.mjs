@@ -12,7 +12,7 @@ for(const [kind,token] of [
   assert.ok(css.includes('data-kind="'+kind+'"]{--')&&css.includes('var('+token+')'),kind+' must use shared category accent');
 }
 assert.match(css,/portal-card[data-kind="tarot"] small::before{content:"✧"}/);
-assert.match(html,/href="clips.html" data-kind="clips"><small aria-hidden="true">⚡</small>/);
-assert.match(css,/portal-card strong[sS]*var(--text-primary)/);
-assert.match(css,/portal-card p[sS]*var(--text-secondary)/);
+assert.ok(html.includes('href="clips.html" data-kind="clips"><small aria-hidden="true">⚡</small>'),'clips shortcut must use the shared lightning icon');
+assert.match(css,/portal-card strong[\s\S]*var\(--text-primary\)/);
+assert.match(css,/portal-card p[\s\S]*var\(--text-secondary\)/);
 console.log('home category palette regression passed');
