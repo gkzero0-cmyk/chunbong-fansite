@@ -113,3 +113,133 @@
 @media(max-width:720px){
   .daily-fortune-launcher{width:52px!important;height:78px!important}
 }
+
+
+/* 2026-09-21: pointer-origin Arcane Lens + Ripple Hologram */
+.daily-fortune-holo-surface{
+  position:absolute;
+  z-index:5;
+  inset:0;
+  overflow:hidden;
+  border-radius:22px;
+  pointer-events:none;
+  transform:translateZ(1px);
+  isolation:isolate;
+}
+.daily-fortune-holo-film{
+  position:absolute;
+  inset:-10%;
+  opacity:0;
+  transform:scale(1.03);
+  background:
+    radial-gradient(circle at var(--glow-x) var(--glow-y),
+      rgba(255,231,151,.62) 0 2.5%,
+      rgba(238,185,74,.27) 6%,
+      rgba(122,105,224,.22) 12%,
+      rgba(77,171,229,.15) 18%,
+      transparent 31%),
+    repeating-linear-gradient(116deg,
+      transparent 0 12%,
+      rgba(246,204,99,.11) 15%,
+      rgba(111,91,213,.15) 18%,
+      rgba(65,173,226,.11) 21%,
+      rgba(236,105,185,.08) 24%,
+      transparent 29% 42%);
+  background-size:100% 100%,185% 185%;
+  background-position:center,calc(var(--glow-x) * .45) calc(var(--glow-y) * .45);
+  mix-blend-mode:soft-light;
+  filter:saturate(1.35) contrast(1.06);
+  -webkit-mask-image:radial-gradient(circle at var(--glow-x) var(--glow-y),#000 0 24%,rgba(0,0,0,.9) 35%,transparent 63%);
+  mask-image:radial-gradient(circle at var(--glow-x) var(--glow-y),#000 0 24%,rgba(0,0,0,.9) 35%,transparent 63%);
+  transition:opacity .16s ease,transform .2s ease;
+  animation:dailyFortuneHoloDrift 4.8s linear infinite paused;
+}
+.daily-fortune-stage.is-prism-active .daily-fortune-holo-film{
+  opacity:.94;
+  transform:scale(1);
+  animation-play-state:running;
+}
+.daily-fortune-stage.is-prism-active .daily-fortune-card:after{
+  opacity:1;
+  background:
+    radial-gradient(circle at var(--glow-x) var(--glow-y),
+      rgba(255,226,136,.76) 0 2.2%,
+      rgba(239,184,74,.38) 5%,
+      rgba(131,105,229,.22) 9%,
+      rgba(76,170,231,.14) 14%,
+      transparent 22%),
+    linear-gradient(122deg,
+      transparent 22%,
+      rgba(246,213,111,.10) 34%,
+      rgba(246,213,111,.32) 44%,
+      rgba(119,100,215,.23) 51%,
+      rgba(76,154,221,.17) 58%,
+      transparent 71%);
+  mix-blend-mode:soft-light;
+}
+.daily-fortune-holo-ripple{
+  position:absolute;
+  z-index:3;
+  width:18px;
+  height:18px;
+  margin:-9px 0 0 -9px;
+  border-radius:50%;
+  opacity:0;
+  transform:scale(.15);
+  background:
+    radial-gradient(circle,
+      transparent 0 34%,
+      rgba(255,230,151,.54) 39%,
+      rgba(236,184,72,.42) 44%,
+      rgba(116,101,224,.38) 49%,
+      rgba(65,178,232,.31) 54%,
+      rgba(232,99,190,.20) 58%,
+      transparent 65% 100%);
+  box-shadow:
+    0 0 10px rgba(255,207,97,.32),
+    0 0 22px rgba(99,83,211,.20);
+  mix-blend-mode:overlay;
+  filter:hue-rotate(var(--ripple-hue,0deg)) saturate(1.35);
+  animation:dailyFortuneHoloRipple .82s cubic-bezier(.1,.58,.2,1) forwards;
+}
+.daily-fortune-holo-ripple::after{
+  content:"";
+  position:absolute;
+  inset:14%;
+  border:1px solid rgba(255,235,172,.44);
+  border-radius:50%;
+  box-shadow:0 0 8px rgba(118,104,225,.26);
+}
+.daily-fortune-holo-spark{
+  position:absolute;
+  z-index:4;
+  width:4px;
+  height:4px;
+  margin:-2px 0 0 -2px;
+  border-radius:50%;
+  background:#ffe8a3;
+  box-shadow:0 0 7px #ffd568,0 0 13px rgba(109,96,220,.72);
+  opacity:0;
+  animation:dailyFortuneHoloSpark .68s ease-out var(--spark-delay,0ms) forwards;
+}
+.daily-fortune-stage.is-spinning .daily-fortune-holo-surface{opacity:0}
+@keyframes dailyFortuneHoloDrift{
+  0%{background-position:center,0% 40%}
+  50%{background-position:center,100% 60%}
+  100%{background-position:center,0% 40%}
+}
+@keyframes dailyFortuneHoloRipple{
+  0%{opacity:.95;transform:scale(.12)}
+  26%{opacity:.92}
+  100%{opacity:0;transform:scale(calc(15 * var(--ripple-scale,1)))}
+}
+@keyframes dailyFortuneHoloSpark{
+  0%{opacity:0;transform:translate(0,0) scale(.35)}
+  22%{opacity:1}
+  100%{opacity:0;transform:translate(var(--spark-x),var(--spark-y)) scale(1.15)}
+}
+@media(prefers-reduced-motion:reduce){
+  .daily-fortune-holo-film,
+  .daily-fortune-holo-ripple,
+  .daily-fortune-holo-spark{display:none!important}
+}

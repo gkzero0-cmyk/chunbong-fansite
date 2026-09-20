@@ -88,9 +88,21 @@
     return state;
   }
 
+  function fortuneSoundPreferences(storage = globalThis.localStorage) {
+    let enabled = true;
+    let volume = 0.7;
+    try {
+      enabled = storage?.getItem?.('chunbongTarotSound') !== 'off';
+      const storedVolume = Number(storage?.getItem?.('chunbongTarotVolume'));
+      if (Number.isFinite(storedVolume)) volume = Math.min(1, Math.max(0, storedVolume));
+    } catch (_) {}
+    return { enabled, volume };
+  }
+
   function createFortuneAudio() {
+    const prefs = fortuneSoundPreferences();
     const Ctor = globalThis.AudioContext || globalThis.webkitAudioContext;
-    if (!Ctor) return null;
+    if (!Ctor || !prefs.enabled || prefs.volume <= 0) return null;
     try {
       const ctx = new Ctor();
       ctx.resume?.();
@@ -102,14 +114,17 @@
 
   function playTone(ctx, frequency, start, duration, volume = 0.035, type = 'sine', endFrequency = 0) {
     if (!ctx) return;
+    const prefs = fortuneSoundPreferences();
+    if (!prefs.enabled || prefs.volume <= 0) return;
     try {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = type;
       osc.frequency.setValueAtTime(Math.max(1, frequency), start);
       if (endFrequency > 0) osc.frequency.exponentialRampToValueAtTime(Math.max(1, endFrequency), start + duration);
+      const scaledVolume = Math.max(0.0002, volume * prefs.volume);
       gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume), start + Math.min(0.025, duration * 0.2));
+      gain.gain.exponentialRampToValueAtTime(scaledVolume, start + Math.min(0.025, duration * 0.2));
       gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
       osc.connect(gain).connect(ctx.destination);
       osc.start(start);
@@ -117,9 +132,20 @@
     } catch (_) {}
   }
 
+  function playMagicRippleSound(ctx, strength = 'move') {
+    if (!ctx) return;
+    const start = ctx.currentTime;
+    const strong = strength === 'enter';
+    playTone(ctx, strong ? 784 : 880, start, strong ? 0.32 : 0.22, strong ? 0.020 : 0.010, 'sine', strong ? 1318.5 : 1174.7);
+    playTone(ctx, strong ? 1318.5 : 1174.7, start + 0.025, strong ? 0.42 : 0.26, strong ? 0.014 : 0.007, 'triangle', strong ? 1975.5 : 1568);
+    playTone(ctx, strong ? 2093 : 1760, start + 0.07, strong ? 0.48 : 0.28, strong ? 0.008 : 0.0045, 'sine', strong ? 2637 : 2093);
+    if (strong) playTone(ctx, 196, start, 0.38, 0.006, 'sine', 293.7);
+  }
+
   function playSpinSound(ctx) {
     if (!ctx) return;
     const start = ctx.currentTime;
+    const masterVolume = fortuneSoundPreferences().volume;
     try {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -133,8 +159,8 @@
       filter.frequency.exponentialRampToValueAtTime(3600, start + 0.82);
       filter.frequency.exponentialRampToValueAtTime(620, start + 1.66);
       gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(0.022, start + 0.08);
-      gain.gain.setValueAtTime(0.022, start + 0.98);
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, 0.022 * masterVolume), start + 0.08);
+      gain.gain.setValueAtTime(Math.max(0.0002, 0.022 * masterVolume), start + 0.98);
       gain.gain.exponentialRampToValueAtTime(0.0001, start + 1.70);
       osc.connect(filter).connect(gain).connect(ctx.destination);
       osc.start(start);
@@ -192,6 +218,9 @@
                   <span class="daily-fortune-front-title"><small data-daily-fortune-en></small><strong data-daily-fortune-name></strong></span>
                 </span>
               </span>
+              <span class="daily-fortune-holo-surface" data-daily-fortune-holo aria-hidden="true">
+                <span class="daily-fortune-holo-film"></span>
+              </span>
             </button>
           </span>
           <span class="daily-fortune-fx" data-daily-fortune-fx aria-hidden="true"></span>
@@ -216,11 +245,12 @@
     const dialog = document.getElementById('daily-fortune-dialog');
     const cardButton = document.querySelector('[data-daily-fortune-card]');
     const stage = document.querySelector('[data-daily-fortune-stage]');
+    const holo = document.querySelector('[data-daily-fortune-holo]');
     const fx = document.querySelector('[data-daily-fortune-fx]');
     const closeButton = document.querySelector('[data-daily-fortune-close]');
     const launcher = document.querySelector('[data-daily-fortune-launcher]');
     const result = document.querySelector('[data-daily-fortune-result]');
-    if (!dialog || !cardButton || !stage || !fx || !closeButton || !launcher || !result) return;
+    if (!dialog || !cardButton || !stage || !holo || !fx || !closeButton || !launcher || !result) return;
 
     const SPIN_MS = 1720;
     const RESULT_MS = 2350;
@@ -228,7 +258,60 @@
     let drawing = false;
     let autoOpenTimer = 0;
     let animationRun = 0;
+    let hoverAudioCtx = null;
+    let lastRippleAt = 0;
+    let lastRippleX = -1;
+    let lastRippleY = -1;
     const reducedMotion = () => Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+
+    const ensureHoverAudio = () => {
+      const prefs = fortuneSoundPreferences();
+      if (!prefs.enabled || prefs.volume <= 0) return null;
+      if (!hoverAudioCtx || hoverAudioCtx.state === 'closed') hoverAudioCtx = createFortuneAudio();
+      try { hoverAudioCtx?.resume?.(); } catch (_) {}
+      return hoverAudioCtx;
+    };
+
+    const spawnHoloRipple = (px, py, strength = 'move') => {
+      if (reducedMotion()) return;
+      const now = performance.now();
+      const width = Math.max(1, stage.clientWidth);
+      const height = Math.max(1, stage.clientHeight);
+      const distance = lastRippleX < 0 ? Infinity : Math.hypot((px - lastRippleX) * width, (py - lastRippleY) * height);
+      const minDelay = strength === 'enter' ? 0 : 280;
+      if (strength !== 'enter' && now - lastRippleAt < minDelay && distance < 54) return;
+      if (strength !== 'enter' && distance < 42 && now - lastRippleAt < 520) return;
+
+      lastRippleAt = now;
+      lastRippleX = px;
+      lastRippleY = py;
+
+      const ripple = document.createElement('i');
+      ripple.className = 'daily-fortune-holo-ripple';
+      ripple.style.left = (px * 100).toFixed(1) + '%';
+      ripple.style.top = (py * 100).toFixed(1) + '%';
+      ripple.style.setProperty('--ripple-hue', ((px - 0.5) * 42).toFixed(1) + 'deg');
+      ripple.style.setProperty('--ripple-scale', strength === 'enter' ? '1.12' : '0.92');
+      holo.appendChild(ripple);
+
+      const sparkCount = strength === 'enter' ? 5 : 3;
+      for (let index = 0; index < sparkCount; index += 1) {
+        const spark = document.createElement('i');
+        spark.className = 'daily-fortune-holo-spark';
+        const angle = (Math.PI * 2 * index) / sparkCount + Math.random() * 0.55;
+        const radius = 12 + Math.random() * 28;
+        spark.style.left = (px * 100).toFixed(1) + '%';
+        spark.style.top = (py * 100).toFixed(1) + '%';
+        spark.style.setProperty('--spark-x', Math.cos(angle) * radius + 'px');
+        spark.style.setProperty('--spark-y', Math.sin(angle) * radius + 'px');
+        spark.style.setProperty('--spark-delay', Math.round(Math.random() * 90) + 'ms');
+        holo.appendChild(spark);
+        setTimeout(() => spark.remove(), 760);
+      }
+
+      playMagicRippleSound(ensureHoverAudio(), strength);
+      setTimeout(() => ripple.remove(), 900);
+    };
 
     const showLauncher = () => {
       launcher.hidden = false;
@@ -243,6 +326,9 @@
       stage.style.setProperty('--tilt-y', '0deg');
       stage.style.setProperty('--glow-x', '50%');
       stage.style.setProperty('--glow-y', '50%');
+      lastRippleX = -1;
+      lastRippleY = -1;
+      holo.querySelectorAll('.daily-fortune-holo-ripple,.daily-fortune-holo-spark').forEach(node => node.remove());
     };
 
     const spawnBurst = (kind = 'reveal') => {
@@ -389,12 +475,30 @@
       renderState(true, audioCtx);
     });
 
+    const pointerPosition = event => {
+      const rect = stage.getBoundingClientRect();
+      if (!rect.width || !rect.height) return null;
+      return {
+        px: Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)),
+        py: Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height))
+      };
+    };
+
+    stage.addEventListener('pointerenter', event => {
+      if (drawing || reducedMotion() || event.pointerType === 'touch') return;
+      const point = pointerPosition(event);
+      if (!point) return;
+      stage.style.setProperty('--glow-x', (point.px * 100).toFixed(1) + '%');
+      stage.style.setProperty('--glow-y', (point.py * 100).toFixed(1) + '%');
+      stage.classList.add('is-prism-active');
+      spawnHoloRipple(point.px, point.py, 'enter');
+    });
+
     stage.addEventListener('pointermove', event => {
       if (drawing || reducedMotion() || event.pointerType === 'touch') return;
-      const rect = stage.getBoundingClientRect();
-      if (!rect.width || !rect.height) return;
-      const px = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
-      const py = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+      const point = pointerPosition(event);
+      if (!point) return;
+      const { px, py } = point;
       const revealed = cardButton.classList.contains('is-revealed');
       const tiltX = revealed ? 8 : 6.5;
       const tiltY = revealed ? 10 : 8.5;
@@ -403,8 +507,12 @@
       stage.style.setProperty('--glow-x', (px * 100).toFixed(1) + '%');
       stage.style.setProperty('--glow-y', (py * 100).toFixed(1) + '%');
       stage.classList.add('is-prism-active');
+      spawnHoloRipple(px, py, 'move');
     });
     stage.addEventListener('pointerleave', resetPrism);
+
+    document.addEventListener('pointerdown', () => { ensureHoverAudio(); }, { once: true, capture: true });
+    document.addEventListener('keydown', () => { ensureHoverAudio(); }, { once: true, capture: true });
 
     closeButton.addEventListener('click', closeDialog);
     launcher.addEventListener('click', openDialog);
