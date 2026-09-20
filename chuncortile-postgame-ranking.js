@@ -10,9 +10,10 @@
   if(!App?.getSnapshot||!Core||!root||!registerButton||!panel||!nicknameInput||!submitButton||!cancelButton||!statusNode)return;
 
   const endpoint='/api/content?type=chuncortile-ranking',nicknameKey='chuncortile:nickname:v1';
+  const sharedNicknameKey='chunbong:player:nickname:v1';
   let submittedKey='',activeKey='',submitting=false;
-  const remember=value=>{try{localStorage.setItem(nicknameKey,value)}catch{}};
-  const recalled=()=>{try{return localStorage.getItem(nicknameKey)||''}catch{return''}};
+  const remember=value=>{try{localStorage.setItem(sharedNicknameKey,value);localStorage.setItem(nicknameKey,value)}catch{}};
+  const recalled=()=>{try{return localStorage.getItem(sharedNicknameKey)||localStorage.getItem(nicknameKey)||''}catch{return''}};
   const state=()=>App.getSnapshot();
   const terminal=()=>root.dataset.gameStatus==='gameover';
   const keyFor=(s=state())=>`classic:${s.score}:${s.maxCombo}:${s.misses}`;
