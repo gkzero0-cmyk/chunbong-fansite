@@ -214,10 +214,10 @@
     const parsed=new Date(raw);return Number.isNaN(parsed.getTime())?'':new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(parsed);
   };
   const mediaLink=(type,item)=>{
-    const id=String(item?.id||item?.videoId||'');
-    if(type==='vod')return id?'vod.html?open='+encodeURIComponent(id):'vod.html';
-    if(type==='clips'){const kind=item?.kind==='clip'?'clip':'catch';return 'clips.html?kind='+kind+(id?'&open='+encodeURIComponent(id):'')}
-    if(type==='youtube'){const kind=item?.kind==='shorts'?'shorts':'videos';return 'youtube.html?kind='+kind+(id?'&open='+encodeURIComponent(id):'')}
+    const key=String(item?.id||item?.videoId||item?.link||item?.sourceHref||item?.title||'');
+    if(type==='vod')return key?'vod.html?open='+encodeURIComponent(key):'vod.html';
+    if(type==='clips'){const kind=item?.kind==='clip'?'clip':'catch';return 'clips.html?kind='+kind+(key?'&open='+encodeURIComponent(key):'')}
+    if(type==='youtube'){const kind=item?.kind==='shorts'?'shorts':'videos';return 'youtube.html?kind='+kind+(key?'&open='+encodeURIComponent(key):'')}
     return'#';
   };
   async function calendarMediaRows(){
