@@ -22,7 +22,7 @@ assert.ok(!index.includes('id="schedule-grid"'), 'home should not contain the fu
 assert.ok(!index.includes('id="notice-list"'), 'home should not contain the full notice page');
 assert.ok(index.includes('춘봉 팬사이트'), 'home should identify the fan site');
 assert.ok(index.includes('assets/chunbong-main.webp') || index.includes('data:image/webp;base64,'), 'home should use the uploaded character');
-assert.ok(index.includes('07 / TAROT'), 'home should expose the TAROT portal card');
+assert.ok(index.includes('data-kind="tarot"')&&index.includes('>TAROT</small>'), 'home should expose the semantic TAROT portal card');
 assert.ok(index.includes('타로 보기'), 'home should name the TAROT portal card');
 
 const minigames = read('minigames.html');
