@@ -1,0 +1,59 @@
+name: Background push dispatch
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: background-push-dispatch
+  cancel-in-progress: true
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Request GitHub OIDC token and dispatch push checks
+        env:
+          AUDIENCE: chunbong-fansite-push
+          CONFIG_URL: https://chunbong-fansite.vercel.app/api/content?type=push-config
+          PUSH_URL: https://chunbong-fansite.vercel.app/api/content?type=push-dispatch
+        shell: bash
+        run: |
+          set -euo pipefail
+          config="$(curl -fsS --retry 2 --retry-delay 2 --max-time 30 "$CONFIG_URL" || true)"
+          dispatch_auth="$(printf '%s' "$config" | node -e "
+            let input='';
+            process.stdin.on('data',chunk=>input+=chunk);
+            process.stdin.on('end',()=>{
+              try{process.stdout.write(JSON.parse(input).dispatchAuth||'')}catch{}
+            });
+          ")"
+          if [[ "$dispatch_auth" != 'github-oidc-v1' ]]; then
+            echo 'Production does not have GitHub OIDC push dispatch yet; skip until the pending deployment is live.'
+            exit 0
+          fi
+
+          separator='?'
+          if [[ "$ACTIONS_ID_TOKEN_REQUEST_URL" == *'?'* ]]; then separator='&'; fi
+          response="$(
+            curl -fsS               -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN"               "${ACTIONS_ID_TOKEN_REQUEST_URL}${separator}audience=${AUDIENCE}"
+          )"
+          token="$(
+            printf '%s' "$response" | node -e "
+              let input='';
+              process.stdin.on('data',chunk=>input+=chunk);
+              process.stdin.on('end',()=>{
+                const value=JSON.parse(input).value||'';
+                if(!value)process.exit(2);
+                process.stdout.write(value);
+              });
+            "
+          )"
+          curl -fsS --retry 2 --retry-delay 2 --max-time 55             -H "Authorization: Bearer $token"             -H "User-Agent: chunbong-github-actions-push"             "$PUSH_URL"
+          echo

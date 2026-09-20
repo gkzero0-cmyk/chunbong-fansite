@@ -58,6 +58,7 @@ jobs:
           node --check lib/activity-feed.js
           node --check lib/activity.js
           node --check lib/changelog-history-api.js
+          node --check lib/push-notifications-api.js
           node --check activity-center.js
           node --check daily-fortune.js
           node --check home-overview.js

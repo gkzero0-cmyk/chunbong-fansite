@@ -21,6 +21,7 @@ jobs:
           node --check tarot-data.js
           node --check tarot.js
           for file in api/*.js; do node --check "$file"; done
+          node --check lib/push-notifications-api.js
       - name: Run all regression tests
         run: |
           set -e
