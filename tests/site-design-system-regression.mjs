@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const css=fs.readFileSync(new URL('../site-design-system.css',import.meta.url),'utf8');
-const shell=fs.readFileSync(new URL('../site-shell.js',import.meta.url),'utf8');
+const quality=fs.readFileSync(new URL('../site-quality.css',import.meta.url),'utf8');
 
 for(const token of [
   '--text-primary','--text-secondary','--text-muted','--text-meta','--text-disabled',
@@ -12,7 +12,7 @@ for(const token of [
 
 assert.match(css,/\[data-theme="light"\]/);
 assert.match(css,/\.category-accent\[data-kind="calendar"\]/);
-assert.match(shell,/site-design-system\.css/);
+assert.match(quality,/@import url\("site-design-system\.css"\)/);
 
 const rootBlock=(css.match(/:root\{([\s\S]*?)\}/)||[])[1]||'';
 const dark=[...rootBlock.matchAll(/--accent-(schedule|notice|replay|clips|fanart|youtube|tarot|minigames|history|data|calendar):\s*(#[0-9a-fA-F]{6})/g)].map(m=>m[2].toLowerCase());
