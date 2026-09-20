@@ -9,8 +9,8 @@ const cssUrl = new URL('tarot-composite.css', root);
 
 assert.ok(fs.existsSync(jsUrl), 'tarot-composite.js must exist so full-card raster rendering can be replaced by a vector composite');
 assert.ok(fs.existsSync(cssUrl), 'tarot-composite.css must exist so upgraded cards can cancel legacy whole-card reversal and preserve crisp sizing');
-assert.ok(html.includes('<link rel="stylesheet" href="tarot-composite.css">'), 'tarot.html must load the vector-composite CSS after the existing tarot quality CSS');
-assert.ok(html.includes('<script src="tarot-composite.js"></script>'), 'tarot.html must load the vector-composite browser upgrader after tarot.js');
+assert.ok(html.includes('<link rel="stylesheet" href="tarot-composite.css?v=2">'), 'tarot.html must load the vector-composite CSS after the existing tarot quality CSS');
+assert.ok(html.includes('<script src="tarot-composite.js?v=2"></script>'), 'tarot.html must load the vector-composite browser upgrader after tarot.js');
 
 const require = createRequire(import.meta.url);
 const data = require('../tarot-data.js');
@@ -28,7 +28,7 @@ assert.deepEqual(
 );
 
 const upright = composite.buildCompositeSvg(wandsNine, { url: 'assets/tarot/hd/pair-22.avif', sourceX: 0 }, false, 'test-upright');
-assert.match(upright, /class="tarot-composite-svg"/, 'composite must render its own SVG shell');
+assert.match(upright, /class="tarot-composite-svg tarot-fortune-frame"/, 'composite must render the shared daily-fortune frame shell');
 assert.match(upright, /class="tarot-vector-frame"/, 'frame must be vector markup, not inherited raster pixels');
 assert.match(upright, /class="tarot-vector-title"[^>]*>NINE OF WANDS<\/text>/, 'English card title must be live SVG text');
 assert.match(upright, /class="tarot-vector-rank"[^>]*>IX<\/text>/, 'rank mark must be live SVG text');
