@@ -1,5 +1,5 @@
 /* CHUNBONG_PWA v1 */
-const CACHE_NAME = 'chunbong-pwa-20260920-v18';
+const CACHE_NAME = 'chunbong-pwa-20260920-v19';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -35,9 +35,6 @@ const APP_SHELL = [
   '/personal-hub.css',
   '/personal-hub.js',
   '/myhub.html',
-  '/timeline.html',
-  '/timeline.css',
-  '/timeline.js',
   '/changelog-data.js'
 ];
 
