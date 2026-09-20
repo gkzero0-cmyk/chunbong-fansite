@@ -480,7 +480,7 @@
 .cg-fruit.empty{background:transparent!important}
 .cg-fruit-shape{
   position:relative;
-  width:84%!important;
+  width:min(84%,40px)!important;
   height:auto!important;
   aspect-ratio:1/1;
   align-self:center;
