@@ -1,49 +1,49 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-19T06:26:24.987Z",
+  "capturedAt": "2026-09-20T06:26:21.904Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 30287,
-    "fanclubCount": 7672,
+    "followerCount": 30433,
+    "fanclubCount": 7675,
     "subscriberCount": 49,
     "supporterCount": 24,
-    "averageViewers": 57,
-    "maxViewers": 153,
-    "airtimeMinutes": 9852,
-    "viewershipHours": 9330,
-    "cumulativeUpCount": 80449,
-    "totalAirtimeMinutes": 625062,
-    "monthlyStarCount": 83546,
+    "averageViewers": 58,
+    "maxViewers": 173,
+    "airtimeMinutes": 10038,
+    "viewershipHours": 9717,
+    "cumulativeUpCount": 80533,
+    "totalAirtimeMinutes": 625247,
+    "monthlyStarCount": 85128,
     "starsPerHour": 509,
-    "monthlySupporterCount": 192,
-    "monthlyChatCount": 39779,
+    "monthlySupporterCount": 197,
+    "monthlyChatCount": 41930,
     "monthlyMuteCount": 6,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-09-19T01:25:33",
+    "latestBroadcastDate": "2026-09-19T17:55:57",
     "categories": [
       {
         "name": "버추얼",
-        "minutes": 8841,
-        "streamCount": 22,
-        "sharePercent": 39.5
+        "minutes": 9027,
+        "streamCount": 23,
+        "sharePercent": 41.7
       },
       {
         "name": "오버워치",
-        "minutes": 6114,
-        "streamCount": 12,
-        "sharePercent": 27.3
+        "minutes": 5883,
+        "streamCount": 11,
+        "sharePercent": 27.2
       },
       {
         "name": "마인크래프트",
-        "minutes": 5990,
-        "streamCount": 10,
-        "sharePercent": 26.7
+        "minutes": 5280,
+        "streamCount": 9,
+        "sharePercent": 24.4
       },
       {
         "name": "PUBG: 배틀그라운드",
         "minutes": 1076,
         "streamCount": 5,
-        "sharePercent": 4.8
+        "sharePercent": 5
       },
       {
         "name": "아르마 3",
@@ -11749,6 +11749,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/297226767"
+    },
+    {
+      "id": "trackify-297239283",
+      "broadcastId": "297239283",
+      "date": "2026-09-19",
+      "startedAt": "2026-09-19T17:55:57+09:00",
+      "endedAt": "2026-09-19T21:01:28+09:00",
+      "durationMinutes": 186,
+      "averageViewers": 126,
+      "maxViewers": 173,
+      "viewerSampleCount": 37,
+      "uniqueViewers": null,
+      "starCount": 1582,
+      "supporterCount": 10,
+      "chatCount": 2151,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "7시 그냥서버:적자생존 설명회",
+      "categories": [
+        {
+          "id": "00810000",
+          "name": "버추얼",
+          "minutes": 186,
+          "sampleCount": 37,
+          "averageViewers": 126,
+          "maxViewers": 173
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297239283"
     }
   ]
 }
