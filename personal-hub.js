@@ -285,6 +285,23 @@
     }catch(_){}
   }
 
+  function tarotArchiveDetail(row){
+    const reading=row?.reading;
+    if(!reading||typeof reading!=='object')return '';
+    const glance=reading.glance||{},detail=reading.detail||{};
+    const glanceRows=[
+      ['핵심 결론',glance.conclusion],['좋은 흐름',glance.positive],
+      ['주의할 점',glance.caution],['지금 할 일',glance.action]
+    ].filter(([,value])=>value);
+    const detailRows=[
+      ['질문에 대한 답',detail.answer],['카드가 말하는 이유',detail.reason],
+      ['상세 주의점',detail.caution],['한 줄 정리',detail.oneLine]
+    ].filter(([,value])=>value);
+    const actions=Array.isArray(detail.actions)?detail.actions.filter(Boolean):[];
+    if(!glanceRows.length&&!detailRows.length&&!actions.length)return '';
+    return `<details class="personal-tarot-detail"><summary>저장된 리딩 보기</summary><div class="personal-tarot-detail-body">${glanceRows.map(([label,value])=>`<section><small>${esc(label)}</small><p>${esc(value)}</p></section>`).join('')}${detailRows.map(([label,value])=>`<section><small>${esc(label)}</small><p>${esc(value)}</p></section>`).join('')}${actions.length?`<section><small>행동 제안</small><ul>${actions.map(value=>`<li>${esc(value)}</li>`).join('')}</ul></section>`:''}</div></details>`;
+  }
+
   function renderDashboard(){
     const root=document.querySelector('[data-personal-dashboard]');if(!root)return;
     const state=read(),game=gameSnapshot(),challenge=dailyChallenge(),recent=state.recent,latestTarot=state.tarot[0],earned=game.achievements.filter(x=>x.earned),collections=Object.entries(COLLECTIONS),counts=Object.fromEntries(collections.map(([key])=>[key,state.favorites.filter(item=>(item.collection||'later')===key).length])),tarotRows=state.tarot.slice().sort((a,b)=>Number(Boolean(b.pinned))-Number(Boolean(a.pinned))||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
@@ -295,7 +312,7 @@
     <section class="personal-panel"><header><div><small>TAROT JOURNAL</small><h2>최근 타로</h2></div><a href="tarot.html">타로 보기 →</a></header>${latestTarot?`<article class="personal-tarot-latest"><strong>${esc(latestTarot.question||'질문 없는 리딩')}</strong><span>${latestTarot.cards.map(c=>esc(c.name)).join(' · ')}</span><small>${esc(formatDate(latestTarot.createdAt))}</small></article>`:'<p class="personal-empty">타로를 보면 자동으로 기록됩니다.</p>'}</section></div>
     <section class="personal-panel personal-wide"><header><div><small>SAVED COLLECTIONS</small><h2>내 보관함</h2></div><span>${state.favorites.length}개</span></header><div class="personal-collection-tabs"><button type="button" class="is-active" data-collection-filter="all">전체 <b>${state.favorites.length}</b></button>${collections.map(([key,label])=>`<button type="button" data-collection-filter="${key}">${esc(label)} <b>${counts[key]}</b></button>`).join('')}</div><div class="personal-saved-grid">${state.favorites.length?state.favorites.map(item=>`<article data-personal-collection="${esc(item.collection||'later')}"><a href="${esc(hrefFor(item))}"><small>${esc((item.type||'saved').toUpperCase())}</small><strong>${esc(item.title||'저장한 콘텐츠')}</strong><span>${esc(item.meta||'')}</span></a><select data-favorite-collection data-favorite-key="${esc(keyOf(item))}" data-favorite-type="${esc(item.type||'')}">${collections.map(([key,label])=>`<option value="${key}" ${(item.collection||'later')===key?'selected':''}>${esc(label)}</option>`).join('')}</select><button type="button" data-remove-favorite="${esc(keyOf(item))}" data-remove-type="${esc(item.type||'')}">삭제</button></article>`).join(''):'<p class="personal-empty">콘텐츠를 보관함에 저장해 보세요.</p>'}</div></section>
     <section class="personal-panel personal-wide"><header><div><small>ACHIEVEMENTS</small><h2>미니게임 업적</h2></div><a href="minigames.html">게임 기록 →</a></header><div class="personal-achievement-grid">${game.achievements.map(row=>`<article class="${row.earned?'is-earned':''}"><span>${row.earned?'✓':'○'}</span><div><strong>${esc(row.title)}</strong><small>${esc(row.desc)}</small></div></article>`).join('')}</div></section>
-    <section class="personal-panel personal-wide"><header><div><small>TAROT JOURNAL</small><h2>타로 기록장</h2></div><span>★ ${state.tarot.filter(row=>row.pinned).length} · 최근 ${Math.min(state.tarot.length,10)}개</span></header><div class="personal-tarot-list">${tarotRows.length?tarotRows.slice(0,10).map(row=>`<article class="${row.pinned?'is-pinned':''}"><time>${esc(formatDate(row.createdAt))}</time><strong>${esc(row.question||'질문 없는 리딩')}</strong><span>${row.cards.map(c=>esc(c.name)+(c.orientation==='reversed'?' ↕':'')).join(' · ')}</span><button type="button" data-pin-tarot="${esc(row.id)}" aria-pressed="${String(Boolean(row.pinned))}">${row.pinned?'★ 즐겨찾기':'☆ 즐겨찾기'}</button></article>`).join(''):'<p class="personal-empty">아직 저장된 타로 기록이 없습니다.</p>'}</div></section>`;
+    <section class="personal-panel personal-wide"><header class="personal-tarot-journal-head"><div><small>TAROT JOURNAL</small><h2>타로 기록장</h2></div><div class="personal-tarot-tools"><input type="search" data-tarot-journal-search placeholder="질문·카드 검색" aria-label="타로 기록 검색"><span>★ ${state.tarot.filter(row=>row.pinned).length} · 최근 ${Math.min(state.tarot.length,10)}개</span></div></header><div class="personal-tarot-list">${tarotRows.length?tarotRows.slice(0,10).map(row=>`<article class="${row.pinned?'is-pinned':''}" data-tarot-journal-row><div class="personal-tarot-row-main"><time>${esc(formatDate(row.createdAt))}</time><strong>${esc(row.question||'질문 없는 리딩')}</strong><span>${row.cards.map(c=>esc(c.name)+(c.orientation==='reversed'?' ↕':'')).join(' · ')}</span><button type="button" data-pin-tarot="${esc(row.id)}" aria-pressed="${String(Boolean(row.pinned))}">${row.pinned?'★ 즐겨찾기':'☆ 즐겨찾기'}</button></div>${tarotArchiveDetail(row)}</article>`).join(''):'<p class="personal-empty">아직 저장된 타로 기록이 없습니다.</p>'}</div></section>`;
     root.querySelector('[data-personal-alert-toggle]')?.addEventListener('click',async e=>{const enabled=await setAlertEnabled(!read().alerts.enabled);e.currentTarget.textContent=enabled?'ON':'OFF';e.currentTarget.setAttribute('aria-pressed',String(enabled))});
     root.querySelectorAll('[data-personal-alert-type]').forEach(input=>input.addEventListener('change',()=>setAlertType(input.dataset.personalAlertType,input.checked)));
     root.querySelector('[data-personal-alert-lead]')?.addEventListener('change',e=>setAlertLead(e.currentTarget.value));
@@ -303,6 +320,12 @@
     root.querySelectorAll('[data-favorite-collection]').forEach(select=>select.addEventListener('change',()=>setFavoriteCollection(select.dataset.favoriteKey,select.dataset.favoriteType,select.value)));
     root.querySelectorAll('[data-remove-favorite]').forEach(button=>button.addEventListener('click',()=>{const state=read();state.favorites=state.favorites.filter(item=>!(keyOf(item)===button.dataset.removeFavorite&&String(item.type||'')===String(button.dataset.removeType||'')));write(state)}));
     root.querySelectorAll('[data-pin-tarot]').forEach(button=>button.addEventListener('click',()=>toggleTarotPinned(button.dataset.pinTarot)));
+    root.querySelector('[data-tarot-journal-search]')?.addEventListener('input',event=>{
+      const query=String(event.currentTarget.value||'').trim().toLocaleLowerCase('ko-KR');
+      root.querySelectorAll('[data-tarot-journal-row]').forEach(article=>{
+        article.hidden=Boolean(query)&&!article.textContent.toLocaleLowerCase('ko-KR').includes(query);
+      });
+    });
   }
 
   function renderAppHome(){
