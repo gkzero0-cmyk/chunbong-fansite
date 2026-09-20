@@ -13,7 +13,8 @@
       "refactor/*": false,
       "test/*": false,
       "hotfix/*": false,
-      "main": true
+      "main": true,
+      "internal/*": false
     }
   },
   "headers": [
