@@ -8,6 +8,7 @@ const gwaJs=fs.readFileSync(new URL('../chungwagame.js',import.meta.url),'utf8')
 const adapter=fs.readFileSync(new URL('../score-race-multiplayer.js',import.meta.url),'utf8');
 const api=fs.readFileSync(new URL('../lib/minigame-multiplayer-api.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../minigame-multiplayer.css',import.meta.url),'utf8');
+const previewWorkflow=fs.readFileSync(new URL('../.github/workflows/minigame-score-multiplayer-preview-smoke.yml',import.meta.url),'utf8');
 
 assert.match(bakHtml,/data-score-multiplayer="chunbak"/,'Chunbak multiplayer entry missing');
 assert.match(bakHtml,/minigame-multiplayer\.js[\s\S]*chunbak\.js[\s\S]*score-race-multiplayer\.js/,'Chunbak multiplayer scripts are out of order');
@@ -34,5 +35,7 @@ assert.match(api,/room\.players\.every\(item=>item\.finished\)/,'score race must
 assert.match(api,/aScore>bScore\?a\.id:b\.id/,'score race winner must be chosen by score');
 assert.match(css,/\.chunbak-multiplayer-main[\s\S]*min-height:48px/,'Chunbak standalone multiplayer button CSS missing');
 assert.match(css,/\.mp-score-hud/,'score-race HUD CSS missing');
+assert.match(previewWorkflow,/startsWith\(github\.head_ref, 'ci\/'\)/,'preview smoke must skip internal CI slash branch names');
+assert.match(previewWorkflow,/startsWith\(github\.head_ref, 'internal\/'\)/,'preview smoke must skip internal slash branch names');
 
 console.log('minigame score-race multiplayer regression passed');

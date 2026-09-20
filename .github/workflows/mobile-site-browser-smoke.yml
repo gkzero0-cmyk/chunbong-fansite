@@ -106,6 +106,25 @@ jobs:
                 await page.close();
               }
             }
+
+            const appPage=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+            const appErrors=[];
+            appPage.on('pageerror',error=>appErrors.push(error.message));
+            await appPage.goto(process.env.BASE_URL+'/?source=pwa',{waitUntil:'domcontentloaded'});
+            await appPage.waitForSelector('[data-pwa-app-tabbar]');
+            assert.equal(await appPage.locator('[data-pwa-app-tabbar] > *').count(),5,'PWA app tabbar missing five controls');
+            assert.equal(await appPage.locator('[data-pwa-app-tab="home"]').getAttribute('aria-current'),'page','PWA home tab is not active');
+            assert.equal(await appPage.locator('.nav-toggle').isVisible(),false,'PWA app mode should hide the hamburger menu');
+            const tabBox=await appPage.locator('[data-pwa-app-tabbar]').boundingBox();
+            assert.ok(tabBox&&tabBox.x>=0&&tabBox.x+tabBox.width<=390&&tabBox.y+tabBox.height<=844,'PWA app tabbar clips viewport');
+            await appPage.locator('[data-pwa-app-more-toggle]').click();
+            assert.ok(await appPage.locator('[data-pwa-app-more]').isVisible(),'PWA more sheet did not open');
+            assert.ok(await appPage.locator('[data-pwa-app-more] [data-more-page="notice"]').isVisible(),'PWA more sheet missing notice');
+            assert.ok(await appPage.locator('[data-pwa-app-more] [data-more-page="data"]').isVisible(),'PWA more sheet missing data');
+            await appPage.keyboard.press('Escape');
+            assert.equal(await appPage.locator('[data-pwa-app-more]').isVisible(),false,'PWA more sheet did not close');
+            assert.deepEqual(appErrors,[],'PWA app mode page errors: '+appErrors.join(' | '));
+            await appPage.close();
           }finally{
             await browser.close();
           }

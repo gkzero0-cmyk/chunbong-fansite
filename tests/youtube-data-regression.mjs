@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const fetchYoutube = require('../api/youtube.js');
+const fetchYoutube = require('../lib/content-api/youtube.js');
 const dataApi = require('../lib/chunbong-data.js');
 
 assert.equal(typeof fetchYoutube.mergeRecentItems, 'function', 'YouTube adapter should expose deterministic recent-item merge helper');

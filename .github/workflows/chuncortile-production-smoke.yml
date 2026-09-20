@@ -13,6 +13,7 @@ on:
       - 'chuncortile-postgame-ranking.js'
       - 'game-layout.css'
       - 'mobile-minigames.css'
+      - 'mobile-minigames.js'
       - 'assets/chuncortile/tiles-user.webp'
       - 'api/content.js'
       - 'lib/chuncortile-ranking-api.js'
@@ -51,6 +52,7 @@ jobs:
             chuncortile-postgame-ranking.js
             game-layout.css
             mobile-minigames.css
+            mobile-minigames.js
             assets/chuncortile/tiles-user.webp
           )
 
@@ -116,8 +118,16 @@ jobs:
                 assert.ok(layout.y+layout.height<=viewport.height+3,'desktop layout clips vertically');
               }
 
-              await page.locator('#ct-start').click();
-              await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='playing',{timeout:5000});
+              if(viewport.width<=390){
+                await page.locator('#ct-start').click();
+                assert.ok(await page.locator('[data-mobile-landscape-gate]').isVisible(),'production portrait start must show landscape guide');
+                await page.setViewportSize({width:844,height:390});
+                await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='playing',{timeout:5000});
+                assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('mobile-landscape-game-ready')),true,'production Chuncortile landscape class missing');
+              }else{
+                await page.locator('#ct-start').click();
+                await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='playing',{timeout:5000});
+              }
               const move=await page.evaluate(()=>window.ChuncortileApp.debugFindMove());
               assert.ok(move&&move.matches.length>=2,'no playable clear found');
               const removed=move.matches.length;
@@ -131,6 +141,19 @@ jobs:
               assert.ok(burstCount>0&&burstCount<=removed*4,'particle cap regressed');
               await page.waitForTimeout(950);
               assert.ok(await pop.isVisible(),'removed count disappeared too quickly');
+              if(viewport.width<=390){
+                await page.setViewportSize({width:390,height:844});
+                await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='paused',{timeout:3000});
+                assert.ok(await page.locator('[data-mobile-landscape-gate]').isVisible(),'production portrait transition must pause Chuncortile');
+                await page.setViewportSize({width:844,height:390});
+                await page.waitForFunction(()=>!document.querySelector('[data-mobile-landscape-resume]')?.hidden,{timeout:3000});
+                await page.locator('[data-mobile-landscape-resume]').click();
+                await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='playing',{timeout:3000});
+                await page.evaluate(()=>window.ChuncortileApp.debugFinishGame());
+                await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='gameover');
+                await page.waitForFunction(()=>!document.body.classList.contains('mobile-landscape-game-session'));
+                assert.ok(await page.locator('.site-header').isVisible(),'production Chuncortile game over must restore normal fan-site UI');
+              }
               assert.deepEqual(errors,[]);
               await page.close();
             }

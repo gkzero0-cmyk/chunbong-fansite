@@ -114,7 +114,7 @@ async function run(query, fetchImpl) {
 
 const clipsHtml = fs.readFileSync(new URL('../clips.html', import.meta.url), 'utf8');
 const liveFixes = fs.readFileSync(new URL('../live-fixes.js', import.meta.url), 'utf8');
-const shared = fs.readFileSync(new URL('../api/_shared.js', import.meta.url), 'utf8');
+const shared = fs.readFileSync(new URL('../lib/content-api/_shared.js', import.meta.url), 'utf8');
 assert.ok(clipsHtml.includes('id="clip-player"'), 'CATCH viewer should include the SOOP iframe player');
 assert.ok(shared.includes('type=catch'), 'CATCH items should use the official SOOP Catch embed player');
 assert.ok(!liveFixes.includes('type=catch-detail'), 'frontend should not override CATCH with direct CDN playback');

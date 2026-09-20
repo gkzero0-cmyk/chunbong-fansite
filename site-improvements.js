@@ -224,18 +224,15 @@
   }
 
   async function checkDeploymentSync(){
-    const CACHE_KEY='chunbong-deploy-sync-v1';
+    const CACHE_KEY='chunbong-deploy-sync-v2';
     let cached=null;
     try{cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');}catch(_){}
     const now=Date.now();
     if(cached&&now-cached.at<10*60*1000) return applyDeploymentState(cached);
 
     try{
-      const [deployed,main]=await Promise.all([
-        fetchJson('/api/version',5000),
-        fetchJson('https://api.github.com/repos/gkzero0-cmyk/chunbong-fansite/commits/main',5000)
-      ]);
-      const state={at:now,deployed:String(deployed?.sha||''),main:String(main?.sha||'')};
+      const version=await fetchJson('/api/version',5000);
+      const state={at:now,deployed:String(version?.sha||''),main:String(version?.mainSha||'')};
       try{localStorage.setItem(CACHE_KEY,JSON.stringify(state));}catch(_){}
       applyDeploymentState(state);
     }catch(_){}
@@ -285,5 +282,9 @@
   ensureAssets();
   buildSearch();
   addLoadingGuards();
-  checkDeploymentSync();
+  const scheduleIdle=callback=>{
+    if('requestIdleCallback' in window) window.requestIdleCallback(callback,{timeout:1500});
+    else setTimeout(callback,500);
+  };
+  scheduleIdle(()=>{ void checkDeploymentSync(); });
 })();

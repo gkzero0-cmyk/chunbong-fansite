@@ -8,6 +8,9 @@ on:
       - 'page.js'
       - 'activity-center.js'
       - 'activity-center.css'
+      - 'changelog-data.js'
+      - 'changelog.js'
+      - 'changelog.html'
       - 'lib/activity.js'
       - 'api/content.js'
       - 'api/fanart.js'
@@ -116,8 +119,11 @@ jobs:
           await page.goto(process.env.BASE_URL+'/changelog.html',{waitUntil:'networkidle'});
           await page.waitForSelector('.changelog-day');
           assert.equal(await page.locator('.changelog-button').getAttribute('aria-current'),'page','changelog header button should be active on changelog page');
-          assert.equal(await page.locator('.changelog-day').first().getAttribute('data-changelog-date'),'2026-09-19','latest changelog date must render first');
-          assert.ok(await page.locator('[data-changelog-date="2026-09-19"]').getByText('미니게임 멀티플레이 개선',{exact:true}).count(),'actual latest multiplayer changelog entry missing');
+          const changelogDates=await page.locator('.changelog-day').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('data-changelog-date')).filter(Boolean));
+          assert.deepEqual(changelogDates,[...changelogDates].sort((a,b)=>b.localeCompare(a)),'latest changelog date must render first');
+          assert.ok(changelogDates.includes('2026-09-20'),'audited 2026-09-20 changelog group missing');
+          assert.ok(await page.locator('[data-changelog-date="2026-09-20"]').getByText('팬사이트 사용성 개선: 홈·타로·데이터 간소화',{exact:true}).count(),'current UX simplification changelog entry missing');
+          assert.ok(await page.locator('[data-changelog-date="2026-09-19"]').getByText('미니게임 멀티플레이 개선',{exact:true}).count(),'actual multiplayer changelog entry missing');
           assert.ok(await page.locator('[data-changelog-date="2026-09-17"]').getByText('춘박게임 추가',{exact:true}).count(),'actual Chunbak changelog entry missing');
 
           const mobile=await context.newPage();

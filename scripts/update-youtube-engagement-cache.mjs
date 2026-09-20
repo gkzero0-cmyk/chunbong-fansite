@@ -8,7 +8,7 @@ const {
   fetchAllChannelItems,
   fetchWatchMetrics,
   CHANNEL
-} = require('../api/youtube');
+} = require('../lib/content-api/youtube');
 const {
   mergeEngagementCache,
   normalizeEngagementItem

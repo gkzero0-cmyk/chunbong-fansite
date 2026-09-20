@@ -42,7 +42,7 @@ for(const file of gamePages){
 }
 
 assert.match(serviceWorker,/\/site-shell\.js/,'offline app shell must include site-shell.js');
-assert.match(serviceWorker,/chunbong-pwa-20260920-v14/,'PWA cache version must advance for shell split');
+assert.match(serviceWorker,/chunbong-pwa-20260920-v16/,'PWA cache version must advance for shell split');
 
 assert.ok(shell.length < 12500,'shared shell unexpectedly large');
 assert.ok(content.length < 6500,'content data bundle unexpectedly large');

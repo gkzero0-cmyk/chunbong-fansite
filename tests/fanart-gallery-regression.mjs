@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
 const detailUrl = new URL('../lib/fanart-detail.js', import.meta.url);
-const publicDetailUrl = new URL('../api/fanart-detail.js', import.meta.url);
+const publicDetailUrl = new URL('../lib/content-api/fanart-detail.js', import.meta.url);
 const galleryUrl = new URL('../fanart-gallery.js', import.meta.url);
 const contentApiUrl = new URL('../api/content.js', import.meta.url);
 
