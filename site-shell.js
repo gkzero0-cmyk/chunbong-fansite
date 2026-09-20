@@ -71,6 +71,13 @@
     personalStyles.dataset.personalHubStyles = 'true';
     document.head.appendChild(personalStyles);
   }
+  if (!document.querySelector('link[data-site-design-system]')) {
+    const design = document.createElement('link');
+    design.rel = 'stylesheet';
+    design.href = 'site-design-system.css';
+    design.dataset.siteDesignSystem = 'true';
+    document.head.appendChild(design);
+  }
   if (!document.querySelector('link[data-site-quality]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
