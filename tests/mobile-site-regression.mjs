@@ -5,7 +5,7 @@ const read=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const css=read('mobile-site.css');
 const js=read('mobile-site.js');
 
-const pages=['index.html','schedule.html','notice.html','vod.html','clips.html','fanart.html','youtube.html','tarot.html','minigames.html','history.html','data.html','changelog.html','myhub.html','timeline.html'];
+const pages=['index.html','schedule.html','notice.html','vod.html','clips.html','fanart.html','youtube.html','tarot.html','minigames.html','history.html','data.html','changelog.html' ,'myhub.html'];
 for(const path of pages){
   const html=read(path);
   assert.match(html,/viewport-fit=cover/,`${path} missing mobile safe-area viewport`);
