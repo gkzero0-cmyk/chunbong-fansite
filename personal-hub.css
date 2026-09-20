@@ -15,3 +15,23 @@
 .personal-tarot-archive-dialog{width:min(94vw,760px);max-height:88dvh;padding:0;border:1px solid #38383d;border-radius:22px;background:#101012;color:#f7f3ef;box-shadow:0 28px 100px #000c}.personal-tarot-archive-dialog::backdrop{background:#000b;backdrop-filter:blur(6px)}.personal-tarot-archive-inner{display:grid;gap:12px;max-height:88dvh;overflow:auto;padding:18px}.personal-tarot-archive-inner header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.personal-tarot-archive-inner header small{color:#ff8f48;font-size:9px;font-weight:950;letter-spacing:.13em}.personal-tarot-archive-inner header h2{margin:4px 0 3px;font-size:24px;line-height:1.2}.personal-tarot-archive-inner header p{margin:0;color:#817a75;font-size:10px}.personal-tarot-archive-inner [data-close-archive]{width:40px;height:40px;border:1px solid #37373c;border-radius:12px;background:#1d1d20;color:#ddd;font-size:24px;cursor:pointer}.personal-tarot-archive-cards{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}.personal-tarot-archive-cards::-webkit-scrollbar{display:none}.personal-tarot-archive-cards span{flex:0 0 auto;max-width:220px;padding:9px 10px;border:1px solid #332d29;border-radius:11px;background:#151311;color:#d5cdc6;font-size:10px}.personal-tarot-archive-cards b{display:block;margin-bottom:2px;color:#ff9a5c}.personal-tarot-archive-inner section{padding:14px;border:1px solid #2d2d31;border-radius:14px;background:#141416}.personal-tarot-archive-inner section h3{margin:0 0 6px;font-size:14px}.personal-tarot-archive-inner section p,.personal-tarot-archive-inner section li{color:#c3bbb5;font-size:12px;line-height:1.7}.personal-tarot-archive-inner section p{margin:0}.personal-tarot-archive-inner section ul{margin:0;padding-left:18px}.personal-tarot-one-line{display:block;padding:14px;border-left:3px solid #ff6b18;background:#ff6b1809;line-height:1.6}
 [data-theme="light"] .personal-backup-bar,[data-theme="light"] .personal-tarot-archive-dialog,[data-theme="light"] .personal-tarot-archive-inner section{border-color:#e3dad2;background:#fff;color:#2d231c}[data-theme="light"] .personal-backup-actions button{border-color:#dfd5cd;background:#fff;color:#564a42}
 @media(max-width:760px){.personal-backup-bar{align-items:stretch;flex-direction:column;padding:14px}.personal-backup-bar span{font-size:12px}.personal-backup-actions{display:grid;grid-template-columns:1fr 1fr;justify-content:stretch}.personal-backup-actions button{width:100%;min-height:44px}.personal-backup-actions button.is-danger{grid-column:1/-1}.personal-tarot-list article{grid-template-columns:1fr 1fr!important;gap:7px!important}.personal-tarot-list article time,.personal-tarot-list article strong,.personal-tarot-list article span{grid-column:1/-1}.personal-tarot-list article>button{min-height:40px;font-size:10px}.personal-tarot-archive-dialog{width:100vw;max-width:none;height:100dvh;max-height:100dvh;margin:0;border:0;border-radius:0}.personal-tarot-archive-inner{max-height:100dvh;padding:14px}.personal-tarot-archive-inner header h2{font-size:20px}.personal-tarot-archive-inner section p,.personal-tarot-archive-inner section li{font-size:13px}}
+
+
+.personal-alert-default{display:block!important;margin-top:4px;color:#7e7772!important;font-size:9px!important;font-weight:800;letter-spacing:0!important}
+.personal-alert-settings{margin:0;padding:0;border:0;min-width:0}
+.personal-alert-settings:disabled{opacity:.42;filter:saturate(.35)}
+.personal-alert-settings:disabled *{cursor:not-allowed!important}
+.personal-alert-panel.is-off{border-color:#2c2c30;background:linear-gradient(145deg,#111113,#0d0d0f)}
+.personal-alert-panel.is-on{border-color:#6a4027;background:radial-gradient(circle at 95% 5%,#ff6b1815,transparent 34%),#121214}
+.personal-alert-panel [data-personal-alert-toggle]{position:relative;min-width:70px;padding:3px}
+.personal-alert-panel [data-personal-alert-toggle] span{display:grid;place-items:center;min-height:28px;border-radius:999px;background:#17171a;transition:.2s}
+.personal-alert-panel [data-personal-alert-toggle][aria-pressed="true"] span{background:#ff6b18;color:#fff;box-shadow:0 0 18px #ff6b1847}
+.personal-alert-panel [data-personal-alert-toggle][aria-pressed="false"] span{background:#1a1a1d;color:#8d8782}
+@media(max-width:760px){
+  .personal-alert-panel header{align-items:flex-start!important}
+  .personal-alert-panel [data-personal-alert-toggle]{min-width:74px;min-height:44px}
+  .personal-alert-default{font-size:10px!important;line-height:1.45}
+  .personal-alert-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .personal-alert-lead{align-items:stretch;flex-direction:column;font-size:11px}
+  .personal-alert-lead select{width:100%;min-height:44px;font-size:12px}
+}
