@@ -13,6 +13,7 @@
     {href:'minigames.html',label:'미니게임',kind:'메뉴',keywords:'game 춘트리스 춘박 춘과 춘컬타일'},
     {href:'history.html',label:'방송 이력',kind:'메뉴',keywords:'history 방송 이력 기록'},
     {href:'data.html',label:'춘봉 데이터',kind:'메뉴',keywords:'data 통계 soop youtube 시청자'},
+    {href:'data.html?view=calendar#soop',label:'방송 기록 캘린더',kind:'메뉴',keywords:'방송 기록 캘린더 날짜 아카이브 vod clip 영상 카테고리'},
     {href:'changelog.html',label:'업데이트 일지',kind:'메뉴',keywords:'update changelog 업데이트 변경사항'},
     {href:'myhub.html',label:'내 팬허브',kind:'메뉴',keywords:'my hub 보관함 이어보기 타로 기록 업적 개인 기록'},
     {href:'timeline.html',label:'춘봉 타임라인',kind:'메뉴',keywords:'timeline 첫 방송 soop 팬사이트 기록 연혁'}
@@ -90,6 +91,11 @@
           add(kind==='shorts'?'YouTube Shorts':'YouTube',href,item);
         });
       }),
+      fetchJson('/api/content?type=data',9000,'search:data').then(payload=>{
+        const calendar=Array.isArray(payload?.soop?.calendar)?payload.soop.calendar:[];
+        calendar.slice(-120).forEach(row=>{const sessions=Array.isArray(row?.sessions)?row.sessions:[];if(sessions.length)sessions.forEach(session=>rows.push({kind:'방송 기록',label:session.title||'춘봉 방송',href:'data.html?view=calendar&date='+encodeURIComponent(row.date||'')+'#soop',meta:row.date||'',keywords:[session.title,session.categoryName,session.category,row.date,'방송 기록'].filter(Boolean).join(' ')}));else if(row?.date)rows.push({kind:'방송 기록',label:(row.date||'')+' 방송 기록',href:'data.html?view=calendar&date='+encodeURIComponent(row.date)+'#soop',meta:(row.streamCount||0)+'회 방송',keywords:[row.date,row.streamCount,row.durationMinutes,'방송 기록 캘린더'].join(' ')})});
+        (Array.isArray(payload?.soop?.categories)?payload.soop.categories:[]).slice(0,30).forEach(row=>rows.push({kind:'방송 카테고리',label:row.name||'미분류',href:'data.html#soop',meta:(row.streamCount||0)+'회',keywords:[row.name,row.streamCount,row.minutes,'카테고리 방송'].join(' ')}));
+      }),
       fetchJson('/api/content?type=notice-detail&id=202862381',7000,'notice-detail:202862381').then(payload=>{
         const item=payload?.item;
         if(item){
@@ -142,7 +148,7 @@
       <div class="site-search-shell">
         <div class="site-search-head">
           <span aria-hidden="true">⌕</span>
-          <input type="search" autocomplete="off" spellcheck="false" placeholder="일정, 공지, 영상, 방송 이력, 업데이트…" aria-label="검색어 입력" aria-controls="site-search-results" aria-autocomplete="list">
+          <input type="search" autocomplete="off" spellcheck="false" placeholder="일정, 방송 기록, 영상, 카테고리, 업데이트…" aria-label="검색어 입력" aria-controls="site-search-results" aria-autocomplete="list">
           <button type="button" data-site-search-close aria-label="검색 닫기">×</button>
         </div>
         <div class="site-search-results" id="site-search-results" role="listbox" aria-label="검색 결과"></div>
