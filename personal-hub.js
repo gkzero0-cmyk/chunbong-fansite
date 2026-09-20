@@ -39,7 +39,16 @@
   }
   function recordRecent(item={}){
     if(!keyOf(item))return;
-    const state=read();state.recent={...item,id:keyOf(item),updatedAt:new Date().toISOString()};write(state);
+    const state=read();
+    const same=state.recent&&keyOf(state.recent)===keyOf(item)&&String(state.recent.type||'')===String(item.type||'');
+    const preserved=same?{
+      progress:Number(state.recent.progress)||0,
+      duration:Number(state.recent.duration)||0
+    }:{};
+    state.recent={...preserved,...item,id:keyOf(item),updatedAt:new Date().toISOString()};
+    if(!Number.isFinite(Number(item.progress))&&preserved.progress)state.recent.progress=preserved.progress;
+    if(!Number.isFinite(Number(item.duration))&&preserved.duration)state.recent.duration=preserved.duration;
+    write(state);
   }
   function recordTarot(entry={}){
     const cards=Array.isArray(entry.cards)?entry.cards:[];
@@ -252,6 +261,18 @@
     if(selectedMedia)recordRecent(selectedMedia);
     watchGame();renderDashboard();renderAppHome();syncSaveButton();
     const nativeVideo=document.querySelector('video');
+    const restoreNativeProgress=()=>{
+      if(!nativeVideo||!selectedMedia)return;
+      const recent=read().recent;
+      if(!recent||keyOf(recent)!==keyOf(selectedMedia)||String(recent.type||'')!==String(selectedMedia.type||''))return;
+      const progress=Number(recent.progress)||0;
+      const duration=Number(nativeVideo.duration)||Number(recent.duration)||0;
+      if(progress>3&&(!duration||progress<duration-3)){
+        try{nativeVideo.currentTime=progress}catch(_){}
+      }
+    };
+    nativeVideo?.addEventListener('loadedmetadata',restoreNativeProgress);
+    if(nativeVideo?.readyState>=1)restoreNativeProgress();
     let lastProgressWrite=0;
     nativeVideo?.addEventListener('timeupdate',()=>{
       if(!selectedMedia||!Number.isFinite(nativeVideo.currentTime))return;
