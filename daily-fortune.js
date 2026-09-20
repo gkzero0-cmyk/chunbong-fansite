@@ -125,27 +125,27 @@
       const gain = ctx.createGain();
       const filter = ctx.createBiquadFilter();
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(95, start);
-      osc.frequency.exponentialRampToValueAtTime(720, start + 1.25);
-      osc.frequency.exponentialRampToValueAtTime(150, start + 2.08);
+      osc.frequency.setValueAtTime(120, start);
+      osc.frequency.exponentialRampToValueAtTime(1180, start + 0.78);
+      osc.frequency.exponentialRampToValueAtTime(210, start + 1.66);
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(650, start);
-      filter.frequency.exponentialRampToValueAtTime(2800, start + 1.25);
-      filter.frequency.exponentialRampToValueAtTime(520, start + 2.08);
+      filter.frequency.setValueAtTime(760, start);
+      filter.frequency.exponentialRampToValueAtTime(3600, start + 0.82);
+      filter.frequency.exponentialRampToValueAtTime(620, start + 1.66);
       gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(0.018, start + 0.12);
-      gain.gain.setValueAtTime(0.018, start + 1.35);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + 2.12);
+      gain.gain.exponentialRampToValueAtTime(0.022, start + 0.08);
+      gain.gain.setValueAtTime(0.022, start + 0.98);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 1.70);
       osc.connect(filter).connect(gain).connect(ctx.destination);
       osc.start(start);
-      osc.stop(start + 2.15);
+      osc.stop(start + 1.74);
     } catch (_) {}
 
-    let tickAt = 0.05;
-    for (let index = 0; index < 18; index += 1) {
-      const progress = index / 17;
-      const interval = 0.07 + progress * progress * 0.085;
-      playTone(ctx, 780 - progress * 260, start + tickAt, 0.045 + progress * 0.02, 0.015, 'triangle');
+    let tickAt = 0.035;
+    for (let index = 0; index < 26; index += 1) {
+      const progress = index / 25;
+      const interval = 0.036 + progress * progress * 0.055;
+      playTone(ctx, 980 - progress * 360, start + tickAt, 0.032 + progress * 0.018, 0.012, 'triangle');
       tickAt += interval;
     }
   }
@@ -222,8 +222,8 @@
     const result = document.querySelector('[data-daily-fortune-result]');
     if (!dialog || !cardButton || !stage || !fx || !closeButton || !launcher || !result) return;
 
-    const SPIN_MS = 2150;
-    const RESULT_MS = 2820;
+    const SPIN_MS = 1720;
+    const RESULT_MS = 2350;
     let state = readState();
     let drawing = false;
     let autoOpenTimer = 0;
@@ -341,7 +341,7 @@
         playStopSound(audioCtx);
         spawnBurst('stop');
         dialog.classList.add('is-revealing');
-      }, 1620);
+      }, 1310);
 
       setTimeout(() => {
         if (run !== animationRun) return;
@@ -366,7 +366,7 @@
         if (run !== animationRun) return;
         dialog.classList.remove('is-bursting','is-revealing');
         try { audioCtx?.close?.(); } catch (_) {}
-      }, 3900);
+      }, 3250);
     };
 
     const openDialog = () => {
@@ -396,8 +396,8 @@
       const px = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
       const py = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
       const revealed = cardButton.classList.contains('is-revealed');
-      const tiltX = revealed ? 6.5 : 5;
-      const tiltY = revealed ? 8 : 6.5;
+      const tiltX = revealed ? 8 : 6.5;
+      const tiltY = revealed ? 10 : 8.5;
       stage.style.setProperty('--tilt-x', ((0.5 - py) * tiltX).toFixed(2) + 'deg');
       stage.style.setProperty('--tilt-y', ((px - 0.5) * tiltY).toFixed(2) + 'deg');
       stage.style.setProperty('--glow-x', (px * 100).toFixed(1) + '%');
