@@ -38,63 +38,6 @@
     return 'recent';
   }
 
-  function renderMobileWeekStrip(items,today) {
-    if (!window.matchMedia('(max-width:760px)').matches) return;
-    const toolbar = $('#schedule-view-upcoming')?.closest('.schedule-view-toolbar');
-    if (!toolbar) return;
-    let strip = document.getElementById('mobile-schedule-week');
-    if (!strip) {
-      strip = document.createElement('div');
-      strip.id = 'mobile-schedule-week';
-      strip.className = 'mobile-schedule-week reveal';
-      strip.setAttribute('aria-label', '7일 방송 일정 빠른 보기');
-      toolbar.insertAdjacentElement('afterend', strip);
-    }
-    const base = new Date(today + 'T00:00:00+09:00');
-    const days = Array.from({ length: 7 }, (_, index) => {
-      const date = new Date(base.getTime() + index * 86400000);
-      const key = kstDateKey(date);
-      return {
-        key,
-        label: new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', weekday: 'short' }).format(date),
-        day: new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', day: 'numeric' }).format(date),
-        count: items.filter(item => String(item?.start || '').slice(0, 10) === key).length
-      };
-    });
-    strip.innerHTML = days.map(day => '<button type="button" class="mobile-schedule-day' +
-      (day.key === today ? ' is-today is-selected' : '') +
-      (day.count ? ' has-event' : '') +
-      '" data-schedule-day="' + esc(day.key) + '" aria-pressed="' + String(day.key === today) + '">' +
-      '<small>' + esc(day.label) + '</small><strong>' + esc(day.day) + '</strong><i aria-hidden="true"></i></button>').join('');
-
-    const apply = key => {
-      const cards = [...document.querySelectorAll('#schedule-grid .schedule-card')];
-      let visible = 0;
-      cards.forEach(card => {
-        const show = card.dataset.scheduleDate === key;
-        card.hidden = !show;
-        if (show) visible += 1;
-      });
-      let empty = document.getElementById('mobile-schedule-empty');
-      if (!empty) {
-        empty = document.createElement('div');
-        empty.id = 'mobile-schedule-empty';
-        empty.className = 'mobile-schedule-empty';
-        empty.hidden = true;
-        document.getElementById('schedule-grid')?.insertAdjacentElement('afterend', empty);
-      }
-      empty.hidden = visible > 0;
-      empty.textContent = visible ? '' : '선택한 날짜에 등록된 일정이 없습니다.';
-      strip.querySelectorAll('[data-schedule-day]').forEach(button => {
-        const selected = button.dataset.scheduleDay === key;
-        button.classList.toggle('is-selected', selected);
-        button.setAttribute('aria-pressed', String(selected));
-      });
-    };
-    strip.querySelectorAll('[data-schedule-day]').forEach(button => button.addEventListener('click', () => apply(button.dataset.scheduleDay)));
-    apply(today);
-  }
-
   async function renderSchedulePage() {
     const grid = $('#schedule-grid');
     if (!grid) return;
@@ -126,7 +69,7 @@
       const status = scheduleStatus(item, today);
       const tags = (item.tags || []).map(tag => `<span class="schedule-tag" data-tag="${esc(tag)}">${esc(tag)}</span>`).join('');
       return `
-        <article class="schedule-card schedule-${status} reveal" data-schedule-date="${esc(String(item.start || '').slice(0, 10))}">
+        <article class="schedule-card schedule-${status} reveal">
           <div class="schedule-number">${String(index + 1).padStart(2, '0')}</div>
           <div class="schedule-card-top"><span class="badge">${statusLabel[status]}</span><div class="schedule-tags">${tags}</div></div>
           <h2>${esc(item.title)}</h2>
@@ -137,8 +80,6 @@
     }).join('') : scheduleStale
       ? `<div class="loading-card"><strong>실시간 일정을 불러오지 못했고 저장된 일정 정보도 오래되었습니다.</strong><br>마지막 동기화 후 ${staleDays}일이 지나 현재 일정은 원본에서 확인해 주세요.<br><a class="inline-link" href="${esc(data.sources?.notion || '#')}" target="_blank" rel="noreferrer">Notion 일정 원본 ↗</a></div>`
       : '<div class="loading-card">등록된 일정이 없습니다.</div>';
-
-    renderMobileWeekStrip(visibleItems, today);
 
     const updated = $('#schedule-updated');
     if (updated) {
