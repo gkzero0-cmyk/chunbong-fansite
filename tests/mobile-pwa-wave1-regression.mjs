@@ -8,7 +8,7 @@ const scheduleJs = await readFile(new URL('../page-schedule.js', import.meta.url
 for (const token of [
   'pwa-home-dashboard-mode',
   'pwa-dashboard-live',
-  'data-mobile-tarot-dock',
+  'mobileTarotDock',
   'mobile-tarot-dock-confirm',
   'has-mobile-fortune-launcher'
 ]) {
