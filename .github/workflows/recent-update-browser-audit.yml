@@ -27,6 +27,7 @@ on:
       - 'site-improvements.js'
       - 'site-shell.js'
       - 'service-worker.js'
+      - 'changelog-data.js'
       - 'tests/recent-update-browser-audit.mjs'
       - '.github/workflows/recent-update-browser-audit.yml'
   push:
@@ -55,6 +56,7 @@ on:
       - 'site-improvements.js'
       - 'site-shell.js'
       - 'service-worker.js'
+      - 'changelog-data.js'
       - 'tests/recent-update-browser-audit.mjs'
       - '.github/workflows/recent-update-browser-audit.yml'
   workflow_dispatch:
