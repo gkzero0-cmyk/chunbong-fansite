@@ -43,6 +43,9 @@ assert.equal((hub.match(/if\(disableUnavailableAlerts\(state\)\)return;/g)||[]).
 assert.match(hub,/\/api\/content\?type=schedule/,'broadcast reminder must use the live schedule');
 assert.match(hub,/\/api\/content\?type=live/,'broadcast reminder must also monitor actual SOOP live state');
 assert.match(hub,/춘봉 방송이 시작됐어요/,'actual live-start notification copy missing');
+assert.match(hub,/async function deliverNotification\(title,options\)/,'notification delivery helper missing');
+assert.match(hub,/if\(!delivered\)return;[\s\S]*lastLiveBroadcastId=broadcastId/,'failed LIVE notifications must not be marked as delivered');
+assert.match(hub,/if\(!\(await showReminder\(target\)\)\)return;[\s\S]*lastNotified=key/,'failed schedule notifications must remain retryable');
 assert.match(api,/type==='live'/,'content API must expose lightweight live state');
 assert.match(api,/fetchSoopStructuredLive/,'live endpoint must reuse the structured SOOP live-state fetcher');
 assert.match(hub,/now>=at-5\*60000&&now<=at\+15\*60000/,'schedule reminder window missing');

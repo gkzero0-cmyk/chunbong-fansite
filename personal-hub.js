@@ -170,14 +170,18 @@
     if(alertPermissionGranted())return false;
     state.alerts.enabled=false;write(state);return true;
   }
+  async function deliverNotification(title,options){
+    try{
+      const reg=await navigator.serviceWorker?.ready;
+      if(reg?.showNotification){await reg.showNotification(title,options);return true}
+      if('Notification'in window&&Notification.permission==='granted'){new Notification(title,options);return true}
+    }catch(_){}
+    return false;
+  }
   async function showReminder(item){
     const title='춘봉 방송 예정 시간이에요';
     const options={body:item.title||'방송 일정을 확인해 보세요.',icon:'/assets/app-icon-192.png',badge:'/assets/app-icon-192.png',tag:'chunbong-schedule-'+String(item.start||''),data:{url:'/schedule.html'}};
-    try{
-      const reg=await navigator.serviceWorker?.ready;
-      if(reg?.showNotification)await reg.showNotification(title,options);
-      else if('Notification'in window&&Notification.permission==='granted')new Notification(title,options);
-    }catch(_){}
+    return deliverNotification(title,options);
   }
   async function checkLiveReminder(){
     const state=read();if(!state.alerts.enabled)return;
@@ -191,11 +195,8 @@
       if(state.alerts.lastLiveBroadcastId===broadcastId)return;
       const title='춘봉 방송이 시작됐어요';
       const options={body:payload.title||'SOOP에서 방송이 시작됐습니다.',icon:'/assets/app-icon-192.png',badge:'/assets/app-icon-192.png',tag:'chunbong-live-'+broadcastId,data:{url:'/'}};
-      try{
-        const reg=await navigator.serviceWorker?.ready;
-        if(reg?.showNotification)await reg.showNotification(title,options);
-        else if('Notification'in window&&Notification.permission==='granted')new Notification(title,options);
-      }catch(_){}
+      const delivered=await deliverNotification(title,options);
+      if(!delivered)return;
       state.alerts.lastLiveBroadcastId=broadcastId;write(state);
     }catch(_){}
   }
@@ -215,7 +216,8 @@
       if(!target)return;
       const key=String(target.start||'')+'|'+String(target.title||'');
       if(state.alerts.lastNotified===key)return;
-      await showReminder(target);state.alerts.lastNotified=key;write(state);
+      if(!(await showReminder(target)))return;
+      state.alerts.lastNotified=key;write(state);
     }catch(_){}
   }
 
