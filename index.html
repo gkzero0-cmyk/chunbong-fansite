@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#ff6b18"><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" type="image/svg+xml" href="/assets/app-icon.svg"><link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png"><meta name="application-name" content="춘봉 팬허브"><meta name="apple-mobile-web-app-title" content="춘봉 팬허브"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="춘봉 팬사이트 메인"><title>CHUNBONG | 춘봉 팬사이트</title><script src="theme-init.js"></script><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="theme.css" data-theme-styles><link rel="stylesheet" href="home-channel-buttons.css"><link rel="stylesheet" href="daily-fortune.css?v=4"><link rel="stylesheet" href="home-overview.css">  <link rel="stylesheet" href="site-quality.css" data-site-quality><link rel="stylesheet" href="mobile-site.css">
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#ff6b18"><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" type="image/svg+xml" href="/assets/app-icon.svg"><link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png"><meta name="application-name" content="춘봉 팬허브"><meta name="apple-mobile-web-app-title" content="춘봉 팬허브"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="춘봉 팬사이트 메인"><title>CHUNBONG | 춘봉 팬사이트</title><script src="theme-init.js"></script><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="theme.css" data-theme-styles><link rel="stylesheet" href="home-channel-buttons.css"><link rel="stylesheet" href="daily-fortune.css?v=4"><link rel="stylesheet" href="home-overview.css">  <link rel="stylesheet" href="site-quality.css" data-site-quality><link rel="stylesheet" href="mobile-site.css"><link rel="stylesheet" href="home-refresh.css">
   <!-- social meta -->
   <link rel="canonical" href="https://chunbong-fansite.vercel.app/">
   <meta property="og:type" content="website">
@@ -21,7 +21,7 @@
 </header>
 <section class="home-dday-strip" aria-label="춘봉 방송 디데이">
   <button class="home-dday-trigger" id="home-dday-trigger" type="button" aria-haspopup="dialog" aria-controls="home-dday-dialog">
-    <span class="home-dday-kicker"><i aria-hidden="true"></i> BROADCAST D-DAY</span>
+    <span class="home-dday-kicker"><i aria-hidden="true"></i> BROADCAST HISTORY</span>
     <span class="home-dday-metric"><span>첫 방송</span> <strong id="home-dday-first">D+2268</strong></span>
     <span class="home-dday-slash" aria-hidden="true">/</span>
     <span class="home-dday-metric"><span>숲 방송</span> <strong id="home-dday-soop">D+1023</strong></span>
@@ -53,7 +53,7 @@
 </dialog>
 <main id="main-content"><section class="hero" aria-labelledby="hero-title">
   <div class="hero-copy reveal"><p class="eyebrow"><span></span> MINECRAFT · TAROT · TALK</p><h1 id="hero-title"><span>언제 들어와도</span><br><strong>반가운 방송,</strong><br>춘봉.</h1><p class="hero-description">춘봉의 방송 일정, 공지, 다시보기, 핫클립, 팬아트, 타로, 유튜브, 방송 이력을 각각의 전용 페이지에서 편하게 만나보세요.</p><div class="hero-actions"><a class="btn btn-primary" href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer">SOOP 방송국 ↗</a><a class="btn btn-cafe" href="https://cafe.naver.com/chunbongtv" target="_blank" rel="noreferrer">팬카페 ↗</a><a class="btn btn-youtube" href="https://www.youtube.com/@%EC%B6%98%EB%B4%89TV" target="_blank" rel="noreferrer">YouTube ↗</a></div><div class="hero-tags"><span>#마인크래프트</span><span>#타로</span><a href="https://saza-company.vercel.app/" target="_blank" rel="noreferrer">#사자컴퍼니 ↗</a><span>#종합게임</span></div></div>
-  <div class="hero-art reveal"><img class="hero-character" src="assets/chunbong-main.webp" width="794" height="875" alt="주황색 사자 캐릭터 춘봉" loading="eager" decoding="async" fetchpriority="high"><a class="status-card status-card-link" href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer" aria-label="춘봉 SOOP 공식 프로필 열기"><span class="status-service-mark" aria-hidden="true">SOOP</span><div><small>공식 프로필</small><strong>chunbongtv</strong></div></a></div>
+  <div class="hero-art reveal"><img class="hero-character" src="assets/chunbong-main.webp" width="794" height="875" alt="주황색 사자 캐릭터 춘봉" loading="eager" decoding="async" fetchpriority="high"><a class="status-card status-card-link status-card-smart is-loading" data-home-smart-status href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer" aria-label="춘봉 방송 상태 확인"><span class="status-light" aria-hidden="true"></span><span class="status-service-mark" aria-hidden="true">SOOP</span><div class="status-card-copy"><small data-status-label>방송 상태 확인 중</small><strong>chunbongtv</strong><span data-status-action>연결 위치 확인 중</span></div><b class="status-card-go" aria-hidden="true">↗</b></a></div>
 </section>
 <section class="home-overview" data-home-overview aria-labelledby="home-overview-title">
   <div class="page-shell">
@@ -71,22 +71,22 @@
 <section class="app-home-panel" data-app-home-panel aria-label="설치형 앱 개인 홈"></section>
 <section class="portal-section"><div class="portal-head reveal"><div><p class="kicker">CHUNBONG FAN HUB</p><h2>바로가기</h2></div><p>자주 찾는 콘텐츠부터 빠르게 이동하세요.</p></div>
 <div class="portal-feature-grid" aria-label="대표 콘텐츠">
-<a class="portal-card reveal" href="vod.html"><small>03 / REPLAY</small><strong>다시보기</strong><p>최신 방송을 팬사이트 안에서 바로 골라 재생합니다.</p><b>→</b></a>
-<a class="portal-card reveal" href="tarot.html"><small>07 / TAROT</small><strong>타로 보기</strong><p>78장 풀덱으로 빠른 타로와 상세 리딩을 확인합니다.</p><b>→</b></a>
-<a class="portal-card reveal" href="minigames.html"><small>08 / MINIGAMES</small><strong>미니게임</strong><p>춘트리스·춘박게임·춘과게임·춘컬타일을 즐깁니다.</p><b>→</b></a>
-<a class="portal-card reveal" href="data.html"><small>10 / DATA</small><strong>춘봉 데이터</strong><p>SOOP 방송 활동과 춘봉TV 공개 지표를 한눈에 봅니다.</p><b>→</b></a>
+<a class="portal-card reveal" data-kind="replay" href="vod.html"><small>REPLAY</small><strong>다시보기</strong><p>최신 방송을 팬사이트 안에서 바로 골라 재생합니다.</p><b>→</b></a>
+<a class="portal-card reveal" data-kind="tarot" href="tarot.html"><small>TAROT</small><strong>타로 보기</strong><p>78장 풀덱으로 빠른 타로와 상세 리딩을 확인합니다.</p><b>→</b></a>
+<a class="portal-card reveal" data-kind="minigames" href="minigames.html"><small>MINIGAMES</small><strong>미니게임</strong><p>춘트리스·춘박게임·춘과게임·춘컬타일을 즐깁니다.</p><b>→</b></a>
+<a class="portal-card reveal" data-kind="data" href="data.html"><small>DATA</small><strong>춘봉 데이터</strong><p>SOOP 방송 활동과 춘봉TV 공개 지표를 한눈에 봅니다.</p><b>→</b></a>
 </div>
 <details class="home-all-links reveal"><summary><span><strong>전체 메뉴 보기</strong><small>공지 · 팬아트 · YouTube · 방송 기록 · 내 팬허브</small></span><b aria-hidden="true">＋</b></summary><div class="home-all-links-panel"><nav class="portal-compact-grid" aria-label="전체 팬사이트 메뉴">
-<a href="schedule.html"><small>01</small><span><strong>방송 일정</strong><em>오늘과 다음 일정을 확인</em></span><b>→</b></a>
-<a href="notice.html"><small>02</small><span><strong>공지</strong><em>최신 SOOP 공지 보기</em></span><b>→</b></a>
-<a href="clips.html"><small>04</small><span><strong>핫클립</strong><em>Catch와 클립 모아보기</em></span><b>→</b></a>
-<a href="fanart.html"><small>05</small><span><strong>팬아트</strong><em>팬카페 작품 감상</em></span><b>→</b></a>
-<a href="youtube.html"><small>06</small><span><strong>유튜브</strong><em>춘봉TV 영상과 Shorts</em></span><b>→</b></a>
-<a href="history.html"><small>09</small><span><strong>방송 이력</strong><em>춘봉 방송 기록 보기</em></span><b>→</b></a>
-<a href="data.html?view=calendar#soop"><small>CAL</small><span><strong>방송 기록 캘린더</strong><em>날짜별 방송·관련 영상 보기</em></span><b>→</b></a>
+<a href="schedule.html" data-kind="schedule"><small aria-hidden="true">◷</small><span><strong>방송 일정</strong><em>오늘과 다음 일정을 확인</em></span><b>→</b></a>
+<a href="notice.html" data-kind="notice"><small aria-hidden="true">!</small><span><strong>공지</strong><em>최신 SOOP 공지 보기</em></span><b>→</b></a>
+<a href="clips.html" data-kind="clips"><small aria-hidden="true">▶</small><span><strong>핫클립</strong><em>Catch와 클립 모아보기</em></span><b>→</b></a>
+<a href="fanart.html" data-kind="fanart"><small aria-hidden="true">✦</small><span><strong>팬아트</strong><em>팬카페 작품 감상</em></span><b>→</b></a>
+<a href="youtube.html" data-kind="youtube"><small aria-hidden="true">▷</small><span><strong>유튜브</strong><em>춘봉TV 영상과 Shorts</em></span><b>→</b></a>
+<a href="history.html" data-kind="history"><small aria-hidden="true">↺</small><span><strong>방송 이력</strong><em>춘봉 방송 기록 보기</em></span><b>→</b></a>
+<a href="data.html?view=calendar#soop" data-kind="calendar"><small aria-hidden="true">▦</small><span><strong>방송 기록 캘린더</strong><em>날짜별 방송·관련 영상 보기</em></span><b>→</b></a>
 </nav>
 <div class="personal-shortcuts"><a href="myhub.html"><strong>내 팬허브</strong><span>보관함 · 이어보기 · 타로 기록 · 업적 →</span></a><a href="changelog.html"><strong>업데이트 일지</strong><span>팬사이트 기능과 변경 기록 보기 →</span></a></div><div class="official-strip"><a href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer">SOOP 방송국 ↗</a><a href="https://cafe.naver.com/chunbongtv" target="_blank" rel="noreferrer">네이버 팬카페 ↗</a><a href="https://fire-space-8c8.notion.site/2c059c07cee480938952ffaf573b8c99" target="_blank" rel="noreferrer">Notion ↗</a><a href="https://saza-company.vercel.app/" target="_blank" rel="noreferrer">사자컴퍼니 ↗</a></div></div></details></section></main><footer>
   <div class="footer-brand"><span class="brand-mark">CB</span><div><strong>CHUNBONG FAN HUB</strong><p>비공식 팬사이트 · 공식 채널의 콘텐츠를 팬사이트 안에서 더 편하게 만나보세요.</p></div></div>
   <div class="footer-links"><a href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer">SOOP ↗</a><a href="https://cafe.naver.com/chunbongtv" target="_blank" rel="noreferrer">NAVER CAFE ↗</a><a href="https://saza-company.vercel.app/" target="_blank" rel="noreferrer">사자컴퍼니 ↗</a></div>
   <p class="copyright">© 2026 CHUNBONG FAN HUB · Unofficial fan project</p>
-</footer><button class="to-top" type="button" aria-label="맨 위로 이동">↑</button><script src="site-shell.js"></script><script src="content.js"></script><script src="page.js?v=2"></script><script src="home-dday.js"></script><script src="home-overview.js"></script><script src="daily-fortune.js?v=4"></script><script src="mobile-site.js"></script></body></html>
+</footer><button class="to-top" type="button" aria-label="맨 위로 이동">↑</button><script src="site-shell.js"></script><script src="content.js"></script><script src="page.js?v=2"></script><script src="home-dday.js"></script><script src="home-overview.js"></script><script src="home-smart-status.js"></script><script src="daily-fortune.js?v=4"></script><script src="mobile-site.js"></script></body></html>
