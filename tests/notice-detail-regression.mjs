@@ -99,7 +99,7 @@ console.log('notice detail regression test passed');
 }
 
 {
-  const shared = require('../api/_shared.js');
+  const shared = require('../lib/content-api/_shared.js');
   const post = shared.normalizePost({
     title_no: 889,
     title_name: '목록 구조화 본문',

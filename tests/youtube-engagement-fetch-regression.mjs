@@ -8,7 +8,7 @@ const {
   extractWatchMetricsFromHtml,
   findCommentsContinuation,
   extractCommentPage
-} = require('../api/youtube');
+} = require('../lib/content-api/youtube');
 
 const browse = {
   contents: [
