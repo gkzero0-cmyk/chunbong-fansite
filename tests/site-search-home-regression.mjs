@@ -21,6 +21,8 @@ for(const type of ['schedule','notice','vod','clips','youtube']){
 }
 assert.match(improvements,/notice-detail&id=202862381/,'global search must index broadcast history text');
 assert.match(improvements,/changelog-history&since=2026-08-30/,'global search must index update history');
+assert.match(improvements,/href:'myhub\.html',label:'내 팬허브'/,'global search must expose My Fan Hub');
+assert.match(improvements,/href:'timeline\.html',label:'춘봉 타임라인'/,'global search must expose Chunbong timeline');
 assert.match(improvements,/aria-activedescendant/,'global search must expose keyboard selection to assistive technology');
 assert.match(improvements,/aria-keyshortcuts/,'global search trigger must expose its keyboard shortcut');
 assert.match(improvements,/aria-busy','true'/,'global search must announce content loading');
