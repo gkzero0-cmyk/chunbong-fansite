@@ -12,6 +12,9 @@ const sprite=fs.readFileSync(new URL('../assets/chuncortile/tiles-user.webp',imp
 assert.match(layout,/Unified Chungwagame \/ Chuncortile desktop footprint/);
 assert.match(layout,/\.cg-board-wrap,\.ct-board-wrap\{[\s\S]*?aspect-ratio:17\/10!important/,'both games must share one board footprint');
 assert.match(layout,/\.chungwagame-layout,\.ct-layout\{[\s\S]*?grid-template-columns:var\(--game-left\) minmax\(0,var\(--game-board\)\) var\(--game-right\)/,'desktop rail sizing must be shared');
+assert.match(layout,/--game-board:min\(1040px,calc\(170dvh - 322px\),calc\(100vw - 330px\)\)/,'desktop board must leave enough bottom breathing room');
+assert.match(layout,/max-height:calc\(100dvh - 176px\)!important/,'shared board must have an explicit viewport height guard');
+assert.match(layout,/--game-board:min\(900px,calc\(170dvh - 340px\),calc\(100vw - 300px\)\)/,'short desktop viewports need the tighter board guard');
 
 assert.match(mobileCss,/@media\(orientation:landscape\) and \(max-height:900px\)/,'landscape layout must support taller phones/tablets');
 assert.doesNotMatch(mobileCss,/@media\(orientation:landscape\) and \(max-height:600px\)/,'old 600px landscape cutoff must not return');
