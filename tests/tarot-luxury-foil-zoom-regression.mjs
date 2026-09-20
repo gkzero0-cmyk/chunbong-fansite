@@ -17,8 +17,8 @@ assert.match(js,/function triggerTarotFoilEntry\(/,'tarot foil entry effect miss
 assert.match(js,/__CHUNBONG_TAROT_SFX_CONTROLLER__/,'tarot foil must use shared sound preferences/controller');
 assert.match(js,/function fitTarotZoom\(/,'large-view viewport fitter missing');
 assert.match(js,/window\.visualViewport\?\.height/,'zoom fitter must use the visual viewport');
-assert.match(js,/widthByHeight = availableHeight \* \(2 \/ 3\)/,'zoom card width must derive from available height');
-assert.match(js,/requestAnimationFrame\(fitTarotZoom\)/,'zoom must fit immediately after opening');
+assert.match(js,/widthByHeight = availableHeight \* \(898 \/ 1488\)/,'zoom card width must derive from the real tarot card aspect ratio');
+assert.match(js,/requestAnimationFrame\(\(\) => \{ fitTarotZoom\(\); requestAnimationFrame\(fitTarotZoom\); \}\)/,'zoom must fit after layout settles');
 
 assert.match(css,/\.tarot-card-foil\{/,'shared result/zoom foil host missing');
 assert.match(css,/\.tarot-card-foil::after/,'subtle foil sheen layer missing');
