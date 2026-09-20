@@ -91,7 +91,7 @@ jobs:
 
           await page.goto(process.env.BASE_URL+'/?source=pwa',{waitUntil:'domcontentloaded'});
           await page.waitForSelector('[data-pwa-app-tabbar]');
-          await page.waitForSelector('[data-app-home-panel] .app-home-grid');
+          await page.waitForSelector('[data-app-home-panel] .pwa-dashboard-grid');
           assert.ok(await page.locator('[data-app-home-panel]').isVisible(),'personal app home must be visible in installed-app mode');
           assert.match(await page.locator('[data-app-home-panel]').innerText(),/이어보기 테스트 영상/);
           assert.match(await page.locator('[data-app-home-panel]').innerText(),/태양/);
