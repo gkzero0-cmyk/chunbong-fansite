@@ -33,11 +33,16 @@ assert.match(css, /\.daily-fortune-front\{[\s\S]*#08152f/, 'daily fortune front 
 assert.match(css, /\.daily-fortune-front-frame::before,\.daily-fortune-front-frame::after/, 'daily fortune front must include matching celestial star medallions');
 assert.match(css, /\.daily-fortune-front-title\{[\s\S]*#102344/, 'daily fortune title plate must use the matching navy-and-gold theme');
 assert.match(css, /@keyframes dailyFortuneBackSpin/, 'high-speed card-back spin animation missing');
+assert.match(css, /dailyFortuneBackSpin\{[\s\S]*rotateY\(5040deg\)/, 'standing spin must rotate rapidly around the vertical Y axis');
+assert.doesNotMatch(css, /dailyFortuneBackSpin\{[^}]*rotateZ\(/, 'draw spin must not look like a flat card rotating on the table');
+assert.match(js, /const SPIN_MS = 1720/, 'standing spin timing must stay fast');
 assert.match(css, /\.daily-fortune-stage\.is-spinning \.daily-fortune-card-inner/, 'spin state styling missing');
 assert.match(css, /\.daily-fortune-card\.is-revealed \.daily-fortune-card-inner\{transform:rotateY\(180deg\) rotateZ\(1turn\)\}/, 'card flip animation missing');
 assert.match(css, /\.daily-fortune-stage\.is-prism-active \.daily-fortune-card/, 'pointer tilt state missing');
 assert.match(css, /--glow-x/, 'pointer-follow glow variables missing');
-assert.match(css, /\.daily-fortune-card:before\{[\s\S]*conic-gradient/, 'arcane gold-violet edge aura missing');
+assert.match(css, /\.daily-fortune-card:before\{[\s\S]*linear-gradient\(118deg[\s\S]*mask-composite:exclude/, '22-card-safe gold-violet border sweep missing');
+assert.match(css, /@keyframes dailyFortuneEdgeSweep/, 'animated tarot border sweep missing');
+assert.match(css, /scale\(1\.032\)/, 'hover lift must be visually noticeable');
 assert.match(css, /mix-blend-mode:soft-light/, 'card sheen must stay subtle instead of screen blending');
 assert.doesNotMatch(css, /mix-blend-mode:screen/, 'white prism screen blend must stay removed');
 assert.doesNotMatch(css, /#fff 0 2%/, 'white pointer hotspot must stay removed');
