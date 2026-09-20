@@ -22,6 +22,7 @@
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const normalize = value => String(value || '').toLowerCase().replace(/\s+/g,' ').trim();
   const stripHtml = value => String(value || '').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+  const contentKey=item=>String(item?.id||item?.videoId||item?.link||item?.sourceHref||item?.title||'').trim();
   const itemText = item => [
     item?.title,item?.subject,item?.name,item?.description,item?.content,item?.meta,item?.date,item?.label,
     ...(Array.isArray(item?.tags)?item.tags:[])
@@ -71,13 +72,13 @@
       }),
       fetchJson('/api/content?type=vod',7000,'content:vod').then(payload=>{
         (Array.isArray(payload?.items)?payload.items:[]).slice(0,30).forEach(item=>{
-          const id=String(item?.id||'');
+          const id=contentKey(item);
           add('다시보기',id?'vod.html?open='+encodeURIComponent(id):'vod.html',item);
         });
       }),
       fetchJson('/api/content?type=clips',7000,'content:clips').then(payload=>{
         (Array.isArray(payload?.items)?payload.items:[]).slice(0,40).forEach(item=>{
-          const id=String(item?.id||'');
+          const id=contentKey(item);
           const kind=item?.kind==='clip'?'clip':'catch';
           const href='clips.html?kind='+kind+(id?'&open='+encodeURIComponent(id):'');
           add(kind==='clip'?'클립':'CATCH',href,item);
@@ -85,7 +86,7 @@
       }),
       fetchJson('/api/content?type=youtube',7000,'content:youtube').then(payload=>{
         (Array.isArray(payload?.items)?payload.items:[]).slice(0,30).forEach(item=>{
-          const id=String(item?.id||'');
+          const id=contentKey(item);
           const kind=item?.kind==='shorts'?'shorts':'videos';
           const href='youtube.html?kind='+kind+(id?'&open='+encodeURIComponent(id):'');
           add(kind==='shorts'?'YouTube Shorts':'YouTube',href,item);
