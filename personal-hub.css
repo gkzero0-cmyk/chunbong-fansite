@@ -35,3 +35,12 @@
   .personal-alert-lead{align-items:stretch;flex-direction:column;font-size:11px}
   .personal-alert-lead select{width:100%;min-height:44px;font-size:12px}
 }
+
+
+.personal-preferences-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 16px;border:1px solid #2e2e32;border-radius:16px;background:#111113}
+.personal-preferences-bar>div{min-width:0;display:flex;flex-direction:column;gap:2px}.personal-preferences-bar small{color:#ff8f48;font-size:9px;font-weight:950;letter-spacing:.12em}.personal-preferences-bar strong{font-size:14px}.personal-preferences-bar div>span{color:#827a75;font-size:10px;line-height:1.5}
+.personal-preferences-bar button{flex:0 0 auto;min-width:70px;min-height:38px;padding:3px;border:1px solid #38383d;border-radius:999px;background:#18181b;color:#85807b;font:inherit;font-size:10px;font-weight:950;cursor:pointer}
+.personal-preferences-bar button span{display:grid;place-items:center;min-height:30px;border-radius:999px;transition:.18s}
+.personal-preferences-bar button[aria-pressed="true"]{border-color:#ff6b1857}.personal-preferences-bar button[aria-pressed="true"] span{background:#ff6b18;color:#fff;box-shadow:0 0 16px #ff6b1838}
+[data-theme="light"] .personal-preferences-bar{border-color:#e3d9d1;background:#fff}[data-theme="light"] .personal-preferences-bar button{border-color:#dfd4cc;background:#f8f3ef}
+@media(max-width:760px){.personal-preferences-bar{padding:13px 14px}.personal-preferences-bar div>span{font-size:11px}.personal-preferences-bar button{min-width:74px;min-height:44px}}
