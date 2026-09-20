@@ -7,9 +7,6 @@ on:
       - 'personal-hub.js'
       - 'personal-hub.css'
       - 'myhub.html'
-      - 'timeline.html'
-      - 'timeline.js'
-      - 'timeline.css'
       - 'index.html'
       - 'home-overview.js'
       - 'api/content.js'
@@ -50,7 +47,7 @@ jobs:
           done
           cat /tmp/personal-hub-http.log
           exit 1
-      - name: Verify local persistence, app home and timeline
+      - name: Verify local persistence and app home
         env:
           BASE_URL: http://127.0.0.1:4173
         run: |
@@ -104,12 +101,6 @@ jobs:
           assert.match(liveCard,/테스트 LIVE 방송/);
           assert.match(liveCard,/1,234명 시청 중/);
 
-          await page.goto(process.env.BASE_URL+'/timeline.html',{waitUntil:'domcontentloaded'});
-          await page.waitForSelector('[data-chunbong-timeline] .timeline-row');
-          const timelineText=await page.locator('[data-chunbong-timeline]').innerText();
-          assert.match(timelineText,/춘봉 첫 방송/);
-          assert.match(timelineText,/SOOP 첫 방송/);
-          assert.match(timelineText,/춘봉 팬사이트 프로젝트 시작/);
 
           assert.deepEqual(errors,[],errors.join(' | '));
           await browser.close();

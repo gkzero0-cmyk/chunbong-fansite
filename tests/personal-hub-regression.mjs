@@ -5,8 +5,6 @@ const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const hub=read('personal-hub.js');
 const hubCss=read('personal-hub.css');
 const myhub=read('myhub.html');
-const timeline=read('timeline.html');
-const timelineJs=read('timeline.js');
 const index=read('index.html');
 const shell=read('site-shell.js');
 const mobile=read('mobile-site.js');
@@ -18,9 +16,7 @@ const minProfile=read('minigame-profile.js');
 const sw=read('service-worker.js');
 const api=read('api/content.js');
 
-for(const [name,source] of [['personal-hub.js',hub],['timeline.js',timelineJs]]){
-  assert.doesNotThrow(()=>new Function(source),name+' must remain valid JavaScript');
-}
+assert.doesNotThrow(()=>new Function(hub),'personal-hub.js must remain valid JavaScript');
 
 assert.match(hub,/chunbong-personal-hub-v1/,'personal storage namespace missing');
 assert.match(hub,/favorites:\[\]/,'favorites store missing');
@@ -85,22 +81,17 @@ for(const achievement of ['첫 발자국','게임 단골','4종 탐험가','블�
 
 assert.match(index,/data-app-home-panel/,'installed-app home panel missing');
 assert.match(index,/href="myhub\.html"/,'home My Hub shortcut missing');
-assert.match(index,/href="timeline\.html"/,'home timeline shortcut missing');
 assert.match(hubCss,/\.pwa-app-mode \.app-home-panel\{display:block/,'app-only personalized home rule missing');
 assert.match(mobile,/data-more-page="myhub"/,'mobile app More menu missing My Hub');
-assert.match(mobile,/data-more-page="timeline"/,'mobile app More menu missing timeline');
-
-assert.match(timeline,/data-chunbong-timeline/,'timeline root missing');
-assert.match(timelineJs,/2020-07-03/,'first broadcast milestone missing');
-assert.match(timelineJs,/2023-11-30/,'SOOP first broadcast milestone missing');
-assert.match(timelineJs,/2026-08-30/,'fan site launch milestone missing');
-assert.match(timelineJs,/CHUNBONG_CHANGELOG/,'timeline must extend from curated fan-site milestones');
-assert.match(timelineJs,/findIndex\(candidate=>candidate\.date===row\.date&&candidate\.title===row\.title\)===index/,'timeline must dedupe curated milestones already present in the fixed base milestones');
+assert.doesNotMatch(index,/timeline\\.html|춘봉 타임라인/,'retired timeline must not remain on home');
+assert.doesNotMatch(myhub,/timeline\\.html|춘봉 타임라인/,'retired timeline must not remain in My Fan Hub');
+assert.doesNotMatch(mobile,/data-more-page="timeline"|timeline\\.html/,'retired timeline must not remain in mobile More menu');
+for(const asset of ['/timeline.html','/timeline.css','/timeline.js']) assert.ok(!sw.includes("'"+asset+"'"),'retired timeline must not remain in PWA app shell: '+asset);
 
 assert.match(shell,/personal-hub\.css/,'shared shell must load personal hub styles');
 assert.match(shell,/personal-hub\.js/,'shared shell must load personal hub runtime');
-assert.match(sw,/chunbong-pwa-20260920-v18/,'personal hub release must advance PWA cache');
-for(const asset of ['/personal-hub.css','/personal-hub.js','/myhub.html','/timeline.html','/timeline.css','/timeline.js']){
+assert.match(sw,/chunbong-pwa-20260920-v19/,'timeline retirement must advance PWA cache');
+for(const asset of ['/personal-hub.css','/personal-hub.js','/myhub.html']){
   assert.ok(sw.includes("'"+asset+"'"),'PWA app shell missing '+asset);
 }
 assert.match(sw,/notificationclick/,'notification click routing missing');
