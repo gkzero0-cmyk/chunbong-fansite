@@ -1,5 +1,5 @@
 /* CHUNBONG_PWA v1 */
-const CACHE_NAME = 'chunbong-pwa-20260920-v20';
+const CACHE_NAME = 'chunbong-pwa-20260921-v21';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -11,6 +11,8 @@ const APP_SHELL = [
   '/site-improvements.css',
   '/mobile-site.css',
   '/mobile-site.js',
+  '/mobile-app-enhancements.css',
+  '/mobile-app-enhancements.js',
   '/page.js?v=2',
   '/site-shell.js',
   '/site-meta.js',
@@ -28,6 +30,17 @@ const APP_SHELL = [
   '/assets/app-icon-192.png',
   '/assets/app-icon-512.png',
   '/assets/apple-touch-icon.png',
+  '/schedule.html',
+  '/schedule-enhancements.css',
+  '/page-schedule.js?v=1',
+  '/tarot.html',
+  '/tarot.css',
+  '/tarot-quality.css',
+  '/tarot-composite.css?v=2',
+  '/tarot-data.js',
+  '/tarot-reading-config.js',
+  '/tarot.js?v=3',
+  '/tarot-composite.js?v=2',
   '/minigames.html',
   '/minigames.css',
   '/minigame-profile.css',
@@ -88,6 +101,13 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  if (url.pathname === '/api/content') {
+    const cacheableTypes = new Set(['schedule','activity','notice','vod','clips','youtube','fanart','data']);
+    if (cacheableTypes.has(url.searchParams.get('type') || '')) {
+      event.respondWith(staleWhileRevalidate(request));
+    }
+    return;
+  }
   if (url.pathname.startsWith('/api/')) return;
 
   if (request.mode === 'navigate' || request.destination === 'document') {
@@ -109,4 +129,43 @@ self.addEventListener('notificationclick',event=>{
     if(existing){await existing.focus();if('navigate'in existing)await existing.navigate(target);return;}
     if(self.clients.openWindow)await self.clients.openWindow(target);
   })());
+});
+
+const ALERT_STATE_CACHE='chunbong-alert-state-v1';
+
+async function readAlertMarker(key){
+  const cache=await caches.open(ALERT_STATE_CACHE);
+  const response=await cache.match('/__chunbong_alert__/'+key);
+  return response?response.text():'';
+}
+
+async function writeAlertMarker(key,value){
+  const cache=await caches.open(ALERT_STATE_CACHE);
+  await cache.put('/__chunbong_alert__/'+key,new Response(String(value||''),{
+    headers:{'content-type':'text/plain;charset=utf-8'}
+  }));
+}
+
+async function checkBackgroundLive(){
+  try{
+    const response=await fetch('/api/content?type=live',{headers:{accept:'application/json'},cache:'no-store'});
+    if(!response.ok)return;
+    const payload=await response.json();
+    if(payload?.live!==true)return;
+    const broadcastId=String(payload.broadcastId||payload.startedAt||payload.title||'live');
+    const previous=await readAlertMarker('live');
+    if(previous===broadcastId)return;
+    await self.registration.showNotification('춘봉 방송이 시작됐어요',{
+      body:payload.title||'SOOP에서 방송이 시작됐습니다.',
+      icon:'/assets/app-icon-192.png',
+      badge:'/assets/app-icon-192.png',
+      tag:'chunbong-live-'+broadcastId,
+      data:{url:'/'}
+    });
+    await writeAlertMarker('live',broadcastId);
+  }catch{}
+}
+
+self.addEventListener('periodicsync',event=>{
+  if(event.tag==='chunbong-live-background')event.waitUntil(checkBackgroundLive());
 });
