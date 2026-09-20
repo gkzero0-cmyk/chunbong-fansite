@@ -96,3 +96,59 @@
 
 /* Uploaded celestial card back + matching deck numbers: 2026-09-20 */
 
+
+
+/* 2026-09-21: unmistakable direct-selection state */
+#tarot-deck .tarot-card-back.selected{
+  animation:none!important;
+  opacity:1!important;
+  transform:translateY(-10px) scale(1.045)!important;
+  z-index:5;
+  border-color:#ffe680!important;
+  outline:2px solid #5e78d9!important;
+  outline-offset:3px!important;
+  box-shadow:
+    0 0 0 2px #07142d,
+    0 0 0 4px #f2c954,
+    0 0 20px #f1c34eaa,
+    0 0 34px #665bd67a,
+    0 16px 36px #000d!important;
+  filter:saturate(1.12) brightness(1.08);
+}
+#tarot-deck .tarot-card-back.selected::before{
+  content:attr(data-selection-label);
+  position:absolute;
+  z-index:5;
+  right:-5px;
+  top:-9px;
+  min-width:42px;
+  padding:5px 7px;
+  border:1px solid #ffe786;
+  border-radius:999px;
+  background:linear-gradient(135deg,#102750,#07142d);
+  color:#fff2b3;
+  font:900 10px/1.1 system-ui,-apple-system,"Noto Sans KR",sans-serif;
+  letter-spacing:-.03em;
+  text-align:center;
+  white-space:nowrap;
+  text-shadow:0 1px 1px #000,0 0 8px #f7d75d7a;
+  box-shadow:0 0 0 2px #07142d,0 0 14px #f0c84f88,0 5px 12px #0009;
+  pointer-events:none;
+}
+#tarot-deck .tarot-card-back.selected .tarot-card-back-number{
+  transform:scale(.91);
+  opacity:.78;
+}
+#tarot-deck .tarot-card-back.selected:hover,
+#tarot-deck .tarot-card-back.selected:focus-visible{
+  transform:translateY(-13px) scale(1.055)!important;
+  outline-color:#8ba4ff!important;
+  filter:saturate(1.18) brightness(1.12);
+}
+#tarot-deck .tarot-card-back:not(.selected){
+  filter:saturate(.92) brightness(.94);
+}
+#tarot-deck .tarot-card-back:not(.selected):hover,
+#tarot-deck .tarot-card-back:not(.selected):focus-visible{
+  filter:saturate(1.05) brightness(1.03);
+}
