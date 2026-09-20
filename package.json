@@ -2,7 +2,9 @@
   "name": "chunbong-fansite",
   "version": "1.0.0",
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "web-push": "^3.6.7"
+  },
   "engines": {
     "node": "22.x"
   }
