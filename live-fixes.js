@@ -105,6 +105,55 @@
     return new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(item.start));
   }
 
+  function calendarPayload(item={}) {
+    return encodeURIComponent(JSON.stringify({
+      title:String(item.title||'춘봉 방송 일정'),
+      start:String(item.start||''),end:String(item.end||''),
+      isDateTime:Boolean(item.isDateTime),link:String(item.link||'')
+    }));
+  }
+  function parseCalendarPayload(value='') {
+    try{return JSON.parse(decodeURIComponent(value))}catch(_){return null}
+  }
+  function icsEscape(value='') {
+    return String(value).replaceAll('\\','\\\\').replaceAll(';','\\;').replaceAll(',','\\,').replace(/\r?\n/g,'\\n');
+  }
+  function utcStamp(value) {
+    const date=new Date(value);if(Number.isNaN(date.getTime()))return'';
+    return date.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z');
+  }
+  function dateStamp(value='') {return String(value).slice(0,10).replaceAll('-','')}
+  function downloadScheduleIcs(item) {
+    if(!item?.start)return;
+    const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//CHUNBONG FAN HUB//Schedule//KO','CALSCALE:GREGORIAN','BEGIN:VEVENT'];
+    lines.push('UID:chunbong-'+Date.now()+'@chunbong-fansite.vercel.app');
+    lines.push('DTSTAMP:'+utcStamp(new Date()));
+    if(item.isDateTime){
+      lines.push('DTSTART:'+utcStamp(item.start));
+      if(item.end)lines.push('DTEND:'+utcStamp(item.end));
+    }else{
+      lines.push('DTSTART;VALUE=DATE:'+dateStamp(item.start));
+      const inclusiveEnd=item.end||item.start;
+      lines.push('DTEND;VALUE=DATE:'+dateStamp(shiftDate(dateOnly(inclusiveEnd),1)));
+    }
+    lines.push('SUMMARY:'+icsEscape(item.title||'춘봉 방송 일정'));
+    if(item.link)lines.push('URL:'+icsEscape(item.link));
+    lines.push('DESCRIPTION:'+icsEscape('춘봉 팬허브에서 추가한 방송 일정'));
+    lines.push('END:VEVENT','END:VCALENDAR');
+    const blob=new Blob([lines.join('\r\n')],{type:'text/calendar;charset=utf-8'});
+    const url=URL.createObjectURL(blob),link=document.createElement('a');
+    link.href=url;link.download='chunbong-schedule-'+dateOnly(item.start)+'.ics';document.body.appendChild(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  async function shareSchedule(item) {
+    if(!item)return;
+    const text=(item.title||'춘봉 방송 일정')+' · '+formatWhen(item);
+    try{
+      if(navigator.share){await navigator.share({title:'춘봉 방송 일정',text,url:item.link||location.href});return}
+      if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text+' '+(item.link||location.href));alert('일정 내용을 클립보드에 복사했습니다.');}
+    }catch(_){}
+  }
+
   function scheduleCard(item, index, today) {
     const status = statusFor(item, today);
     const labels = { today: 'TODAY', upcoming: 'UPCOMING', recent: 'RECENT' };
@@ -115,6 +164,7 @@
       <h2>${esc(item.title)}</h2>
       <div class="time">${esc(formatWhen(item))}</div>
       <p>${status === 'today' ? '오늘 예정된 방송 일정입니다.' : status === 'upcoming' ? '예정된 방송 일정입니다.' : '이전에 진행된 일정입니다.'}</p>
+      <div class="schedule-card-actions"><button type="button" data-schedule-calendar="${calendarPayload(item)}">캘린더 추가</button><button type="button" data-schedule-share="${calendarPayload(item)}">공유</button></div>
       <a class="inline-link" href="${esc(item.link || 'https://fire-space-8c8.notion.site/2c059c07cee480938952ffaf573b8c99?pvs=74')}" target="_blank" rel="noreferrer">Notion 일정 원본 ↗</a>
     </article>`;
   }
@@ -233,6 +283,12 @@
   }
 
   function bindControls() {
+    document.getElementById('schedule-grid')?.addEventListener('click',event=>{
+      const calendarButton=event.target.closest('[data-schedule-calendar]');
+      if(calendarButton){downloadScheduleIcs(parseCalendarPayload(calendarButton.dataset.scheduleCalendar));return}
+      const shareButton=event.target.closest('[data-schedule-share]');
+      if(shareButton){void shareSchedule(parseCalendarPayload(shareButton.dataset.scheduleShare));}
+    });
     $('#schedule-view-upcoming')?.addEventListener('click', () => setMode('upcoming'));
     $('#schedule-view-previous')?.addEventListener('click', () => setMode('previous'));
     $('#schedule-view-calendar')?.addEventListener('click', () => setMode('calendar'));
