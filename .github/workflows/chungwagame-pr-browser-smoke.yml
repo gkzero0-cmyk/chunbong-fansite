@@ -7,6 +7,7 @@ on:
       - 'chungwagame.html'
       - 'chungwagame.css'
       - 'game-layout.css'
+      - 'game-layout.js'
       - 'mobile-minigames.css'
       - 'mobile-minigames.js'
       - 'chungwagame.js'
@@ -207,6 +208,11 @@ jobs:
             await page.locator('#cg-ranking-submit').click();
             await page.waitForFunction(()=>document.querySelector('#cg-ranking-submit-status')?.textContent.includes('2~16자'));
 
+            if(viewport.width>=900){
+              const boardBottom=await page.locator('#cg-board-wrap').evaluate(el=>el.getBoundingClientRect().bottom);
+              const viewportHeight=await page.evaluate(()=>window.visualViewport?.height||window.innerHeight);
+              assert.ok(boardBottom<=viewportHeight-6,`Chungwagame board clips below viewport: ${boardBottom} > ${viewportHeight}`);
+            }
             assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
             await page.close();
           }
@@ -214,6 +220,7 @@ jobs:
           try{
             await verify({width:1440,height:900});
             await verify({width:1280,height:720});
+            await verify({width:1585,height:668});
             await verify({width:390,height:844});
           }finally{
             await browser.close();
