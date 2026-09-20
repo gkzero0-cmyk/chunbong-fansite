@@ -124,7 +124,12 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  if (['script','style','worker','image','font'].includes(request.destination)) {
+  if (['script','style','worker'].includes(request.destination)) {
+    event.respondWith(networkFirst(request, event));
+    return;
+  }
+
+  if (['image','font'].includes(request.destination)) {
     event.respondWith(staleWhileRevalidate(request));
   }
 });
