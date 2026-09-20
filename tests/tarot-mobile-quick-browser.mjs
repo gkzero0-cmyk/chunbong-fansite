@@ -20,6 +20,10 @@ try{
   assert.equal(await quick.getAttribute('aria-pressed'),'true','quick mode must start active');
   assert.equal(await page.locator('input[name="selection-mode"][value="cards"]').isChecked(),true,'quick mode must force direct-card selection');
   assert.equal(await page.locator('#tarot-number-panel').isHidden(),true,'quick mode number panel must stay hidden');
+  assert.equal(await page.locator('.tarot-topic-group').isVisible(),true,'quick mode topic chooser must stay visible');
+  assert.equal(await page.locator('.tarot-question-field').isHidden(),true,'quick mode question field must stay hidden');
+  await page.locator('input[name="topic"][value="love"]').check();
+  assert.equal(await page.locator('input[name="topic"][value="love"]').isChecked(),true,'quick mode must allow a topic choice');
   assert.equal((await page.locator('#tarot-shuffle').textContent()).trim(),'78장 카드 섞기','quick mode action must shuffle the deck');
 
   await page.locator('input[name="spread"][value="single"]').check();
