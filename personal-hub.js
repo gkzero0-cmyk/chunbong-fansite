@@ -6,7 +6,7 @@
   const GAME_LABELS={chuntris:'춘트리스',chunbak:'춘박게임',chungwagame:'춘과게임',chuncortile:'춘컬타일'};
   const COLLECTIONS=Object.freeze({later:'나중에 보기',funny:'웃긴 방송',minecraft:'마크 명장면',favorite:'다시 보고 싶은 콘텐츠'});
   const ALERT_TYPE_LABELS=Object.freeze({live:'LIVE 시작',tarot:'타로 방송',minecraft:'마인크래프트',collab:'합방',special:'특별 콘텐츠',other:'기타 일정'});
-  const blank=()=>({version:2,favorites:[],recent:null,tarot:[],games:{plays:{},lastPlayed:null,daily:{}},alerts:{enabled:false,pushEnabled:false,leadMinutes:10,types:{live:true,tarot:true,minecraft:true,collab:true,special:true,other:true},lastNotified:'',lastLiveBroadcastId:''}});
+  const blank=()=>({version:2,favorites:[],recent:null,tarot:[],games:{plays:{},lastPlayed:null,daily:{}},preferences:{haptics:false},alerts:{enabled:false,pushEnabled:false,leadMinutes:10,types:{live:true,tarot:true,minecraft:true,collab:true,special:true,other:true},lastNotified:'',lastLiveBroadcastId:''}});
   const safeParse=value=>{try{return JSON.parse(value)}catch(_){return null}};
   function normalizeImportedState(payload){
     const parsed=payload?.state&&typeof payload.state==='object'?payload.state:payload;
@@ -16,6 +16,7 @@
       favorites:(Array.isArray(parsed.favorites)?parsed.favorites:[]).slice(0,MAX_FAVORITES).map(row=>({...row,collection:COLLECTIONS[row?.collection]?row.collection:'later'})),
       tarot:(Array.isArray(parsed.tarot)?parsed.tarot:[]).slice(0,MAX_TAROT).map(row=>({...row,pinned:Boolean(row?.pinned)})),
       games:{...blank().games,...(parsed.games||{}),plays:{...(parsed.games?.plays||{})},daily:{...(parsed.games?.daily||{})}},
+      preferences:{...blank().preferences,...(parsed.preferences||{})},
       alerts:{...blank().alerts,...(parsed.alerts||{}),types:{...blank().alerts.types,...(parsed.alerts?.types||{})}}
     };
   }
@@ -225,7 +226,14 @@
       return response.ok;
     }catch(_){return false}
   }
-  async function setAlertEnabled(enabled){
+  function setHapticsEnabled(enabled){
+    const state=read();
+    state.preferences={...(state.preferences||{}),haptics:Boolean(enabled)};
+    write(state);
+    return state.preferences.haptics;
+  }
+  function hapticsEnabled(){return Boolean(read().preferences?.haptics)}
+    async function setAlertEnabled(enabled){
     const state=read();
     if(enabled&&(!('Notification'in window))) enabled=false;
     if(enabled&&'Notification'in window){
@@ -317,6 +325,14 @@
     <section class="personal-panel personal-wide"><header><div><small>ACHIEVEMENTS</small><h2>미니게임 업적</h2></div><a href="minigames.html">게임 기록 →</a></header><div class="personal-achievement-grid">${game.achievements.map(row=>`<article class="${row.earned?'is-earned':''}"><span>${row.earned?'✓':'○'}</span><div><strong>${esc(row.title)}</strong><small>${esc(row.desc)}</small></div></article>`).join('')}</div></section>
     <section class="personal-panel personal-wide"><header><div><small>TAROT JOURNAL</small><h2>타로 기록장</h2></div><span>★ ${state.tarot.filter(row=>row.pinned).length} · 최근 ${Math.min(state.tarot.length,10)}개</span></header><div class="personal-tarot-list">${tarotRows.length?tarotRows.slice(0,10).map(row=>`<article class="${row.pinned?'is-pinned':''}"><time>${esc(formatDate(row.createdAt))}</time><strong>${esc(row.question||'질문 없는 리딩')}</strong><span>${row.cards.map(c=>esc(c.name)+(c.orientation==='reversed'?' ↕':'')).join(' · ')}</span><button type="button" data-pin-tarot="${esc(row.id)}" aria-pressed="${String(Boolean(row.pinned))}">${row.pinned?'★ 즐겨찾기':'☆ 즐겨찾기'}</button>${row.reading?`<button type="button" data-view-tarot="${esc(row.id)}">상세 기록</button>`:''}</article>`).join(''):'<p class="personal-empty">아직 저장된 타로 기록이 없습니다.</p>'}</div></section>`;
     root.insertAdjacentHTML('afterbegin','<section class="personal-backup-bar"><div><small>MY DATA</small><strong>내 팬허브 백업</strong><span>이 기기의 보관함·타로·게임 기록을 파일로 보관할 수 있어요.</span></div><div class="personal-backup-actions"><button type="button" data-personal-export>백업 저장</button><button type="button" data-personal-import>백업 불러오기</button><button type="button" class="is-danger" data-personal-reset>기록 초기화</button><input type="file" accept="application/json,.json" data-personal-import-file hidden></div></section>');
+    root.querySelector('.personal-backup-bar')?.insertAdjacentHTML('afterend','<section class="personal-preferences-bar"><div><small>APP FEEL</small><strong>터치 진동</strong><span>지원되는 기기에서 주요 버튼을 누를 때 짧게 반응합니다. 기본값은 OFF입니다.</span></div><button type="button" data-personal-haptics-toggle aria-pressed="'+String(Boolean(state.preferences?.haptics))+'"><span>'+ (state.preferences?.haptics?'ON':'OFF') +'</span></button></section>');
+    const hapticsButton=root.querySelector('[data-personal-haptics-toggle]');
+    hapticsButton?.addEventListener('click',()=>{
+      const enabled=setHapticsEnabled(!read().preferences?.haptics);
+      hapticsButton.setAttribute('aria-pressed',String(enabled));
+      const label=hapticsButton.querySelector('span');if(label)label.textContent=enabled?'ON':'OFF';
+      if(enabled&&navigator.vibrate)navigator.vibrate(10);
+    });
     const importInput=root.querySelector('[data-personal-import-file]');
     root.querySelector('[data-personal-export]')?.addEventListener('click',exportBackup);
     root.querySelector('[data-personal-import]')?.addEventListener('click',()=>importInput?.click());
@@ -416,6 +432,6 @@
     window.addEventListener('pageshow',()=>{startReminderTimer();void checkBroadcastReminder();void checkLiveReminder()});
   }
 
-  window.ChunbongPersonal={read,write,favoriteItem,isFavorite,setFavoriteCollection,toggleTarotPinned,recordRecent,recordTarot,attachTarotReading,recordGameStart,gameSnapshot,dailyChallenge,setAlertEnabled,setAlertType,setAlertLead,exportBackup,importBackupFile,resetPersonalData,renderDashboard};
+  window.ChunbongPersonal={read,write,favoriteItem,isFavorite,setFavoriteCollection,toggleTarotPinned,recordRecent,recordTarot,attachTarotReading,recordGameStart,gameSnapshot,dailyChallenge,setAlertEnabled,setAlertType,setAlertLead,setHapticsEnabled,hapticsEnabled,exportBackup,importBackupFile,resetPersonalData,renderDashboard};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
