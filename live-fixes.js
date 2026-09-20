@@ -4,7 +4,7 @@
   const esc = (value = '') => String(value)
     .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
-  const state = { source: [], today: '', mode: 'upcoming', previousOffset: 1, calendarMonth: '' };
+  const state = { source: [], today: '', mode: 'upcoming', previousOffset: 1, calendarMonth: '', mobileDateFilter: '' };
 
   async function json(url) {
     const response = await fetch(url, { headers: { accept: 'application/json' } });
@@ -109,7 +109,7 @@
     const status = statusFor(item, today);
     const labels = { today: 'TODAY', upcoming: 'UPCOMING', recent: 'RECENT' };
     const tags = (item.tags || []).map(tag => `<span class="schedule-tag" data-tag="${esc(tag)}">${esc(tag)}</span>`).join('');
-    return `<article class="schedule-card schedule-${status} reveal visible">
+    return `<article class="schedule-card schedule-${status} reveal visible" data-schedule-date="${esc(itemStartDate(item))}">
       <div class="schedule-number">${String(index + 1).padStart(2, '0')}</div>
       <div class="schedule-card-top"><span class="badge">${labels[status]}</span><div class="schedule-tags">${tags}</div></div>
       <h2>${esc(item.title)}</h2>
@@ -125,8 +125,53 @@
     grid.innerHTML = items.length ? items.map((item, index) => scheduleCard(item, index, state.today)).join('') : `<div class="loading-card">${esc(emptyText)}</div>`;
   }
 
+  function renderMobileWeekStrip() {
+    if (!window.matchMedia('(max-width:760px)').matches) return;
+    const toolbar = $('#schedule-view-upcoming')?.closest('.schedule-view-toolbar');
+    if (!toolbar) return;
+    let strip = $('#mobile-schedule-week');
+    if (!strip) {
+      strip = document.createElement('div');
+      strip.id = 'mobile-schedule-week';
+      strip.className = 'mobile-schedule-week';
+      strip.setAttribute('aria-label', '7일 방송 일정 빠른 보기');
+      toolbar.insertAdjacentElement('afterend', strip);
+    }
+    strip.hidden = state.mode !== 'upcoming';
+    if (strip.hidden) return;
+    const base = new Date(state.today + 'T00:00:00+09:00');
+    const days = Array.from({ length: 7 }, (_, index) => {
+      const key = shiftDate(state.today, index);
+      const date = new Date(base.getTime() + index * 86400000);
+      return {
+        key,
+        label: new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', weekday: 'short' }).format(date),
+        day: new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', day: 'numeric' }).format(date),
+        count: state.source.filter(item => intersectsDateRange(item, key, key)).length
+      };
+    });
+    const selected = state.mobileDateFilter || 'all';
+    strip.innerHTML =
+      '<button type="button" class="mobile-schedule-day mobile-schedule-all ' + (selected === 'all' ? 'is-selected' : '') + '" data-schedule-day="all" aria-pressed="' + String(selected === 'all') + '"><small>7일</small><strong>전체</strong><i aria-hidden="true"></i></button>' +
+      days.map(day => '<button type="button" class="mobile-schedule-day' +
+        (day.key === state.today ? ' is-today' : '') +
+        (day.count ? ' has-event' : '') +
+        (selected === day.key ? ' is-selected' : '') +
+        '" data-schedule-day="' + esc(day.key) + '" aria-pressed="' + String(selected === day.key) + '">' +
+        '<small>' + esc(day.label) + '</small><strong>' + esc(day.day) + '</strong><i aria-hidden="true"></i></button>').join('');
+    strip.querySelectorAll('[data-schedule-day]').forEach(button => button.addEventListener('click', () => {
+      state.mobileDateFilter = button.dataset.scheduleDay === 'all' ? '' : button.dataset.scheduleDay;
+      renderUpcoming();
+    }));
+  }
+
   function renderUpcoming() {
-    renderList(upcomingItems(state.source, state.today), '오늘 이후 등록된 일정이 없습니다.');
+    const upcoming = upcomingItems(state.source, state.today);
+    const filtered = state.mobileDateFilter
+      ? upcoming.filter(item => intersectsDateRange(item, state.mobileDateFilter, state.mobileDateFilter))
+      : upcoming;
+    renderList(filtered, state.mobileDateFilter ? '선택한 날짜에 등록된 일정이 없습니다.' : '오늘 이후 등록된 일정이 없습니다.');
+    renderMobileWeekStrip();
   }
 
   function renderPrevious() {
@@ -183,8 +228,8 @@
       button.setAttribute('aria-selected', String(active));
     });
     if (state.mode === 'upcoming') renderUpcoming();
-    else if (state.mode === 'previous') renderPrevious();
-    else renderCalendar();
+    else if (state.mode === 'previous') { renderPrevious(); renderMobileWeekStrip(); }
+    else { renderCalendar(); renderMobileWeekStrip(); }
   }
 
   function bindControls() {
