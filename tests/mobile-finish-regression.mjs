@@ -6,8 +6,8 @@ const mobile=await readFile(new URL('../mobile-site.js',import.meta.url),'utf8')
 const mobileCss=await readFile(new URL('../mobile-site.css',import.meta.url),'utf8');
 const shell=await readFile(new URL('../site-shell.js',import.meta.url),'utf8');
 const push=await readFile(new URL('../lib/push-notifications-api.js',import.meta.url),'utf8');
-const cron=await readFile(new URL('../api/push-cron.js',import.meta.url),'utf8');
 const vercel=JSON.parse(await readFile(new URL('../vercel.json',import.meta.url),'utf8'));
+const pushWorkflow=await readFile(new URL('../.github/workflows/push-dispatch.yml',import.meta.url),'utf8');
 
 assert.ok(personal.includes("alerts:{enabled:false,pushEnabled:false"),'alerts must default OFF');
 assert.ok(personal.includes("data-personal-alert-toggle"),'alert ON/OFF control missing');
@@ -27,9 +27,12 @@ assert.ok(mobile.includes("data-pwa-live-state"),'installed-app LIVE badge missi
 
 assert.ok(push.includes('resolveVapid'),'managed VAPID resolution missing');
 assert.ok(push.includes("push:vapid:v1"),'managed VAPID Redis key missing');
-assert.ok(push.includes("x-vercel-cron-schedule"),'Vercel cron authorization marker missing');
+assert.ok(push.includes('authorizedGitHubOidc'),'GitHub OIDC dispatch authorization missing');
 assert.ok(push.includes("push:dispatch-lock:v1"),'push dispatch lock missing');
-assert.ok(cron.includes('handleDispatch'),'push cron route missing');
-assert.ok(vercel.crons?.some(row=>row.path==='/api/push-cron'&&row.schedule==='* * * * *'),'1-minute push cron missing');
+assert.ok(pushWorkflow.includes("cron: '*/5 * * * *'"),'5-minute GitHub push schedule missing');
+assert.ok(pushWorkflow.includes('id-token: write'),'GitHub OIDC permission missing');
+assert.ok(pushWorkflow.includes('chunbong-fansite-push'),'Push OIDC audience missing');
+assert.ok(pushWorkflow.includes('/api/content?type=push-dispatch'),'Push workflow must reuse the content API');
+assert.ok(!Array.isArray(vercel.crons)||vercel.crons.length===0,'Hobby deployment must not register a minute-level Vercel cron');
 
 console.log('mobile-finish-regression: ok');
