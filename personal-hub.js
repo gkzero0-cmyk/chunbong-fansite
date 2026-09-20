@@ -8,6 +8,36 @@
   const ALERT_TYPE_LABELS=Object.freeze({live:'LIVE 시작',tarot:'타로 방송',minecraft:'마인크래프트',collab:'합방',special:'특별 콘텐츠',other:'기타 일정'});
   const blank=()=>({version:2,favorites:[],recent:null,tarot:[],games:{plays:{},lastPlayed:null,daily:{}},alerts:{enabled:false,leadMinutes:10,types:{live:true,tarot:true,minecraft:true,collab:true,special:true,other:true},lastNotified:'',lastLiveBroadcastId:''}});
   const safeParse=value=>{try{return JSON.parse(value)}catch(_){return null}};
+  function normalizeImportedState(payload){
+    const parsed=payload?.state&&typeof payload.state==='object'?payload.state:payload;
+    if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))throw new Error('invalid_backup');
+    return {
+      ...blank(),...parsed,
+      favorites:(Array.isArray(parsed.favorites)?parsed.favorites:[]).slice(0,MAX_FAVORITES).map(row=>({...row,collection:COLLECTIONS[row?.collection]?row.collection:'later'})),
+      tarot:(Array.isArray(parsed.tarot)?parsed.tarot:[]).slice(0,MAX_TAROT).map(row=>({...row,pinned:Boolean(row?.pinned)})),
+      games:{...blank().games,...(parsed.games||{}),plays:{...(parsed.games?.plays||{})},daily:{...(parsed.games?.daily||{})}},
+      alerts:{...blank().alerts,...(parsed.alerts||{}),types:{...blank().alerts.types,...(parsed.alerts?.types||{})}}
+    };
+  }
+  function exportBackup(){
+    const payload={format:'chunbong-fanhub-backup',version:1,exportedAt:new Date().toISOString(),state:read()};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement('a');
+    link.href=url;
+    link.download='chunbong-fanhub-backup-'+kstDateKey(new Date())+'.json';
+    document.body.appendChild(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  async function importBackupFile(file){
+    if(!file)throw new Error('missing_file');
+    const text=await file.text();
+    const parsed=safeParse(text);
+    const next=normalizeImportedState(parsed);
+    write(next);
+    return next;
+  }
+  function resetPersonalData(){return write(blank())}
   function read(){
     try{
       const parsed=safeParse(localStorage.getItem(STORAGE_KEY)||'');
@@ -73,7 +103,14 @@
         position:String(card.position||''),deckNumber:Number(card.deckNumber)||0
       }))
     };
-    state.tarot.unshift(row);state.tarot=state.tarot.slice(0,MAX_TAROT);write(state);
+    state.tarot.unshift(row);state.tarot=state.tarot.slice(0,MAX_TAROT);write(state);return row.id;
+  }
+  function attachTarotReading(id,reading){
+    if(!id||!reading||typeof reading!=='object')return false;
+    const state=read(),row=state.tarot.find(item=>String(item.id)===String(id));
+    if(!row)return false;
+    try{row.reading=JSON.parse(JSON.stringify(reading))}catch(_){return false}
+    write(state);return true;
   }
   const kstDateKey=value=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(value instanceof Date?value:new Date(value));
   const shiftDate=(key,days)=>{const d=new Date(key+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10)};
@@ -141,7 +178,11 @@
     const render=()=>{const saved=isFavorite(item);button.textContent=saved?'★ 보관함 저장됨':'☆ 보관함에 저장';button.classList.toggle('is-saved',saved);button.setAttribute('aria-pressed',String(saved))};
     button.onclick=()=>{favoriteItem(item);render()};render();
   });
-  document.addEventListener('chunbong:tarot-reading',event=>recordTarot(event.detail||{}));
+  let lastTarotRecordId='';
+  document.addEventListener('chunbong:tarot-reading',event=>{lastTarotRecordId=recordTarot(event.detail||{})||''});
+  document.addEventListener('chunbong:tarot-reading-detail',event=>{
+    if(lastTarotRecordId)attachTarotReading(lastTarotRecordId,event.detail?.reading||event.detail||{});
+  });
 
   function watchGame(){
     const game=document.body.dataset.game;if(!GAME_LABELS[game])return;
@@ -234,7 +275,19 @@
     <section class="personal-panel"><header><div><small>TAROT JOURNAL</small><h2>최근 타로</h2></div><a href="tarot.html">타로 보기 →</a></header>${latestTarot?`<article class="personal-tarot-latest"><strong>${esc(latestTarot.question||'질문 없는 리딩')}</strong><span>${latestTarot.cards.map(c=>esc(c.name)).join(' · ')}</span><small>${esc(formatDate(latestTarot.createdAt))}</small></article>`:'<p class="personal-empty">타로를 보면 자동으로 기록됩니다.</p>'}</section></div>
     <section class="personal-panel personal-wide"><header><div><small>SAVED COLLECTIONS</small><h2>내 보관함</h2></div><span>${state.favorites.length}개</span></header><div class="personal-collection-tabs"><button type="button" class="is-active" data-collection-filter="all">전체 <b>${state.favorites.length}</b></button>${collections.map(([key,label])=>`<button type="button" data-collection-filter="${key}">${esc(label)} <b>${counts[key]}</b></button>`).join('')}</div><div class="personal-saved-grid">${state.favorites.length?state.favorites.map(item=>`<article data-personal-collection="${esc(item.collection||'later')}"><a href="${esc(hrefFor(item))}"><small>${esc((item.type||'saved').toUpperCase())}</small><strong>${esc(item.title||'저장한 콘텐츠')}</strong><span>${esc(item.meta||'')}</span></a><select data-favorite-collection data-favorite-key="${esc(keyOf(item))}" data-favorite-type="${esc(item.type||'')}">${collections.map(([key,label])=>`<option value="${key}" ${(item.collection||'later')===key?'selected':''}>${esc(label)}</option>`).join('')}</select><button type="button" data-remove-favorite="${esc(keyOf(item))}" data-remove-type="${esc(item.type||'')}">삭제</button></article>`).join(''):'<p class="personal-empty">콘텐츠를 보관함에 저장해 보세요.</p>'}</div></section>
     <section class="personal-panel personal-wide"><header><div><small>ACHIEVEMENTS</small><h2>미니게임 업적</h2></div><a href="minigames.html">게임 기록 →</a></header><div class="personal-achievement-grid">${game.achievements.map(row=>`<article class="${row.earned?'is-earned':''}"><span>${row.earned?'✓':'○'}</span><div><strong>${esc(row.title)}</strong><small>${esc(row.desc)}</small></div></article>`).join('')}</div></section>
-    <section class="personal-panel personal-wide"><header><div><small>TAROT JOURNAL</small><h2>타로 기록장</h2></div><span>★ ${state.tarot.filter(row=>row.pinned).length} · 최근 ${Math.min(state.tarot.length,10)}개</span></header><div class="personal-tarot-list">${tarotRows.length?tarotRows.slice(0,10).map(row=>`<article class="${row.pinned?'is-pinned':''}"><time>${esc(formatDate(row.createdAt))}</time><strong>${esc(row.question||'질문 없는 리딩')}</strong><span>${row.cards.map(c=>esc(c.name)+(c.orientation==='reversed'?' ↕':'')).join(' · ')}</span><button type="button" data-pin-tarot="${esc(row.id)}" aria-pressed="${String(Boolean(row.pinned))}">${row.pinned?'★ 즐겨찾기':'☆ 즐겨찾기'}</button></article>`).join(''):'<p class="personal-empty">아직 저장된 타로 기록이 없습니다.</p>'}</div></section>`;
+    <section class="personal-panel personal-wide"><header><div><small>TAROT JOURNAL</small><h2>타로 기록장</h2></div><span>★ ${state.tarot.filter(row=>row.pinned).length} · 최근 ${Math.min(state.tarot.length,10)}개</span></header><div class="personal-tarot-list">${tarotRows.length?tarotRows.slice(0,10).map(row=>`<article class="${row.pinned?'is-pinned':''}"><time>${esc(formatDate(row.createdAt))}</time><strong>${esc(row.question||'질문 없는 리딩')}</strong><span>${row.cards.map(c=>esc(c.name)+(c.orientation==='reversed'?' ↕':'')).join(' · ')}</span><button type="button" data-pin-tarot="${esc(row.id)}" aria-pressed="${String(Boolean(row.pinned))}">${row.pinned?'★ 즐겨찾기':'☆ 즐겨찾기'}</button>${row.reading?`<button type="button" data-view-tarot="${esc(row.id)}">상세 기록</button>`:''}</article>`).join(''):'<p class="personal-empty">아직 저장된 타로 기록이 없습니다.</p>'}</div></section>`;
+    root.insertAdjacentHTML('afterbegin','<section class="personal-backup-bar"><div><small>MY DATA</small><strong>내 팬허브 백업</strong><span>이 기기의 보관함·타로·게임 기록을 파일로 보관할 수 있어요.</span></div><div class="personal-backup-actions"><button type="button" data-personal-export>백업 저장</button><button type="button" data-personal-import>백업 불러오기</button><button type="button" class="is-danger" data-personal-reset>기록 초기화</button><input type="file" accept="application/json,.json" data-personal-import-file hidden></div></section>');
+    const importInput=root.querySelector('[data-personal-import-file]');
+    root.querySelector('[data-personal-export]')?.addEventListener('click',exportBackup);
+    root.querySelector('[data-personal-import]')?.addEventListener('click',()=>importInput?.click());
+    importInput?.addEventListener('change',async()=>{
+      const file=importInput.files?.[0];if(!file)return;
+      try{await importBackupFile(file);alert('춘봉 팬허브 백업을 불러왔습니다.')}catch(_){alert('백업 파일을 확인해 주세요.')}
+      importInput.value='';
+    });
+    root.querySelector('[data-personal-reset]')?.addEventListener('click',()=>{
+      if(confirm('이 기기에 저장된 내 팬허브 기록을 모두 초기화할까요?'))resetPersonalData();
+    });
     root.querySelector('[data-personal-alert-toggle]')?.addEventListener('click',async e=>{const enabled=await setAlertEnabled(!read().alerts.enabled);e.currentTarget.textContent=enabled?'ON':'OFF';e.currentTarget.setAttribute('aria-pressed',String(enabled))});
     root.querySelectorAll('[data-personal-alert-type]').forEach(input=>input.addEventListener('change',()=>setAlertType(input.dataset.personalAlertType,input.checked)));
     root.querySelector('[data-personal-alert-lead]')?.addEventListener('change',e=>setAlertLead(e.currentTarget.value));
@@ -242,6 +295,29 @@
     root.querySelectorAll('[data-favorite-collection]').forEach(select=>select.addEventListener('change',()=>setFavoriteCollection(select.dataset.favoriteKey,select.dataset.favoriteType,select.value)));
     root.querySelectorAll('[data-remove-favorite]').forEach(button=>button.addEventListener('click',()=>{const state=read();state.favorites=state.favorites.filter(item=>!(keyOf(item)===button.dataset.removeFavorite&&String(item.type||'')===String(button.dataset.removeType||'')));write(state)}));
     root.querySelectorAll('[data-pin-tarot]').forEach(button=>button.addEventListener('click',()=>toggleTarotPinned(button.dataset.pinTarot)));
+    root.querySelectorAll('[data-view-tarot]').forEach(button=>button.addEventListener('click',()=>{
+      const row=read().tarot.find(item=>String(item.id)===String(button.dataset.viewTarot));
+      if(!row?.reading)return;
+      let dialog=document.getElementById('personal-tarot-archive-dialog');
+      if(!dialog){
+        dialog=document.createElement('dialog');dialog.id='personal-tarot-archive-dialog';dialog.className='personal-tarot-archive-dialog';
+        dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close()});
+        document.body.appendChild(dialog);
+      }
+      const glance=row.reading.glance||{},detail=row.reading.detail||{};
+      const actions=Array.isArray(detail.actions)?detail.actions:[];
+      dialog.innerHTML='<div class="personal-tarot-archive-inner"><header><div><small>TAROT ARCHIVE</small><h2>'+esc(row.question||'질문 없는 리딩')+'</h2><p>'+esc(formatDate(row.createdAt))+'</p></div><button type="button" data-close-archive aria-label="타로 기록 닫기">×</button></header>'+
+        '<div class="personal-tarot-archive-cards">'+row.cards.map(card=>'<span><b>'+esc(card.position||'카드')+'</b>'+esc(card.name)+(card.orientation==='reversed'?' · 역방향':' · 정방향')+'</span>').join('')+'</div>'+
+        '<section><h3>핵심 결론</h3><p>'+esc(glance.conclusion||detail.answer||'저장된 상세 해석을 확인해 주세요.')+'</p></section>'+
+        (glance.positive?'<section><h3>좋은 흐름</h3><p>'+esc(glance.positive)+'</p></section>':'')+
+        (glance.caution||detail.caution?'<section><h3>주의할 점</h3><p>'+esc(glance.caution||detail.caution)+'</p></section>':'')+
+        (detail.reason?'<section><h3>카드가 그렇게 말하는 이유</h3><p>'+esc(detail.reason)+'</p></section>':'')+
+        (actions.length?'<section><h3>지금 해볼 수 있는 것</h3><ul>'+actions.map(item=>'<li>'+esc(item)+'</li>').join('')+'</ul></section>':'')+
+        (detail.oneLine?'<strong class="personal-tarot-one-line">한 줄 정리 · '+esc(detail.oneLine)+'</strong>':'')+
+        '</div>';
+      dialog.querySelector('[data-close-archive]')?.addEventListener('click',()=>dialog.close());
+      if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');
+    }));
   }
 
   function renderAppHome(){
@@ -296,6 +372,6 @@
     window.addEventListener('pageshow',()=>{startReminderTimer();void checkBroadcastReminder();void checkLiveReminder()});
   }
 
-  window.ChunbongPersonal={read,write,favoriteItem,isFavorite,setFavoriteCollection,toggleTarotPinned,recordRecent,recordTarot,recordGameStart,gameSnapshot,dailyChallenge,setAlertEnabled,setAlertType,setAlertLead,renderDashboard};
+  window.ChunbongPersonal={read,write,favoriteItem,isFavorite,setFavoriteCollection,toggleTarotPinned,recordRecent,recordTarot,attachTarotReading,recordGameStart,gameSnapshot,dailyChallenge,setAlertEnabled,setAlertType,setAlertLead,exportBackup,importBackupFile,resetPersonalData,renderDashboard};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
