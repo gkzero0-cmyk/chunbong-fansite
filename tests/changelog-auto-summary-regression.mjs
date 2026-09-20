@@ -20,7 +20,8 @@ const groups=[
       {sha:'curation-1',time:'2026-09-20T00:05:00Z',rawTitle:'9월 20일 타로 디자인 업데이트 일지 정리 (#168)',title:'9월 20일 타로 디자인 업데이트 일지 정리',type:'improved'},
       {sha:'curation-2',time:'2026-09-20T00:04:00Z',rawTitle:'업데이트 일지 자동 요약 중복 방지 (#169)',title:'업데이트 일지 자동 요약 중복 방지',type:'improved'},
       {sha:'curated-release-171',time:'2026-09-20T00:03:00Z',rawTitle:'팬사이트 사용성·모바일 앱·가로 게임 모드 개선 (#171)',title:'팬사이트 사용성·모바일 앱·가로 게임 모드 개선',type:'improved'},
-      {sha:'curated-release-174',time:'2026-09-20T00:02:00Z',rawTitle:'내 팬허브·개인 기록·타임라인 추가 (#174)',title:'내 팬허브·개인 기록·타임라인 추가',type:'new'}
+      {sha:'curated-release-174',time:'2026-09-20T00:02:00Z',rawTitle:'내 팬허브·개인 기록·타임라인 추가 (#174)',title:'내 팬허브·개인 기록·타임라인 추가',type:'new'},
+      {sha:'infra-180',time:'2026-09-20T00:01:00Z',rawTitle:'Vercel API 쿼리 파싱을 WHATWG URL로 전환 (#180)',title:'Vercel API 쿼리 파싱을 WHATWG URL로 전환',description:'Node 24 deprecation 경고 대응을 위한 Serverless 내부 호환 변경',type:'improved'}
     ]
   },
   {
@@ -38,6 +39,7 @@ assert.equal(auto.isInternalMaintenance(groups[0].items[5]),true,'changelog cura
 assert.equal(auto.isInternalMaintenance(groups[0].items[6]),true,'changelog automatic-summary maintenance must stay hidden');
 assert.equal(auto.isAlreadyCuratedRelease(groups[0].items[7]),true,'fully curated release merge commits must not create duplicate automatic cards');
 assert.equal(auto.isAlreadyCuratedRelease(groups[0].items[8]),true,'personal hub curated release must not create a duplicate automatic card');
+assert.equal(auto.isInternalMaintenance(groups[0].items[9]),true,'Vercel/API parser maintenance must stay hidden from automatic summaries');
 assert.equal(auto.areaFor(groups[0].items[0]).id,'tarot');
 assert.equal(auto.areaFor(groups[0].items[2]).id,'pwa');
 
@@ -56,6 +58,7 @@ assert.ok(!JSON.stringify(summarized).includes('업데이트 일지 정리'),'ch
 assert.ok(!JSON.stringify(summarized).includes('중복 방지'),'changelog maintenance fix leaked back into automatic summaries');
 assert.ok(!JSON.stringify(summarized).includes('가로 게임 모드 개선'),'curated release merge commit leaked back into automatic summaries');
 assert.ok(!JSON.stringify(summarized).includes('내 팬허브'),'personal hub curated release leaked back into automatic summaries');
+assert.ok(!JSON.stringify(summarized).includes('WHATWG'),'Vercel/API maintenance leaked into automatic summaries');
 
 const unknown=auto.summarizeGroup({date:'2026-09-20',items:[
   {sha:'unknown',time:'2026-09-20T02:00:00Z',rawTitle:'refactor: reorganize navigation internals',title:'reorganize navigation internals',type:'improved'}
