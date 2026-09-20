@@ -3,8 +3,9 @@
   const App=globalThis.ChungwagameApp,Core=globalThis.ChungwagameRankingCore,root=document.getElementById('chungwagame');
   const registerButton=document.getElementById('cg-ranking-register'),panel=document.getElementById('cg-ranking-submit-panel'),nicknameInput=document.getElementById('cg-ranking-nickname'),submitButton=document.getElementById('cg-ranking-submit'),cancelButton=document.getElementById('cg-ranking-cancel'),statusNode=document.getElementById('cg-ranking-submit-status');
   if(!App?.getSnapshot||!root||!registerButton||!panel||!nicknameInput||!submitButton||!cancelButton)return;
-  const endpoint='/api/content?type=chungwagame-ranking',nicknameKey='chungwagame:nickname:v1';let submittedKey='',activeKey='',submitting=false;
-  const remember=v=>{try{localStorage.setItem(nicknameKey,v)}catch{}};const recalled=()=>{try{return localStorage.getItem(nicknameKey)||''}catch{return''}};
+  const endpoint='/api/content?type=chungwagame-ranking',nicknameKey='chungwagame:nickname:v1';
+  const sharedNicknameKey='chunbong:player:nickname:v1';let submittedKey='',activeKey='',submitting=false;
+  const remember=v=>{try{localStorage.setItem(sharedNicknameKey,v);localStorage.setItem(nicknameKey,v)}catch{}};const recalled=()=>{try{return localStorage.getItem(sharedNicknameKey)||localStorage.getItem(nicknameKey)||''}catch{return''}};
   function state(){return App.getSnapshot()}function terminal(){return root.dataset.gameStatus==='gameover'}function keyFor(s=state()){return`classic:${s.score}:${s.maxCombo}:${s.cleared}`}
   function setStatus(message,state=''){statusNode.textContent=message;statusNode.dataset.state=state}
   function reset(){panel.hidden=true;submitButton.disabled=false;cancelButton.disabled=false;submitting=false;activeKey=terminal()?keyFor():'';if(!terminal()){registerButton.disabled=false;registerButton.textContent='랭킹 등록';setStatus('')}}
