@@ -8,7 +8,7 @@
     String(key) === 'changelog-summary';
 
   const read = key => {
-    const cached = memory.get(key);
+    const cached=memory.get(key);
     if (cached) return cached;
     if (!shouldPersist(key)) return null;
     try {
