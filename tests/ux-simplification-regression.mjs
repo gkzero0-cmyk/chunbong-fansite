@@ -30,6 +30,10 @@ for(const href of ['vod.html','tarot.html','minigames.html','data.html']){
 assert.match(index,/class="portal-compact-grid reveal"/,'secondary home destinations must use compact navigation');
 assert.match(styles,/\.portal-feature-grid\{display:grid/,'featured home layout styles missing');
 assert.match(styles,/\.portal-compact-grid\{display:grid/,'compact home layout styles missing');
+assert.match(index,/class="home-all-links reveal"/,'secondary home links should be collapsed behind a single control');
+assert.match(index,/class="status-service-mark"/,'SOOP profile should use a neutral service badge');
+assert.doesNotMatch(index,/class="status-dot"/,'SOOP profile must not look like a false LIVE indicator');
+assert.match(index,/data\.html\?view=calendar#soop"><small>CAL<\/small>/,'calendar shortcut must not duplicate the DATA number');
 
 assert.doesNotMatch(improvements,/api\.github\.com\/repos\/gkzero0-cmyk\/chunbong-fansite\/commits\/main/,'browser must not call GitHub main API directly');
 assert.match(improvements,/fetchJson\('\/api\/version',/,'browser deployment sync must use the local version endpoint');
@@ -47,11 +51,14 @@ assert.match(tarotJs,/let setupMode = 'quick'/,'tarot JS must track quick/detail
 assert.match(tarotJs,/input\[name="selection-mode"\]\[value="cards"\]/,'quick tarot must default to direct card selection');
 assert.match(tarotJs,/Number\(input\?\.dataset\.count\|\|0\)>3/,'quick tarot must hide spreads above three cards');
 assert.match(tarotJs,/renderNumberInputs\(Number\(fallback\.dataset\.count\|\|1\)\)/,'quick tarot fallback must keep inputs synchronized');
+assert.match(tarotJs,/질문과 1장\/3장을 정한 뒤 카드를 골라 주세요\./,'quick tarot stage guidance must match visible controls');
+assert.match(tarotJs,/주제와 스프레드, 카드 선택 방식을 정해 주세요\./,'detail tarot stage guidance must match detailed controls');
 assert.match(tarotCss,/Quick \/ detailed tarot setup/,'quick tarot styles missing');
 
 assert.match(dataHtml,/data-data-view="summary"/,'data page must default to summary mode');
 assert.match(dataHtml,/data-data-view-button="summary"/,'data summary toggle missing');
 assert.match(dataHtml,/data-data-view-button="detail"/,'data detail toggle missing');
+assert.ok(dataHtml.indexOf('class="data-platform-tabs') < dataHtml.indexOf('class="data-view-toggle'),'platform selection should appear before analysis-depth controls');
 assert.match(dataEnh,/chunbong-data-view-v1/,'data view preference must be remembered');
 assert.match(dataEnh,/document\.body\.dataset\.dataView=view/,'data view mode must update body state');
 assert.match(dataCss,/body\[data-data-view="summary"\]/,'summary-mode visibility rules missing');
