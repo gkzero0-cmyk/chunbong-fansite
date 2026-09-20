@@ -61,6 +61,21 @@
     return next;
   }
   const keyOf=item=>String(item?.id||item?.href||item?.sourceHref||item?.title||'').trim();
+  function personalCategoryKind(value=''){
+    const type=String(value||'').toLowerCase();
+    if(type==='vod'||type==='replay')return'replay';
+    if(type==='clip'||type==='catch'||type==='clips')return'clips';
+    if(type==='youtube'||type==='videos'||type==='shorts')return'youtube';
+    if(type==='fanart')return'fanart';
+    if(type==='tarot')return'tarot';
+    if(type==='history')return'history';
+    if(type==='data')return'data';
+    if(type==='calendar')return'calendar';
+    if(type==='schedule')return'schedule';
+    if(type==='notice')return'notice';
+    if(type==='minigames'||GAME_LABELS[type])return'minigames';
+    return'notice';
+  }
   function favoriteItem(item={}){
     const key=keyOf(item);if(!key)return false;
     const state=read();const index=state.favorites.findIndex(row=>keyOf(row)===key&&row.type===item.type);
@@ -207,10 +222,23 @@
     return output;
   }
   function pushPreferences(state=read()){return{types:{...(state.alerts?.types||{})},leadMinutes:Number(state.alerts?.leadMinutes)||10}}
+  async function ensurePushServiceWorker(){
+    if(!('serviceWorker'in navigator))return null;
+    try{
+      let registration=await navigator.serviceWorker.getRegistration('/');
+      if(!registration){
+        registration=await navigator.serviceWorker.register('/service-worker.js',{scope:'/',updateViaCache:'none'});
+      }
+      if(registration?.active)return registration;
+      const timeout=new Promise(resolve=>setTimeout(()=>resolve(null),8000));
+      return await Promise.race([navigator.serviceWorker.ready,timeout]);
+    }catch(_){return null}
+  }
   async function syncPushSubscription(enable,state=read()){
     if(!('serviceWorker'in navigator)||!('PushManager'in window))return false;
     try{
-      const registration=await navigator.serviceWorker.ready;
+      const registration=await ensurePushServiceWorker();
+      if(!registration)return false;
       let subscription=await registration.pushManager.getSubscription();
       if(!enable){
         if(subscription){
@@ -313,11 +341,11 @@
     const root=document.querySelector('[data-personal-dashboard]');if(!root)return;
     const state=read(),game=gameSnapshot(),challenge=dailyChallenge(),recent=state.recent,latestTarot=state.tarot[0],earned=game.achievements.filter(x=>x.earned),collections=Object.entries(COLLECTIONS),counts=Object.fromEntries(collections.map(([key])=>[key,state.favorites.filter(item=>(item.collection||'later')===key).length])),tarotRows=state.tarot.slice().sort((a,b)=>Number(Boolean(b.pinned))-Number(Boolean(a.pinned))||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
     root.innerHTML=`<section class="personal-hero-card"><div><p class="kicker">MY CHUNBONG HUB</p><h1>내 팬허브</h1><p>즐겨찾기, 이어보기, 타로 기록과 미니게임 기록은 이 기기에만 저장됩니다.</p></div><div class="personal-summary"><span><b>${state.favorites.length}</b>보관함</span><span><b>${state.tarot.length}</b>타로 기록</span><span><b>${game.totalPlays}</b>게임 플레이</span><span><b>${earned.length}</b>업적</span></div></section>
-    <div class="personal-grid"><section class="personal-panel"><header><div><small>CONTINUE</small><h2>이어보기</h2></div></header>${recent?`<a class="personal-recent" href="${esc(hrefFor(recent))}"><strong>${esc(recent.title||'최근 콘텐츠')}</strong><span>${esc(recent.meta||recent.type||'')} · ${esc(formatDate(recent.updatedAt))}${recent.progress?' · '+Math.floor(recent.progress/60)+':'+String(recent.progress%60).padStart(2,'0')+'까지':''}</span><b>이어보기 →</b></a>`:'<p class="personal-empty">아직 본 콘텐츠가 없습니다.</p>'}</section>
+    <div class="personal-grid"><section class="personal-panel"><header><div><small>CONTINUE</small><h2>이어보기</h2></div></header>${recent?`<a class="personal-recent category-accent" data-kind="${esc(personalCategoryKind(recent.type))}" href="${esc(hrefFor(recent))}"><strong>${esc(recent.title||'최근 콘텐츠')}</strong><span>${esc(recent.meta||recent.type||'')} · ${esc(formatDate(recent.updatedAt))}${recent.progress?' · '+Math.floor(recent.progress/60)+':'+String(recent.progress%60).padStart(2,'0')+'까지':''}</span><b>이어보기 →</b></a>`:'<p class="personal-empty">아직 본 콘텐츠가 없습니다.</p>'}</section>
     <section class="personal-panel"><header><div><small>DAILY CHALLENGE</small><h2>오늘의 도전</h2></div><span>${challenge.completed?'완료 ✓':challenge.progress+'/'+challenge.goal}</span></header><a class="personal-challenge ${challenge.completed?'is-complete':''}" href="${challenge.href}"><strong>${esc(challenge.title)}</strong><span>${esc(challenge.desc)}</span><b>${challenge.completed?'오늘 도전 완료 · 연속 '+challenge.streak+'일':'도전하기 · '+challenge.progress+'/'+challenge.goal+' →'}</b></a></section>
-    <section class="personal-panel personal-alert-panel ${state.alerts.enabled?'is-on':'is-off'}"><header><div><small>LIVE & SCHEDULE ALERT</small><h2>방송 알림</h2><span class="personal-alert-default">${state.alerts.enabled?(state.alerts.pushEnabled?'백그라운드 Push ON · 앱을 닫아도 알림':'알림 ON · 사이트가 열려 있을 때 확인'):'기본 설정 OFF · 직접 켠 경우에만 알림'}</span></div><button type="button" data-personal-alert-toggle aria-pressed="${String(state.alerts.enabled)}" aria-label="방송 알림 ${state.alerts.enabled?'끄기':'켜기'}"><span>${state.alerts.enabled?'ON':'OFF'}</span></button></header><p>${state.alerts.enabled?'알림이 켜져 있습니다. 원하는 방송 종류와 미리 알림 시간을 선택하세요.':'알림은 현재 꺼져 있습니다. ON으로 바꾸기 전까지 알림 권한 요청이나 방송 알림이 발생하지 않습니다.'}</p><fieldset class="personal-alert-settings" ${state.alerts.enabled?'':'disabled'}><legend class="sr-only">방송 알림 세부 설정</legend><div class="personal-alert-options">${Object.entries(ALERT_TYPE_LABELS).map(([key,label])=>`<label><input type="checkbox" data-personal-alert-type="${key}" ${state.alerts.types?.[key]!==false?'checked':''}><span>${esc(label)}</span></label>`).join('')}</div><label class="personal-alert-lead"><span>예정 방송 미리 알림</span><select data-personal-alert-lead><option value="5" ${Number(state.alerts.leadMinutes)===5?'selected':''}>5분 전</option><option value="10" ${Number(state.alerts.leadMinutes)===10?'selected':''}>10분 전</option><option value="30" ${Number(state.alerts.leadMinutes)===30?'selected':''}>30분 전</option></select></label></fieldset></section>
+    <section class="personal-panel personal-alert-panel ${state.alerts.enabled?'is-on':'is-off'}"><header><div><small>LIVE & SCHEDULE ALERT</small><h2>방송 알림</h2><span class="personal-alert-default">${state.alerts.enabled?(state.alerts.pushEnabled?'백그라운드 Push ON · 앱을 닫아도 알림':'백그라운드 Push 연결 실패 · 사이트가 열려 있을 때만 알림'):'기본 설정 OFF · 직접 켠 경우에만 알림'}</span></div><button type="button" data-personal-alert-toggle aria-pressed="${String(state.alerts.enabled)}" aria-label="방송 알림 ${state.alerts.enabled?'끄기':'켜기'}"><span>${state.alerts.enabled?'ON':'OFF'}</span></button></header><p>${state.alerts.enabled?(state.alerts.pushEnabled?'알림이 켜져 있습니다. 원하는 방송 종류와 미리 알림 시간을 선택하세요.':'브라우저 Push 연결에 실패했습니다. 이 탭이 열려 있을 때 알림은 계속 확인하며, 아래 버튼으로 백그라운드 Push를 다시 연결할 수 있습니다.'):'알림은 현재 꺼져 있습니다. ON으로 바꾸기 전까지 알림 권한 요청이나 방송 알림이 발생하지 않습니다.'}</p>${state.alerts.enabled&&!state.alerts.pushEnabled?'<button type="button" class="personal-push-retry" data-personal-push-retry>백그라운드 Push 다시 연결</button>':''}<fieldset class="personal-alert-settings" ${state.alerts.enabled?'':'disabled'}><legend class="sr-only">방송 알림 세부 설정</legend><div class="personal-alert-options">${Object.entries(ALERT_TYPE_LABELS).map(([key,label])=>`<label><input type="checkbox" data-personal-alert-type="${key}" ${state.alerts.types?.[key]!==false?'checked':''}><span>${esc(label)}</span></label>`).join('')}</div><label class="personal-alert-lead"><span>예정 방송 미리 알림</span><select data-personal-alert-lead><option value="5" ${Number(state.alerts.leadMinutes)===5?'selected':''}>5분 전</option><option value="10" ${Number(state.alerts.leadMinutes)===10?'selected':''}>10분 전</option><option value="30" ${Number(state.alerts.leadMinutes)===30?'selected':''}>30분 전</option></select></label></fieldset></section>
     <section class="personal-panel"><header><div><small>TAROT JOURNAL</small><h2>최근 타로</h2></div><a href="tarot.html">타로 보기 →</a></header>${latestTarot?`<article class="personal-tarot-latest"><strong>${esc(tarotRecordTitle(latestTarot))}</strong>${latestTarot.question?`<span class="personal-tarot-question">질문 · ${esc(latestTarot.question)}</span>`:''}<span>${latestTarot.cards.map(c=>esc(c.name)).join(' · ')}</span><small>${esc(formatDate(latestTarot.createdAt))}</small></article>`:'<p class="personal-empty">타로를 보면 자동으로 기록됩니다.</p>'}</section></div>
-    <section class="personal-panel personal-wide"><header><div><small>SAVED COLLECTIONS</small><h2>내 보관함</h2></div><span>${state.favorites.length}개</span></header><div class="personal-collection-tabs"><button type="button" class="is-active" data-collection-filter="all">전체 <b>${state.favorites.length}</b></button>${collections.map(([key,label])=>`<button type="button" data-collection-filter="${key}">${esc(label)} <b>${counts[key]}</b></button>`).join('')}</div><div class="personal-saved-grid">${state.favorites.length?state.favorites.map(item=>`<article data-personal-collection="${esc(item.collection||'later')}"><a href="${esc(hrefFor(item))}"><small>${esc((item.type||'saved').toUpperCase())}</small><strong>${esc(item.title||'저장한 콘텐츠')}</strong><span>${esc(item.meta||'')}</span></a><select data-favorite-collection data-favorite-key="${esc(keyOf(item))}" data-favorite-type="${esc(item.type||'')}">${collections.map(([key,label])=>`<option value="${key}" ${(item.collection||'later')===key?'selected':''}>${esc(label)}</option>`).join('')}</select><button type="button" data-remove-favorite="${esc(keyOf(item))}" data-remove-type="${esc(item.type||'')}">삭제</button></article>`).join(''):'<p class="personal-empty">콘텐츠를 보관함에 저장해 보세요.</p>'}</div></section>
+    <section class="personal-panel personal-wide"><header><div><small>SAVED COLLECTIONS</small><h2>내 보관함</h2></div><span>${state.favorites.length}개</span></header><div class="personal-collection-tabs"><button type="button" class="is-active" data-collection-filter="all">전체 <b>${state.favorites.length}</b></button>${collections.map(([key,label])=>`<button type="button" data-collection-filter="${key}">${esc(label)} <b>${counts[key]}</b></button>`).join('')}</div><div class="personal-saved-grid">${state.favorites.length?state.favorites.map(item=>`<article class="category-accent" data-kind="${esc(personalCategoryKind(item.type))}" data-personal-collection="${esc(item.collection||'later')}"><a href="${esc(hrefFor(item))}"><small>${esc((item.type||'saved').toUpperCase())}</small><strong>${esc(item.title||'저장한 콘텐츠')}</strong><span>${esc(item.meta||'')}</span></a><select data-favorite-collection data-favorite-key="${esc(keyOf(item))}" data-favorite-type="${esc(item.type||'')}">${collections.map(([key,label])=>`<option value="${key}" ${(item.collection||'later')===key?'selected':''}>${esc(label)}</option>`).join('')}</select><button type="button" data-remove-favorite="${esc(keyOf(item))}" data-remove-type="${esc(item.type||'')}">삭제</button></article>`).join(''):'<p class="personal-empty">콘텐츠를 보관함에 저장해 보세요.</p>'}</div></section>
     <section class="personal-panel personal-wide"><header><div><small>ACHIEVEMENTS</small><h2>미니게임 업적</h2></div><a href="minigames.html">게임 기록 →</a></header><div class="personal-achievement-grid">${game.achievements.map(row=>`<article class="${row.earned?'is-earned':''}"><span>${row.earned?'✓':'○'}</span><div><strong>${esc(row.title)}</strong><small>${esc(row.desc)}</small></div></article>`).join('')}</div></section>
     <section class="personal-panel personal-wide"><header><div><small>TAROT JOURNAL</small><h2>타로 기록장</h2></div><span>★ ${state.tarot.filter(row=>row.pinned).length} · 최근 ${Math.min(state.tarot.length,10)}개</span></header><div class="personal-tarot-list">${tarotRows.length?tarotRows.slice(0,10).map(row=>`<article class="${row.pinned?'is-pinned':''}"><time>${esc(formatDate(row.createdAt))}</time><strong>${esc(tarotRecordTitle(row))}</strong>${row.question?`<span class="personal-tarot-question">질문 · ${esc(row.question)}</span>`:''}<span>${row.cards.map(c=>esc(c.name)+(c.orientation==='reversed'?' ↕':'')).join(' · ')}</span><button type="button" data-pin-tarot="${esc(row.id)}" aria-pressed="${String(Boolean(row.pinned))}">${row.pinned?'★ 즐겨찾기':'☆ 즐겨찾기'}</button>${row.reading?`<button type="button" data-view-tarot="${esc(row.id)}">상세 기록</button>`:''}</article>`).join(''):'<p class="personal-empty">아직 저장된 타로 기록이 없습니다.</p>'}</div></section>`;
     root.insertAdjacentHTML('afterbegin','<section class="personal-backup-bar"><div><small>MY DATA</small><strong>내 팬허브 백업</strong><span>이 기기의 보관함·타로·게임 기록을 파일로 보관할 수 있어요.</span></div><div class="personal-backup-actions"><button type="button" data-personal-export>백업 저장</button><button type="button" data-personal-import>백업 불러오기</button><button type="button" class="is-danger" data-personal-reset>기록 초기화</button><input type="file" accept="application/json,.json" data-personal-import-file hidden></div></section>');
@@ -333,6 +361,10 @@
       if(confirm('이 기기에 저장된 내 팬허브 기록을 모두 초기화할까요?'))resetPersonalData();
     });
     root.querySelector('[data-personal-alert-toggle]')?.addEventListener('click',async e=>{const enabled=await setAlertEnabled(!read().alerts.enabled);e.currentTarget.textContent=enabled?'ON':'OFF';e.currentTarget.setAttribute('aria-pressed',String(enabled))});
+    root.querySelector('[data-personal-push-retry]')?.addEventListener('click',async e=>{
+      e.currentTarget.disabled=true;e.currentTarget.textContent='연결 중…';
+      const state=read();const connected=await syncPushSubscription(true,state);const latest=read();latest.alerts.pushEnabled=Boolean(connected);write(latest);
+    });
     root.querySelectorAll('[data-personal-alert-type]').forEach(input=>input.addEventListener('change',()=>setAlertType(input.dataset.personalAlertType,input.checked)));
     root.querySelector('[data-personal-alert-lead]')?.addEventListener('change',e=>setAlertLead(e.currentTarget.value));
     root.querySelectorAll('[data-collection-filter]').forEach(button=>button.addEventListener('click',()=>{root.querySelectorAll('[data-collection-filter]').forEach(n=>n.classList.toggle('is-active',n===button));const filter=button.dataset.collectionFilter;root.querySelectorAll('[data-personal-collection]').forEach(article=>article.hidden=filter!=='all'&&article.dataset.personalCollection!==filter)}));

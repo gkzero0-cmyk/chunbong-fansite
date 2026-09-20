@@ -81,4 +81,20 @@ assert.equal(calls.length, 2, 'structured live failure should trigger exactly on
 assert.equal(calls[1].init.method, 'POST');
 assert.match(String(calls[1].init.body), /bid=chunbongtv/);
 
+const domainCalls=[];
+const domainFallback=await fetchSoopStructuredLive({
+  fetchImpl:async(url,init={})=>{
+    domainCalls.push({url:String(url),init});
+    if(domainCalls.length===1)return{ok:true,status:200,json:async()=>({})};
+    if(domainCalls.length===2)return{ok:true,status:200,json:async()=>({broadNo:297222333,broadTitle:'도메인 보조 LIVE',currentSumViewer:42})};
+    throw new Error('player fallback should not run when secondary channel endpoint is authoritative');
+  }
+});
+assert.equal(domainFallback.live,true,'secondary api-channel domain should recover LIVE when the primary returns an unknown payload');
+assert.equal(domainFallback.broadcastId,'297222333');
+assert.match(domainCalls[0].url,/api-channel\.sooplive\.co\.kr/);
+assert.match(domainCalls[1].url,/api-channel\.sooplive\.com/);
+assert.equal(domainCalls[0].init.headers.origin,'https://www.sooplive.co.kr','structured SOOP request must send the browser-like Origin expected by the channel API');
+assert.equal(domainCalls[0].init.headers.referer,'https://www.sooplive.co.kr/','structured SOOP request must send the browser-like Referer expected by the channel API');
+
 console.log('SOOP live state regression test passed');

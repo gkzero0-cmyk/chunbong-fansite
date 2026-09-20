@@ -4,6 +4,7 @@
   const STORAGE_KEY = 'chunbong-activity-seen-v1';
   const REFRESH_MS = 3 * 60 * 1000;
   const MAX_SEEN_IDS = 240;
+  const CATEGORY_META={schedule:{kind:'schedule',icon:'◷'},notice:{kind:'notice',icon:'!'},vod:{kind:'replay',icon:'▶'},catch:{kind:'clips',icon:'⚡'},clip:{kind:'clips',icon:'⚡'},videos:{kind:'youtube',icon:'▷'},shorts:{kind:'youtube',icon:'▷'},fanart:{kind:'fanart',icon:'✦'}};
   const header = document.querySelector('.site-header');
   if (!header || header.querySelector('.activity-center')) return;
 
@@ -132,12 +133,13 @@
   }
 
   function rowHtml(item) {
+    const meta=CATEGORY_META[item.type]||{kind:'notice',icon:'•'};
     const thumb = item.thumb
-      ? '<span class="activity-thumb"><img src="' + escapeHtml(item.thumb) + '" alt="" loading="lazy" referrerpolicy="no-referrer"></span>'
-      : '<span class="activity-type-icon" data-type="' + escapeHtml(item.type) + '">' + escapeHtml((item.label || 'NEW').slice(0,2)) + '</span>';
-    return '<a class="activity-item" href="' + escapeHtml(item.href || item.sourceHref || '#') + '" data-activity-id="' + escapeHtml(item.id || '') + '">' +
+      ? '<span class="activity-thumb category-accent" data-kind="' + escapeHtml(meta.kind) + '"><img src="' + escapeHtml(item.thumb) + '" alt="" loading="lazy" referrerpolicy="no-referrer"></span>'
+      : '<span class="activity-type-icon category-accent" data-kind="' + escapeHtml(meta.kind) + '">' + escapeHtml(meta.icon) + '</span>';
+    return '<a class="activity-item category-accent" data-kind="' + escapeHtml(meta.kind) + '" href="' + escapeHtml(item.href || item.sourceHref || '#') + '" data-activity-id="' + escapeHtml(item.id || '') + '">' +
       thumb +
-      '<span class="activity-item-copy"><span class="activity-item-meta"><b>' + escapeHtml(item.label || '업데이트') + '</b><time>' + escapeHtml(timeText(item)) + '</time></span>' +
+      '<span class="activity-item-copy" data-kind="' + escapeHtml(meta.kind) + '"><span class="activity-item-meta"><b>' + escapeHtml(item.label || '업데이트') + '</b><time>' + escapeHtml(timeText(item)) + '</time></span>' +
       '<strong>' + escapeHtml(item.title || '새 콘텐츠') + '</strong>' +
       (item.meta ? '<small>' + escapeHtml(item.meta) + '</small>' : '') +
       '</span><span class="activity-arrow" aria-hidden="true">›</span></a>';

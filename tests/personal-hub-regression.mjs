@@ -32,6 +32,10 @@ assert.match(hub,/function recordGameStart/);
 assert.match(hub,/function gameSnapshot/);
 assert.match(hub,/function dailyChallenge/);
 assert.match(hub,/Notification\.requestPermission/,'broadcast reminder must ask permission only after opt-in');
+assert.match(hub,/async function ensurePushServiceWorker\(\)/,'push alerts must ensure a service worker instead of depending on page load timing');
+assert.match(hub,/navigator\.serviceWorker\.register\('\/service-worker\.js'/,'push alerts must be able to register the service worker directly');
+assert.match(hub,/data-personal-push-retry/,'failed background push setup must expose a retry action');
+assert.match(hub,/백그라운드 Push 연결 실패/,'failed background push setup must be visible to the user');
 assert.match(hub,/else if\(permission!=='granted'\)enabled=false/,'blocked browser notification permission must keep the alert preference OFF');
 assert.match(hub,/function alertPermissionGranted\(\)/,'runtime notification permission guard missing');
 assert.match(hub,/function disableUnavailableAlerts\(state\)/,'revoked notification permission must disable persisted alerts');
@@ -50,6 +54,9 @@ assert.doesNotMatch(hub,/fetch\([^)]*(favorite|tarot|personal|profile)/i,'person
 
 assert.match(myhub,/data-personal-dashboard/,'My Fan Hub dashboard root missing');
 assert.match(myhub,/현재 브라우저의 로컬 저장소/,'local-only privacy explanation missing');
+assert.match(hub,/function personalCategoryKind\(/,'My Hub saved content must normalize category identity');
+assert.match(hub,/data-kind=/,'My Hub saved content must expose shared category kinds');
+assert.match(hubCss,/var\(--category-accent\)/,'My Hub category labels must use shared category accents');
 assert.match(hub,/내 보관함/);
 assert.match(hub,/이어보기/);
 assert.match(hub,/타로 기록장/);
@@ -90,7 +97,7 @@ for(const asset of ['/timeline.html','/timeline.css','/timeline.js']) assert.ok(
 
 assert.match(shell,/personal-hub\.css/,'shared shell must load personal hub styles');
 assert.match(shell,/personal-hub\.js/,'shared shell must load personal hub runtime');
-assert.match(sw,/chunbong-pwa-20260921-v23/,'timeline retirement must advance PWA cache');
+assert.match(sw,/chunbong-pwa-20260921-v25/,'timeline retirement must advance PWA cache');
 for(const asset of ['/personal-hub.css','/personal-hub.js','/myhub.html']){
   assert.ok(sw.includes("'"+asset+"'"),'PWA app shell missing '+asset);
 }

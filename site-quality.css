@@ -1,3 +1,4 @@
+@import url("site-design-system.css");
 /* Shared UX / accessibility layer. */
 :where(a,button,input,select,textarea,[tabindex]):focus-visible{
   outline:3px solid #ff8a43;
@@ -205,4 +206,64 @@ body[data-game] .pwa-install-chip{display:none!important}
 [data-theme="light"] .site-header :is(.site-search-trigger,.header-myhub,.theme-toggle,.changelog-button,.activity-bell){
   border-color:#d8cec5;
   background:#fff;
+}
+
+
+/* 2026-09-21 clear navigation state hierarchy */
+@media(min-width:761px){
+  .site-header .main-nav>a,
+  .site-header .nav-minigames>a[data-nav="minigames"],
+  .site-header .nav-group-trigger{
+    color:var(--text-secondary);
+    font-weight:800;
+  }
+  .site-header .main-nav>a:hover,
+  .site-header .nav-minigames>a[data-nav="minigames"]:hover,
+  .site-header .nav-group:hover>.nav-group-trigger,
+  .site-header .nav-group:focus-within>.nav-group-trigger,
+  .site-header .nav-group.open>.nav-group-trigger{
+    color:var(--text-primary);
+    border-color:rgba(255,255,255,.12);
+    background:rgba(255,255,255,.045);
+  }
+  .site-header .nav-group.is-current-section>.nav-group-trigger{
+    color:#ffb071;
+    border-color:rgba(255,107,24,.36);
+    background:rgba(255,107,24,.09);
+    font-weight:900;
+  }
+  .site-header .main-nav>a[aria-current="page"],
+  .site-header .nav-minigames>a[data-nav="minigames"][aria-current="page"],
+  .site-header .nav-group-submenu a[aria-current="page"]{
+    color:#1a0d05;
+    border-color:#ff7a1a;
+    background:#ff7a1a;
+    font-weight:950;
+    box-shadow:0 7px 20px rgba(255,107,24,.16);
+  }
+  [data-theme="light"] .site-header .main-nav>a,
+  [data-theme="light"] .site-header .nav-minigames>a[data-nav="minigames"],
+  [data-theme="light"] .site-header .nav-group-trigger{color:#4a4038}
+  [data-theme="light"] .site-header .main-nav>a:hover,
+  [data-theme="light"] .site-header .nav-minigames>a[data-nav="minigames"]:hover,
+  [data-theme="light"] .site-header .nav-group:hover>.nav-group-trigger,
+  [data-theme="light"] .site-header .nav-group:focus-within>.nav-group-trigger,
+  [data-theme="light"] .site-header .nav-group.open>.nav-group-trigger{
+    color:#1f1814;
+    border-color:#d4cbc3;
+    background:#f4f1ee;
+  }
+  [data-theme="light"] .site-header .nav-group.is-current-section>.nav-group-trigger{
+    color:#c94f00;
+    border-color:#e58a50;
+    background:#fff1e7;
+  }
+  [data-theme="light"] .site-header .main-nav>a[aria-current="page"],
+  [data-theme="light"] .site-header .nav-minigames>a[data-nav="minigames"][aria-current="page"],
+  [data-theme="light"] .site-header .nav-group-submenu a[aria-current="page"]{
+    color:#fff;
+    border-color:#e85d04;
+    background:#e85d04;
+    box-shadow:0 7px 18px rgba(201,79,0,.14);
+  }
 }
