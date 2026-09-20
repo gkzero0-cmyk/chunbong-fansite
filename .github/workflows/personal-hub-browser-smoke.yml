@@ -11,6 +11,8 @@ on:
       - 'timeline.js'
       - 'timeline.css'
       - 'index.html'
+      - 'home-overview.js'
+      - 'api/content.js'
       - 'page-media.js'
       - 'page-fanart.js'
       - 'tarot.js'
@@ -86,12 +88,21 @@ jobs:
           assert.match(await page.locator('[data-personal-dashboard]').innerText(),/저장 테스트 영상/,'favorites must persist after reload');
           assert.match(await page.locator('[data-personal-dashboard]').innerText(),/1:33까지/,'native progress metadata must render in continue watching');
 
+          await page.route('**/api/content?type=live',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({live:true,authoritative:true,broadcastId:'test-live',title:'테스트 LIVE 방송',viewerCount:1234,categoryName:'Minecraft'})}));
+          await page.route('**/api/content?type=schedule',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:[]})}));
+          await page.route('**/api/content?type=activity',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:[]})}));
+
           await page.goto(process.env.BASE_URL+'/?source=pwa',{waitUntil:'domcontentloaded'});
           await page.waitForSelector('[data-pwa-app-tabbar]');
           await page.waitForSelector('[data-app-home-panel] .app-home-grid');
           assert.ok(await page.locator('[data-app-home-panel]').isVisible(),'personal app home must be visible in installed-app mode');
           assert.match(await page.locator('[data-app-home-panel]').innerText(),/이어보기 테스트 영상/);
           assert.match(await page.locator('[data-app-home-panel]').innerText(),/태양/);
+          await page.waitForFunction(()=>document.querySelector('[data-home-overview-card="schedule"]')?.textContent?.includes('LIVE NOW'));
+          const liveCard=await page.locator('[data-home-overview-card="schedule"]').innerText();
+          assert.match(liveCard,/LIVE NOW/,'LIVE NOW must replace the schedule card while SOOP is live');
+          assert.match(liveCard,/테스트 LIVE 방송/);
+          assert.match(liveCard,/1,234명 시청 중/);
 
           await page.goto(process.env.BASE_URL+'/timeline.html',{waitUntil:'domcontentloaded'});
           await page.waitForSelector('[data-chunbong-timeline] .timeline-row');
