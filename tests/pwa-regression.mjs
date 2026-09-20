@@ -52,7 +52,7 @@ assert.match(sw, /\/site-health\.js/, 'PWA app shell must cache runtime health c
 assert.match(sw, /\/mobile-site\.js/, 'PWA app shell must cache mobile-site.js');
 assert.match(sw, /\/personal-hub\.js/, 'PWA app shell must cache personal hub runtime');
 assert.match(sw, /\/myhub\.html/, 'PWA app shell must cache My Fan Hub');
-assert.match(sw, /\/timeline\.html/, 'PWA app shell must cache timeline');
+assert.doesNotMatch(sw, /\/timeline(?:\.html|\.css|\.js)/, 'retired timeline must not remain in the PWA app shell');
 assert.match(sw, /notificationclick/, 'PWA service worker must route reminder notification clicks');
 assert.match(page, /schedule: '\/api\/content\?type=schedule'/, 'schedule page must use live content API');
 assert.match(schedulePage, /await loadContent\('schedule'\)/, 'schedule renderer must request live schedule data');
