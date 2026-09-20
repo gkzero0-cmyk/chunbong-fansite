@@ -45,6 +45,8 @@ assert.match(js,/data-pwa-app-more-toggle/,'installed app more menu control miss
 assert.match(js,/data-pwa-ios-install/,'iOS Safari install helper missing');
 assert.match(js,/pwa-app-keyboard-open/,'app tabbar must react to the mobile keyboard');
 assert.match(css,/\.pwa-app-tabbar\{/,'mobile tabbar styles missing');
+assert.match(css,/@media\(min-width:761px\)\{[\s\S]*\.pwa-app-tabbar,[\s\S]*display:none!important/,'mobile tabbar must disappear above the mobile breakpoint');
+assert.match(js,/모바일 빠른 메뉴/,'bottom navigation needs a browser-neutral accessible label');
 assert.match(css,/body\.mobile-tabbar-mode:not\(\[data-game\]\)/,'regular mobile browser bottom spacing missing');
 assert.match(css,/content-visibility:auto/,'long mobile card lists should defer off-screen painting');
 assert.match(css,/backdrop-filter:blur\(8px\)!important/,'mobile header/menu blur should be reduced');

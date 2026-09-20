@@ -662,3 +662,9 @@
 @media(prefers-reduced-motion:reduce){
   .pwa-app-tabbar{transition:none!important}
 }
+
+
+@media(min-width:761px){
+  .pwa-app-tabbar,
+  .pwa-app-more-backdrop{display:none!important}
+}

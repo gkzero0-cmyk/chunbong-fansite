@@ -72,7 +72,7 @@
     const bar=document.createElement('nav');
     bar.className='pwa-app-tabbar';
     bar.dataset.pwaAppTabbar='';
-    bar.setAttribute('aria-label','앱 빠른 메뉴');
+    bar.setAttribute('aria-label','모바일 빠른 메뉴');
     for(const item of tabs){
       const link=document.createElement('a');
       link.href=item.href;
