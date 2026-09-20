@@ -6,7 +6,7 @@ const read = (name) => fs.readFileSync(new URL(name, root), 'utf8');
 const index = read('index.html');
 const content = read('content.js');
 const script = read('page.js');
-const api = ['api/content.js','api/_shared.js','api/vod.js','api/notice.js','api/clips.js','api/fanart.js'].map(read).join('\n');
+const api = ['api/content.js','lib/content-api/_shared.js','lib/content-api/vod.js','lib/content-api/notice.js','lib/content-api/clips.js','lib/content-api/fanart.js'].map(read).join('\n');
 const allHtml = ['index.html','schedule.html','notice.html','vod.html','clips.html','fanart.html'].map(read).join('\n');
 
 assert.ok(fs.existsSync(new URL('assets/chunbong-main.webp', root)), 'uploaded main character image should exist');
