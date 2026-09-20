@@ -36,6 +36,7 @@ assert.match(hub,/function recordGameStart/);
 assert.match(hub,/function gameSnapshot/);
 assert.match(hub,/function dailyChallenge/);
 assert.match(hub,/Notification\.requestPermission/,'broadcast reminder must ask permission only after opt-in');
+assert.match(hub,/else if\(permission!=='granted'\)enabled=false/,'blocked browser notification permission must keep the alert preference OFF');
 assert.match(hub,/\/api\/content\?type=schedule/,'broadcast reminder must use the live schedule');
 assert.match(hub,/\/api\/content\?type=live/,'broadcast reminder must also monitor actual SOOP live state');
 assert.match(hub,/춘봉 방송이 시작됐어요/,'actual live-start notification copy missing');
