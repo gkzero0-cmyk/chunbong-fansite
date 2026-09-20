@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { normalizeVideo } = require('../api/_shared.js');
+const { normalizeVideo } = require('../lib/content-api/_shared.js');
 
 const catchItem = normalizeVideo({ catchNo: 123456789, catchTitle: '재생 테스트' }, 'catch');
 assert.match(
