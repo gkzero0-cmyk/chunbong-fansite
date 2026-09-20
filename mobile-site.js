@@ -409,14 +409,7 @@
     if(strong)strong.textContent=labels[page]||'춘봉 팬허브';
     if(small)small.textContent='CHUNBONG FAN HUB';
   }
-  const action=document.createElement('a');
-  action.className='pwa-header-action';
-  action.href=page==='myhub'?'index.html':'myhub.html';
-  action.setAttribute('aria-label',page==='myhub'?'홈으로 이동':'내 팬허브 열기');
-  action.innerHTML=page==='myhub'
-    ? '<span aria-hidden="true">⌂</span><small>홈</small>'
-    : '<span aria-hidden="true">CB</span><small>MY</small>';
-  header.appendChild(action);
+  // 하단 탭바의 더보기 → 내 팬허브 경로가 있어 모바일 상단 MY 버튼은 제거해 시야를 확보합니다.
 })();
 
 
@@ -471,8 +464,7 @@
     state.target='_blank';state.rel='noreferrer';
     state.hidden=true;
     state.innerHTML='<i aria-hidden="true"></i><span>LIVE</span>';
-    const action=header.querySelector('.pwa-header-action');
-    if(action)header.insertBefore(state,action);else header.appendChild(state);
+    header.appendChild(state);
     try{
       const response=await fetch('/api/content?type=live',{headers:{accept:'application/json'},cache:'no-store'});
       const payload=response.ok?await response.json():null;
