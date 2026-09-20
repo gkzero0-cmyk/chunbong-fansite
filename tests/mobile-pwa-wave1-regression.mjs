@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 
 const mobileJs = await readFile(new URL('../mobile-site.js', import.meta.url), 'utf8');
 const mobileCss = await readFile(new URL('../mobile-site.css', import.meta.url), 'utf8');
-const scheduleJs = await readFile(new URL('../page-schedule.js', import.meta.url), 'utf8');
+const scheduleJs = await readFile(new URL('../live-fixes.js', import.meta.url), 'utf8');
 
 for (const token of [
   'pwa-home-dashboard-mode',
@@ -27,6 +27,7 @@ for (const token of [
 
 assert.ok(scheduleJs.includes('renderMobileWeekStrip'), 'schedule mobile week renderer missing');
 assert.ok(scheduleJs.includes('data-schedule-date'), 'schedule cards need mobile date hooks');
+assert.ok(scheduleJs.includes('mobileDateFilter'), 'schedule mobile filter state missing');
 assert.ok(scheduleJs.includes('aria-pressed'), 'mobile day strip should expose selection state');
 
 console.log('mobile-pwa-wave1-regression: ok');
