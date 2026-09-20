@@ -338,7 +338,9 @@
     if(!row){root.innerHTML='<div class="data-empty">방송한 날짜를 선택하면 상세 기록을 보여줍니다.</div>';return;}
     const sessions=Array.isArray(row.sessions)?row.sessions:[];
     const counts=row;
-    root.innerHTML=`<small>${esc(row.date)}</small><h3>${number(row.streamCount)}회 방송 · ${esc(minutes(row.durationMinutes))}</h3><div class="data-calendar-stats"><span>평균 <b>${number(row.averageViewers)}</b></span><span>최대 <b>${number(row.maxViewers)}</b></span><span>애청자 <b>${esc(countDeltaText(counts.followerCount,counts.followerDelta))}</b></span><span>팬클럽 <b>${esc(countDeltaText(counts.fanclubCount,counts.fanclubDelta))}</b></span></div>${sessions.map(session=>`<article class="data-calendar-session"><strong>${esc(session.title||'춘봉 방송')}</strong><span>${esc(minutes(session.durationMinutes))} · 평균 ${number(session.averageViewers)} · 최대 ${number(session.maxViewers)}</span></article>`).join('')}`;
+    root.innerHTML=`<small>${esc(row.date)}</small><h3>${number(row.streamCount)}회 방송 · ${esc(minutes(row.durationMinutes))}</h3><div class="data-calendar-stats"><span>평균 <b>${number(row.averageViewers)}</b></span><span>최대 <b>${number(row.maxViewers)}</b></span><span>애청자 <b>${esc(countDeltaText(counts.followerCount,counts.followerDelta))}</b></span><span>팬클럽 <b>${esc(countDeltaText(counts.fanclubCount,counts.fanclubDelta))}</b></span></div>${sessions.map(session=>`<article class="data-calendar-session"><strong>${esc(session.title||'춘봉 방송')}</strong><span>${esc(minutes(session.durationMinutes))} · 평균 ${number(session.averageViewers)} · 최대 ${number(session.maxViewers)}</span></article>`).join('')}<section class="data-calendar-related" data-calendar-related data-date="${esc(row.date)}"><small>RELATED CONTENT</small><p>같은 날짜의 콘텐츠를 찾는 중...</p></section>`;
+    const media=window.__CHUNBONG_DATA_CALENDAR_MEDIA__;
+    if(media?.render)void media.render(row.date);
   }
 
   function enhanceCalendar(payload) {
