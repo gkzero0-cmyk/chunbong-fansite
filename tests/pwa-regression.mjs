@@ -4,7 +4,7 @@ import fs from 'node:fs';
 const read = path => fs.readFileSync(path, 'utf8');
 const htmlPaths = [
   'changelog.html','clips.html','data.html','fanart.html','history.html','index.html',
-  'minigames.html','myhub.html','notice.html','schedule.html','tarot.html','timeline.html','vod.html','youtube.html'
+  'minigames.html','myhub.html','notice.html','schedule.html','tarot.html','vod.html','youtube.html'
 ];
 const manifest = JSON.parse(read('manifest.webmanifest'));
 const sw = read('service-worker.js');
@@ -37,7 +37,7 @@ assert.match(page, /새 버전 준비 완료/);
 assert.match(css, /\.pwa-install-chip/);
 assert.match(css, /\.pwa-update-toast/);
 assert.match(sw, /CHUNBONG_PWA/);
-assert.match(sw, /chunbong-pwa-20260920-v18/,'mobile app mode release must advance the PWA cache');
+assert.match(sw, /chunbong-pwa-20260920-v19/,'mobile app mode release must advance the PWA cache');
 assert.match(sw, /\/offline\.html/);
 assert.match(sw, /url\.pathname\.startsWith\('\/api\/'\)/);
 assert.match(sw, /networkFirst/);
@@ -51,7 +51,6 @@ assert.match(sw, /\/site-health\.js/, 'PWA app shell must cache runtime health c
 assert.match(sw, /\/mobile-site\.js/, 'PWA app shell must cache mobile-site.js');
 assert.match(sw, /\/personal-hub\.js/, 'PWA app shell must cache personal hub runtime');
 assert.match(sw, /\/myhub\.html/, 'PWA app shell must cache My Fan Hub');
-assert.match(sw, /\/timeline\.html/, 'PWA app shell must cache timeline');
 assert.match(sw, /notificationclick/, 'PWA service worker must route reminder notification clicks');
 assert.match(page, /schedule: '\/api\/content\?type=schedule'/, 'schedule page must use live content API');
 assert.match(schedulePage, /await loadContent\('schedule'\)/, 'schedule renderer must request live schedule data');
