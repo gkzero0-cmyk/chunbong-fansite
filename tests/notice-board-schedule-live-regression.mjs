@@ -7,7 +7,8 @@ async function run(query, fetchImpl){
   for (const key of Object.keys(require.cache)) if (key.includes('/api/')) delete require.cache[key];
   global.fetch=fetchImpl; const handler=require(contentPath); let body;
   const res={setHeader(){},status(){return this},json(payload){body=payload;return payload}};
-  await handler({query},res); return body;
+  const params=new URLSearchParams(Object.entries(query).map(([key,value])=>[key,String(value)]));
+  await handler({url:`/api/content?${params.toString()}`},res); return body;
 }
 
 // SOOP station board responses may contain mixed or metadata-free rows. Only canonical bbs_no 126448625 is accepted; unknown membership is excluded without per-post guessing.
