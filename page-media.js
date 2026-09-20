@@ -3,7 +3,7 @@
   const core = window.ChunbongPageCore;
   if (!core || !['vod','clips','youtube'].includes(core.page)) return;
   const {
-    data, $, $, esc, loadContent, loadItems, sourceFor,
+    data, $, $$, esc, loadContent, loadItems, sourceFor,
     errorState, bindRetry, setupReveal, requestedOpenId, requestedKind
   } = core;
   const itemKey=item=>String(item?.id||item?.videoId||item?.link||item?.title||'');
