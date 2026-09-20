@@ -24,7 +24,8 @@ async function run(query, fetchImpl) {
     status(code) { statusCode = code; return this; },
     json(payload) { body = payload; return payload; }
   };
-  await handler({ query }, res);
+  const params = new URLSearchParams(Object.entries(query).map(([key, value]) => [key, String(value)]));
+  await handler({ url: `/api/content?${params.toString()}` }, res);
   return { body, statusCode };
 }
 
