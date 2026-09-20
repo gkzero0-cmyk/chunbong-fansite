@@ -45,7 +45,6 @@ jobs:
           node --check api/image.js
           node --check api/tarot-reading.js
           node --check api/version.js
-          node --check api/push-cron.js
           node --check lib/content-api/_shared.js
           node --check lib/content-api/catch-detail.js
           node --check lib/content-api/clips.js
