@@ -844,3 +844,38 @@
     padding:16px;border:1px dashed #353539;border-radius:14px;color:#918982;font-size:12px;text-align:center
   }
 }
+
+
+/* ===== Mobile wave 2: media mini player ===== */
+@media(max-width:760px){
+  body[data-page="vod"] .mobile-mini-player-close,
+  body[data-page="clips"] .mobile-mini-player-close,
+  body[data-page="youtube"] .mobile-mini-player-close{
+    display:none;position:absolute;z-index:5;right:5px;top:5px;width:32px;height:32px;min-height:32px!important;
+    padding:0;border:1px solid #ffffff35;border-radius:50%;background:#090909d9;color:#fff;font-size:21px;line-height:1;cursor:pointer;
+    box-shadow:0 4px 14px #0008
+  }
+  body[data-page="vod"] .video-viewer.is-mobile-mini,
+  body[data-page="clips"] .video-viewer.is-mobile-mini,
+  body[data-page="youtube"] .video-viewer.is-mobile-mini{
+    position:fixed!important;z-index:275!important;
+    right:8px!important;left:auto!important;top:auto!important;
+    bottom:calc(76px + env(safe-area-inset-bottom))!important;
+    width:min(58vw,224px)!important;max-width:224px!important;
+    margin:0!important;border-radius:13px!important;overflow:hidden!important;
+    box-shadow:0 18px 52px #000c!important;
+    border:1px solid #ffffff22!important;background:#080808!important
+  }
+  body[data-page="vod"] .video-viewer.is-mobile-mini .player-info,
+  body[data-page="clips"] .video-viewer.is-mobile-mini .player-info,
+  body[data-page="youtube"] .video-viewer.is-mobile-mini .player-info{display:none!important}
+  body[data-page="vod"] .video-viewer.is-mobile-mini .player-stage,
+  body[data-page="clips"] .video-viewer.is-mobile-mini .player-stage,
+  body[data-page="youtube"] .video-viewer.is-mobile-mini .player-stage{
+    width:100%!important;aspect-ratio:16/9!important;border-radius:0!important
+  }
+  body[data-page="vod"] .video-viewer.is-mobile-mini .mobile-mini-player-close,
+  body[data-page="clips"] .video-viewer.is-mobile-mini .mobile-mini-player-close,
+  body[data-page="youtube"] .video-viewer.is-mobile-mini .mobile-mini-player-close{display:grid;place-items:center}
+  body.mobile-tarot-dock-visible :is(.video-viewer.is-mobile-mini){bottom:calc(148px + env(safe-area-inset-bottom))!important}
+}
