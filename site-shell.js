@@ -1,11 +1,4 @@
 (() => {
-  const appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]') || document.createElement('meta');
-  appleTitle.name = 'apple-mobile-web-app-title';
-  appleTitle.content = '춘봉 팬허브';
-  if (!appleTitle.parentNode) document.head.appendChild(appleTitle);
-})();
-
-(() => {
   'use strict';
   const memory = new Map();
   const CACHE_PREFIX = 'chunbong-cache-v2:';
