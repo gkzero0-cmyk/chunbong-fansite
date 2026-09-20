@@ -141,7 +141,16 @@ async function tarotJournalMetadata(browser){
     const ai=page.locator('#tarot-ai-button');
     await page.waitForFunction(()=>!document.querySelector('#tarot-ai-button')?.disabled);
     await ai.click();
-    await page.waitForFunction(()=>document.querySelector('#tarot-ai-content')?.textContent?.includes('테스트'));
+    if(MOCK){
+      await page.waitForFunction(()=>document.querySelector('#tarot-ai-content')?.textContent?.includes('테스트'));
+    }else{
+      await page.waitForFunction(()=>{
+        const content=document.querySelector('#tarot-ai-content');
+        const status=(document.querySelector('#tarot-ai-status')?.textContent||'').trim();
+        const text=(content?.textContent||'').trim();
+        return Boolean(content&&!content.hidden&&text.length>40&&status.includes('준비됐습니다'));
+      });
+    }
     await page.goto(BASE+'/myhub.html?_journal='+Date.now(),{waitUntil:'domcontentloaded'});
     await page.waitForTimeout(220);
     const row=page.locator('.personal-tarot-list article').first();
