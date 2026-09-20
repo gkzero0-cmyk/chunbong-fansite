@@ -7,8 +7,7 @@
   const COMBO_WINDOW=2800;
   const CLEAR_PARTICLES_PER_TILE=4;
   const CLEAR_RESOLVE_MS=300;
-  const TILE_MARKS=['●','▲','◆','★','＋','✦','■','⬟','≡','♥','✿'];
-  const COLORS=['#16c931','#2377ee','#ef254f','#ffc51f','#ff6b24','#982fe8','#16c4c8','#8e531d','#969ca1','#ef4a9d','#49b856'];
+  const COLORS=['#E53935','#1E88E5','#FDD835','#43A047','#FB8C00','#8E24AA','#00ACC1','#EC407A','#90A4AE','#3949AB','#7CB342'];
 
   const e={
     game:document.getElementById('chuncortile'),board:document.getElementById('ct-board'),wrap:document.getElementById('ct-board-wrap'),
@@ -52,9 +51,9 @@
       cell.className='ct-cell '+(type===null?'is-empty':'is-tile');
       if(index===hintIndex)cell.classList.add('is-hint');
       cell.replaceChildren();
-      cell.setAttribute('aria-label',type===null?'빈 칸':`춘봉 타일 ${type+1}, ${TILE_MARKS[type]||type+1} 표식`);
+      cell.setAttribute('aria-label',type===null?'빈 칸':`춘봉 표정 타일 ${type+1}`);
       if(type!==null){
-        const tile=document.createElement('span');tile.className='ct-tile type-'+type;tile.style.setProperty('--tile-color',COLORS[type]);tile.dataset.mark=TILE_MARKS[type]||String(type+1);
+        const tile=document.createElement('span');tile.className='ct-tile type-'+type;tile.style.setProperty('--tile-color',COLORS[type]);
         const face=document.createElement('i');face.className=faceClass(type);tile.append(face);cell.append(tile);
         if(clearSet?.has(index))cell.classList.add('is-clearing');
       }
@@ -335,9 +334,8 @@
   function snapshot(){return{status:e.game.dataset.gameStatus,score,best,misses,combo,maxCombo,remainingMs,remaining:Core.remainingTiles(board),seed,board:[...board]};}
 
   buildCells();renderBoard();updateHud();void loadRanking();
-  e.board.addEventListener('pointerover',event=>{const cell=event.target.closest?.('.ct-cell');if(cell&&e.board.contains(cell))previewCell(Number(cell.dataset.index));});
-  e.board.addEventListener('pointerleave',()=>{clearPreview();if(running&&!paused)setMessage('빈 칸에 마우스를 올리면 제거될 타일을 미리 볼 수 있어요.');});
-  e.board.addEventListener('focusin',event=>{const cell=event.target.closest?.('.ct-cell');if(cell)previewCell(Number(cell.dataset.index));});
+  // Normal hover/focus no longer reveals valid moves. Preview is reserved for the Hint button.
+  e.board.addEventListener('pointerleave',()=>{clearPreview();if(running&&!paused)setMessage('빈 칸을 눌러 같은 춘봉 표정을 찾아보세요.');});
   e.board.addEventListener('focusout',event=>{if(!e.board.contains(event.relatedTarget)){clearPreview();}});
   e.start.addEventListener('click',newBoard);e.again.addEventListener('click',newBoard);e.restart.addEventListener('click',newBoard);e.pauseRestart.addEventListener('click',newBoard);
   e.pause.addEventListener('click',()=>paused?resumeGame():pauseGame(true));e.resume.addEventListener('click',resumeGame);e.hint.addEventListener('click',showHint);e.sound.addEventListener('click',toggleSound);
