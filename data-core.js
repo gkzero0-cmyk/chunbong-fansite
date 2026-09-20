@@ -317,6 +317,8 @@
   function shiftCalendar(delta) {
     const [year,month]=(state.calendarMonth||new Date().toISOString().slice(0,7)).split('-').map(Number),date=new Date(Date.UTC(year,month-1+delta,1));
     state.calendarMonth=`${date.getUTCFullYear()}-${String(date.getUTCMonth()+1).padStart(2,'0')}`;
+    state.selectedCalendarDate='';
+    const url=new URL(location.href);url.searchParams.set('view','calendar');url.searchParams.delete('date');history.replaceState(null,'',url);
     if(state.payload) renderSoopCalendar(state.payload);
   }
 
