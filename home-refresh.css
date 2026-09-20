@@ -1,5 +1,5 @@
 /* 2026-09-21 home visual refresh */
-/* Production sync marker: semantic home navigation regression aligned. */
+/* Production sync marker: semantic home navigation regression aligned; main deployment refresh 2026-09-21. */
 body[data-page="home"] .home-dday-strip{
   height:auto;
   padding:14px 20px 0;
