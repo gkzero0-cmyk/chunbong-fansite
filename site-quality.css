@@ -98,3 +98,111 @@ body[data-game] .pwa-install-chip{display:none!important}
   .pwa-status-toast{top:max(66px,calc(env(safe-area-inset-top) + 58px));font-size:.76rem;text-align:center}
 }
 @media (prefers-reduced-motion:reduce){.pwa-status-toast{transition:none}}
+
+
+/* 2026-09-21 unified desktop header rhythm */
+@media(min-width:761px){
+  .site-header{
+    gap:8px;
+  }
+  .site-header .brand{
+    order:0;
+    margin-right:auto;
+  }
+  .site-header .site-search-trigger{order:1}
+  .site-header .main-nav{order:2}
+  .site-header .theme-toggle{order:3}
+  .site-header .header-myhub{order:4}
+  .site-header .changelog-button{order:5}
+  .site-header .activity-center{order:6}
+  .site-header .nav-toggle{order:7}
+  .site-header .main-nav{
+    gap:6px;
+    margin-right:8px;
+  }
+  .site-header .main-nav>a,
+  .site-header .nav-minigames>a[data-nav="minigames"],
+  .site-header .nav-group-trigger{
+    box-sizing:border-box;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:40px;
+    height:40px;
+    padding:0 13px!important;
+    border:1px solid transparent;
+    border-radius:14px!important;
+    line-height:1;
+  }
+  .site-header .main-nav>a:hover,
+  .site-header .nav-minigames>a[data-nav="minigames"]:hover,
+  .site-header .nav-group:hover>.nav-group-trigger,
+  .site-header .nav-group:focus-within>.nav-group-trigger{
+    border-color:#332e2a;
+  }
+  .site-header .main-nav>a.active,
+  .site-header .nav-minigames>a[data-nav="minigames"].active,
+  .site-header .nav-group.active>.nav-group-trigger{
+    border-color:#ff6b1848;
+    background:#ff6b1815;
+  }
+  .site-header .site-search-trigger,
+  .site-header .header-myhub,
+  .site-header .theme-toggle,
+  .site-header .changelog-button,
+  .site-header .activity-bell{
+    box-sizing:border-box;
+    min-height:40px;
+    height:40px;
+    border:1px solid #343438;
+    border-radius:14px!important;
+    background:#111214;
+  }
+  .site-header .site-search-trigger{
+    min-width:102px;
+    justify-content:center;
+    margin-left:2px;
+    padding:0 12px;
+  }
+  .site-header .header-myhub{
+    min-width:48px;
+    justify-content:center;
+    padding:0 9px;
+  }
+  .site-header .header-myhub span{
+    min-width:auto;
+    height:auto;
+    padding:0;
+    border-radius:0;
+    background:transparent;
+    font-size:10px;
+  }
+  .site-header .activity-center{
+    height:40px;
+  }
+  .site-header :is(.site-search-trigger,.header-myhub,.theme-toggle,.changelog-button,.activity-bell):hover{
+    border-color:#ff782f70;
+    background:#171311;
+  }
+}
+@media(max-width:1180px) and (min-width:761px){
+  .site-header{gap:6px}
+  .site-header .main-nav{gap:4px;margin-right:4px}
+  .site-header .main-nav>a,
+  .site-header .nav-minigames>a[data-nav="minigames"],
+  .site-header .nav-group-trigger{
+    padding:0 10px!important;
+    font-size:12px!important;
+  }
+  .site-header .site-search-trigger{
+    min-width:40px;
+    width:40px;
+    padding:0;
+  }
+  .site-header .site-search-trigger b,
+  .site-header .site-search-trigger kbd{display:none}
+}
+[data-theme="light"] .site-header :is(.site-search-trigger,.header-myhub,.theme-toggle,.changelog-button,.activity-bell){
+  border-color:#d8cec5;
+  background:#fff;
+}
