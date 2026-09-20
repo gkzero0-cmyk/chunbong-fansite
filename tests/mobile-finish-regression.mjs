@@ -15,9 +15,12 @@ assert.ok(personal.includes("action:'unsubscribe'"),'OFF must unsubscribe backgr
 
 assert.ok(shell.includes("header-myhub"),'desktop MY fan hub entry missing');
 assert.ok(shell.includes("href='myhub.html'"),'desktop MY fan hub link missing');
-assert.ok(mobile.includes('모바일 상단 MY 버튼은 제거'),'mobile PWA top MY action should be removed');
-assert.ok(mobileCss.includes('.pwa-header-action{display:none!important}'),'mobile PWA MY action must stay hidden');
-assert.ok(mobileCss.includes('height:46px!important'),'mobile top chrome should be compact');
+assert.ok(mobile.includes("action.className='pwa-header-action'"),'mobile PWA MY action should remain');
+assert.ok(mobile.includes('mobileHeaderAutoHide'),'mobile header auto-hide behavior missing');
+assert.ok(mobileCss.includes('flex-wrap:nowrap!important'),'mobile PWA header must stay in one row');
+assert.ok(mobileCss.includes('.pwa-app-mode .site-header.pwa-compact-header .site-search-trigger{order:4!important'),'search order missing');
+assert.ok(!mobileCss.includes('.pwa-header-action{display:none!important}'),'mobile PWA MY action must not be hidden');
+assert.ok(!mobileCss.includes('height:46px!important;min-height:46px!important'),'mobile header must keep its original size');
 
 assert.ok(mobile.includes("chunbong:haptics:v1"),'optional haptics setting missing');
 assert.ok(mobile.includes("data-pwa-live-state"),'installed-app LIVE badge missing');
