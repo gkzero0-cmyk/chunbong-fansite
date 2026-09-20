@@ -51,6 +51,7 @@
   async function load(){
     const [liveResult,scheduleResult,activityResult,dataResult]=await Promise.allSettled([get('live'),get('schedule'),get('activity'),get('data')]);
     const live=liveResult.status==='fulfilled'&&liveResult.value?.live===true?liveResult.value:null;
+    scheduleRoot?.classList.toggle('is-live-now',Boolean(live));
     if(live){
       const viewers=Number.isFinite(Number(live.viewerCount))&&Number(live.viewerCount)>0?Number(live.viewerCount).toLocaleString('ko-KR')+'명 시청 중':'지금 방송 중';
       setCard(scheduleRoot,{label:'LIVE NOW',title:live.title||'춘봉 LIVE',desc:[live.categoryName,viewers].filter(Boolean).join(' · '),href:'https://www.sooplive.com/station/chunbongtv',time:'SOOP에서 바로 보기'});
