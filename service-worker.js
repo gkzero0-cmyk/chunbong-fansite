@@ -1,5 +1,5 @@
 /* CHUNBONG_PWA v1 */
-const CACHE_NAME = 'chunbong-pwa-20260920-v17';
+const CACHE_NAME = 'chunbong-pwa-20260920-v18';
 const APP_SHELL = [
   '/',
   '/index.html',
