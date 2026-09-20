@@ -4,6 +4,7 @@
   const root=document.querySelector('[data-minigame-profile]');
   if(!root)return;
 
+  const UNIFIED_NICKNAME_KEY='chunbong.minigame.nickname.v1';
   const KEYS={
     nickname:['chuntris.nickname.v1','chunbak.multiplayer.nickname','chungwagame.multiplayer.nickname','chuncortile.multiplayer.nickname'],
     chuntrisClassic:['chuntris.bestScore.classic.v1','chuntris.bestScore.hard.v1','chuntris.bestScore.classic.extreme.v1'],
@@ -29,7 +30,7 @@
   };
 
   function readProfile(){
-    const nickname=KEYS.nickname.map(safeGet).find(value=>value.trim())?.trim()||'로컬 플레이어';
+    const nickname=(safeGet(UNIFIED_NICKNAME_KEY)||KEYS.nickname.map(safeGet).find(value=>value.trim())||'').trim()||'로컬 플레이어';
     const classic=maxOf(KEYS.chuntrisClassic);
     const sprint=minOf(KEYS.chuntrisSprint);
     const score180=maxOf(KEYS.chuntrisScore180);
@@ -45,8 +46,41 @@
     if(node)node.textContent=value;
   }
 
+  function setNickname(value){
+    const nickname=String(value||'').trim().slice(0,20);
+    if(!nickname)return false;
+    try{
+      localStorage.setItem(UNIFIED_NICKNAME_KEY,nickname);
+      KEYS.nickname.forEach(key=>localStorage.setItem(key,nickname));
+    }catch(_){return false}
+    render();
+    document.dispatchEvent(new CustomEvent('chunbong:minigame-profile-updated',{detail:{nickname}}));
+    return true;
+  }
+
+  function ensureNicknameEditor(data){
+    const host=root.querySelector('.minigame-profile-id');
+    if(!host)return;
+    let form=host.querySelector('[data-profile-edit]');
+    if(!form){
+      form=document.createElement('form');
+      form.className='minigame-profile-edit';
+      form.dataset.profileEdit='';
+      form.innerHTML='<input type="text" maxlength="20" aria-label="미니게임 통합 닉네임" placeholder="통합 닉네임"><button type="submit">4개 게임에 적용</button>';
+      host.appendChild(form);
+      form.addEventListener('submit',event=>{
+        event.preventDefault();
+        const input=form.querySelector('input');
+        if(setNickname(input?.value))input.value=readProfile().nickname;
+      });
+    }
+    const input=form.querySelector('input');
+    if(input&&document.activeElement!==input)input.value=data.nickname==='로컬 플레이어'?'':data.nickname;
+  }
+
   function render(){
     const data=readProfile();
+    ensureNicknameEditor(data);
     setText('[data-profile-name]',data.nickname);
     setText('[data-profile-progress]',data.completed+'/4 게임 기록');
     const meter=root.querySelector('[data-profile-meter]');
@@ -93,5 +127,5 @@
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)render();});
   document.addEventListener('chunbong:personal-updated',render);
   window.addEventListener('pageshow',render);
-  window.ChunbongMinigameProfile={readProfile,render};
+  window.ChunbongMinigameProfile={readProfile,setNickname,render};
 })();
