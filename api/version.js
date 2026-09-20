@@ -1,4 +1,4 @@
-/* Production audit follow-up: keep deployment SHA aligned with main for browser smoke validation. */
+/* Production audit follow-up v2: validate real tarot content and keep deployment SHA aligned with main. */
 let latestMainCache={sha:'',at:0};
 const MAIN_CACHE_MS=5*60*1000;
 
