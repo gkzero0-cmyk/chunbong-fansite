@@ -1,4 +1,50 @@
 {
   "version": 1,
-  "sessions": []
+  "sessions": [
+    {
+      "id": "2026-09-06T06:59:44.000Z",
+      "broadcastId": "",
+      "startedAt": "2026-09-06T06:59:44.000Z",
+      "endedAt": "2026-09-20T23:43:40.613Z",
+      "date": "2026-09-06",
+      "durationMinutes": 21164,
+      "averageViewers": 62,
+      "maxViewers": 171,
+      "viewerSampleCount": 629,
+      "followerStart": 29804,
+      "followerEnd": 30262,
+      "followerDelta": 458,
+      "fanclubStart": 7612,
+      "fanclubEnd": 7672,
+      "fanclubDelta": 60,
+      "title": "7시 그냥서버:적자생존 설명회",
+      "categories": [
+        {
+          "id": "810000",
+          "name": "버추얼",
+          "minutes": 4768,
+          "sampleCount": 516,
+          "averageViewers": 64,
+          "maxViewers": 171
+        },
+        {
+          "id": "40017",
+          "name": "마인크래프트",
+          "minutes": 733,
+          "sampleCount": 85,
+          "averageViewers": 57,
+          "maxViewers": 79
+        },
+        {
+          "id": "40058",
+          "name": "오버워치",
+          "minutes": 266,
+          "sampleCount": 28,
+          "averageViewers": 43,
+          "maxViewers": 58
+        }
+      ],
+      "measurement": "fan-site-sampled-5m"
+    }
+  ]
 }
