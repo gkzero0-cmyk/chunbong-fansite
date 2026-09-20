@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { normalizeSoopBroadPayload, resolveLiveState } = require('../lib/soop-live-state.js');
+const { normalizeSoopBroadPayload, normalizeSoopPlayerPayload, resolveLiveState, fetchSoopStructuredLive } = require('../lib/soop-live-state.js');
 
 const structured = normalizeSoopBroadPayload({
   broad: {
@@ -53,5 +53,32 @@ assert.equal(resolveLiveState([explicitOffline]).live, false);
 
 const unknown = resolveLiveState([{ live: null, authoritative: false, source: 'failed' }]);
 assert.equal(unknown.live, null, 'missing or failed signals must remain unknown instead of false OFFLINE');
+
+const playerLive = normalizeSoopPlayerPayload({
+  CHANNEL: { RESULT: 1, BNO: '297123456', TITLE: '플레이어 API 방송', VIEWCNT: '81' }
+});
+assert.equal(playerLive.live, true);
+assert.equal(playerLive.authoritative, true);
+assert.equal(playerLive.broadcastId, '297123456');
+assert.equal(playerLive.title, '플레이어 API 방송');
+assert.equal(playerLive.viewerCount, 81);
+
+const playerOffline = normalizeSoopPlayerPayload({ CHANNEL: { RESULT: -1, BNO: 0 } });
+assert.equal(playerOffline.live, false);
+assert.equal(playerOffline.authoritative, true);
+
+const calls = [];
+const fallbackResult = await fetchSoopStructuredLive({
+  fetchImpl: async (url, init = {}) => {
+    calls.push({ url: String(url), init });
+    if (calls.length === 1) return { ok: false, status: 403, json: async () => ({}) };
+    return { ok: true, status: 200, json: async () => ({ CHANNEL: { RESULT: -1, BNO: 0 } }) };
+  }
+});
+assert.equal(fallbackResult.live, false, 'player API fallback should recover an authoritative offline state');
+assert.equal(fallbackResult.authoritative, true);
+assert.equal(calls.length, 2, 'structured live failure should trigger exactly one player API fallback');
+assert.equal(calls[1].init.method, 'POST');
+assert.match(String(calls[1].init.body), /bid=chunbongtv/);
 
 console.log('SOOP live state regression test passed');
