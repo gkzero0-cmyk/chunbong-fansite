@@ -1,4 +1,4 @@
-const { naverHeaders } = require('./_shared');
+const { naverHeaders } = require('../lib/content-api/_shared');
 
 function allowed(url) {
   try {
