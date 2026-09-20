@@ -9,6 +9,7 @@ const sw=read('service-worker.js');
 
 assert.doesNotThrow(()=>new Function(js),'minigame profile runtime must remain valid JavaScript');
 assert.match(html,/data-minigame-profile/,'minigames hub must include local record profile');
+assert.ok(html.indexOf('class="minigame-grid"') < html.indexOf('data-minigame-profile'),'game choices should appear before personal records');
 assert.match(html,/data-record="chuntris"/);
 assert.match(html,/data-record="chunbak"/);
 assert.match(html,/data-record="chungwa"/);
