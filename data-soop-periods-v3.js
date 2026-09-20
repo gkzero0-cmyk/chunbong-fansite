@@ -234,7 +234,8 @@
     const pointMarkup=clean.map((row,i)=>{
       if(row.value===null)return '';
       const xx=x(i),yy=y(row.value),valueText=formatter(row.value),cardX=Math.min(width-210,Math.max(8,xx-92));
-      return `<g class="data-chart-point data-chart-hover" tabindex="0" aria-label="${esc(row.label)} ${esc(valueText)}"><line class="data-chart-crosshair" x1="${xx}" y1="${top}" x2="${xx}" y2="${height-bottom}"/><circle cx="${xx}" cy="${yy}" r="6"/><title>${esc(row.label)} · ${esc(valueText)}</title><g class="data-chart-hover-card" transform="translate(${cardX} ${Math.max(8,yy-66)})"><rect width="196" height="60" rx="10"/><text x="12" y="19">${esc(row.label)}</text><text class="value" x="12" y="43">${esc(valueText)}</text></g><text class="data-chart-value" x="${xx}" y="${Math.max(15,yy-12)}" text-anchor="middle">${esc(short(row.value))}</text></g>`;
+      const tooltipHeight=60,preferredAbove=yy-tooltipHeight-12,cardY=preferredAbove>=8?preferredAbove:Math.min(height-bottom-tooltipHeight,yy+14);
+      return `<g class="data-chart-point data-chart-hover" tabindex="0" aria-label="${esc(row.label)} ${esc(valueText)}"><line class="data-chart-crosshair" x1="${xx}" y1="${top}" x2="${xx}" y2="${height-bottom}"/><circle cx="${xx}" cy="${yy}" r="6"/><g class="data-chart-hover-card" transform="translate(${cardX} ${cardY})"><rect width="196" height="60" rx="10"/><text x="12" y="19">${esc(row.label)}</text><text class="value" x="12" y="43">${esc(valueText)}</text></g><text class="data-chart-value" x="${xx}" y="${Math.max(15,yy-12)}" text-anchor="middle">${esc(short(row.value))}</text></g>`;
     }).join('');
     const grid=[0,1,2,3,4].map(i=>{const yy=top+i*((height-top-bottom)/4);return `<line x1="${left}" y1="${yy}" x2="${width-right}" y2="${yy}"/>`;}).join('');
     const step=Math.max(1,Math.ceil(clean.length/7));
@@ -258,7 +259,8 @@
     const periodDelta=clean.reduce((sum,row)=>sum+(Number.isFinite(row.delta)?row.delta:0),0),latest=clean.at(-1);
     const pointMarkup=clean.map((row,i)=>{
       const xx=x(i),yy=y(row.count),valueText=countDeltaText(row.count,row.delta),cardX=Math.min(width-230,Math.max(8,xx-102));
-      return `<g class="data-chart-point data-chart-hover" tabindex="0" aria-label="${esc(row.label)} ${esc(valueText)}"><line class="data-chart-crosshair" x1="${xx}" y1="${top}" x2="${xx}" y2="${height-bottom}"/><circle cx="${xx}" cy="${yy}" r="6"/><title>${esc(row.label)} · ${esc(valueText)}</title><g class="data-chart-hover-card" transform="translate(${cardX} ${Math.max(8,yy-66)})"><rect width="216" height="60" rx="10"/><text x="12" y="19">${esc(row.label)}</text><text class="value" x="12" y="43">${esc(valueText)}</text></g><text class="data-chart-value" x="${xx}" y="${Math.max(15,yy-12)}" text-anchor="middle">${esc(valueText)}</text></g>`;
+      const tooltipHeight=60,preferredAbove=yy-tooltipHeight-12,cardY=preferredAbove>=8?preferredAbove:Math.min(height-bottom-tooltipHeight,yy+14);
+      return `<g class="data-chart-point data-chart-hover" tabindex="0" aria-label="${esc(row.label)} ${esc(valueText)}"><line class="data-chart-crosshair" x1="${xx}" y1="${top}" x2="${xx}" y2="${height-bottom}"/><circle cx="${xx}" cy="${yy}" r="6"/><g class="data-chart-hover-card" transform="translate(${cardX} ${cardY})"><rect width="216" height="60" rx="10"/><text x="12" y="19">${esc(row.label)}</text><text class="value" x="12" y="43">${esc(valueText)}</text></g><text class="data-chart-value" x="${xx}" y="${Math.max(15,yy-12)}" text-anchor="middle">${esc(valueText)}</text></g>`;
     }).join('');
     const grid=[0,1,2,3,4].map(i=>{const yy=top+i*((height-top-bottom)/4);return `<line x1="${left}" y1="${yy}" x2="${width-right}" y2="${yy}"/>`;}).join('');
     const step=Math.max(1,Math.ceil(clean.length/7));
