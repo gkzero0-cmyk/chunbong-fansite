@@ -409,12 +409,72 @@
     if(strong)strong.textContent=labels[page]||'춘봉 팬허브';
     if(small)small.textContent='CHUNBONG FAN HUB';
   }
-  const action=document.createElement('a');
-  action.className='pwa-header-action';
-  action.href=page==='myhub'?'index.html':'myhub.html';
-  action.setAttribute('aria-label',page==='myhub'?'홈으로 이동':'내 팬허브 열기');
-  action.innerHTML=page==='myhub'
-    ? '<span aria-hidden="true">⌂</span><small>홈</small>'
-    : '<span aria-hidden="true">CB</span><small>MY</small>';
-  header.appendChild(action);
+  // 하단 탭바의 더보기 → 내 팬허브 경로가 있어 모바일 상단 MY 버튼은 제거해 시야를 확보합니다.
+})();
+
+
+/* Mobile finish pass — installed-app LIVE header + optional haptics. */
+(()=>{
+  'use strict';
+  const mobile=window.matchMedia('(max-width:760px)');
+  const appMode=Boolean(
+    window.matchMedia('(display-mode: standalone)').matches||
+    window.navigator.standalone===true||
+    new URLSearchParams(location.search).get('source')==='pwa'
+  );
+  if(!mobile.matches)return;
+  const HAPTIC_KEY='chunbong:haptics:v1';
+  const hapticsEnabled=()=>{try{return localStorage.getItem(HAPTIC_KEY)==='on'}catch{return false}};
+  const buzz=(pattern=7)=>{if(hapticsEnabled()&&navigator.vibrate)try{navigator.vibrate(pattern)}catch(_){}};
+
+  function setupHapticsControl(){
+    const grid=document.querySelector('.pwa-app-more-grid');
+    if(!grid||grid.querySelector('[data-haptics-toggle]'))return;
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='pwa-haptics-toggle';
+    button.dataset.hapticsToggle='';
+    const sync=()=>{
+      const on=hapticsEnabled();
+      button.setAttribute('aria-pressed',String(on));
+      button.innerHTML='<span>햅틱</span><small>'+(on?'터치 진동 ON':'터치 진동 OFF')+'</small><i aria-hidden="true">'+(on?'ON':'OFF')+'</i>';
+    };
+    button.addEventListener('click',()=>{
+      const next=!hapticsEnabled();
+      try{localStorage.setItem(HAPTIC_KEY,next?'on':'off')}catch(_){}
+      if(next&&navigator.vibrate)try{navigator.vibrate(10)}catch(_){}
+      sync();
+    });
+    grid.appendChild(button);
+    sync();
+    document.addEventListener('click',event=>{
+      if(!hapticsEnabled())return;
+      if(event.target.closest('.pwa-app-tabbar a,.pwa-app-more-grid a,.mobile-schedule-day,.tarot-choice-group label,.personal-alert-panel [data-personal-alert-toggle]'))buzz(6);
+    },{passive:true});
+  }
+
+  async function setupLiveHeader(){
+    if(!appMode)return;
+    const header=document.querySelector('.site-header.pwa-compact-header');
+    if(!header||header.querySelector('[data-pwa-live-state]'))return;
+    const state=document.createElement('a');
+    state.dataset.pwaLiveState='';
+    state.className='pwa-header-live-state';
+    state.href='https://www.sooplive.com/station/chunbongtv';
+    state.target='_blank';state.rel='noreferrer';
+    state.hidden=true;
+    state.innerHTML='<i aria-hidden="true"></i><span>LIVE</span>';
+    header.appendChild(state);
+    try{
+      const response=await fetch('/api/content?type=live',{headers:{accept:'application/json'},cache:'no-store'});
+      const payload=response.ok?await response.json():null;
+      if(payload?.live===true){
+        state.hidden=false;
+        state.title=payload.title||'춘봉 LIVE';
+      }
+    }catch(_){}
+  }
+
+  const run=()=>{setupHapticsControl();void setupLiveHeader();};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
 })();

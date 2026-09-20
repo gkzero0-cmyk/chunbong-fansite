@@ -305,3 +305,19 @@
   }
 })();
 
+
+(() => {
+  const header=document.querySelector('.site-header');
+  if(!header||header.querySelector('.header-myhub')) return;
+  const link=document.createElement('a');
+  link.className='header-myhub';
+  link.href='myhub.html';
+  link.setAttribute('aria-label','MY 팬허브');
+  link.title='MY 팬허브';
+  if(document.body.dataset.page==='myhub') link.setAttribute('aria-current','page');
+  link.innerHTML='<span aria-hidden="true">MY</span><strong>팬허브</strong>';
+  const theme=header.querySelector('.theme-toggle');
+  const changelog=header.querySelector('.changelog-button');
+  const navToggle=header.querySelector('.nav-toggle');
+  header.insertBefore(link,changelog||theme||navToggle||null);
+})();

@@ -916,3 +916,63 @@
   [data-theme="light"] .pwa-app-mode .site-header.pwa-compact-header{border-bottom-color:#e7ddd5!important;background:#fffaf6f2!important}
   [data-theme="light"] .pwa-header-action{border-color:#e4d9d0;background:#fff;color:#342820}
 }
+
+
+/* ===== Mobile finish pass: optional haptics + installed-app LIVE badge ===== */
+@media(max-width:760px){
+  .pwa-app-more-grid .pwa-haptics-toggle{
+    position:relative;min-height:67px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+    padding:12px!important;border:1px solid #303035!important;border-radius:13px!important;background:#141416!important;
+    color:#d7d0ca!important;text-align:left;cursor:pointer
+  }
+  .pwa-haptics-toggle span{font-size:12px;font-weight:950}
+  .pwa-haptics-toggle small{margin-top:3px;color:#77716d;font-size:9px;font-weight:800}
+  .pwa-haptics-toggle i{
+    position:absolute;right:9px;top:9px;display:grid;place-items:center;min-width:28px;height:20px;
+    padding:0 5px;border-radius:999px;background:#242428;color:#777;font-size:8px;font-style:normal;font-weight:950
+  }
+  .pwa-haptics-toggle[aria-pressed="true"]{border-color:#ff713f55!important;background:#21140f!important}
+  .pwa-haptics-toggle[aria-pressed="true"] i{background:#ff6b18;color:#fff}
+  [data-theme="light"] .pwa-app-more-grid .pwa-haptics-toggle{border-color:#e5dbd3!important;background:#fff!important;color:#30251e!important}
+
+  .pwa-app-mode .site-header.pwa-compact-header:has(.pwa-header-live-state:not([hidden])){
+    grid-template-columns:minmax(0,1fr) auto auto!important
+  }
+  .pwa-header-live-state{
+    min-height:36px;display:flex;align-items:center;gap:5px;padding:0 8px;border:1px solid #ff536d55;
+    border-radius:11px;background:#2a0f15;color:#ff8495;text-decoration:none;font-size:9px;font-weight:950
+  }
+  .pwa-header-live-state[hidden]{display:none!important}
+  .pwa-header-live-state i{width:7px;height:7px;border-radius:50%;background:#ff3c56;box-shadow:0 0 0 3px #ff3c5620,0 0 11px #ff3c5675}
+  [data-theme="light"] .pwa-header-live-state{background:#fff1f3;border-color:#ff859559;color:#cf3349}
+
+  body[data-page="data"] .data-view-toggle{
+    position:sticky;z-index:35;top:60px;margin-top:8px;
+    backdrop-filter:blur(14px)
+  }
+}
+
+
+/* Compact mobile top chrome + desktop MY fan hub entry */
+.header-myhub{
+  display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 12px;border:1px solid #363238;
+  border-radius:999px;background:#121214;color:#d7d0ca;font-size:11px;font-weight:900;white-space:nowrap
+}
+.header-myhub span{display:grid;place-items:center;min-width:24px;height:20px;padding:0 5px;border-radius:999px;background:#ff6b1817;color:#ff9454;font-size:8px;letter-spacing:.08em}
+.header-myhub:hover,.header-myhub[aria-current="page"]{border-color:#ff6b185f;background:#21140f;color:#ffb07d}
+@media(max-width:760px){
+  .header-myhub{display:none!important}
+  body[data-page]:not([data-game]) .site-header{height:46px!important;min-height:46px!important;padding-top:max(4px,env(safe-area-inset-top))!important;padding-bottom:4px!important}
+  body[data-page]:not([data-game]) .brand-mark{width:30px!important;height:30px!important;border-radius:9px!important;font-size:10px!important}
+  body[data-page]:not([data-game]) :is(.nav-toggle,.theme-toggle,.changelog-button,.activity-bell){width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;flex-basis:34px!important;padding:6px!important;border-radius:10px!important}
+  .pwa-app-mode .site-header.pwa-compact-header{height:46px!important;min-height:46px!important;padding:max(4px,env(safe-area-inset-top)) 8px 4px!important}
+  .pwa-app-mode .site-header.pwa-compact-header .brand-mark{display:none!important}
+  .pwa-app-mode .site-header.pwa-compact-header .brand{gap:0!important}
+  .pwa-app-mode .site-header.pwa-compact-header .brand-copy strong{font-size:13px!important}
+  .pwa-app-mode .site-header.pwa-compact-header .brand-copy small{display:none!important}
+  .pwa-app-mode .site-header.pwa-compact-header{grid-template-columns:minmax(0,1fr) auto!important}
+  .pwa-app-mode .site-header.pwa-compact-header:has(.pwa-header-live-state:not([hidden])){grid-template-columns:minmax(0,1fr) auto!important}
+  .pwa-header-action{display:none!important}
+  .pwa-header-live-state{min-height:30px;padding:0 7px;border-radius:9px;font-size:8px}
+}
+[data-theme="light"] .header-myhub{border-color:#e2d8d0;background:#fff;color:#4a3e35}
