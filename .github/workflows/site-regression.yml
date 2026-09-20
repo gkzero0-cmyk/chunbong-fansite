@@ -41,12 +41,23 @@ jobs:
           node --check chuncortile-ranking-core.js
           node --check chuncortile.js
           node --check chuncortile-postgame-ranking.js
-          node --check api/_shared.js
           node --check api/content.js
+          node --check api/image.js
+          node --check api/tarot-reading.js
+          node --check api/version.js
+          node --check lib/content-api/_shared.js
+          node --check lib/content-api/catch-detail.js
+          node --check lib/content-api/clips.js
+          node --check lib/content-api/fanart.js
+          node --check lib/content-api/notice-detail.js
+          node --check lib/content-api/notice.js
+          node --check lib/content-api/schedule-detail.js
+          node --check lib/content-api/schedule.js
+          node --check lib/content-api/vod.js
+          node --check lib/content-api/youtube.js
           node --check lib/activity-feed.js
           node --check lib/activity.js
           node --check lib/changelog-history-api.js
-          node --check api/fanart.js
           node --check activity-center.js
           node --check daily-fortune.js
           node --check home-overview.js
