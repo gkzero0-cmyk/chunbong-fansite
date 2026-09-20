@@ -107,6 +107,13 @@ function createEnhancedTarotSoundController(storage = globalThis.localStorage, A
     tone(112, 0.07, 0.10, 0.003, 'triangle');
   };
 
+  const hoverAura = () => {
+    // One low, airy resonance per card entry. No pointer-move chirps.
+    tone(174.6, 0.62, 0.018, 0, 'sine');
+    tone(349.2, 0.70, 0.012, 0.035, 'triangle');
+    tone(523.25, 0.76, 0.007, 0.10, 'sine');
+  };
+
   const cardSpread = () => {
     noiseBurst({ duration: 0.56, gain: 0.30, frequency: 1250, q: 0.65, startFrequency: 520, endFrequency: 3400 });
     for (let index = 0; index < 9; index += 1) {
@@ -140,6 +147,7 @@ function createEnhancedTarotSoundController(storage = globalThis.localStorage, A
         if (name === 'shuffle') cardShuffle();
         if (name === 'select') cardSlap();
         if (name === 'reveal') cardSpread();
+        if (name === 'hover') hoverAura();
       } catch (_) {}
     }
   };
@@ -240,6 +248,7 @@ function installEnhancedTarotSfx(root = globalThis) {
 
   updateSoundUi();
   updateVolumeUi();
+  root.__CHUNBONG_TAROT_SFX_CONTROLLER__ = controller;
   return controller;
 }
 
