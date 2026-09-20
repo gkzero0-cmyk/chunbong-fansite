@@ -63,6 +63,6 @@ assert.match(dataEnh,/chunbong-data-view-v1/,'data view preference must be remem
 assert.match(dataEnh,/document\.body\.dataset\.dataView=view/,'data view mode must update body state');
 assert.match(dataCss,/body\[data-data-view="summary"\]/,'summary-mode visibility rules missing');
 assert.match(dataCss,/content-visibility:auto/,'detailed data sections should use offscreen rendering optimization');
-assert.match(serviceWorker,/chunbong-pwa-20260921-v22/,'UX asset changes must advance the PWA cache version');
+assert.match(serviceWorker,/chunbong-pwa-20260921-v23/,'UX asset changes must advance the PWA cache version');
 
 console.log('UX simplification regression passed');
