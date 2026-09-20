@@ -418,3 +418,30 @@
     : '<span aria-hidden="true">CB</span><small>MY</small>';
   header.appendChild(action);
 })();
+
+
+/* Optional mobile haptics — user opt-in only. */
+(()=>{
+  'use strict';
+  if(!window.matchMedia('(max-width:760px)').matches||!('vibrate'in navigator))return;
+  const enabled=()=>{
+    if(window.ChunbongPersonal?.hapticsEnabled)return window.ChunbongPersonal.hapticsEnabled();
+    try{return Boolean(JSON.parse(localStorage.getItem('chunbong-personal-hub-v1')||'{}')?.preferences?.haptics)}catch(_){return false}
+  };
+  const pulse=(pattern=8)=>{
+    if(!enabled())return false;
+    try{return navigator.vibrate(pattern)}catch(_){return false}
+  };
+  const interactive=[
+    '.pwa-app-tabbar a','.pwa-app-tabbar button','.pwa-app-more-grid a',
+    '.data-view-toggle button','.data-platform-tab','.data-soop-view-tabs button',
+    '.mobile-schedule-day','.mobile-tarot-dock-confirm',
+    '[data-personal-haptics-toggle]','[data-personal-alert-toggle]'
+  ].join(',');
+  document.addEventListener('click',event=>{
+    const target=event.target.closest?.(interactive);
+    if(!target)return;
+    pulse(target.matches('.mobile-tarot-dock-confirm,[data-personal-alert-toggle]')?12:8);
+  });
+  window.ChunbongHaptics={pulse,enabled};
+})();
