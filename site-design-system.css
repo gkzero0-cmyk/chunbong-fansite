@@ -57,3 +57,21 @@
 .category-accent[data-kind="history"]{--category-accent:var(--accent-history)}
 .category-accent[data-kind="data"]{--category-accent:var(--accent-data)}
 .category-accent[data-kind="calendar"]{--category-accent:var(--accent-calendar)}
+
+body[data-page="schedule"]{--page-accent:var(--accent-schedule)}
+body[data-page="notice"]{--page-accent:var(--accent-notice)}
+body[data-page="vod"]{--page-accent:var(--accent-replay)}
+body[data-page="clips"]{--page-accent:var(--accent-clips)}
+body[data-page="fanart"]{--page-accent:var(--accent-fanart)}
+body[data-page="youtube"]{--page-accent:var(--accent-youtube)}
+body[data-page="tarot"]{--page-accent:var(--accent-tarot)}
+body[data-page="minigames"],
+body[data-page="chuntris"],
+body[data-page="chunbak"],
+body[data-page="chungwagame"],
+body[data-page="chuncortile"]{--page-accent:var(--accent-minigames)}
+body[data-page="history"]{--page-accent:var(--accent-history)}
+body[data-page="data"]{--page-accent:var(--accent-data)}
+.page-category-kicker,.page-hero .kicker{color:var(--page-accent,var(--orange-2))}
+.page-category-kicker{display:flex;align-items:center;gap:8px;font-weight:900;letter-spacing:.12em}
+.page-category-kicker>span[aria-hidden="true"]{display:inline-grid;place-items:center;min-width:22px;height:22px;border-radius:8px;background:color-mix(in srgb,var(--page-accent) 11%,transparent);border:1px solid color-mix(in srgb,var(--page-accent) 28%,transparent);color:var(--page-accent)}
