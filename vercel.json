@@ -13,7 +13,8 @@
       "refactor/*": false,
       "test/*": false,
       "hotfix/*": false,
-      "main": true
+      "main": true,
+      "internal/*": false
     }
   },
   "headers": [
@@ -78,5 +79,6 @@
       ]
     }
   ],
-  "$schema": "https://openapi.vercel.sh/vercel.json"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "ignoreCommand": "node .github/scripts/vercel-ignore-build.mjs"
 }
