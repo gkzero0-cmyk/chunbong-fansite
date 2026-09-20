@@ -1,5 +1,5 @@
 /* CHUNBONG_PWA v1 */
-const CACHE_NAME = 'chunbong-pwa-20260920-v20';
+const CACHE_NAME = 'chunbong-pwa-20260921-v21';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -34,6 +34,18 @@ const APP_SHELL = [
   '/minigame-profile.js',
   '/personal-hub.css',
   '/personal-hub.js',
+  '/content-filter.css',
+  '/content-filter.js',
+  '/schedule.html',
+  '/schedule-enhancements.css',
+  '/live-fixes.js',
+  '/tarot.html',
+  '/tarot.css',
+  '/tarot.js',
+  '/vod.html',
+  '/clips.html',
+  '/youtube.html',
+  '/fanart.html',
   '/myhub.html',
   '/changelog-data.js'
 ];
