@@ -48,7 +48,7 @@ assert.match(hub,/if\(!delivered\)return;[\s\S]*lastLiveBroadcastId=broadcastId/
 assert.match(hub,/if\(!\(await showReminder\(target\)\)\)return;[\s\S]*lastNotified=key/,'failed schedule notifications must remain retryable');
 assert.match(api,/type==='live'/,'content API must expose lightweight live state');
 assert.match(api,/fetchSoopStructuredLive/,'live endpoint must reuse the structured SOOP live-state fetcher');
-assert.match(hub,/now>=at-5\*60000&&now<=at\+15\*60000/,'schedule reminder window missing');
+assert.match(hub,/now>=at-lead\*60000&&now<=at\+15\*60000/,'schedule reminder window missing');
 assert.doesNotMatch(hub,/fetch\([^)]*(favorite|tarot|personal|profile)/i,'personal records must not be uploaded to a server');
 
 assert.match(myhub,/data-personal-dashboard/,'My Fan Hub dashboard root missing');
@@ -98,7 +98,7 @@ assert.match(timelineJs,/findIndex\(candidate=>candidate\.date===row\.date&&cand
 
 assert.match(shell,/personal-hub\.css/,'shared shell must load personal hub styles');
 assert.match(shell,/personal-hub\.js/,'shared shell must load personal hub runtime');
-assert.match(sw,/chunbong-pwa-20260920-v17/,'personal hub release must advance PWA cache');
+assert.match(sw,/chunbong-pwa-20260920-v18/,'personal hub release must advance PWA cache');
 for(const asset of ['/personal-hub.css','/personal-hub.js','/myhub.html','/timeline.html','/timeline.css','/timeline.js']){
   assert.ok(sw.includes("'"+asset+"'"),'PWA app shell missing '+asset);
 }
@@ -109,4 +109,13 @@ const homeOverview=read('home-overview.js');
 assert.match(homeOverview,/get\('live'\)/,'home overview must query actual SOOP LIVE state');
 assert.match(homeOverview,/LIVE NOW/,'home overview must prioritize actual SOOP LIVE state');
 
+assert.match(hub,/COLLECTIONS=Object\.freeze/,'saved-content collections missing');
+assert.match(hub,/setFavoriteCollection/,'saved-content collection assignment missing');
+assert.match(hub,/toggleTarotPinned/,'tarot favorites missing');
+assert.match(hub,/leadMinutes:10/,'default scheduled alert lead missing');
+assert.match(hub,/ALERT_TYPE_LABELS/,'alert content-type preferences missing');
+assert.match(hub,/classifyScheduleItem/,'schedule alert classifier missing');
+assert.match(hub,/daily:\{\}/,'daily minigame history missing');
+assert.match(hub,/3일 연속 출석/,'three-day daily streak achievement missing');
+assert.match(hub,/일주일 도전자/,'seven-day daily streak achievement missing');
 console.log('personal fan hub regression passed');
