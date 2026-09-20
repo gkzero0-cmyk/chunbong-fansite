@@ -550,6 +550,13 @@ if (typeof document !== 'undefined') {
       if (version !== state.requestVersion) return null;
       state.structuredReading = payload.reading;
       renderGlance(payload.reading);
+      document.dispatchEvent(new CustomEvent('chunbong:tarot-reading-detail',{detail:{
+        question:state.question,topic:state.topic,spreadId:state.spreadId,reading:payload.reading,
+        cards:state.selected.map(selection=>({
+          name:selection.card?.nameKo||selection.card?.name||'',
+          orientation:selection.orientation,position:selection.position,deckNumber:selection.deckNumber
+        }))
+      }}));
       const button = byId('tarot-ai-button');
       const status = byId('tarot-ai-status');
       if (button) button.disabled = false;
