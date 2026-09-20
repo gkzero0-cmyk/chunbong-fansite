@@ -16,7 +16,7 @@ assert.match(personal,/challengeProgress/);
 assert.match(personal,/dailyStreak/);
 assert.match(data,/data-calendar-related/,'broadcast calendar related-media block missing');
 assert.match(data,/query\.get\('date'\)/,'broadcast calendar date deep link missing');
-assert.match(data,/\$\$\('\[data-calendar-date\]'\)\.forEach/,'broadcast calendar must bind all date buttons');
+assert.match(data,/document\.querySelectorAll\('\[data-calendar-date\]'\)\.forEach/,'broadcast calendar must bind all date buttons');
 assert.match(data,/state\.selectedCalendarDate='';/,'calendar month navigation must clear stale selected date');
 assert.match(data,/url\.searchParams\.delete\('date'\)/,'calendar month navigation must clear stale date deep link');
 assert.match(search,/kind:'방송 기록'/,'search must index broadcast sessions');
