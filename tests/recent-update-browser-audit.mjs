@@ -118,6 +118,44 @@ async function quickTarot(browser,{mobile=false,pwa=false}={}){
   }finally{await context.close()}
 }
 
+
+async function tarotJournalMetadata(browser){
+  const {context,page,errors}=await freshPage(browser,{mobile:false});
+  try{
+    await page.goto(BASE+'/tarot.html?_journal='+Date.now(),{waitUntil:'domcontentloaded'});
+    await page.waitForTimeout(220);
+    await page.locator('[data-tarot-mode-button="detail"]').click();
+    await page.locator('input[name="topic"][value="money"]').check();
+    await page.locator('input[name="spread"]').first().check();
+    await page.locator('input[name="selection-mode"][value="cards"]').check();
+    await page.locator('#tarot-question').fill('이번 달 금전 흐름은 어떨까?');
+    await page.locator('#tarot-shuffle').click();
+    await page.waitForFunction(()=>document.querySelectorAll('#tarot-deck [data-card-index]').length===78);
+    await page.locator('#tarot-deck [data-card-index]').first().click();
+    await page.locator('#tarot-confirm-selection').click();
+    await page.waitForFunction(()=>document.querySelector('#tarot-results')?.hidden===false);
+    const ai=page.locator('#tarot-ai-button');
+    await page.waitForFunction(()=>!document.querySelector('#tarot-ai-button')?.disabled);
+    await ai.click();
+    await page.waitForFunction(()=>document.querySelector('#tarot-ai-content')?.textContent?.includes('테스트'));
+    await page.goto(BASE+'/myhub.html?_journal='+Date.now(),{waitUntil:'domcontentloaded'});
+    await page.waitForTimeout(220);
+    const row=page.locator('.personal-tarot-list article').first();
+    assert.match((await row.locator('strong').textContent())||'',/금전운 · 상세 타로/,'journal must show topic + reading mode');
+    assert.match((await row.textContent())||'',/질문 · 이번 달 금전 흐름은 어떨까\?/,'journal must show entered question');
+    const detail=row.locator('[data-view-tarot]');
+    await detail.click();
+    const dialog=page.locator('#personal-tarot-archive-dialog');
+    await dialog.waitFor({state:'visible'});
+    const detailText=(await dialog.textContent())||'';
+    assert.match(detailText,/금전운 · 상세 타로/);
+    assert.match(detailText,/주제 · 금전운/);
+    assert.match(detailText,/방식 · 상세 타로/);
+    assert.match(detailText,/질문 · 이번 달 금전 흐름은 어떨까\?/);
+    assert.deepEqual(errors,[],'tarot journal metadata errors: '+errors.join(' | '));
+  }finally{await context.close()}
+}
+
 async function findProductionCalendarDate(){
   if(MOCK)return MOCK_DATE;
   const [data,vod,clips,youtube]=await Promise.all([
@@ -183,6 +221,8 @@ async function fanHubAndHeader(browser){
     const my=page.locator('.header-myhub');
     assert.ok(await my.count(),'desktop MY fan hub header entry missing');
     assert.equal(await my.getAttribute('href'),'myhub.html');
+    assert.equal((await my.textContent()).trim(),'MY','desktop MY fan hub entry should display MY only');
+    assert.equal(await my.getAttribute('aria-label'),'MY 팬허브');
     assert.deepEqual(errors,[],'fan hub/header errors: '+errors.join(' | '));
   }finally{await context.close()}
 }
@@ -260,6 +300,7 @@ try{
   await quickTarot(browser,{mobile:false});
   await quickTarot(browser,{mobile:true});
   await quickTarot(browser,{mobile:true,pwa:true});
+  await tarotJournalMetadata(browser);
   await calendarRelated(browser,{mobile:false});
   await calendarRelated(browser,{mobile:true});
   await fanHubAndHeader(browser);
