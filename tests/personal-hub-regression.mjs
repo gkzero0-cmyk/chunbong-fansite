@@ -47,7 +47,8 @@ assert.match(hub,/async function deliverNotification\(title,options\)/,'notifica
 assert.match(hub,/if\(!delivered\)return;[\s\S]*lastLiveBroadcastId=broadcastId/,'failed LIVE notifications must not be marked as delivered');
 assert.match(hub,/if\(!\(await showReminder\(target\)\)\)return;[\s\S]*lastNotified=key/,'failed schedule notifications must remain retryable');
 assert.match(api,/type==='live'/,'content API must expose lightweight live state');
-assert.match(api,/fetchSoopStructuredLive/,'live endpoint must reuse the structured SOOP live-state fetcher');
+assert.match(api,/source:String\(state\.source\|\|'soop-live'\)/,'live endpoint should report the actual fallback source');
+assert.match(api,/fetchSoopLive/,'live endpoint must reuse the shared SOOP live-state fetcher');
 assert.match(hub,/now>=at-lead\*60000&&now<=at\+15\*60000/,'schedule reminder window missing');
 assert.doesNotMatch(hub,/fetch\([^)]*(favorite|tarot|personal|profile)/i,'personal records must not be uploaded to a server');
 

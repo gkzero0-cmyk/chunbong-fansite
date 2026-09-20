@@ -19,7 +19,7 @@ const handleChangelogHistory = require('../lib/changelog-history-api');
 const youtubeEngagementCache = require('../data/youtube-engagement-cache.json');
 const soopMetricHistory = require('../data/soop-follower-history.json');
 const { buildEngagementRankings } = require('../lib/youtube-engagement');
-const { fetchSoopStructuredLive } = require('../lib/soop-live-state');
+const fetchSoopLive = fetchChunbongData.fetchSoopLive;
 
 function compactCategory(row = {}) {
   return {
@@ -255,7 +255,7 @@ async function handler(req,res) {
   if(type==='live'){
     res.setHeader('Cache-Control','s-maxage=30, stale-while-revalidate=30');
     try{
-      const state=await fetchSoopStructuredLive();
+      const state=await fetchSoopLive();
       return res.status(200).json({
         live:state.live===true?true:state.live===false?false:null,
         authoritative:Boolean(state.authoritative),
@@ -264,7 +264,7 @@ async function handler(req,res) {
         title:String(state.title||''),
         viewerCount:Number.isFinite(state.viewerCount)?state.viewerCount:null,
         categoryName:String(state.categoryName||''),
-        source:'soop-channel'
+        source:String(state.source||'soop-live')
       });
     }catch(error){
       return res.status(503).json({live:null,authoritative:false,error:'live_state_unavailable'});
