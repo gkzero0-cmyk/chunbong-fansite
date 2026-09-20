@@ -15,8 +15,7 @@
     {href:'data.html',label:'춘봉 데이터',kind:'메뉴',keywords:'data 통계 soop youtube 시청자'},
     {href:'data.html?view=calendar#soop',label:'방송 기록 캘린더',kind:'메뉴',keywords:'방송 기록 캘린더 날짜 아카이브 vod clip 영상 카테고리'},
     {href:'changelog.html',label:'업데이트 일지',kind:'메뉴',keywords:'update changelog 업데이트 변경사항'},
-    {href:'myhub.html',label:'내 팬허브',kind:'메뉴',keywords:'my hub 보관함 이어보기 타로 기록 업적 개인 기록'},
-    {href:'timeline.html',label:'춘봉 타임라인',kind:'메뉴',keywords:'timeline 첫 방송 soop 팬사이트 기록 연혁'}
+    {href:'myhub.html',label:'내 팬허브',kind:'메뉴',keywords:'my hub 보관함 이어보기 타로 기록 업적 개인 기록'}
   ];
 
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
