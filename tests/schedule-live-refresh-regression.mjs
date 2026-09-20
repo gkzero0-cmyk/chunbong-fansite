@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const schedule = require('../api/schedule.js');
+const schedule = require('../lib/content-api/schedule.js');
 
 const nestedRecordMap = {
   block: {
