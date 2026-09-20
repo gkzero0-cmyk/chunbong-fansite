@@ -990,3 +990,47 @@
     .pwa-app-mode .site-header.pwa-compact-header{transition:none!important}
   }
 }
+
+
+/* Installed mobile app header: keep every control in one horizontal row.
+   Order: brand → MY → updates/settings → search → theme → notifications. */
+@media(max-width:760px){
+  .pwa-app-mode .site-header.pwa-compact-header{
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    align-items:center!important;
+    gap:6px!important;
+    overflow:visible!important;
+  }
+  .pwa-app-mode .site-header.pwa-compact-header .brand{
+    order:0!important;
+    flex:1 1 auto!important;
+    min-width:0!important;
+    margin-right:auto!important;
+  }
+  .pwa-app-mode .site-header.pwa-compact-header .brand-copy{
+    min-width:0!important;
+    overflow:hidden!important;
+  }
+  .pwa-app-mode .site-header.pwa-compact-header .brand-copy strong,
+  .pwa-app-mode .site-header.pwa-compact-header .brand-copy small{
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+
+  .pwa-app-mode .site-header.pwa-compact-header .pwa-header-live-state{order:1!important;flex:0 0 auto!important}
+  .pwa-app-mode .site-header.pwa-compact-header .pwa-header-action{order:2!important;flex:0 0 auto!important}
+  .pwa-app-mode .site-header.pwa-compact-header .changelog-button{order:3!important;flex:0 0 40px!important}
+  .pwa-app-mode .site-header.pwa-compact-header .site-search-trigger{order:4!important;flex:0 0 38px!important}
+  .pwa-app-mode .site-header.pwa-compact-header .theme-toggle{order:5!important;flex:0 0 40px!important}
+  .pwa-app-mode .site-header.pwa-compact-header .activity-center{order:6!important;flex:0 0 40px!important}
+  .pwa-app-mode .site-header.pwa-compact-header .activity-bell{width:40px!important;height:40px!important}
+
+  /* These controls are already replaced by the app tab bar / compact controls in PWA mode. */
+  .pwa-app-mode .site-header.pwa-compact-header .nav-toggle,
+  .pwa-app-mode .site-header.pwa-compact-header .main-nav,
+  .pwa-app-mode .site-header.pwa-compact-header .header-live{
+    display:none!important
+  }
+}
