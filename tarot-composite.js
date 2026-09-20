@@ -130,7 +130,7 @@ function buildCompositeSvg(card, descriptor, reversed = false, uid = 'tarot-comp
   const artTransform = reversed ? ' transform="rotate(180 480 656)"' : '';
   const fontSize = titleFontSize(meta.title);
 
-  return `<svg class="tarot-composite-svg" viewBox="0 0 960 1440" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${title}">
+  return `<svg class="tarot-composite-svg tarot-fortune-frame" data-frame-theme="daily-fortune" viewBox="0 0 960 1440" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${title}">
     <defs>
       <linearGradient id="${safeUid}-frame-gold" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0" stop-color="#fff1a0"/>
@@ -152,10 +152,10 @@ function buildCompositeSvg(card, descriptor, reversed = false, uid = 'tarot-comp
       <clipPath id="${safeUid}-art-clip"><rect x="88" y="126" width="784" height="1060" rx="34"/></clipPath>
     </defs>
 
-    <rect class="tarot-vector-frame" x="18" y="18" width="924" height="1404" rx="58" fill="url(#${safeUid}-shadow)" stroke="url(#${safeUid}-frame-gold)" stroke-width="18"/>
-    <rect class="tarot-vector-frame" x="45" y="45" width="870" height="1350" rx="43" fill="#07142d" stroke="#f8d65e" stroke-width="5"/>
-    <rect class="tarot-vector-frame" x="56" y="56" width="848" height="1328" rx="37" fill="none" stroke="#9e6917" stroke-width="3"/>
-    <rect x="68" y="102" width="824" height="1110" rx="38" fill="#020817" stroke="url(#${safeUid}-frame-gold)" stroke-width="11"/>
+    <rect class="tarot-vector-frame tarot-fortune-frame-outer" x="18" y="18" width="924" height="1404" rx="58" fill="url(#${safeUid}-shadow)" stroke="#efbd43" stroke-width="8"/>
+    <rect class="tarot-vector-frame tarot-fortune-frame-mid" x="38" y="38" width="884" height="1364" rx="47" fill="#07142d" stroke="#ffd55c" stroke-width="4"/>
+    <rect class="tarot-vector-frame tarot-fortune-frame-inner" x="52" y="52" width="856" height="1336" rx="39" fill="none" stroke="#9f6916" stroke-width="2"/>
+    <rect class="tarot-fortune-art-shell" x="72" y="108" width="816" height="1096" rx="36" fill="#020817" stroke="#dca52c" stroke-width="4"/>
 
     <g class="tarot-composite-art-layer" clip-path="url(#${safeUid}-art-clip)">
       <g class="tarot-composite-art-rotation"${artTransform}>
@@ -165,11 +165,11 @@ function buildCompositeSvg(card, descriptor, reversed = false, uid = 'tarot-comp
       </g>
     </g>
 
-    <rect x="78" y="116" width="804" height="1080" rx="35" fill="none" stroke="#f8da7e" stroke-width="8"/>
-    <rect x="87" y="125" width="786" height="1062" rx="29" fill="none" stroke="#7d4c12" stroke-width="3"/>
+    <rect class="tarot-fortune-art-line" x="78" y="116" width="804" height="1080" rx="35" fill="none" stroke="#ffd55c" stroke-width="3"/>
+    <rect class="tarot-fortune-art-line" x="87" y="125" width="786" height="1062" rx="29" fill="none" stroke="#8f5d16" stroke-width="1.5"/>
 
     <g aria-hidden="true" stroke="url(#${safeUid}-frame-gold)">
-      <g fill="#07142d" stroke-width="5">
+      <g fill="#07142d" stroke-width="3">
         <circle cx="86" cy="86" r="27"/><circle cx="874" cy="86" r="27"/>
         <circle cx="86" cy="1354" r="27"/><circle cx="874" cy="1354" r="27"/>
       </g>
@@ -192,15 +192,15 @@ function buildCompositeSvg(card, descriptor, reversed = false, uid = 'tarot-comp
     </g>
 
     <g class="tarot-vector-rank-medallion">
-      <ellipse cx="480" cy="82" rx="76" ry="52" fill="url(#${safeUid}-plate)" stroke="#e9b538" stroke-width="7"/>
-      <ellipse cx="480" cy="82" rx="66" ry="43" fill="none" stroke="#ffe374" stroke-width="3"/>
+      <ellipse cx="480" cy="82" rx="76" ry="52" fill="url(#${safeUid}-plate)" stroke="#efbd43" stroke-width="4"/>
+      <ellipse cx="480" cy="82" rx="66" ry="43" fill="none" stroke="#ffd55c" stroke-width="2"/>
       <path d="M480 49l5 15 15 5-15 5-5 15-5-15-15-5 15-5z" fill="#ffd75b" opacity=".22"/>
       <text class="tarot-vector-rank" x="480" y="98" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="${rankMark.length > 4 ? 28 : 48}" font-weight="700" fill="#ffe27a" stroke="#201000" stroke-width="1.4" paint-order="stroke">${rankMark}</text>
     </g>
 
     <g class="tarot-vector-title-plate">
-      <path d="M112 1222H848Q881 1222 881 1255V1340Q881 1374 848 1374H112Q79 1374 79 1340V1255Q79 1222 112 1222Z" fill="url(#${safeUid}-plate)" stroke="#dca52c" stroke-width="8"/>
-      <path d="M105 1240H855V1356H105Z" fill="#081832" fill-opacity=".72" stroke="#f4ce56" stroke-width="3"/>
+      <path d="M112 1222H848Q881 1222 881 1255V1340Q881 1374 848 1374H112Q79 1374 79 1340V1255Q79 1222 112 1222Z" fill="url(#${safeUid}-plate)" stroke="#e9b638" stroke-width="4"/>
+      <path d="M105 1240H855V1356H105Z" fill="#081832" fill-opacity=".8" stroke="#ffd55c" stroke-width="2"/>
       <path d="M134 1298h112M714 1298h112" stroke="#dca62f" stroke-width="3" stroke-linecap="round"/>
       <circle cx="264" cy="1298" r="4" fill="#f5cd4f"/><circle cx="696" cy="1298" r="4" fill="#f5cd4f"/>
       <text class="tarot-vector-title" x="480" y="1322" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="${fontSize}" font-weight="700" letter-spacing="2" fill="#fff0ae" stroke="#1a0d00" stroke-width="1.8" paint-order="stroke">${title}</text>
