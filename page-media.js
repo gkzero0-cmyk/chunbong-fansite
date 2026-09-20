@@ -3,9 +3,10 @@
   const core = window.ChunbongPageCore;
   if (!core || !['vod','clips','youtube'].includes(core.page)) return;
   const {
-    data, $, $$, esc, loadContent, loadItems, sourceFor,
+    data, $, $, esc, loadContent, loadItems, sourceFor,
     errorState, bindRetry, setupReveal, requestedOpenId, requestedKind
   } = core;
+  const itemKey=item=>String(item?.id||item?.videoId||item?.link||item?.title||'');
 
   function setVideoPlayer(kind, item) {
     const frame = $(`#${kind}-player`);
@@ -20,11 +21,11 @@
     if (source) source.href = item?.link || sourceFor(item?.kind || (kind === 'vod' ? 'vod' : kind === 'youtube' ? 'youtube' : 'catch'));
     if (item) {
       const personalDetail={
-      id:String(item.id||item.videoId||item.link||item.title||''),
+      id:itemKey(item),
       type:kind==='youtube'?'youtube':String(item.kind||kind||'vod'),
       title:String(item.title||''),
       meta:[platformLabel,item.date||item.meta||''].filter(Boolean).join(' · '),
-      href:(kind==='youtube'?'youtube.html':kind==='clip'?'clips.html':'vod.html')+'?'+(item.kind?'kind='+encodeURIComponent(item.kind)+'&':'')+'open='+encodeURIComponent(String(item.id||item.videoId||'')),
+      href:(kind==='youtube'?'youtube.html':kind==='clip'?'clips.html':'vod.html')+'?'+(item.kind?'kind='+encodeURIComponent(item.kind)+'&':'')+'open='+encodeURIComponent(itemKey(item)),
       sourceHref:item.link||'',thumb:item.thumb||''
       };
       window.__CHUNBONG_CURRENT_MEDIA__=personalDetail;
@@ -48,7 +49,7 @@
   }
 
   function renderVideoList(kind, items, list, selectedId = '') {
-    const selectedIndex = Math.max(0, items.findIndex(item => String(item?.id || '') === String(selectedId || '')));
+    const selectedIndex = Math.max(0, items.findIndex(item => itemKey(item) === String(selectedId || '')));
     list.innerHTML = items.map((item, index) => `
       <button class="video-list-card${index === selectedIndex ? ' selected' : ''}" type="button" data-video-index="${index}">
         <span class="video-thumb">

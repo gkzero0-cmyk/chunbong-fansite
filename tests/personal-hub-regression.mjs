@@ -56,6 +56,10 @@ assert.match(hub,/오늘의 도전/);
 
 assert.match(media,/chunbong:media-selected/,'media selection event missing');
 assert.match(media,/__CHUNBONG_CURRENT_MEDIA__/,'late-loaded personal runtime media handoff missing');
+assert.match(media,/const itemKey=item=>String\(item\?\.id\|\|item\?\.videoId\|\|item\?\.link\|\|item\?\.title\|\|''\)/,'media favorites need a stable fallback key');
+assert.match(media,/open='\+encodeURIComponent\(itemKey\(item\)\)/,'saved media reopen links must use the same stable key');
+assert.match(fanart,/href:'fanart\.html\?open='\+encodeURIComponent\(itemKey\(item\)\)/,'saved fanart reopen links must preserve fallback keys');
+assert.match(fanart,/items\.findIndex\(item => itemKey\(item\) === String\(requestedOpenId\)\)/,'fanart deep links must resolve the same fallback key');
 assert.match(fanart,/chunbong:fanart-selected/,'fanart favorite event missing');
 assert.match(tarot,/chunbong:tarot-reading/,'tarot journal event missing');
 assert.match(hub,/timeupdate/,'native video progress persistence missing');
