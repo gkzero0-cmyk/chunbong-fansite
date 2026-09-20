@@ -6,13 +6,16 @@ on:
     paths:
       - 'tarot.html'
       - 'tarot.js'
+      - 'tarot-sfx-v2.js'
       - 'tarot.css'
       - 'tarot-quality.css'
       - 'tarot-composite.css'
+      - 'tarot-luxury-foil.css'
       - 'tarot-composite.js'
       - 'tarot-data.js'
       - 'tests/tarot-clarity-numbered-backs-regression.mjs'
       - 'tests/tarot-selection-fortune-frame-regression.mjs'
+      - 'tests/tarot-luxury-foil-zoom-regression.mjs'
       - '.github/workflows/tarot-pr-browser-smoke.yml'
 
 permissions:
@@ -32,6 +35,7 @@ jobs:
         run: |
           node tests/tarot-clarity-numbered-backs-regression.mjs
           node tests/tarot-selection-fortune-frame-regression.mjs
+          node tests/tarot-luxury-foil-zoom-regression.mjs
 
       - name: Install Playwright Chromium
         run: |
@@ -58,7 +62,7 @@ jobs:
 
           const browser=await chromium.launch({headless:true});
           try{
-            const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
+            const page=await browser.newPage({viewport:{width:1585,height:736},deviceScaleFactor:1});
             const errors=[];
             page.on('pageerror',error=>errors.push(error.message));
             await page.route('https://res.cloudinary.com/**',route=>route.fulfill({
@@ -138,6 +142,39 @@ jobs:
             assert.match(revealed,/class="tarot-fortune-art-shell"[^>]*stroke-width="4"/,'revealed artwork frame must stay thin');
             assert.doesNotMatch(revealed,/stroke-width="18"/,'legacy thick outer frame must stay removed');
             assert.doesNotMatch(revealed,/stroke-width="11"/,'legacy thick art border must stay removed');
+
+            const foil=page.locator('#tarot-reading-grid [data-tarot-foil]').first();
+            await foil.hover();
+            await page.waitForFunction(()=>document.querySelector('#tarot-reading-grid [data-tarot-foil]')?.classList.contains('is-foil-active'));
+            const foilState=await foil.evaluate(el=>({
+              x:el.style.getPropertyValue('--foil-x'),
+              y:el.style.getPropertyValue('--foil-y'),
+              tx:el.style.getPropertyValue('--foil-tilt-x'),
+              ty:el.style.getPropertyValue('--foil-tilt-y'),
+              ripple:el.classList.contains('is-foil-rippling')
+            }));
+            assert.ok(foilState.x&&foilState.y,'tarot foil must track pointer coordinates');
+            assert.notEqual(foilState.tx,'0deg','tarot foil must tilt on X');
+            assert.notEqual(foilState.ty,'0deg','tarot foil must tilt on Y');
+
+            await page.locator('#tarot-reading-grid [data-tarot-zoom]').first().click();
+            await page.waitForFunction(()=>document.querySelector('#tarot-card-zoom')?.open===true);
+            const zoomMetrics=await page.locator('#tarot-card-zoom').evaluate(dialog=>{
+              const card=dialog.querySelector('[data-tarot-foil]');
+              const rect=dialog.getBoundingClientRect();
+              const cardRect=card.getBoundingClientRect();
+              const vh=window.visualViewport?.height||window.innerHeight;
+              return {
+                top:rect.top,bottom:rect.bottom,clientHeight:dialog.clientHeight,scrollHeight:dialog.scrollHeight,
+                cardBottom:cardRect.bottom,vh
+              };
+            });
+            assert.ok(zoomMetrics.top>=-1,'large tarot dialog must stay inside the viewport top');
+            assert.ok(zoomMetrics.bottom<=zoomMetrics.vh+1,'large tarot dialog must stay inside the viewport bottom');
+            assert.ok(zoomMetrics.scrollHeight<=zoomMetrics.clientHeight+1,'large tarot dialog must not require internal scrolling');
+            assert.ok(zoomMetrics.cardBottom<=zoomMetrics.vh-4,'large tarot card must fit fully on screen');
+            await page.locator('#tarot-card-zoom-close').click();
+
             assert.deepEqual(errors,[]);
           }finally{
             await browser.close();
