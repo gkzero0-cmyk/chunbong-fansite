@@ -434,7 +434,7 @@ body.mobile-landscape-game-session .to-top{
   display:none!important
 }
 
-@media(orientation:landscape) and (max-height:600px){
+@media(orientation:landscape) and (max-height:900px){
   body.mobile-landscape-game-ready{
     width:100%!important;
     min-width:0!important;
@@ -692,4 +692,48 @@ body.mobile-landscape-game-session .to-top{
 
 @media(prefers-reduced-motion:reduce){
   .mobile-landscape-rotate span{animation:none!important}
+}
+
+
+/* Unified landscape footprint for Chungwagame + Chuncortile.
+   The session class is only applied to handheld devices, so taller phones/tablets can use it too. */
+@media(orientation:landscape) and (max-height:900px){
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-stat{
+    min-height:54px!important;
+    padding:7px 5px!important;
+    border-radius:11px!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-stat span{font-size:8px!important}
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-stat strong{font-size:16px!important}
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-stat strong b{font-size:18px!important}
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-layout{
+    grid-template-columns:minmax(0,1fr) 72px!important;
+    gap:6px!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-board-wrap{
+    width:auto!important;
+    height:min(calc(var(--mobile-landscape-height,100svh) - 42px),calc((100vw - 198px)*10/17))!important;
+    aspect-ratio:17/10!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-board{
+    width:100%!important;
+    height:100%!important;
+    aspect-ratio:auto!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-tile{
+    inset:3% 2%!important;
+    border-width:2px!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-tile .ct-face{
+    width:auto!important;
+    height:86%!important;
+    aspect-ratio:1/1!important;
+    transform:none!important;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.48))!important
+  }
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-tile::after,
+  body.mobile-landscape-game-ready[data-game="chuncortile"] .ct-mini::after{
+    display:none!important;
+    content:none!important
+  }
 }

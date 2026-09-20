@@ -6,6 +6,7 @@
 
   const mobileQuery=window.matchMedia('(max-width: 760px)');
   const coarseQuery=window.matchMedia('(pointer: coarse)');
+  const landscapeQuery=window.matchMedia('(orientation: landscape)');
   const handheldAtLoad=mobileQuery.matches||coarseQuery.matches;
   const isHandheld=()=>handheldAtLoad||mobileQuery.matches||coarseQuery.matches||
     (navigator.maxTouchPoints>0&&Math.min(window.innerWidth,window.innerHeight)<=760);
@@ -31,8 +32,20 @@
   let gateResume=null;
   let gateTitle=null;
   let gateCopy=null;
+  let fullscreenOwned=false;
 
-  const isPortrait=()=>window.innerHeight>=window.innerWidth;
+  const viewportSize=()=>{
+    const visual=window.visualViewport;
+    return {width:visual?.width||window.innerWidth,height:visual?.height||window.innerHeight};
+  };
+  const isLandscape=()=>{
+    const {width,height}=viewportSize();
+    if(Math.abs(width-height)>2)return width>height;
+    if(landscapeQuery.matches)return true;
+    const orientationType=String(screen.orientation?.type||'');
+    return orientationType.startsWith('landscape');
+  };
+  const isPortrait=()=>!isLandscape();
   const landscapeApi=()=>{
     if(game==='chungwagame')return globalThis.ChungwagameApp||null;
     if(game==='chuncortile')return globalThis.ChuncortileApp||null;
@@ -67,7 +80,12 @@
     gateResume=landscapeGate.querySelector('[data-mobile-landscape-resume]');
     gateTitle=landscapeGate.querySelector('#mobile-landscape-title');
     gateCopy=landscapeGate.querySelector('[data-mobile-landscape-copy]');
-    gateResume?.addEventListener('click',()=>{
+    gateResume?.addEventListener('click',async()=>{
+      if(gateResume.dataset.action==='rotate'){
+        await requestLandscapeLock();
+        setTimeout(syncLandscapeMode,80);
+        return;
+      }
       if(isPortrait())return;
       const api=landscapeApi();
       if(!orientationPaused||!api?.resumeGame)return;
@@ -88,15 +106,21 @@
     if(mode==='resume'){
       gateTitle.textContent='게임이 일시정지되었습니다';
       gateCopy.textContent='가로 화면으로 돌아왔습니다. 준비되면 계속하기를 눌러주세요.';
+      gateResume.dataset.action='resume';
+      gateResume.textContent='계속하기';
       gateResume.hidden=false;
     }else if(mode==='paused-rotate'){
       gateTitle.textContent='세로 화면으로 전환되어 일시정지했습니다';
-      gateCopy.textContent='게임 기록은 그대로 유지됩니다. 휴대폰을 다시 가로로 돌려주세요.';
-      gateResume.hidden=true;
+      gateCopy.textContent='게임 기록은 그대로 유지됩니다. 휴대폰을 가로로 돌리거나 아래 버튼으로 다시 시도해 주세요.';
+      gateResume.dataset.action='rotate';
+      gateResume.textContent='가로모드 다시 시도';
+      gateResume.hidden=false;
     }else{
       gateTitle.textContent='휴대폰을 가로로 돌려주세요';
-      gateCopy.textContent=`${gameName}은 모바일 가로 화면에 맞춰 게임판과 조작 버튼을 크게 표시합니다.`;
-      gateResume.hidden=true;
+      gateCopy.textContent=`${gameName}은 모바일 가로 화면에 맞춰 게임판과 조작 버튼을 크게 표시합니다. 자동 회전이 되지 않으면 아래 버튼을 눌러주세요.`;
+      gateResume.dataset.action='rotate';
+      gateResume.textContent='가로모드 실행';
+      gateResume.hidden=false;
     }
     landscapeGate.hidden=false;
     body.classList.add('mobile-landscape-gate-open');
@@ -107,17 +131,26 @@
     body.classList.remove('mobile-landscape-gate-open');
   }
 
-  function requestLandscapeLock(){
+  async function requestLandscapeLock(){
+    try{
+      if(!document.fullscreenElement&&typeof document.documentElement.requestFullscreen==='function'){
+        const request=document.documentElement.requestFullscreen({navigationUI:'hide'});
+        fullscreenOwned=true;
+        await Promise.resolve(request).catch(()=>{fullscreenOwned=false;});
+      }
+    }catch(_){fullscreenOwned=false;}
     try{
       const lock=screen.orientation?.lock;
-      if(typeof lock==='function'){
-        Promise.resolve(lock.call(screen.orientation,'landscape')).catch(()=>{});
-      }
+      if(typeof lock==='function')await Promise.resolve(lock.call(screen.orientation,'landscape')).catch(()=>{});
     }catch(_){}
   }
 
   function releaseLandscapeLock(){
     try{screen.orientation?.unlock?.();}catch(_){}
+    if(fullscreenOwned&&document.fullscreenElement&&typeof document.exitFullscreen==='function'){
+      Promise.resolve(document.exitFullscreen()).catch(()=>{});
+    }
+    fullscreenOwned=false;
   }
 
   function beginLandscapeSession(){
@@ -272,7 +305,11 @@
   const resync=()=>{sync();centerChuncortile(false);};
   window.addEventListener('resize',resync,{passive:true});
   window.visualViewport?.addEventListener('resize',resync,{passive:true});
-  window.addEventListener('orientationchange',()=>setTimeout(()=>{sync();centerChuncortile(true)},120),{passive:true});
+  const orientationResync=()=>setTimeout(()=>{sync();centerChuncortile(true)},80);
+  window.addEventListener('orientationchange',orientationResync,{passive:true});
+  landscapeQuery.addEventListener?.('change',orientationResync);
+  screen.orientation?.addEventListener?.('change',orientationResync);
+  document.addEventListener('fullscreenchange',orientationResync,{passive:true});
   window.addEventListener('pagehide',()=>{if(landscapeSession)releaseLandscapeLock();},{once:true});
   sync();
 })();

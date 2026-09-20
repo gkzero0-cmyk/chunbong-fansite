@@ -78,8 +78,8 @@ jobs:
               assert.equal(await page.locator('.ct-cell').count(),450);
               assert.equal(await page.locator('.ct-cell.is-tile').count(),200);
               assert.equal(await page.locator('.ct-face').count()>=200,true);
-              const markerCount=await page.locator('.ct-tile').evaluateAll(nodes=>new Set(nodes.map(node=>node.dataset.mark).filter(Boolean)).size);
-              assert.equal(markerCount,11,'all 11 tile types need a unique non-color marker');
+              const markerCount=await page.locator('.ct-tile[data-mark]').count();
+              assert.equal(markerCount,0,'symbol marker badges must stay removed');
 
               if(viewport.width<=390){
                 await page.locator('#ct-start').click();
@@ -89,7 +89,7 @@ jobs:
                 await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='playing',{timeout:5000});
                 assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('mobile-landscape-game-ready')),true,'Chuncortile landscape class missing');
                 const boardBox=await page.locator('#ct-board-wrap').boundingBox();
-                assert.ok(boardBox&&boardBox.width>=460&&boardBox.height>=320,'landscape Chuncortile board is too small');
+                assert.ok(boardBox&&boardBox.width>=460&&boardBox.height>=260,'landscape Chuncortile board is too small');
               }else{
                 await page.locator('#ct-start').click();
                 await page.waitForFunction(()=>document.querySelector('#chuncortile')?.dataset.gameStatus==='playing',{timeout:5000});
@@ -98,8 +98,11 @@ jobs:
               let move=await page.evaluate(()=>window.ChuncortileApp.debugFindMove());
               assert.ok(move&&move.matches.length>=2);
               await page.locator('.ct-cell').nth(move.index).hover();
-              assert.ok(await page.locator('.ct-cell').nth(move.index).evaluate(el=>el.classList.contains('is-preview-valid')),'valid empty cell preview missing');
-              assert.equal(await page.locator('.ct-cell.is-preview-match').count(),move.matches.length,'hover preview must highlight the exact removal targets');
+              assert.equal(await page.locator('.ct-cell.is-preview-match').count(),0,'normal hover must not reveal removal targets');
+              assert.equal(await page.locator('.ct-cell.is-preview-valid').count(),0,'normal hover must not reveal valid cells');
+              await page.locator('#ct-hint').click();
+              assert.ok(await page.locator('.ct-cell.is-hint').count()>=1,'hint button must mark one playable empty cell');
+              assert.ok(await page.locator('.ct-cell.is-preview-match').count()>=2,'hint button must preview the matched tiles');
               let before=await page.evaluate(()=>window.ChuncortileApp.getSnapshot().score);
               const firstRemoved=move.matches.length;
               await page.locator('.ct-cell').nth(move.index).click();

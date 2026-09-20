@@ -302,3 +302,35 @@
 @media(prefers-reduced-motion:reduce){
   .ct-cell.is-preview-match .ct-tile{transition:none!important}
 }
+
+
+/* 2026-09-20: Chunbong face tiles + simpler primary-color language.
+   Normal hover never reveals a valid move; preview classes are reserved for Hint. */
+.ct-tile::after,.ct-mini::after{display:none!important;content:none!important}
+.ct-face{
+  background-image:url('assets/chuncortile/tiles-user.webp')!important;
+  background-size:400% 300%!important;
+  background-repeat:no-repeat!important
+}
+.type-0{--tile-edge:#FF8A80;background:linear-gradient(145deg,#EF5350,#D32F2F)!important}
+.type-1{--tile-edge:#82B1FF;background:linear-gradient(145deg,#42A5F5,#1565C0)!important}
+.type-2{--tile-edge:#FFF176;background:linear-gradient(145deg,#FFEE58,#F9A825)!important}
+.type-3{--tile-edge:#81C784;background:linear-gradient(145deg,#66BB6A,#2E7D32)!important}
+.type-4{--tile-edge:#FFB74D;background:linear-gradient(145deg,#FFA726,#EF6C00)!important}
+.type-5{--tile-edge:#CE93D8;background:linear-gradient(145deg,#AB47BC,#6A1B9A)!important}
+.type-6{--tile-edge:#80DEEA;background:linear-gradient(145deg,#26C6DA,#00838F)!important}
+.type-7{--tile-edge:#F48FB1;background:linear-gradient(145deg,#EC407A,#AD1457)!important}
+.type-8{--tile-edge:#CFD8DC;background:linear-gradient(145deg,#B0BEC5,#607D8B)!important}
+.type-9{--tile-edge:#9FA8DA;background:linear-gradient(145deg,#5C6BC0,#283593)!important}
+.type-10{--tile-edge:#C5E1A5;background:linear-gradient(145deg,#9CCC65,#558B2F)!important}
+.ct-cell.is-empty:hover{
+  background:rgba(255,255,255,.035)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)!important
+}
+.ct-tile .ct-face,.ct-mini .ct-face{
+  width:auto!important;
+  height:88%!important;
+  aspect-ratio:1/1;
+  transform:none!important;
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.42))!important
+}
