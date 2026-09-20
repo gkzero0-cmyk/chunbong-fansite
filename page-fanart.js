@@ -3,7 +3,7 @@
   const core = window.ChunbongPageCore;
   if (!core || core.page !== 'fanart') return;
   const {
-    data, $, $, esc, proxiedImage, loadContent,
+    data, $, $$, esc, proxiedImage, loadContent,
     errorState, bindRetry, setupReveal, requestedOpenId
   } = core;
   const itemKey=item=>String(item?.id||item?.link||item?.title||'');
