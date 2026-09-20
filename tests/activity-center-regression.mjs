@@ -78,7 +78,7 @@ assert.match(activityJs,/document\.body\.append\(panel\)/,'mobile activity panel
 assert.match(activityJs,/!panel\.contains\(event\.target\)/,'outside-click handling must still treat the body-hosted panel as inside');
 assert.match(activityCss,/\.activity-panel\{/);
 assert.match(activityCss,/grid-template-columns:repeat\(5,1fr\)/,'activity tabs must fit all/schedule/notice/media/fanart');
-assert.match(activityCss,/data-type="schedule"/,'schedule entries need a distinct activity icon style');
+assert.match(activityCss,/data-kind="schedule"/,'schedule entries need a shared category activity style');
 assert.match(activityCss,/\[data-theme="light"\] \.activity-panel/,'notification panel needs light-mode styling');
 assert.match(activityCss,/@media\(max-width:760px\)/,'notification panel needs mobile layout');
 assert.match(activityCss,/\.activity-panel\{position:fixed;top:76px;left:8px;right:8px;bottom:8px;/,'mobile notification panel must be viewport-bounded');
