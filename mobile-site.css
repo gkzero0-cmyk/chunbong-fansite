@@ -951,3 +951,28 @@
     backdrop-filter:blur(14px)
   }
 }
+
+
+/* Compact mobile top chrome + desktop MY fan hub entry */
+.header-myhub{
+  display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 12px;border:1px solid #363238;
+  border-radius:999px;background:#121214;color:#d7d0ca;font-size:11px;font-weight:900;white-space:nowrap
+}
+.header-myhub span{display:grid;place-items:center;min-width:24px;height:20px;padding:0 5px;border-radius:999px;background:#ff6b1817;color:#ff9454;font-size:8px;letter-spacing:.08em}
+.header-myhub:hover,.header-myhub[aria-current="page"]{border-color:#ff6b185f;background:#21140f;color:#ffb07d}
+@media(max-width:760px){
+  .header-myhub{display:none!important}
+  body[data-page]:not([data-game]) .site-header{height:46px!important;min-height:46px!important;padding-top:max(4px,env(safe-area-inset-top))!important;padding-bottom:4px!important}
+  body[data-page]:not([data-game]) .brand-mark{width:30px!important;height:30px!important;border-radius:9px!important;font-size:10px!important}
+  body[data-page]:not([data-game]) :is(.nav-toggle,.theme-toggle,.changelog-button,.activity-bell){width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;flex-basis:34px!important;padding:6px!important;border-radius:10px!important}
+  .pwa-app-mode .site-header.pwa-compact-header{height:46px!important;min-height:46px!important;padding:max(4px,env(safe-area-inset-top)) 8px 4px!important}
+  .pwa-app-mode .site-header.pwa-compact-header .brand-mark{display:none!important}
+  .pwa-app-mode .site-header.pwa-compact-header .brand{gap:0!important}
+  .pwa-app-mode .site-header.pwa-compact-header .brand-copy strong{font-size:13px!important}
+  .pwa-app-mode .site-header.pwa-compact-header .brand-copy small{display:none!important}
+  .pwa-app-mode .site-header.pwa-compact-header{grid-template-columns:minmax(0,1fr) auto!important}
+  .pwa-app-mode .site-header.pwa-compact-header:has(.pwa-header-live-state:not([hidden])){grid-template-columns:minmax(0,1fr) auto!important}
+  .pwa-header-action{display:none!important}
+  .pwa-header-live-state{min-height:30px;padding:0 7px;border-radius:9px;font-size:8px}
+}
+[data-theme="light"] .header-myhub{border-color:#e2d8d0;background:#fff;color:#4a3e35}
