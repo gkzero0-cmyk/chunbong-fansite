@@ -69,6 +69,8 @@ assert.match(fanart,/items\.findIndex\(item => itemKey\(item\) === String\(reque
 assert.match(fanart,/chunbong:fanart-selected/,'fanart favorite event missing');
 assert.match(tarot,/chunbong:tarot-reading/,'tarot journal event missing');
 assert.match(hub,/timeupdate/,'native video progress persistence missing');
+assert.match(hub,/window\.addEventListener\('pagehide',stopReminderTimer\)/,'background navigation must stop the reminder timer cleanly');
+assert.match(hub,/window\.addEventListener\('pageshow',[\s\S]*startReminderTimer\(\)[\s\S]*checkBroadcastReminder\(\)[\s\S]*checkLiveReminder\(\)/,'bfcache return must restart LIVE and schedule monitoring');
 assert.match(hub,/progress:/,'continue-watching progress field missing');
 
 assert.match(minigames,/data-profile-total-plays/,'minigame total play stat missing');

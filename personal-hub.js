@@ -297,9 +297,16 @@
     document.addEventListener('chunbong:personal-updated',()=>{renderDashboard();renderAppHome();syncSaveButton()});
     setTimeout(()=>document.dispatchEvent(new CustomEvent('chunbong:personal-updated',{detail:read()})),0);
     void checkBroadcastReminder();void checkLiveReminder();
-    const timer=setInterval(()=>{void checkBroadcastReminder();void checkLiveReminder()},60000);
+    let timer=0;
+    const startReminderTimer=()=>{
+      if(timer)clearInterval(timer);
+      timer=window.setInterval(()=>{void checkBroadcastReminder();void checkLiveReminder()},60000);
+    };
+    const stopReminderTimer=()=>{if(timer){clearInterval(timer);timer=0}};
+    startReminderTimer();
     document.addEventListener('visibilitychange',()=>{if(!document.hidden){void checkBroadcastReminder();void checkLiveReminder()}});
-    window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});
+    window.addEventListener('pagehide',stopReminderTimer);
+    window.addEventListener('pageshow',()=>{startReminderTimer();void checkBroadcastReminder();void checkLiveReminder()});
   }
 
   window.ChunbongPersonal={read,write,favoriteItem,isFavorite,recordRecent,recordTarot,recordGameStart,gameSnapshot,dailyChallenge,setAlertEnabled,renderDashboard};
