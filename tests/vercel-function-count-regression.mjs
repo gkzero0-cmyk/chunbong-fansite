@@ -16,6 +16,11 @@ for(const name of fs.readdirSync(libDir).filter(name=>name.endsWith('.js'))){
   const source=fs.readFileSync(new URL('../lib/'+name,import.meta.url),'utf8');
   assert.ok(!source.includes("../api/"),'lib/'+name+' must not import moved internal modules from api/');
 }
+const scriptsDir=new URL('../scripts/',import.meta.url);
+for(const name of fs.readdirSync(scriptsDir).filter(name=>/\.(?:js|mjs)$/.test(name))){
+  const source=fs.readFileSync(new URL('../scripts/'+name,import.meta.url),'utf8');
+  assert.ok(!source.includes("../api/"),'scripts/'+name+' must not import moved internal modules from api/');
+}
 for(const moduleName of ['vod','notice','notice-detail','schedule-detail','clips','fanart','youtube','schedule','catch-detail']){
   assert.ok(content.includes("../lib/content-api/"+moduleName),'content.js must import '+moduleName+' from lib/content-api');
 }
