@@ -56,8 +56,8 @@ assert.match(css,/backdrop-filter:blur\(8px\)!important/,'mobile header/menu blu
 assert.match(css,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/,'app tabbar must expose five primary controls');
 assert.match(css,/\.pwa-app-more-sheet\{/,'installed app more sheet styles missing');
 assert.match(css,/\.pwa-ios-install-chip\{/,'iOS home-screen install helper styles missing');
-assert.match(css,/body\.pwa-app-mode \.daily-fortune-launcher\{/,'daily fortune launcher must clear the app tabbar');
-assert.match(css,/body\.pwa-app-mode \.activity-panel\{/,'activity panel must clear the app tabbar');
+assert.match(css,/body\.pwa-app-mode \.daily-fortune-launcher,[\s\S]*body\.mobile-tabbar-mode \.daily-fortune-launcher\{/,'daily fortune launcher must clear the mobile tabbar');
+assert.match(css,/body\.pwa-app-mode \.activity-panel,[\s\S]*body\.mobile-tabbar-mode \.activity-panel\{/,'activity panel must clear the mobile tabbar');
 new Function(js);
 
 console.log('Mobile site regression passed');
