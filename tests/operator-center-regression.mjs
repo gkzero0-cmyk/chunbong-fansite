@@ -14,6 +14,8 @@ const feedbackCss=read('feedback-widget.css');
 const improvements=read('site-improvements.js');
 const mobile=read('mobile-site.js');
 const sw=read('service-worker.js');
+const vercel=read('vercel.json');
+const robots=read('robots.txt');
 
 assert.match(api,/OWNER_GITHUB_ID\s*=\s*322299248/,'owner GitHub numeric id missing');
 assert.match(api,/OWNER_GITHUB_LOGIN\s*=\s*'gkzero0-cmyk'/,'owner GitHub login missing');
@@ -28,6 +30,11 @@ assert.match(api,/SameSite=Lax/);
 assert.match(api,/Max-Age=7776000/,'90-day operator session missing');
 assert.match(api,/timingSafeEqual/,'signed session verification missing');
 assert.match(api,/github\.com\/login\/oauth\/authorize/,'GitHub OAuth start missing');
+assert.match(api,/GITHUB_PKCE_PREFIX/,'GitHub PKCE storage missing');
+assert.match(api,/code_challenge_method','S256'/,'GitHub PKCE challenge missing');
+assert.match(api,/code_verifier:verifier/,'GitHub PKCE verifier missing');
+assert.match(api,/AUTH_EPOCH_KEY/,'operator session revocation epoch missing');
+assert.match(api,/SESSION_INDEX/,'operator active session index missing');
 assert.match(api,/set\('scope','read:user'\)/,'GitHub OAuth must request only the minimum profile scope');
 assert.doesNotMatch(api,/read:user user:email/,'GitHub OAuth must not request email scope');
 assert.match(api,/api\.github\.com\/user/,'GitHub identity verification missing');
@@ -46,7 +53,7 @@ assert.match(api,/No raw IP|raw IP/i,'privacy guard comment missing');
 for(const type of [
   'site-analytics-event','feedback-submit','operator-auth-config','operator-session',
   'operator-github-start','operator-github-callback','operator-email-complete',
-  'operator-analytics','operator-feedback','operator-feedback-update','operator-logout'
+  'operator-analytics','operator-feedback','operator-feedback-update','operator-logout','operator-logout-all'
 ]) assert.ok(content.includes(type),'api/content missing '+type);
 assert.match(content,/operatorCenter=require\('\.\.\/lib\/operator-center-api'\)/);
 
@@ -101,3 +108,12 @@ new Function(analytics);
 new Function(feedback);
 
 console.log('operator center analytics, feedback and auth regression passed');
+
+const vercelConfig=JSON.parse(vercel);
+assert.ok((vercelConfig.rewrites||[]).some(row=>row.source==='/api/operator/github/start'),'clean GitHub auth start rewrite missing');
+assert.ok((vercelConfig.rewrites||[]).some(row=>row.source==='/api/operator/github/callback'),'clean GitHub auth callback rewrite missing');
+assert.match(operatorHtml,/\/api\/operator\/github\/start/,'operator login should use clean GitHub auth route');
+assert.match(operatorHtml,/operator-logout-all/,'all-device logout control missing');
+assert.match(operatorJs,/operator-logout-all/,'all-device logout runtime missing');
+assert.match(operatorJs,/security-sessions/,'active operator session count missing');
+assert.match(robots,/Disallow: \/operator\.html/,'operator page should be excluded from crawlers');
