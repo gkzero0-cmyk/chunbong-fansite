@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "updatedAt": "2026-09-22T04:22:00+09:00",
+  "items": [
+    {
+      "id": "leopel",
+      "title": "레오펠: 사자의 노래",
+      "aliases": [
+        "레오펠",
+        "LEOPEL"
+      ],
+      "category": "minecraft",
+      "role": "주최 · 기획",
+      "status": "ended",
+      "startDate": "2025-06-05",
+      "endDate": "2025-07-06",
+      "datePrecision": "day",
+      "summary": "춘봉이 기획·운영한 SOOP·치지직·YouTube 플랫폼 통합 대규모 스트리머 마인크래프트 서버.",
+      "description": "2025년 6월 5일부터 7월 6일까지 진행된 플랫폼 통합 마인크래프트 서버입니다. 경쟁보다 협동과 힐링에 초점을 두고, 기억을 잃은 채 이세계에서 자신을 찾아가는 모험과 RP를 중심으로 각 스트리머가 자신만의 이야기를 만들어가는 방향으로 기획되었습니다.",
+      "heroImage": {
+        "src": "/assets/chunbong-contents/leopel-cover.svg",
+        "alt": "레오펠: 사자의 노래 팬사이트 아카이브 커버",
+        "sourceId": ""
+      },
+      "participants": [],
+      "results": [],
+      "timeline": [
+        {
+          "id": "soop-pick-presentation",
+          "type": "article",
+          "title": "레오펠 서버 발표회",
+          "date": "2025-05-12",
+          "datePrecision": "day",
+          "url": "https://pick.sooplive.com/daily/view/162209",
+          "thumbnail": "",
+          "sourceId": "source-presentation",
+          "note": "SOOP PICK에서 레오펠의 일정과 콘셉트, 핵심 콘텐츠를 소개한 발표회 기록입니다."
+        },
+        {
+          "id": "soop-pick-open",
+          "type": "article",
+          "title": "레오펠 서버 오픈 기록",
+          "date": "2025-06-06",
+          "datePrecision": "day",
+          "url": "https://pick.sooplive.com/daily/view/162435",
+          "thumbnail": "",
+          "sourceId": "source-open",
+          "note": "6월 5일 레오펠 서버 오픈과 초기 서버 모습을 다룬 SOOP PICK 기록입니다."
+        },
+        {
+          "id": "soop-hotterview",
+          "type": "article",
+          "title": "춘봉 Hotterview #066 · 레오펠 기획 이야기",
+          "date": "2025-10-30",
+          "datePrecision": "day",
+          "url": "https://pick.sooplive.com/interview/view/168110",
+          "thumbnail": "",
+          "sourceId": "source-interview",
+          "note": "춘봉이 직접 레오펠의 제작 계기와 플랫폼 통합 서버로 기획한 이유를 설명한 인터뷰입니다."
+        }
+      ],
+      "media": [],
+      "gallery": [],
+      "sources": [
+        {
+          "id": "source-presentation",
+          "kind": "article",
+          "label": "SOOP PICK · 레오펠 서버 발표회",
+          "url": "https://pick.sooplive.com/daily/view/162209"
+        },
+        {
+          "id": "source-open",
+          "kind": "article",
+          "label": "SOOP PICK · 레오펠 서버 오픈",
+          "url": "https://pick.sooplive.com/daily/view/162435"
+        },
+        {
+          "id": "source-interview",
+          "kind": "official",
+          "label": "SOOP PICK Hotterview · 춘봉 #066",
+          "url": "https://pick.sooplive.com/interview/view/168110"
+        },
+        {
+          "id": "source-reference",
+          "kind": "reference",
+          "label": "나무위키 · 레오펠",
+          "url": "https://www.namu.moe/w/%EB%A0%88%EC%98%A4%ED%8E%A0"
+        }
+      ],
+      "verification": {
+        "state": "cross_checked",
+        "verifiedAt": "2026-09-22T04:15:00+09:00",
+        "conflicts": []
+      },
+      "published": true,
+      "updatedAt": "2026-09-22T04:22:00+09:00"
+    }
+  ]
+}

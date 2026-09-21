@@ -1,0 +1,29 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url);
+const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
+const html=read('chunbong-contents.html');
+const css=read('chunbong-contents.css');
+assert.match(html,/data-page="contents"/);
+for(const hook of ['data-archive-search','data-archive-category','data-archive-year','data-archive-sort','data-archive-list','data-archive-detail','data-archive-lightbox']) assert.ok(html.includes(hook),hook);
+assert.match(html,/춘봉 콘텐츠/);
+assert.match(css,/grid-template-columns/);
+assert.match(css,/@media\(max-width:760px\)/);
+assert.match(css,/prefers-reduced-motion/);
+assert.match(css,/object-fit:cover/);
+assert.match(css,/\[data-theme="light"\]/);
+console.log('chunbong contents page regression passed');
+
+const js=read('chunbong-contents.js');
+for(const text of ['/api/content?type=chunbong-contents','/api/content?type=chunbong-content&id=','URLSearchParams','history.replaceState','loading="lazy"','decoding="async"','showModal','Escape']) assert.ok(js.includes(text),text);
+const archive=require('../chunbong-contents.js');
+assert.equal(archive.formatDate('2026-06','month'),'2026년 6월');
+assert.equal(archive.filterItems([{title:'레오펠',aliases:[],participants:['춘봉'],category:'minecraft',startDate:'2025-06'}],{q:'춘봉',category:'all',year:'all'}).length,1);
+
+const shell=read('site-shell.js');
+const home=read('index.html');
+const sw=read('service-worker.js');
+assert.match(shell,/items:\['contents','history','data'\]/);
+assert.match(home,/href="chunbong-contents\.html"/);
+for(const asset of ['/chunbong-contents.html','/chunbong-contents.css','/chunbong-contents.js']) assert.ok(sw.includes(asset),asset);

@@ -56,6 +56,7 @@
 
     <nav class="operator-tabs" role="tablist" aria-label="운영자 메뉴">
       <button id="operator-tab-overview" class="active" type="button" role="tab" aria-selected="true" aria-controls="operator-panel-overview" data-operator-tab="overview">개요</button>
+      <button id="operator-tab-contents" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-contents" data-operator-tab="contents">콘텐츠 아카이브</button>
       <button id="operator-tab-performance" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-performance" data-operator-tab="performance">성능</button>
       <button id="operator-tab-feedback" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-feedback" data-operator-tab="feedback">피드백 <i id="operator-feedback-badge" hidden>0</i></button>
       <button id="operator-tab-system" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-system" data-operator-tab="system">시스템 상태</button>
@@ -102,6 +103,19 @@
         <header><h2>기능 이용 흐름</h2><span>시작 → 완료</span></header>
         <div id="operator-funnel" class="operator-funnel"></div>
       </article>
+    </section>
+
+    <section id="operator-panel-contents" role="tabpanel" aria-labelledby="operator-tab-contents" data-operator-panel="contents" hidden>
+      <div class="operator-archive-layout">
+        <aside class="operator-card operator-archive-list-card">
+          <header><div><h2>콘텐츠 아카이브</h2><small>초안 · 검증 · 공개 상태</small></div><button type="button" data-archive-new>새 콘텐츠</button></header>
+          <input class="operator-archive-search" type="search" data-archive-admin-search placeholder="콘텐츠명 · ID 검색" aria-label="콘텐츠 검색">
+          <div class="operator-archive-list" data-archive-admin-list><p class="operator-empty">콘텐츠를 불러오고 있습니다.</p></div>
+        </aside>
+        <article class="operator-card operator-archive-editor" data-archive-admin-editor>
+          <p class="operator-empty">콘텐츠를 선택하거나 새로 만드세요.</p>
+        </article>
+      </div>
     </section>
 
     <section id="operator-panel-performance" role="tabpanel" aria-labelledby="operator-tab-performance" data-operator-panel="performance" hidden>

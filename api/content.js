@@ -18,6 +18,7 @@ const handleMinigameMultiplayer = require('../lib/minigame-multiplayer-api');
 const handleChangelogHistory = require('../lib/changelog-history-api');
 const pushNotifications = require('../lib/push-notifications-api');
 const operatorCenter=require('../lib/operator-center-api');
+const contentArchive=require('../lib/chunbong-content-archive-api');
 const youtubeEngagementCache = require('../data/youtube-engagement-cache.json');
 const soopMetricHistory = require('../data/soop-follower-history.json');
 const { buildEngagementRankings } = require('../lib/youtube-engagement');
@@ -274,6 +275,12 @@ async function handler(req,res) {
   if(type==='operator-session-revoke') return operatorCenter.handleOperatorSessionRevoke(req,res);
   if(type==='operator-logout') return operatorCenter.handleLogout(req,res);
   if(type==='operator-logout-all') return operatorCenter.handleLogoutAll(req,res);
+  if(type==='chunbong-contents') return contentArchive.handlePublicList(req,res);
+  if(type==='chunbong-content') return contentArchive.handlePublicDetail(req,res);
+  if(type==='operator-content-archive') return contentArchive.handleOperatorList(req,res);
+  if(type==='operator-content-archive-save') return contentArchive.handleOperatorSave(req,res);
+  if(type==='operator-content-archive-publish') return contentArchive.handleOperatorPublish(req,res);
+  if(type==='operator-content-archive-delete') return contentArchive.handleOperatorDelete(req,res);
   if(type==='live'){
     res.setHeader('Cache-Control','s-maxage=30, stale-while-revalidate=30');
     try{
