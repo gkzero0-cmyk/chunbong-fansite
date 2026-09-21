@@ -64,13 +64,6 @@
     }
   };
 
-  if (!document.querySelector('link[data-personal-hub-styles]')) {
-    const personalStyles = document.createElement('link');
-    personalStyles.rel = 'stylesheet';
-    personalStyles.href = 'personal-hub.css';
-    personalStyles.dataset.personalHubStyles = 'true';
-    document.head.appendChild(personalStyles);
-  }
   if (!document.querySelector('link[data-site-quality]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -78,12 +71,42 @@
     link.dataset.siteQuality = 'true';
     document.head.appendChild(link);
   }
-  for (const src of ['site-meta.js', 'site-health.js', 'site-improvements.js', 'personal-hub.js']) {
-    if (document.querySelector('script[src="' + src + '"]')) continue;
+
+  const loadScript = src => {
+    if (document.querySelector('script[src="' + src + '"]')) return;
     const script = document.createElement('script');
     script.src = src;
     script.defer = true;
     document.head.appendChild(script);
+  };
+  const loadPersonalHub = () => {
+    if (!document.querySelector('link[data-personal-hub-styles]')) {
+      const personalStyles = document.createElement('link');
+      personalStyles.rel = 'stylesheet';
+      personalStyles.href = 'personal-hub.css';
+      personalStyles.dataset.personalHubStyles = 'true';
+      document.head.appendChild(personalStyles);
+    }
+    loadScript('personal-hub.js');
+  };
+
+  loadScript('site-health.js');
+  loadScript('site-meta.js');
+  loadScript('site-improvements.js');
+
+  const page = document.body?.dataset?.page || '';
+  const interactivePersonalPages = new Set([
+    'home','myhub','vod','clips','youtube','fanart','tarot','minigames',
+    'chuntris','chunbak','chungwagame','chuncortile'
+  ]);
+  if (interactivePersonalPages.has(page)) {
+    loadPersonalHub();
+  } else {
+    const scheduleIdle = callback => {
+      if ('requestIdleCallback' in window) window.requestIdleCallback(callback,{timeout:1800});
+      else setTimeout(callback,700);
+    };
+    scheduleIdle(loadPersonalHub);
   }
 })();
 (() => {
