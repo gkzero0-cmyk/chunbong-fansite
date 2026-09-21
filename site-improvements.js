@@ -445,9 +445,9 @@
     if(!hinted)return;
     try{
       const response=await fetch(SESSION_URL,{headers:{accept:'application/json'},cache:'no-store'});
-      if(!response.ok)return;
+      if(!response.ok){if(response.status===401)try{localStorage.removeItem(HINT_KEY)}catch(_){};return}
       const data=await response.json();authenticated=data?.authenticated===true;
-      if(!authenticated)return;
+      if(!authenticated){try{localStorage.removeItem(HINT_KEY)}catch(_){};return}
       document.documentElement.dataset.operatorSession='active';
       installEntries();observeMobileMore();
     }catch(_){}
