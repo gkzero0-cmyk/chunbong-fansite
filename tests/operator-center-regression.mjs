@@ -35,7 +35,8 @@ assert.match(api,/accounts:lookup/,'Firebase ID token lookup missing');
 assert.match(api,/sha256/,'owner email comparison must use hash');
 assert.match(api,/operator:session-secret:v1/,'server-managed session secret missing');
 assert.match(api,/operator:analytics:start:v1/,'analytics collection start marker missing');
-assert.match(api,/ZADD[\s\S]*operator:analytics:active:v1/,'active visitor tracking missing');
+assert.match(api,/ACTIVE_KEY='operator:analytics:active:v1'/,'active visitor key missing');
+assert.match(api,/\['ZADD',ACTIVE_KEY/,'active visitor tracking missing');
 assert.match(api,/PFADD/,'anonymous unique visitor aggregation missing');
 assert.match(api,/feedback:[\s\S]*nickname/,'feedback storage missing optional nickname');
 assert.match(api,/origin_not_allowed/,'same-origin write guard missing');
@@ -66,7 +67,7 @@ assert.match(api,/accounts:sendOobCode/,'Firebase email link dispatch missing');
 assert.match(api,/operator:auth:email-cooldown:v1/,'operator email magic-link cooldown missing');
 assert.match(operatorJs,/signInWithEmailLink/,'Firebase email link completion missing');
 assert.doesNotMatch(operatorJs,/eligible/,'operator email registration state must not be exposed to the client');
-assert.match(operatorJs,/90일/);
+assert.match(operatorHtml,/90일/);
 assert.match(operatorCss,/operator-dashboard/);
 assert.match(operatorCss,/operator-metric-grid/);
 
