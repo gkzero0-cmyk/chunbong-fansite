@@ -15,6 +15,7 @@
   --accent-history:#AEB9C8;
   --accent-data:#48E0C2;
   --accent-calendar:#B7E75C;
+  --accent-contents:#F2A65A;
   --accent-schedule-soft:color-mix(in srgb,var(--accent-schedule) 12%,transparent);
   --accent-notice-soft:color-mix(in srgb,var(--accent-notice) 12%,transparent);
   --accent-replay-soft:color-mix(in srgb,var(--accent-replay) 12%,transparent);
@@ -26,6 +27,7 @@
   --accent-history-soft:color-mix(in srgb,var(--accent-history) 12%,transparent);
   --accent-data-soft:color-mix(in srgb,var(--accent-data) 12%,transparent);
   --accent-calendar-soft:color-mix(in srgb,var(--accent-calendar) 12%,transparent);
+  --accent-contents-soft:color-mix(in srgb,var(--accent-contents) 12%,transparent);
 }
 [data-theme="light"]{
   --text-primary:#1D1815;
@@ -44,6 +46,7 @@
   --accent-history:#596879;
   --accent-data:#087F6B;
   --accent-calendar:#658800;
+  --accent-contents:#A84E05;
 }
 .category-accent{--category-accent:var(--orange-2)}
 .category-accent[data-kind="schedule"]{--category-accent:var(--accent-schedule)}
@@ -57,6 +60,7 @@
 .category-accent[data-kind="history"]{--category-accent:var(--accent-history)}
 .category-accent[data-kind="data"]{--category-accent:var(--accent-data)}
 .category-accent[data-kind="calendar"]{--category-accent:var(--accent-calendar)}
+.category-accent[data-kind="contents"]{--category-accent:var(--accent-contents)}
 
 body[data-page="schedule"]{--page-accent:var(--accent-schedule)}
 body[data-page="notice"]{--page-accent:var(--accent-notice)}
@@ -72,6 +76,7 @@ body[data-page="chungwagame"],
 body[data-page="chuncortile"]{--page-accent:var(--accent-minigames)}
 body[data-page="history"]{--page-accent:var(--accent-history)}
 body[data-page="data"]{--page-accent:var(--accent-data)}
+body[data-page="contents"]{--page-accent:var(--accent-contents)}
 .page-category-kicker,.page-hero .kicker{color:var(--page-accent,var(--orange-2))}
 .page-category-kicker{display:flex;align-items:center;gap:8px;font-weight:900;letter-spacing:.12em}
 .page-category-kicker>span[aria-hidden="true"]{display:inline-grid;place-items:center;min-width:22px;height:22px;border-radius:8px;background:color-mix(in srgb,var(--page-accent) 11%,transparent);border:1px solid color-mix(in srgb,var(--page-accent) 28%,transparent);color:var(--page-accent)}
