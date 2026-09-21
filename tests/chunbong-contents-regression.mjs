@@ -27,3 +27,9 @@ const sw=read('service-worker.js');
 assert.match(shell,/items:\['contents','history','data'\]/);
 assert.match(home,/href="chunbong-contents\.html"/);
 for(const asset of ['/chunbong-contents.html','/chunbong-contents.css','/chunbong-contents.js']) assert.ok(sw.includes(asset),asset);
+
+
+for(const token of ['archive-overview-highlight-grid','archive-people-chips','archive-record-strip','archive-media-visual']) assert.ok(css.includes(token),token);
+for(const token of ['주요 기록','기록 하이라이트','영상 · 방송','자료 이미지']) assert.ok(js.includes(token),token);
+assert.match(js,/renderOverviewHighlights/);
+assert.match(js,/renderRecordStrip/);

@@ -95,3 +95,20 @@ const psyContest=seed.items.find(item=>item.id==='psy-emotion-song-contest-2026'
 assert.equal(psyContest?.startDate,'2026-04-28');
 assert.ok((psyContest?.sources||[]).length>=2,'song contest should be cross-checked');
 assert.match(String(psyContest?.heroImage?.src||''),/^\/assets\/chunbong-contents\//);
+
+
+const chuntacle=seed.items.find(item=>item.id==='chuntacle-2026');
+assert.ok(chuntacle?.published,'춘타클 should be included in the public content archive');
+assert.equal(chuntacle?.category,'class-event');
+assert.match(String(chuntacle?.heroImage?.src||''),/^\/assets\/chunbong-contents\/chuntacle-/);
+assert.ok((chuntacle?.timeline||[]).length>=3,'춘타클 should expose multiple class sessions in its timeline');
+assert.ok((chuntacle?.participants||[]).length>=10,'춘타클 should list confirmed students from archived class records');
+assert.ok((chuntacle?.results||[]).length>=2,'춘타클 should summarize confirmed class sessions');
+assert.ok((chuntacle?.gallery||[]).length>=2,'춘타클 should include visual archive material');
+
+assert.ok((leopel?.media||[]).some(row=>/159711687/.test(row.url)),'Leopel should link the verified SOOP presentation VOD');
+assert.ok((leopel?.gallery||[]).length>=2,'Leopel detail should have visual archive material');
+assert.ok((justserver?.media||[]).length>=2,'JustServer should include multiple verified SOOP Catch records');
+assert.ok((justserver?.gallery||[]).length>=2,'JustServer detail should have visual archive material');
+assert.ok((psyContest?.participants||[]).includes('시로코'),'song contest should include confirmed participant evidence');
+assert.ok((psyContest?.gallery||[]).length>=2,'song contest detail should have visual archive material');
