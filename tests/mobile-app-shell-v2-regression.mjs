@@ -23,7 +23,7 @@ assert.match(css,/body\[data-page="data"\] \.data-detail-table\{[^}]*overflow:vi
 assert.match(css,/body\[data-page="data"\] \.data-detail-row\{[^}]*min-width:0!important/s,'mobile data rows must become cards');
 assert.match(css,/body\[data-page="data"\] \.data-detail-header\{[^}]*display:none!important/s,'desktop data table header must disappear on card layout');
 assert.match(css,/body\[data-page="data"\] \.data-calendar-wrap\{[^}]*overflow:visible!important/s,'data calendar must not horizontally scroll');
-assert.match(css,/body\[data-page="data"\] \.data-calendar-grid\{[^}]*grid-template-columns:repeat\(7,minmax\(0,1fr\)\)!important/s,'data calendar must fit seven columns');
+assert.match(css,/body\[data-page="data"\] :is\(\.data-calendar-week,\.data-calendar-grid\)\{[^}]*grid-template-columns:repeat\(7,minmax\(0,1fr\)\)!important/s,'data calendar must fit seven columns');
 assert.match(css,/body\[data-page="data"\] \.data-chart-grid\{[^}]*scroll-snap-type:x mandatory!important/s,'multiple data charts should use an intentional swipe rail');
 
 new Function(js);
