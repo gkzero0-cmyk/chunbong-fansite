@@ -114,6 +114,7 @@
           <a href="data.html" data-more-page="data"><span>춘봉 데이터</span><small>통계 · 분석</small></a>
           <a href="changelog.html" data-more-page="changelog"><span>업데이트</span><small>변경 기록</small></a>
           <a href="myhub.html" data-more-page="myhub"><span>내 팬허브</span><small>보관함 · 기록</small></a>
+          <button type="button" class="pwa-app-more-action" data-mobile-theme-toggle><span>화면 테마</span><small>라이트 · 다크 전환</small></button>
         </div>
       </section>`;
 
@@ -124,6 +125,19 @@
         link.setAttribute('aria-current','page');
       }
     });
+    const mobileTheme=moreBackdrop.querySelector('[data-mobile-theme-toggle]');
+    const syncMobileTheme=()=>{
+      if(!mobileTheme)return;
+      const light=document.documentElement.dataset.theme==='light';
+      const small=mobileTheme.querySelector('small');
+      if(small)small.textContent=light?'현재 라이트 · 다크로 변경':'현재 다크 · 라이트로 변경';
+      mobileTheme.setAttribute('aria-label',light?'다크 모드로 변경':'라이트 모드로 변경');
+    };
+    mobileTheme?.addEventListener('click',()=>{
+      document.querySelector('.theme-toggle')?.click();
+      setTimeout(syncMobileTheme,0);
+    });
+    syncMobileTheme();
 
     const openMore=()=>{
       closeNav();
@@ -292,10 +306,11 @@
   }
 
   async function renderInstalledHome(){
-    if(!mobile.matches||!appMode||body.dataset.page!=='home')return;
+    if(!mobile.matches||body.dataset.page!=='home')return;
     const root=document.querySelector('[data-app-home-panel]');
     if(!root)return;
-    body.classList.add('pwa-home-dashboard-mode');
+    body.classList.add('mobile-home-dashboard-mode');
+    if(appMode)body.classList.add('pwa-home-dashboard-mode');
     const personal=window.ChunbongPersonal?.read?.()||{};
     const challenge=window.ChunbongPersonal?.dailyChallenge?.();
     const recent=personal.recent||null;
@@ -321,6 +336,11 @@
         '<a href="'+esc(challenge?.href||'minigames.html')+'"><small>오늘의 미션</small><strong>'+esc(challenge?.title||'미니게임 도전')+'</strong><span>'+esc(challenge?((challenge.completed?'완료 ✓':challenge.progress+'/'+challenge.goal+' 진행')):'도전 보기')+'</span></a>'+
         '<a href="'+esc(recentHref)+'"><small>이어보기</small><strong>'+esc(recentTitle)+'</strong><span>계속 보기 →</span></a>'+
         '<a href="myhub.html"><small>내 팬허브</small><strong>보관함 '+Number(personal?.favorites?.length||0)+' · 타로 '+Number(personal?.tarot?.length||0)+'</strong><span>기록 열기 →</span></a>'+
+      '</div>'+
+      '<div class="pwa-dashboard-official" aria-label="춘봉 공식 채널">'+
+        '<a href="https://www.sooplive.com/station/chunbongtv" target="_blank" rel="noreferrer"><strong>SOOP</strong><span>방송국 ↗</span></a>'+
+        '<a href="https://cafe.naver.com/chunbongtv" target="_blank" rel="noreferrer"><strong>팬카페</strong><span>커뮤니티 ↗</span></a>'+
+        '<a href="https://www.youtube.com/@%EC%B6%98%EB%B4%89TV" target="_blank" rel="noreferrer"><strong>YouTube</strong><span>영상 ↗</span></a>'+
       '</div>';
   }
 
@@ -392,11 +412,12 @@
     window.navigator.standalone===true||
     new URLSearchParams(location.search).get('source')==='pwa'
   );
-  if(!mobile.matches||!appMode)return;
+  if(!mobile.matches)return;
   const body=document.body,header=document.querySelector('.site-header'),brand=header?.querySelector('.brand');
   if(!header||!brand||header.dataset.pwaCompactHeader==='true')return;
   header.dataset.pwaCompactHeader='true';
-  header.classList.add('pwa-compact-header');
+  header.classList.add('mobile-compact-header');
+  if(appMode)header.classList.add('pwa-compact-header');
   const labels={
     home:'홈',schedule:'방송 일정',notice:'공지',vod:'다시보기',clips:'핫클립',
     fanart:'팬아트',youtube:'유튜브',tarot:'춘봉 타로',minigames:'미니게임',

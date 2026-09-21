@@ -24,8 +24,8 @@ for(const [name,source] of [
 }
 
 assert.match(index,/class="portal-feature-grid"/,'home must have a focused featured-content grid');
-for(const href of ['vod.html','tarot.html','minigames.html','data.html']){
-  assert.match(index,new RegExp('portal-card reveal" href="'+href.replace('.','\\.')+'"'),'featured home content missing '+href);
+for(const [kind,href] of [['replay','vod.html'],['tarot','tarot.html'],['minigames','minigames.html'],['data','data.html']]){
+  assert.match(index,new RegExp('portal-card reveal" data-kind="'+kind+'" href="'+href.replace('.','\\.')+'"'),'featured home content missing '+href);
 }
 assert.match(index,/class="portal-compact-grid"/,'secondary home destinations must use compact navigation');
 assert.match(styles,/\.portal-feature-grid\{display:grid/,'featured home layout styles missing');
@@ -33,7 +33,7 @@ assert.match(styles,/\.portal-compact-grid\{display:grid/,'compact home layout s
 assert.match(index,/class="home-all-links reveal"/,'secondary home links should be collapsed behind a single control');
 assert.match(index,/class="status-service-mark"/,'SOOP profile should use a neutral service badge');
 assert.doesNotMatch(index,/class="status-dot"/,'SOOP profile must not look like a false LIVE indicator');
-assert.match(index,/data\.html\?view=calendar#soop"><small>CAL<\/small>/,'calendar shortcut must not duplicate the DATA number');
+assert.match(index,/data\.html\?view=calendar#soop" data-kind="calendar"><small[^>]*>▦<\/small>/,'calendar shortcut must use the semantic calendar icon');
 
 assert.doesNotMatch(improvements,/api\.github\.com\/repos\/gkzero0-cmyk\/chunbong-fansite\/commits\/main/,'browser must not call GitHub main API directly');
 assert.match(improvements,/fetchJson\('\/api\/version',/,'browser deployment sync must use the local version endpoint');
@@ -65,6 +65,6 @@ assert.match(dataEnh,/chunbong-data-view-v1/,'data view preference must be remem
 assert.match(dataEnh,/document\.body\.dataset\.dataView=view/,'data view mode must update body state');
 assert.match(dataCss,/body\[data-data-view="summary"\]/,'summary-mode visibility rules missing');
 assert.match(dataCss,/content-visibility:auto/,'detailed data sections should use offscreen rendering optimization');
-assert.match(serviceWorker,/chunbong-pwa-20260921-v23/,'UX asset changes must advance the PWA cache version');
+assert.match(serviceWorker,/chunbong-pwa-20260921-v26/,'UX asset changes must advance the PWA cache version');
 
 console.log('UX simplification regression passed');

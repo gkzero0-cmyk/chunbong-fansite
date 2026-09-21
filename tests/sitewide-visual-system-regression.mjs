@@ -4,6 +4,7 @@ import fs from 'node:fs';
 const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const css=read('site-design-system.css');
 const shell=read('site-shell.js');
+const quality=read('site-quality.css');
 const home=read('home-refresh.css');
 const activity=read('activity-center.js');
 const dataPeriods=read('data-soop-periods-v3.js');
@@ -15,7 +16,7 @@ for(const token of [
 ]) assert.ok(css.includes(token+':'),token+' missing');
 
 assert.match(css,/\[data-theme="light"\]/,'light-mode token override missing');
-assert.match(shell,/site-design-system\.css/,'shared design stylesheet must be injected by site shell');
+assert.match(quality,/@import url\("site-design-system\.css"\)/,'shared design stylesheet must load through the global quality layer');
 assert.match(shell,/is-current-section/,'header must expose current section state');
 assert.match(shell,/aria-current/,'header must expose exact current page');
 for(const key of ['replay','tarot','minigames','data','schedule','notice','clips','fanart','youtube','history','calendar']){

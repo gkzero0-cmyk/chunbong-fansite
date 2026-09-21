@@ -1034,3 +1034,323 @@
     display:none!important
   }
 }
+
+
+/* ===== Mobile App Shell 2.0 — app-first layout for every phone browser ===== */
+@media(max-width:760px){
+  /* The bottom tab bar replaces the long website footer and desktop navigation chrome. */
+  body.mobile-tabbar-mode footer{display:none!important}
+
+  body.mobile-tabbar-mode .site-header.mobile-compact-header{
+    height:58px!important;
+    min-height:58px!important;
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    align-items:center!important;
+    gap:7px!important;
+    padding:7px max(10px,env(safe-area-inset-right)) 7px max(10px,env(safe-area-inset-left))!important;
+    overflow:visible!important;
+  }
+  body.mobile-tabbar-mode .site-header.mobile-compact-header .brand{
+    order:0!important;
+    flex:1 1 auto!important;
+    min-width:0!important;
+    margin:0 auto 0 0!important;
+    gap:9px!important;
+  }
+  body.mobile-tabbar-mode .site-header.mobile-compact-header .brand-mark{
+    display:grid!important;
+    width:40px!important;height:40px!important;flex:0 0 40px!important;
+    border-radius:12px!important
+  }
+  body.mobile-tabbar-mode .site-header.mobile-compact-header .brand-copy{
+    display:flex!important;
+    min-width:0!important;
+    flex-direction:column!important;
+    gap:1px!important;
+    overflow:hidden!important
+  }
+  body.mobile-tabbar-mode .site-header.mobile-compact-header .brand-copy strong{
+    display:block!important;
+    overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+    font-size:15px!important;line-height:1.15!important
+  }
+  body.mobile-tabbar-mode .site-header.mobile-compact-header .brand-copy small{
+    display:block!important;
+    overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+    font-size:8px!important;letter-spacing:.11em!important;color:var(--text-meta)!important
+  }
+  body.mobile-tabbar-mode .site-header.mobile-compact-header .site-search-trigger{
+    order:1!important;display:grid!important;flex:0 0 40px!important;width:40px!important;height:40px!important;
+    min-width:40px!important;min-height:40px!important;padding:0!important;border-radius:13px!important
+  }
+  body.mobile-tabbar-mode .site-header.mobile-compact-header .activity-center{
+    order:2!important;display:flex!important;flex:0 0 40px!important
+  }
+  body.mobile-tabbar-mode .site-header.mobile-compact-header .activity-bell{
+    width:40px!important;height:40px!important;min-height:40px!important;border-radius:13px!important
+  }
+  body.mobile-tabbar-mode .site-header.mobile-compact-header :is(
+    .nav-toggle,.main-nav,.header-live,.header-myhub,.pwa-header-action,
+    .pwa-header-live-state,.changelog-button,.theme-toggle
+  ){display:none!important}
+
+  /* More is the mobile settings/navigation hub. */
+  .pwa-app-more-grid :is(a,.pwa-app-more-action,.pwa-haptics-toggle){
+    position:relative;
+    display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:4px;
+    min-height:72px!important;padding:12px 13px!important;
+    border:1px solid #29292d!important;border-radius:15px!important;
+    background:#151517!important;color:var(--text-primary)!important;
+    text-decoration:none!important;font:inherit!important;text-align:left!important
+  }
+  .pwa-app-more-grid :is(a,.pwa-app-more-action,.pwa-haptics-toggle)>span{font-size:13px!important;font-weight:900!important}
+  .pwa-app-more-grid :is(a,.pwa-app-more-action,.pwa-haptics-toggle)>small{font-size:10px!important;color:var(--text-muted)!important}
+  [data-theme="light"] .pwa-app-more-grid :is(a,.pwa-app-more-action,.pwa-haptics-toggle){
+    border-color:#e5dbd3!important;background:#fff!important;color:var(--text-primary)!important
+  }
+
+  /* App-style home: useful information first, no duplicate marketing/navigation sections. */
+  body.mobile-home-dashboard-mode main{
+    display:flex!important;flex-direction:column!important
+  }
+  body.mobile-home-dashboard-mode .app-home-panel{
+    order:-5!important;display:block!important;
+    margin:12px 12px 8px!important;padding:0!important;border:0!important;background:transparent!important
+  }
+  body.mobile-home-dashboard-mode .home-dday-strip,
+  body.mobile-home-dashboard-mode .hero,
+  body.mobile-home-dashboard-mode .portal-section{display:none!important}
+  body.mobile-home-dashboard-mode .home-overview{
+    order:-4!important;padding:8px 0 12px!important
+  }
+  body.mobile-home-dashboard-mode .home-overview-head,
+  body.mobile-home-dashboard-mode .home-quick-stats,
+  body.mobile-home-dashboard-mode .home-overview-grid [data-home-overview-card="schedule"],
+  body.mobile-home-dashboard-mode .home-overview-grid .home-overview-fortune,
+  body.mobile-home-dashboard-mode .home-overview-grid [data-home-overview-card="challenge"]{display:none!important}
+  body.mobile-home-dashboard-mode .home-overview-grid{
+    display:flex!important;overflow-x:auto!important;gap:8px!important;
+    scroll-snap-type:x mandatory!important;overscroll-behavior-x:contain!important;
+    padding:2px 12px 6px!important;scrollbar-width:none!important
+  }
+  body.mobile-home-dashboard-mode .home-overview-grid::-webkit-scrollbar{display:none}
+  body.mobile-home-dashboard-mode .home-overview-card{
+    flex:0 0 min(82vw,315px)!important;min-height:126px!important;
+    padding:14px!important;border-radius:17px!important;scroll-snap-align:start!important
+  }
+  .pwa-dashboard-official{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:8px
+  }
+  .pwa-dashboard-official a{
+    min-width:0;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    padding:7px;border:1px solid #303034;border-radius:14px;background:#111113;color:var(--text-primary);text-decoration:none
+  }
+  .pwa-dashboard-official strong{font-size:11px}
+  .pwa-dashboard-official span{font-size:9px;color:var(--text-muted)}
+  [data-theme="light"] .pwa-dashboard-official a{border-color:#e2d8d0;background:#fff}
+
+  /* Functional pages open like app screens instead of repeating large marketing heroes. */
+  body.mobile-tabbar-mode:not([data-page="home"]) .page-hero{
+    padding:17px 0 10px!important;min-height:0!important
+  }
+  body.mobile-tabbar-mode:not([data-page="home"]) .page-hero .page-shell>div[class$="-hero-grid"],
+  body.mobile-tabbar-mode:not([data-page="home"]) .page-hero .page-shell>.minigames-hero-layout{
+    gap:0!important
+  }
+  body.mobile-tabbar-mode:not([data-page="home"]) .page-hero h1{
+    margin:5px 0 0!important;font-size:31px!important;line-height:1.05!important
+  }
+  body.mobile-tabbar-mode:not([data-page="home"]) .page-hero .page-shell p:not(.kicker):not(.eyebrow),
+  body.mobile-tabbar-mode:not([data-page="home"]) .page-hero figure,
+  body.mobile-tabbar-mode:not([data-page="home"]) .page-hero .minigames-hero-art,
+  body.mobile-tabbar-mode:not([data-page="home"]) .page-hero .page-actions{display:none!important}
+  body.mobile-tabbar-mode:not([data-page="home"]) .content-section{padding:18px 0 32px!important}
+  body.mobile-tabbar-mode:not([data-page="home"]) .section-head{margin-bottom:13px!important}
+  body.mobile-tabbar-mode:not([data-page="home"]) .section-head h2{font-size:24px!important}
+
+  /* Schedule: every required control and month cell fits the phone width. */
+  body[data-page="schedule"] .schedule-view-toolbar{
+    display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:5px!important;overflow:visible!important;padding:0!important
+  }
+  body[data-page="schedule"] .schedule-view-button{
+    min-width:0!important;padding:9px 5px!important;font-size:11px!important
+  }
+  body[data-page="schedule"] .mobile-schedule-week{
+    display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;
+    gap:4px!important;overflow:visible!important;margin:8px 0 12px!important;padding:0!important
+  }
+  body[data-page="schedule"] .mobile-schedule-day{
+    min-width:0!important;width:auto!important;min-height:58px!important;
+    padding:5px 2px!important;border-radius:11px!important
+  }
+  body[data-page="schedule"] .mobile-schedule-day small{font-size:9px!important}
+  body[data-page="schedule"] .mobile-schedule-day strong{font-size:14px!important}
+  body[data-page="schedule"] .schedule-number{display:none!important}
+  body[data-page="schedule"] .schedule-card h2{margin:6px 0 3px!important;font-size:20px!important}
+  body[data-page="schedule"] .schedule-calendar-toolbar{
+    display:grid!important;grid-template-columns:40px minmax(0,1fr) auto 40px!important;
+    align-items:center!important;gap:5px!important;padding:10px!important
+  }
+  body[data-page="schedule"] .schedule-calendar-toolbar strong{
+    width:auto!important;margin:0!important;text-align:center!important;font-size:16px!important
+  }
+  body[data-page="schedule"] .schedule-calendar-scroll{
+    overflow:visible!important;padding-bottom:0!important
+  }
+  body[data-page="schedule"] .schedule-calendar-scroll>div{min-width:0!important;width:100%!important}
+  body[data-page="schedule"] :is(.schedule-calendar-week,.schedule-calendar-grid){
+    min-width:0!important;width:100%!important;
+    grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:3px!important
+  }
+  body[data-page="schedule"] .schedule-calendar-week span{padding:7px 1px!important;font-size:9px!important}
+  body[data-page="schedule"] .schedule-calendar-day{
+    position:relative;min-width:0!important;min-height:48px!important;
+    display:flex!important;align-items:center!important;justify-content:center!important;flex-direction:column!important;
+    gap:2px!important;padding:4px 2px!important;border-radius:10px!important;text-align:center!important
+  }
+  body[data-page="schedule"] button.schedule-calendar-day b{font-size:12px!important}
+  body[data-page="schedule"] button.schedule-calendar-day i{
+    width:5px;height:5px;border-radius:50%;background:transparent
+  }
+  body[data-page="schedule"] button.schedule-calendar-day.has-events i{
+    background:var(--accent-schedule);box-shadow:0 0 8px color-mix(in srgb,var(--accent-schedule) 55%,transparent)
+  }
+  body[data-page="schedule"] button.schedule-calendar-day span{
+    position:absolute;right:3px;top:3px;display:grid;place-items:center;min-width:14px;height:14px;padding:0 3px;
+    border-radius:999px;background:color-mix(in srgb,var(--accent-schedule) 15%,#111);color:var(--accent-schedule);
+    font-size:7px;font-weight:950
+  }
+  body[data-page="schedule"] button.schedule-calendar-day.is-selected{
+    border-color:color-mix(in srgb,var(--accent-schedule) 70%,#333)!important;
+    background:color-mix(in srgb,var(--accent-schedule) 11%,#111)!important
+  }
+  body[data-page="schedule"] .schedule-calendar-day.is-empty{min-height:48px!important}
+  .schedule-calendar-mobile-detail{
+    display:grid;gap:8px;margin:10px;padding:12px;border:1px solid #303034;border-radius:15px;background:#111113
+  }
+  .schedule-calendar-mobile-detail>header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .schedule-calendar-mobile-detail>header div{display:flex;flex-direction:column;gap:2px}
+  .schedule-calendar-mobile-detail>header small{color:var(--accent-schedule);font-size:10px;font-weight:900}
+  .schedule-calendar-mobile-detail>header strong{font-size:16px}
+  .schedule-calendar-mobile-detail>header button{
+    width:36px;height:36px!important;min-height:36px!important;padding:0!important;border:1px solid #343438;border-radius:11px;background:#19191b;color:var(--text-primary);font-size:20px
+  }
+  .schedule-calendar-mobile-detail article{
+    display:grid;gap:9px;padding:11px;border:1px solid #29292d;border-radius:13px;background:#0d0d0f
+  }
+  .schedule-calendar-mobile-detail article>div:first-child{display:grid;gap:3px}
+  .schedule-calendar-mobile-detail article small{color:var(--accent-schedule);font-size:9px;font-weight:900}
+  .schedule-calendar-mobile-detail article strong{font-size:13px;line-height:1.35}
+  .schedule-calendar-mobile-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .schedule-calendar-mobile-actions button{
+    min-height:38px!important;border:1px solid #343438;border-radius:10px;background:#171719;color:var(--text-secondary);font:inherit;font-size:10px;font-weight:900
+  }
+  [data-theme="light"] .schedule-calendar-mobile-detail{border-color:#e2d8d0;background:#fff}
+  [data-theme="light"] .schedule-calendar-mobile-detail article{border-color:#e8dfd8;background:#fbf7f3}
+  [data-theme="light"] .schedule-calendar-mobile-actions button{border-color:#e2d8d0;background:#fff;color:var(--text-secondary)}
+
+  /* Data: controls and calendars fit; charts become a deliberate swipe rail; tables become cards. */
+  body[data-page="data"] .data-shell{gap:20px!important}
+  body[data-page="data"] .data-platform-tabs{
+    display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:6px!important;overflow:visible!important;padding:0!important
+  }
+  body[data-page="data"] .data-platform-tab{
+    min-width:0!important;padding:10px!important;border-radius:14px!important
+  }
+  body[data-page="data"] .data-platform-tab strong{font-size:14px!important}
+  body[data-page="data"] .data-platform-tab small{display:none!important}
+  body[data-page="data"] .data-view-toggle{
+    position:sticky!important;top:64px!important;z-index:34!important;
+    display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    width:100%!important;gap:5px!important;padding:4px!important
+  }
+  body[data-page="data"] .data-view-toggle button{min-width:0!important;padding:8px 7px!important}
+  body[data-page="data"] .data-view-toggle button span{display:none!important}
+  body[data-page="data"] .data-soop-view-tabs{
+    display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    width:100%!important;gap:4px!important;overflow:visible!important;padding:4px!important
+  }
+  body[data-page="data"] .data-soop-view-tabs button{
+    min-width:0!important;padding:9px 5px!important;font-size:11px!important
+  }
+  body[data-page="data"] .data-period-controls{overflow:visible!important;padding-bottom:0!important}
+  body[data-page="data"] .data-chart-grid{
+    display:flex!important;overflow-x:auto!important;gap:8px!important;
+    scroll-snap-type:x mandatory!important;overscroll-behavior-x:contain!important;
+    padding:1px 1px 7px!important;scrollbar-width:none!important
+  }
+  body[data-page="data"] .data-chart-grid::-webkit-scrollbar{display:none}
+  body[data-page="data"] .data-chart-card{
+    flex:0 0 min(86vw,360px)!important;min-width:0!important;
+    scroll-snap-align:start!important;padding:13px!important
+  }
+  body[data-page="data"] .data-chart-svg{min-height:178px!important}
+  body[data-page="data"] .data-detail-table{
+    width:100%!important;max-width:100%!important;overflow:visible!important
+  }
+  body[data-page="data"] .data-detail-row{
+    min-width:0!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:6px!important;margin:8px!important;padding:10px!important;
+    border:1px solid #29292d!important;border-radius:13px!important;background:#0d0d0f!important;font-size:10px!important
+  }
+  body[data-page="data"] .data-detail-header{display:none!important}
+  body[data-page="data"] .data-detail-row>strong{
+    grid-column:1/-1!important;padding-bottom:5px!important;color:var(--text-primary)!important;font-size:13px!important
+  }
+  body[data-page="data"] .data-detail-row>span{
+    display:grid!important;grid-template-columns:1fr auto!important;gap:7px!important;
+    align-items:center!important;padding:7px 8px!important;border-radius:9px!important;
+    background:#151517!important;color:var(--text-primary)!important;text-align:right!important
+  }
+  body[data-page="data"] .data-detail-row>span::before{
+    color:var(--text-meta)!important;font-size:8px!important;font-weight:900!important;text-align:left!important
+  }
+  body[data-page="data"] .data-detail-row>span:nth-of-type(1)::before{content:"방송"}
+  body[data-page="data"] .data-detail-row>span:nth-of-type(2)::before{content:"방송시간"}
+  body[data-page="data"] .data-detail-row>span:nth-of-type(3)::before{content:"평균"}
+  body[data-page="data"] .data-detail-row>span:nth-of-type(4)::before{content:"최대"}
+  body[data-page="data"] .data-detail-row>span:nth-of-type(5)::before{content:"애청자"}
+  body[data-page="data"] .data-detail-row>span:nth-of-type(6)::before{content:"팬클럽"}
+  body[data-page="data"] .data-calendar-wrap{
+    display:grid!important;grid-template-columns:1fr!important;
+    width:100%!important;max-width:100%!important;overflow:visible!important;gap:10px!important;padding-bottom:0!important
+  }
+  body[data-page="data"] .data-calendar-wrap>div:first-child{min-width:0!important;width:100%!important}
+  body[data-page="data"] :is(.data-calendar-week,.data-calendar-grid){
+    width:100%!important;min-width:0!important;
+    grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:3px!important
+  }
+  body[data-page="data"] .data-calendar-week{padding:0 1px 5px!important;font-size:9px!important}
+  body[data-page="data"] .data-calendar-grid{min-height:0!important}
+  body[data-page="data"] .data-calendar-day{
+    position:relative;min-width:0!important;min-height:48px!important;
+    align-items:center!important;justify-content:center!important;gap:1px!important;
+    padding:4px 2px!important;border-radius:10px!important;text-align:center!important
+  }
+  body[data-page="data"] .data-calendar-day b{font-size:11px!important}
+  body[data-page="data"] .data-calendar-day span,
+  body[data-page="data"] .data-calendar-day small{display:none!important}
+  body[data-page="data"] .data-calendar-day.has-stream::after{
+    content:"";width:5px;height:5px;margin-top:2px;border-radius:50%;
+    background:var(--accent-calendar);box-shadow:0 0 8px color-mix(in srgb,var(--accent-calendar) 55%,transparent)
+  }
+  body[data-page="data"] .data-calendar-day.is-selected{
+    border-color:color-mix(in srgb,var(--accent-calendar) 72%,#333)!important;
+    background:color-mix(in srgb,var(--accent-calendar) 10%,#111)!important
+  }
+  body[data-page="data"] .data-calendar-detail{
+    position:static!important;top:auto!important;padding:14px!important;border-radius:15px!important
+  }
+  body[data-page="data"] .data-calendar-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+  body[data-page="data"] .data-section{gap:0!important}
+  body[data-page="data"] .data-session-list,
+  body[data-page="data"] .data-category-list{gap:7px!important}
+  [data-theme="light"] body[data-page="data"] .data-detail-row{border-color:#e5dbd3!important;background:#fff!important}
+  [data-theme="light"] body[data-page="data"] .data-detail-row>span{background:#f8f3ee!important}
+
+  /* Mobile app should not expose accidental document-level sideways scrolling. */
+  body.mobile-tabbar-mode:not([data-game]) main{max-width:100vw!important;overflow-x:clip!important}
+}

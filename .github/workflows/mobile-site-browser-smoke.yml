@@ -87,11 +87,19 @@ jobs:
 
                 if(path==='schedule.html'){
                   const shell=page.locator('.schedule-calendar-scroll');
-                  if(await shell.count()) assert.equal(await shell.evaluate(el=>getComputedStyle(el).overflowX),'auto');
+                  if(await shell.count()){
+                    const box=await shell.evaluate(el=>({scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,overflowX:getComputedStyle(el).overflowX}));
+                    assert.ok(box.scrollWidth<=box.clientWidth+1,'schedule calendar must fit without horizontal scrolling');
+                    assert.notEqual(box.overflowX,'auto','schedule calendar should no longer depend on horizontal scroll');
+                  }
                 }
                 if(path==='data.html'){
                   const table=page.locator('.data-detail-table').first();
-                  if(await table.count()) assert.ok(['auto','scroll'].includes(await table.evaluate(el=>getComputedStyle(el).overflowX)));
+                  if(await table.count()){
+                    const box=await table.evaluate(el=>({scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,overflowX:getComputedStyle(el).overflowX}));
+                    assert.ok(box.scrollWidth<=box.clientWidth+1,'data detail cards must fit without horizontal scrolling');
+                    assert.equal(box.overflowX,'visible','data detail table must use the card layout');
+                  }
                 }
                 if(path==='fanart.html'){
                   const grid=page.locator('.fanart-grid');
@@ -122,6 +130,7 @@ jobs:
             assert.ok(await appPage.locator('[data-pwa-app-more] [data-more-page="notice"]').isVisible(),'PWA more sheet missing notice');
             assert.ok(await appPage.locator('[data-pwa-app-more] [data-more-page="data"]').isVisible(),'PWA more sheet missing data');
             assert.ok(await appPage.locator('[data-pwa-app-more] [data-more-page="myhub"]').isVisible(),'PWA more sheet missing My Hub');
+            assert.ok(await appPage.locator('[data-pwa-app-more] [data-mobile-theme-toggle]').isVisible(),'PWA more sheet missing theme control');
             assert.equal(await appPage.locator('[data-pwa-app-more] [data-more-page="timeline"]').count(),0,'retired timeline must not appear in PWA more sheet');
             await appPage.keyboard.press('Escape');
             assert.equal(await appPage.locator('[data-pwa-app-more]').isVisible(),false,'PWA more sheet did not close');

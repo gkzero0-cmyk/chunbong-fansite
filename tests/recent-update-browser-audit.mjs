@@ -293,22 +293,26 @@ async function pwaHeader(browser){
   const {context,page,errors}=await freshPage(browser,{mobile:true});
   try{
     await page.goto(BASE+'/index.html?source=pwa&_audit='+Date.now(),{waitUntil:'domcontentloaded'});
-    await page.waitForTimeout(260);
-    const header=page.locator('.site-header.pwa-compact-header');
+    await page.waitForTimeout(300);
+    const header=page.locator('.site-header.mobile-compact-header');
     await header.waitFor({state:'visible'});
     const wrap=await header.evaluate(el=>getComputedStyle(el).flexWrap);
-    assert.equal(wrap,'nowrap','PWA header must stay on one row');
-    const names=['.pwa-header-action','.changelog-button','.site-search-trigger','.theme-toggle','.activity-center'];
-    const boxes=[];
-    for(const selector of names){
+    assert.equal(wrap,'nowrap','mobile app header must stay on one row');
+    for(const selector of ['.site-search-trigger','.activity-center']){
       const loc=header.locator(selector);
-      assert.ok(await loc.count(),selector+' missing in PWA header');
-      boxes.push(await loc.boundingBox());
+      assert.ok(await loc.count(),selector+' missing in mobile app header');
+      assert.equal(await loc.isVisible(),true,selector+' must stay visible in mobile app header');
     }
-    assert.ok(boxes.every(Boolean),'PWA header controls must have boxes');
-    for(let i=1;i<boxes.length;i++)assert.ok(boxes[i].x>=boxes[i-1].x-1,'PWA header control order must flow left-to-right');
-    const ys=boxes.map(b=>b.y+b.height/2);
-    assert.ok(Math.max(...ys)-Math.min(...ys)<8,'PWA controls must share one row');
+    for(const selector of ['.pwa-header-action','.changelog-button','.theme-toggle']){
+      const loc=header.locator(selector);
+      if(await loc.count())assert.equal(await loc.isVisible(),false,selector+' must move out of the simplified mobile header');
+    }
+    const tabbar=page.locator('[data-pwa-app-tabbar]');
+    await tabbar.waitFor({state:'visible'});
+    await tabbar.locator('[data-pwa-app-more-toggle]').click();
+    const sheet=page.locator('[data-pwa-app-more]');
+    await sheet.waitFor({state:'visible'});
+    assert.ok(await sheet.locator('[data-mobile-theme-toggle]').count(),'More sheet must contain the theme control');
     assert.deepEqual(errors,[],'PWA header errors: '+errors.join(' | '));
   }finally{await context.close()}
 }
@@ -339,19 +343,59 @@ async function contentFilter(browser){
   }finally{await context.close()}
 }
 
+async function mobileAppShell(browser){
+  const {context,page,errors}=await freshPage(browser,{mobile:true});
+  try{
+    await page.goto(BASE+'/index.html?_mobile_app='+Date.now(),{waitUntil:'domcontentloaded'});
+    await page.waitForTimeout(420);
+    assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('mobile-home-dashboard-mode')),true,'regular mobile browser must use app-style home dashboard');
+    assert.equal(await page.locator('.hero').isVisible(),false,'mobile app home must hide the large marketing hero');
+    assert.equal(await page.locator('.portal-section').isVisible(),false,'mobile app home must hide duplicate shortcut portal');
+    await page.goto(BASE+'/data.html?_mobile_app='+Date.now(),{waitUntil:'domcontentloaded'});
+    await page.waitForTimeout(500);
+    const detail=page.locator('[data-data-view-button="detail"]');
+    if(await detail.count())await detail.click();
+    await page.waitForTimeout(100);
+    if(MOCK)await page.waitForFunction(()=>document.querySelector('#data-soop-daily-table .data-detail-row:not(.data-detail-header)'));
+    const table=page.locator('#data-soop-daily-table');
+    if(await table.count()){
+      const overflow=await table.evaluate(el=>el.scrollWidth-el.clientWidth);
+      assert.ok(overflow<=1,'mobile data detail rows must not require horizontal scrolling');
+    }
+    const calendarTab=page.locator('[data-soop-view-tab="calendar"]');
+    if(await calendarTab.count())await calendarTab.click();
+    if(MOCK)await page.waitForFunction(()=>document.querySelector('.data-calendar-wrap [data-calendar-date]'));
+    else await page.waitForTimeout(100);
+    const cal=page.locator('.data-calendar-wrap');
+    if(await cal.count()){
+      const overflow=await cal.evaluate(el=>el.scrollWidth-el.clientWidth);
+      assert.ok(overflow<=1,'mobile data calendar must fit the phone width');
+    }
+    assert.deepEqual(errors,[],'mobile app shell errors: '+errors.join(' | '));
+  }finally{await context.close()}
+}
+
 async function mobileSchedule(browser){
   const {context,page,errors}=await freshPage(browser,{mobile:true});
   try{
     await page.goto(BASE+'/schedule.html?_audit='+Date.now(),{waitUntil:'domcontentloaded'});
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(450);
     const strip=page.locator('.mobile-schedule-week');
     if(MOCK){
       await strip.waitFor({state:'visible'});
-      assert.ok(await strip.locator('[data-schedule-day]').count()>=2,'mobile 7-day schedule strip missing');
+      assert.equal(await strip.locator('[data-schedule-day]').count(),7,'mobile week selector must show exactly seven fitted days');
+      const stripOverflow=await strip.evaluate(el=>el.scrollWidth-el.clientWidth);
+      assert.ok(stripOverflow<=1,'7-day schedule selector must not require horizontal scrolling');
       const actions=page.locator('.schedule-card-actions');
       await actions.first().waitFor({state:'visible'});
       assert.ok(await actions.first().locator('[data-schedule-calendar]').count(),'calendar add button missing');
       assert.ok(await actions.first().locator('[data-schedule-share]').count(),'schedule share button missing');
+      await page.locator('#schedule-view-calendar').click();
+      await page.waitForTimeout(100);
+      const calendar=page.locator('.schedule-calendar-scroll');
+      const overflow=await calendar.evaluate(el=>el.scrollWidth-el.clientWidth);
+      assert.ok(overflow<=1,'schedule month calendar must fit the phone width');
+      assert.ok(await page.locator('#schedule-calendar-mobile-detail').count(),'schedule calendar selected-day detail must exist');
     }
     assert.deepEqual(errors,[],'schedule page errors: '+errors.join(' | '));
   }finally{await context.close()}
@@ -369,6 +413,7 @@ try{
   await fanHubAndHeader(browser);
   await pwaHeader(browser);
   await contentFilter(browser);
+  await mobileAppShell(browser);
   await mobileSchedule(browser);
   console.log('RECENT_UPDATE_BROWSER_AUDIT=PASS');
 }finally{

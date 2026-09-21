@@ -4,7 +4,7 @@
   const esc = (value = '') => String(value)
     .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
-  const state = { source: [], today: '', mode: 'upcoming', previousOffset: 1, calendarMonth: '', mobileDateFilter: '' };
+  const state = { source: [], today: '', mode: 'upcoming', previousOffset: 1, calendarMonth: '', mobileDateFilter: '', mobileCalendarDate: '' };
 
   async function json(url) {
     const response = await fetch(url, { headers: { accept: 'application/json' } });
@@ -200,17 +200,16 @@
         count: state.source.filter(item => intersectsDateRange(item, key, key)).length
       };
     });
-    const selected = state.mobileDateFilter || 'all';
-    strip.innerHTML =
-      '<button type="button" class="mobile-schedule-day mobile-schedule-all ' + (selected === 'all' ? 'is-selected' : '') + '" data-schedule-day="all" aria-pressed="' + String(selected === 'all') + '"><small>7일</small><strong>전체</strong><i aria-hidden="true"></i></button>' +
-      days.map(day => '<button type="button" class="mobile-schedule-day' +
+    const selected = state.mobileDateFilter || '';
+    strip.innerHTML = days.map(day => '<button type="button" class="mobile-schedule-day' +
         (day.key === state.today ? ' is-today' : '') +
         (day.count ? ' has-event' : '') +
         (selected === day.key ? ' is-selected' : '') +
-        '" data-schedule-day="' + esc(day.key) + '" aria-pressed="' + String(selected === day.key) + '">' +
+        '" data-schedule-day="' + esc(day.key) + '" aria-pressed="' + String(selected === day.key) + '" aria-label="' + esc(day.label+'요일 '+day.day+'일'+(day.count?' · 일정 '+day.count+'개':'')) + '">' +
         '<small>' + esc(day.label) + '</small><strong>' + esc(day.day) + '</strong><i aria-hidden="true"></i></button>').join('');
     strip.querySelectorAll('[data-schedule-day]').forEach(button => button.addEventListener('click', () => {
-      state.mobileDateFilter = button.dataset.scheduleDay === 'all' ? '' : button.dataset.scheduleDay;
+      const key=button.dataset.scheduleDay||'';
+      state.mobileDateFilter = state.mobileDateFilter===key ? '' : key;
       renderUpcoming();
     }));
   }
@@ -237,6 +236,41 @@
     return sortByStart(state.source.filter(item => intersectsDateRange(item, dateKey, dateKey)));
   }
 
+  function renderMobileCalendarDetail(dateKey) {
+    let detail=$('#schedule-calendar-mobile-detail');
+    const shell=$('#schedule-calendar-shell');
+    if(!shell)return;
+    if(!detail){
+      detail=document.createElement('section');
+      detail.id='schedule-calendar-mobile-detail';
+      detail.className='schedule-calendar-mobile-detail';
+      detail.setAttribute('aria-live','polite');
+      shell.appendChild(detail);
+    }
+    if(!dateKey){
+      detail.innerHTML='<div class="mobile-schedule-empty">일정이 표시된 날짜를 누르면 이곳에서 상세 일정을 확인할 수 있습니다.</div>';
+      return;
+    }
+    const events=eventsForDate(dateKey);
+    const date=new Date(dateKey+'T00:00:00+09:00');
+    const label=Number.isNaN(date.getTime())?dateKey:new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',weekday:'short'}).format(date);
+    detail.innerHTML='<header><div><small>'+esc(label)+'</small><strong>'+events.length+'개 일정</strong></div><button type="button" data-schedule-calendar-detail-close aria-label="일정 상세 닫기">×</button></header>'+
+      (events.length?events.map(item=>'<article><div><small>'+esc(calendarTime(item,dateKey))+'</small><strong>'+esc(item.title||'춘봉 방송 일정')+'</strong></div><div class="schedule-calendar-mobile-actions"><button type="button" data-schedule-calendar="'+calendarPayload(item)+'">캘린더 추가</button><button type="button" data-schedule-share="'+calendarPayload(item)+'">공유</button></div></article>').join(''):'<div class="mobile-schedule-empty">등록된 일정이 없습니다.</div>');
+    detail.querySelector('[data-schedule-calendar-detail-close]')?.addEventListener('click',()=>{
+      state.mobileCalendarDate='';
+      rootCalendarSelection('');
+      renderMobileCalendarDetail('');
+    });
+  }
+
+  function rootCalendarSelection(dateKey) {
+    $('#schedule-calendar')?.querySelectorAll('[data-schedule-calendar-date]').forEach(button=>{
+      const selected=button.dataset.scheduleCalendarDate===dateKey;
+      button.classList.toggle('is-selected',selected);
+      button.setAttribute('aria-pressed',String(selected));
+    });
+  }
+
   function renderCalendar() {
     const root = $('#schedule-calendar');
     if (!root) return;
@@ -246,17 +280,37 @@
     if (monthLabel) monthLabel.textContent = `${year}년 ${month}월`;
     const first = new Date(Date.UTC(year, month - 1, 1));
     const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    const mobileCalendar=window.matchMedia('(max-width:760px)').matches;
     const cells = [];
     for (let index = 0; index < first.getUTCDay(); index += 1) cells.push('<span class="schedule-calendar-day is-empty"></span>');
     for (let day = 1; day <= lastDay; day += 1) {
       const key = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const events = eventsForDate(key);
-      const shown = events.slice(0, 3).map(item => `<span class="schedule-calendar-event"><time>${esc(calendarTime(item, key))}</time><strong>${esc(item.title || '일정')}</strong></span>`).join('');
-      const more = events.length > 3 ? `<span class="schedule-calendar-more">+${events.length - 3}개 일정</span>` : '';
-      cells.push(`<article class="schedule-calendar-day ${key === state.today ? 'is-today' : ''}"><div class="schedule-calendar-date"><b>${day}</b>${key === state.today ? '<small>오늘</small>' : ''}</div><div class="schedule-calendar-events">${shown}${more}</div></article>`);
+      if(mobileCalendar){
+        cells.push('<button type="button" class="schedule-calendar-day '+(events.length?'has-events ':'')+(key===state.today?'is-today ':'')+(key===state.mobileCalendarDate?'is-selected':'')+'" data-schedule-calendar-date="'+esc(key)+'" aria-pressed="'+String(key===state.mobileCalendarDate)+'" '+(events.length?'':'disabled')+'><b>'+day+'</b><i aria-hidden="true"></i>'+(events.length?'<span>'+events.length+'</span>':'')+'</button>');
+      }else{
+        const shown = events.slice(0, 3).map(item => `<span class="schedule-calendar-event"><time>${esc(calendarTime(item, key))}</time><strong>${esc(item.title || '일정')}</strong></span>`).join('');
+        const more = events.length > 3 ? `<span class="schedule-calendar-more">+${events.length - 3}개 일정</span>` : '';
+        cells.push(`<article class="schedule-calendar-day ${key === state.today ? 'is-today' : ''}"><div class="schedule-calendar-date"><b>${day}</b>${key === state.today ? '<small>오늘</small>' : ''}</div><div class="schedule-calendar-events">${shown}${more}</div></article>`);
+      }
     }
     while (cells.length % 7) cells.push('<span class="schedule-calendar-day is-empty"></span>');
     root.innerHTML = cells.join('');
+    if(mobileCalendar){
+      root.querySelectorAll('[data-schedule-calendar-date]').forEach(button=>button.addEventListener('click',()=>{
+        state.mobileCalendarDate=button.dataset.scheduleCalendarDate||'';
+        rootCalendarSelection(state.mobileCalendarDate);
+        renderMobileCalendarDetail(state.mobileCalendarDate);
+      }));
+      if(state.mobileCalendarDate&&!state.mobileCalendarDate.startsWith(monthKey))state.mobileCalendarDate='';
+      if(!state.mobileCalendarDate){
+        const todayButton=root.querySelector('[data-schedule-calendar-date="'+state.today+'"]:not([disabled])');
+        const firstButton=root.querySelector('[data-schedule-calendar-date]:not([disabled])');
+        state.mobileCalendarDate=(todayButton||firstButton)?.dataset.scheduleCalendarDate||'';
+        rootCalendarSelection(state.mobileCalendarDate);
+      }
+      renderMobileCalendarDetail(state.mobileCalendarDate);
+    }
   }
 
   function setMode(mode) {
@@ -283,12 +337,14 @@
   }
 
   function bindControls() {
-    document.getElementById('schedule-grid')?.addEventListener('click',event=>{
+    const bindScheduleActions=root=>root?.addEventListener('click',event=>{
       const calendarButton=event.target.closest('[data-schedule-calendar]');
       if(calendarButton){downloadScheduleIcs(parseCalendarPayload(calendarButton.dataset.scheduleCalendar));return}
       const shareButton=event.target.closest('[data-schedule-share]');
       if(shareButton){void shareSchedule(parseCalendarPayload(shareButton.dataset.scheduleShare));}
     });
+    bindScheduleActions(document.getElementById('schedule-grid'));
+    bindScheduleActions(document.getElementById('schedule-calendar-shell'));
     $('#schedule-view-upcoming')?.addEventListener('click', () => setMode('upcoming'));
     $('#schedule-view-previous')?.addEventListener('click', () => setMode('previous'));
     $('#schedule-view-calendar')?.addEventListener('click', () => setMode('calendar'));

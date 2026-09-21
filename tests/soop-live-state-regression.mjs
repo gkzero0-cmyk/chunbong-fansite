@@ -77,9 +77,11 @@ const fallbackResult = await fetchSoopStructuredLive({
 });
 assert.equal(fallbackResult.live, false, 'player API fallback should recover an authoritative offline state');
 assert.equal(fallbackResult.authoritative, true);
-assert.equal(calls.length, 2, 'structured live failure should trigger exactly one player API fallback');
-assert.equal(calls[1].init.method, 'POST');
-assert.match(String(calls[1].init.body), /bid=chunbongtv/);
+assert.equal(calls.length, 3, 'structured live failure should try both channel domains before the player API fallback');
+assert.match(calls[0].url,/api-channel\.sooplive\.co\.kr/);
+assert.match(calls[1].url,/api-channel\.sooplive\.com/);
+assert.equal(calls[2].init.method, 'POST');
+assert.match(String(calls[2].init.body), /bid=chunbongtv/);
 
 const domainCalls=[];
 const domainFallback=await fetchSoopStructuredLive({

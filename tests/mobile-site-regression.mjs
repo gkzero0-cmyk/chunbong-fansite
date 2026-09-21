@@ -23,13 +23,13 @@ assert.match(css,/\.site-header\{[\s\S]*height:58px!important/,'shared mobile he
 assert.match(css,/\.main-nav\.open\{display:grid!important\}/,'mobile navigation drawer missing');
 assert.match(css,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/,'mobile navigation/card two-column primitive missing');
 assert.match(css,/body\[data-page="home"\] \.portal-grid\{grid-template-columns:1fr!important/,'home portal must use one column on mobile');
-assert.match(css,/body\[data-page="schedule"\] \.schedule-calendar-scroll\{[\s\S]*overflow-x:auto!important/,'schedule calendar must scroll safely');
+assert.match(css,/body\[data-page="schedule"\] :is\(\.schedule-calendar-week,\.schedule-calendar-grid\)\{[\s\S]*min-width:0!important/,'schedule calendar must fit the phone width without horizontal scrolling');
 assert.match(css,/body\[data-page="notice"\] \.notice-toggle\{[\s\S]*grid-template-columns:34px minmax\(0,1fr\) 24px!important/,'notice cards need mobile layout');
 assert.match(css,/body\[data-page="vod"\] \.video-layout,[\s\S]*grid-template-columns:1fr!important/,'video pages must stack on mobile');
 assert.match(css,/body\[data-page="fanart"\] \.fanart-modal\{[\s\S]*height:100dvh!important/,'fanart dialog should be full-screen on mobile');
 assert.match(css,/body\[data-page="tarot"\] \.tarot-choice-group\{[\s\S]*repeat\(2,minmax\(0,1fr\)\)/,'tarot choices must be touch-friendly');
 assert.match(css,/body\[data-page="history"\] \.history-layout\{[\s\S]*grid-template-columns:1fr!important/,'history layout must stack on mobile');
-assert.match(css,/body\[data-page="data"\] \.data-detail-table\{[\s\S]*overflow-x:auto!important/,'data tables must scroll without overflowing the page');
+assert.match(css,/body\[data-page="data"\] \.data-detail-table\{[\s\S]*overflow:visible!important/,'data table rows must become mobile cards without horizontal scrolling');
 assert.match(css,/body\[data-page="changelog"\] #changelog-index-list\{[\s\S]*overflow-x:auto!important/,'changelog mobile date index must stay available as a horizontal scroller');
 assert.match(css,/\.activity-panel\{[\s\S]*bottom:max\(8px,env\(safe-area-inset-bottom\)\)!important/,'activity center must become a mobile bottom sheet');
 
