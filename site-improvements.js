@@ -342,10 +342,20 @@
   scheduleIdle(()=>{ void checkDeploymentSync(); });
 })();
 
-/* Operator center analytics + feedback runtime loader */
+/* Non-critical analytics + feedback runtime loader.
+   Keep first paint and primary navigation free from optional telemetry/UI work. */
 (()=>{
-  for(const src of ['site-analytics.js','feedback-widget.js']){
-    if(document.querySelector('script[src="'+src+'"]'))continue;
-    const script=document.createElement('script');script.src=src;script.defer=true;document.head.appendChild(script);
-  }
+  const loadScript=src=>{
+    if(document.querySelector('script[src="'+src+'"]'))return;
+    const script=document.createElement('script');
+    script.src=src;script.defer=true;script.dataset.deferredRuntime='true';
+    document.head.appendChild(script);
+  };
+  const start=()=>{
+    const run=()=>{loadScript('site-analytics.js');loadScript('feedback-widget.js')};
+    if('requestIdleCallback' in window)window.requestIdleCallback(run,{timeout:2500});
+    else setTimeout(run,900);
+  };
+  if(document.readyState==='complete')start();
+  else window.addEventListener('load',start,{once:true});
 })();
