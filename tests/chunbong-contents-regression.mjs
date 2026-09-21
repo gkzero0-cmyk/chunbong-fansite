@@ -12,3 +12,9 @@ assert.match(css,/prefers-reduced-motion/);
 assert.match(css,/object-fit:cover/);
 assert.match(css,/\[data-theme="light"\]/);
 console.log('chunbong contents page regression passed');
+
+const js=read('chunbong-contents.js');
+for(const text of ['/api/content?type=chunbong-contents','/api/content?type=chunbong-content&id=','URLSearchParams','history.replaceState','loading="lazy"','decoding="async"','showModal','Escape']) assert.ok(js.includes(text),text);
+const archive=require('../chunbong-contents.js');
+assert.equal(archive.formatDate('2026-06','month'),'2026년 6월');
+assert.equal(archive.filterItems([{title:'레오펠',aliases:[],participants:['춘봉'],category:'minecraft',startDate:'2025-06'}],{q:'춘봉',category:'all',year:'all'}).length,1);
