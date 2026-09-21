@@ -45,6 +45,64 @@
         }
       ],
       "measurement": "fan-site-sampled-5m"
+    },
+    {
+      "id": "2026-09-21T09:14:26.000Z",
+      "broadcastId": "",
+      "startedAt": "2026-09-21T09:14:26.000Z",
+      "endedAt": "2026-09-21T19:54:44.594Z",
+      "date": "2026-09-21",
+      "durationMinutes": 640,
+      "averageViewers": 52,
+      "maxViewers": 116,
+      "viewerSampleCount": 58,
+      "followerStart": 30589,
+      "followerEnd": 30629,
+      "followerDelta": 40,
+      "fanclubStart": 7677,
+      "fanclubEnd": 7677,
+      "fanclubDelta": 0,
+      "title": "마병대 4 간부 합격 감사합니다.",
+      "categories": [
+        {
+          "id": "810000",
+          "name": "버추얼",
+          "minutes": 536,
+          "sampleCount": 58,
+          "averageViewers": 52,
+          "maxViewers": 116
+        }
+      ],
+      "measurement": "fan-site-sampled-5m"
+    },
+    {
+      "id": "2026-09-21T20:39:38.000Z",
+      "broadcastId": "",
+      "startedAt": "2026-09-21T20:39:38.000Z",
+      "endedAt": "2026-09-21T20:59:29.976Z",
+      "date": "2026-09-22",
+      "durationMinutes": 20,
+      "averageViewers": 48,
+      "maxViewers": 55,
+      "viewerSampleCount": 2,
+      "followerStart": 30628,
+      "followerEnd": 30628,
+      "followerDelta": 0,
+      "fanclubStart": 7677,
+      "fanclubEnd": 7677,
+      "fanclubDelta": 0,
+      "title": "예? 행정관이요?",
+      "categories": [
+        {
+          "id": "810000",
+          "name": "버추얼",
+          "minutes": 13,
+          "sampleCount": 2,
+          "averageViewers": 48,
+          "maxViewers": 55
+        }
+      ],
+      "measurement": "fan-site-sampled-5m"
     }
   ]
 }
