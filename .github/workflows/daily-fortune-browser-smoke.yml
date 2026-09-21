@@ -87,6 +87,8 @@ jobs:
 
           await page.locator('[data-daily-fortune-card]').click();
           await page.waitForFunction(() => document.querySelector('[data-daily-fortune-stage]')?.classList.contains('is-spinning'));
+          await page.waitForTimeout(1900);
+          assert.equal(await page.locator('[data-daily-fortune-stage]').evaluate(el=>el.classList.contains('is-spinning')),true,'extended spin should still be visibly decelerating near two seconds');
           assert.equal(await page.locator('[data-daily-fortune-result]').isHidden(), true, 'result must remain hidden during the high-speed back spin');
           assert.equal(await page.locator('[data-daily-fortune-card]').isDisabled(), true, 'draw must lock immediately while the card is spinning');
           await page.waitForFunction(() => {
@@ -126,7 +128,7 @@ jobs:
           assert.equal(await page.locator('.daily-fortune-holo-spark').count(),0,'luxury hover should not emit noisy spark particles');
           await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('.daily-fortune-holo-film')).opacity) > 0.25);
           const holoOpacity=await page.locator('.daily-fortune-holo-film').evaluate(el=>getComputedStyle(el).opacity);
-          assert.ok(Number(holoOpacity)>=0.25&&Number(holoOpacity)<=0.55,'luxury foil should stay visible but restrained');
+          assert.ok(Number(holoOpacity)>=0.60&&Number(holoOpacity)<=0.75,'inner prism should be clearly visible without becoming a white wash');
           await page.mouse.move(20,20);
 
           await page.locator('[data-daily-fortune-close]').click();
