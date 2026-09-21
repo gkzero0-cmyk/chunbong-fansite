@@ -10,6 +10,7 @@ const css=read('styles.css');
 assert.match(sw,/chunbong-pwa-20260922-v30/,'navigation optimization must advance the service worker cache');
 assert.match(sw,/request\.mode === 'navigate'[\s\S]*staleWhileRevalidate\(request, event, '\/offline\.html'\)/,'documents should render cached navigation immediately and refresh in background');
 assert.match(sw,/event\.preloadResponse/,'cached navigation refresh should reuse navigation preload instead of issuing a duplicate request');
+assert.match(sw,/if \(preload\?\.ok\)[\s\S]*await fetch\(request\)/,'failed preload responses must fall through to fetch so offline fallback remains reachable');
 assert.match(sw,/APP_SHELL_PATHS\.has\(url\.pathname\)[\s\S]*staleWhileRevalidate\(request, event\)[\s\S]*networkFirst\(request, event\)/,'common shell assets should be cache-fast while feature runtimes stay network-first');
 assert.match(sw,/url\.pathname\.startsWith\('\/api\/'\)[\s\S]*return/,'API responses must stay outside service worker document caching');
 
