@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T04:15:00+09:00",
+  "updatedAt": "2026-09-22T04:22:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -17,7 +17,11 @@
       "datePrecision": "day",
       "summary": "춘봉이 기획·운영한 SOOP·치지직·YouTube 플랫폼 통합 대규모 스트리머 마인크래프트 서버.",
       "description": "2025년 6월 5일부터 7월 6일까지 진행된 플랫폼 통합 마인크래프트 서버입니다. 경쟁보다 협동과 힐링에 초점을 두고, 기억을 잃은 채 이세계에서 자신을 찾아가는 모험과 RP를 중심으로 각 스트리머가 자신만의 이야기를 만들어가는 방향으로 기획되었습니다.",
-      "heroImage": null,
+      "heroImage": {
+        "src": "/assets/chunbong-contents/leopel-cover.svg",
+        "alt": "레오펠: 사자의 노래 팬사이트 아카이브 커버",
+        "sourceId": ""
+      },
       "participants": [],
       "results": [],
       "timeline": [
@@ -89,7 +93,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T04:15:00+09:00"
+      "updatedAt": "2026-09-22T04:22:00+09:00"
     }
   ]
 }
