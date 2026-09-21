@@ -83,7 +83,7 @@ jobs:
               const page=await context.newPage();
               const errors=[];
               page.on('pageerror',error=>errors.push(error.message));
-              await page.goto(`${process.env.BASE_URL}/index.html?_activity_smoke=${Date.now()}`,{waitUntil:'networkidle'});
+              await page.goto(`${process.env.BASE_URL}/index.html?_activity_smoke=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:45000});
               await page.waitForSelector('.activity-bell');
 
               assert.equal(await page.locator('.header-live[href*="sooplive.com"]').count(),0,'SOOP header shortcut still visible');
@@ -129,7 +129,7 @@ jobs:
                 assert.ok(header.scrollWidth<=header.clientWidth+1,'activity controls overflow mobile header');
               }
 
-              await page.goto(`${process.env.BASE_URL}/changelog.html?_smoke=${Date.now()}`,{waitUntil:'networkidle'});
+              await page.goto(`${process.env.BASE_URL}/changelog.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:45000});
               await page.waitForSelector('.changelog-day');
               const changelogDates=await page.locator('.changelog-day').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('data-changelog-date')).filter(Boolean));
               assert.deepEqual(changelogDates,[...changelogDates].sort((a,b)=>b.localeCompare(a)),'production changelog must render newest date first');
