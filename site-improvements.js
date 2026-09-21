@@ -341,3 +341,11 @@
   };
   scheduleIdle(()=>{ void checkDeploymentSync(); });
 })();
+
+/* Operator center analytics + feedback runtime loader */
+(()=>{
+  for(const src of ['site-analytics.js','feedback-widget.js']){
+    if(document.querySelector('script[src="'+src+'"]'))continue;
+    const script=document.createElement('script');script.src=src;script.defer=true;document.head.appendChild(script);
+  }
+})();
