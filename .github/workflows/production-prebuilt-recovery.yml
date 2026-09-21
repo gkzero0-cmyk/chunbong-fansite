@@ -53,8 +53,31 @@ jobs:
           fi
           curl -fsS -X POST             -H "Authorization: Bearer $GH_TOKEN"             -H 'Accept: application/vnd.github+json'             "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA"             -d "$(node -e "process.stdout.write(JSON.stringify({state:process.argv[1],context:'Prebuilt Recovery',description:process.argv[2]}))" "$state" "$description")"
 
+      - name: Check whether production already matches this commit
+        id: sync
+        shell: bash
+        run: |
+          set -euo pipefail
+          stamp="$(date +%s)"
+          body="$(curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/api/version?_ts=$stamp" || true)"
+          actual="$(printf '%s' "$body" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(JSON.parse(s).sha||'')}catch{}})")"
+          if [[ "$actual" == "$GITHUB_SHA" ]]; then
+            echo 'needs_deploy=false' >> "$GITHUB_OUTPUT"
+            echo "Production already synced to $GITHUB_SHA; recovery deploy is unnecessary."
+          else
+            echo 'needs_deploy=true' >> "$GITHUB_OUTPUT"
+            echo "Production recovery needed: expected=$GITHUB_SHA actual=${actual:-missing}"
+          fi
+
+      - name: Validate Vercel CLI token
+        if: steps.token.outputs.can_deploy == 'true' && steps.sync.outputs.needs_deploy == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes vercel@latest whoami --token "$VERCEL_TOKEN"
+
       - name: Link Vercel project
-        if: steps.token.outputs.can_deploy == 'true'
+        if: steps.token.outputs.can_deploy == 'true' && steps.sync.outputs.needs_deploy == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -62,21 +85,21 @@ jobs:
           npx --yes vercel@latest pull --yes --environment=production --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
 
       - name: Build production output locally
-        if: steps.token.outputs.can_deploy == 'true'
+        if: steps.token.outputs.can_deploy == 'true' && steps.sync.outputs.needs_deploy == 'true'
         shell: bash
         run: |
           set -euo pipefail
           npx --yes vercel@latest build --prod --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
 
       - name: Deploy prebuilt output to production
-        if: steps.token.outputs.can_deploy == 'true'
+        if: steps.token.outputs.can_deploy == 'true' && steps.sync.outputs.needs_deploy == 'true'
         shell: bash
         run: |
           set -euo pipefail
           npx --yes vercel@latest deploy --prebuilt --prod --yes --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN" --env "DEPLOY_COMMIT_SHA=$GITHUB_SHA"
 
       - name: Verify production commit and new home
-        if: steps.token.outputs.can_deploy == 'true'
+        if: steps.token.outputs.can_deploy == 'true' && steps.sync.outputs.needs_deploy == 'true'
         shell: bash
         run: |
           set -euo pipefail
