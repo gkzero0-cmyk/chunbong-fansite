@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T06:20:00+09:00",
+  "updatedAt": "2026-09-22T07:05:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -32,7 +32,7 @@
           "date": "2025-05-12",
           "datePrecision": "day",
           "url": "https://pick.sooplive.com/daily/view/162209",
-          "thumbnail": "",
+          "thumbnail": "/assets/chunbong-contents/leopel-presentation-vod.svg",
           "sourceId": "source-presentation",
           "note": "SOOP PICK에서 레오펠의 일정과 콘셉트, 핵심 콘텐츠를 소개한 발표회 기록입니다."
         },
@@ -59,9 +59,42 @@
           "note": "춘봉이 직접 레오펠의 제작 계기와 플랫폼 통합 서버로 기획한 이유를 설명한 인터뷰입니다."
         }
       ],
-      "media": [],
-      "gallery": [],
+      "media": [
+        {
+          "id": "presentation-vod",
+          "type": "vod",
+          "title": "레오펠 - 플랫폼 통합 마인크래프트 서버 발표회",
+          "date": "2025-05-12",
+          "datePrecision": "day",
+          "url": "https://vod.sooplive.com/player/159711687",
+          "thumbnail": "/assets/chunbong-contents/leopel-presentation-vod.svg",
+          "sourceId": "source-presentation-vod",
+          "note": "레오펠의 일정과 콘셉트를 직접 소개한 SOOP 발표회 VOD입니다."
+        }
+      ],
+      "gallery": [
+        {
+          "id": "leopel-cover",
+          "src": "/assets/chunbong-contents/leopel-cover.svg",
+          "alt": "레오펠 사자의 노래 팬사이트 아카이브 커버",
+          "caption": "레오펠 : 사자의 노래 아카이브 커버",
+          "sourceId": ""
+        },
+        {
+          "id": "leopel-presentation-visual",
+          "src": "/assets/chunbong-contents/leopel-presentation-vod.svg",
+          "alt": "레오펠 서버 발표회 VOD 아카이브 이미지",
+          "caption": "2025년 5월 12일 레오펠 서버 발표회 VOD",
+          "sourceId": "source-presentation-vod"
+        }
+      ],
       "sources": [
+        {
+          "id": "source-presentation-vod",
+          "kind": "official",
+          "label": "SOOP VOD · 레오펠 서버 발표회",
+          "url": "https://vod.sooplive.com/player/159711687"
+        },
         {
           "id": "source-presentation",
           "kind": "article",
@@ -93,7 +126,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T04:22:00+09:00"
+      "updatedAt": "2026-09-22T07:05:00+09:00"
     },
     {
       "id": "justserver-moneygame",
@@ -156,17 +189,56 @@
         {
           "id": "soop-catch-red",
           "type": "catch",
-          "title": "그냥서버 : 머니게임 관련 SOOP Catch",
+          "title": "[그냥서버 : 머니게임] 빨간색을 좋아하는 춘봉",
           "date": "",
           "datePrecision": "unknown",
           "url": "https://vod.sooplive.com/player/198012777/catch",
-          "thumbnail": "",
+          "thumbnail": "/assets/chunbong-contents/justserver-catch-red.svg",
           "sourceId": "source-soop-catch",
           "note": "SOOP VOD에 남아 있는 그냥서버 : 머니게임 관련 Catch입니다."
+        },
+        {
+          "id": "soop-catch-pink",
+          "type": "catch",
+          "title": "[그냥서버 : 머니게임] 핑크 루파만 나오는 춘봉",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/198013623/catch",
+          "thumbnail": "/assets/chunbong-contents/justserver-catch-pink.svg",
+          "sourceId": "source-soop-catch-pink",
+          "note": "SOOP에 남아 있는 그냥서버 : 머니게임 관련 Catch입니다."
         }
       ],
-      "gallery": [],
+      "gallery": [
+        {
+          "id": "justserver-cover",
+          "src": "/assets/chunbong-contents/justserver-moneygame-cover.svg",
+          "alt": "그냥서버 머니게임 팬사이트 아카이브 커버",
+          "caption": "그냥서버 : 머니게임 아카이브 커버",
+          "sourceId": ""
+        },
+        {
+          "id": "justserver-catch-red",
+          "src": "/assets/chunbong-contents/justserver-catch-red.svg",
+          "alt": "그냥서버 머니게임 빨간색 Catch 아카이브 이미지",
+          "caption": "SOOP Catch · 빨간색을 좋아하는 춘봉",
+          "sourceId": "source-soop-catch"
+        },
+        {
+          "id": "justserver-catch-pink",
+          "src": "/assets/chunbong-contents/justserver-catch-pink.svg",
+          "alt": "그냥서버 머니게임 핑크 루파 Catch 아카이브 이미지",
+          "caption": "SOOP Catch · 핑크 루파만 나오는 춘봉",
+          "sourceId": "source-soop-catch-pink"
+        }
+      ],
       "sources": [
+        {
+          "id": "source-soop-catch-pink",
+          "kind": "official",
+          "label": "SOOP VOD · 그냥서버 : 머니게임 Catch (핑크 루파)",
+          "url": "https://vod.sooplive.com/player/198013623/catch"
+        },
         {
           "id": "source-soop-catch",
           "kind": "official",
@@ -198,7 +270,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T06:20:00+09:00"
+      "updatedAt": "2026-09-22T07:05:00+09:00"
     },
     {
       "id": "psy-emotion-song-contest-2026",
@@ -220,8 +292,15 @@
         "alt": "싸이감성 노래자랑 2026 팬사이트 아카이브 커버",
         "sourceId": ""
       },
-      "participants": [],
-      "results": [],
+      "participants": [
+        "시로코"
+      ],
+      "results": [
+        {
+          "title": "확인된 참가 기록 · 시로코",
+          "value": "서인영의 ‘신데렐라’로 참가 · 입상하지 못함"
+        }
+      ],
       "timeline": [
         {
           "id": "contest-date",
@@ -241,13 +320,39 @@
           "date": "2026-04-28",
           "datePrecision": "day",
           "url": "https://streamscharts.com/channels/lilpa0309/streams/293582583?platform=afreecatv",
-          "thumbnail": "",
+          "thumbnail": "/assets/chunbong-contents/psy-song-judge-stream.svg",
           "sourceId": "source-judge-stream",
           "note": "당일 '싸이감성 노래자랑 심사합니다'라는 방송 제목과 방송 시간이 기록되어 있습니다."
+        },
+        {
+          "id": "participant-siroko",
+          "type": "reference",
+          "title": "시로코 참가 기록",
+          "date": "2026-04-28",
+          "datePrecision": "day",
+          "url": "https://www.namu.moe/w/%EC%8B%9C%EB%A1%9C%EC%BD%94(%EC%9D%B8%ED%84%B0%EB%84%B7%20%EB%B0%A9%EC%86%A1%EC%9D%B8)",
+          "thumbnail": "",
+          "sourceId": "source-siroko",
+          "note": "시로코가 제1회 싸이감성 노래자랑에 ‘신데렐라’로 참가한 기록입니다."
         }
       ],
       "media": [],
-      "gallery": [],
+      "gallery": [
+        {
+          "id": "psy-cover",
+          "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
+          "alt": "싸이감성 노래자랑 2026 팬사이트 아카이브 커버",
+          "caption": "싸이감성 노래자랑 2026 아카이브 커버",
+          "sourceId": ""
+        },
+        {
+          "id": "psy-judge-stream",
+          "src": "/assets/chunbong-contents/psy-song-judge-stream.svg",
+          "alt": "싸이감성 노래자랑 심사 방송 아카이브 이미지",
+          "caption": "2026년 4월 28일 심사 방송 기록",
+          "sourceId": "source-judge-stream"
+        }
+      ],
       "sources": [
         {
           "id": "source-chunbong-record",
@@ -260,6 +365,12 @@
           "kind": "reference",
           "label": "Streams Charts · 2026-04-28 심사 방송 기록",
           "url": "https://streamscharts.com/channels/lilpa0309/streams/293582583?platform=afreecatv"
+        },
+        {
+          "id": "source-siroko",
+          "kind": "reference",
+          "label": "나무위키 · 시로코 참가 기록",
+          "url": "https://www.namu.moe/w/%EC%8B%9C%EB%A1%9C%EC%BD%94(%EC%9D%B8%ED%84%B0%EB%84%B7%20%EB%B0%A9%EC%86%A1%EC%9D%B8)"
         }
       ],
       "verification": {
@@ -268,7 +379,154 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T06:00:00+09:00"
+      "updatedAt": "2026-09-22T07:05:00+09:00"
+    },
+    {
+      "id": "chuntacle-2026",
+      "title": "춘타클 · 춘봉 타로 클래스",
+      "aliases": [
+        "춘타클",
+        "춘봉 타로 클래스",
+        "춘봉 타로클래스"
+      ],
+      "category": "class-event",
+      "role": "주최 · 강의",
+      "status": "ended",
+      "startDate": "2026-07",
+      "endDate": "2026-09",
+      "datePrecision": "month",
+      "summary": "춘봉이 VRChat에서 스트리머 수강생들과 타로 카드 해석과 리딩을 함께 배우는 회차형 타로 클래스.",
+      "description": "춘타클은 춘봉이 진행한 스트리머 대상 타로 클래스 시리즈입니다. 회차별로 수강생이 함께 VRChat에 모여 카드 해석과 리딩을 배우는 형식으로 진행됐습니다. 팬사이트에서는 사용자가 확정한 회차 포스터 기록과 공개 방송 이력을 분리해 보관하며, 번호나 날짜가 서로 다른 외부 기록은 하나로 억지로 합치지 않습니다.",
+      "heroImage": {
+        "src": "/assets/chunbong-contents/chuntacle-cover.svg",
+        "alt": "춘타클 춘봉 타로 클래스 팬사이트 아카이브 커버",
+        "sourceId": ""
+      },
+      "participants": [
+        "모이사",
+        "다키",
+        "연주홍",
+        "문이유",
+        "슬윤",
+        "흠냥",
+        "클라비스",
+        "유리",
+        "멍보리",
+        "투미츠",
+        "소하",
+        "김뽁분",
+        "김잇딥"
+      ],
+      "results": [
+        {
+          "title": "2회 수강 기록",
+          "value": "11명 · 모이사, 다키, 연주홍, 문이유, 슬윤, 흠냥, 클라비스, 유리, 멍보리, 투미츠, 소하"
+        },
+        {
+          "title": "4회 최종 포스터 기록",
+          "value": "5명 · 김뽁분, 김잇딥, 문이유, 연주홍, 클라비스"
+        },
+        {
+          "title": "수업 공간",
+          "value": "VRChat"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "session-2",
+          "type": "result",
+          "title": "춘타클 2회",
+          "date": "2026-07-21",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "",
+          "note": "08:00 진행 · 수강생 11명: 모이사, 다키, 연주홍, 문이유, 슬윤, 흠냥, 클라비스, 유리, 멍보리, 투미츠, 소하."
+        },
+        {
+          "id": "session-3-broadcast-record",
+          "type": "reference",
+          "title": "‘춘봉 타로 클래스 세번째 수업’ 방송 기록",
+          "date": "2026-08-02",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "source-moon-streams",
+          "note": "문이유 방송 이력에서 ‘춘봉 타로 클래스🔮 세번째 수업’ 제목이 확인됩니다."
+        },
+        {
+          "id": "session-4-broadcast-record",
+          "type": "reference",
+          "title": "‘춘타클 네번째수업’ 방송 기록",
+          "date": "2026-08-11",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "source-moon-streams",
+          "note": "문이유 방송 이력에서 ‘춘타클 네번째수업🔮 다시보기’ 제목이 확인됩니다. 최종 9월 포스터 기록과는 별개의 방송 이력으로 보관합니다."
+        },
+        {
+          "id": "session-4-final-poster",
+          "type": "result",
+          "title": "춘타클 4회 · 최종 포스터 기록",
+          "date": "2026-09-14",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "/assets/chunbong-contents/chuntacle-session-4.svg",
+          "sourceId": "",
+          "note": "08:00 · VRChat · 김뽁분, 김잇딥, 문이유, 연주홍, 클라비스."
+        }
+      ],
+      "media": [
+        {
+          "id": "moon-stream-history",
+          "type": "reference",
+          "title": "문이유 방송 이력 · 춘타클 수업 기록",
+          "date": "2026-08-11",
+          "datePrecision": "day",
+          "url": "https://streamscharts.com/channels/moon26/streams?platform=afreecatv",
+          "thumbnail": "/assets/chunbong-contents/chuntacle-session-4.svg",
+          "sourceId": "source-moon-streams",
+          "note": "8월 2일 ‘세번째 수업’, 8월 11일 ‘네번째수업 다시보기’ 방송 제목을 확인할 수 있는 외부 방송 이력입니다."
+        }
+      ],
+      "gallery": [
+        {
+          "id": "chuntacle-cover",
+          "src": "/assets/chunbong-contents/chuntacle-cover.svg",
+          "alt": "춘타클 춘봉 타로 클래스 아카이브 커버",
+          "caption": "춘타클 2026 아카이브 커버",
+          "sourceId": ""
+        },
+        {
+          "id": "chuntacle-session-4",
+          "src": "/assets/chunbong-contents/chuntacle-session-4.svg",
+          "alt": "춘타클 4회 수강생 기록 카드",
+          "caption": "2026년 9월 14일 춘타클 4회 · 최종 포스터 기록 기반",
+          "sourceId": ""
+        }
+      ],
+      "sources": [
+        {
+          "id": "source-moon-streams",
+          "kind": "reference",
+          "label": "Streams Charts · 문이유 2026 방송 이력",
+          "url": "https://streamscharts.com/channels/moon26/streams?platform=afreecatv"
+        },
+        {
+          "id": "source-chunbong-tarot",
+          "kind": "reference",
+          "label": "나무위키 · 춘봉 / 스트리머 타로상담 목록",
+          "url": "https://m.namu.moe/w/%EC%B6%98%EB%B4%89/%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%A8%B8%20%ED%83%80%EB%A1%9C%EC%83%81%EB%8B%B4%20%EB%AA%A9%EB%A1%9D"
+        }
+      ],
+      "verification": {
+        "state": "cross_checked",
+        "verifiedAt": "2026-09-22T07:05:00+09:00",
+        "conflicts": []
+      },
+      "published": true,
+      "updatedAt": "2026-09-22T07:05:00+09:00"
     }
   ]
 }
