@@ -2,8 +2,8 @@
   --text-primary:#F8F5F2;
   --text-secondary:#D1CBC5;
   --text-muted:#AAA29B;
-  --text-meta:#88817B;
-  --text-disabled:#68635F;
+  --text-meta:#918A84;
+  --text-disabled:#85807B;
   --accent-schedule:#4ADE80;
   --accent-notice:#FF8A3D;
   --accent-replay:#4CC9FF;
@@ -31,8 +31,8 @@
   --text-primary:#1D1815;
   --text-secondary:#4B433D;
   --text-muted:#69605A;
-  --text-meta:#827971;
-  --text-disabled:#A49C95;
+  --text-meta:#746B64;
+  --text-disabled:#7B716A;
   --accent-schedule:#168447;
   --accent-notice:#C9500A;
   --accent-replay:#0876A8;
@@ -82,3 +82,58 @@ body[data-page="data"]{--page-accent:var(--accent-data)}
 .portal-compact-grid em,.home-all-links summary small,.activity-item-copy>small,.activity-item-meta time,.personal-panel header>a,.personal-panel header>span,.personal-recent span,.personal-challenge span,.personal-tarot-latest span,.personal-empty{color:var(--text-muted)}
 .site-search-results a strong{color:var(--text-primary)}
 .site-search-results a small,.site-search-help{color:var(--text-muted)}
+
+
+/* 2026-09-21 site-wide readability hardening
+   Retire legacy hard-coded gray text where it falls below the shared light/dark contrast hierarchy. */
+.personal-summary span,
+.personal-saved-grid span,
+.personal-achievement-grid small,
+.personal-tarot-latest small,
+.personal-tarot-list span,
+.personal-shortcuts span,
+.personal-backup-bar span,
+.app-home-grid small,
+.app-home-head a,
+.status-card-copy small,
+.status-card-copy [data-status-action],
+.schedule-calendar-week span,
+.schedule-calendar-more,
+.data-rank-list span,
+.tarot-disclaimer,
+.history-guide p,
+.history-loading p{
+  color:var(--text-muted)!important;
+}
+.activity-item-meta time,
+.personal-tarot-list time,
+.personal-alert-default,
+.status-card-go,
+.site-search-results a small,
+.site-search-help,
+.footer-brand p,
+.footer-links,
+.copyright{
+  color:var(--text-meta)!important;
+}
+.personal-summary b,
+.personal-backup-bar strong,
+.personal-tarot-list strong,
+.app-home-head strong,
+.app-home-grid strong,
+.history-guide dd,
+.data-view-toggle button strong,
+.tarot-card-copy h2,
+.tarot-ai-title{
+  color:var(--text-primary)!important;
+}
+.notice-body p,
+.tarot-card-copy p,
+.tarot-summary>p,
+.tarot-ai-overall,
+.tarot-ai-card-reading p,
+.tarot-ai-advice ul,
+.personal-tarot-archive-inner section p,
+.personal-tarot-archive-inner section li{
+  color:var(--text-secondary)!important;
+}
