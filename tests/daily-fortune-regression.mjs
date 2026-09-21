@@ -38,9 +38,9 @@ assert.match(css, /\.daily-fortune-front\{[\s\S]*#08152f/, 'daily fortune front 
 assert.match(css, /\.daily-fortune-front-frame::before,\.daily-fortune-front-frame::after/, 'daily fortune front must include matching celestial star medallions');
 assert.match(css, /\.daily-fortune-front-title\{[\s\S]*#102344/, 'daily fortune title plate must use the matching navy-and-gold theme');
 assert.match(css, /@keyframes dailyFortuneBackSpin/, 'high-speed card-back spin animation missing');
-assert.match(css, /dailyFortuneBackSpin\{[\s\S]*rotateY\(5040deg\)/, 'standing spin must rotate rapidly around the vertical Y axis');
+assert.match(css, /dailyFortuneBackSpin\{[\s\S]*rotateY\(6120deg\)/, 'standing spin must complete seventeen vertical turns with a visible deceleration');
 assert.doesNotMatch(css, /dailyFortuneBackSpin\{[^}]*rotateZ\(/, 'draw spin must not look like a flat card rotating on the table');
-assert.match(js, /const SPIN_MS = 1720/, 'standing spin timing must stay fast');
+assert.match(js, /const SPIN_MS = 2600/, 'standing spin must allow time for the final turns to remain visible');
 assert.match(css, /\.daily-fortune-stage\.is-spinning \.daily-fortune-card-inner/, 'spin state styling missing');
 assert.match(css, /\.daily-fortune-card\.is-revealed \.daily-fortune-card-inner\{transform:rotateY\(180deg\) rotateZ\(1turn\)\}/, 'card flip animation missing');
 assert.match(css, /\.daily-fortune-stage\.is-prism-active \.daily-fortune-card/, 'pointer tilt state missing');
@@ -52,11 +52,11 @@ assert.match(css, /\.daily-fortune-holo-ripple/, 'pointer-origin hologram ripple
 assert.match(css, /@keyframes dailyFortuneHoloRipple/, 'hologram ripple animation missing');
 assert.match(css, /2026-09-21 Luxury Tarot Foil/, 'refined luxury foil override missing');
 assert.match(css, /@keyframes dailyFortuneLuxuryRipple/, 'subtle luxury ripple animation missing');
-assert.doesNotMatch(js, /spawnHoloRipple\(px, py, 'move'\)/, 'pointer movement must not retrigger noisy ripple audio/effects');
+assert.match(js, /rippleDistance > 0\.18/, 'pointer travel must be able to retrigger a restrained prism ripple');
 assert.match(js, /playTone\(ctx, 174\.6/, 'hover sound must use a low restrained magical resonance');
 assert.match(css, /scale\(1\.032\)/, 'hover lift must be visually noticeable');
-assert.match(css, /mix-blend-mode:soft-light/, 'card sheen must stay subtle instead of screen blending');
-assert.doesNotMatch(css, /mix-blend-mode:screen/, 'white prism screen blend must stay removed');
+assert.match(css, /mix-blend-mode:screen!important/, 'inner artwork prism must use a controlled screen blend for visible feedback');
+assert.match(css, /opacity:\.68!important/, 'inner prism film must be visibly stronger than the previous restrained pass');
 assert.doesNotMatch(css, /#fff 0 2%/, 'white pointer hotspot must stay removed');
 assert.match(js, /const revealed = cardButton\.classList\.contains\('is-revealed'\)/, 'hover effect must react before and after reveal');
 assert.match(css, /dailyFortuneParticle/, 'fortune reveal particles missing');
