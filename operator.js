@@ -56,6 +56,33 @@ function renderDelta(id,value){
   if(value===null||value===undefined){el.textContent='이전 기간 비교 없음';el.className='is-neutral';return}
   const n=Number(value)||0;el.textContent=(n>0?'▲ ':n<0?'▼ ':'')+Math.abs(n).toFixed(1)+'% · 이전 기간 대비';el.className=n>0?'is-up':n<0?'is-down':'is-neutral';
 }
+function renderOverallStatus(){
+  const title=$('#operator-overall-title'),copy=$('#operator-overall-copy'),badges=$('#operator-overall-badges');
+  if(!title||!copy||!badges)return;
+  const issues=[],notes=[];
+  const dep=currentSystem?.deployment||{},storage=currentSystem?.storage||{},services=currentSystem?.services||{};
+  const endpoints=Array.isArray(currentSystem?.endpoints)?currentSystem.endpoints:[];
+  const unread=Number(currentAnalytics?.feedbackCounts?.new)||0;
+  if(currentSystem){
+    if(dep.synced===false)issues.push('Production 동기화 필요');
+    else if(dep.synced===null||dep.synced===undefined)notes.push('Git 동기화 확인 불가');
+    if(storage.redisConfigured&&!storage.redisOk)issues.push('Redis/KV 확인 필요');
+    if(services.push===false)issues.push('Push 설정 확인 필요');
+    if(endpoints.some(row=>row.ok===false))issues.push('핵심 API 응답 확인 필요');
+  }else notes.push('시스템 상태 확인 중');
+  if(unread>0)notes.push('새 피드백 '+fmt(unread)+'건');
+  const healthy=currentSystem&&issues.length===0;
+  title.textContent=healthy?'핵심 시스템 정상':issues.length?'확인이 필요한 항목 '+fmt(issues.length)+'개':'운영 상태 확인 중';
+  copy.textContent=[...issues,...notes].join(' · ')||(healthy?'Production · API · 저장소가 정상입니다.':'상태 데이터를 불러오는 중입니다.');
+  const rows=[
+    ['Production',currentSystem?(dep.synced===true?'동기화':dep.synced===false?'확인 필요':'확인 불가'):'확인 중',dep.synced===true?'ok':dep.synced===false?'bad':'warn'],
+    ['API',currentSystem?(endpoints.length&&endpoints.every(row=>row.ok)?'정상':endpoints.some(row=>row.ok===false)?'확인 필요':'확인 중'):'확인 중',endpoints.length&&endpoints.every(row=>row.ok)?'ok':endpoints.some(row=>row.ok===false)?'bad':'warn'],
+    ['저장소',currentSystem?(storage.redisConfigured?(storage.redisOk?'정상':'확인 필요'):'미설정'):'확인 중',storage.redisOk?'ok':storage.redisConfigured?'bad':'warn'],
+    ['새 피드백',fmt(unread)+'건',unread?'warn':'ok']
+  ];
+  badges.innerHTML=rows.map(([label,value,state])=>'<span class="'+state+'"><small>'+escapeHtml(label)+'</small><b>'+escapeHtml(value)+'</b></span>').join('');
+  $('#operator-overall-status')?.classList.toggle('has-issue',issues.length>0);
+}
 async function loadAnalytics(){
   const data=await json(API+'operator-analytics&days='+currentDays);currentAnalytics=data;
   $('#metric-active').textContent=fmt(data.activeNow);$('#metric-visitors').textContent=fmt(data.visitors);$('#metric-sessions').textContent=fmt(data.sessions);
@@ -65,7 +92,7 @@ async function loadAnalytics(){
   renderRows($('#operator-pages'),data.topPages);renderRows($('#operator-menus'),data.topMenus);renderRows($('#operator-features'),data.topFeatures);renderRows($('#operator-devices'),data.devices);
   renderDaily(data.daily||[]);renderHourly(data.hourly||[]);renderFunnel(data.funnel||{});
   $('#operator-collection-note').textContent=data.collectionStartedAt?'실사용 분석 수집 시작: '+new Date(data.collectionStartedAt).toLocaleString('ko-KR'):'분석 데이터가 아직 수집되지 않았습니다.';
-  const unread=Number(data.feedbackCounts?.new)||0,badge=$('#operator-feedback-badge');badge.textContent=unread;badge.hidden=!unread;
+  const unread=Number(data.feedbackCounts?.new)||0,badge=$('#operator-feedback-badge');badge.textContent=unread;badge.hidden=!unread;renderOverallStatus();
 }
 function exportAnalyticsJson(){if(!currentAnalytics)return;download('chunbong-analytics-'+String(currentDays)+'d.json',JSON.stringify({exportedAt:new Date().toISOString(),period:currentDays,data:currentAnalytics},null,2),'application/json')}
 function exportAnalyticsCsv(){
@@ -127,7 +154,7 @@ async function loadSystemStatus(){
   const serviceRows=[['GitHub 운영자 인증',services.githubAuth],['이메일 운영자 인증',services.emailAuth],['Push 알림',services.push],['실사용 분석',services.analytics],['피드백 저장',services.feedback]];
   $('#operator-service-health').innerHTML=serviceRows.map(([label,ok])=>`<div><span>${label}</span>${healthLabel(Boolean(ok))}</div>`).join('');
   const endpoints=Array.isArray(data.endpoints)?data.endpoints:[];
-  $('#operator-endpoint-health').innerHTML=endpoints.length?endpoints.map(row=>`<div><span>${escapeHtml(row.label||row.path||'API')} <small>${fmt(row.ms)}ms</small></span><span class="operator-endpoint-result ${row.ok?'ok':'bad'}">${row.ok?'HTTP '+fmt(row.status):row.status?'HTTP '+fmt(row.status):'응답 실패'}</span></div>`).join(''):'<p class="operator-empty">API 상태를 확인하지 못했습니다.</p>';
+  $('#operator-endpoint-health').innerHTML=endpoints.length?endpoints.map(row=>`<div><span>${escapeHtml(row.label||row.path||'API')} <small>${fmt(row.ms)}ms</small></span><span class="operator-endpoint-result ${row.ok?'ok':'bad'}">${row.ok?'HTTP '+fmt(row.status):row.status?'HTTP '+fmt(row.status):'응답 실패'}</span></div>`).join(''):'<p class="operator-empty">API 상태를 확인하지 못했습니다.</p>';renderOverallStatus();
 }
 function renderSessions(){
   const el=$('#operator-session-list'),rows=session?.sessions||[];
@@ -142,12 +169,13 @@ async function setupFirebaseEmail(){
 async function boot(){
   try{
     await refreshSession();showDashboard();
-    await Promise.all([loadAnalytics(),loadFeedback()]);
+    await Promise.all([loadAnalytics(),loadFeedback(),loadSystemStatus()]);
   }catch{showLogin()}
 }
 $('#operator-github-login')?.addEventListener('click',event=>{if(event.currentTarget.getAttribute('aria-disabled')==='true')event.preventDefault()});
-document.querySelectorAll('[data-days]').forEach(btn=>btn.addEventListener('click',async()=>{document.querySelectorAll('[data-days]').forEach(x=>x.classList.toggle('active',x===btn));currentDays=btn.dataset.days==='all'?'all':(Number(btn.dataset.days)||7);await loadAnalytics()}));
-$$('[data-operator-tab]').forEach(btn=>btn.addEventListener('click',async()=>{$$('[data-operator-tab]').forEach(x=>x.classList.toggle('active',x===btn));$$('[data-operator-panel]').forEach(panel=>panel.hidden=panel.dataset.operatorPanel!==btn.dataset.operatorTab);if(btn.dataset.operatorTab==='system')await loadSystemStatus();if(btn.dataset.operatorTab==='security')await refreshSession()}));
+document.querySelectorAll('[data-days]').forEach(btn=>btn.addEventListener('click',async()=>{document.querySelectorAll('[data-days]').forEach(x=>{const active=x===btn;x.classList.toggle('active',active);x.setAttribute('aria-pressed',String(active))});currentDays=btn.dataset.days==='all'?'all':(Number(btn.dataset.days)||7);await loadAnalytics()}));
+$('[data-operator-tab]').forEach(btn=>btn.addEventListener('click',async()=>{$('[data-operator-tab]').forEach(x=>{const active=x===btn;x.classList.toggle('active',active);x.setAttribute('aria-selected',String(active));x.tabIndex=active?0:-1});$('[data-operator-panel]').forEach(panel=>panel.hidden=panel.dataset.operatorPanel!==btn.dataset.operatorTab);if(btn.dataset.operatorTab==='system')await loadSystemStatus();if(btn.dataset.operatorTab==='security')await refreshSession()}));
+$('[data-operator-tab]').forEach((btn,index,buttons)=>btn.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();let next=index;if(event.key==='ArrowLeft')next=(index-1+buttons.length)%buttons.length;if(event.key==='ArrowRight')next=(index+1)%buttons.length;if(event.key==='Home')next=0;if(event.key==='End')next=buttons.length-1;buttons[next]?.focus();buttons[next]?.click()}));
 $('#operator-export-json')?.addEventListener('click',exportAnalyticsJson);$('#operator-export-csv')?.addEventListener('click',exportAnalyticsCsv);
 $('#operator-feedback-refresh')?.addEventListener('click',loadFeedback);
 ['#operator-feedback-search','#operator-feedback-status-filter','#operator-feedback-category-filter','#operator-feedback-sort'].forEach(selector=>$(selector)?.addEventListener(selector.includes('search')?'input':'change',renderFeedbackList));
