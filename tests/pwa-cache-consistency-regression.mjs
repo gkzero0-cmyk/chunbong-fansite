@@ -12,7 +12,7 @@ const mismatches=[];
 for(const name of fs.readdirSync(path.join(root,'tests'))){
   if(!name.endsWith('.mjs')||name==='pwa-cache-consistency-regression.mjs')continue;
   const text=fs.readFileSync(path.join(root,'tests',name),'utf8');
-  for(const match of text.matchAll(/chunbong-pwa-20260921-v\d+/g)){
+  for(const match of text.matchAll(/chunbong-pwa-\d{8}-v\d+/g)){
     if(match[0]!==version)mismatches.push(name+': '+match[0]+' != '+version);
   }
 }
