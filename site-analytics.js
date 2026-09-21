@@ -5,7 +5,7 @@
   const SESSION_KEY='chunbong-analytics-session-v1';
   const LAST_PATH_KEY='chunbong-analytics-last-path-v1';
   const SESSION_GAP=30*60*1000;
-  const HEARTBEAT=15000;
+  const HEARTBEAT=60000;
 
   const uuid=()=>{
     try{return crypto.randomUUID();}catch{return String(Date.now())+'-'+Math.random().toString(36).slice(2)+'-'+Math.random().toString(36).slice(2);}
