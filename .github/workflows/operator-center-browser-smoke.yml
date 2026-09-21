@@ -1,0 +1,83 @@
+name: Operator center browser smoke
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'operator.html'
+      - 'operator.js'
+      - 'operator.css'
+      - 'lib/operator-center-api.js'
+      - 'api/content.js'
+      - 'site-analytics.js'
+      - 'feedback-widget.js'
+      - 'feedback-widget.css'
+      - '.github/workflows/operator-center-browser-smoke.yml'
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local site
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/operator-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:4173/operator.html >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/operator-http.log
+          exit 1
+      - name: Verify protected dashboard UI with mocked owner session
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          node --input-type=module <<'EOF_NODE'
+          import assert from 'node:assert/strict';
+          import { chromium } from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          try{
+            const page=await browser.newPage({viewport:{width:1280,height:900}});
+            const errors=[];page.on('pageerror',error=>errors.push(error.message));
+            const feedback=[{id:'FB-20260921-ABC123',category:'feature',nickname:'째비테스트',message:'모바일 일정이 더 편해졌어요.',status:'new',createdAt:'2026-09-21T08:00:00.000Z',updatedAt:'2026-09-21T08:00:00.000Z',page:'/schedule.html',device:'mobile',viewport:'390x844',pwa:true,theme:'dark',siteSha:'1234567890abcdef'}];
+
+            await page.route('**/api/content?type=*',async route=>{
+              const url=new URL(route.request().url()),type=url.searchParams.get('type');
+              const json=value=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(value)});
+              if(type==='operator-auth-config')return json({authenticated:true,provider:'github',providers:{github:false,email:false},storage:true,ownerRegistered:true});
+              if(type==='operator-session')return json({authenticated:true,provider:'github',expiresAt:'2026-12-20T00:00:00.000Z',activeSessions:1,owner:{githubLogin:'gkzero0-cmyk',githubId:322299248,emailRegistered:true}});
+              if(type==='operator-analytics')return json({collectionStartedAt:'2026-09-21T08:00:00.000Z',activeNow:3,visitors:42,averageDailyVisitors:14,pageviews:120,averageActiveSeconds:185,topPages:[{key:'/schedule.html',value:50}],topMenus:[{key:'방송 일정',value:31}],topFeatures:[{key:'game_start:chungwagame',value:8}],devices:[{key:'device:mobile',value:80}],daily:[{date:'2026-09-21',visitors:42,pageviews:120}],feedbackCounts:{new:1}});
+              if(type==='operator-feedback-update')return json({ok:true,item:{...feedback[0],status:'reviewing'}});
+              if(type==='operator-feedback')return json({items:feedback});
+              if(type==='operator-logout'||type==='operator-logout-all')return json({ok:true});
+              return route.fulfill({status:404,contentType:'application/json',body:'{}'});
+            });
+
+            await page.goto(process.env.BASE_URL+'/operator.html',{waitUntil:'networkidle'});
+            await page.waitForFunction(()=>!document.querySelector('#operator-dashboard')?.hidden);
+            assert.equal((await page.locator('#metric-active').textContent())?.trim(),'3');
+            assert.equal((await page.locator('#metric-visitors').textContent())?.trim(),'42');
+            assert.equal((await page.locator('#metric-pageviews').textContent())?.trim(),'120');
+            assert.match((await page.locator('#metric-duration').textContent())||'',/3분 5초/);
+            assert.equal(await page.locator('[data-days]').count(),4,'period buttons missing');
+            await page.locator('[data-days="all"]').click();
+            assert.ok(await page.locator('[data-days="all"]').evaluate(el=>el.classList.contains('active')),'all-time period did not activate');
+
+            await page.locator('[data-operator-tab="feedback"]').click();
+            await page.locator('[data-feedback-id="FB-20260921-ABC123"]').click();
+            assert.equal((await page.locator('#feedback-id').textContent())?.trim(),'FB-20260921-ABC123');
+            assert.equal((await page.locator('#feedback-message').textContent())?.trim(),'모바일 일정이 더 편해졌어요.');
+            await page.locator('#feedback-status').selectOption('reviewing');
+
+            await page.locator('[data-operator-tab="security"]').click();
+            assert.equal((await page.locator('#security-github').textContent())?.trim(),'gkzero0-cmyk');
+            assert.match((await page.locator('#security-sessions').textContent())||'',/1개/);
+            assert.deepEqual(errors,[],errors.join(' | '));
+          }finally{await browser.close();}
+          EOF_NODE
