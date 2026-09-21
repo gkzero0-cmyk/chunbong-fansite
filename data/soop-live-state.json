@@ -1,9 +1,27 @@
 {
   "version": 1,
-  "session": null,
+  "session": {
+    "active": true,
+    "sessionId": "2026-09-21T20:39:38.000Z",
+    "startedAt": "2026-09-21T20:39:38.000Z",
+    "title": "예? 행정관이요?",
+    "samples": [
+      {
+        "capturedAt": "2026-09-21T20:46:10.103Z",
+        "live": true,
+        "startedAt": "2026-09-21T20:39:38.000Z",
+        "title": "예? 행정관이요?",
+        "viewerCount": 55,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30628,
+        "fanclubCount": 7677
+      }
+    ]
+  },
   "lastProfile": {
-    "capturedAt": "2026-09-21T20:38:02.812Z",
-    "followerCount": 30629,
+    "capturedAt": "2026-09-21T20:46:10.103Z",
+    "followerCount": 30628,
     "fanclubCount": 7677
   }
 }
