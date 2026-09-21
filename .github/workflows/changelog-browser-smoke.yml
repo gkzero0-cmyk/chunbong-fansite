@@ -101,8 +101,8 @@ jobs:
           assert.match(await page.locator('.changelog-button').getAttribute('aria-label'),/새 업데이트 있음/);
 
           await page.goto(process.env.BASE_URL+'/changelog.html?_changelog='+Date.now(),{waitUntil:'domcontentloaded'});
-          await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-21');
-          assert.equal(await page.locator('.changelog-day').first().getAttribute('data-changelog-date'),'2026-09-21','latest curated/automatic changelog date must be first');
+          await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-22');
+          assert.equal(await page.locator('.changelog-day').first().getAttribute('data-changelog-date'),'2026-09-22','latest curated/automatic changelog date must be first');
           assert.equal(await page.locator('.changelog-day').last().getAttribute('data-changelog-date'),'2026-08-30');
           assert.ok(await page.locator(' #changelog-index-list a[data-changelog-index-date="2026-09-21"]').isVisible(),'automatic date index missing');
           assert.ok(await page.locator('#changelog-index-list a[data-changelog-index-date="2026-09-19"]').isVisible(),'curated date index missing');
