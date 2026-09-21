@@ -105,6 +105,7 @@ assert.match(operatorJs,/operatorMemo/,'operator memo handling missing');
 assert.match(operatorJs,/redisMemoryLabel/,'Redis memory formatter missing');
 assert.match(operatorJs,/operator-endpoint-health/,'endpoint response renderer missing');
 assert.match(operatorJs,/text\/csv/,'analytics CSV export missing');
+assert.match(operatorJs,/Promise\.allSettled/,'operator dashboard must survive partial analytics/feedback/system failures');
 assert.match(api,/accounts:sendOobCode/,'Firebase email link dispatch missing');
 assert.match(api,/operator:auth:email-cooldown:v1/,'operator email magic-link cooldown missing');
 assert.match(operatorJs,/signInWithEmailLink/,'Firebase email link completion missing');
@@ -161,10 +162,11 @@ assert.match(feedbackCss,/feedback-dialog/);
 
 assert.match(improvements,/site-analytics\.js/,'sitewide analytics runtime not loaded');
 assert.match(improvements,/feedback-widget\.js/,'sitewide feedback runtime not loaded');
+assert.match(improvements,/requestIdleCallback/,'optional analytics and feedback should wait for browser idle time');
 assert.match(mobile,/data-feedback-open/,'mobile More feedback entry missing');
 
 assert.match(sw,/chunbong-pwa-20260922-v29/,'PWA cache must include the latest operator and alert assets');
-for(const asset of ['/site-analytics.js','/feedback-widget.js','/feedback-widget.css']) assert.ok(sw.includes(asset),'PWA shell missing '+asset);
+for(const asset of ['/site-analytics.js','/feedback-widget.js','/feedback-widget.css']) assert.ok(!sw.includes(asset),'optional runtime must not block first-install PWA shell: '+asset);
 
 new Function(api);
 new Function(analytics);
