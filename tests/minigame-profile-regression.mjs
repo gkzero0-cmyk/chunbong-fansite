@@ -41,8 +41,8 @@ assert.match(css,/\.minigame-profile-extra/,'unified profile extra stat styles m
 assert.match(css,/\.minigame-achievement-strip/,'achievement badge strip styles missing');
 assert.match(css,/@media\(max-width:640px\)/,'record profile must have a mobile layout');
 assert.match(sw,/chunbong-pwa-20260922-v29/,'PWA cache must include the latest minigame profile and alert assets');
-assert.match(sw,/minigame-profile\.js/,'PWA must cache profile runtime');
-assert.match(sw,/minigame-profile\.css/,'PWA must cache profile styles');
+assert.doesNotMatch(sw,/minigame-profile\.js/,'route-specific profile runtime should cache on first visit, not during PWA install');
+assert.doesNotMatch(sw,/minigame-profile\.css/,'route-specific profile styles should cache on first visit, not during PWA install');
 
 assert.match(html,/data-profile-streak/,'daily challenge streak stat missing');
 assert.match(html,/data-profile-daily-challenge/,'daily challenge card missing');
