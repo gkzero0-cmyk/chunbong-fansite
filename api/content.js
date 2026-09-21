@@ -270,6 +270,7 @@ async function handler(req,res) {
   if(type==='operator-feedback') return operatorCenter.handleOperatorFeedback(req,res);
   if(type==='operator-feedback-update') return operatorCenter.handleOperatorFeedbackUpdate(req,res);
   if(type==='operator-logout') return operatorCenter.handleLogout(req,res);
+  if(type==='operator-logout-all') return operatorCenter.handleLogoutAll(req,res);
   if(type==='live'){
     res.setHeader('Cache-Control','s-maxage=30, stale-while-revalidate=30');
     try{
