@@ -39,6 +39,7 @@ assert.match(api,/set\('scope','read:user'\)/,'GitHub OAuth must request only th
 assert.doesNotMatch(api,/read:user user:email/,'GitHub OAuth must not request email scope');
 assert.match(api,/api\.github\.com\/user/,'GitHub identity verification missing');
 assert.match(api,/accounts:lookup/,'Firebase ID token lookup missing');
+assert.match(api,/user\.emailVerified!==true/,'Firebase owner email must be explicitly verified');
 assert.match(api,/sha256/,'owner email comparison must use hash');
 assert.match(api,/operator:session-secret:v1/,'server-managed session secret missing');
 assert.match(api,/operator:analytics:start:v1/,'analytics collection start marker missing');
@@ -82,6 +83,7 @@ assert.match(operatorHtml,/1년/);
 assert.match(operatorHtml,/data-days="all"/,'all-time analytics control missing');
 assert.match(operatorHtml,/metric-average-daily/,'average daily visitor KPI missing');
 assert.match(operatorJs,/averageDailyVisitors/,'average daily visitor rendering missing');
+assert.match(operatorJs,/document\.querySelectorAll\('\[data-days\]'\)\.forEach/,'all analytics period controls must be bound with a NodeList');
 assert.match(api,/dailyVisitorCounts/,'all-time daily average must use all recorded days');
 assert.match(operatorCss,/operator-dashboard/);
 assert.match(operatorCss,/operator-auth-button\.is-unavailable/,'unavailable auth provider style missing');
