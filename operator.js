@@ -55,7 +55,7 @@ function friendlyKey(key=''){
   return raw.replace(/^game_(start|finish):/,'미니게임 · ').replace(/^tarot_(start|result)$/,'춘봉 타로').replace(/^feedback_(open|submit)$/,'피드백');
 }
 function periodTitle(){
-  return currentDays==='all'?'전체 이용 추이':currentDays===1?'오늘 이용 추이':`최근 ${currentDays}일 이용 추이`;
+  return currentDays==='all'?'전체 이용 추이 · 최근 60일':currentDays===1?'오늘 이용 추이':`최근 ${currentDays}일 이용 추이`;
 }
 function compareLabel(){return currentDays==='all'?'전체 기간':currentDays===1?'어제 대비':`이전 ${currentDays}일 대비`}
 function renderRows(el,rows=[]){el.innerHTML=rows.length?rows.map((row,i)=>`<li><em>${i+1}</em><strong title="${escapeHtml(row.key)}">${escapeHtml(friendlyKey(row.key))}</strong><b>${fmt(row.value)}${Number.isFinite(row.averageActiveSeconds)?' · '+shortTime(row.averageActiveSeconds):''}</b></li>`).join(''):'<li><em>–</em><strong>아직 데이터가 없습니다.</strong><b>0</b></li>'}
