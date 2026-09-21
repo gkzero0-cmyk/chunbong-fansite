@@ -98,6 +98,8 @@ assert.match(operatorJs,/renderOperatorAttention/,'operator attention summary re
 assert.match(operatorJs,/activateOperatorTab/,'operator accessible tab controller missing');
 assert.match(operatorJs,/\$\$\('\[data-operator-tab\]'\)\.forEach/,'operator tab binding must iterate a NodeList');
 assert.doesNotMatch(operatorJs,/(^|\n)\$\('\[data-operator-tab\]'\)\.forEach/,'operator tab binding must not call forEach on querySelector result');
+assert.match(operatorJs,/\$\$\('\[data-operator-panel\]'\)\.forEach/,'operator panel switching must iterate a NodeList');
+assert.doesNotMatch(operatorJs,/(^|\n)\$\('\[data-operator-panel\]'\)\.forEach/,'operator panel switching must not call forEach on querySelector result');
 assert.match(operatorJs,/comparison/,'previous-period comparison rendering missing');
 assert.match(operatorJs,/operator-feedback-status-filter/,'feedback status filtering missing');
 assert.match(operatorJs,/operator-feedback-category-filter/,'feedback category filtering missing');

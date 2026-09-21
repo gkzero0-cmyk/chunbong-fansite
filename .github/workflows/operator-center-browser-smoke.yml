@@ -45,17 +45,18 @@ jobs:
           try{
             const page=await browser.newPage({viewport:{width:1280,height:900}});
             const errors=[];page.on('pageerror',error=>errors.push(error.message));
-            const feedback=[{id:'FB-20260921-ABC123',category:'feature',nickname:'째비테스트',message:'모바일 일정이 더 편해졌어요.',status:'new',operatorMemo:'',createdAt:'2026-09-21T08:00:00.000Z',updatedAt:'2026-09-21T08:00:00.000Z',page:'/schedule.html',device:'mobile',viewport:'390x844',pwa:true,theme:'dark',siteSha:'1234567890abcdef'}];
+            const feedback=[{id:'FB-20260921-ABC123',category:'feature',nickname:'째비테스트',message:'모바일 일정이 더 편해졌어요.',status:'new',priority:'normal',tags:['모바일','일정'],relatedUpdate:'#238',operatorMemo:'',createdAt:'2026-09-21T08:00:00.000Z',updatedAt:'2026-09-21T08:00:00.000Z',page:'/schedule.html',device:'mobile',viewport:'390x844',pwa:true,theme:'dark',siteSha:'1234567890abcdef'}];
 
             await page.route('**/api/content?type=*',async route=>{
               const url=new URL(route.request().url()),type=url.searchParams.get('type');
               const json=value=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(value)});
               if(type==='operator-auth-config')return json({authenticated:true,provider:'github',providers:{github:false,email:false},storage:true,ownerRegistered:true});
               if(type==='operator-session')return json({authenticated:true,provider:'github',expiresAt:'2027-09-21T00:00:00.000Z',activeSessions:2,currentSessionId:'session-current-1234',sessions:[{id:'session-current-1234',current:true,provider:'github',createdAt:'2026-09-21T08:00:00.000Z',expiresAt:'2027-09-21T00:00:00.000Z'},{id:'session-other-5678',current:false,provider:'email',createdAt:'2026-09-20T08:00:00.000Z',expiresAt:'2027-09-20T00:00:00.000Z'}],owner:{githubLogin:'gkzero0-cmyk',githubId:322299248,emailRegistered:true}});
-              if(type==='operator-analytics')return json({collectionStartedAt:'2026-09-21T08:00:00.000Z',activeNow:3,visitors:42,sessions:55,newVisitors:24,returningVisits:96,averageDailyVisitors:14,pageviews:120,averageActiveSeconds:185,topPages:[{key:'/schedule.html',value:50}],topMenus:[{key:'방송 일정',value:31}],topFeatures:[{key:'game_start:chungwagame',value:8}],devices:[{key:'device:mobile',value:80}],daily:[{date:'2026-09-21',visitors:42,sessions:55,pageviews:120}],hourly:[{key:'20',value:44}],funnel:{game:{start:10,finish:8},tarot:{start:6,finish:5},feedback:{start:4,finish:1}},comparison:{visitorsPct:12.5,sessionsPct:10,pageviewsPct:-5,averageActiveSecondsPct:3.2},feedbackCounts:{new:1}});
+              if(type==='operator-analytics')return json({collectionStartedAt:'2026-09-21T08:00:00.000Z',activeNow:3,visitors:42,sessions:55,newVisitors:24,returningVisits:96,averageDailyVisitors:14,pageviews:120,averageActiveSeconds:185,topPages:[{key:'/schedule.html',value:50}],topMenus:[{key:'방송 일정',value:31}],topFeatures:[{key:'game_start:chungwagame',value:8}],devices:[{key:'device:mobile',value:80}],daily:[{date:'2026-09-21',visitors:42,sessions:55,pageviews:120}],hourly:[{key:'20',value:44}],funnel:{game:{start:10,finish:8},tarot:{start:6,finish:5},feedback:{start:4,finish:1}},comparison:{visitorsPct:12.5,sessionsPct:10,pageviewsPct:-5,averageActiveSecondsPct:3.2},performance:{averageMs:420,samples:12,pages:[{key:'/schedule.html',samples:8,totalMs:3840,averageMs:480},{key:'/index.html',samples:4,totalMs:1200,averageMs:300}]},feedbackCounts:{new:1}});
               if(type==='operator-feedback-update'){const body=JSON.parse(route.request().postData()||'{}');Object.assign(feedback[0],body.status?{status:body.status}:{},body.memo!==undefined?{operatorMemo:body.memo}:{});return json({ok:true,item:feedback[0]});}
               if(type==='operator-feedback')return json({items:feedback});
-              if(type==='operator-system-status')return json({checkedAt:'2026-09-21T12:00:00.000Z',deployment:{environment:'production',sha:'1234567890abcdef',url:'chunbong-fansite.vercel.app',mainSha:'1234567890abcdef',synced:true},storage:{redisConfigured:true,redisOk:true,analyticsRecordedDays:20,feedbackTotal:5,keyCount:128,usedMemory:1048576,usedMemoryHuman:'1.00M',maxMemory:null,maxMemoryHuman:null},services:{githubAuth:true,emailAuth:true,push:true,analytics:true,feedback:true},endpoints:[{label:'버전',path:'/api/version',ok:true,status:200,ms:42},{label:'LIVE',path:'/api/content?type=live',ok:true,status:200,ms:81},{label:'방송 일정',path:'/api/content?type=schedule',ok:true,status:200,ms:93},{label:'Push',path:'/api/content?type=push-config',ok:true,status:200,ms:51}],traffic:{visitors:12,sessions:15,pageviews:39,activeNow:2},repository:{sizeKb:12345,updatedAt:'2026-09-21T11:00:00.000Z'},vercelUsage:{available:false}});
+              if(type==='operator-system-status')return json({checkedAt:'2026-09-21T12:00:00.000Z',deployment:{environment:'production',sha:'1234567890abcdef',url:'chunbong-fansite.vercel.app',mainSha:'1234567890abcdef',synced:true,rateLimited:false,retryAfter:null,vercel:{state:'success',description:'Deployment completed',createdAt:'2026-09-21T11:59:00.000Z'}},storage:{redisConfigured:true,redisOk:true,analyticsRecordedDays:20,feedbackTotal:5,keyCount:128,usedMemory:1048576,usedMemoryHuman:'1.00M',maxMemory:null,maxMemoryHuman:null},services:{githubAuth:true,emailAuth:true,push:true,analytics:true,feedback:true},endpoints:[{label:'버전',path:'/api/version',ok:true,status:200,ms:42},{label:'LIVE',path:'/api/content?type=live',ok:true,status:200,ms:81},{label:'방송 일정',path:'/api/content?type=schedule',ok:true,status:200,ms:93},{label:'Push',path:'/api/content?type=push-config',ok:true,status:200,ms:51}],traffic:{visitors:12,sessions:15,pageviews:39,activeNow:2},repository:{sizeKb:12345,updatedAt:'2026-09-21T11:00:00.000Z'},health:{level:'ok',issues:[],history:[{id:'HLT-test',level:'ok',issues:[],at:'2026-09-21T12:00:00.000Z'}]},vercelUsage:{available:false}});
+              if(type==='operator-security-log')return json({items:[{id:'SEC-test',action:'login_success',provider:'github',detail:'gkzero0-cmyk',at:'2026-09-21T11:58:00.000Z'}]});
               if(type==='operator-session-revoke')return json({ok:true,current:false});
               if(type==='operator-logout'||type==='operator-logout-all')return json({ok:true});
               return route.fulfill({status:404,contentType:'application/json',body:'{}'});
@@ -74,14 +75,25 @@ jobs:
             assert.equal(await page.locator('#operator-hourly .operator-hour').count(),24,'hourly chart must render all 24 hours');
             assert.match((await page.locator('#operator-funnel').textContent())||'',/미니게임/);
             assert.match((await page.locator('#metric-duration').textContent())||'',/3분 5초/);
+            assert.match((await page.locator('#operator-period-summary-text').textContent())||'',/이전 7일 대비/);
+            assert.match((await page.locator('#operator-pages').textContent())||'',/방송 일정/);
+            assert.match((await page.locator('#operator-hourly-summary').textContent())||'',/20시/);
+            await page.locator('[data-operator-tab="performance"]').click();
+            assert.equal((await page.locator('#performance-average').textContent())?.trim(),'420ms');
+            assert.match((await page.locator('#operator-performance-pages').textContent())||'',/방송 일정/);
+            await page.locator('[data-operator-tab="overview"]').click();
             assert.equal(await page.locator('[data-days]').count(),4,'period buttons missing');
             await page.locator('[data-days="all"]').click();
             assert.ok(await page.locator('[data-days="all"]').evaluate(el=>el.classList.contains('active')),'all-time period did not activate');
+            await page.waitForFunction(()=>document.querySelector('#operator-period-compare-label')?.textContent?.includes('전체 기간'));
 
             await page.locator('[data-operator-tab="feedback"]').click();
+            await page.locator('[data-operator-panel="feedback"]').waitFor({state:'visible'});
             await page.locator('[data-feedback-id="FB-20260921-ABC123"]').click();
             assert.equal((await page.locator('#feedback-id').textContent())?.trim(),'FB-20260921-ABC123');
             assert.equal((await page.locator('#feedback-message').textContent())?.trim(),'모바일 일정이 더 편해졌어요.');
+            assert.equal(await page.locator('#feedback-priority').inputValue(),'normal');
+            assert.match(await page.locator('#feedback-tags').inputValue(),/모바일/);
             await page.locator('#feedback-status').selectOption('reviewing');
             await page.locator('#feedback-memo').fill('다음 업데이트에 반영');
             await page.locator('#feedback-memo-save').click();
@@ -102,12 +114,16 @@ jobs:
             assert.equal(await page.locator('#operator-endpoint-health>div').count(),4,'public API health rows missing');
             assert.match((await page.locator('#operator-endpoint-health').textContent())||'',/LIVE/);
             assert.match((await page.locator('#operator-endpoint-health').textContent())||'',/81ms/);
+            assert.match((await page.locator('#system-vercel-status').textContent())||'',/Deployment completed/);
+            assert.equal(await page.locator('#operator-health-history .operator-event-row').count(),1,'health history missing');
 
             await page.locator('[data-operator-tab="security"]').click();
             assert.equal((await page.locator('#security-github').textContent())?.trim(),'gkzero0-cmyk');
             assert.match((await page.locator('#security-sessions').textContent())||'',/2개/);
             assert.equal(await page.locator('#operator-session-list article').count(),2,'active session list missing');
             assert.equal(await page.locator('[data-revoke-session]').count(),1,'other session revoke control missing');
+            await page.waitForFunction(()=>document.querySelectorAll('#operator-security-log .operator-event-row').length===1);
+            assert.match((await page.locator('#operator-security-log').textContent())||'',/로그인 성공/);
             assert.deepEqual(errors,[],errors.join(' | '));
           }finally{await browser.close();}
           EOF_NODE

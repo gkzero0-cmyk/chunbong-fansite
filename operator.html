@@ -56,6 +56,7 @@
 
     <nav class="operator-tabs" role="tablist" aria-label="운영자 메뉴">
       <button id="operator-tab-overview" class="active" type="button" role="tab" aria-selected="true" aria-controls="operator-panel-overview" data-operator-tab="overview">개요</button>
+      <button id="operator-tab-performance" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-performance" data-operator-tab="performance">성능</button>
       <button id="operator-tab-feedback" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-feedback" data-operator-tab="feedback">피드백 <i id="operator-feedback-badge" hidden>0</i></button>
       <button id="operator-tab-system" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-system" data-operator-tab="system">시스템 상태</button>
       <button id="operator-tab-security" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-security" data-operator-tab="security">보안</button>
@@ -66,6 +67,10 @@
       <section class="operator-attention" aria-labelledby="operator-attention-title" aria-live="polite">
         <header><div><small>OPERATIONS AT A GLANCE</small><h2 id="operator-attention-title">지금 확인할 것</h2></div><span id="operator-attention-state">확인 중</span></header>
         <div id="operator-attention-list" class="operator-attention-list"><p class="operator-empty">운영 상태를 확인하고 있습니다.</p></div>
+      </section>
+      <section class="operator-period-summary" aria-labelledby="operator-period-summary-title">
+        <header><div><small>PERIOD INSIGHT</small><h2 id="operator-period-summary-title">최근 7일 요약</h2></div><span id="operator-period-compare-label">이전 7일 대비</span></header>
+        <p id="operator-period-summary-text">이용 흐름을 계산하고 있습니다.</p>
       </section>
       <div class="operator-metric-grid operator-metric-grid-wide">
         <article class="is-live"><span>현재 활성</span><strong id="metric-active">-</strong><small>최근 5분</small></article>
@@ -78,25 +83,49 @@
         <article><span>재방문 이용 페이지뷰</span><strong id="metric-returning">-</strong><small>기존 브라우저에서 발생</small></article>
       </div>
       <div class="operator-grid-2">
-        <article class="operator-card"><header><h2>가장 많이 본 페이지</h2></header><ol id="operator-pages" class="operator-rank-list"></ol></article>
-        <article class="operator-card"><header><h2>가장 많이 이용한 메뉴</h2></header><ol id="operator-menus" class="operator-rank-list"></ol></article>
+        <article class="operator-card"><header><div><h2>페이지 이용 순위</h2><small>조회수 · 평균 활동시간</small></div></header><ol id="operator-pages" class="operator-rank-list operator-page-rank-list"></ol></article>
+        <article class="operator-card"><header><div><h2>메뉴 이용 순위</h2><small>선택 기간 내 클릭 횟수</small></div></header><ol id="operator-menus" class="operator-rank-list operator-menu-rank-list"></ol></article>
         <article class="operator-card"><header><h2>기능 이용</h2></header><ol id="operator-features" class="operator-rank-list"></ol></article>
         <article class="operator-card"><header><h2>기기 · 이용 환경</h2></header><ol id="operator-devices" class="operator-rank-list"></ol></article>
       </div>
       <div class="operator-grid-2 operator-insight-grid">
         <article class="operator-card">
-          <header><h2>일별 이용량</h2><span class="operator-legend"><i class="is-pageview"></i>페이지뷰 <i class="is-visitor"></i>방문자</span></header>
-          <div id="operator-daily" class="operator-daily-chart" aria-label="일별 이용량 차트"></div>
+          <header><div><h2 id="operator-daily-title">최근 7일 이용 추이</h2><small id="operator-daily-summary">일별 차이를 확인할 수 있습니다.</small></div><span class="operator-legend"><i class="is-pageview"></i>페이지뷰 <i class="is-visitor"></i>방문자</span></header>
+          <div id="operator-daily" class="operator-daily-chart" aria-label="기간별 이용 추이 차트"></div>
         </article>
         <article class="operator-card">
-          <header><h2>시간대별 이용량</h2><span>KST · 페이지뷰</span></header>
-          <div id="operator-hourly" class="operator-hourly-chart" aria-label="시간대별 이용량 차트"></div>
+          <header><div><h2>방문이 많은 시간대</h2><small id="operator-hourly-summary">가장 활발한 시간을 계산하고 있습니다.</small></div><span>KST · 페이지뷰</span></header>
+          <div id="operator-hourly" class="operator-hourly-chart" aria-label="시간대별 페이지뷰 차트"></div>
         </article>
       </div>
       <article class="operator-card">
         <header><h2>기능 이용 흐름</h2><span>시작 → 완료</span></header>
         <div id="operator-funnel" class="operator-funnel"></div>
       </article>
+    </section>
+
+    <section id="operator-panel-performance" role="tabpanel" aria-labelledby="operator-tab-performance" data-operator-panel="performance" hidden>
+      <div class="operator-system-summary operator-performance-summary">
+        <article class="operator-health-card"><span>평균 페이지 표시</span><strong id="performance-average">-</strong><small>DOMContentLoaded 기준</small></article>
+        <article class="operator-health-card"><span>측정 표본</span><strong id="performance-samples">-</strong><small>익명 브라우저 측정</small></article>
+        <article class="operator-health-card"><span>가장 느린 페이지</span><strong id="performance-slowest">-</strong><small id="performance-slowest-meta">측정 대기 중</small></article>
+        <article class="operator-health-card"><span>체감 상태</span><strong id="performance-state">확인 중</strong><small id="performance-state-meta">배포 후 실제 사용자 데이터를 기준으로 판단합니다.</small></article>
+      </div>
+      <div class="operator-grid-2">
+        <article class="operator-card">
+          <header><div><h2>페이지 표시 속도</h2><small>느린 페이지부터 · 평균값</small></div></header>
+          <ol id="operator-performance-pages" class="operator-rank-list operator-performance-list"></ol>
+        </article>
+        <article class="operator-card operator-performance-guide">
+          <header><h2>읽는 방법</h2><span>실사용 브라우저 기준</span></header>
+          <div class="operator-guide-grid">
+            <div><b>빠름</b><strong>0~500ms</strong><small>메뉴 이동이 즉시 느껴지는 구간</small></div>
+            <div><b>보통</b><strong>501~1,000ms</strong><small>네트워크에 따라 짧은 지연이 느껴질 수 있음</small></div>
+            <div><b>느림</b><strong>1,001ms 이상</strong><small>공통 스크립트·API·페이지 자산 점검 권장</small></div>
+          </div>
+          <p>개인 식별 정보 없이 페이지 경로와 표시 완료 시간만 집계합니다. 표본이 적을 때는 단일 기기나 네트워크 영향이 크게 보일 수 있습니다.</p>
+        </article>
+      </div>
     </section>
 
     <section id="operator-panel-feedback" role="tabpanel" aria-labelledby="operator-tab-feedback" data-operator-panel="feedback" hidden>
@@ -107,6 +136,7 @@
             <input id="operator-feedback-search" type="search" placeholder="내용·닉네임·ID 검색" aria-label="피드백 검색">
             <select id="operator-feedback-status-filter" aria-label="피드백 상태 필터"><option value="all">모든 상태</option><option value="new">새로 들어옴</option><option value="reviewing">확인 중</option><option value="planned">반영 예정</option><option value="done">완료</option><option value="archived">보관</option></select>
             <select id="operator-feedback-category-filter" aria-label="피드백 종류 필터"><option value="all">모든 종류</option><option value="bug">버그 신고</option><option value="inconvenience">불편한 점</option><option value="feature">기능 제안</option><option value="design">디자인 의견</option><option value="content">콘텐츠 요청</option><option value="other">기타</option></select>
+            <select id="operator-feedback-priority-filter" aria-label="피드백 우선순위 필터"><option value="all">모든 우선순위</option><option value="high">높음</option><option value="normal">보통</option><option value="low">낮음</option></select>
             <select id="operator-feedback-sort" aria-label="피드백 정렬"><option value="newest">최신순</option><option value="oldest">오래된순</option></select>
           </div>
           <div id="operator-feedback-list" class="operator-feedback-list"></div>
@@ -114,10 +144,18 @@
         <article class="operator-card operator-feedback-detail">
           <div id="operator-feedback-empty"><h2>피드백을 선택하세요</h2><p>닉네임은 선택사항이며 입력하지 않은 경우 익명으로 표시됩니다.</p></div>
           <div id="operator-feedback-content" hidden>
-            <div class="operator-feedback-detail-head"><div><span id="feedback-category"></span><h2 id="feedback-id"></h2></div><select id="feedback-status"><option value="new">새로 들어옴</option><option value="reviewing">확인 중</option><option value="planned">반영 예정</option><option value="done">완료</option><option value="archived">보관</option></select></div>
+            <div class="operator-feedback-detail-head"><div><span id="feedback-category"></span><h2 id="feedback-id"></h2></div><div class="operator-feedback-detail-controls"><select id="feedback-priority" aria-label="피드백 우선순위"><option value="high">높음</option><option value="normal">보통</option><option value="low">낮음</option></select><select id="feedback-status"><option value="new">새로 들어옴</option><option value="reviewing">확인 중</option><option value="planned">반영 예정</option><option value="done">완료</option><option value="archived">보관</option></select></div></div>
             <p id="feedback-message" class="operator-feedback-message"></p>
             <dl id="feedback-meta" class="operator-feedback-meta"></dl>
-            <div class="operator-feedback-memo"><label for="feedback-memo">운영자 메모</label><textarea id="feedback-memo" rows="5" placeholder="처리 내용, 관련 업데이트, 확인할 사항 등을 기록하세요."></textarea><button id="feedback-memo-save" type="button">메모 저장</button></div>
+            <div class="operator-feedback-memo">
+              <label for="feedback-tags">태그 <small>쉼표로 구분 · 최대 8개</small></label>
+              <input id="feedback-tags" type="text" placeholder="예: 타로, 모바일, UI">
+              <label for="feedback-related-update">관련 업데이트</label>
+              <input id="feedback-related-update" type="text" placeholder="예: #238 · 2026-09-22 업데이트">
+              <label for="feedback-memo">운영자 메모</label>
+              <textarea id="feedback-memo" rows="5" placeholder="처리 내용, 확인할 사항 등을 기록하세요."></textarea>
+              <button id="feedback-memo-save" type="button">관리 정보 저장</button>
+            </div>
           </div>
         </article>
       </div>
@@ -142,6 +180,8 @@
             <div><dt>Production SHA</dt><dd id="system-sha">-</dd></div>
             <div><dt>GitHub main SHA</dt><dd id="system-main-sha">-</dd></div>
             <div><dt>배포 URL</dt><dd id="system-url">-</dd></div>
+            <div><dt>Vercel 상태</dt><dd id="system-vercel-status">-</dd></div>
+            <div><dt>자동 재시도</dt><dd id="system-retry-at">-</dd></div>
             <div><dt>Git 저장소 크기 <small>(참고)</small></dt><dd id="system-repo-size">-</dd></div>
             <div><dt>Redis 키 수</dt><dd id="system-redis-keys">-</dd></div>
             <div><dt>Redis 메모리</dt><dd id="system-redis-memory">-</dd></div>
@@ -156,6 +196,10 @@
         <article class="operator-card">
           <header><h2>핵심 API 응답</h2><span>실제 서버 요청 · 최대 3.5초</span></header>
           <div id="operator-endpoint-health" class="operator-service-health operator-endpoint-health"></div>
+        </article>
+        <article class="operator-card operator-health-history-card">
+          <header><h2>운영 상태 변경 이력</h2><span>상태가 바뀐 시점만 기록</span></header>
+          <div id="operator-health-history" class="operator-event-list"><p class="operator-empty">상태 이력을 불러오고 있습니다.</p></div>
         </article>
         <article class="operator-card operator-usage-card">
           <header><h2>Vercel 사용량</h2><a href="https://vercel.com/gkzero0-9465/chunbong-fansite" target="_blank" rel="noopener">Vercel 열기 ↗</a></header>
@@ -176,6 +220,7 @@
         </dl>
         <p>GitHub 또는 이메일 중 하나만 인증해도 동일한 소유주 권한으로 접속합니다. 운영자 API는 서버 세션이 없으면 데이터를 반환하지 않습니다.</p>
         <div class="operator-session-section"><h3>활성 세션</h3><div id="operator-session-list" class="operator-session-list"></div></div>
+        <div class="operator-session-section"><div class="operator-section-title-row"><h3>최근 보안 활동</h3><button id="operator-security-refresh" type="button">새로고침</button></div><div id="operator-security-log" class="operator-event-list"><p class="operator-empty">보안 활동을 불러오고 있습니다.</p></div></div>
         <button id="operator-logout-all" class="operator-danger" type="button">모든 기기에서 로그아웃</button>
       </article>
     </section>

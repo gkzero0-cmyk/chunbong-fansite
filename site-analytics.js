@@ -26,6 +26,13 @@ async function flush({beacon=false}={}){
  sending=true;try{await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:payload,keepalive:true})}catch{}finally{sending=false;if(queue.length)setTimeout(flush,500)}
 }
 add({type:'page_view',device:device(),pwa:pwa(),theme:theme(),visitorState});
+function reportNavigationTiming(){
+ const entry=performance.getEntriesByType?.('navigation')?.[0];
+ const ms=Math.round(Number(entry?.domContentLoadedEventEnd||entry?.duration||0));
+ if(ms>0&&ms<=15000)add({type:'navigation_timing',durationMs:ms});
+}
+if(document.readyState==='complete')setTimeout(reportNavigationTiming,0);
+else window.addEventListener('load',()=>setTimeout(reportNavigationTiming,0),{once:true});
 document.addEventListener('click',event=>{
  const target=event.target.closest('a,button');if(!target)return;
  const nav=target.closest('.main-nav,.pwa-app-tabbar,.pwa-app-more-grid');
