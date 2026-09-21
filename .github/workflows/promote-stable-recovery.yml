@@ -1,0 +1,60 @@
+name: Promote validated stable recovery
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/promote-stable-recovery.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PREVIEW_URL: https://chunbong-fansite-em424ew8j-gkzero0-9465.vercel.app
+      EXPECTED_SHA: 0e2d9287610b195ec29477bc137d7210fbc2dbcc
+      PROD_URL: https://chunbong-fansite.vercel.app
+      VERCEL_SCOPE: gkzero0-9465
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - name: Require Vercel token
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${VERCEL_TOKEN:-}"
+
+      - name: Verify stable artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          body="$(curl -fsSL -H 'cache-control: no-cache' "$PREVIEW_URL/api/version?_ts=$(date +%s)")"
+          actual="$(printf '%s' "$body" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(JSON.parse(s).sha||'')}catch{}})")"
+          test "$actual" = "$EXPECTED_SHA"
+          curl -fsSL -H 'cache-control: no-cache' "$PREVIEW_URL/operator.html?_ts=$(date +%s)" | grep -Fq 'operator-attention-list'
+          curl -fsSL -H 'cache-control: no-cache' "$PREVIEW_URL/service-worker.js?_ts=$(date +%s)" | grep -Fq 'chunbong-pwa-20260922-v29'
+          echo "Validated stable artifact $actual"
+
+      - name: Promote existing deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes vercel@latest promote "$PREVIEW_URL" --yes --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
+
+      - name: Verify production alias
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 24); do
+            body="$(curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/api/version?_ts=$(date +%s)" || true)"
+            actual="$(printf '%s' "$body" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(JSON.parse(s).sha||'')}catch{}})")"
+            if [ "$actual" = "$EXPECTED_SHA" ]; then
+              echo "Production promoted to $actual"
+              exit 0
+            fi
+            echo "attempt=$attempt actual=${actual:-missing}"
+            sleep 5
+          done
+          exit 1
