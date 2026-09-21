@@ -356,6 +356,7 @@ async function mobileAppShell(browser){
     const detail=page.locator('[data-data-view-button="detail"]');
     if(await detail.count())await detail.click();
     await page.waitForTimeout(100);
+    if(MOCK)await page.waitForFunction(()=>document.querySelector('#data-soop-daily-table .data-detail-row:not(.data-detail-header)'));
     const table=page.locator('#data-soop-daily-table');
     if(await table.count()){
       const overflow=await table.evaluate(el=>el.scrollWidth-el.clientWidth);
@@ -363,7 +364,8 @@ async function mobileAppShell(browser){
     }
     const calendarTab=page.locator('[data-soop-view-tab="calendar"]');
     if(await calendarTab.count())await calendarTab.click();
-    await page.waitForTimeout(100);
+    if(MOCK)await page.waitForFunction(()=>document.querySelector('.data-calendar-wrap [data-calendar-date]'));
+    else await page.waitForTimeout(100);
     const cal=page.locator('.data-calendar-wrap');
     if(await cal.count()){
       const overflow=await cal.evaluate(el=>el.scrollWidth-el.clientWidth);
