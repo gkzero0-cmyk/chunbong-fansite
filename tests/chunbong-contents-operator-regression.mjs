@@ -21,3 +21,14 @@ assert.match(operatorHtml,/data-operator-panel="contents"/);
 assert.match(operatorHtml,/콘텐츠 아카이브/);
 assert.match(operatorJs,/loadOperatorContents/);
 for(const text of ['operator-content-archive','초안 저장','공개하기','정보 충돌','원문 URL']) assert.ok(operatorContents.includes(text),text);
+
+assert.equal(typeof archive._internals.mergeArchiveRows,'function','seed/stored merge helper missing');
+const seedPublished={...base,id:'leopel',title:'시드 레오펠',published:true};
+const storedOther={...base,id:'other',title:'운영자 콘텐츠',published:true};
+const storedOverride={...base,id:'leopel',title:'운영자 레오펠',published:true};
+let merged=archive._internals.mergeArchiveRows([seedPublished],[storedOther]);
+assert.deepEqual(merged.map(item=>item.id).sort(),['leopel','other'],'stored records must not hide verified seed records');
+merged=archive._internals.mergeArchiveRows([seedPublished],[storedOverride]);
+assert.equal(merged.find(item=>item.id==='leopel').title,'운영자 레오펠','stored published record should override the seed with the same id');
+assert.match(String(archive._internals.DRAFT_PREFIX||''),/content-archive:draft:v1:/,'draft storage must be separate from public records');
+assert.match(String(archive._internals.DRAFT_INDEX||''),/content-archive:draft-index:v1/,'draft index missing');
