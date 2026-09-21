@@ -39,6 +39,7 @@ assert.match(api,/set\('scope','read:user'\)/,'GitHub OAuth must request only th
 assert.doesNotMatch(api,/read:user user:email/,'GitHub OAuth must not request email scope');
 assert.match(api,/api\.github\.com\/user/,'GitHub identity verification missing');
 assert.match(api,/accounts:lookup/,'Firebase ID token lookup missing');
+assert.match(api,/user\.emailVerified!==true/,'Firebase owner email must be explicitly verified');
 assert.match(api,/sha256/,'owner email comparison must use hash');
 assert.match(api,/operator:session-secret:v1/,'server-managed session secret missing');
 assert.match(api,/operator:analytics:start:v1/,'analytics collection start marker missing');
