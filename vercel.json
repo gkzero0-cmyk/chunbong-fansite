@@ -19,6 +19,23 @@
   },
   "headers": [
     {
+      "source": "/operator.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+        }
+      ]
+    },
+    {
       "source": "/manifest.webmanifest",
       "headers": [
         {
@@ -91,6 +108,11 @@
       "source": "/timeline",
       "destination": "/history.html",
       "permanent": true
+    },
+    {
+      "source": "/operator",
+      "destination": "/operator.html",
+      "permanent": false
     }
   ]
 }
