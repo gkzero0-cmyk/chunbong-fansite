@@ -29,3 +29,11 @@ assert.ok(Array.isArray(seed.items));
 for(const item of seed.items) assert.deepEqual(validateArchiveItem(normalizeArchiveItem(item),{publishing:true}),[]);
 
 console.log('chunbong contents data regression passed');
+
+const archiveApi=require('../lib/chunbong-content-archive-api.js');
+const rows=archiveApi._internals.publicRows([
+  {...monthOnly,id:'visible',published:true},
+  {...monthOnly,id:'draft',published:false}
+]);
+assert.deepEqual(rows.map(row=>row.id),['visible']);
+assert.ok(!('verification' in rows[0]));
