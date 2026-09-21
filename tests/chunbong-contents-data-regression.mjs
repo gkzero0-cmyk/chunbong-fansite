@@ -82,7 +82,7 @@ assert.equal(koreanId.id,'그냥서버','Korean archive ids created by the opera
 
 
 const publishedIds=new Set(seed.items.filter(item=>item.published===true).map(item=>item.id));
-for(const id of ['leopel','justserver-moneygame','psy-emotion-song-contest']){
+for(const id of ['leopel','justserver-moneygame','psy-emotion-song-contest-2026']){
   assert.ok(publishedIds.has(id),`verified archive seed missing ${id}`);
 }
 const justserver=seed.items.find(item=>item.id==='justserver-moneygame');
@@ -91,7 +91,7 @@ assert.equal(justserver?.endDate,'2026-07-15');
 assert.ok((justserver?.sources||[]).some(source=>/sooplive\.com/.test(source.url)),'JustServer should include a SOOP source');
 assert.match(String(justserver?.heroImage?.src||''),/^\/assets\/chunbong-contents\//);
 
-const psyContest=seed.items.find(item=>item.id==='psy-emotion-song-contest');
+const psyContest=seed.items.find(item=>item.id==='psy-emotion-song-contest-2026');
 assert.equal(psyContest?.startDate,'2026-04-28');
 assert.ok((psyContest?.sources||[]).length>=2,'song contest should be cross-checked');
 assert.match(String(psyContest?.heroImage?.src||''),/^\/assets\/chunbong-contents\//);
