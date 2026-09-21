@@ -51,3 +51,10 @@ assert.match(homeOverview,/get\('chunbong-contents'\)/,'home archive preview mus
 assert.match(homeOverview,/data-home-content-list/,'home archive renderer hook missing');
 assert.match(homeRefresh,/\.home-content-archive-grid/,'home archive responsive grid styles missing');
 assert.match(homeRefresh,/\.home-content-card/,'home archive card styles missing');
+
+
+const sitemap=read('sitemap.xml');
+const changelog=read('changelog-data.js');
+assert.match(sitemap,/chunbong-contents\.html/,'content archive should be discoverable in sitemap');
+assert.match(changelog,/2026-09-22/,'latest archive work should be in changelog');
+assert.match(changelog,/춘타클/,'ChunTaClass archive addition should be documented');

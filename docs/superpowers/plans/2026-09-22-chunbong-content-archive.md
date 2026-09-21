@@ -1,6 +1,6 @@
 # 춘봉 콘텐츠 아카이브 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 춘봉이 직접 주최·기획·개최한 콘텐츠를 이미지 중심으로 탐색하고, 출처가 검증된 타임라인·영상·게시글·참가자·결과·이미지를 볼 수 있으며 운영자 센터에서 초안/검증/공개를 관리하는 아카이브를 구축한다.
 
@@ -75,7 +75,7 @@
 - Produces: `normalizeArchiveItem(raw)`, `validateArchiveItem(item, { publishing })`, `toPublicArchiveItem(item)`, `formatArchiveDate(value, precision)`
 - Consumes: no earlier task.
 
-- [ ] **Step 1: 실패하는 데이터 회귀 테스트 작성**
+- [x] **Step 1: 실패하는 데이터 회귀 테스트 작성**
 
 ```js
 import assert from 'node:assert/strict';
@@ -120,12 +120,12 @@ for(const item of seed.items) assert.deepEqual(validateArchiveItem(normalizeArch
 console.log('chunbong contents data regression passed');
 ```
 
-- [ ] **Step 2: 테스트를 실행해 실패 확인**
+- [x] **Step 2: 테스트를 실행해 실패 확인**
 
 Run: `node tests/chunbong-contents-data-regression.mjs`  
 Expected: FAIL because `lib/chunbong-content-archive-core.js` does not exist.
 
-- [ ] **Step 3: 최소 스키마/검증 구현**
+- [x] **Step 3: 최소 스키마/검증 구현**
 
 ```js
 'use strict';
@@ -205,12 +205,12 @@ Create `data/chunbong-contents-seed.json` initially as:
 
 The empty seed is intentional until Task 8 verifies official sources; do not insert guessed history.
 
-- [ ] **Step 4: 테스트 통과 확인**
+- [x] **Step 4: 테스트 통과 확인**
 
 Run: `node tests/chunbong-contents-data-regression.mjs`  
 Expected: PASS.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add lib/chunbong-content-archive-core.js data/chunbong-contents-seed.json tests/chunbong-contents-data-regression.mjs
@@ -230,7 +230,7 @@ git commit -m "feat: add Chunbong archive data model"
 - Consumes: Task 1 `normalizeArchiveItem`, `validateArchiveItem`, `toPublicArchiveItem`
 - Produces: `handlePublicList(req,res)`, `handlePublicDetail(req,res)`
 
-- [ ] **Step 1: 공개 API 테스트 추가**
+- [x] **Step 1: 공개 API 테스트 추가**
 
 Append assertions that import `_internals` and verify:
 - no Redis → seed items returned
@@ -250,12 +250,12 @@ assert.deepEqual(rows.map(row=>row.id),['visible']);
 assert.ok(!('verification' in rows[0]));
 ```
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `node tests/chunbong-contents-data-regression.mjs`  
 Expected: FAIL because archive API module does not exist.
 
-- [ ] **Step 3: API 모듈 구현**
+- [x] **Step 3: API 모듈 구현**
 
 Use the same environment names as the existing operator storage:
 
@@ -322,7 +322,7 @@ if(type==='chunbong-content') return contentArchive.handlePublicDetail(req,res);
 
 Place these before the generic cached content block so the archive module controls its own cache headers.
 
-- [ ] **Step 4: 테스트**
+- [x] **Step 4: 테스트**
 
 Run:
 ```bash
@@ -331,7 +331,7 @@ node tests/vercel-function-count-regression.mjs
 ```
 Expected: PASS; function count unchanged.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add lib/chunbong-content-archive-api.js api/content.js tests/chunbong-contents-data-regression.mjs
@@ -358,7 +358,7 @@ git commit -m "feat: expose Chunbong archive content API"
   - `[data-archive-detail]`
   - `[data-archive-lightbox]`
 
-- [ ] **Step 1: 실패하는 마크업 회귀 테스트 작성**
+- [x] **Step 1: 실패하는 마크업 회귀 테스트 작성**
 
 ```js
 import assert from 'node:assert/strict';
@@ -377,12 +377,12 @@ assert.match(css,/\[data-theme="light"\]/);
 console.log('chunbong contents page regression passed');
 ```
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `node tests/chunbong-contents-regression.mjs`  
 Expected: FAIL because page files do not exist.
 
-- [ ] **Step 3: HTML 셸 작성**
+- [x] **Step 3: HTML 셸 작성**
 
 The page must use the same header/footer structure as other first-class pages and load:
 
@@ -418,7 +418,7 @@ The page must use the same header/footer structure as other first-class pages an
 <script src="chunbong-contents.js"></script>
 ```
 
-- [ ] **Step 4: CSS 구현**
+- [x] **Step 4: CSS 구현**
 
 Required layout behavior:
 - desktop grid `repeat(3,minmax(0,1fr))`
@@ -430,7 +430,7 @@ Required layout behavior:
 - lightbox max dimensions `max-width:min(94vw,1400px); max-height:86vh; object-fit:contain`
 - reduced motion disables transforms/animations
 
-- [ ] **Step 5: 디자인 토큰 추가**
+- [x] **Step 5: 디자인 토큰 추가**
 
 In `site-design-system.css`:
 
@@ -441,7 +441,7 @@ In `site-design-system.css`:
 body[data-page="contents"]{--page-accent:var(--accent-contents)}
 ```
 
-- [ ] **Step 6: 테스트**
+- [x] **Step 6: 테스트**
 
 Run:
 ```bash
@@ -450,7 +450,7 @@ node tests/site-design-system-regression.mjs
 ```
 Expected: PASS.
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 git add chunbong-contents.html chunbong-contents.css site-design-system.css tests/chunbong-contents-regression.mjs
@@ -470,7 +470,7 @@ git commit -m "feat: add Chunbong archive page shell"
 - Consumes: Task 2 public APIs and Task 3 DOM hooks
 - Produces: browser-visible archive behavior; URL contract `?id=<slug>&category=<key>&year=<yyyy>&q=<text>&sort=<newest|oldest>`
 
-- [ ] **Step 1: 런타임 회귀 테스트 추가**
+- [x] **Step 1: 런타임 회귀 테스트 추가**
 
 Assert source contains:
 ```js
@@ -499,12 +499,12 @@ assert.equal(formatDate('2026-06','month'),'2026년 6월');
 assert.equal(filterItems([{title:'레오펠',aliases:[],participants:['춘봉'],category:'minecraft',startDate:'2025-06'}],{q:'춘봉',category:'all',year:'all'}).length,1);
 ```
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `node tests/chunbong-contents-regression.mjs`  
 Expected: FAIL because runtime does not exist.
 
-- [ ] **Step 3: 목록 런타임 구현**
+- [x] **Step 3: 목록 런타임 구현**
 
 Core filtering must be deterministic:
 
@@ -530,7 +530,7 @@ Card images:
 ```
 and attach `error` handler to replace the image wrapper with a non-image placeholder while preserving title/meta.
 
-- [ ] **Step 4: 상세 렌더링 구현**
+- [x] **Step 4: 상세 렌더링 구현**
 
 When `id` exists:
 - hide list browser
@@ -545,7 +545,7 @@ When `id` exists:
 
 Do not render guessed labels; unknown date calls `formatDate('', 'unknown')` → `날짜 확인 중`.
 
-- [ ] **Step 5: 라이트박스 구현**
+- [x] **Step 5: 라이트박스 구현**
 
 ```js
 function openLightbox(src,alt,sourceUrl=''){
@@ -561,11 +561,11 @@ document.addEventListener('keydown',event=>{
 });
 ```
 
-- [ ] **Step 6: URL 상태와 뒤로가기**
+- [x] **Step 6: URL 상태와 뒤로가기**
 
 On search/filter/sort use `history.replaceState` and preserve `id` only in detail mode. Listen for `popstate` and re-render from URL.
 
-- [ ] **Step 7: 테스트**
+- [x] **Step 7: 테스트**
 
 Run:
 ```bash
@@ -574,7 +574,7 @@ node tests/navigation-performance-regression.mjs
 ```
 Expected: PASS.
 
-- [ ] **Step 8: 커밋**
+- [x] **Step 8: 커밋**
 
 ```bash
 git add chunbong-contents.js tests/chunbong-contents-regression.mjs tests/chunbong-contents-browser-smoke.mjs
@@ -597,7 +597,7 @@ git commit -m "feat: make Chunbong archive searchable and visual"
 - Consumes: Task 3 public page
 - Produces: first-class navigation entry and offline shell discovery
 
-- [ ] **Step 1: 실패 테스트 추가**
+- [x] **Step 1: 실패 테스트 추가**
 
 ```js
 assert.match(read('index.html'),/href="chunbong-contents\.html"/);
@@ -610,7 +610,7 @@ Image test must assert:
 assert.doesNotMatch(read('chunbong-contents.js'),/\/api\/image\?[^"' ]*(?:width|w)=/i);
 ```
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run:
 ```bash
@@ -618,7 +618,7 @@ node tests/site-smoke.mjs
 node tests/image-quality-preservation-regression.mjs
 ```
 
-- [ ] **Step 3: 공통 내비게이션 통합**
+- [x] **Step 3: 공통 내비게이션 통합**
 
 Add `data-nav="contents"` link to page headers using existing patterns, and update group declaration:
 
@@ -637,7 +637,7 @@ if(nav&&!nav.querySelector('[data-nav="contents"]')){
 }
 ```
 
-- [ ] **Step 4: 홈 전체 메뉴 카드 추가**
+- [x] **Step 4: 홈 전체 메뉴 카드 추가**
 
 Add:
 ```html
@@ -646,7 +646,7 @@ Add:
 
 Do not promote it to the four primary feature cards until enough archive data exists.
 
-- [ ] **Step 5: PWA cache update**
+- [x] **Step 5: PWA cache update**
 
 Bump cache version one step and include:
 - `/chunbong-contents.html`
@@ -655,7 +655,7 @@ Bump cache version one step and include:
 
 Do not pre-cache archive gallery images; they remain runtime stale-while-revalidate image cache.
 
-- [ ] **Step 6: 테스트**
+- [x] **Step 6: 테스트**
 
 Run:
 ```bash
@@ -666,7 +666,7 @@ node tests/image-quality-preservation-regression.mjs
 node tests/pwa-regression.mjs
 ```
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 git add site-shell.js index.html service-worker.js tests/site-smoke.mjs tests/multipage-smoke.mjs tests/image-quality-preservation-regression.mjs
@@ -691,7 +691,7 @@ git commit -m "feat: integrate Chunbong archive into fan hub"
   - `type=operator-content-archive-delete` POST
   - `type=operator-content-archive-publish` POST
 
-- [ ] **Step 1: 실패하는 운영자 API 테스트 작성**
+- [x] **Step 1: 실패하는 운영자 API 테스트 작성**
 
 Static assertions:
 ```js
@@ -714,12 +714,12 @@ assert.throws(()=>prepareForSave({...monthOnly,sources:[],published:true},{publi
 assert.throws(()=>prepareForSave({...monthOnly,verification:{state:'needs_review',conflicts:[{field:'date'}]}},{publish:true}),/unresolved_conflict/);
 ```
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `node tests/chunbong-contents-operator-regression.mjs`  
 Expected: FAIL.
 
-- [ ] **Step 3: 안전한 auth helper export**
+- [x] **Step 3: 안전한 auth helper export**
 
 At the bottom of `lib/operator-center-api.js`, expand `_internals` only:
 
@@ -735,7 +735,7 @@ _internals:{
 
 Do not create a new public auth endpoint and do not expose session secrets.
 
-- [ ] **Step 4: archive operator CRUD 구현**
+- [x] **Step 4: archive operator CRUD 구현**
 
 In `lib/chunbong-content-archive-api.js`:
 
@@ -763,7 +763,7 @@ Write handlers that:
 - never publish validation failures
 - draft save may keep `needs_review` and conflicts
 
-- [ ] **Step 5: `api/content.js` 디스패치**
+- [x] **Step 5: `api/content.js` 디스패치**
 
 ```js
 if(type==='operator-content-archive') return contentArchive.handleOperatorList(req,res);
@@ -772,7 +772,7 @@ if(type==='operator-content-archive-delete') return contentArchive.handleOperato
 if(type==='operator-content-archive-publish') return contentArchive.handleOperatorPublish(req,res);
 ```
 
-- [ ] **Step 6: 테스트**
+- [x] **Step 6: 테스트**
 
 Run:
 ```bash
@@ -782,7 +782,7 @@ node tests/vercel-function-count-regression.mjs
 ```
 Expected: PASS.
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 git add lib/operator-center-api.js lib/chunbong-content-archive-api.js api/content.js tests/chunbong-contents-operator-regression.mjs
@@ -805,7 +805,7 @@ git commit -m "feat: add protected Chunbong archive management API"
 - Consumes: Task 6 operator APIs
 - Produces: owner-only list/editor/validation/publish UI
 
-- [ ] **Step 1: 실패 UI 테스트 추가**
+- [x] **Step 1: 실패 UI 테스트 추가**
 
 Require:
 ```js
@@ -819,11 +819,11 @@ assert.match(operatorContents,/정보 충돌/);
 assert.match(operatorContents,/원문 URL/);
 ```
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `node tests/chunbong-contents-operator-regression.mjs`.
 
-- [ ] **Step 3: 운영자 탭/패널 마크업 추가**
+- [x] **Step 3: 운영자 탭/패널 마크업 추가**
 
 Add tab after overview:
 
@@ -847,7 +847,7 @@ Panel:
 </section>
 ```
 
-- [ ] **Step 4: lazy runtime 연결**
+- [x] **Step 4: lazy runtime 연결**
 
 In `operator.js`, extend tab activation:
 
@@ -862,7 +862,7 @@ function loadOperatorContents(){
 if(target==='contents')await loadOperatorContents();
 ```
 
-- [ ] **Step 5: editor 구현**
+- [x] **Step 5: editor 구현**
 
 `operator-contents.js` must:
 - load list only after owner dashboard is authenticated
@@ -877,14 +877,14 @@ if(target==='contents')await loadOperatorContents();
   - `unresolved_conflict` → “확인되지 않은 정보 충돌이 남아 있어 공개할 수 없습니다.”
   - `duplicate_material_url` → “같은 원문 URL이 두 번 등록되어 있습니다.”
 
-- [ ] **Step 6: 관리 CSS 구현**
+- [x] **Step 6: 관리 CSS 구현**
 
 Desktop: list/editor `minmax(280px,.7fr) minmax(0,1.3fr)`.  
 <=900px: one column.  
 Repeaters use bordered rows; destructive delete buttons visually distinct but not oversized.  
 All inputs meet readable dark/light contrast.
 
-- [ ] **Step 7: 테스트**
+- [x] **Step 7: 테스트**
 
 Run:
 ```bash
@@ -893,7 +893,7 @@ node tests/operator-center-regression.mjs
 node tests/accessibility-final-regression.mjs
 ```
 
-- [ ] **Step 8: 커밋**
+- [x] **Step 8: 커밋**
 
 ```bash
 git add operator.html operator.js operator.css operator-contents.js tests/chunbong-contents-operator-regression.mjs tests/operator-center-regression.mjs
@@ -912,7 +912,7 @@ git commit -m "feat: manage content archive in operator center"
 - Consumes: Task 1 schema
 - Produces: first useful public archive records
 
-- [ ] **Step 1: 후보별 1차 자료 조사**
+- [x] **Step 1: 후보별 1차 자료 조사**
 
 For each candidate `레오펠`, `그냥서버`, `춘봉 주최 노래대회`, search current public sources and collect only:
 - 춘봉 SOOP official posts
@@ -923,7 +923,7 @@ For each candidate `레오펠`, `그냥서버`, `춘봉 주최 노래대회`, se
 
 Do not derive exact dates, participant counts, winners, or role claims from memory.
 
-- [ ] **Step 2: 공개 기준을 통과하는 후보만 seed에 입력**
+- [x] **Step 2: 공개 기준을 통과하는 후보만 seed에 입력**
 
 Each published item must include at least:
 ```json
@@ -951,14 +951,14 @@ Each published item must include at least:
 
 The example dates above are schema examples only; implementation must replace them with verified values or use `month/year/unknown` precision.
 
-- [ ] **Step 3: 불확실 항목 처리**
+- [x] **Step 3: 불확실 항목 처리**
 
 If a candidate lacks enough first-party evidence:
 - do not publish it
 - either omit it from seed or include only as `published:false`, `verification.state:"needs_review"` after Task 6 storage is available
 - do not invent a hero image
 
-- [ ] **Step 4: 데이터 테스트**
+- [x] **Step 4: 데이터 테스트**
 
 Run:
 ```bash
@@ -966,7 +966,7 @@ node tests/chunbong-contents-data-regression.mjs
 ```
 Expected: every published seed record has zero validation errors.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add data/chunbong-contents-seed.json tests/chunbong-contents-data-regression.mjs
@@ -985,7 +985,7 @@ git commit -m "data: seed verified Chunbong content archive"
 - Consumes all previous tasks
 - Produces release-ready branch
 
-- [ ] **Step 1: 전체 정적/Node 회귀 실행**
+- [x] **Step 1: 전체 정적/Node 회귀 실행**
 
 Run:
 ```bash
@@ -1004,7 +1004,7 @@ node tests/pwa-regression.mjs
 ```
 Expected: all PASS.
 
-- [ ] **Step 2: Preview 배포**
+- [x] **Step 2: Preview 배포**
 
 Deploy the feature branch to a Vercel Preview, not Production.
 
@@ -1014,7 +1014,7 @@ Verify:
 - known detail id HTTP 200
 - nonexistent detail id HTTP 404
 
-- [ ] **Step 3: 데스크톱 브라우저 검증 (1440×900)**
+- [x] **Step 3: 데스크톱 브라우저 검증 (1440×900)**
 
 Check:
 - navigation entry visible under 기록
@@ -1028,7 +1028,7 @@ Check:
 - back navigation restores filters
 - console has no uncaught errors
 
-- [ ] **Step 4: 모바일 브라우저 검증 (390×844)**
+- [x] **Step 4: 모바일 브라우저 검증 (390×844)**
 
 Check:
 - no horizontal overflow
@@ -1040,7 +1040,7 @@ Check:
 - touch targets readable
 - header/menu remains usable
 
-- [ ] **Step 5: 운영자 브라우저 검증**
+- [x] **Step 5: 운영자 브라우저 검증**
 
 After authentication:
 - 콘텐츠 아카이브 tab opens
@@ -1051,7 +1051,7 @@ After authentication:
 - published content appears on public page after refresh
 - delete/draft changes do not leak unvalidated content publicly
 
-- [ ] **Step 6: 최종 품질 점검**
+- [x] **Step 6: 최종 품질 점검**
 
 Use browser accessibility tree/console and verify:
 - all content images have alt
@@ -1060,14 +1060,14 @@ Use browser accessibility tree/console and verify:
 - reduced-motion does not rely on animation for state
 - no private operator data appears in public archive API
 
-- [ ] **Step 7: 최종 커밋**
+- [x] **Step 7: 최종 커밋**
 
 ```bash
 git add -A
 git commit -m "test: verify Chunbong content archive end to end"
 ```
 
-- [ ] **Step 8: 전체 브랜치 리뷰 후 main 통합**
+- [x] **Step 8: 전체 브랜치 리뷰 후 main 통합**
 
 Run a whole-branch review against:
 - spec

@@ -39,3 +39,8 @@ assert.deepEqual(archive._internals.withoutHidden([seedPublished],['leopel']),[]
 const archiveSource=fs.readFileSync(new URL('../lib/chunbong-content-archive-api.js',import.meta.url),'utf8');
 assert.match(archiveSource,/SADD['\",\s]+HIDDEN_KEY/,'delete must create a seed tombstone');
 assert.match(archiveSource,/SREM['\",\s]+HIDDEN_KEY/,'publish must clear a seed tombstone');
+
+
+for(const token of ['별칭','결과 · 회차 기록','data-result-row','data-move-row','공개 페이지 열기']) assert.ok(operatorContents.includes(token),token);
+assert.match(operatorContents,/item\.aliases=/,'operator must collect aliases');
+assert.match(operatorContents,/item\.results=/,'operator must collect results');

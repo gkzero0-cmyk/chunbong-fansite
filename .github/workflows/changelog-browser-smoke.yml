@@ -101,8 +101,8 @@ jobs:
           assert.match(await page.locator('.changelog-button').getAttribute('aria-label'),/새 업데이트 있음/);
 
           await page.goto(process.env.BASE_URL+'/changelog.html?_changelog='+Date.now(),{waitUntil:'domcontentloaded'});
-          await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-21');
-          assert.equal(await page.locator('.changelog-day').first().getAttribute('data-changelog-date'),'2026-09-21','latest curated/automatic changelog date must be first');
+          await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-22');
+          assert.equal(await page.locator('.changelog-day').first().getAttribute('data-changelog-date'),'2026-09-22','latest curated/automatic changelog date must be first');
           assert.equal(await page.locator('.changelog-day').last().getAttribute('data-changelog-date'),'2026-08-30');
           assert.ok(await page.locator(' #changelog-index-list a[data-changelog-index-date="2026-09-21"]').isVisible(),'automatic date index missing');
           assert.ok(await page.locator('#changelog-index-list a[data-changelog-index-date="2026-09-19"]').isVisible(),'curated date index missing');
@@ -119,16 +119,16 @@ jobs:
 
           archive={
             ...archive,
-            latest:{sha:refreshedSha,shortSha:'fedcba0',date:'2026-09-22',time:'2026-09-20T15:05:00Z',title:'add Chuntris practice mode',rawTitle:'feat: add Chuntris practice mode',type:'new'},
+            latest:{sha:refreshedSha,shortSha:'fedcba0',date:'2026-09-23',time:'2026-09-20T15:05:00Z',title:'add Chuntris practice mode',rawTitle:'feat: add Chuntris practice mode',type:'new'},
             groups:[
-              {date:'2026-09-22',items:[
-                {sha:refreshedSha,shortSha:'fedcba0',date:'2026-09-22',time:'2026-09-20T15:05:00Z',title:'add Chuntris practice mode',rawTitle:'feat: add Chuntris practice mode',type:'new',url:'#'}
+              {date:'2026-09-23',items:[
+                {sha:refreshedSha,shortSha:'fedcba0',date:'2026-09-23',time:'2026-09-20T15:05:00Z',title:'add Chuntris practice mode',rawTitle:'feat: add Chuntris practice mode',type:'new',url:'#'}
               ]},
               ...archive.groups
             ]
           };
           await page.evaluate(()=>{const base=Date.now();Date.now=()=>base+61_000;window.dispatchEvent(new Event('focus'));});
-          await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-22');
+          await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-23');
           assert.ok(await page.getByText('춘트리스 기능 추가',{exact:true}).count(),'focus refresh must add the newest grouped Korean update');
           assert.equal(await page.getByText('타로 기능 추가',{exact:true}).count(),1,'focus refresh must rebuild from curated data without duplicating existing automatic cards');
           await page.waitForFunction(key=>localStorage.getItem('chunbong-changelog-seen-v2')===key,refreshedSha);
@@ -140,10 +140,10 @@ jobs:
 
           archive={
             ...archive,
-            latest:{sha:newestSha,shortSha:'1111222',date:'2026-09-22',time:'2026-09-20T15:10:00Z',title:'fix mobile site header',rawTitle:'fix: mobile site header',type:'fixed'},
+            latest:{sha:newestSha,shortSha:'1111222',date:'2026-09-23',time:'2026-09-20T15:10:00Z',title:'fix mobile site header',rawTitle:'fix: mobile site header',type:'fixed'},
             groups:[
-              {date:'2026-09-22',items:[
-                {sha:newestSha,shortSha:'1111222',date:'2026-09-22',time:'2026-09-20T15:10:00Z',title:'fix mobile site header',rawTitle:'fix: mobile site header',type:'fixed',url:'#'},
+              {date:'2026-09-23',items:[
+                {sha:newestSha,shortSha:'1111222',date:'2026-09-23',time:'2026-09-20T15:10:00Z',title:'fix mobile site header',rawTitle:'fix: mobile site header',type:'fixed',url:'#'},
                 ...archive.groups[0].items
               ]},
               ...archive.groups.slice(1)
@@ -155,7 +155,7 @@ jobs:
 
           await page.setViewportSize({width:390,height:844});
           await page.goto(process.env.BASE_URL+'/changelog.html?_mobile='+Date.now(),{waitUntil:'domcontentloaded'});
-          await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-22');
+          await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-23');
           assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),true,'mobile changelog must not overflow horizontally');
           assert.ok(await page.locator('#changelog-index-list').isVisible(),'mobile date index missing');
 
