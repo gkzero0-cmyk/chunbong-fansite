@@ -64,28 +64,13 @@
     }
   };
 
-  const loadStyle=(href,dataKey)=>{
-    const selector='link['+dataKey+']';
-    if(document.querySelector(selector))return;
-    const link=document.createElement('link');link.rel='stylesheet';link.href=href;link.setAttribute(dataKey,'true');document.head.appendChild(link);
-  };
-  const loadScript=src=>{
-    if(document.querySelector('script[src="' + src + '"]')) return;
-    const script=document.createElement('script');script.src=src;script.defer=true;document.head.appendChild(script);
-  };
-  const runIdle=callback=>{
-    if('requestIdleCallback' in window)window.requestIdleCallback(callback,{timeout:1800});
-    else setTimeout(callback,650);
-  };
-  loadStyle('site-quality.css','data-site-quality');
-  loadScript('site-health.js');
-  loadScript('site-improvements.js');
-
+  const loadStyle=(href,key)=>{if(document.querySelector('link['+key+']'))return;const n=document.createElement('link');n.rel='stylesheet';n.href=href;n.setAttribute(key,'true');document.head.appendChild(n)};
+  const loadScript=src=>{if(document.querySelector('script[src="'+src+'"]'))return;const n=document.createElement('script');n.src=src;n.defer=true;document.head.appendChild(n)};
+  const runIdle=fn=>'requestIdleCallback'in window?requestIdleCallback(fn,{timeout:1800}):setTimeout(fn,650);
+  loadStyle('site-quality.css','data-site-quality');loadScript('site-health.js');loadScript('site-improvements.js');
   const personalPriorityPages=new Set(['home','myhub','vod','clips','youtube','tarot','minigames','chuntris','chunbak','chungwagame','chuncortile']);
   const loadPersonal=()=>{loadStyle('personal-hub.css','data-personal-hub-styles');loadScript('personal-hub.js')};
-  if(personalPriorityPages.has(document.body?.dataset?.page||''))loadPersonal();
-  else runIdle(loadPersonal);
-
+  personalPriorityPages.has(document.body?.dataset?.page||'')?loadPersonal():runIdle(loadPersonal);
   runIdle(()=>loadScript('site-meta.js'));
 })();
 (() => {
