@@ -103,6 +103,8 @@ function renderOperatorAttention(){
   const root=$('#operator-attention-list'),state=$('#operator-attention-state');if(!root||!state)return;
   const rows=[],dep=currentSystem?.deployment||{},endpoints=Array.isArray(currentSystem?.endpoints)?currentSystem.endpoints:[],services=currentSystem?.services||{};
   if(dep.synced===false)rows.push({level:'warn',title:'Production 동기화 필요',detail:'배포본 '+shortSha(dep.sha)+' · main '+shortSha(dep.mainSha),tab:'system'});
+  if(dep.rateLimited)rows.push({level:'warn',title:'Vercel 배포 제한',detail:dep.retryAfter?'안전 재시도 기준 '+new Date(dep.retryAfter).toLocaleString('ko-KR'):'새 배포가 제한되어 있습니다.',tab:'system'});
+  const perfAverage=Number(currentAnalytics?.performance?.averageMs)||0;if(perfAverage>1000)rows.push({level:'warn',title:'페이지 표시 속도 확인',detail:'선택 기간 평균 '+fmt(perfAverage)+'ms',tab:'performance'});
   const badEndpoints=endpoints.filter(row=>!row.ok);if(badEndpoints.length)rows.push({level:'bad',title:'API 응답 확인 필요',detail:badEndpoints.map(row=>row.label||row.path||'API').join(' · '),tab:'system'});
   const slow=endpoints.filter(row=>row.ok&&Number(row.ms)>=1500);if(slow.length)rows.push({level:'warn',title:'느린 API 감지',detail:slow.map(row=>(row.label||row.path||'API')+' '+fmt(row.ms)+'ms').join(' · '),tab:'system'});
   if(currentSystem&&(!services.analytics||!services.feedback||!services.push))rows.push({level:'warn',title:'서비스 설정 확인',detail:[!services.analytics&&'실사용 분석',!services.feedback&&'피드백 저장',!services.push&&'Push'].filter(Boolean).join(' · '),tab:'system'});
