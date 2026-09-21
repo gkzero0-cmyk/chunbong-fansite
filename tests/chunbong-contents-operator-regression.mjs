@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url);
+const archive=require('../lib/chunbong-content-archive-api.js');
+const content=fs.readFileSync(new URL('../api/content.js',import.meta.url),'utf8');
+assert.equal(typeof archive._internals.prepareForSave,'function','prepareForSave missing');
+const base={id:'sample',title:'샘플',category:'minecraft',role:'주최',status:'ended',startDate:'2026-06',datePrecision:'month',summary:'설명',sources:[{id:'s1',kind:'official',url:'https://www.sooplive.com/station/chunbongtv'}],verification:{state:'official',conflicts:[]},published:false};
+const draft=archive._internals.prepareForSave(base,{publish:false});
+assert.equal(draft.item.published,false);
+assert.throws(()=>archive._internals.prepareForSave({...base,sources:[]},{publish:true}),/published_source_required/);
+assert.throws(()=>archive._internals.prepareForSave({...base,verification:{state:'needs_review',conflicts:[{field:'date'}]}},{publish:true}),/unresolved_conflict/);
+for(const type of ['operator-content-archive','operator-content-archive-save','operator-content-archive-publish','operator-content-archive-delete']) assert.ok(content.includes(type),'missing '+type);
+console.log('chunbong contents operator API regression passed');
