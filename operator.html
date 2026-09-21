@@ -56,9 +56,9 @@
 
     <nav class="operator-tabs" role="tablist" aria-label="운영자 메뉴">
       <button id="operator-tab-overview" class="active" type="button" role="tab" aria-selected="true" aria-controls="operator-panel-overview" data-operator-tab="overview">개요</button>
-      <button id="operator-tab-feedback" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-feedback" data-operator-tab="feedback">피드백 <i id="operator-feedback-badge" hidden>0</i></button>
-      <button id="operator-tab-system" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-system" data-operator-tab="system">시스템 상태</button>
-      <button id="operator-tab-security" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-security" data-operator-tab="security">보안</button>
+      <button id="operator-tab-feedback" type="button" role="tab" tabindex="-1" aria-selected="false" aria-controls="operator-panel-feedback" data-operator-tab="feedback">피드백 <i id="operator-feedback-badge" hidden>0</i></button>
+      <button id="operator-tab-system" type="button" role="tab" tabindex="-1" aria-selected="false" aria-controls="operator-panel-system" data-operator-tab="system">시스템 상태</button>
+      <button id="operator-tab-security" type="button" role="tab" tabindex="-1" aria-selected="false" aria-controls="operator-panel-security" data-operator-tab="security">보안</button>
     </nav>
 
     <section class="operator-overall-status" id="operator-overall-status" aria-live="polite" aria-atomic="true">
@@ -87,11 +87,11 @@
       <div class="operator-grid-2 operator-insight-grid">
         <article class="operator-card">
           <header><h2>일별 이용량</h2><span class="operator-legend"><i class="is-pageview"></i>페이지뷰 <i class="is-visitor"></i>방문자</span></header>
-          <div id="operator-daily" class="operator-daily-chart" aria-label="일별 이용량 차트"></div>
+          <div id="operator-daily" class="operator-daily-chart" role="img" aria-label="일별 이용량 차트"></div>
         </article>
         <article class="operator-card">
           <header><h2>시간대별 이용량</h2><span>KST · 페이지뷰</span></header>
-          <div id="operator-hourly" class="operator-hourly-chart" aria-label="시간대별 이용량 차트"></div>
+          <div id="operator-hourly" class="operator-hourly-chart" role="img" aria-label="시간대별 이용량 차트"></div>
         </article>
       </div>
       <article class="operator-card">
