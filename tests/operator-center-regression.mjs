@@ -102,6 +102,7 @@ assert.match(feedback,/입력하지 않으면 익명/);
 assert.match(feedback,/버그 신고/);
 assert.match(feedback,/기능 제안/);
 assert.match(feedback,/feedback-submit/);
+assert.match(feedback,/원본 IP 주소는 피드백 내용에 저장하지 않습니다/,'feedback environment privacy note missing');
 assert.match(feedback,/data-feedback-open/);
 assert.match(feedbackCss,/feedback-dialog/);
 
