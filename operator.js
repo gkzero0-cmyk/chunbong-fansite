@@ -40,16 +40,30 @@ function friendlyKey(key=''){
   return map[key]||key;
 }
 function renderRows(el,rows=[]){el.innerHTML=rows.length?rows.map((row,i)=>`<li><em>${i+1}</em><strong title="${escapeHtml(row.key)}">${escapeHtml(friendlyKey(row.key))}</strong><b>${fmt(row.value)}${Number.isFinite(row.averageActiveSeconds)?' · '+shortTime(row.averageActiveSeconds):''}</b></li>`).join(''):'<li><em>–</em><strong>아직 데이터가 없습니다.</strong><b>0</b></li>'}
-function renderDaily(rows=[]){const el=$('#operator-daily'),max=Math.max(1,...rows.map(x=>Math.max(x.pageviews,x.visitors)));el.innerHTML=rows.length?rows.map(x=>`<div class="operator-day"><div class="operator-day-bars" title="${x.date} · 방문자 ${fmt(x.visitors)} · 페이지뷰 ${fmt(x.pageviews)}"><i style="height:${Math.max(3,x.pageviews/max*100)}%"></i><i style="height:${Math.max(3,x.visitors/max*100)}%"></i></div><small>${x.date.slice(5)}</small></div>`).join(''):'<p class="operator-empty">아직 일별 데이터가 없습니다.</p>'}
+function renderDaily(rows=[]){const el=$('#operator-daily'),max=Math.max(1,...rows.map(x=>Math.max(x.pageviews,x.visitors)));el.innerHTML=rows.length?rows.map(x=>`<div class="operator-day"><div class="operator-day-bars" title="${x.date} · 방문자 ${fmt(x.visitors)} · 페이지뷰 ${fmt(x.pageviews)}"><i style="height:${Math.max(3,x.pageviews/max*100)}%"></i><i style="height:${Math.max(3,x.visitors/max*100)}%"></i></div><small>${x.date.slice(5)}</small></div>`).join(''):'<p class="operator-empty">아직 일별 데이터가 없습니다.</p>';const peak=rows.reduce((best,row)=>(Number(row.pageviews)||0)>(Number(best?.pageviews)||0)?row:best,null);el.setAttribute('role','img');el.setAttribute('aria-label',peak?`일별 이용량 그래프. 가장 많은 페이지뷰는 ${peak.date} ${fmt(peak.pageviews)}회입니다.`:'일별 이용량 데이터가 아직 없습니다.')}
 function renderHourly(rows=[]){
   const map=Object.fromEntries((rows||[]).map(row=>[String(row.key).padStart(2,'0'),Number(row.value)||0])),values=Array.from({length:24},(_,h)=>({hour:String(h).padStart(2,'0'),value:map[String(h).padStart(2,'0')]||0}));
   const max=Math.max(1,...values.map(x=>x.value)),el=$('#operator-hourly');
   el.innerHTML=values.map(x=>`<div class="operator-hour" title="${x.hour}시 · ${fmt(x.value)} 페이지뷰"><i style="height:${x.value?Math.max(6,x.value/max*100):2}%"></i><small>${Number(x.hour)%3===0?x.hour:''}</small></div>`).join('');
+  const peak=values.reduce((best,row)=>row.value>(best?.value||0)?row:best,null);el.setAttribute('role','img');el.setAttribute('aria-label',peak&&peak.value?`시간대별 페이지뷰 그래프. 가장 많은 시간대는 ${Number(peak.hour)}시, ${fmt(peak.value)}회입니다.`:'시간대별 페이지뷰 데이터가 아직 없습니다.');
 }
 function completionRate(row){const start=Number(row?.start)||0,finish=Number(row?.finish)||0;return start?Math.min(100,Math.round(finish/start*100)):0}
 function renderFunnel(funnel={}){
   const rows=[['미니게임',funnel.game],['춘봉 타로',funnel.tarot],['피드백',funnel.feedback]],el=$('#operator-funnel');
   el.innerHTML=rows.map(([label,row])=>{const rate=completionRate(row);return `<div class="operator-funnel-row"><div><strong>${label}</strong><span>${fmt(row?.start)} 시작 → ${fmt(row?.finish)} 완료</span></div><div class="operator-funnel-track"><i style="width:${rate}%"></i></div><b>${rate}%</b></div>`}).join('');
+}
+function renderOperatorAttention(){
+  const root=$('#operator-attention-list'),state=$('#operator-attention-state');if(!root||!state)return;
+  const rows=[],dep=currentSystem?.deployment||{},endpoints=Array.isArray(currentSystem?.endpoints)?currentSystem.endpoints:[],services=currentSystem?.services||{};
+  if(dep.synced===false)rows.push({level:'warn',title:'Production 동기화 필요',detail:'배포본 '+shortSha(dep.sha)+' · main '+shortSha(dep.mainSha),tab:'system'});
+  const badEndpoints=endpoints.filter(row=>!row.ok);if(badEndpoints.length)rows.push({level:'bad',title:'API 응답 확인 필요',detail:badEndpoints.map(row=>row.label||row.path||'API').join(' · '),tab:'system'});
+  const slow=endpoints.filter(row=>row.ok&&Number(row.ms)>=1500);if(slow.length)rows.push({level:'warn',title:'느린 API 감지',detail:slow.map(row=>(row.label||row.path||'API')+' '+fmt(row.ms)+'ms').join(' · '),tab:'system'});
+  if(currentSystem&&(!services.analytics||!services.feedback||!services.push))rows.push({level:'warn',title:'서비스 설정 확인',detail:[!services.analytics&&'실사용 분석',!services.feedback&&'피드백 저장',!services.push&&'Push'].filter(Boolean).join(' · '),tab:'system'});
+  const unread=feedbackItems.filter(item=>item.status==='new').length||Number(currentAnalytics?.feedbackCounts?.new)||0;if(unread)rows.push({level:'info',title:'새 피드백 '+fmt(unread)+'건',detail:'확인하지 않은 사용자 의견이 있습니다.',tab:'feedback'});
+  if(!rows.length){state.textContent=currentSystem?'정상':'확인 중';state.className=currentSystem?'is-ok':'is-neutral';root.innerHTML=currentSystem?'<div class="operator-attention-item is-ok"><span>✓</span><div><strong>현재 확인할 이상 신호가 없습니다.</strong><small>Production · API · 저장소 · Push · 피드백 상태를 기준으로 확인했습니다.</small></div></div>':'<p class="operator-empty">운영 상태를 확인하고 있습니다.</p>';return}
+  state.textContent=rows.some(row=>row.level==='bad')?'확인 필요':rows.some(row=>row.level==='warn')?'주의':'새 항목';state.className=rows.some(row=>row.level==='bad')?'is-bad':rows.some(row=>row.level==='warn')?'is-warn':'is-info';
+  root.innerHTML=rows.map(row=>`<button type="button" class="operator-attention-item is-${row.level}" data-operator-jump="${row.tab}"><span aria-hidden="true">${row.level==='bad'?'!':row.level==='warn'?'△':'•'}</span><div><strong>${escapeHtml(row.title)}</strong><small>${escapeHtml(row.detail)}</small></div><b aria-hidden="true">→</b></button>`).join('');
+  root.querySelectorAll('[data-operator-jump]').forEach(button=>button.addEventListener('click',()=>void activateOperatorTab(button.dataset.operatorJump)));
 }
 function renderDelta(id,value){
   const el=$(id);if(!el)return;
@@ -65,7 +79,7 @@ async function loadAnalytics(){
   renderRows($('#operator-pages'),data.topPages);renderRows($('#operator-menus'),data.topMenus);renderRows($('#operator-features'),data.topFeatures);renderRows($('#operator-devices'),data.devices);
   renderDaily(data.daily||[]);renderHourly(data.hourly||[]);renderFunnel(data.funnel||{});
   $('#operator-collection-note').textContent=data.collectionStartedAt?'실사용 분석 수집 시작: '+new Date(data.collectionStartedAt).toLocaleString('ko-KR'):'분석 데이터가 아직 수집되지 않았습니다.';
-  const unread=Number(data.feedbackCounts?.new)||0,badge=$('#operator-feedback-badge');badge.textContent=unread;badge.hidden=!unread;
+  const unread=Number(data.feedbackCounts?.new)||0,badge=$('#operator-feedback-badge');badge.textContent=unread;badge.hidden=!unread;renderOperatorAttention();
 }
 function exportAnalyticsJson(){if(!currentAnalytics)return;download('chunbong-analytics-'+String(currentDays)+'d.json',JSON.stringify({exportedAt:new Date().toISOString(),period:currentDays,data:currentAnalytics},null,2),'application/json')}
 function exportAnalyticsCsv(){
@@ -90,7 +104,7 @@ function renderFeedbackList(){
   list.innerHTML=rows.length?rows.map(x=>`<button class="operator-feedback-row ${selectedFeedback?.id===x.id?'active':''}" type="button" data-feedback-id="${x.id}"><span><i data-category="${x.category}">${escapeHtml(categoryLabel[x.category]||x.category)}</i><b data-status="${x.status}">${escapeHtml(statusLabel[x.status]||x.status)}</b></span><strong>${escapeHtml(x.nickname||'익명')}</strong><p>${escapeHtml(x.message)}</p></button>`).join(''):'<p class="operator-empty">조건에 맞는 피드백이 없습니다.</p>';
   list.querySelectorAll('[data-feedback-id]').forEach(btn=>btn.addEventListener('click',()=>selectFeedback(btn.dataset.feedbackId)));
 }
-async function loadFeedback(){const data=await json(API+'operator-feedback');feedbackItems=data.items||[];if(selectedFeedback)selectedFeedback=feedbackItems.find(x=>x.id===selectedFeedback.id)||null;renderFeedbackList();if(selectedFeedback)renderFeedbackDetail()}
+async function loadFeedback(){const data=await json(API+'operator-feedback');feedbackItems=data.items||[];if(selectedFeedback)selectedFeedback=feedbackItems.find(x=>x.id===selectedFeedback.id)||null;renderFeedbackList();if(selectedFeedback)renderFeedbackDetail();renderOperatorAttention()}
 function renderFeedbackDetail(){
   if(!selectedFeedback)return;
   $('#operator-feedback-empty').hidden=true;$('#operator-feedback-content').hidden=false;
@@ -127,7 +141,7 @@ async function loadSystemStatus(){
   const serviceRows=[['GitHub 운영자 인증',services.githubAuth],['이메일 운영자 인증',services.emailAuth],['Push 알림',services.push],['실사용 분석',services.analytics],['피드백 저장',services.feedback]];
   $('#operator-service-health').innerHTML=serviceRows.map(([label,ok])=>`<div><span>${label}</span>${healthLabel(Boolean(ok))}</div>`).join('');
   const endpoints=Array.isArray(data.endpoints)?data.endpoints:[];
-  $('#operator-endpoint-health').innerHTML=endpoints.length?endpoints.map(row=>`<div><span>${escapeHtml(row.label||row.path||'API')} <small>${fmt(row.ms)}ms</small></span><span class="operator-endpoint-result ${row.ok?'ok':'bad'}">${row.ok?'HTTP '+fmt(row.status):row.status?'HTTP '+fmt(row.status):'응답 실패'}</span></div>`).join(''):'<p class="operator-empty">API 상태를 확인하지 못했습니다.</p>';
+  $('#operator-endpoint-health').innerHTML=endpoints.length?endpoints.map(row=>`<div><span>${escapeHtml(row.label||row.path||'API')} <small>${fmt(row.ms)}ms</small></span><span class="operator-endpoint-result ${row.ok?'ok':'bad'}">${row.ok?'HTTP '+fmt(row.status):row.status?'HTTP '+fmt(row.status):'응답 실패'}</span></div>`).join(''):'<p class="operator-empty">API 상태를 확인하지 못했습니다.</p>';renderOperatorAttention();
 }
 function renderSessions(){
   const el=$('#operator-session-list'),rows=session?.sessions||[];
@@ -139,15 +153,23 @@ async function setupFirebaseEmail(){
  const form=$('#operator-email-form');form.addEventListener('submit',async e=>{e.preventDefault();const email=$('#operator-email').value.trim().toLowerCase();status.textContent='인증 메일 요청 중…';try{await json(API+'operator-email-start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});localStorage.setItem('chunbong:operator:email',email);status.textContent='등록된 운영자 계정이라면 인증 메일이 발송됩니다. 메일함을 확인해 주세요.'}catch(err){status.textContent=err.message==='email_auth_not_configured'?'이메일 인증 설정이 아직 완료되지 않았습니다.':'인증 요청을 처리하지 못했습니다.'}})
  if(new URLSearchParams(location.search).get('email')==='complete'){try{const config=await json(API+'operator-auth-config');if(!config.providers.email||!config.firebase)return;const email=localStorage.getItem('chunbong:operator:email')||prompt('인증 메일을 받은 주소를 입력하세요')||'';if(!email)return;const {initializeApp}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js');const {getAuth,isSignInWithEmailLink,signInWithEmailLink}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js');const app=initializeApp(config.firebase,'operator-email-complete');const auth=getAuth(app);if(!isSignInWithEmailLink(auth,location.href))throw new Error('invalid_link');const credential=await signInWithEmailLink(auth,email,location.href);const idToken=await credential.user.getIdToken();await json(API+'operator-email-complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken})});localStorage.removeItem('chunbong:operator:email');history.replaceState(null,'','/operator.html');await boot()}catch{status.textContent='이메일 인증 링크를 확인하지 못했습니다.'}}
 }
+async function activateOperatorTab(tab){
+  const target=String(tab||'overview');
+  $('[data-operator-tab]').forEach(button=>{const active=button.dataset.operatorTab===target;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1});
+  $('[data-operator-panel]').forEach(panel=>panel.hidden=panel.dataset.operatorPanel!==target);
+  if(target==='system'&&!currentSystem)await loadSystemStatus();
+  if(target==='security')await refreshSession();
+}
 async function boot(){
   try{
     await refreshSession();showDashboard();
-    await Promise.all([loadAnalytics(),loadFeedback()]);
+    await Promise.all([loadAnalytics(),loadFeedback(),loadSystemStatus()]);
+    renderOperatorAttention();
   }catch{showLogin()}
 }
 $('#operator-github-login')?.addEventListener('click',event=>{if(event.currentTarget.getAttribute('aria-disabled')==='true')event.preventDefault()});
-document.querySelectorAll('[data-days]').forEach(btn=>btn.addEventListener('click',async()=>{document.querySelectorAll('[data-days]').forEach(x=>x.classList.toggle('active',x===btn));currentDays=btn.dataset.days==='all'?'all':(Number(btn.dataset.days)||7);await loadAnalytics()}));
-$$('[data-operator-tab]').forEach(btn=>btn.addEventListener('click',async()=>{$$('[data-operator-tab]').forEach(x=>x.classList.toggle('active',x===btn));$$('[data-operator-panel]').forEach(panel=>panel.hidden=panel.dataset.operatorPanel!==btn.dataset.operatorTab);if(btn.dataset.operatorTab==='system')await loadSystemStatus();if(btn.dataset.operatorTab==='security')await refreshSession()}));
+document.querySelectorAll('[data-days]').forEach(btn=>btn.addEventListener('click',async()=>{document.querySelectorAll('[data-days]').forEach(x=>{const active=x===btn;x.classList.toggle('active',active);x.setAttribute('aria-pressed',String(active))});currentDays=btn.dataset.days==='all'?'all':(Number(btn.dataset.days)||7);await loadAnalytics()}));
+$('[data-operator-tab]').forEach((btn,index)=>{btn.tabIndex=index===0?0:-1;btn.addEventListener('click',()=>void activateOperatorTab(btn.dataset.operatorTab));btn.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const tabs=$('[data-operator-tab]');let next=event.key==='Home'?0:event.key==='End'?tabs.length-1:Math.max(0,tabs.indexOf(btn)+(event.key==='ArrowRight'?1:-1));if(event.key==='ArrowLeft'&&tabs.indexOf(btn)===0)next=tabs.length-1;if(event.key==='ArrowRight'&&tabs.indexOf(btn)===tabs.length-1)next=0;tabs[next]?.focus();void activateOperatorTab(tabs[next]?.dataset.operatorTab)})});
 $('#operator-export-json')?.addEventListener('click',exportAnalyticsJson);$('#operator-export-csv')?.addEventListener('click',exportAnalyticsCsv);
 $('#operator-feedback-refresh')?.addEventListener('click',loadFeedback);
 ['#operator-feedback-search','#operator-feedback-status-filter','#operator-feedback-category-filter','#operator-feedback-sort'].forEach(selector=>$(selector)?.addEventListener(selector.includes('search')?'input':'change',renderFeedbackList));
