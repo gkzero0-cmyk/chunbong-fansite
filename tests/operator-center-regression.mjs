@@ -165,7 +165,7 @@ assert.match(improvements,/feedback-widget\.js/,'sitewide feedback runtime not l
 assert.match(improvements,/requestIdleCallback/,'optional analytics and feedback should wait for browser idle time');
 assert.match(mobile,/data-feedback-open/,'mobile More feedback entry missing');
 
-assert.match(sw,/chunbong-pwa-20260922-v29/,'PWA cache must include the latest operator and alert assets');
+assert.match(sw,/chunbong-pwa-20260922-v30/,'PWA cache must include the latest operator and alert assets');
 for(const asset of ['/site-analytics.js','/feedback-widget.js','/feedback-widget.css']) assert.ok(!sw.includes(asset),'optional runtime must not block first-install PWA shell: '+asset);
 
 new Function(api);

@@ -1,5 +1,5 @@
 /* CHUNBONG_PWA v1 */
-const CACHE_NAME = 'chunbong-pwa-20260922-v29';
+const CACHE_NAME = 'chunbong-pwa-20260922-v30';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -35,6 +35,7 @@ const APP_SHELL = [
   '/assets/apple-touch-icon.png',
   '/assets/chunbong-main.webp'
 ]
+const APP_SHELL_PATHS = new Set(APP_SHELL.map(asset => new URL(asset, self.location.origin).pathname));
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -71,14 +72,24 @@ async function networkFirst(request, event) {
   }
 }
 
-async function staleWhileRevalidate(request) {
+async function staleWhileRevalidate(request, event, fallback = '') {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
-  const network = fetch(request).then(response => {
-    if (response?.ok) cache.put(request, response.clone());
+  const network = (async () => {
+    const preload = request.mode === 'navigate' && event ? await event.preloadResponse : null;
+    if (preload?.ok) {
+      await cache.put(request, preload.clone());
+      return preload;
+    }
+    const response = await fetch(request);
+    if (response?.ok) await cache.put(request, response.clone());
     return response;
-  }).catch(() => null);
-  return cached || await network || Response.error();
+  })().catch(() => null);
+  if (cached) {
+    event?.waitUntil(network);
+    return cached;
+  }
+  return await network || (fallback ? await cache.match(fallback) : null) || Response.error();
 }
 
 self.addEventListener('fetch', event => {
@@ -89,17 +100,24 @@ self.addEventListener('fetch', event => {
   if (url.pathname.startsWith('/api/')) return;
 
   if (request.mode === 'navigate' || request.destination === 'document') {
-    event.respondWith(networkFirst(request, event));
+    event.respondWith(staleWhileRevalidate(request, event, '/offline.html'));
     return;
   }
 
-  if (['script','style','worker'].includes(request.destination)) {
+  if (['script','style'].includes(request.destination)) {
+    event.respondWith(APP_SHELL_PATHS.has(url.pathname)
+      ? staleWhileRevalidate(request, event)
+      : networkFirst(request, event));
+    return;
+  }
+
+  if (request.destination === 'worker') {
     event.respondWith(networkFirst(request, event));
     return;
   }
 
   if (['image','font'].includes(request.destination)) {
-    event.respondWith(staleWhileRevalidate(request));
+    event.respondWith(staleWhileRevalidate(request, event));
   }
 });
 

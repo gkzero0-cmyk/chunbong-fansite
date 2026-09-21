@@ -115,7 +115,7 @@ for(const asset of ['/personal-hub.css','/personal-hub.js']){
   assert.ok(sw.includes("'"+asset+"'"),'PWA app shell missing '+asset);
 }
 assert.ok(!sw.includes("'/myhub.html'"),'My Fan Hub page should runtime-cache after first visit instead of bloating initial PWA install');
-assert.match(sw,/chunbong-pwa-20260922-v29/,'lightweight PWA shell change must refresh the cache');
+assert.match(sw,/chunbong-pwa-20260922-v30/,'lightweight PWA shell change must refresh the cache');
 assert.match(sw,/notificationclick/,'notification click routing missing');
 
 
