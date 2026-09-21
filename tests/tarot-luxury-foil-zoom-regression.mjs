@@ -8,7 +8,7 @@ const css=read('tarot-luxury-foil.css');
 const sfx=read('tarot-sfx-v2.js');
 
 assert.match(html,/href="tarot-luxury-foil\.css\?v=2"/,'luxury tarot foil stylesheet must load');
-assert.match(html,/src="tarot\.js\?v=4"/,'updated tarot runtime must be cache-busted');
+assert.match(html,/src="tarot\.js\?v=5"/,'updated tarot runtime must be cache-busted');
 assert.match(html,/src="tarot-sfx-v2\.js\?v=3"/,'updated tarot hover SFX runtime must be cache-busted');
 
 assert.match(js,/data-tarot-foil/,'result and zoom cards must expose foil hosts');

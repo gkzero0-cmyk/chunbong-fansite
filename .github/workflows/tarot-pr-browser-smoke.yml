@@ -125,26 +125,35 @@ jobs:
             await cards.nth(0).click();
             const selectedState=await cards.nth(0).evaluate(card=>{
               const style=getComputedStyle(card);
-              const badge=getComputedStyle(card,'::before');
+              const badge=card.querySelector('.tarot-selection-order-badge');
+              const badgeStyle=badge?getComputedStyle(badge):null;
               return {
                 order:card.dataset.selectionOrder,
+                total:card.dataset.selectionTotal,
                 label:card.dataset.selectionLabel,
                 pressed:card.getAttribute('aria-pressed'),
                 transform:style.transform,
                 outline:style.outlineStyle,
-                badgeContent:badge.content
+                badgeText:badge?.textContent?.trim()||'',
+                badgeDisplay:badgeStyle?.display||'',
+                badgeOpacity:badgeStyle?.opacity||''
               };
             });
             assert.equal(selectedState.order,'1','first pick must expose selection order');
-            assert.equal(selectedState.label,'✓ 1번째','first pick must expose visible selected label');
+            assert.equal(selectedState.total,'3','three-card spread must expose total selection count');
+            assert.equal(selectedState.label,'1/3','first pick must expose visible current/total label');
             assert.equal(selectedState.pressed,'true');
             assert.notEqual(selectedState.transform,'none','selected card must visibly lift/scale');
             assert.equal(selectedState.outline,'solid','selected card must have an explicit rim');
-            assert.match(selectedState.badgeContent,/1번째/,'selected badge must show selection order');
+            assert.equal(selectedState.badgeText,'1/3','selected badge must show current/total order');
+            assert.ok(['flex','inline-flex'].includes(selectedState.badgeDisplay),'selected badge must remain visible above foil effects');
+            assert.equal(selectedState.badgeOpacity,'1','selected badge must not inherit the faded card state');
             assert.equal(await cards.nth(1).getAttribute('data-selection-order'),null,'unselected card must not receive selection order');
 
             await cards.nth(1).click();
             await cards.nth(2).click();
+            assert.equal((await cards.nth(1).locator('.tarot-selection-order-badge').textContent())?.trim(),'2/3');
+            assert.equal((await cards.nth(2).locator('.tarot-selection-order-badge').textContent())?.trim(),'3/3');
             await page.locator('#tarot-confirm-selection').click();
             await page.waitForFunction(()=>document.querySelectorAll('#tarot-reading-grid .tarot-composite-svg').length===3);
 

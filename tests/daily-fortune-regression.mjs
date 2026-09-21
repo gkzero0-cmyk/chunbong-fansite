@@ -8,8 +8,8 @@ const css = read('daily-fortune.css');
 const sw = read('service-worker.js');
 
 assert.doesNotThrow(() => new Function(js), 'daily fortune runtime must remain valid JavaScript');
-assert.match(home, /href="daily-fortune\.css\?v=4"/, 'home daily fortune CSS missing');
-assert.match(home, /src="daily-fortune\.js\?v=4"/, 'home daily fortune runtime missing');
+assert.match(home, /href="daily-fortune\.css\?v=5"/, 'home daily fortune CSS missing');
+assert.match(home, /src="daily-fortune\.js\?v=5"/, 'home daily fortune runtime missing');
 assert.match(js, /timeZone: SEOUL_TZ/, 'daily fortune must use the Seoul timezone');
 assert.match(js, /const STORAGE_KEY = 'chunbong-daily-fortune-v1'/, 'daily fortune storage key missing');
 assert.match(js, /parsed\?\.date !== today/, 'stored result must expire on the next KST date');
@@ -52,11 +52,11 @@ assert.match(css, /\.daily-fortune-holo-ripple/, 'pointer-origin hologram ripple
 assert.match(css, /@keyframes dailyFortuneHoloRipple/, 'hologram ripple animation missing');
 assert.match(css, /2026-09-21 Luxury Tarot Foil/, 'refined luxury foil override missing');
 assert.match(css, /@keyframes dailyFortuneLuxuryRipple/, 'subtle luxury ripple animation missing');
-assert.match(js, /rippleDistance > 0\.18/, 'pointer travel must be able to retrigger a restrained prism ripple');
-assert.match(js, /playTone\(ctx, 174\.6/, 'hover sound must use a low restrained magical resonance');
+assert.match(js, /rippleDistance > 0\.26/, 'pointer travel must require meaningful movement before another visual ripple');
+assert.match(js, /playTone\(ctx, 220/, 'hover entry sound must use a restrained glass resonance');
 assert.match(css, /scale\(1\.032\)/, 'hover lift must be visually noticeable');
 assert.match(css, /mix-blend-mode:screen!important/, 'inner artwork prism must use a controlled screen blend for visible feedback');
-assert.match(css, /opacity:\.68!important/, 'inner prism film must be visibly stronger than the previous restrained pass');
+assert.match(css, /opacity:\.82!important/, 'inner prism film must be clearly visible without washing out the artwork');
 assert.doesNotMatch(css, /#fff 0 2%/, 'white pointer hotspot must stay removed');
 assert.match(js, /const revealed = cardButton\.classList\.contains\('is-revealed'\)/, 'hover effect must react before and after reveal');
 assert.match(css, /dailyFortuneParticle/, 'fortune reveal particles missing');
@@ -66,3 +66,8 @@ assert.match(sw, /'\/daily-fortune\.css'/);
 assert.match(sw, /'\/daily-fortune\.js'/);
 
 console.log('home daily fortune regression passed');
+
+assert.match(js,/lastHoverSoundAt >= 5000|now - lastHoverSoundAt >= 5000/,'fortune hover sound must have a long entry cooldown');
+assert.doesNotMatch(js,/holo\.appendChild\(ripple\);\s*playMagicRippleSound/,'pointer-generated ripples must stay silent');
+assert.match(css,/width:58px!important/,'fortune ripple must be large enough to notice');
+assert.match(css,/daily-fortune-holo-ripple::before/,'fortune ripple must render a second prism ring');
