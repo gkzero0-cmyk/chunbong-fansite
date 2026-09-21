@@ -135,10 +135,10 @@
   function playMagicRippleSound(ctx) {
     if (!ctx) return;
     const start = ctx.currentTime;
-    // Low, restrained magical resonance: one soft chord on entry, never on pointer-move.
-    playTone(ctx, 174.6, start, 0.64, 0.014, 'sine', 220);
-    playTone(ctx, 349.2, start + 0.035, 0.72, 0.010, 'triangle', 440);
-    playTone(ctx, 523.25, start + 0.10, 0.78, 0.006, 'sine', 659.25);
+    // A single soft glass resonance on card entry. Pointer movement stays silent.
+    playTone(ctx, 220, start, 0.76, 0.008, 'sine', 246.94);
+    playTone(ctx, 659.25, start + 0.055, 0.62, 0.0045, 'triangle', 698.46);
+    playTone(ctx, 987.77, start + 0.14, 0.46, 0.0025, 'sine', 1046.5);
   }
 
   function playSpinSound(ctx) {
@@ -261,6 +261,7 @@
     let lastRippleAt = 0;
     let lastRippleX = -1;
     let lastRippleY = -1;
+    let lastHoverSoundAt = -Infinity;
     const reducedMotion = () => Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 
     const ensureHoverAudio = () => {
@@ -284,8 +285,7 @@
       ripple.style.left = (px * 100).toFixed(1) + '%';
       ripple.style.top = (py * 100).toFixed(1) + '%';
       holo.appendChild(ripple);
-      playMagicRippleSound(ensureHoverAudio());
-      setTimeout(() => ripple.remove(), 780);
+      setTimeout(() => ripple.remove(), 1050);
     };
 
     const showLauncher = () => {
@@ -467,6 +467,11 @@
       stage.style.setProperty('--glow-y', (point.py * 100).toFixed(1) + '%');
       stage.classList.add('is-prism-active');
       spawnHoloRipple(point.px, point.py);
+      const now = performance.now();
+      if (now - lastHoverSoundAt >= 5000) {
+        lastHoverSoundAt = now;
+        playMagicRippleSound(ensureHoverAudio());
+      }
     });
 
     stage.addEventListener('pointermove', event => {
@@ -483,7 +488,7 @@
       stage.style.setProperty('--glow-y', (py * 100).toFixed(1) + '%');
       stage.classList.add('is-prism-active');
       const rippleDistance = lastRippleX < 0 ? 1 : Math.hypot(px - lastRippleX, py - lastRippleY);
-      if (rippleDistance > 0.18) spawnHoloRipple(px, py);
+      if (rippleDistance > 0.26) spawnHoloRipple(px, py);
     });
     stage.addEventListener('pointerleave', resetPrism);
 
