@@ -1,5 +1,6 @@
 (async()=>{
 'use strict';
+window.__CHUNBONG_OPERATOR_BOOT__='started';
 const API='/api/content?type=';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const login=$('#operator-login'),dashboard=$('#operator-dashboard'),status=$('#operator-login-status'),logout=$('#operator-logout');
@@ -203,6 +204,6 @@ $('#operator-system-refresh')?.addEventListener('click',()=>void loadSystemStatu
 $('#operator-attention-action')?.addEventListener('click',()=>{$('[data-operator-tab="system"]')?.click()});
 logout.addEventListener('click',async()=>{await json(API+'operator-logout',{method:'POST'});session=null;showLogin()});
 $('#operator-logout-all')?.addEventListener('click',async()=>{if(!confirm('모든 기기에서 운영자 로그인을 해제할까요?'))return;await json(API+'operator-logout-all',{method:'POST'});session=null;showLogin();status.textContent='모든 기기의 운영자 세션을 해제했습니다.'});
-await loadAuthAvailability();await setupFirebaseEmail();await boot();
+window.__CHUNBONG_OPERATOR_BOOT__='auth-check';await loadAuthAvailability();window.__CHUNBONG_OPERATOR_BOOT__='email-setup';await setupFirebaseEmail();window.__CHUNBONG_OPERATOR_BOOT__='dashboard-boot';await boot();window.__CHUNBONG_OPERATOR_BOOT__='ready';
 setInterval(()=>{if(!dashboard.hidden){void loadAnalytics();if(!document.querySelector('[data-operator-panel="system"]')?.hidden)void loadSystemStatus()}},60000);
 })().catch(error=>{console.error('[operator-center]',error);});
