@@ -143,13 +143,13 @@ function renderOperatorAttention(){
 }
 function activateOperatorTab(name){
   const target=$('[data-operator-tab="'+name+'"]');if(!target)return;
-  $('[data-operator-tab]').forEach(button=>{
+  $$('[data-operator-tab]').forEach(button=>{
     const active=button===target;
     button.classList.toggle('active',active);
     button.setAttribute('aria-selected',String(active));
     button.tabIndex=active?0:-1;
   });
-  $('[data-operator-panel]').forEach(panel=>panel.hidden=panel.dataset.operatorPanel!==name);
+  $$('[data-operator-panel]').forEach(panel=>panel.hidden=panel.dataset.operatorPanel!==name);
 }
 function healthLabel(ok){return ok?'<span class="operator-health ok">● 정상</span>':'<span class="operator-health bad">● 확인 필요</span>'}
 function redisMemoryLabel(storage={}){
