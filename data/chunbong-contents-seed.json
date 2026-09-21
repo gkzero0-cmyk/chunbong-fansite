@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T06:00:00+09:00",
+  "updatedAt": "2026-09-22T06:20:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -146,10 +146,10 @@
           "title": "서버 종료 기록",
           "date": "2026-07-15",
           "datePrecision": "day",
-          "url": "https://www.namu.moe/w/%EB%A7%88%EC%9D%B8%ED%81%AC%EB%9E%98%ED%94%84%ED%8A%B8%20%EC%9D%B8%ED%84%B0%EB%84%B7%20%EB%B0%A9%EC%86%A1%EC%9D%B8%20%EC%84%9C%EB%B2%84",
+          "url": "https://www.namu.moe/w/%EC%B6%98%EB%B4%89",
           "thumbnail": "",
-          "sourceId": "source-server-record",
-          "note": "서버 일정 기록의 종료일입니다."
+          "sourceId": "source-chunbong-record",
+          "note": "춘봉 활동 이력과 서버 일정 기록을 함께 비교해 종료일을 확인합니다."
         }
       ],
       "media": [
@@ -198,7 +198,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T06:00:00+09:00"
+      "updatedAt": "2026-09-22T06:20:00+09:00"
     },
     {
       "id": "psy-emotion-song-contest-2026",
