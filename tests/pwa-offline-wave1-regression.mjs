@@ -9,6 +9,6 @@ for (const asset of [
   '/data.html','/data.css','/data.js','/data-core.js','/data-soop-periods-v3.js','/data-recent-session-metrics.js','/data-enhancements.js','/data-enhancements.css',
   '/vod.html','/clips.html','/youtube.html','/fanart.html'
 ]) {
-  assert.ok(sw.includes("'"+asset+"'"), 'offline shell missing '+asset);
+  assert.ok(!sw.includes("'"+asset+"'"), 'feature asset should runtime-cache after first visit instead of initial PWA install: '+asset);
 }
 console.log('pwa-offline-wave1-regression: ok');
