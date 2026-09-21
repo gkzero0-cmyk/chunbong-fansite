@@ -47,7 +47,7 @@ const homeOverview=read('home-overview.js');
 const homeRefresh=read('home-refresh.css');
 assert.match(html,/data-home-content-archive/,'home archive preview section missing');
 assert.match(html,/data-home-content-list/,'home archive preview list missing');
-assert.match(homeOverview,/type=chunbong-contents/,'home archive preview must use the public archive API');
+assert.match(homeOverview,/get\('chunbong-contents'\)/,'home archive preview must request the public archive dataset');
 assert.match(homeOverview,/data-home-content-list/,'home archive renderer hook missing');
 assert.match(homeRefresh,/\.home-content-archive-grid/,'home archive responsive grid styles missing');
 assert.match(homeRefresh,/\.home-content-card/,'home archive card styles missing');
