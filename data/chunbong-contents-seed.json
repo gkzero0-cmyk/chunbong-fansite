@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T07:05:00+09:00",
+  "updatedAt": "2026-09-22T07:12:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -70,6 +70,17 @@
           "thumbnail": "/assets/chunbong-contents/leopel-presentation-vod.svg",
           "sourceId": "source-presentation-vod",
           "note": "레오펠의 일정과 콘셉트를 직접 소개한 SOOP 발표회 VOD입니다."
+        },
+        {
+          "id": "trailer-pv",
+          "type": "vod",
+          "title": "레오펠 서버 트레일러 PV",
+          "date": "2025-05-12",
+          "datePrecision": "day",
+          "url": "https://vod.sooplive.com/player/159715611",
+          "thumbnail": "/assets/chunbong-contents/leopel-trailer-pv.svg",
+          "sourceId": "source-trailer-pv",
+          "note": "SOOP에 공개된 레오펠 서버 트레일러 PV입니다."
         }
       ],
       "gallery": [
@@ -86,6 +97,13 @@
           "alt": "레오펠 서버 발표회 VOD 아카이브 이미지",
           "caption": "2025년 5월 12일 레오펠 서버 발표회 VOD",
           "sourceId": "source-presentation-vod"
+        },
+        {
+          "id": "leopel-trailer-visual",
+          "src": "/assets/chunbong-contents/leopel-trailer-pv.svg",
+          "alt": "레오펠 서버 트레일러 PV 아카이브 이미지",
+          "caption": "SOOP VOD · 레오펠 서버 트레일러 PV",
+          "sourceId": "source-trailer-pv"
         }
       ],
       "sources": [
@@ -118,6 +136,12 @@
           "kind": "reference",
           "label": "나무위키 · 레오펠",
           "url": "https://www.namu.moe/w/%EB%A0%88%EC%98%A4%ED%8E%A0"
+        },
+        {
+          "id": "source-trailer-pv",
+          "kind": "official",
+          "label": "SOOP VOD · 레오펠 서버 트레일러 PV",
+          "url": "https://vod.sooplive.com/player/159715611"
         }
       ],
       "verification": {
