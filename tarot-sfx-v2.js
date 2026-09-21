@@ -102,16 +102,19 @@ function createEnhancedTarotSoundController(storage = globalThis.localStorage, A
   };
 
   const cardSlap = () => {
-    noiseBurst({ duration: 0.055, gain: 0.24, frequency: 720, q: 0.42, type: 'lowpass' });
-    noiseBurst({ duration: 0.026, gain: 0.12, frequency: 2650, q: 1.15, offset: 0.01 });
-    tone(112, 0.07, 0.10, 0.003, 'triangle');
+    noiseBurst({ duration: 0.05, gain: 0.18, frequency: 680, q: 0.42, type: 'lowpass' });
+    tone(196, 0.16, 0.055, 0.004, 'sine');
+    tone(392, 0.24, 0.035, 0.035, 'triangle');
+    tone(783.99, 0.34, 0.018, 0.075, 'sine');
+    tone(1174.66, 0.42, 0.008, 0.11, 'sine');
   };
 
   const hoverAura = () => {
-    // One low, airy resonance per card entry. No pointer-move chirps.
-    tone(174.6, 0.62, 0.018, 0, 'sine');
-    tone(349.2, 0.70, 0.012, 0.035, 'triangle');
-    tone(523.25, 0.76, 0.007, 0.10, 'sine');
+    // Crystal-prism entry: airy and restrained, never repeated on pointer movement.
+    tone(164.8, 0.70, 0.016, 0, 'sine');
+    tone(329.6, 0.78, 0.011, 0.045, 'triangle');
+    tone(493.9, 0.86, 0.007, 0.12, 'sine');
+    tone(987.8, 0.34, 0.0035, 0.17, 'sine');
   };
 
   const cardSpread = () => {
