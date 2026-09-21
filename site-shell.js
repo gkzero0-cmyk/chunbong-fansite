@@ -64,13 +64,20 @@
     }
   };
 
-  if (!document.querySelector('link[data-personal-hub-styles]')) {
-    const personalStyles = document.createElement('link');
-    personalStyles.rel = 'stylesheet';
-    personalStyles.href = 'personal-hub.css';
-    personalStyles.dataset.personalHubStyles = 'true';
-    document.head.appendChild(personalStyles);
-  }
+  const loadStyle=(href,marker)=>{
+    if(document.querySelector('link['+marker+']'))return;
+    const link=document.createElement('link');
+    link.rel='stylesheet';link.href=href;link.setAttribute(marker,'true');document.head.appendChild(link);
+  };
+  const loadScript=src=>{
+    if(document.querySelector('script[src="'+src+'"]'))return;
+    const script=document.createElement('script');
+    script.src=src;script.defer=true;document.head.appendChild(script);
+  };
+  const runIdle=callback=>{
+    if('requestIdleCallback' in window)window.requestIdleCallback(callback,{timeout:1800});
+    else setTimeout(callback,650);
+  };
   if (!document.querySelector('link[data-site-quality]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -78,13 +85,13 @@
     link.dataset.siteQuality = 'true';
     document.head.appendChild(link);
   }
-  for (const src of ['site-meta.js', 'site-health.js', 'site-improvements.js', 'personal-hub.js']) {
-    if (document.querySelector('script[src="' + src + '"]')) continue;
-    const script = document.createElement('script');
-    script.src = src;
-    script.defer = true;
-    document.head.appendChild(script);
-  }
+  loadScript('site-health.js');
+  loadScript('site-improvements.js');
+  const personalPriorityPages=new Set(['home','myhub','vod','clips','youtube','fanart','tarot','minigames','chuntris','chunbak','chungwagame','chuncortile']);
+  const loadPersonal=()=>{loadStyle('personal-hub.css','data-personal-hub-styles');loadScript('personal-hub.js')};
+  const page=document.body?.dataset?.page||'';
+  if(personalPriorityPages.has(page))loadPersonal();else runIdle(loadPersonal);
+  runIdle(()=>loadScript('site-meta.js'));
 })();
 (() => {
   const nav=document.getElementById('main-nav');
