@@ -45,6 +45,35 @@
         }
       ],
       "measurement": "fan-site-sampled-5m"
+    },
+    {
+      "id": "2026-09-21T09:14:26.000Z",
+      "broadcastId": "",
+      "startedAt": "2026-09-21T09:14:26.000Z",
+      "endedAt": "2026-09-21T19:54:44.594Z",
+      "date": "2026-09-21",
+      "durationMinutes": 640,
+      "averageViewers": 52,
+      "maxViewers": 116,
+      "viewerSampleCount": 58,
+      "followerStart": 30589,
+      "followerEnd": 30629,
+      "followerDelta": 40,
+      "fanclubStart": 7677,
+      "fanclubEnd": 7677,
+      "fanclubDelta": 0,
+      "title": "마병대 4 간부 합격 감사합니다.",
+      "categories": [
+        {
+          "id": "810000",
+          "name": "버추얼",
+          "minutes": 536,
+          "sampleCount": 58,
+          "averageViewers": 52,
+          "maxViewers": 116
+        }
+      ],
+      "measurement": "fan-site-sampled-5m"
     }
   ]
 }
