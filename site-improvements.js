@@ -342,10 +342,15 @@
   scheduleIdle(()=>{ void checkDeploymentSync(); });
 })();
 
-/* Operator center analytics + feedback runtime loader */
+/* Analytics + feedback are non-critical: load after the first paint/idle window. */
 (()=>{
-  for(const src of ['site-analytics.js','feedback-widget.js']){
-    if(document.querySelector('script[src="'+src+'"]'))continue;
+  const load=src=>{
+    if(document.querySelector('script[src="'+src+'"]'))return;
     const script=document.createElement('script');script.src=src;script.defer=true;document.head.appendChild(script);
-  }
+  };
+  const schedule=callback=>{
+    if('requestIdleCallback' in window)window.requestIdleCallback(callback,{timeout:2200});
+    else setTimeout(callback,900);
+  };
+  schedule(()=>{load('site-analytics.js');load('feedback-widget.js')});
 })();
