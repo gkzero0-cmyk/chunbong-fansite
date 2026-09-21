@@ -26,6 +26,10 @@ assert.ok(validateArchiveItem(conflicted,{publishing:true}).includes('unresolved
 
 const seed=JSON.parse(fs.readFileSync(new URL('../data/chunbong-contents-seed.json',import.meta.url),'utf8'));
 assert.ok(Array.isArray(seed.items));
+assert.ok(seed.items.some(item=>item.published===true),'at least one verified archive item should ship publicly');
+const leopel=seed.items.find(item=>item.id==='leopel');
+assert.ok(leopel?.published,'verified Leopol record should be publicly seeded');
+assert.ok((leopel?.sources||[]).length>=2,'Leopol should be cross-checked with multiple public sources');
 for(const item of seed.items) assert.deepEqual(validateArchiveItem(normalizeArchiveItem(item),{publishing:true}),[]);
 
 console.log('chunbong contents data regression passed');
