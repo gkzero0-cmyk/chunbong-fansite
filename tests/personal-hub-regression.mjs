@@ -114,7 +114,7 @@ assert.match(shell,/personal-hub\.js/,'shared shell must load personal hub runti
 for(const asset of ['/personal-hub.css','/personal-hub.js','/myhub.html']){
   assert.ok(sw.includes("'"+asset+"'"),'PWA app shell missing '+asset);
 }
-assert.match(sw,/chunbong-pwa-20260921-v28/,'alert toggle fix must refresh the PWA cache');
+assert.match(sw,/chunbong-pwa-20260922-v29/,'alert toggle fix must refresh the PWA cache');
 assert.match(sw,/notificationclick/,'notification click routing missing');
 
 
