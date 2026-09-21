@@ -47,7 +47,7 @@ assert.match(shell,/personalPriorityPages/,'personal hub runtime should be prior
 assert.match(shell,/runIdle\(loadPersonal\)/,'passive pages should defer personal hub runtime');
 assert.match(shell,/runIdle\(\(\)=>loadScript\('site-meta\.js'\)\)/,'site metadata enhancement should defer to browser idle time');
 
-assert.ok(shell.length < 13500,'shared shell unexpectedly large');
+assert.ok(shell.length < 12500,'shared shell unexpectedly large');
 assert.ok(content.length < 6500,'content data bundle unexpectedly large');
 
 console.log('site shell split regression passed');
