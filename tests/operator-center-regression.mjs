@@ -69,6 +69,8 @@ assert.match(operatorHtml,/operator\.css/);
 assert.match(operatorHtml,/type="module" src="operator\.js"/);
 
 assert.match(operatorJs,/operator-auth-config/);
+assert.match(operatorJs,/loadAuthAvailability/,'operator auth readiness UI missing');
+assert.match(operatorJs,/aria-disabled/,'unconfigured GitHub auth must be disabled safely');
 assert.match(operatorJs,/operator-session/);
 assert.match(operatorJs,/operator-analytics/);
 assert.match(operatorJs,/operator-feedback/);
@@ -79,6 +81,7 @@ assert.doesNotMatch(operatorJs,/eligible/,'operator email registration state mus
 assert.match(operatorHtml,/90일/);
 assert.match(operatorHtml,/data-days="all"/,'all-time analytics control missing');
 assert.match(operatorCss,/operator-dashboard/);
+assert.match(operatorCss,/operator-auth-button\.is-unavailable/,'unavailable auth provider style missing');
 assert.match(operatorCss,/operator-metric-grid/);
 
 assert.match(analytics,/crypto\.randomUUID/,'anonymous browser id missing');
