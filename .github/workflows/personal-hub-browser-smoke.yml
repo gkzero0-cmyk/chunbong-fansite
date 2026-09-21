@@ -57,8 +57,19 @@ jobs:
 
           const browser=await chromium.launch({headless:true});
           const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
-          await context.grantPermissions(['notifications'],{origin:process.env.BASE_URL});
           const page=await context.newPage();
+          await page.addInitScript(()=>{
+            const NativeNotification=window.Notification;
+            if(NativeNotification){
+              try{Object.defineProperty(NativeNotification,'permission',{get:()=> 'granted',configurable:true})}catch(_){}
+              try{NativeNotification.requestPermission=async()=> 'granted'}catch(_){}
+            }else{
+              function MockNotification(){}
+              Object.defineProperty(MockNotification,'permission',{value:'granted'});
+              MockNotification.requestPermission=async()=> 'granted';
+              window.Notification=MockNotification;
+            }
+          });
           const errors=[];
           page.on('pageerror',error=>errors.push(error.message));
 
