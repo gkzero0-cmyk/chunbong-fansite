@@ -42,7 +42,7 @@ for(const file of gamePages){
 }
 
 assert.match(serviceWorker,/\/site-shell\.js/,'offline app shell must include site-shell.js');
-assert.match(serviceWorker,/chunbong-pwa-20260922-v30/,'PWA cache version must include latest shell assets');
+assert.match(serviceWorker,/chunbong-pwa-20260922-v31/,'PWA cache version must include latest shell assets');
 assert.match(shell,/personalPriorityPages/,'personal hub runtime should be prioritized only on interactive pages');
 assert.match(shell,/runIdle\(loadPersonal\)/,'passive pages should defer personal hub runtime');
 assert.match(shell,/runIdle\(\(\)=>loadScript\('site-meta\.js'\)\)/,'site metadata enhancement should defer to browser idle time');
