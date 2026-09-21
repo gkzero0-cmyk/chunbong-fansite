@@ -85,8 +85,10 @@ jobs:
             assert.equal(await page.locator('[data-days]').count(),4,'period buttons missing');
             await page.locator('[data-days="all"]').click();
             assert.ok(await page.locator('[data-days="all"]').evaluate(el=>el.classList.contains('active')),'all-time period did not activate');
+            await page.waitForFunction(()=>document.querySelector('#operator-period-compare-label')?.textContent?.includes('전체 기간'));
 
             await page.locator('[data-operator-tab="feedback"]').click();
+            await page.locator('[data-operator-panel="feedback"]').waitFor({state:'visible'});
             await page.locator('[data-feedback-id="FB-20260921-ABC123"]').click();
             assert.equal((await page.locator('#feedback-id').textContent())?.trim(),'FB-20260921-ABC123');
             assert.equal((await page.locator('#feedback-message').textContent())?.trim(),'모바일 일정이 더 편해졌어요.');
