@@ -2,13 +2,16 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const sw = await readFile(new URL('../service-worker.js', import.meta.url), 'utf8');
-assert.ok(sw.includes("chunbong-pwa-20260921-v28"), 'PWA cache version must advance after broadcast alert changes');
+assert.ok(sw.includes("chunbong-pwa-20260922-v29"), 'PWA cache version must advance after core-shell optimization');
 for (const asset of [
-  '/content-filter.css','/content-filter.js','/schedule.html','/schedule-enhancements.css',
-  '/live-fixes.js','/tarot.html','/tarot.css','/tarot.js','/tarot-quality.css','/tarot-composite.css','/tarot-data.js','/tarot-composite.js','/tarot-sfx-v2.js',
-  '/data.html','/data.css','/data.js','/data-core.js','/data-soop-periods-v3.js','/data-recent-session-metrics.js','/data-enhancements.js','/data-enhancements.css',
-  '/vod.html','/clips.html','/youtube.html','/fanart.html'
+  '/offline.html','/styles.css','/theme.css','/theme-init.js','/site-shell.js',
+  '/site-quality.css','/mobile-site.css','/mobile-site.js','/personal-hub.js','/myhub.html'
 ]) {
-  assert.ok(sw.includes("'"+asset+"'"), 'offline shell missing '+asset);
+  assert.ok(sw.includes("'"+asset+"'"), 'core offline shell missing '+asset);
+}
+for (const asset of [
+  '/schedule.html','/tarot.js','/data.js','/page-media.js','/fanart-gallery.js'
+]) {
+  assert.ok(!sw.includes("'"+asset+"'"), 'route-specific asset must runtime-cache after first visit: '+asset);
 }
 console.log('pwa-offline-wave1-regression: ok');
