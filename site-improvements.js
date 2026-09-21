@@ -247,6 +247,29 @@
     render();
   }
 
+  function setupNavigationPrefetch(){
+    const warmed=new Set();
+    const warm=target=>{
+      const anchor=target?.closest?.('a[href]');
+      if(!anchor||anchor.hasAttribute('download'))return;
+      let url;
+      try{url=new URL(anchor.href,location.href);}catch(_){return;}
+      if(url.origin!==location.origin||!/^https?:$/.test(url.protocol))return;
+      if(!(/\.html$/.test(url.pathname)||url.pathname==='/'))return;
+      url.hash='';
+      const key=url.pathname+url.search;
+      if(key===location.pathname+location.search||warmed.has(key))return;
+      warmed.add(key);
+      const link=document.createElement('link');
+      link.rel='prefetch';link.href=key;link.dataset.navigationPrefetch='true';
+      document.head.appendChild(link);
+    };
+    const warmFromEvent=event=>warm(event.target);
+    document.addEventListener('pointerover',warmFromEvent,{passive:true});
+    document.addEventListener('focusin',warmFromEvent);
+    document.addEventListener('touchstart',warmFromEvent,{passive:true,capture:true});
+  }
+
   async function checkDeploymentSync(){
     const CACHE_KEY='chunbong-deploy-sync-v2';
     let cached=null;
@@ -331,6 +354,7 @@
   }
 
   ensureAssets();
+  setupNavigationPrefetch();
   markHeaderNavigationState();
   addMyHubHeaderEntry();
   buildSearch();
