@@ -60,7 +60,8 @@ jobs:
             });
 
             await page.goto(process.env.BASE_URL+'/operator.html',{waitUntil:'networkidle'});
-            await page.waitForFunction(()=>!document.querySelector('#operator-dashboard')?.hidden);\n            assert.match(await page.locator('#operator-login').textContent(),/1년/,'1-year login persistence copy missing');
+            await page.waitForFunction(()=>!document.querySelector('#operator-dashboard')?.hidden);
+            assert.match(await page.locator('#operator-login').textContent(),/1년/,'1-year login persistence copy missing');
             assert.equal((await page.locator('#metric-active').textContent())?.trim(),'3');
             assert.equal((await page.locator('#metric-visitors').textContent())?.trim(),'42');
             assert.equal((await page.locator('#metric-pageviews').textContent())?.trim(),'120');
