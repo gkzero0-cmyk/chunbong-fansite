@@ -302,3 +302,102 @@
   0%{opacity:.55;transform:scale(.45)}
   100%{opacity:0;transform:scale(7.6)}
 }
+
+
+/* 2026-09-21 Fortune tactile polish — longer readable spin + interior-first prism response. */
+.daily-fortune-stage.is-spinning .daily-fortune-card-inner{
+  animation-duration:2.64s!important;
+  animation-timing-function:cubic-bezier(.12,.58,.12,1)!important;
+}
+@keyframes dailyFortuneBackSpin{
+  0%{transform:rotateX(0) rotateY(0) scale(1)}
+  10%{transform:rotateX(.7deg) rotateY(720deg) scale(1.014)}
+  31%{transform:rotateX(-.7deg) rotateY(2520deg) scale(.992)}
+  56%{transform:rotateX(.55deg) rotateY(4320deg) scale(1.018)}
+  69%{transform:rotateX(-.35deg) rotateY(5040deg) scale(.998)}
+  82%{transform:rotateX(.22deg) rotateY(5580deg) scale(1.01)}
+  92%{transform:rotateX(-.12deg) rotateY(5940deg) scale(.999)}
+  100%{transform:rotateX(0) rotateY(6120deg) scale(1)}
+}
+.daily-fortune-stage.is-prism-active .daily-fortune-card:before{opacity:.76!important}
+.daily-fortune-holo-film{
+  background:
+    radial-gradient(ellipse 34% 28% at var(--glow-x) var(--glow-y),
+      rgba(255,236,172,.38) 0 5%,
+      rgba(239,195,91,.22) 12%,
+      rgba(123,104,224,.20) 24%,
+      rgba(72,177,222,.16) 34%,
+      transparent 57%),
+    linear-gradient(118deg,
+      transparent 22%,
+      rgba(72,190,220,.12) 33%,
+      rgba(120,96,214,.20) 41%,
+      rgba(221,105,178,.12) 48%,
+      rgba(239,199,92,.22) 55%,
+      rgba(88,181,218,.12) 63%,
+      transparent 74%)!important;
+  background-size:100% 100%,185% 185%!important;
+  background-position:center,var(--glow-x) var(--glow-y)!important;
+  filter:saturate(1.22) contrast(1.025)!important;
+}
+.daily-fortune-stage.is-prism-active .daily-fortune-holo-film{opacity:.74!important}
+.daily-fortune-stage.is-prism-active .daily-fortune-card:after{
+  opacity:.66!important;
+  background:
+    radial-gradient(circle at var(--glow-x) var(--glow-y),
+      rgba(255,237,175,.48) 0 3%,
+      rgba(238,193,83,.24) 7%,
+      rgba(124,103,222,.18) 13%,
+      rgba(75,174,220,.13) 19%,
+      transparent 30%),
+    linear-gradient(126deg,
+      transparent 27%,
+      rgba(84,190,221,.10) 38%,
+      rgba(127,103,217,.17) 47%,
+      rgba(239,204,104,.20) 55%,
+      transparent 68%)!important;
+  background-size:100% 100%,170% 170%!important;
+  background-position:center,var(--glow-x) var(--glow-y)!important;
+}
+.daily-fortune-stage.is-prism-active .daily-fortune-front img{
+  filter:brightness(1.045) saturate(1.09) contrast(1.02);
+  transition:filter .22s ease;
+}
+.daily-fortune-stage.is-prism-active .daily-fortune-back{
+  filter:brightness(1.055) saturate(1.10);
+  transition:filter .22s ease;
+}
+.daily-fortune-holo-ripple{
+  width:34px!important;height:22px!important;margin:-11px 0 0 -17px!important;
+  border-color:rgba(241,216,144,.48)!important;
+  box-shadow:0 0 0 1px rgba(111,101,215,.18),0 0 16px rgba(81,177,216,.16)!important;
+  animation:dailyFortuneLuxuryRipple .86s cubic-bezier(.14,.66,.18,1) forwards!important;
+}
+.daily-fortune-holo-ripple::after{
+  border-color:rgba(124,105,220,.28)!important;
+  box-shadow:0 0 10px rgba(84,176,218,.11)!important;
+}
+.daily-fortune-holo-spark{
+  display:block!important;
+  width:3px;height:3px;margin:-1.5px 0 0 -1.5px;
+  background:#ffe7a0;
+  box-shadow:0 0 7px rgba(255,213,104,.72),0 0 12px rgba(109,96,220,.38);
+  animation:dailyFortuneHoloSpark .78s ease-out var(--spark-delay,0ms) forwards!important;
+}
+@keyframes dailyFortuneLuxuryRipple{
+  0%{opacity:.72;transform:scale(.38)}
+  38%{opacity:.54}
+  100%{opacity:0;transform:scale(8.8)}
+}
+.daily-fortune-dialog.is-braking .daily-fortune-orbit{
+  opacity:.95;
+  animation:dailyFortuneBrakeOrbit .72s cubic-bezier(.12,.7,.18,1) infinite;
+}
+.daily-fortune-dialog.is-braking .daily-fortune-card{
+  filter:drop-shadow(0 34px 54px #000e) drop-shadow(0 0 24px rgba(132,103,226,.28));
+}
+@keyframes dailyFortuneBrakeOrbit{
+  0%{transform:rotate(0) scale(.98);opacity:.9}
+  62%{opacity:.62}
+  100%{transform:rotate(1turn) scale(1.08);opacity:.28}
+}
