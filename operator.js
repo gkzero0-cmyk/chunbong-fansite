@@ -111,7 +111,7 @@ async function loadSystemStatus(){
   const data=await json(API+'operator-system-status');currentSystem=data;
   const dep=data.deployment||{},storage=data.storage||{},services=data.services||{},traffic=data.traffic||{};
   $('#system-production').innerHTML=dep.sha?'<span class="operator-health ok">● READY</span>':'<span class="operator-health bad">● 확인 필요</span>';$('#system-production-meta').textContent=(dep.environment||'-')+' · '+shortSha(dep.sha);
-  $('#system-sync').innerHTML=dep.synced?'<span class="operator-health ok">● 동기화</span>':'<span class="operator-health warn">● SHA 불일치</span>';$('#system-sync-meta').textContent=shortSha(dep.sha)+' / '+shortSha(dep.mainSha);
+  $('#system-sync').innerHTML=dep.synced===true?'<span class="operator-health ok">● 동기화</span>':dep.synced===false?'<span class="operator-health warn">● SHA 불일치</span>':'<span class="operator-health warn">● 확인 불가</span>';$('#system-sync-meta').textContent=shortSha(dep.sha)+' / '+shortSha(dep.mainSha);
   $('#system-storage').innerHTML=healthLabel(Boolean(storage.redisOk));$('#system-storage-meta').textContent=storage.redisConfigured?'Redis/KV 연결 '+(storage.redisOk?'정상':'확인 필요'):'저장소 설정 없음';
   $('#system-push').innerHTML=healthLabel(Boolean(services.push));$('#system-push-meta').textContent=services.push?'VAPID 준비됨':'Push 설정 확인 필요';
   $('#system-active').textContent=fmt(traffic.activeNow);$('#system-visitors').textContent=fmt(traffic.visitors);$('#system-sessions').textContent=fmt(traffic.sessions);$('#system-pageviews').textContent=fmt(traffic.pageviews);
