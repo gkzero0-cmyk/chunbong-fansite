@@ -26,7 +26,7 @@
 .personal-alert-panel [data-personal-alert-toggle]{position:relative;min-width:70px;padding:3px}
 .personal-alert-panel [data-personal-alert-toggle] span{display:grid;place-items:center;min-height:28px;border-radius:999px;background:#17171a;transition:.2s}
 .personal-alert-panel [data-personal-alert-toggle][aria-pressed="true"] span{background:#ff6b18;color:#fff;box-shadow:0 0 18px #ff6b1847}
-.personal-alert-panel [data-personal-alert-toggle][aria-pressed="false"] span{background:#1a1a1d;color:#8d8782}
+.personal-alert-panel [data-personal-alert-toggle][aria-pressed="false"] span{background:#1a1a1d;color:#8d8782}.personal-alert-panel [data-personal-alert-toggle][aria-busy="true"]{cursor:wait;opacity:.78}.personal-alert-panel [data-personal-alert-toggle][aria-busy="true"] span{font-size:10px}
 @media(max-width:760px){
   .personal-alert-panel header{align-items:flex-start!important}
   .personal-alert-panel [data-personal-alert-toggle]{min-width:74px;min-height:44px}
