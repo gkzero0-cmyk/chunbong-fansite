@@ -19,10 +19,10 @@ assert.match(improvements,/loadScript\('site-analytics\.js'\)/);
 assert.match(improvements,/loadScript\('feedback-widget\.js'\)/);
 
 assert.match(sw,/chunbong-pwa-20260922-v29/,'optimized PWA cache version missing');
-for(const heavy of ['/tarot.js','/data.js','/myhub.html','/site-analytics.js','/feedback-widget.js']){
+for(const heavy of ['/tarot.js','/data.js','/site-analytics.js','/feedback-widget.js']){
   assert.ok(!sw.includes(heavy),'heavy/optional runtime must not block PWA installation: '+heavy);
 }
-for(const core of ['/site-shell.js','/mobile-site.js','/personal-hub.js','/assets/chunbong-main.webp']){
+for(const core of ['/site-shell.js','/mobile-site.js','/personal-hub.js','/myhub.html','/assets/chunbong-main.webp']){
   assert.ok(sw.includes(core),'core PWA shell asset missing: '+core);
 }
 
