@@ -70,14 +70,12 @@
   personalPriorityPages.includes('|'+page+'|')?loadPersonal():runIdle(loadPersonal);runIdle(()=>loadScript('site-meta.js'));
 })();
 (() => {
-  const nav=document.getElementById('main-nav');
-  if(!nav||nav.querySelector('[data-nav="history"]'))return;
-  const link=document.createElement('a');
-  link.dataset.nav='history';
-  link.href='history.html';
-  link.textContent='방송 이력';
-  const dataLink=nav.querySelector('[data-nav="data"]');
-  nav.insertBefore(link,dataLink||null);
+  const nav=document.getElementById('main-nav');if(!nav)return;
+  [['contents','chunbong-contents.html','춘봉 콘텐츠'],['history','history.html','방송 이력']].forEach(([key,href,label])=>{
+    if(nav.querySelector('[data-nav="'+key+'"]'))return;
+    const a=document.createElement('a');a.dataset.nav=key;a.href=href;a.textContent=label;
+    nav.insertBefore(a,nav.querySelector(key==='contents'?'[data-nav="history"],[data-nav="data"]':'[data-nav="data"]')||null);
+  });
 })();
 (() => {
   const nav = document.getElementById('main-nav');
@@ -109,17 +107,6 @@
   wrapper.addEventListener('focusout', event => {
     if (!wrapper.contains(event.relatedTarget)) setExpanded(false);
   });
-})();
-(() => {
-  const nav=document.getElementById('main-nav');
-  if(!nav||nav.querySelector('[data-nav="contents"]'))return;
-  const link=document.createElement('a');
-  link.dataset.nav='contents';
-  link.href='chunbong-contents.html';
-  link.textContent='춘봉 콘텐츠';
-  const history=nav.querySelector('[data-nav="history"]');
-  const dataLink=nav.querySelector('[data-nav="data"]');
-  nav.insertBefore(link,history||dataLink||null);
 })();
 (() => {
   const nav=document.getElementById('main-nav');
