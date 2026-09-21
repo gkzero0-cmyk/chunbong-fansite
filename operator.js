@@ -56,6 +56,21 @@ function renderDelta(id,value){
   if(value===null||value===undefined){el.textContent='이전 기간 비교 없음';el.className='is-neutral';return}
   const n=Number(value)||0;el.textContent=(n>0?'▲ ':n<0?'▼ ':'')+Math.abs(n).toFixed(1)+'% · 이전 기간 대비';el.className=n>0?'is-up':n<0?'is-down':'is-neutral';
 }
+function renderAttention(){
+  const root=$('#operator-attention');if(!root)return;
+  const issues=[],notes=[];
+  const unread=Number(currentAnalytics?.feedbackCounts?.new)||0;
+  if(unread>0)issues.push('새 피드백 '+fmt(unread)+'건');
+  const dep=currentSystem?.deployment||{},storage=currentSystem?.storage||{};
+  if(dep.synced===false)issues.push('Production과 main 동기화 필요');
+  if(storage.redisConfigured&&storage.redisOk===false)issues.push('Redis / KV 확인 필요');
+  const failed=(currentSystem?.endpoints||[]).filter(row=>!row.ok);
+  if(failed.length)issues.push('핵심 API '+fmt(failed.length)+'곳 확인 필요');
+  if(currentSystem?.checkedAt)notes.push('마지막 시스템 확인 '+new Date(currentSystem.checkedAt).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}));
+  root.classList.toggle('has-issues',issues.length>0);
+  root.querySelector('strong').textContent=issues.length?'확인할 항목이 있습니다':'현재 확인된 주요 이상 없음';
+  root.querySelector('span').textContent=issues.length?issues.join(' · '):(notes[0]||'배포 · API · 저장소 · 피드백 상태가 정상 범위입니다.');
+}
 async function loadAnalytics(){
   const data=await json(API+'operator-analytics&days='+currentDays);currentAnalytics=data;
   $('#metric-active').textContent=fmt(data.activeNow);$('#metric-visitors').textContent=fmt(data.visitors);$('#metric-sessions').textContent=fmt(data.sessions);
@@ -65,8 +80,7 @@ async function loadAnalytics(){
   renderRows($('#operator-pages'),data.topPages);renderRows($('#operator-menus'),data.topMenus);renderRows($('#operator-features'),data.topFeatures);renderRows($('#operator-devices'),data.devices);
   renderDaily(data.daily||[]);renderHourly(data.hourly||[]);renderFunnel(data.funnel||{});
   $('#operator-collection-note').textContent=data.collectionStartedAt?'실사용 분석 수집 시작: '+new Date(data.collectionStartedAt).toLocaleString('ko-KR'):'분석 데이터가 아직 수집되지 않았습니다.';
-  const unread=Number(data.feedbackCounts?.new)||0,badge=$('#operator-feedback-badge');badge.textContent=unread;badge.hidden=!unread;
-}
+  const unread=Number(data.feedbackCounts?.new)||0,badge=$('#operator-feedback-badge');badge.textContent=unread;badge.hidden=!unread;renderAttention();\n}
 function exportAnalyticsJson(){if(!currentAnalytics)return;download('chunbong-analytics-'+String(currentDays)+'d.json',JSON.stringify({exportedAt:new Date().toISOString(),period:currentDays,data:currentAnalytics},null,2),'application/json')}
 function exportAnalyticsCsv(){
   if(!currentAnalytics)return;
@@ -127,8 +141,7 @@ async function loadSystemStatus(){
   const serviceRows=[['GitHub 운영자 인증',services.githubAuth],['이메일 운영자 인증',services.emailAuth],['Push 알림',services.push],['실사용 분석',services.analytics],['피드백 저장',services.feedback]];
   $('#operator-service-health').innerHTML=serviceRows.map(([label,ok])=>`<div><span>${label}</span>${healthLabel(Boolean(ok))}</div>`).join('');
   const endpoints=Array.isArray(data.endpoints)?data.endpoints:[];
-  $('#operator-endpoint-health').innerHTML=endpoints.length?endpoints.map(row=>`<div><span>${escapeHtml(row.label||row.path||'API')} <small>${fmt(row.ms)}ms</small></span><span class="operator-endpoint-result ${row.ok?'ok':'bad'}">${row.ok?'HTTP '+fmt(row.status):row.status?'HTTP '+fmt(row.status):'응답 실패'}</span></div>`).join(''):'<p class="operator-empty">API 상태를 확인하지 못했습니다.</p>';
-}
+  $('#operator-endpoint-health').innerHTML=endpoints.length?endpoints.map(row=>`<div><span>${escapeHtml(row.label||row.path||'API')} <small>${fmt(row.ms)}ms</small></span><span class="operator-endpoint-result ${row.ok?'ok':'bad'}">${row.ok?'HTTP '+fmt(row.status):row.status?'HTTP '+fmt(row.status):'응답 실패'}</span></div>`).join(''):'<p class="operator-empty">API 상태를 확인하지 못했습니다.</p>';renderAttention();\n}
 function renderSessions(){
   const el=$('#operator-session-list'),rows=session?.sessions||[];
   el.innerHTML=rows.length?rows.map(row=>`<article class="${row.current?'is-current':''}"><div><strong>${row.current?'현재 세션 · ':''}${escapeHtml(providerLabel(row.provider))}</strong><span>${row.createdAt?'로그인 '+new Date(row.createdAt).toLocaleString('ko-KR'):'기존 세션'}${row.lastSeen?' · 최근 활동 '+new Date(row.lastSeen).toLocaleString('ko-KR'):''} · 만료 ${new Date(row.expiresAt).toLocaleDateString('ko-KR')}</span></div>${row.current?'<b>현재 기기</b>':`<button type="button" data-revoke-session="${escapeHtml(row.id)}">세션 종료</button>`}</article>`).join(''):'<p class="operator-empty">세션 상세 정보가 아직 없습니다.</p>';
@@ -142,12 +155,33 @@ async function setupFirebaseEmail(){
 async function boot(){
   try{
     await refreshSession();showDashboard();
-    await Promise.all([loadAnalytics(),loadFeedback()]);
+    await Promise.all([loadAnalytics(),loadFeedback(),loadSystemStatus()]);
   }catch{showLogin()}
 }
 $('#operator-github-login')?.addEventListener('click',event=>{if(event.currentTarget.getAttribute('aria-disabled')==='true')event.preventDefault()});
-document.querySelectorAll('[data-days]').forEach(btn=>btn.addEventListener('click',async()=>{document.querySelectorAll('[data-days]').forEach(x=>x.classList.toggle('active',x===btn));currentDays=btn.dataset.days==='all'?'all':(Number(btn.dataset.days)||7);await loadAnalytics()}));
-$$('[data-operator-tab]').forEach(btn=>btn.addEventListener('click',async()=>{$$('[data-operator-tab]').forEach(x=>x.classList.toggle('active',x===btn));$$('[data-operator-panel]').forEach(panel=>panel.hidden=panel.dataset.operatorPanel!==btn.dataset.operatorTab);if(btn.dataset.operatorTab==='system')await loadSystemStatus();if(btn.dataset.operatorTab==='security')await refreshSession()}));
+document.querySelectorAll('[data-days]').forEach(btn=>btn.addEventListener('click',async()=>{
+  document.querySelectorAll('[data-days]').forEach(x=>{const active=x===btn;x.classList.toggle('active',active);x.setAttribute('aria-pressed',String(active))});
+  currentDays=btn.dataset.days==='all'?'all':(Number(btn.dataset.days)||7);await loadAnalytics()
+}));
+async function activateOperatorTab(btn,{focus=false}={}){
+  const tabs=$('[data-operator-tab]'),name=btn.dataset.operatorTab;
+  tabs.forEach(x=>{const active=x===btn;x.classList.toggle('active',active);x.setAttribute('aria-selected',String(active));x.tabIndex=active?0:-1});
+  $('[data-operator-panel]').forEach(panel=>panel.hidden=panel.dataset.operatorPanel!==name);
+  if(focus)btn.focus();
+  if(name==='system')await loadSystemStatus();
+  if(name==='security')await refreshSession();
+}
+$('[data-operator-tab]').forEach(btn=>{
+  btn.addEventListener('click',()=>void activateOperatorTab(btn));
+  btn.addEventListener('keydown',event=>{
+    if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+    event.preventDefault();
+    const tabs=$('[data-operator-tab]'),index=tabs.indexOf(btn);
+    const next=event.key==='Home'?tabs[0]:event.key==='End'?tabs[tabs.length-1]:tabs[(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length];
+    void activateOperatorTab(next,{focus:true});
+  });
+});
+$('[data-operator-tab]').forEach((btn,index)=>btn.tabIndex=index===0?0:-1);
 $('#operator-export-json')?.addEventListener('click',exportAnalyticsJson);$('#operator-export-csv')?.addEventListener('click',exportAnalyticsCsv);
 $('#operator-feedback-refresh')?.addEventListener('click',loadFeedback);
 ['#operator-feedback-search','#operator-feedback-status-filter','#operator-feedback-category-filter','#operator-feedback-sort'].forEach(selector=>$(selector)?.addEventListener(selector.includes('search')?'input':'change',renderFeedbackList));
