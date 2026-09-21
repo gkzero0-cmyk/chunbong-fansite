@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-const appShell=sw.slice(sw.indexOf('const APP_SHELL'),sw.indexOf('];',sw.indexOf('const APP_SHELL'))+2);
 import fs from 'node:fs';
 
 const improvements=fs.readFileSync(new URL('../site-improvements.js',import.meta.url),'utf8');
 const sw=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');
+const appShell=sw.slice(sw.indexOf('const APP_SHELL'),sw.indexOf('];',sw.indexOf('const APP_SHELL'))+2);
 const mobile=fs.readFileSync(new URL('../mobile-site.css',import.meta.url),'utf8');
 
 assert.match(improvements,/optimizeImageLoading/,'image loading optimizer missing');
