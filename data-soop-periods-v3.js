@@ -348,7 +348,7 @@
   function enhanceCalendar(payload) {
     const rows=mergeDailyHistory(payload),monthlyRows=mergeMonthlyHistory(payload),map=new Map(rows.map(row=>[row.date,row]));
     const monthlyMap=new Map([...new Set(rows.map(row=>monthKey(row.date)).filter(Boolean))].map(month=>[month,calendarMonthMetrics(payload,`${month}-01`,rows,monthlyRows)]));
-    const syncSelection=date=>$('[data-calendar-date]').forEach(button=>{
+    const syncSelection=date=>$$('[data-calendar-date]').forEach(button=>{
       const selected=button.dataset.calendarDate===date;
       button.classList.toggle('is-selected',selected);
       button.setAttribute('aria-pressed',String(selected));
@@ -357,7 +357,7 @@
       syncSelection(date);
       renderCalendarDetail(map.get(date),monthlyMap.get(monthKey(date))||null);
     };
-    $('[data-calendar-date]').forEach(button=>{
+    $$('[data-calendar-date]').forEach(button=>{
       if(button.dataset.v3Bound==='1')return;
       button.dataset.v3Bound='1';
       button.addEventListener('click',()=>setTimeout(()=>renderDate(button.dataset.calendarDate),0));
