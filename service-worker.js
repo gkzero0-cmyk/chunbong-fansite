@@ -22,7 +22,6 @@ const APP_SHELL = [
   '/content.js',
   '/personal-hub.css',
   '/personal-hub.js',
-  '/myhub.html',
   '/daily-fortune.css',
   '/daily-fortune.js',
   '/home-overview.css',
