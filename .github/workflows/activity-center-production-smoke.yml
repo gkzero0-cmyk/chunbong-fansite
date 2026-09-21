@@ -84,7 +84,10 @@ jobs:
               const errors=[];
               page.on('pageerror',error=>errors.push(error.message));
               await page.goto(`${process.env.BASE_URL}/index.html?_activity_smoke=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:45000});
-              await page.waitForSelector('.activity-bell');
+              await page.waitForSelector('.activity-bell',{state:'visible',timeout:30000});
+              await page.waitForSelector('.theme-toggle',{state:'visible',timeout:30000});
+              await page.waitForSelector('.changelog-button',{state:'visible',timeout:30000});
+              await page.waitForFunction(()=>document.querySelector('.site-header')&&document.querySelector('.activity-center'));
 
               assert.equal(await page.locator('.header-live[href*="sooplive.com"]').count(),0,'SOOP header shortcut still visible');
               assert.ok(await page.locator('.theme-toggle').isVisible(),'theme toggle missing');
