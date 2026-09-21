@@ -33,3 +33,8 @@ for(const token of ['archive-overview-highlight-grid','archive-people-chips','ar
 for(const token of ['주요 기록','기록 하이라이트','영상 · 방송','자료 이미지']) assert.ok(js.includes(token),token);
 assert.match(js,/renderOverviewHighlights/);
 assert.match(js,/renderRecordStrip/);
+
+for(const token of ['data-archive-featured','data-archive-series-nav']) assert.ok(html.includes(token),token);
+for(const token of ['archive-featured','archive-series-nav','archive-edition-grid','archive-edition-card']) assert.ok(css.includes(token),token);
+for(const token of ['renderFeaturedArchive','renderEditionPicker','edition=','editionCount']) assert.ok(js.includes(token),token);
+assert.ok(!html.includes('archive-stack-card-a'),'decorative empty poster/vod/archive cards should be removed');
