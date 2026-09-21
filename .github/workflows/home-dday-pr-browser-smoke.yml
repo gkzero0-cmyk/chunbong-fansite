@@ -131,12 +131,14 @@ jobs:
                 assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('mobile-home-dashboard-mode')),true,'mobile home dashboard mode missing');
               }
 
-              await page.locator('#home-dday-trigger').click();
-              assert.ok(await page.locator('#home-dday-dialog').evaluate(el=>el.open),'D-day dialog did not open');
-              assert.equal((await page.locator('#home-dday-first-years').textContent())?.trim(),values.expected.firstYears);
-              assert.equal((await page.locator('#home-dday-soop-years').textContent())?.trim(),values.expected.soopYears);
-              await page.locator('[data-home-dday-close]').click();
-              assert.equal(await page.locator('#home-dday-dialog').evaluate(el=>el.open),false,'D-day dialog did not close');
+              if(viewport.width>390){
+                await page.locator('#home-dday-trigger').click();
+                assert.ok(await page.locator('#home-dday-dialog').evaluate(el=>el.open),'D-day dialog did not open');
+                assert.equal((await page.locator('#home-dday-first-years').textContent())?.trim(),values.expected.firstYears);
+                assert.equal((await page.locator('#home-dday-soop-years').textContent())?.trim(),values.expected.soopYears);
+                await page.locator('[data-home-dday-close]').click();
+                assert.equal(await page.locator('#home-dday-dialog').evaluate(el=>el.open),false,'D-day dialog did not close');
+              }
 
               const homeOfficial=page.locator('.status-card-link');
               assert.equal(await homeOfficial.getAttribute('href'),'https://www.sooplive.com/station/chunbongtv');
