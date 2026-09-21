@@ -238,8 +238,8 @@ async function setupFirebaseEmail(){
 }
 async function activateOperatorTab(tab){
   const target=String(tab||'overview');
-  $('[data-operator-tab]').forEach(button=>{const active=button.dataset.operatorTab===target;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1});
-  $('[data-operator-panel]').forEach(panel=>panel.hidden=panel.dataset.operatorPanel!==target);
+  $$('[data-operator-tab]').forEach(button=>{const active=button.dataset.operatorTab===target;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1});
+  $$('[data-operator-panel]').forEach(panel=>panel.hidden=panel.dataset.operatorPanel!==target);
   if(target==='performance'&&!currentAnalytics)await loadAnalytics();
   if(target==='system'&&!currentSystem)await loadSystemStatus();
   if(target==='security')await Promise.allSettled([refreshSession(),loadSecurityLog()]);
