@@ -17,9 +17,6 @@ const APP_SHELL = [
   '/site-meta.js',
   '/site-health.js',
   '/site-improvements.js',
-  '/site-analytics.js',
-  '/feedback-widget.js',
-  '/feedback-widget.css',
   '/activity-center.css',
   '/activity-center.js',
   '/content.js',
@@ -35,7 +32,8 @@ const APP_SHELL = [
   '/assets/app-icon.svg',
   '/assets/app-icon-192.png',
   '/assets/app-icon-512.png',
-  '/assets/apple-touch-icon.png'
+  '/assets/apple-touch-icon.png',
+  '/assets/chunbong-main.webp'
 ]
 
 self.addEventListener('install', event => {

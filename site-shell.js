@@ -64,27 +64,10 @@
     }
   };
 
-  if (!document.querySelector('link[data-personal-hub-styles]')) {
-    const personalStyles = document.createElement('link');
-    personalStyles.rel = 'stylesheet';
-    personalStyles.href = 'personal-hub.css';
-    personalStyles.dataset.personalHubStyles = 'true';
-    document.head.appendChild(personalStyles);
-  }
-  if (!document.querySelector('link[data-site-quality]')) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'site-quality.css';
-    link.dataset.siteQuality = 'true';
-    document.head.appendChild(link);
-  }
-  for (const src of ['site-meta.js', 'site-health.js', 'site-improvements.js', 'personal-hub.js']) {
-    if (document.querySelector('script[src="' + src + '"]')) continue;
-    const script = document.createElement('script');
-    script.src = src;
-    script.defer = true;
-    document.head.appendChild(script);
-  }
+  const d=document,loadStyle=(h,k)=>{if(d.querySelector('link['+k+']'))return;const n=d.createElement('link');n.rel='stylesheet';n.href=h;n.setAttribute(k,'true');d.head.appendChild(n)},loadScript=s=>{if(d.querySelector('script[src="'+s+'"]'))return;const n=d.createElement('script');n.src=s;n.defer=1;d.head.appendChild(n)},runIdle=f=>'requestIdleCallback'in window?requestIdleCallback(f,{timeout:1800}):setTimeout(f,650);
+  loadScript('site-health.js');loadScript('site-improvements.js');
+  const personalPriorityPages='|home|myhub|vod|clips|youtube|fanart|tarot|minigames|chuntris|chunbak|chungwagame|chuncortile|',loadPersonal=()=>{loadStyle('personal-hub.css','data-personal-hub-styles');loadScript('personal-hub.js')},page=d.body.dataset.page||'';
+  personalPriorityPages.includes('|'+page+'|')?loadPersonal():runIdle(loadPersonal);runIdle(()=>loadScript('site-meta.js'));
 })();
 (() => {
   const nav=document.getElementById('main-nav');

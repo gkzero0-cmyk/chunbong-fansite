@@ -43,6 +43,9 @@ for(const file of gamePages){
 
 assert.match(serviceWorker,/\/site-shell\.js/,'offline app shell must include site-shell.js');
 assert.match(serviceWorker,/chunbong-pwa-20260922-v29/,'PWA cache version must include latest shell assets');
+assert.match(shell,/personalPriorityPages/,'personal hub runtime should be prioritized only on interactive pages');
+assert.match(shell,/runIdle\(loadPersonal\)/,'passive pages should defer personal hub runtime');
+assert.match(shell,/runIdle\(\(\)=>loadScript\('site-meta\.js'\)\)/,'site metadata enhancement should defer to browser idle time');
 
 assert.ok(shell.length < 12500,'shared shell unexpectedly large');
 assert.ok(content.length < 6500,'content data bundle unexpectedly large');

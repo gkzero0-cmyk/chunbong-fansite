@@ -163,9 +163,8 @@ async function activateOperatorTab(tab){
 async function boot(){
   try{
     await refreshSession();showDashboard();
-    await Promise.all([loadAnalytics(),loadFeedback()]);
+    await Promise.allSettled([loadAnalytics(),loadFeedback(),loadSystemStatus()]);
     renderOperatorAttention();
-    void loadSystemStatus().catch(()=>renderOperatorAttention());
   }catch{showLogin()}
 }
 $('#operator-github-login')?.addEventListener('click',event=>{if(event.currentTarget.getAttribute('aria-disabled')==='true')event.preventDefault()});

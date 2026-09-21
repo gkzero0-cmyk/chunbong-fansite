@@ -58,6 +58,9 @@ assert.match(css,/\.pwa-app-more-sheet\{/,'installed app more sheet styles missi
 assert.match(css,/\.pwa-ios-install-chip\{/,'iOS home-screen install helper styles missing');
 assert.match(css,/body\.pwa-app-mode \.daily-fortune-launcher,[\s\S]*body\.mobile-tabbar-mode \.daily-fortune-launcher\{/,'daily fortune launcher must clear the mobile tabbar');
 assert.match(css,/body\.pwa-app-mode \.activity-panel,[\s\S]*body\.mobile-tabbar-mode \.activity-panel\{/,'activity panel must clear the mobile tabbar');
+assert.match(css,/Mobile overlay coordination/,'mobile overlay coordination layer missing');
+assert.match(css,/\.pwa-app-more-open,\.feedback-open/,'mobile modal states must suppress competing floating controls');
+assert.match(css,/body\.feedback-open \.pwa-app-tabbar/,'feedback modal must disable the bottom navigation');
 new Function(js);
 
 console.log('Mobile site regression passed');
