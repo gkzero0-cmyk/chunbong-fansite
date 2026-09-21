@@ -52,10 +52,14 @@ function friendlyKey(key=''){
   if(PAGE_LABELS[raw])return PAGE_LABELS[raw];
   if(MENU_LABELS[raw])return MENU_LABELS[raw];
   if(map[raw])return map[raw];
-  return raw.replace(/^game_(start|finish):/,'미니게임 · ').replace(/^tarot_(start|result)$/,'춘봉 타로').replace(/^feedback_(open|submit)$/,'피드백');
+  const game=raw.match(/^game_(?:start|finish):(.+)$/);
+  if(game){const names={chuntris:'춘트리스',chunbak:'춘박게임',chungwagame:'춘과게임',chuncortile:'춘컬타일'};return '미니게임 · '+(names[game[1]]||game[1])}
+  if(/^tarot_(start|result)$/.test(raw))return '춘봉 타로';
+  if(/^feedback_(open|submit)$/.test(raw))return '피드백';
+  return raw;
 }
 function periodTitle(){
-  return currentDays==='all'?'전체 이용 추이 · 최근 60일':currentDays===1?'오늘 이용 추이':`최근 ${currentDays}일 이용 추이`;
+  return currentDays==='all'?'전체 이용 추이':currentDays===1?'오늘 이용 추이':`최근 ${currentDays}일 이용 추이`;
 }
 function compareLabel(){return currentDays==='all'?'전체 기간':currentDays===1?'어제 대비':`이전 ${currentDays}일 대비`}
 function renderRows(el,rows=[]){el.innerHTML=rows.length?rows.map((row,i)=>`<li><em>${i+1}</em><strong title="${escapeHtml(row.key)}">${escapeHtml(friendlyKey(row.key))}</strong><b>${fmt(row.value)}${Number.isFinite(row.averageActiveSeconds)?' · '+shortTime(row.averageActiveSeconds):''}</b></li>`).join(''):'<li><em>–</em><strong>아직 데이터가 없습니다.</strong><b>0</b></li>'}
