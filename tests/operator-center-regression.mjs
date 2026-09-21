@@ -80,6 +80,10 @@ assert.match(operatorHtml,/operator-endpoint-health/,'public endpoint health UI 
 assert.match(operatorHtml,/Vercel 사용량/,'Vercel usage guidance missing');
 assert.match(operatorHtml,/operator\.css/);
 assert.match(operatorHtml,/type="module" src="operator\.js"/);
+assert.match(operatorHtml,/class="skip-link"/,'operator skip link missing');
+assert.match(operatorHtml,/role="tablist"/,'operator tabs must expose tablist semantics');
+assert.match(operatorHtml,/aria-selected="true"/,'active operator tab must expose aria-selected');
+assert.match(operatorHtml,/operator-overall-status/,'operator status overview missing');
 
 assert.match(operatorJs,/operator-auth-config/);
 assert.match(operatorJs,/loadAuthAvailability/,'operator auth readiness UI missing');
@@ -98,6 +102,10 @@ assert.match(operatorJs,/operatorMemo/,'operator memo handling missing');
 assert.match(operatorJs,/redisMemoryLabel/,'Redis memory formatter missing');
 assert.match(operatorJs,/operator-endpoint-health/,'endpoint response renderer missing');
 assert.match(operatorJs,/text\/csv/,'analytics CSV export missing');
+assert.match(operatorJs,/renderOverallStatus/,'operator overall status renderer missing');
+assert.match(operatorJs,/aria-selected/,'operator tab selection accessibility missing');
+assert.match(operatorJs,/aria-pressed/,'operator period accessibility missing');
+assert.match(operatorJs,/Promise\.allSettled/,'operator overview health must not make login brittle');
 assert.match(api,/accounts:sendOobCode/,'Firebase email link dispatch missing');
 assert.match(api,/operator:auth:email-cooldown:v1/,'operator email magic-link cooldown missing');
 assert.match(operatorJs,/signInWithEmailLink/,'Firebase email link completion missing');
@@ -132,6 +140,8 @@ assert.match(operatorCss,/--op-muted:#a6adb6/,'operator readable muted token mis
 assert.match(operatorCss,/operator-system-summary/,'system status card styles missing');
 assert.match(operatorCss,/operator-feedback-filters/,'feedback filter styles missing');
 assert.match(operatorCss,/operator-session-list/,'session list styles missing');
+assert.match(operatorCss,/operator-overall-status/,'operator status overview styles missing');
+assert.match(operatorCss,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/,'operator mobile controls should fit without horizontal scrolling');
 
 assert.match(analytics,/crypto\.randomUUID/,'anonymous browser id missing');
 assert.match(analytics,/sessionStorage/,'session identifier missing');
@@ -150,14 +160,16 @@ assert.match(feedback,/기능 제안/);
 assert.match(feedback,/feedback-submit/);
 assert.match(feedback,/원본 IP 주소는 피드백 내용에 저장하지 않습니다/,'feedback environment privacy note missing');
 assert.match(feedback,/data-feedback-open/);
+assert.match(feedback,/feedback-open/,'feedback dialog must coordinate with mobile overlays');
 assert.match(feedbackCss,/feedback-dialog/);
 
 assert.match(improvements,/site-analytics\.js/,'sitewide analytics runtime not loaded');
 assert.match(improvements,/feedback-widget\.js/,'sitewide feedback runtime not loaded');
+assert.match(improvements,/requestIdleCallback/,'optional analytics and feedback should be deferred to browser idle time');
 assert.match(mobile,/data-feedback-open/,'mobile More feedback entry missing');
 
-assert.match(sw,/chunbong-pwa-20260921-v28/,'PWA cache must include the latest operator and alert assets');
-for(const asset of ['/site-analytics.js','/feedback-widget.js','/feedback-widget.css']) assert.ok(sw.includes(asset),'PWA shell missing '+asset);
+assert.match(sw,/chunbong-pwa-20260922-v29/,'PWA cache must include the latest operator and alert assets');
+for(const asset of ['/site-analytics.js','/feedback-widget.js','/feedback-widget.css']) assert.ok(!sw.includes(asset),'optional runtime should not be part of the PWA install shell: '+asset);
 
 new Function(api);
 new Function(analytics);
