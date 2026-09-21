@@ -415,14 +415,26 @@ if (typeof document !== 'undefined') {
       const selected = selectionOrder >= 0;
       button.classList.toggle('selected', selected);
       button.setAttribute('aria-pressed', String(selected));
+      let badge = button.querySelector('.tarot-selection-order-badge');
       if (selected) {
         const order = selectionOrder + 1;
+        const badgeText = `${order}/${state.count}`;
         button.dataset.selectionOrder = String(order);
-        button.dataset.selectionLabel = `✓ ${order}번째`;
-        button.setAttribute('aria-label', `뒤집힌 타로 카드 ${index + 1}, ${order}번째로 선택됨 · 누르면 선택 취소`);
+        button.dataset.selectionTotal = String(state.count);
+        button.dataset.selectionLabel = badgeText;
+        if (!badge) {
+          badge = document.createElement('span');
+          badge.className = 'tarot-selection-order-badge';
+          badge.setAttribute('aria-hidden', 'true');
+          button.appendChild(badge);
+        }
+        badge.textContent = badgeText;
+        button.setAttribute('aria-label', `뒤집힌 타로 카드 ${index + 1}, ${badgeText} 선택됨 · 누르면 선택 취소`);
       } else {
         delete button.dataset.selectionOrder;
+        delete button.dataset.selectionTotal;
         delete button.dataset.selectionLabel;
+        badge?.remove();
         button.setAttribute('aria-label', `뒤집힌 타로 카드 ${index + 1} 선택`);
       }
     });
