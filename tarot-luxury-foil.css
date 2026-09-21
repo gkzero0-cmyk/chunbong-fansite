@@ -118,3 +118,67 @@
   .tarot-card-foil{transform:none!important;transition:none!important}
   .tarot-card-foil::before,.tarot-card-foil::after{display:none!important}
 }
+
+
+/* 2026-09-21 tactile foil pass — visible rim + pointer-origin interior prism. */
+.tarot-card-foil.is-foil-active{
+  filter:saturate(1.07) contrast(1.025);
+  box-shadow:
+    0 22px 62px #000c,
+    0 0 0 1px rgba(244,213,124,.72),
+    0 0 0 3px rgba(109,91,211,.24),
+    0 0 24px rgba(233,190,77,.22),
+    0 0 42px rgba(88,103,212,.18);
+}
+.tarot-card-foil::after{
+  background:
+    radial-gradient(ellipse 34% 28% at var(--foil-x) var(--foil-y),
+      rgba(255,238,176,.44) 0 5%,
+      rgba(239,197,92,.23) 12%,
+      rgba(123,103,224,.21) 24%,
+      rgba(72,178,222,.16) 35%,
+      transparent 58%),
+    linear-gradient(118deg,
+      transparent 22%,
+      rgba(71,187,219,.12) 34%,
+      rgba(118,96,213,.20) 42%,
+      rgba(220,104,178,.12) 49%,
+      rgba(239,201,96,.22) 56%,
+      rgba(80,176,217,.12) 64%,
+      transparent 75%);
+  background-size:100% 100%,185% 185%;
+  background-position:center,var(--foil-x) var(--foil-y);
+  -webkit-mask-image:radial-gradient(ellipse 58% 50% at var(--foil-x) var(--foil-y),#000 0 36%,rgba(0,0,0,.84) 58%,transparent 86%);
+  mask-image:radial-gradient(ellipse 58% 50% at var(--foil-x) var(--foil-y),#000 0 36%,rgba(0,0,0,.84) 58%,transparent 86%);
+}
+.tarot-card-foil.is-foil-active::after{opacity:.76}
+.tarot-card-foil.is-foil-active .tarot-card-art{
+  filter:brightness(1.045) saturate(1.09) contrast(1.02)!important;
+  transition:filter .22s ease;
+}
+.tarot-card-foil::before{
+  width:48px;height:30px;
+  border-color:rgba(242,216,139,.50);
+  box-shadow:
+    0 0 0 1px rgba(117,103,218,.18),
+    0 0 14px rgba(81,176,216,.15),
+    inset 0 0 10px rgba(239,201,96,.08);
+}
+.tarot-card-foil.is-foil-rippling::before{animation:tarotLuxuryRipple .84s cubic-bezier(.14,.66,.18,1) forwards}
+@keyframes tarotLuxuryRipple{
+  0%{opacity:.72;transform:translate(-50%,-50%) scale(.42)}
+  36%{opacity:.52}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(8.5)}
+}
+.tarot-card-art-button:hover .tarot-card-foil,
+.tarot-card-art-button:focus-visible .tarot-card-foil{
+  transform:perspective(1200px) rotateX(var(--foil-tilt-x)) rotateY(var(--foil-tilt-y)) scale(1.018);
+}
+.tarot-card-dialog-art .tarot-card-foil.is-foil-active{
+  box-shadow:
+    0 24px 70px #000d,
+    0 0 0 2px rgba(244,213,124,.74),
+    0 0 0 4px rgba(109,91,211,.25),
+    0 0 34px rgba(233,190,77,.25),
+    0 0 56px rgba(88,103,212,.20);
+}
