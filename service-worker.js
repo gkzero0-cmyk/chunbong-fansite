@@ -35,6 +35,7 @@ const APP_SHELL = [
   '/assets/apple-touch-icon.png',
   '/assets/chunbong-main.webp'
 ]
+const APP_SHELL_PATHS = new Set(APP_SHELL.map(asset => new URL(asset, self.location.origin).pathname));
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -100,7 +101,9 @@ self.addEventListener('fetch', event => {
   }
 
   if (['script','style'].includes(request.destination)) {
-    event.respondWith(staleWhileRevalidate(request, event));
+    event.respondWith(APP_SHELL_PATHS.has(url.pathname)
+      ? staleWhileRevalidate(request, event)
+      : networkFirst(request, event));
     return;
   }
 
