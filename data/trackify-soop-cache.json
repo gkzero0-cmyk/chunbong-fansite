@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-20T11:36:07.988Z",
+  "capturedAt": "2026-09-21T06:30:14.131Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 30433,
-    "fanclubCount": 7675,
+    "followerCount": 30562,
+    "fanclubCount": 7677,
     "subscriberCount": 49,
     "supporterCount": 24,
     "averageViewers": 58,
@@ -25,31 +25,31 @@
         "name": "버추얼",
         "minutes": 9027,
         "streamCount": 23,
-        "sharePercent": 41.7
+        "sharePercent": 43.5
       },
       {
         "name": "오버워치",
-        "minutes": 5883,
-        "streamCount": 11,
-        "sharePercent": 27.2
+        "minutes": 5450,
+        "streamCount": 10,
+        "sharePercent": 26.2
       },
       {
         "name": "마인크래프트",
-        "minutes": 5280,
-        "streamCount": 9,
-        "sharePercent": 24.4
+        "minutes": 4844,
+        "streamCount": 8,
+        "sharePercent": 23.3
       },
       {
         "name": "PUBG: 배틀그라운드",
         "minutes": 1076,
         "streamCount": 5,
-        "sharePercent": 5
+        "sharePercent": 5.2
       },
       {
         "name": "아르마 3",
         "minutes": 376,
         "streamCount": 2,
-        "sharePercent": 1.7
+        "sharePercent": 1.8
       }
     ]
   },
