@@ -39,7 +39,8 @@ assert.match(gameLayout,/\.chuncortile-page/);
 assert.match(gameLayout,/max-height:900px/);
 
 assert.doesNotMatch(styles,/\/\* Chuntris \*\/[\s\S]*chuntris-stage-height/);
-assert.match(index,/SOOP 공식 프로필/);
+assert.match(index,/data-home-smart-status/,'home must expose the smart SOOP status card');
+assert.match(index,/data-status-label/,'home smart status card must expose LIVE\/OFFLINE label');
 assert.match(index,/춘트리스·춘박게임·춘과게임·춘컬타일/);
 assert.match(minigames,/클래식 무한 · 40줄 타임어택 · 3분 점수전/);
 assert.match(robots,/sitemap\.xml/);
