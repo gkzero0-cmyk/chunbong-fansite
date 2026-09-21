@@ -29,6 +29,16 @@ await operator.handleOperatorAnalytics({method:'GET',headers:{host:'localhost'},
 assert.equal(res.statusCode,401,'operator analytics must reject unauthenticated requests');
 assert.equal(res.body?.error,'operator_auth_required');
 
+for(const [handler,url] of [
+  ['handleOperatorSystemStatus','/api/content?type=operator-system-status'],
+  ['handleOperatorSessionRevoke','/api/content?type=operator-session-revoke']
+]){
+  const next=response();
+  await operator[handler]({method:handler==='handleOperatorSessionRevoke'?'POST':'GET',headers:{host:'localhost'},url,body:{id:'abcdefghijklmnop'}},next);
+  assert.equal(next.statusCode,401,handler+' must reject unauthenticated requests');
+  assert.equal(next.body?.error,'operator_auth_required');
+}
+
 if(oldUrl)process.env.UPSTASH_REDIS_REST_URL=oldUrl;
 if(oldToken)process.env.UPSTASH_REDIS_REST_TOKEN=oldToken;
 

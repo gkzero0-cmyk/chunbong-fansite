@@ -269,6 +269,8 @@ async function handler(req,res) {
   if(type==='operator-analytics') return operatorCenter.handleOperatorAnalytics(req,res);
   if(type==='operator-feedback') return operatorCenter.handleOperatorFeedback(req,res);
   if(type==='operator-feedback-update') return operatorCenter.handleOperatorFeedbackUpdate(req,res);
+  if(type==='operator-system-status') return operatorCenter.handleOperatorSystemStatus(req,res);
+  if(type==='operator-session-revoke') return operatorCenter.handleOperatorSessionRevoke(req,res);
   if(type==='operator-logout') return operatorCenter.handleLogout(req,res);
   if(type==='operator-logout-all') return operatorCenter.handleLogoutAll(req,res);
   if(type==='live'){

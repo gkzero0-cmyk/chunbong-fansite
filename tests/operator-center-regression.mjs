@@ -56,7 +56,7 @@ assert.match(api,/No raw IP|raw IP/i,'privacy guard comment missing');
 for(const type of [
   'site-analytics-event','feedback-submit','operator-auth-config','operator-session',
   'operator-github-start','operator-github-callback','operator-email-complete',
-  'operator-analytics','operator-feedback','operator-feedback-update','operator-logout','operator-logout-all'
+  'operator-analytics','operator-feedback','operator-feedback-update','operator-system-status','operator-session-revoke','operator-logout','operator-logout-all'
 ]) assert.ok(content.includes(type),'api/content missing '+type);
 assert.match(content,/operatorCenter=require\('\.\.\/lib\/operator-center-api'\)/);
 
@@ -66,6 +66,18 @@ assert.match(operatorHtml,/이메일로 인증/);
 assert.match(operatorHtml,/개요/);
 assert.match(operatorHtml,/피드백/);
 assert.match(operatorHtml,/보안/);
+assert.match(operatorHtml,/시스템 상태/,'operator system status tab missing');
+assert.match(operatorHtml,/metric-sessions/,'session KPI missing');
+assert.match(operatorHtml,/metric-new/,'new-visitor pageview KPI missing');
+assert.match(operatorHtml,/operator-hourly/,'hourly usage chart missing');
+assert.match(operatorHtml,/operator-funnel/,'feature funnel missing');
+assert.match(operatorHtml,/operator-feedback-search/,'feedback search control missing');
+assert.match(operatorHtml,/feedback-memo/,'operator feedback memo UI missing');
+assert.match(operatorHtml,/operator-session-list/,'active session list missing');
+assert.match(operatorHtml,/system-redis-keys/,'Redis key count UI missing');
+assert.match(operatorHtml,/system-redis-memory/,'Redis memory UI missing');
+assert.match(operatorHtml,/operator-endpoint-health/,'public endpoint health UI missing');
+assert.match(operatorHtml,/Vercel 사용량/,'Vercel usage guidance missing');
 assert.match(operatorHtml,/operator\.css/);
 assert.match(operatorHtml,/type="module" src="operator\.js"/);
 
@@ -75,6 +87,17 @@ assert.match(operatorJs,/aria-disabled/,'unconfigured GitHub auth must be disabl
 assert.match(operatorJs,/operator-session/);
 assert.match(operatorJs,/operator-analytics/);
 assert.match(operatorJs,/operator-feedback/);
+assert.match(operatorJs,/operator-system-status/,'protected system health runtime missing');
+assert.match(operatorJs,/operator-session-revoke/,'individual session revoke runtime missing');
+assert.match(operatorJs,/renderHourly/,'hourly analytics renderer missing');
+assert.match(operatorJs,/renderFunnel/,'feature funnel renderer missing');
+assert.match(operatorJs,/comparison/,'previous-period comparison rendering missing');
+assert.match(operatorJs,/operator-feedback-status-filter/,'feedback status filtering missing');
+assert.match(operatorJs,/operator-feedback-category-filter/,'feedback category filtering missing');
+assert.match(operatorJs,/operatorMemo/,'operator memo handling missing');
+assert.match(operatorJs,/redisMemoryLabel/,'Redis memory formatter missing');
+assert.match(operatorJs,/operator-endpoint-health/,'endpoint response renderer missing');
+assert.match(operatorJs,/text\/csv/,'analytics CSV export missing');
 assert.match(api,/accounts:sendOobCode/,'Firebase email link dispatch missing');
 assert.match(api,/operator:auth:email-cooldown:v1/,'operator email magic-link cooldown missing');
 assert.match(operatorJs,/signInWithEmailLink/,'Firebase email link completion missing');
@@ -85,9 +108,30 @@ assert.match(operatorHtml,/metric-average-daily/,'average daily visitor KPI miss
 assert.match(operatorJs,/averageDailyVisitors/,'average daily visitor rendering missing');
 assert.match(operatorJs,/document\.querySelectorAll\('\[data-days\]'\)\.forEach/,'all analytics period controls must be bound with a NodeList');
 assert.match(api,/dailyVisitorCounts/,'all-time daily average must use all recorded days');
+assert.match(api,/analyticsTotalsForDates/,'previous-period analytics totals missing');
+assert.match(api,/funnel/,'feature funnel aggregation missing');
+assert.match(api,/operatorSystemStatus/,'server-side system health aggregator missing');
+assert.match(api,/redisStorageStats/,'Redis storage capacity probe missing');
+assert.match(api,/redisCommand\('DBSIZE'\)/,'Redis key count probe missing');
+assert.match(api,/redisCommand\('INFO','memory'\)/,'Redis memory probe missing');
+assert.match(api,/publicEndpointHealth/,'public API response health probe missing');
+assert.match(api,/endpointHealth\(base,'LIVE'/,'LIVE endpoint health probe missing');
+assert.match(api,/endpointHealth\(base,'방송 일정'/,'schedule endpoint health probe missing');
+assert.match(api,/endpointHealth\(base,'Push'/,'Push endpoint health probe missing');
+assert.match(api,/githubProjectState/,'GitHub main synchronization check missing');
+assert.match(api,/SESSION_META_PREFIX/,'individual operator session metadata missing');
+assert.match(api,/operatorSessionList/,'active session list backend missing');
+assert.match(api,/operatorMemo/,'operator feedback memo persistence missing');
+assert.match(api,/Detailed Fast Data Transfer \/ Function usage is not exposed/,'Vercel usage must not be guessed when no dedicated integration exists');
 assert.match(operatorCss,/operator-dashboard/);
 assert.match(operatorCss,/operator-auth-button\.is-unavailable/,'unavailable auth provider style missing');
 assert.match(operatorCss,/operator-metric-grid/);
+assert.match(operatorCss,/\[data-theme="light"\]/,'operator center light mode styling missing');
+assert.match(operatorCss,/--op-text:#f7f5f2/,'operator readable dark text token missing');
+assert.match(operatorCss,/--op-muted:#a6adb6/,'operator readable muted token missing');
+assert.match(operatorCss,/operator-system-summary/,'system status card styles missing');
+assert.match(operatorCss,/operator-feedback-filters/,'feedback filter styles missing');
+assert.match(operatorCss,/operator-session-list/,'session list styles missing');
 
 assert.match(analytics,/crypto\.randomUUID/,'anonymous browser id missing');
 assert.match(analytics,/sessionStorage/,'session identifier missing');
@@ -128,4 +172,6 @@ assert.match(operatorHtml,/\/api\/operator\/github\/start/,'operator login shoul
 assert.match(operatorHtml,/operator-logout-all/,'all-device logout control missing');
 assert.match(operatorJs,/operator-logout-all/,'all-device logout runtime missing');
 assert.match(operatorJs,/security-sessions/,'active operator session count missing');
+assert.match(operatorJs,/operator-export-json/,'analytics JSON export missing');
+assert.match(operatorJs,/operator-export-csv/,'analytics CSV export control missing');
 assert.match(robots,/Disallow: \/operator\.html/,'operator page should be excluded from crawlers');
