@@ -1,5 +1,12 @@
 /* CHUNBONG_PWA v1 */
 const CACHE_NAME = 'chunbong-pwa-20260921-v28';
+
+/*
+ * Keep install-time precache intentionally small.
+ * Feature pages, scripts, styles, and full-resolution images are cached on first use
+ * by the runtime strategies below. This improves first install/update speed without
+ * recompressing or resizing any visual asset.
+ */
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -34,43 +41,9 @@ const APP_SHELL = [
   '/assets/app-icon-192.png',
   '/assets/app-icon-512.png',
   '/assets/apple-touch-icon.png',
-  '/minigames.html',
-  '/minigames.css',
-  '/minigame-profile.css',
-  '/minigame-profile.js',
   '/personal-hub.css',
   '/personal-hub.js',
-  '/content-filter.css',
-  '/content-filter.js',
-  '/schedule.html',
-  '/schedule-enhancements.css',
-  '/live-fixes.js',
-  '/tarot.html',
-  '/tarot.css',
-  '/tarot.js',
-  '/tarot-quality.css',
-  '/tarot-composite.css',
-  '/tarot-luxury-foil.css',
-  '/tarot-data.js',
-  '/tarot-composite.js',
-  '/tarot-sfx-v2.js',
-  '/data.html',
-  '/data.css',
-  '/data.js',
-  '/data-core.js',
-  '/data-soop-periods-v3.js',
-  '/data-recent-session-metrics.js',
-  '/data-enhancements.js',
-  '/data-enhancements.css',
-  '/vod.html',
-  '/clips.html',
-  '/youtube.html',
-  '/fanart.html',
-  '/page-media.js',
-  '/fanart-gallery.js',
-  '/fanart-gallery.css',
-  '/myhub.html',
-  '/changelog-data.js'
+  '/myhub.html'
 ];
 
 self.addEventListener('install', event => {
