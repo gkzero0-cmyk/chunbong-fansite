@@ -37,6 +37,13 @@ assert.match(hub,/void syncPushSubscription\(true,state\)\.then/,'background pus
 assert.match(hub,/state\.alerts\.enabled=false;state\.alerts\.pushEnabled=false;write\(state\);[\s\S]*void syncPushSubscription\(false,state\)/,'OFF toggle must persist before background unsubscribe');
 assert.match(hub,/브라우저 알림 권한 차단됨 · 설정에서 허용 필요/,'blocked notification permission must show actionable UI copy');
 assert.match(hub,/aria-busy/,'alert toggle must show immediate busy feedback');
+assert.match(hub,/ALERT_PERMISSION_RECOVERY_KEY/,'blocked permission recovery state missing');
+assert.match(hub,/function showAlertPermissionHelp\(\)/,'blocked permission help dialog missing');
+assert.match(hub,/function recheckAlertPermission\(/,'permission recheck flow missing');
+assert.match(hub,/data-alert-permission-recheck/,'permission recovery dialog must expose a recheck action');
+assert.match(hub,/window\.addEventListener\('focus',handlePermissionReturn\)/,'returning from browser or OS settings must recheck notification permission');
+assert.match(hub,/브라우저 보안 정책상 팬사이트가 차단된 권한을 직접 해제할 수는 없습니다/,'permission dialog must explain the browser security boundary');
+assert.match(hub,/data-alert-permission-help/,'blocked alert card must expose permission instructions directly');
 assert.match(hub,/async function ensurePushServiceWorker\(\)/,'push alerts must ensure a service worker instead of depending on page load timing');
 assert.match(hub,/navigator\.serviceWorker\.register\('\/service-worker\.js'/,'push alerts must be able to register the service worker directly');
 assert.match(hub,/data-personal-push-retry/,'failed background push setup must expose a retry action');
@@ -62,6 +69,8 @@ assert.match(myhub,/현재 브라우저의 로컬 저장소/,'local-only privacy
 assert.match(hub,/function personalCategoryKind\(/,'My Hub saved content must normalize category identity');
 assert.match(hub,/data-kind=/,'My Hub saved content must expose shared category kinds');
 assert.match(hubCss,/var\(--category-accent\)/,'My Hub category labels must use shared category accents');
+assert.match(hubCss,/\.personal-alert-permission-dialog/,'blocked notification recovery dialog styles missing');
+assert.match(hubCss,/@media\(max-width:760px\)[\s\S]*personal-alert-permission-dialog/,'permission dialog must fit mobile screens');
 assert.match(hub,/내 보관함/);
 assert.match(hub,/이어보기/);
 assert.match(hub,/타로 기록장/);

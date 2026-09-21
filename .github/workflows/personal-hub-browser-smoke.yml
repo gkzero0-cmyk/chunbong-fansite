@@ -124,5 +124,34 @@ jobs:
 
 
           assert.deepEqual(errors,[],errors.join(' | '));
+
+          const deniedContext=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+          const deniedPage=await deniedContext.newPage();
+          await deniedPage.addInitScript(()=>{
+            window.__notificationPermission='denied';
+            function MockNotification(){}
+            Object.defineProperty(MockNotification,'permission',{get:()=>window.__notificationPermission,configurable:true});
+            MockNotification.requestPermission=async()=>window.__notificationPermission;
+            try{Object.defineProperty(window,'Notification',{value:MockNotification,configurable:true,writable:true})}catch(_){window.Notification=MockNotification}
+          });
+          const deniedErrors=[];
+          deniedPage.on('pageerror',error=>deniedErrors.push(error.message));
+          await deniedPage.goto(process.env.BASE_URL+'/myhub.html?_permission='+Date.now(),{waitUntil:'domcontentloaded'});
+          await deniedPage.waitForFunction(()=>Boolean(window.ChunbongPersonal));
+          const deniedToggle=deniedPage.locator('[data-personal-alert-toggle]');
+          assert.equal(await deniedToggle.getAttribute('aria-pressed'),'false','blocked notification state must remain OFF');
+          await deniedToggle.click();
+          await deniedPage.waitForFunction(()=>document.querySelector('#personal-alert-permission-dialog')?.open===true);
+          assert.match(await deniedPage.locator('#personal-alert-permission-dialog').innerText(),/알림 권한을 허용해 주세요/,'blocked OFF click must open permission recovery guidance');
+          assert.match(await deniedPage.locator('#personal-alert-permission-dialog').innerText(),/설정 후 팬페이지로 돌아오면 자동으로 다시 확인합니다/,'permission guidance must explain automatic recheck');
+          await deniedPage.evaluate(()=>{
+            window.__notificationPermission='granted';
+            window.dispatchEvent(new Event('focus'));
+          });
+          await deniedPage.waitForFunction(()=>document.querySelector('[data-personal-alert-toggle]')?.getAttribute('aria-pressed')==='true');
+          assert.equal(await deniedPage.locator('#personal-alert-permission-dialog').evaluate(el=>el.open),false,'permission dialog must close after granted permission is detected');
+          assert.deepEqual(deniedErrors,[],deniedErrors.join(' | '));
+          await deniedContext.close();
+
           await browser.close();
           EOF_NODE

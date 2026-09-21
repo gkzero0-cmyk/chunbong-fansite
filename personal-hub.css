@@ -46,3 +46,33 @@
 .personal-push-retry{align-self:flex-start;margin-top:10px;min-height:36px;padding:0 12px;border:1px solid color-mix(in srgb,var(--orange-2) 42%,#3a3a3e);border-radius:11px;background:color-mix(in srgb,var(--orange-2) 10%,#151517);color:var(--text-primary,#eee);font:inherit;font-size:10px;font-weight:900;cursor:pointer}.personal-push-retry:hover{border-color:var(--orange-2);background:color-mix(in srgb,var(--orange-2) 15%,#151517)}.personal-push-retry:disabled{opacity:.6;cursor:wait}[data-theme="light"] .personal-push-retry{background:#fff6ee;border-color:#e3a77f;color:#8c3d09}
 
 .personal-saved-grid article.category-accent small{color:var(--category-accent)}.personal-saved-grid article.category-accent{border-left-color:color-mix(in srgb,var(--category-accent) 60%,#2d2d31)}.personal-recent.category-accent strong{color:var(--text-primary)}.personal-recent.category-accent span{color:var(--text-muted)}
+
+
+.personal-alert-permission-help{align-self:flex-start;margin-top:10px;min-height:36px;padding:0 12px;border:1px solid color-mix(in srgb,var(--orange-2) 42%,#3a3a3e);border-radius:11px;background:color-mix(in srgb,var(--orange-2) 10%,#151517);color:var(--text-primary,#eee);font:inherit;font-size:10px;font-weight:900;cursor:pointer}
+.personal-alert-permission-help:hover{border-color:var(--orange-2);background:color-mix(in srgb,var(--orange-2) 15%,#151517)}
+.personal-alert-permission-dialog{width:min(92vw,560px);max-height:88dvh;padding:0;border:1px solid #3b3b40;border-radius:22px;background:#111113;color:var(--text-primary,#f7f3ef);box-shadow:0 28px 100px #000c}
+.personal-alert-permission-dialog::backdrop{background:#000b;backdrop-filter:blur(8px)}
+.personal-alert-permission-inner{display:grid;gap:14px;padding:20px}
+.personal-alert-permission-inner header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.personal-alert-permission-inner header small{display:block;color:var(--orange-2);font-size:9px;font-weight:950;letter-spacing:.13em}
+.personal-alert-permission-inner header h2{margin:4px 0 0;font-size:23px;line-height:1.2}
+.personal-alert-permission-inner [data-alert-permission-close]{flex:0 0 auto;width:40px;height:40px;border:1px solid #3a3a3f;border-radius:12px;background:#1b1b1e;color:#ddd;font-size:24px;cursor:pointer}
+.personal-alert-permission-inner>p{margin:0;color:var(--text-secondary,#c9c2bc);font-size:13px;line-height:1.65}
+.personal-alert-permission-inner ol{display:grid;gap:8px;margin:0;padding:14px 14px 14px 34px;border:1px solid #2f2f34;border-radius:14px;background:#0d0d0f;color:var(--text-primary,#eee)}
+.personal-alert-permission-inner li{padding-left:3px;font-size:12px;line-height:1.6}
+.personal-alert-permission-note{padding:11px 12px;border-left:3px solid var(--orange-2);border-radius:0 11px 11px 0;background:#ff6b180b;color:var(--text-muted,#9a938d)!important;font-size:11px!important}
+.personal-alert-permission-inner footer{display:flex;justify-content:flex-end;gap:8px}
+.personal-alert-permission-inner footer button{min-height:40px;padding:0 14px;border:1px solid #3b3b40;border-radius:11px;background:#19191c;color:#d7d0ca;font-weight:900;cursor:pointer}
+.personal-alert-permission-inner footer button.is-primary{border-color:#ff7b31;background:#ff6b18;color:#fff}
+[data-theme="light"] .personal-alert-permission-help{background:#fff6ee;border-color:#e3a77f;color:#8c3d09}
+[data-theme="light"] .personal-alert-permission-dialog{border-color:#dfd5cd;background:#fff;color:#2d231c}
+[data-theme="light"] .personal-alert-permission-inner [data-alert-permission-close],[data-theme="light"] .personal-alert-permission-inner footer button{border-color:#ddd2c9;background:#fff;color:#554a42}
+[data-theme="light"] .personal-alert-permission-inner ol{border-color:#e7ddd5;background:#fffaf6;color:#312821}
+@media(max-width:760px){
+  .personal-alert-permission-dialog{width:calc(100vw - 20px);max-height:92dvh;border-radius:18px}
+  .personal-alert-permission-inner{padding:16px}
+  .personal-alert-permission-inner header h2{font-size:20px}
+  .personal-alert-permission-inner>p,.personal-alert-permission-inner li{font-size:13px}
+  .personal-alert-permission-inner footer{display:grid;grid-template-columns:1fr 1fr}
+  .personal-alert-permission-inner footer button{min-height:46px}
+}

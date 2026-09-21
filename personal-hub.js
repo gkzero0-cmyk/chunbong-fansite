@@ -2,6 +2,7 @@
   'use strict';
   if(window.ChunbongPersonal)return;
   const STORAGE_KEY='chunbong-personal-hub-v1';
+  const ALERT_PERMISSION_RECOVERY_KEY='chunbong-alert-permission-recovery-v1';
   const MAX_FAVORITES=80,MAX_TAROT=40;
   const GAME_LABELS={chuntris:'춘트리스',chunbak:'춘박게임',chungwagame:'춘과게임',chuncortile:'춘컬타일'};
   const TAROT_TOPIC_LABELS=Object.freeze({general:'종합타로',love:'연애',partner:'상대방 마음',relations:'인간관계',broadcast:'방송운',content:'콘텐츠운',crew:'합방 · 크루',money:'금전운',choice:'선택 · 결정',direction:'앞으로의 흐름'});
@@ -257,9 +258,93 @@
       return response.ok;
     }catch(_){return false}
   }
+  function alertPermissionRecoveryPending(){
+    try{return localStorage.getItem(ALERT_PERMISSION_RECOVERY_KEY)==='1'}catch(_){return false}
+  }
+  function setAlertPermissionRecoveryPending(value){
+    try{if(value)localStorage.setItem(ALERT_PERMISSION_RECOVERY_KEY,'1');else localStorage.removeItem(ALERT_PERMISSION_RECOVERY_KEY)}catch(_){}
+  }
+  function alertPermissionRecoveryGuide(){
+    const standalone=Boolean(window.matchMedia?.('(display-mode: standalone)')?.matches||navigator.standalone===true);
+    const mobile=Boolean(window.matchMedia?.('(pointer: coarse)')?.matches||/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent||''));
+    if(standalone)return[
+      '기기 설정의 앱 알림에서 춘봉 팬허브 또는 사용 중인 브라우저의 알림을 허용해 주세요.',
+      '브라우저의 이 사이트 권한에서도 알림이 차단되어 있다면 사이트 설정에서 알림을 허용해 주세요.',
+      '설정 후 팬페이지로 돌아오면 자동으로 다시 확인합니다.'
+    ];
+    if(mobile)return[
+      '브라우저 메뉴에서 이 사이트의 사이트 설정 또는 권한을 열어 알림을 허용해 주세요.',
+      '기기 설정 > 앱 > 사용 중인 브라우저 > 알림도 허용되어 있는지 확인해 주세요.',
+      '설정 후 팬페이지로 돌아오면 자동으로 다시 확인합니다.'
+    ];
+    return[
+      '주소창 왼쪽의 사이트 정보/권한 버튼을 눌러 사이트 설정을 열어 주세요.',
+      '알림 권한을 허용으로 바꿔 주세요.',
+      '이 탭으로 돌아오면 자동으로 다시 확인합니다.'
+    ];
+  }
+  function ensureAlertPermissionDialog(){
+    let dialog=document.getElementById('personal-alert-permission-dialog');
+    if(dialog)return dialog;
+    dialog=document.createElement('dialog');
+    dialog.id='personal-alert-permission-dialog';
+    dialog.className='personal-alert-permission-dialog';
+    dialog.innerHTML='<div class="personal-alert-permission-inner"><header><div><small>NOTIFICATION PERMISSION</small><h2>알림 권한을 허용해 주세요</h2></div><button type="button" data-alert-permission-close aria-label="알림 권한 안내 닫기">×</button></header><p data-alert-permission-status></p><ol data-alert-permission-steps></ol><p class="personal-alert-permission-note">브라우저 보안 정책상 팬사이트가 차단된 권한을 직접 해제할 수는 없습니다. 설정에서 허용한 뒤 돌아오면 자동으로 확인합니다.</p><footer><button type="button" data-alert-permission-later>나중에</button><button type="button" class="is-primary" data-alert-permission-recheck>다시 확인</button></footer></div>';
+    dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close()});
+    dialog.querySelectorAll('[data-alert-permission-close],[data-alert-permission-later]').forEach(button=>button.addEventListener('click',()=>dialog.close()));
+    dialog.querySelector('[data-alert-permission-recheck]')?.addEventListener('click',()=>{void recheckAlertPermission({userInitiated:true})});
+    document.body.appendChild(dialog);
+    return dialog;
+  }
+  function refreshAlertPermissionDialog(){
+    const dialog=ensureAlertPermissionDialog();
+    const status=dialog.querySelector('[data-alert-permission-status]');
+    const steps=dialog.querySelector('[data-alert-permission-steps]');
+    const permission='Notification'in window?Notification.permission:'unsupported';
+    if(status)status.textContent=permission==='granted'
+      ?'알림 권한이 허용되었습니다. 방송 알림을 켜는 중입니다.'
+      :permission==='default'
+        ?'알림 권한이 아직 허용되지 않았습니다. 아래 ‘다시 확인’을 눌러 권한 요청을 진행해 주세요.'
+        :permission==='denied'
+          ?'현재 이 사이트의 알림 권한이 차단되어 있습니다.'
+          :'현재 브라우저에서는 웹 알림을 지원하지 않습니다.';
+    if(steps)steps.innerHTML=alertPermissionRecoveryGuide().map(step=>'<li>'+esc(step)+'</li>').join('');
+    return dialog;
+  }
+  function showAlertPermissionHelp(){
+    setAlertPermissionRecoveryPending(true);
+    const dialog=refreshAlertPermissionDialog();
+    if(!dialog.open){
+      if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');
+    }
+    return dialog;
+  }
+  function closeAlertPermissionHelp(){
+    const dialog=document.getElementById('personal-alert-permission-dialog');
+    if(!dialog)return;
+    if(typeof dialog.close==='function'&&dialog.open)dialog.close();else dialog.removeAttribute('open');
+  }
+  async function recheckAlertPermission({userInitiated=false}={}){
+    if(!alertPermissionRecoveryPending())return false;
+    if(!('Notification'in window)){refreshAlertPermissionDialog();return false}
+    if(Notification.permission==='granted'){
+      refreshAlertPermissionDialog();
+      const enabled=await setAlertEnabled(true);
+      if(enabled){setAlertPermissionRecoveryPending(false);closeAlertPermissionHelp()}
+      return enabled;
+    }
+    if(Notification.permission==='default'&&userInitiated){
+      const enabled=await setAlertEnabled(true);
+      if(enabled){setAlertPermissionRecoveryPending(false);closeAlertPermissionHelp();return true}
+    }
+    refreshAlertPermissionDialog();
+    return false;
+  }
+
   async function setAlertEnabled(enabled){
     const state=read(),target=Boolean(enabled);
     if(!target){
+      setAlertPermissionRecoveryPending(false);closeAlertPermissionHelp();
       state.alerts.enabled=false;state.alerts.pushEnabled=false;write(state);
       void syncPushSubscription(false,state);
       return false;
@@ -274,8 +359,10 @@
     }
     if(permission!=='granted'){
       state.alerts.enabled=false;state.alerts.pushEnabled=false;write(state);
+      if(permission==='denied')showAlertPermissionHelp();
       return false;
     }
+    setAlertPermissionRecoveryPending(false);closeAlertPermissionHelp();
     state.alerts.enabled=true;state.alerts.pushEnabled=false;write(state);
     void syncPushSubscription(true,state).then(pushEnabled=>{
       const latest=read();
@@ -366,7 +453,7 @@
     root.innerHTML=`<section class="personal-hero-card"><div><p class="kicker">MY CHUNBONG HUB</p><h1>내 팬허브</h1><p>즐겨찾기, 이어보기, 타로 기록과 미니게임 기록은 이 기기에만 저장됩니다.</p></div><div class="personal-summary"><span><b>${state.favorites.length}</b>보관함</span><span><b>${state.tarot.length}</b>타로 기록</span><span><b>${game.totalPlays}</b>게임 플레이</span><span><b>${earned.length}</b>업적</span></div></section>
     <div class="personal-grid"><section class="personal-panel"><header><div><small>CONTINUE</small><h2>이어보기</h2></div></header>${recent?`<a class="personal-recent category-accent" data-kind="${esc(personalCategoryKind(recent.type))}" href="${esc(hrefFor(recent))}"><strong>${esc(recent.title||'최근 콘텐츠')}</strong><span>${esc(recent.meta||recent.type||'')} · ${esc(formatDate(recent.updatedAt))}${recent.progress?' · '+Math.floor(recent.progress/60)+':'+String(recent.progress%60).padStart(2,'0')+'까지':''}</span><b>이어보기 →</b></a>`:'<p class="personal-empty">아직 본 콘텐츠가 없습니다.</p>'}</section>
     <section class="personal-panel"><header><div><small>DAILY CHALLENGE</small><h2>오늘의 도전</h2></div><span>${challenge.completed?'완료 ✓':challenge.progress+'/'+challenge.goal}</span></header><a class="personal-challenge ${challenge.completed?'is-complete':''}" href="${challenge.href}"><strong>${esc(challenge.title)}</strong><span>${esc(challenge.desc)}</span><b>${challenge.completed?'오늘 도전 완료 · 연속 '+challenge.streak+'일':'도전하기 · '+challenge.progress+'/'+challenge.goal+' →'}</b></a></section>
-    <section class="personal-panel personal-alert-panel ${state.alerts.enabled?'is-on':'is-off'}"><header><div><small>LIVE & SCHEDULE ALERT</small><h2>방송 알림</h2><span class="personal-alert-default">${esc(alert.label)}</span></div><button type="button" data-personal-alert-toggle aria-pressed="${String(state.alerts.enabled)}" aria-label="방송 알림 ${state.alerts.enabled?'끄기':'켜기'}"><span>${state.alerts.enabled?'ON':'OFF'}</span></button></header><p>${esc(alert.body)}</p>${state.alerts.enabled&&!state.alerts.pushEnabled?'<button type="button" class="personal-push-retry" data-personal-push-retry>백그라운드 Push 다시 연결</button>':''}<fieldset class="personal-alert-settings" ${state.alerts.enabled?'':'disabled'}><legend class="sr-only">방송 알림 세부 설정</legend><div class="personal-alert-options">${Object.entries(ALERT_TYPE_LABELS).map(([key,label])=>`<label><input type="checkbox" data-personal-alert-type="${key}" ${state.alerts.types?.[key]!==false?'checked':''}><span>${esc(label)}</span></label>`).join('')}</div><label class="personal-alert-lead"><span>예정 방송 미리 알림</span><select data-personal-alert-lead><option value="5" ${Number(state.alerts.leadMinutes)===5?'selected':''}>5분 전</option><option value="10" ${Number(state.alerts.leadMinutes)===10?'selected':''}>10분 전</option><option value="30" ${Number(state.alerts.leadMinutes)===30?'selected':''}>30분 전</option></select></label></fieldset></section>
+    <section class="personal-panel personal-alert-panel ${state.alerts.enabled?'is-on':'is-off'}"><header><div><small>LIVE & SCHEDULE ALERT</small><h2>방송 알림</h2><span class="personal-alert-default">${esc(alert.label)}</span></div><button type="button" data-personal-alert-toggle aria-pressed="${String(state.alerts.enabled)}" aria-label="방송 알림 ${state.alerts.enabled?'끄기':'켜기'}"><span>${state.alerts.enabled?'ON':'OFF'}</span></button></header><p>${esc(alert.body)}</p>${!state.alerts.enabled&&'Notification'in window&&Notification.permission==='denied'?'<button type="button" class="personal-alert-permission-help" data-alert-permission-help>알림 권한 설정 방법</button>':''}${state.alerts.enabled&&!state.alerts.pushEnabled?'<button type="button" class="personal-push-retry" data-personal-push-retry>백그라운드 Push 다시 연결</button>':''}<fieldset class="personal-alert-settings" ${state.alerts.enabled?'':'disabled'}><legend class="sr-only">방송 알림 세부 설정</legend><div class="personal-alert-options">${Object.entries(ALERT_TYPE_LABELS).map(([key,label])=>`<label><input type="checkbox" data-personal-alert-type="${key}" ${state.alerts.types?.[key]!==false?'checked':''}><span>${esc(label)}</span></label>`).join('')}</div><label class="personal-alert-lead"><span>예정 방송 미리 알림</span><select data-personal-alert-lead><option value="5" ${Number(state.alerts.leadMinutes)===5?'selected':''}>5분 전</option><option value="10" ${Number(state.alerts.leadMinutes)===10?'selected':''}>10분 전</option><option value="30" ${Number(state.alerts.leadMinutes)===30?'selected':''}>30분 전</option></select></label></fieldset></section>
     <section class="personal-panel"><header><div><small>TAROT JOURNAL</small><h2>최근 타로</h2></div><a href="tarot.html">타로 보기 →</a></header>${latestTarot?`<article class="personal-tarot-latest"><strong>${esc(tarotRecordTitle(latestTarot))}</strong>${latestTarot.question?`<span class="personal-tarot-question">질문 · ${esc(latestTarot.question)}</span>`:''}<span>${latestTarot.cards.map(c=>esc(c.name)).join(' · ')}</span><small>${esc(formatDate(latestTarot.createdAt))}</small></article>`:'<p class="personal-empty">타로를 보면 자동으로 기록됩니다.</p>'}</section></div>
     <section class="personal-panel personal-wide"><header><div><small>SAVED COLLECTIONS</small><h2>내 보관함</h2></div><span>${state.favorites.length}개</span></header><div class="personal-collection-tabs"><button type="button" class="is-active" data-collection-filter="all">전체 <b>${state.favorites.length}</b></button>${collections.map(([key,label])=>`<button type="button" data-collection-filter="${key}">${esc(label)} <b>${counts[key]}</b></button>`).join('')}</div><div class="personal-saved-grid">${state.favorites.length?state.favorites.map(item=>`<article class="category-accent" data-kind="${esc(personalCategoryKind(item.type))}" data-personal-collection="${esc(item.collection||'later')}"><a href="${esc(hrefFor(item))}"><small>${esc((item.type||'saved').toUpperCase())}</small><strong>${esc(item.title||'저장한 콘텐츠')}</strong><span>${esc(item.meta||'')}</span></a><select data-favorite-collection data-favorite-key="${esc(keyOf(item))}" data-favorite-type="${esc(item.type||'')}">${collections.map(([key,label])=>`<option value="${key}" ${(item.collection||'later')===key?'selected':''}>${esc(label)}</option>`).join('')}</select><button type="button" data-remove-favorite="${esc(keyOf(item))}" data-remove-type="${esc(item.type||'')}">삭제</button></article>`).join(''):'<p class="personal-empty">콘텐츠를 보관함에 저장해 보세요.</p>'}</div></section>
     <section class="personal-panel personal-wide"><header><div><small>ACHIEVEMENTS</small><h2>미니게임 업적</h2></div><a href="minigames.html">게임 기록 →</a></header><div class="personal-achievement-grid">${game.achievements.map(row=>`<article class="${row.earned?'is-earned':''}"><span>${row.earned?'✓':'○'}</span><div><strong>${esc(row.title)}</strong><small>${esc(row.desc)}</small></div></article>`).join('')}</div></section>
@@ -388,6 +475,7 @@
       button.disabled=true;button.setAttribute('aria-busy','true');if(label)label.textContent=next?'확인 중…':'끄는 중…';
       await setAlertEnabled(next);
     });
+    root.querySelector('[data-alert-permission-help]')?.addEventListener('click',showAlertPermissionHelp);
     root.querySelector('[data-personal-push-retry]')?.addEventListener('click',async e=>{
       e.currentTarget.disabled=true;e.currentTarget.textContent='연결 중…';
       const state=read();const connected=await syncPushSubscription(true,state);const latest=read();latest.alerts.pushEnabled=Boolean(connected);write(latest);
@@ -475,11 +563,14 @@
     };
     const stopReminderTimer=()=>{if(timer){clearInterval(timer);timer=0}};
     startReminderTimer();
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden){void checkBroadcastReminder();void checkLiveReminder()}});
+    const handlePermissionReturn=()=>{if(!document.hidden)void recheckAlertPermission()};
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden){void recheckAlertPermission();void checkBroadcastReminder();void checkLiveReminder()}});
+    window.addEventListener('focus',handlePermissionReturn);
     window.addEventListener('pagehide',stopReminderTimer);
-    window.addEventListener('pageshow',()=>{startReminderTimer();void checkBroadcastReminder();void checkLiveReminder()});
+    window.addEventListener('pageshow',()=>{startReminderTimer();void recheckAlertPermission();void checkBroadcastReminder();void checkLiveReminder()});
+    if(alertPermissionRecoveryPending())setTimeout(()=>{void recheckAlertPermission()},0);
   }
 
-  window.ChunbongPersonal={read,write,favoriteItem,isFavorite,setFavoriteCollection,toggleTarotPinned,recordRecent,recordTarot,attachTarotReading,recordGameStart,gameSnapshot,dailyChallenge,setAlertEnabled,setAlertType,setAlertLead,exportBackup,importBackupFile,resetPersonalData,renderDashboard};
+  window.ChunbongPersonal={read,write,favoriteItem,isFavorite,setFavoriteCollection,toggleTarotPinned,recordRecent,recordTarot,attachTarotReading,recordGameStart,gameSnapshot,dailyChallenge,setAlertEnabled,setAlertType,setAlertLead,recheckAlertPermission,showAlertPermissionHelp,exportBackup,importBackupFile,resetPersonalData,renderDashboard};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
