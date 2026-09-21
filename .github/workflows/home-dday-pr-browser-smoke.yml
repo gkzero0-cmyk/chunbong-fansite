@@ -122,8 +122,14 @@ jobs:
 
               const header=await page.locator('.site-header').boundingBox();
               const strip=await page.locator('.home-dday-strip').boundingBox();
-              assert.ok(header&&strip,'header or D-day strip missing');
-              assert.ok(Math.abs(strip.y-(header.y+header.height))<=2,'D-day strip is not directly below the menu bar');
+              assert.ok(header,'header missing');
+              if(viewport.width>390){
+                assert.ok(strip,'desktop D-day strip missing');
+                assert.ok(Math.abs(strip.y-(header.y+header.height))<=2,'D-day strip is not directly below the menu bar');
+              }else{
+                assert.equal(strip,null,'mobile dashboard intentionally hides the redundant D-day strip');
+                assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('mobile-home-dashboard-mode')),true,'mobile home dashboard mode missing');
+              }
 
               await page.locator('#home-dday-trigger').click();
               assert.ok(await page.locator('#home-dday-dialog').evaluate(el=>el.open),'D-day dialog did not open');
