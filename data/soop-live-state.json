@@ -412,12 +412,23 @@
         "categoryName": "버추얼",
         "followerCount": 30609,
         "fanclubCount": 7677
+      },
+      {
+        "capturedAt": "2026-09-21T16:00:03.147Z",
+        "live": true,
+        "startedAt": "2026-09-21T09:14:26.000Z",
+        "title": "마병대 4 간부 면접 1번입니다.",
+        "viewerCount": 50,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30608,
+        "fanclubCount": 7677
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-21T15:53:07.904Z",
-    "followerCount": 30609,
+    "capturedAt": "2026-09-21T16:00:03.147Z",
+    "followerCount": 30608,
     "fanclubCount": 7677
   }
 }
