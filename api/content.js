@@ -17,6 +17,10 @@ const handleChuncortileRanking = require('../lib/chuncortile-ranking-api');
 const handleMinigameMultiplayer = require('../lib/minigame-multiplayer-api');
 const handleChangelogHistory = require('../lib/changelog-history-api');
 const pushNotifications = require('../lib/push-notifications-api');
+const { handleAnalyticsEvent } = require('../lib/site-analytics-api');
+const { handlePublicFeedback, handleOperatorFeedback } = require('../lib/feedback-api');
+const { handleAuth: handleOperatorAuth } = require('../lib/operator-auth-api');
+const { handleOperatorDashboard } = require('../lib/operator-dashboard-api');
 const youtubeEngagementCache = require('../data/youtube-engagement-cache.json');
 const soopMetricHistory = require('../data/soop-follower-history.json');
 const { buildEngagementRankings } = require('../lib/youtube-engagement');
@@ -257,6 +261,11 @@ async function handler(req,res) {
   if(type==='push-config') return pushNotifications.handleConfig(req,res);
   if(type==='push-subscription') return pushNotifications.handleSubscription(req,res);
   if(type==='push-dispatch') return pushNotifications.handleDispatch(req,res);
+  if(type==='analytics-event') return handleAnalyticsEvent(req,res);
+  if(type==='feedback') return handlePublicFeedback(req,res);
+  if(type==='operator-auth') return handleOperatorAuth(req,res);
+  if(type==='operator-dashboard') return handleOperatorDashboard(req,res);
+  if(type==='operator-feedback') return handleOperatorFeedback(req,res);
   if(type==='live'){
     res.setHeader('Cache-Control','s-maxage=30, stale-while-revalidate=30');
     try{
