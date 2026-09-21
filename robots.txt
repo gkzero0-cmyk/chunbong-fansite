@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /operator.html
+Disallow: /api/operator/
 
 Sitemap: https://chunbong-fansite.vercel.app/sitemap.xml
