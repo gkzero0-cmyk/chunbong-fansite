@@ -87,12 +87,20 @@
   }
 
   function setupReveal() {
-    const nodes = $$('.reveal');
+    const nodes = $('.reveal');
     if (!nodes.length) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       nodes.forEach(node => node.classList.add('visible'));
       return;
     }
+    const initialCutoff = window.innerHeight * 1.08;
+    const pending = [];
+    nodes.forEach(node => {
+      const rect = node.getBoundingClientRect();
+      if (rect.top < initialCutoff && rect.bottom > -80) node.classList.add('visible','reveal-initial');
+      else if (!node.classList.contains('visible')) pending.push(node);
+    });
+    if (!pending.length) return;
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -100,10 +108,8 @@
           observer.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.08 });
-    nodes.forEach(node => {
-      if (!node.classList.contains('visible')) observer.observe(node);
-    });
+    }, { threshold: 0.08, rootMargin: '0px 0px 8% 0px' });
+    pending.forEach(node => observer.observe(node));
   }
 
   function setupToTop() {
