@@ -16,33 +16,47 @@
     return window.visualViewport?.height||window.innerHeight||document.documentElement.clientHeight||0;
   }
 
-  function fitBoard(){
-    cancelAnimationFrame(raf);
-    page.style.removeProperty('--game-board');
-    if(!desktop.matches)return;
-
-    raf=requestAnimationFrame(()=>{
-      const wrapRect=wrap.getBoundingClientRect();
-      const cardRect=card.getBoundingClientRect();
-      const extraBelow=Math.max(0,cardRect.bottom-wrapRect.bottom);
-      const safeBottom=12;
-      const available=Math.max(0,viewportHeight()-wrapRect.top-extraBelow-safeBottom);
-      if(!available)return;
-
-      const naturalWidth=wrapRect.width;
-      const fittedWidth=Math.floor(available*BOARD_RATIO);
-      if(fittedWidth>0&&fittedWidth<naturalWidth-1){
-        page.style.setProperty('--game-board',fittedWidth+'px');
-      }
-    });
+  function markReady(){
+    document.body.dataset.gameLayoutReady='ready';
   }
 
-  const resync=()=>fitBoard();
-  window.addEventListener('resize',resync,{passive:true});
-  window.visualViewport?.addEventListener('resize',resync,{passive:true});
-  desktop.addEventListener?.('change',resync);
+  function applyFit(){
+    raf=0;
+    if(!desktop.matches){
+      page.style.removeProperty('--game-board');
+      markReady();
+      return;
+    }
+
+    const wrapRect=wrap.getBoundingClientRect();
+    const cardRect=card.getBoundingClientRect();
+    const extraBelow=Math.max(0,cardRect.bottom-wrapRect.bottom);
+    const safeBottom=12;
+    const available=Math.max(0,viewportHeight()-wrapRect.top-extraBelow-safeBottom);
+    if(!available){
+      markReady();
+      return;
+    }
+
+    const naturalWidth=wrapRect.width;
+    const fittedWidth=Math.floor(available*BOARD_RATIO);
+    if(fittedWidth>0&&fittedWidth<naturalWidth-1){
+      page.style.setProperty('--game-board',fittedWidth+'px');
+    }
+    markReady();
+  }
+
+  function fitBoard(){
+    cancelAnimationFrame(raf);
+    raf=requestAnimationFrame(applyFit);
+  }
+
+  /* Run once synchronously before the heavier game runtimes execute.
+     This prevents the old two-frame "large board -> smaller board" entry jump. */
+  applyFit();
+
+  window.addEventListener('resize',fitBoard,{passive:true});
+  window.visualViewport?.addEventListener('resize',fitBoard,{passive:true});
+  desktop.addEventListener?.('change',fitBoard);
   document.fonts?.ready?.then(fitBoard).catch(()=>{});
-  requestAnimationFrame(fitBoard);
-  setTimeout(fitBoard,120);
-  setTimeout(fitBoard,450);
 })();

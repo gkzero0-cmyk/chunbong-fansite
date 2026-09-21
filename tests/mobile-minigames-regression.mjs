@@ -43,6 +43,12 @@ assert.match(js,/screen\.orientation\?\.lock/,'landscape orientation lock attemp
 assert.match(js,/pauseGame\(false\)/,'portrait transition must pause without opening the native pause overlay');
 assert.match(js,/orientationPaused/,'orientation pause state missing');
 assert.match(js,/gameover[\s\S]*endLandscapeSession/,'game over must restore the normal fan-site layout');
+assert.match(pages.chungwagame,/id="cg-countdown"/,'Chungwagame mobile countdown overlay missing');
+assert.match(js,/function runChungwaCountdown/,'Chungwagame mobile countdown runtime missing');
+assert.match(js,/\['3','2','1','START!'\]/,'mobile countdown must run 3 2 1 START');
+assert.match(js,/ChungwagameApp\?\.pauseGame\?\.\(false\)/,'restarting during play must freeze the old timer before countdown');
+assert.match(js,/runChungwaCountdown\(control\)/,'mobile Chungwagame start controls must pass through countdown');
+assert.match(css,/\.cg-countdown strong/,'Chungwagame countdown visual missing');
 assert.match(css,/MOBILE LANDSCAPE GAME MODE/,'landscape game CSS layer missing');
 assert.match(css,/body\.mobile-landscape-game-ready\[data-game="chungwagame"\]/,'Chungwagame landscape layout missing');
 assert.match(css,/body\.mobile-landscape-game-ready\[data-game="chuncortile"\]/,'Chuncortile landscape layout missing');

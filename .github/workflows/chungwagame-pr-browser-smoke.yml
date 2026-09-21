@@ -124,7 +124,13 @@ jobs:
               assert.ok(await page.locator('[data-mobile-landscape-gate]').isVisible(),'portrait start must show the landscape rotation guide');
               assert.equal(await page.locator('#chungwagame').getAttribute('data-game-status'),'start','portrait start must not begin gameplay before rotation');
               await page.setViewportSize({width:844,height:390});
-              await page.waitForFunction(()=>document.querySelector('#chungwagame')?.dataset.gameStatus==='playing',{timeout:5000});
+              await page.waitForFunction(()=>!document.querySelector('#cg-countdown')?.classList.contains('hidden'),{timeout:3000});
+              assert.notEqual(await page.locator('#chungwagame').getAttribute('data-game-status'),'playing','timer must not start during mobile countdown');
+              const countdownTimer=(await page.locator('#cg-timer').textContent())?.trim();
+              await page.waitForTimeout(700);
+              assert.equal((await page.locator('#cg-timer').textContent())?.trim(),countdownTimer,'timer advanced during mobile countdown');
+              await page.waitForFunction(()=>document.querySelector('#chungwagame')?.dataset.gameStatus==='playing',{timeout:6000});
+              assert.equal(await page.locator('#cg-countdown').evaluate(el=>el.classList.contains('hidden')),true,'countdown must close before gameplay');
               assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('mobile-landscape-game-ready')),true,'landscape gameplay class missing');
               assert.equal(await page.locator('[data-mobile-landscape-gate]').isVisible(),false,'rotation guide must close in landscape');
               const boardBox=await page.locator('#cg-board-wrap').boundingBox();
@@ -160,6 +166,13 @@ jobs:
             await page.waitForTimeout(1050);
             assert.equal((await page.locator('#cg-timer').textContent())?.trim(),paused,'timer advanced while paused');
             await page.locator('#cg-pause-restart').click();
+            if(viewport.width<=390){
+              await page.waitForFunction(()=>!document.querySelector('#cg-countdown')?.classList.contains('hidden'),{timeout:3000});
+              const restartCountdownTime=(await page.locator('#cg-timer').textContent())?.trim();
+              await page.waitForTimeout(700);
+              assert.equal((await page.locator('#cg-timer').textContent())?.trim(),restartCountdownTime,'restart countdown must keep the timer frozen');
+              await page.waitForFunction(()=>document.querySelector('#chungwagame')?.dataset.gameStatus==='playing',{timeout:6000});
+            }
             assert.equal((await page.locator('#cg-score').textContent())?.trim(),'0','pause restart did not reset score');
             assert.equal((await page.locator('#cg-timer').textContent())?.trim(),'02:00','pause restart did not reset time');
 

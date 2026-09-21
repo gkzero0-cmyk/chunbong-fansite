@@ -33,6 +33,10 @@
   let gateTitle=null;
   let gateCopy=null;
   let fullscreenOwned=false;
+  const chungwaCountdown=document.getElementById('cg-countdown');
+  const chungwaCountdownValue=chungwaCountdown?.querySelector('strong')||null;
+  let countdownToken=0;
+  let countdownControl=null;
 
   const viewportSize=()=>{
     const visual=window.visualViewport;
@@ -168,6 +172,7 @@
     landscapeSession=false;
     pendingControl=null;
     orientationPaused=false;
+    cancelChungwaCountdown();
     hideLandscapeGate();
     body.classList.remove(
       'mobile-landscape-game-session',
@@ -177,6 +182,63 @@
     );
     delete body.dataset.mobileLandscape;
     releaseLandscapeLock();
+  }
+
+  function triggerControlNow(control){
+    if(!control||!document.contains(control))return;
+    bypassControl=true;
+    control.click();
+    queueMicrotask(()=>{bypassControl=false;});
+  }
+
+  function cancelChungwaCountdown(){
+    countdownToken+=1;
+    countdownControl=null;
+    body.classList.remove('mobile-game-countdown');
+    if(chungwaCountdown){
+      chungwaCountdown.classList.add('hidden');
+      chungwaCountdown.classList.remove('pop');
+      delete chungwaCountdown.dataset.step;
+    }
+  }
+
+  async function runChungwaCountdown(control){
+    if(game!=='chungwagame'||!isHandheld()||!chungwaCountdown||!chungwaCountdownValue){
+      triggerControlNow(control);
+      return;
+    }
+
+    const token=++countdownToken;
+    countdownControl=control;
+    pendingControl=null;
+    if((root.dataset.gameStatus||'')==='playing')globalThis.ChungwagameApp?.pauseGame?.(false);
+    body.classList.add('mobile-game-countdown');
+    hideLandscapeGate();
+
+    /* Let the landscape viewport variables and final board footprint settle first.
+       The game timer has not started yet because the original start control is still blocked. */
+    await new Promise(resolve=>requestAnimationFrame(resolve));
+    if(token!==countdownToken||isPortrait())return;
+
+    chungwaCountdown.classList.remove('hidden');
+    const labels=['3','2','1','START!'];
+    for(const label of labels){
+      if(token!==countdownToken)return;
+      chungwaCountdownValue.textContent=label;
+      chungwaCountdown.dataset.step=label==='START!'?'start':label;
+      chungwaCountdown.classList.remove('pop');
+      void chungwaCountdownValue.offsetWidth;
+      chungwaCountdown.classList.add('pop');
+      await new Promise(resolve=>setTimeout(resolve,label==='START!'?420:650));
+    }
+
+    if(token!==countdownToken)return;
+    chungwaCountdown.classList.add('hidden');
+    chungwaCountdown.classList.remove('pop');
+    delete chungwaCountdown.dataset.step;
+    body.classList.remove('mobile-game-countdown');
+    countdownControl=null;
+    triggerControlNow(control);
   }
 
   function pauseForOrientation(){
@@ -194,15 +256,22 @@
     const control=pendingControl;
     pendingControl=null;
     if(!control||!document.contains(control))return;
-    bypassControl=true;
-    control.click();
-    queueMicrotask(()=>{bypassControl=false;});
+    if(game==='chungwagame'&&isHandheld()){
+      void runChungwaCountdown(control);
+      return;
+    }
+    triggerControlNow(control);
   }
 
   function syncLandscapeMode(){
     if(!landscapeEnabled||!landscapeSession)return;
     setViewportVars();
     if(isPortrait()){
+      if(countdownControl){
+        const control=countdownControl;
+        cancelChungwaCountdown();
+        pendingControl=control;
+      }
       body.classList.add('mobile-landscape-game-portrait');
       body.classList.remove('mobile-landscape-game-ready');
       pauseForOrientation();
@@ -235,6 +304,11 @@
       const control=document.querySelector(selector);
       control?.addEventListener('click',event=>{
         if(bypassControl||!isHandheld())return;
+        if(countdownControl){
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          return;
+        }
         beginLandscapeSession();
         if(isPortrait()){
           event.preventDefault();
@@ -242,6 +316,13 @@
           pendingControl=control;
           showLandscapeGate('rotate');
           requestLandscapeLock();
+          return;
+        }
+        if(game==='chungwagame'){
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          syncLandscapeMode();
+          void runChungwaCountdown(control);
           return;
         }
         syncLandscapeMode();
@@ -310,6 +391,6 @@
   landscapeQuery.addEventListener?.('change',orientationResync);
   screen.orientation?.addEventListener?.('change',orientationResync);
   document.addEventListener('fullscreenchange',orientationResync,{passive:true});
-  window.addEventListener('pagehide',()=>{if(landscapeSession)releaseLandscapeLock();},{once:true});
+  window.addEventListener('pagehide',()=>{cancelChungwaCountdown();if(landscapeSession)releaseLandscapeLock();},{once:true});
   sync();
 })();
