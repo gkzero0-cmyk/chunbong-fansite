@@ -112,12 +112,23 @@
 })();
 (() => {
   const nav=document.getElementById('main-nav');
+  if(!nav||nav.querySelector('[data-nav="contents"]'))return;
+  const link=document.createElement('a');
+  link.dataset.nav='contents';
+  link.href='chunbong-contents.html';
+  link.textContent='춘봉 콘텐츠';
+  const history=nav.querySelector('[data-nav="history"]');
+  const dataLink=nav.querySelector('[data-nav="data"]');
+  nav.insertBefore(link,history||dataLink||null);
+})();
+(() => {
+  const nav=document.getElementById('main-nav');
   if(!nav||nav.querySelector('.nav-group')) return;
   const NAV_GROUPS=[
     {label:'방송',items:['schedule','notice']},
     {label:'영상',items:['vod','clips','youtube']},
     {label:'팬존',items:['fanart','tarot']},
-    {label:'기록',items:['history','data']}
+    {label:'기록',items:['contents','history','data']}
   ];
   const current=document.body.dataset.page||'';
   NAV_GROUPS.forEach(group=>{
