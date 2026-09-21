@@ -7,7 +7,7 @@ const improvements=read('site-improvements.js');
 const page=read('page.js');
 const css=read('styles.css');
 
-assert.match(sw,/chunbong-pwa-20260922-v30/,'navigation optimization must advance the service worker cache');
+assert.match(sw,/chunbong-pwa-20260922-v31/,'navigation optimization must advance the service worker cache');
 assert.match(sw,/request\.mode === 'navigate'[\s\S]*staleWhileRevalidate\(request, event, '\/offline\.html'\)/,'documents should render cached navigation immediately and refresh in background');
 assert.match(sw,/event\.preloadResponse/,'cached navigation refresh should reuse navigation preload instead of issuing a duplicate request');
 assert.match(sw,/if \(preload\?\.ok\)[\s\S]*await fetch\(request\)/,'failed preload responses must fall through to fetch so offline fallback remains reachable');
