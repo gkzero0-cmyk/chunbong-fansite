@@ -5,12 +5,14 @@ const require=createRequire(import.meta.url);
 process.env.UPSTASH_REDIS_REST_URL='https://example.upstash.test';
 process.env.UPSTASH_REDIS_REST_TOKEN='test-token';
 
-const redis=new Map(),originalFetch=global.fetch;
+const redis=new Map(),originalFetch=global.fetch,originalSetTimeout=global.setTimeout;
+let transientLockFailures=0;
 global.fetch=async url=>{
   const parsed=new URL(url),parts=parsed.pathname.split('/').filter(Boolean).map(decodeURIComponent),[command,key,...args]=parts;
   if(command==='GET')return{ok:true,json:async()=>({result:redis.has(key)?redis.get(key):null})};
   if(command==='SET'){
     const [value,...options]=args,nx=options.includes('NX');
+    if(nx&&key.startsWith('minigame:room-lock:')&&transientLockFailures>0){transientLockFailures-=1;return{ok:true,json:async()=>({result:null})};}
     if(nx&&redis.has(key))return{ok:true,json:async()=>({result:null})};
     redis.set(key,value);return{ok:true,json:async()=>({result:'OK'})};
   }
@@ -79,6 +81,20 @@ await invoke({body:{action:'rematch',code:rematch.code,token:rematch.p1}});
 const rematch2=await invoke({body:{action:'rematch',code:rematch.code,token:rematch.p2}});
 assert.equal(rematch2.body.room.state,'waiting');assert.equal(rematch2.body.room.round,2);assert.equal(rematch2.body.room.mode,'classic');assert.equal(rematch2.body.room.difficulty,'hard');
 
+global.setTimeout=(fn)=>{fn();return 0;};
+transientLockFailures=10;
+const contentionRecovered=await invoke({body:{action:'ready',code:rematch.code,token:rematch.p1,ready:true}});
+assert.equal(contentionRecovered.statusCode,200,'transient room contention should be absorbed server-side');
+assert.equal(contentionRecovered.body.room.players.find(p=>p.id==='p1').ready,true);
+
+transientLockFailures=20;
+const contentionBusy=await invoke({body:{action:'ready',code:rematch.code,token:rematch.p1,ready:false}});
+assert.equal(contentionBusy.statusCode,409,'persistent room contention should remain retryable');
+assert.equal(contentionBusy.body.error,'room_busy');
+assert.equal(contentionBusy.body.retryAfterMs,180);
+assert.equal(contentionBusy.headers['retry-after'],'1');
+global.setTimeout=originalSetTimeout;
+
 const invalidToken=await invoke({body:{action:'ready',code:rematch.code,token:'wrong',ready:true}});assert.equal(invalidToken.statusCode,403);
 const crossOrigin=await invoke({headers:{origin:'https://evil.example'},body:{action:'create',game:'chuntris',nickname:'악성유저'}});assert.equal(crossOrigin.statusCode,403);
 const wrongMethod=await invoke({method:'DELETE',query:{code:rematch.code}});assert.equal(wrongMethod.statusCode,405);
@@ -87,4 +103,5 @@ const bak=await invoke({body:{action:'create',game:'chunbak',nickname:'춘박이
 const gwa=await invoke({body:{action:'create',game:'chungwagame',nickname:'춘과이'}});assert.equal(gwa.body.room.mode,'score120');
 
 global.fetch=originalFetch;
+global.setTimeout=originalSetTimeout;
 console.log('minigame multiplayer API regression passed');

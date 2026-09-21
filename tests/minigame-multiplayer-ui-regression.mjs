@@ -17,6 +17,8 @@ assert.match(runtime,/new Engine\.ChuntrisGame\(\{mode,difficulty,random:seededR
 assert.match(runtime,/root\.ChuntrisApp=\{start,startMultiplayer,/);
 
 assert.match(common,/type=minigame-multiplayer/);
+assert.match(common,/data\.retryAfterMs/,'multiplayer client must honor server contention retry timing');
+assert.match(common,/retryAfter\+attempt\*60/,'multiplayer contention retries must back off progressively');
 assert.match(common,/function seededRandom\(seed\)/);
 assert.match(common,/roomInviteUrl/);
 assert.match(common,/async create\(nickname,mode,difficulty\)/);
