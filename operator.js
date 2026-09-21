@@ -1,3 +1,5 @@
+(async()=>{
+'use strict';
 const API='/api/content?type=';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const login=$('#operator-login'),dashboard=$('#operator-dashboard'),status=$('#operator-login-status'),logout=$('#operator-logout');
@@ -27,3 +29,4 @@ $('#feedback-status').addEventListener('change',async e=>{if(!selectedFeedback)r
 logout.addEventListener('click',async()=>{await json(API+'operator-logout',{method:'POST'});session=null;showLogin()});
 await setupFirebaseEmail();await boot();
 setInterval(()=>{if(!dashboard.hidden)void loadAnalytics()},60000);
+})().catch(error=>{console.error('[operator-center]',error);});
