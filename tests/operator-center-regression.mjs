@@ -77,6 +77,10 @@ assert.match(operatorHtml,/operator-session-list/,'active session list missing')
 assert.match(operatorHtml,/system-redis-keys/,'Redis key count UI missing');
 assert.match(operatorHtml,/system-redis-memory/,'Redis memory UI missing');
 assert.match(operatorHtml,/operator-endpoint-health/,'public endpoint health UI missing');
+assert.match(operatorHtml,/operator-attention-summary/,'operator at-a-glance health summary missing');
+assert.match(operatorHtml,/role="tablist"/,'operator accessible tablist missing');
+assert.match(operatorHtml,/aria-selected="true"/,'operator selected tab state missing');
+assert.match(operatorHtml,/skip-link/,'operator skip link missing');
 assert.match(operatorHtml,/Vercel 사용량/,'Vercel usage guidance missing');
 assert.match(operatorHtml,/operator\.css/);
 assert.match(operatorHtml,/type="module" src="operator\.js"/);
@@ -97,6 +101,9 @@ assert.match(operatorJs,/operator-feedback-category-filter/,'feedback category f
 assert.match(operatorJs,/operatorMemo/,'operator memo handling missing');
 assert.match(operatorJs,/redisMemoryLabel/,'Redis memory formatter missing');
 assert.match(operatorJs,/operator-endpoint-health/,'endpoint response renderer missing');
+assert.match(operatorJs,/renderOperatorAttention/,'operator attention summary renderer missing');
+assert.match(operatorJs,/activateOperatorTab/,'operator accessible tab controller missing');
+assert.match(operatorJs,/ArrowLeft/,'operator keyboard tab navigation missing');
 assert.match(operatorJs,/text\/csv/,'analytics CSV export missing');
 assert.match(api,/accounts:sendOobCode/,'Firebase email link dispatch missing');
 assert.match(api,/operator:auth:email-cooldown:v1/,'operator email magic-link cooldown missing');
@@ -132,6 +139,8 @@ assert.match(operatorCss,/--op-muted:#a6adb6/,'operator readable muted token mis
 assert.match(operatorCss,/operator-system-summary/,'system status card styles missing');
 assert.match(operatorCss,/operator-feedback-filters/,'feedback filter styles missing');
 assert.match(operatorCss,/operator-session-list/,'session list styles missing');
+assert.match(operatorCss,/operator-attention-summary/,'operator attention summary styles missing');
+assert.match(operatorCss,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/,'operator mobile controls should fit without horizontal scrolling');
 
 assert.match(analytics,/crypto\.randomUUID/,'anonymous browser id missing');
 assert.match(analytics,/sessionStorage/,'session identifier missing');
