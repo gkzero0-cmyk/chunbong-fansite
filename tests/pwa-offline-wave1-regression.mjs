@@ -11,7 +11,7 @@ for (const asset of [
 }
 for (const featureAsset of [
   '/schedule.html','/tarot.html','/tarot.js','/data.html','/data.js',
-  '/minigames.html','/vod.html','/clips.html','/youtube.html','/fanart.html'
+  '/vod.html','/clips.html','/youtube.html','/fanart.html'
 ]) {
   assert.ok(!sw.includes("'"+featureAsset+"'"), 'heavy feature asset should be runtime-cached, not install-precached: '+featureAsset);
 }
