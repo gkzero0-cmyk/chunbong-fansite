@@ -32,6 +32,24 @@ document.addEventListener('click',event=>{
  if(nav){const label=(target.dataset.nav||target.dataset.morePage||target.textContent||'').trim().slice(0,80);if(label)add({type:'menu_click',target:label})}
  const feedback=target.closest('[data-feedback-open]');if(feedback)add({type:'feedback_open'});
 },{passive:true});
+const gameRoot=document.querySelector('[data-game-status]');
+if(gameRoot){
+ let previousGameStatus=gameRoot.dataset.gameStatus||'';
+ new MutationObserver(()=>{
+   const next=gameRoot.dataset.gameStatus||'';
+   if(next===previousGameStatus)return;
+   if(next==='playing'&&previousGameStatus!=='paused')add({type:'game_start',target:document.body.dataset.game||'game'});
+   if(next==='gameover')add({type:'game_finish',target:document.body.dataset.game||'game'});
+   previousGameStatus=next;
+ }).observe(gameRoot,{attributes:true,attributeFilter:['data-game-status']});
+}
+const tarotSetup=document.querySelector('#tarot-setup');
+tarotSetup?.addEventListener('submit',()=>add({type:'tarot_start'}),{passive:true});
+const tarotReading=document.querySelector('#tarot-reading-grid');
+if(tarotReading){
+ let tarotResultSent=false;
+ new MutationObserver(()=>{if(!tarotResultSent&&tarotReading.querySelector('.tarot-card-result')){tarotResultSent=true;add({type:'tarot_result'})}}).observe(tarotReading,{childList:true,subtree:true});
+}
 document.addEventListener('chunbong:game-start',event=>add({type:'game_start',target:String(event.detail?.game||document.body.dataset.game||'game').slice(0,80)}));
 document.addEventListener('chunbong:game-finish',event=>add({type:'game_finish',target:String(event.detail?.game||document.body.dataset.game||'game').slice(0,80)}));
 document.addEventListener('chunbong:tarot-start',()=>add({type:'tarot_start'}));
