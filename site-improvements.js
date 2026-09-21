@@ -391,6 +391,7 @@
   'use strict';
   if(document.body?.dataset?.page==='operator')return;
   const SESSION_URL='/api/content?type=operator-session';
+  const HINT_KEY='chunbong:operator:access-hint:v1';
   let authenticated=false,longPressTimer=0,suppressClickUntil=0;
 
   const makeDesktopLink=()=>{
@@ -423,13 +424,12 @@
   };
   const bindShortcuts=()=>{
     document.addEventListener('keydown',event=>{
-      if(!authenticated)return;
       if((event.ctrlKey||event.metaKey)&&event.shiftKey&&String(event.key||'').toLowerCase()==='o'){
         event.preventDefault();location.href='operator.html';
       }
     });
     document.addEventListener('pointerdown',event=>{
-      if(!authenticated||event.pointerType!=='touch')return;
+      if(event.pointerType!=='touch')return;
       const anchor=event.target.closest('a[href$="myhub.html"]');if(!anchor)return;
       clearTimeout(longPressTimer);
       longPressTimer=setTimeout(()=>{suppressClickUntil=Date.now()+900;location.href='operator.html'},700);
@@ -441,15 +441,18 @@
     },true);
   };
   const check=async()=>{
+    let hinted=false;try{hinted=localStorage.getItem(HINT_KEY)==='1'}catch(_){}
+    if(!hinted)return;
     try{
       const response=await fetch(SESSION_URL,{headers:{accept:'application/json'},cache:'no-store'});
       if(!response.ok)return;
       const data=await response.json();authenticated=data?.authenticated===true;
       if(!authenticated)return;
       document.documentElement.dataset.operatorSession='active';
-      installEntries();observeMobileMore();bindShortcuts();
+      installEntries();observeMobileMore();
     }catch(_){}
   };
+  bindShortcuts();
   if(document.readyState==='complete')setTimeout(check,700);
   else window.addEventListener('load',()=>setTimeout(check,700),{once:true});
 })();
