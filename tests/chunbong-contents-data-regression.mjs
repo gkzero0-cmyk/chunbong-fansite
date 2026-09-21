@@ -37,6 +37,7 @@ assert.ok(seed.items.some(item=>item.published===true),'at least one verified ar
 const leopel=seed.items.find(item=>item.id==='leopel');
 assert.ok(leopel?.published,'verified Leopol record should be publicly seeded');
 assert.ok((leopel?.sources||[]).length>=2,'Leopol should be cross-checked with multiple public sources');
+assert.equal(leopel?.role,'주최 · 기획','Leopol role should match directly supported source wording');
 for(const item of seed.items) assert.deepEqual(validateArchiveItem(normalizeArchiveItem(item),{publishing:true}),[]);
 
 console.log('chunbong contents data regression passed');
