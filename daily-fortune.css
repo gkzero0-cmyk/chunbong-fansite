@@ -314,3 +314,83 @@
 }
 .daily-fortune-stage.is-prism-active .daily-fortune-card{filter:drop-shadow(0 34px 54px #000e) drop-shadow(0 0 11px #f0c85f70) saturate(1.035) brightness(1.025)}
 .daily-fortune-stage.is-prism-active .daily-fortune-card:before{opacity:.78}
+
+
+/* 2026-09-21 Fortune hover polish: stronger inner prism, quieter edge, visible double ripple. */
+.daily-fortune-stage.is-prism-active .daily-fortune-holo-film{
+  opacity:.82!important;
+  background:
+    radial-gradient(circle at var(--glow-x) var(--glow-y),
+      rgba(255,244,194,.48) 0 3.5%,
+      rgba(239,190,82,.25) 8%,
+      rgba(137,107,229,.23) 15%,
+      rgba(76,178,231,.18) 21%,
+      transparent 34%),
+    linear-gradient(118deg,
+      transparent 18%,
+      rgba(99,202,231,.14) 30%,
+      rgba(133,105,226,.28) 41%,
+      rgba(229,115,190,.18) 49%,
+      rgba(247,211,105,.32) 58%,
+      rgba(91,188,228,.15) 68%,
+      transparent 82%)!important;
+  mix-blend-mode:screen!important;
+  filter:saturate(1.28) contrast(1.08)!important;
+}
+.daily-fortune-stage.is-prism-active .daily-fortune-card:after{
+  opacity:.72!important;
+  background:
+    radial-gradient(circle at var(--glow-x) var(--glow-y),
+      rgba(255,239,171,.58) 0 2.5%,
+      rgba(232,177,69,.26) 6%,
+      rgba(131,104,227,.18) 12%,
+      rgba(74,170,228,.12) 18%,
+      transparent 30%),
+    linear-gradient(126deg,
+      transparent 24%,
+      rgba(92,195,225,.10) 36%,
+      rgba(129,104,220,.18) 45%,
+      rgba(239,204,104,.24) 54%,
+      transparent 68%)!important;
+  mix-blend-mode:screen!important;
+}
+.daily-fortune-stage.is-prism-active .daily-fortune-card:before{opacity:.58!important}
+.daily-fortune-holo-ripple{
+  width:58px!important;
+  height:58px!important;
+  margin:-29px 0 0 -29px!important;
+  border:1.5px solid rgba(255,226,143,.82)!important;
+  border-radius:50%!important;
+  background:radial-gradient(circle,
+    rgba(255,239,183,.20) 0 10%,
+    transparent 27%,
+    rgba(130,107,227,.20) 39%,
+    rgba(72,178,230,.20) 48%,
+    rgba(247,202,96,.17) 57%,
+    transparent 70%)!important;
+  box-shadow:
+    0 0 16px rgba(246,198,91,.38),
+    0 0 30px rgba(113,91,219,.28),
+    inset 0 0 12px rgba(91,184,229,.18)!important;
+  mix-blend-mode:screen!important;
+  filter:saturate(1.22)!important;
+  animation:dailyFortuneLuxuryRipple .96s cubic-bezier(.12,.66,.16,1) forwards!important;
+}
+.daily-fortune-holo-ripple::before{
+  content:"";
+  position:absolute;
+  inset:-18%;
+  border:1px solid rgba(111,174,239,.52);
+  border-radius:50%;
+  box-shadow:0 0 12px rgba(128,103,226,.28);
+}
+.daily-fortune-holo-ripple::after{
+  inset:18%!important;
+  border:1px solid rgba(255,231,156,.66)!important;
+  box-shadow:0 0 10px rgba(245,199,94,.25)!important;
+}
+@keyframes dailyFortuneLuxuryRipple{
+  0%{opacity:.96;transform:scale(.34)}
+  28%{opacity:.88}
+  100%{opacity:0;transform:scale(7.4)}
+}
