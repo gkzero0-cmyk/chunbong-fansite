@@ -76,6 +76,8 @@ assert.match(operatorJs,/aria-disabled/,'unconfigured GitHub auth must be disabl
 assert.match(operatorJs,/operator-session/);
 assert.match(operatorJs,/operator-analytics/);
 assert.match(operatorJs,/operator-feedback/);
+assert.match(operatorJs,/\$\$\('\[data-days\]'\)\.forEach/,'operator period controls must bind through querySelectorAll');
+assert.doesNotMatch(operatorJs,/\$\('\[data-days\]'\)\.forEach/,'operator period controls must not call forEach on querySelector');
 assert.match(api,/accounts:sendOobCode/,'Firebase email link dispatch missing');
 assert.match(api,/operator:auth:email-cooldown:v1/,'operator email magic-link cooldown missing');
 assert.match(operatorJs,/signInWithEmailLink/,'Firebase email link completion missing');
