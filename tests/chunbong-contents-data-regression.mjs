@@ -24,6 +24,13 @@ assert.ok(validateArchiveItem(duplicateUrl,{publishing:true}).includes('duplicat
 const conflicted={...monthOnly,id:'conflict',verification:{state:'needs_review',conflicts:[{field:'startDate'}]}};
 assert.ok(validateArchiveItem(conflicted,{publishing:true}).includes('unresolved_conflict'));
 
+const localArt=normalizeArchiveItem({
+  ...monthOnly,
+  id:'local-art',
+  heroImage:{src:'/assets/chunbong-contents/leopel-cover.svg',alt:'레오펠 팬사이트 아카이브 커버',sourceId:'s1'}
+});
+assert.equal(localArt.heroImage?.src,'/assets/chunbong-contents/leopel-cover.svg','local archive artwork path should be preserved');
+
 const seed=JSON.parse(fs.readFileSync(new URL('../data/chunbong-contents-seed.json',import.meta.url),'utf8'));
 assert.ok(Array.isArray(seed.items));
 assert.ok(seed.items.some(item=>item.published===true),'at least one verified archive item should ship publicly');
