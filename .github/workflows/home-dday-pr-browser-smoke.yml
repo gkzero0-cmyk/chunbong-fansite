@@ -145,7 +145,11 @@ jobs:
               assert.equal(await homeOfficial.getAttribute('target'),'_blank');
               assert.match((await homeOfficial.locator('.status-service-mark').textContent())||'',/SOOP/);
               assert.match((await homeOfficial.textContent())||'',/OFFLINE|LIVE/);
-              assert.ok(await homeOfficial.isVisible(),'home official profile card not visible');
+              if(viewport.width>390){
+                assert.ok(await homeOfficial.isVisible(),'desktop home official profile card not visible');
+              }else{
+                assert.equal(await homeOfficial.isVisible(),false,'mobile dashboard intentionally hides the legacy hero profile card');
+              }
               assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'home horizontal overflow');
 
               assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
