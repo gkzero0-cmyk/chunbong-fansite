@@ -550,6 +550,21 @@ body.mobile-landscape-game-session .to-top{
   body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-utility b{font-size:9px!important}
   body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-utility small{display:none!important}
   body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-overlay{background:rgba(10,12,9,.92)!important}
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-countdown{
+    z-index:40!important;place-items:center!important;
+    background:rgba(8,10,7,.78)!important;backdrop-filter:blur(5px)!important
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-countdown strong{
+    display:block;color:#F7F4EC!important;
+    font-size:clamp(64px,22vh,128px)!important;line-height:1!important;font-weight:1000!important;
+    letter-spacing:-.06em;text-shadow:0 8px 36px rgba(0,0,0,.55),0 0 28px rgba(255,122,26,.24)
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-countdown[data-step="start"] strong{
+    color:#FFD27A!important;font-size:clamp(38px,13vh,72px)!important;letter-spacing:-.04em
+  }
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-countdown.pop strong{
+    animation:cgMobileCountdownPop .58s cubic-bezier(.18,.78,.24,1) both
+  }
   body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-overlay-inner{
     width:min(390px,88%)!important;max-height:92%!important;overflow:auto!important;
     background:#20251EF7!important;border-color:#5A624F!important
@@ -736,4 +751,15 @@ body.mobile-landscape-game-session .to-top{
     display:none!important;
     content:none!important
   }
+}
+
+
+@keyframes cgMobileCountdownPop{
+  0%{opacity:0;transform:scale(1.28)}
+  28%{opacity:1;transform:scale(1)}
+  78%{opacity:1;transform:scale(.96)}
+  100%{opacity:.82;transform:scale(.92)}
+}
+@media(prefers-reduced-motion:reduce){
+  body.mobile-landscape-game-ready[data-game="chungwagame"] .cg-countdown.pop strong{animation:none!important}
 }
