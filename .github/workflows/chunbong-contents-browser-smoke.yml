@@ -1,0 +1,44 @@
+name: Chunbong content archive browser smoke
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'chunbong-contents.html'
+      - 'chunbong-contents.css'
+      - 'chunbong-contents.js'
+      - 'data/chunbong-contents-seed.json'
+      - 'lib/chunbong-content-archive-core.js'
+      - 'lib/chunbong-content-archive-api.js'
+      - 'operator-contents.js'
+      - 'operator.html'
+      - 'operator.js'
+      - 'operator.css'
+      - 'api/content.js'
+      - 'tests/chunbong-contents-browser-smoke.mjs'
+      - '.github/workflows/chunbong-contents-browser-smoke.yml'
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local site
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/archive-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:4173/chunbong-contents.html >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/archive-http.log
+          exit 1
+      - name: Verify archive desktop and mobile flows
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: node tests/chunbong-contents-browser-smoke.mjs
