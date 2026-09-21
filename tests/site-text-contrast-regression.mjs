@@ -9,3 +9,9 @@ for(const token of ['color:var(--text-primary)','color:var(--text-secondary)','c
   assert.ok(css.includes(token),token+' missing from shared text hierarchy');
 }
 console.log('site text contrast regression passed');
+
+assert.match(css,/--text-meta:#9A938D/,'dark meta text must stay readable on dark panels');
+assert.match(css,/--text-muted:#625951/,'light muted text must meet the raised contrast target');
+assert.match(css,/--text-meta:#625951/,'light meta text must meet the raised contrast target');
+assert.match(css,/\.copyright[\s\S]*color:var\(--text-muted\)!important/,'footer copyright must use the readable shared token');
+assert.match(css,/\.personal-alert-default[\s\S]*color:var\(--text-muted\)!important/,'fan hub microcopy must use the readable shared token');
