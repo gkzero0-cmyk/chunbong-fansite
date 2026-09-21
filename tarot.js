@@ -660,34 +660,44 @@ if (typeof document !== 'undefined') {
   }
 
   let lastTarotHoverSoundAt = 0;
+  let lastTarotFoilRippleAt = 0;
+  const tarotFoilPoints = new WeakMap();
 
   function tarotFoilPointer(host, event) {
-    if (!host || event.pointerType === 'touch') return;
+    if (!host || event.pointerType === 'touch') return null;
     const rect = host.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
+    if (!rect.width || !rect.height) return null;
     const px = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
     const py = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
     host.style.setProperty('--foil-x', (px * 100).toFixed(1) + '%');
     host.style.setProperty('--foil-y', (py * 100).toFixed(1) + '%');
-    host.style.setProperty('--foil-tilt-x', ((0.5 - py) * 5).toFixed(2) + 'deg');
-    host.style.setProperty('--foil-tilt-y', ((px - 0.5) * 7).toFixed(2) + 'deg');
+    host.style.setProperty('--foil-tilt-x', ((0.5 - py) * 6.5).toFixed(2) + 'deg');
+    host.style.setProperty('--foil-tilt-y', ((px - 0.5) * 9).toFixed(2) + 'deg');
+    return { px, py };
   }
 
-  function triggerTarotFoilEntry(host, event) {
-    if (!host || prefersReducedMotion() || event.pointerType === 'touch') return;
-    tarotFoilPointer(host, event);
+  function pulseTarotFoil(host, point, withSound = false) {
+    if (!host || !point || prefersReducedMotion()) return;
+    const now = performance.now();
     host.classList.add('is-foil-active');
     host.classList.remove('is-foil-rippling');
     void host.offsetWidth;
     host.classList.add('is-foil-rippling');
-    const now = performance.now();
-    if (now - lastTarotHoverSoundAt > 1800) {
+    tarotFoilPoints.set(host, point);
+    lastTarotFoilRippleAt = now;
+    if (withSound && now - lastTarotHoverSoundAt > 1500) {
       lastTarotHoverSoundAt = now;
       const controller = globalThis.__CHUNBONG_TAROT_SFX_CONTROLLER__;
       controller?.unlock?.();
       controller?.play?.('hover');
     }
-    setTimeout(() => host.classList.remove('is-foil-rippling'), 720);
+    setTimeout(() => host.classList.remove('is-foil-rippling'), 860);
+  }
+
+  function triggerTarotFoilEntry(host, event) {
+    if (!host || prefersReducedMotion() || event.pointerType === 'touch') return;
+    const point = tarotFoilPointer(host, event);
+    pulseTarotFoil(host, point, true);
   }
 
   function resetTarotFoil(host) {
@@ -695,6 +705,7 @@ if (typeof document !== 'undefined') {
     host.classList.remove('is-foil-active','is-foil-rippling');
     host.style.setProperty('--foil-tilt-x','0deg');
     host.style.setProperty('--foil-tilt-y','0deg');
+    tarotFoilPoints.delete(host);
   }
 
   function installTarotFoilEvents(container) {
@@ -708,13 +719,60 @@ if (typeof document !== 'undefined') {
     container.addEventListener('pointermove', event => {
       const host = event.target.closest?.('[data-tarot-foil]');
       if (!host || !container.contains(host)) return;
-      tarotFoilPointer(host, event);
+      const point = tarotFoilPointer(host, event);
+      if (!point) return;
       host.classList.add('is-foil-active');
+      const previous = tarotFoilPoints.get(host);
+      const distance = previous ? Math.hypot(point.px - previous.px, point.py - previous.py) : 1;
+      if (distance > 0.12 && performance.now() - lastTarotFoilRippleAt > 480) pulseTarotFoil(host, point, false);
     });
     container.addEventListener('pointerout', event => {
       const host = event.target.closest?.('[data-tarot-foil]');
       if (!host || !container.contains(host) || host.contains(event.relatedTarget)) return;
       resetTarotFoil(host);
+    });
+  }
+
+  function installTarotDeckFoilEvents(container) {
+    if (!container || container.dataset.deckFoilEvents === '1') return;
+    container.dataset.deckFoilEvents = '1';
+    const pointFor = (button, event) => {
+      const rect = button.getBoundingClientRect();
+      if (!rect.width || !rect.height) return null;
+      return {
+        px: Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)),
+        py: Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height))
+      };
+    };
+    container.addEventListener('pointerover', event => {
+      const button = event.target.closest?.('[data-card-index]');
+      if (!button || !container.contains(button) || button.contains(event.relatedTarget) || event.pointerType === 'touch') return;
+      const point = pointFor(button, event);
+      if (!point) return;
+      button.style.setProperty('--deck-foil-x', (point.px * 100).toFixed(1) + '%');
+      button.style.setProperty('--deck-foil-y', (point.py * 100).toFixed(1) + '%');
+      button.classList.add('is-deck-foil');
+      const now = performance.now();
+      if (now - lastTarotHoverSoundAt > 1500) {
+        lastTarotHoverSoundAt = now;
+        const controller = globalThis.__CHUNBONG_TAROT_SFX_CONTROLLER__;
+        controller?.unlock?.();
+        controller?.play?.('hover');
+      }
+    });
+    container.addEventListener('pointermove', event => {
+      const button = event.target.closest?.('[data-card-index]');
+      if (!button || !container.contains(button) || event.pointerType === 'touch') return;
+      const point = pointFor(button, event);
+      if (!point) return;
+      button.style.setProperty('--deck-foil-x', (point.px * 100).toFixed(1) + '%');
+      button.style.setProperty('--deck-foil-y', (point.py * 100).toFixed(1) + '%');
+      button.classList.add('is-deck-foil');
+    });
+    container.addEventListener('pointerout', event => {
+      const button = event.target.closest?.('[data-card-index]');
+      if (!button || !container.contains(button) || button.contains(event.relatedTarget)) return;
+      button.classList.remove('is-deck-foil');
     });
   }
 
@@ -941,6 +999,7 @@ if (typeof document !== 'undefined') {
     });
     installTarotFoilEvents(readingGrid);
     installTarotFoilEvents(byId('tarot-card-zoom-art'));
+    installTarotDeckFoilEvents(byId('tarot-deck'));
     window.addEventListener('resize', fitTarotZoom, { passive: true });
     window.visualViewport?.addEventListener('resize', fitTarotZoom, { passive: true });
     byId('tarot-card-zoom-close')?.addEventListener('click', closeCardZoom);
