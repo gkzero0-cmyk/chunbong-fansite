@@ -43,7 +43,11 @@ const APP_SHELL = [
   '/assets/apple-touch-icon.png',
   '/personal-hub.css',
   '/personal-hub.js',
-  '/myhub.html'
+  '/myhub.html',
+  '/minigames.html',
+  '/minigames.css',
+  '/minigame-profile.css',
+  '/minigame-profile.js'
 ];
 
 self.addEventListener('install', event => {
