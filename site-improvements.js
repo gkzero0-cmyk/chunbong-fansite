@@ -383,3 +383,73 @@
   if(document.readyState==='complete')start();
   else window.addEventListener('load',start,{once:true});
 })();
+
+
+/* Authenticated operator quick access.
+   Visibility is only a convenience; operator.html remains protected by the server session. */
+(()=>{
+  'use strict';
+  if(document.body?.dataset?.page==='operator')return;
+  const SESSION_URL='/api/content?type=operator-session';
+  let authenticated=false,longPressTimer=0,suppressClickUntil=0;
+
+  const makeDesktopLink=()=>{
+    const header=document.querySelector('.site-header');
+    if(!header||header.querySelector('.operator-quick-link'))return;
+    const link=document.createElement('a');
+    link.className='operator-quick-link';
+    link.href='operator.html';
+    link.setAttribute('aria-label','운영자 센터');
+    link.title='운영자 센터 · Ctrl/⌘ + Shift + O';
+    link.innerHTML='<span aria-hidden="true">⚙</span><b>운영자</b>';
+    const my=header.querySelector('.header-myhub');
+    if(my)my.insertAdjacentElement('afterend',link);
+    else header.appendChild(link);
+  };
+  const makeMobileLink=()=>{
+    const grid=document.querySelector('.pwa-app-more-grid');
+    if(!grid||grid.querySelector('[data-more-page="operator"]'))return;
+    const link=document.createElement('a');
+    link.href='operator.html';link.dataset.morePage='operator';link.className='operator-mobile-entry';
+    link.innerHTML='<span>운영자 센터</span><small>분석 · 상태 · 피드백</small>';
+    const feedback=grid.querySelector('[data-feedback-open]');
+    if(feedback)feedback.insertAdjacentElement('beforebegin',link);else grid.appendChild(link);
+  };
+  const installEntries=()=>{if(!authenticated)return;makeDesktopLink();makeMobileLink()};
+  const observeMobileMore=()=>{
+    const observer=new MutationObserver(()=>{if(authenticated)makeMobileLink()});
+    observer.observe(document.body,{childList:true,subtree:true});
+    setTimeout(()=>observer.disconnect(),30000);
+  };
+  const bindShortcuts=()=>{
+    document.addEventListener('keydown',event=>{
+      if(!authenticated)return;
+      if((event.ctrlKey||event.metaKey)&&event.shiftKey&&String(event.key||'').toLowerCase()==='o'){
+        event.preventDefault();location.href='operator.html';
+      }
+    });
+    document.addEventListener('pointerdown',event=>{
+      if(!authenticated||event.pointerType!=='touch')return;
+      const anchor=event.target.closest('a[href$="myhub.html"]');if(!anchor)return;
+      clearTimeout(longPressTimer);
+      longPressTimer=setTimeout(()=>{suppressClickUntil=Date.now()+900;location.href='operator.html'},700);
+    },true);
+    for(const name of ['pointerup','pointercancel','pointerleave'])document.addEventListener(name,()=>clearTimeout(longPressTimer),true);
+    document.addEventListener('click',event=>{
+      if(Date.now()>suppressClickUntil)return;
+      if(event.target.closest('a[href$="myhub.html"]')){event.preventDefault();event.stopPropagation()}
+    },true);
+  };
+  const check=async()=>{
+    try{
+      const response=await fetch(SESSION_URL,{headers:{accept:'application/json'},cache:'no-store'});
+      if(!response.ok)return;
+      const data=await response.json();authenticated=data?.authenticated===true;
+      if(!authenticated)return;
+      document.documentElement.dataset.operatorSession='active';
+      installEntries();observeMobileMore();bindShortcuts();
+    }catch(_){}
+  };
+  if(document.readyState==='complete')setTimeout(check,700);
+  else window.addEventListener('load',()=>setTimeout(check,700),{once:true});
+})();
