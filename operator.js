@@ -10,6 +10,28 @@ async function json(url,options){const r=await fetch(url,options);let data={};tr
 function showLogin(){login.hidden=false;dashboard.hidden=true;logout.hidden=true}
 function showDashboard(){login.hidden=true;dashboard.hidden=false;logout.hidden=false}
 function providerLabel(value){return value==='github'?'GitHub':'이메일'}
+async function loadAuthAvailability(){
+  const github=$('#operator-github-login'),form=$('#operator-email-form'),input=$('#operator-email'),submit=form?.querySelector('button[type="submit"]');
+  try{
+    const config=await json(API+'operator-auth-config');
+    const githubReady=Boolean(config.providers?.github),emailReady=Boolean(config.providers?.email);
+    github?.classList.toggle('is-unavailable',!githubReady);
+    github?.setAttribute('aria-disabled',String(!githubReady));
+    github?.setAttribute('title',githubReady?'GitHub로 운영자 인증':'GitHub OAuth 설정 필요');
+    if(input)input.disabled=!emailReady;if(submit)submit.disabled=!emailReady;
+    const helper=form?.querySelector('small');
+    if(helper)helper.textContent=emailReady?'등록된 소유주 이메일로만 인증할 수 있습니다.':'이메일 인증 설정이 아직 필요합니다.';
+    const auth=new URLSearchParams(location.search).get('auth');
+    if(auth==='github-not-configured')status.textContent='GitHub 운영자 인증 설정이 아직 완료되지 않았습니다.';
+    else if(auth==='denied')status.textContent='GitHub 운영자 인증을 완료하지 못했습니다.';
+    else if(auth==='success')status.textContent='GitHub 운영자 인증이 완료되었습니다.';
+    if(!githubReady&&!emailReady&&!auth)status.textContent='운영자 인증 제공자 설정이 필요합니다. 분석·피드백 수집은 배포 후 별도로 시작됩니다.';
+    return config;
+  }catch{
+    status.textContent='운영자 인증 상태를 불러오지 못했습니다.';
+    return null;
+  }
+}
 function renderRows(el,rows=[]){el.innerHTML=rows.length?rows.map((row,i)=>`<li><em>${i+1}</em><strong title="${escapeHtml(row.key)}">${escapeHtml(row.key)}</strong><b>${fmt(row.value)}</b></li>`).join(''):'<li><em>–</em><strong>아직 데이터가 없습니다.</strong><b>0</b></li>'}
 function renderDaily(rows=[]){const el=$('#operator-daily'),max=Math.max(1,...rows.map(x=>Math.max(x.pageviews,x.visitors)));el.innerHTML=rows.map(x=>`<div class="operator-day"><div class="operator-day-bars" title="${x.date} · 방문자 ${fmt(x.visitors)} · 페이지뷰 ${fmt(x.pageviews)}"><i style="height:${Math.max(3,x.pageviews/max*100)}%"></i><i style="height:${Math.max(3,x.visitors/max*100)}%"></i></div><small>${x.date.slice(5)}</small></div>`).join('')}
 async function loadAnalytics(){const data=await json(API+'operator-analytics&days='+currentDays);$('#metric-active').textContent=fmt(data.activeNow);$('#metric-visitors').textContent=fmt(data.visitors);$('#metric-pageviews').textContent=fmt(data.pageviews);$('#metric-duration').textContent=data.averageActiveSeconds>=60?Math.floor(data.averageActiveSeconds/60)+'분 '+data.averageActiveSeconds%60+'초':data.averageActiveSeconds+'초';renderRows($('#operator-pages'),data.topPages);renderRows($('#operator-menus'),data.topMenus);renderRows($('#operator-features'),data.topFeatures);renderRows($('#operator-devices'),data.devices);renderDaily(data.daily||[]);$('#operator-collection-note').textContent=data.collectionStartedAt?'실사용 분석 수집 시작: '+new Date(data.collectionStartedAt).toLocaleString('ko-KR'):'분석 데이터가 아직 수집되지 않았습니다.';const unread=Number(data.feedbackCounts?.new)||0;const badge=$('#operator-feedback-badge');badge.textContent=unread;badge.hidden=!unread}
@@ -22,12 +44,13 @@ async function setupFirebaseEmail(){
  if(new URLSearchParams(location.search).get('email')==='complete'){try{const config=await json(API+'operator-auth-config');if(!config.providers.email||!config.firebase)return;const email=localStorage.getItem('chunbong:operator:email')||prompt('인증 메일을 받은 주소를 입력하세요')||'';if(!email)return;const {initializeApp}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js');const {getAuth,isSignInWithEmailLink,signInWithEmailLink}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js');const app=initializeApp(config.firebase,'operator-email-complete');const auth=getAuth(app);if(!isSignInWithEmailLink(auth,location.href))throw new Error('invalid_link');const credential=await signInWithEmailLink(auth,email,location.href);const idToken=await credential.user.getIdToken();await json(API+'operator-email-complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken})});localStorage.removeItem('chunbong:operator:email');history.replaceState(null,'','/operator.html');await boot()}catch{status.textContent='이메일 인증 링크를 확인하지 못했습니다.'}}
 }
 async function boot(){try{session=await json(API+'operator-session');showDashboard();$('#security-provider').textContent=providerLabel(session.provider);$('#security-expires').textContent=new Date(session.expiresAt).toLocaleString('ko-KR');$('#security-sessions').textContent=fmt(session.activeSessions||1)+'개';$('#security-github').textContent=session.owner?.githubLogin||'gkzero0-cmyk';await Promise.all([loadAnalytics(),loadFeedback()])}catch{showLogin()}}
-$$('[data-days]').forEach(btn=>btn.addEventListener('click',async()=>{$$('[data-days]').forEach(x=>x.classList.toggle('active',x===btn));currentDays=btn.dataset.days==='all'?'all':(Number(btn.dataset.days)||7);await loadAnalytics()}));
+$('#operator-github-login')?.addEventListener('click',event=>{if(event.currentTarget.getAttribute('aria-disabled')==='true')event.preventDefault()});
+$('[data-days]').forEach(btn=>btn.addEventListener('click',async()=>{$$('[data-days]').forEach(x=>x.classList.toggle('active',x===btn));currentDays=btn.dataset.days==='all'?'all':(Number(btn.dataset.days)||7);await loadAnalytics()}));
 $$('[data-operator-tab]').forEach(btn=>btn.addEventListener('click',()=>{$$('[data-operator-tab]').forEach(x=>x.classList.toggle('active',x===btn));$$('[data-operator-panel]').forEach(panel=>panel.hidden=panel.dataset.operatorPanel!==btn.dataset.operatorTab)}));
 $('#operator-feedback-refresh').addEventListener('click',loadFeedback);
 $('#feedback-status').addEventListener('change',async e=>{if(!selectedFeedback)return;await json(API+'operator-feedback-update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:selectedFeedback.id,status:e.target.value})});selectedFeedback.status=e.target.value;await Promise.all([loadFeedback(),loadAnalytics()])});
 logout.addEventListener('click',async()=>{await json(API+'operator-logout',{method:'POST'});session=null;showLogin()});
 $('#operator-logout-all').addEventListener('click',async()=>{if(!confirm('모든 기기에서 운영자 로그인을 해제할까요?'))return;await json(API+'operator-logout-all',{method:'POST'});session=null;showLogin();status.textContent='모든 기기의 운영자 세션을 해제했습니다.'});
-await setupFirebaseEmail();await boot();
+await loadAuthAvailability();await setupFirebaseEmail();await boot();
 setInterval(()=>{if(!dashboard.hidden)void loadAnalytics()},60000);
 })().catch(error=>{console.error('[operator-center]',error);});
