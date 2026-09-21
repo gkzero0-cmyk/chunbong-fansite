@@ -31,6 +31,7 @@ assert.equal(res.body?.error,'operator_auth_required');
 
 for(const [handler,url] of [
   ['handleOperatorSystemStatus','/api/content?type=operator-system-status'],
+  ['handleOperatorSecurityLog','/api/content?type=operator-security-log'],
   ['handleOperatorSessionRevoke','/api/content?type=operator-session-revoke']
 ]){
   const next=response();
