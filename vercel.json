@@ -92,5 +92,15 @@
       "destination": "/history.html",
       "permanent": true
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/operator/github/start",
+      "destination": "/api/content?type=operator-github-start"
+    },
+    {
+      "source": "/api/operator/github/callback",
+      "destination": "/api/content?type=operator-github-callback"
+    }
   ]
 }
