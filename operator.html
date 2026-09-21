@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="operator.css">
 </head>
 <body data-page="operator">
+<a class="skip-link" href="#main-content">본문 바로가기</a>
 <main class="operator-page" id="main-content">
   <header class="operator-topbar">
     <a href="index.html" class="operator-back">← 팬사이트</a>
@@ -42,9 +43,9 @@
       <div><span class="operator-kicker">PRIVATE DASHBOARD</span><h1>운영자 센터</h1></div>
       <div class="operator-heading-actions">
         <div class="operator-period" role="group" aria-label="분석 기간">
-          <button type="button" data-days="1">오늘</button>
-          <button type="button" data-days="7" class="active">7일</button>
-          <button type="button" data-days="30">30일</button><button type="button" data-days="all">전체</button>
+          <button type="button" data-days="1" aria-pressed="false">오늘</button>
+          <button type="button" data-days="7" class="active" aria-pressed="true">7일</button>
+          <button type="button" data-days="30" aria-pressed="false">30일</button><button type="button" data-days="all" aria-pressed="false">전체</button>
         </div>
         <div class="operator-export-actions">
           <button type="button" id="operator-export-json">JSON</button>
@@ -53,14 +54,19 @@
       </div>
     </div>
 
-    <nav class="operator-tabs" aria-label="운영자 메뉴">
-      <button class="active" type="button" data-operator-tab="overview">개요</button>
-      <button type="button" data-operator-tab="feedback">피드백 <i id="operator-feedback-badge" hidden>0</i></button>
-      <button type="button" data-operator-tab="system">시스템 상태</button>
-      <button type="button" data-operator-tab="security">보안</button>
+    <nav class="operator-tabs" role="tablist" aria-label="운영자 메뉴">
+      <button id="operator-tab-overview" class="active" type="button" role="tab" aria-selected="true" aria-controls="operator-panel-overview" data-operator-tab="overview">개요</button>
+      <button id="operator-tab-feedback" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-feedback" data-operator-tab="feedback">피드백 <i id="operator-feedback-badge" hidden>0</i></button>
+      <button id="operator-tab-system" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-system" data-operator-tab="system">시스템 상태</button>
+      <button id="operator-tab-security" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-security" data-operator-tab="security">보안</button>
     </nav>
 
-    <section data-operator-panel="overview">
+    <section class="operator-overall-status" id="operator-overall-status" aria-live="polite" aria-atomic="true">
+      <div><span class="operator-kicker">OPERATION STATUS</span><strong id="operator-overall-title">운영 상태 확인 중</strong><p id="operator-overall-copy">Production · API · 저장소 · 새 피드백을 함께 확인합니다.</p></div>
+      <div id="operator-overall-badges" class="operator-overall-badges"></div>
+    </section>
+
+    <section id="operator-panel-overview" role="tabpanel" aria-labelledby="operator-tab-overview" data-operator-panel="overview">
       <p id="operator-collection-note" class="operator-collection-note"></p>
       <div class="operator-metric-grid operator-metric-grid-wide">
         <article class="is-live"><span>현재 활성</span><strong id="metric-active">-</strong><small>최근 5분</small></article>
@@ -94,7 +100,7 @@
       </article>
     </section>
 
-    <section data-operator-panel="feedback" hidden>
+    <section id="operator-panel-feedback" role="tabpanel" aria-labelledby="operator-tab-feedback" data-operator-panel="feedback" hidden>
       <div class="operator-feedback-layout">
         <aside class="operator-card operator-feedback-list-card">
           <header><h2>사용자 피드백</h2><button id="operator-feedback-refresh" type="button">새로고침</button></header>
@@ -119,7 +125,7 @@
     </section>
 
 
-    <section data-operator-panel="system" hidden>
+    <section id="operator-panel-system" role="tabpanel" aria-labelledby="operator-tab-system" data-operator-panel="system" hidden>
       <div class="operator-system-summary">
         <article class="operator-health-card"><span>Production</span><strong id="system-production">확인 중</strong><small id="system-production-meta">-</small></article>
         <article class="operator-health-card"><span>Git 동기화</span><strong id="system-sync">확인 중</strong><small id="system-sync-meta">-</small></article>
@@ -160,7 +166,7 @@
       </div>
     </section>
 
-    <section data-operator-panel="security" hidden>
+    <section id="operator-panel-security" role="tabpanel" aria-labelledby="operator-tab-security" data-operator-panel="security" hidden>
       <article class="operator-card operator-security">
         <header><h2>소유주 계정</h2></header>
         <dl>
