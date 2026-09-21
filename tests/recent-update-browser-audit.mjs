@@ -9,6 +9,7 @@ try{({chromium}=await import('playwright'))}catch(_){
 const BASE=(process.env.BASE_URL||'http://127.0.0.1:4175').replace(/\/$/,'');
 const MOCK=process.env.MOCK_CONTENT==='1';
 const MOCK_DATE='2026-09-20';
+const MOCK_SCHEDULE_DATE=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(Date.now()+86400000));
 
 const dataPayload={
   capturedAt:'2026-09-20T12:00:00Z',
@@ -36,7 +37,7 @@ const mediaPayloads={
   ]},
   clips:{items:[{id:'clip-one',kind:'clip',title:'Mock Clip',date:MOCK_DATE,meta:'조회수 20',link:'https://example.com/clip'}]},
   youtube:{items:[{id:'yt-one',kind:'shorts',title:'Mock YouTube',date:MOCK_DATE,dateIso:'2026-09-20T03:00:00Z',meta:'조회수 30',link:'https://youtube.com/shorts/yt-one'}]},
-  schedule:{items:[{title:'Mock Schedule',tags:['테스트'],start:'2026-09-21T19:00:00+09:00',end:'',isDateTime:true,link:'https://example.com/schedule'}]},
+  schedule:{items:[{title:'Mock Schedule',tags:['테스트'],start:MOCK_SCHEDULE_DATE+'T19:00:00+09:00',end:'',isDateTime:true,link:'https://example.com/schedule'}]},
   live:{live:false},
   activity:{items:[]},
   notice:{items:[]},
