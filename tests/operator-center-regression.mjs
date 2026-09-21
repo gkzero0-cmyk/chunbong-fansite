@@ -40,6 +40,8 @@ for(const event of ['page_view','active_time','menu_click','feature_click']){
 assert.match(analyticsApi,/analytics:active:v1/,'active-user index missing');
 assert.match(analyticsApi,/analytics:visitors:v1/,'daily unique visitor set missing');
 assert.match(analyticsApi,/analytics:sessions:v1/,'daily session set missing');
+assert.doesNotMatch(analyticsApi,/EXPIRE[^\n]*analytics:day:v1|RETENTION_SECONDS=400/,'aggregate analytics must not expire on a short retention window');
+assert.match(analyticsApi,/SESSION_RETENTION_SECONDS=45\*24\*60\*60/,'only raw recent session detail should use bounded retention');
 assert.doesNotMatch(analyticsApi,/x-forwarded-for|remoteAddress|clientIp|ipAddress/i,'analytics must not persist IP addresses');
 
 for(const token of ['visibilityState','location.pathname','navigator.sendBeacon','chunbong-analytics-id-v1']){
