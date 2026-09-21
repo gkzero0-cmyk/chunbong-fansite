@@ -66,6 +66,7 @@ async function loadAnalytics(){
   renderDaily(data.daily||[]);renderHourly(data.hourly||[]);renderFunnel(data.funnel||{});
   $('#operator-collection-note').textContent=data.collectionStartedAt?'실사용 분석 수집 시작: '+new Date(data.collectionStartedAt).toLocaleString('ko-KR'):'분석 데이터가 아직 수집되지 않았습니다.';
   const unread=Number(data.feedbackCounts?.new)||0,badge=$('#operator-feedback-badge');badge.textContent=unread;badge.hidden=!unread;
+  renderOperatorAttention();
 }
 function exportAnalyticsJson(){if(!currentAnalytics)return;download('chunbong-analytics-'+String(currentDays)+'d.json',JSON.stringify({exportedAt:new Date().toISOString(),period:currentDays,data:currentAnalytics},null,2),'application/json')}
 function exportAnalyticsCsv(){
@@ -106,6 +107,49 @@ async function updateSelectedFeedback({statusValue,memoValue}={}){
   const data=await json(API+'operator-feedback-update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   selectedFeedback=data.item;feedbackItems=feedbackItems.map(x=>x.id===selectedFeedback.id?selectedFeedback:x);renderFeedbackList();renderFeedbackDetail();await loadAnalytics();
 }
+function renderOperatorAttention(){
+  const root=$('#operator-attention-summary'),title=$('#operator-attention-title'),detail=$('#operator-attention-detail');
+  if(!root||!title||!detail)return;
+  const issues=[];let critical=false;
+  const dep=currentSystem?.deployment||{},storage=currentSystem?.storage||{},services=currentSystem?.services||{};
+  const endpoints=Array.isArray(currentSystem?.endpoints)?currentSystem.endpoints:[];
+  if(currentSystem){
+    if(!dep.sha){issues.push('Production 상태 확인 필요');critical=true}
+    else if(dep.synced===false)issues.push('Production과 GitHub main SHA 불일치');
+    else if(dep.synced!==true)issues.push('Git 동기화 확인 불가');
+    if(storage.redisConfigured&&storage.redisOk===false){issues.push('Redis/KV 연결 확인 필요');critical=true}
+    if(services.analytics===false){issues.push('실사용 분석 확인 필요');critical=true}
+    if(services.feedback===false){issues.push('피드백 저장 확인 필요');critical=true}
+    const failed=endpoints.filter(row=>!row.ok);
+    if(failed.length){issues.push('핵심 API '+failed.length+'개 응답 확인 필요');critical=true}
+  }
+  const unread=Number(currentAnalytics?.feedbackCounts?.new)||0;
+  if(unread>0)issues.push('새 피드백 '+fmt(unread)+'건');
+  root.classList.toggle('is-attention',issues.length>0&&!critical);
+  root.classList.toggle('is-critical',critical);
+  if(!currentSystem){
+    title.textContent='시스템 상태를 불러오는 중...';
+    detail.textContent='Production · 저장소 · API · 새 피드백을 함께 확인합니다.';
+    return;
+  }
+  if(!issues.length){
+    title.textContent='핵심 운영 상태 정상';
+    detail.textContent='Production · Git 동기화 · 저장소 · 핵심 API에서 즉시 확인할 문제가 없습니다.';
+  }else{
+    title.textContent='확인할 항목 '+fmt(issues.length)+'개';
+    detail.textContent=issues.slice(0,4).join(' · ')+(issues.length>4?' 외 '+fmt(issues.length-4)+'개':'');
+  }
+}
+function activateOperatorTab(name){
+  const target=$('[data-operator-tab="'+name+'"]');if(!target)return;
+  $('[data-operator-tab]').forEach(button=>{
+    const active=button===target;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-selected',String(active));
+    button.tabIndex=active?0:-1;
+  });
+  $('[data-operator-panel]').forEach(panel=>panel.hidden=panel.dataset.operatorPanel!==name);
+}
 function healthLabel(ok){return ok?'<span class="operator-health ok">● 정상</span>':'<span class="operator-health bad">● 확인 필요</span>'}
 function redisMemoryLabel(storage={}){
   if(storage.usedMemoryHuman){
@@ -128,6 +172,7 @@ async function loadSystemStatus(){
   $('#operator-service-health').innerHTML=serviceRows.map(([label,ok])=>`<div><span>${label}</span>${healthLabel(Boolean(ok))}</div>`).join('');
   const endpoints=Array.isArray(data.endpoints)?data.endpoints:[];
   $('#operator-endpoint-health').innerHTML=endpoints.length?endpoints.map(row=>`<div><span>${escapeHtml(row.label||row.path||'API')} <small>${fmt(row.ms)}ms</small></span><span class="operator-endpoint-result ${row.ok?'ok':'bad'}">${row.ok?'HTTP '+fmt(row.status):row.status?'HTTP '+fmt(row.status):'응답 실패'}</span></div>`).join(''):'<p class="operator-empty">API 상태를 확인하지 못했습니다.</p>';
+  renderOperatorAttention();
 }
 function renderSessions(){
   const el=$('#operator-session-list'),rows=session?.sessions||[];
@@ -142,18 +187,19 @@ async function setupFirebaseEmail(){
 async function boot(){
   try{
     await refreshSession();showDashboard();
-    await Promise.all([loadAnalytics(),loadFeedback()]);
+    await Promise.all([loadAnalytics(),loadFeedback(),loadSystemStatus()]);
   }catch{showLogin()}
 }
 $('#operator-github-login')?.addEventListener('click',event=>{if(event.currentTarget.getAttribute('aria-disabled')==='true')event.preventDefault()});
 document.querySelectorAll('[data-days]').forEach(btn=>btn.addEventListener('click',async()=>{document.querySelectorAll('[data-days]').forEach(x=>x.classList.toggle('active',x===btn));currentDays=btn.dataset.days==='all'?'all':(Number(btn.dataset.days)||7);await loadAnalytics()}));
-$$('[data-operator-tab]').forEach(btn=>btn.addEventListener('click',async()=>{$$('[data-operator-tab]').forEach(x=>x.classList.toggle('active',x===btn));$$('[data-operator-panel]').forEach(panel=>panel.hidden=panel.dataset.operatorPanel!==btn.dataset.operatorTab);if(btn.dataset.operatorTab==='system')await loadSystemStatus();if(btn.dataset.operatorTab==='security')await refreshSession()}));
+$('[data-operator-tab]').forEach(btn=>{btn.addEventListener('click',async()=>{activateOperatorTab(btn.dataset.operatorTab);if(btn.dataset.operatorTab==='system')await loadSystemStatus();if(btn.dataset.operatorTab==='security')await refreshSession()});btn.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;const tabs=$('[data-operator-tab]');let index=tabs.indexOf(btn);if(event.key==='ArrowRight')index=(index+1)%tabs.length;if(event.key==='ArrowLeft')index=(index-1+tabs.length)%tabs.length;if(event.key==='Home')index=0;if(event.key==='End')index=tabs.length-1;event.preventDefault();tabs[index].focus();tabs[index].click()})});
 $('#operator-export-json')?.addEventListener('click',exportAnalyticsJson);$('#operator-export-csv')?.addEventListener('click',exportAnalyticsCsv);
 $('#operator-feedback-refresh')?.addEventListener('click',loadFeedback);
 ['#operator-feedback-search','#operator-feedback-status-filter','#operator-feedback-category-filter','#operator-feedback-sort'].forEach(selector=>$(selector)?.addEventListener(selector.includes('search')?'input':'change',renderFeedbackList));
 $('#feedback-status')?.addEventListener('change',e=>void updateSelectedFeedback({statusValue:e.target.value}));
 $('#feedback-memo-save')?.addEventListener('click',()=>void updateSelectedFeedback({memoValue:$('#feedback-memo').value}));
 $('#operator-system-refresh')?.addEventListener('click',()=>void loadSystemStatus());
+$('#operator-attention-action')?.addEventListener('click',()=>{$('[data-operator-tab="system"]')?.click()});
 logout.addEventListener('click',async()=>{await json(API+'operator-logout',{method:'POST'});session=null;showLogin()});
 $('#operator-logout-all')?.addEventListener('click',async()=>{if(!confirm('모든 기기에서 운영자 로그인을 해제할까요?'))return;await json(API+'operator-logout-all',{method:'POST'});session=null;showLogin();status.textContent='모든 기기의 운영자 세션을 해제했습니다.'});
 await loadAuthAvailability();await setupFirebaseEmail();await boot();
