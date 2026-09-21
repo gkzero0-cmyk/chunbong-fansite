@@ -305,6 +305,27 @@
 
 
 
+  function optimizeImageLoading(){
+    const isCritical=img=>Boolean(
+      img.closest('.hero,.page-hero,.player-stage,.daily-fortune-stage,.tarot-stage') ||
+      img.getAttribute('fetchpriority')==='high' ||
+      img.getAttribute('loading')==='eager'
+    );
+    const apply=img=>{
+      if(!(img instanceof HTMLImageElement))return;
+      if(!img.hasAttribute('decoding'))img.decoding='async';
+      if(!isCritical(img)&&!img.hasAttribute('loading'))img.loading='lazy';
+    };
+    document.querySelectorAll('img').forEach(apply);
+    const observer=new MutationObserver(records=>{
+      for(const record of records)for(const node of record.addedNodes){
+        if(node instanceof HTMLImageElement)apply(node);
+        else if(node instanceof Element)node.querySelectorAll('img').forEach(apply);
+      }
+    });
+    observer.observe(document.documentElement,{childList:true,subtree:true});
+  }
+
   function markHeaderNavigationState(){
     const nav=document.getElementById('main-nav');if(!nav)return;
     const aliases={chuntris:'minigames',chunbak:'minigames',chungwagame:'minigames',chuncortile:'minigames'};
@@ -335,6 +356,7 @@
   addMyHubHeaderEntry();
   buildSearch();
   addLoadingGuards();
+  optimizeImageLoading();
   const scheduleIdle=callback=>{
     if('requestIdleCallback' in window) window.requestIdleCallback(callback,{timeout:1500});
     else setTimeout(callback,500);
@@ -342,10 +364,14 @@
   scheduleIdle(()=>{ void checkDeploymentSync(); });
 })();
 
-/* Operator center analytics + feedback runtime loader */
+/* Analytics stays prompt for accurate page views; feedback UI waits for idle time. */
 (()=>{
-  for(const src of ['site-analytics.js','feedback-widget.js']){
-    if(document.querySelector('script[src="'+src+'"]'))continue;
+  const loadScript=src=>{
+    if(document.querySelector('script[src="'+src+'"]'))return;
     const script=document.createElement('script');script.src=src;script.defer=true;document.head.appendChild(script);
-  }
+  };
+  loadScript('site-analytics.js');
+  const loadFeedback=()=>loadScript('feedback-widget.js');
+  if('requestIdleCallback' in window)window.requestIdleCallback(loadFeedback,{timeout:2200});
+  else setTimeout(loadFeedback,900);
 })();
