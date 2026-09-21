@@ -115,25 +115,31 @@
     0 16px 36px #000d!important;
   filter:saturate(1.12) brightness(1.08);
 }
-#tarot-deck .tarot-card-back.selected::before{
-  content:attr(data-selection-label);
+#tarot-deck .tarot-card-back .tarot-selection-order-badge{
   position:absolute;
-  z-index:5;
-  right:-5px;
+  z-index:8;
+  right:-6px;
   top:-9px;
-  min-width:42px;
-  padding:5px 7px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:auto;
+  height:24px;
+  min-width:40px;
+  padding:0 8px;
   border:1px solid #ffe786;
   border-radius:999px;
   background:linear-gradient(135deg,#102750,#07142d);
   color:#fff2b3;
-  font:900 10px/1.1 system-ui,-apple-system,"Noto Sans KR",sans-serif;
-  letter-spacing:-.03em;
+  font:900 11px/1 system-ui,-apple-system,"Noto Sans KR",sans-serif;
+  letter-spacing:-.02em;
   text-align:center;
   white-space:nowrap;
   text-shadow:0 1px 1px #000,0 0 8px #f7d75d7a;
   box-shadow:0 0 0 2px #07142d,0 0 14px #f0c84f88,0 5px 12px #0009;
   pointer-events:none;
+  transform:none;
+  opacity:1;
 }
 #tarot-deck .tarot-card-back.selected .tarot-card-back-number{
   transform:scale(.91);
