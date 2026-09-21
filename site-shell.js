@@ -69,7 +69,7 @@
   const personalPriorityPages='|home|myhub|vod|clips|youtube|fanart|tarot|minigames|chuntris|chunbak|chungwagame|chuncortile|',loadPersonal=()=>{loadStyle('personal-hub.css','data-personal-hub-styles');loadScript('personal-hub.js')},page=d.body.dataset.page||'';
   personalPriorityPages.includes('|'+page+'|')?loadPersonal():runIdle(loadPersonal);runIdle(()=>loadScript('site-meta.js'));
 })();
-(()=>{const n=document.getElementById('main-nav');if(!n)return;[['contents','chunbong-contents.html','춘봉 콘텐츠'],['history','history.html','방송 이력']].forEach(([k,h,t])=>{if(n.querySelector('[data-nav="'+k+'"]'))return;const a=document.createElement('a');a.dataset.nav=k;a.href=h;a.textContent=t;n.insertBefore(a,n.querySelector(k==='contents'?'[data-nav="history"],[data-nav="data"]':'[data-nav="data"]')||null)})})();
+(()=>{let n=document.getElementById('main-nav');if(!n)return;for(let[k,h,t,b]of[['contents','chunbong-contents','춘봉 콘텐츠','history'],['history','history','방송 이력','data']])if(!n.querySelector(`[data-nav=${k}]`)){let p=n.querySelector(`[data-nav=${b}]`);(p||n).insertAdjacentHTML(p?'beforebegin':'beforeend',`<a data-nav="${k}" href="${h}.html">${t}</a>`)}})();
 (() => {
   const nav = document.getElementById('main-nav');
   const link = nav?.querySelector('[data-nav="minigames"]');
@@ -104,12 +104,7 @@
 (() => {
   const nav=document.getElementById('main-nav');
   if(!nav||nav.querySelector('.nav-group')) return;
-  const NAV_GROUPS=[
-    {label:'방송',items:['schedule','notice']},
-    {label:'영상',items:['vod','clips','youtube']},
-    {label:'팬존',items:['fanart','tarot']},
-    {label:'기록',items:['contents','history','data']}
-  ];
+  const NAV_GROUPS=[{label:'방송',items:['schedule','notice']},{label:'영상',items:['vod','clips','youtube']},{label:'팬존',items:['fanart','tarot']},{label:'기록',items:['contents','history','data']}];
   const current=document.body.dataset.page||'';
   NAV_GROUPS.forEach(group=>{
     const links=group.items.map(key=>nav.querySelector('[data-nav="'+key+'"]')).filter(Boolean);
