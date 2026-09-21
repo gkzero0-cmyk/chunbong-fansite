@@ -41,7 +41,7 @@ assert.match(hub,/async function ensurePushServiceWorker\(\)/,'push alerts must 
 assert.match(hub,/navigator\.serviceWorker\.register\('\/service-worker\.js'/,'push alerts must be able to register the service worker directly');
 assert.match(hub,/data-personal-push-retry/,'failed background push setup must expose a retry action');
 assert.match(hub,/알림 ON · 백그라운드 Push 연결 중\/확인 필요/,'background push setup state must be visible to the user');
-assert.match(hub,/else if\(permission!=='granted'\)enabled=false/,'blocked browser notification permission must keep the alert preference OFF');
+assert.match(hub,/if\(permission!=='granted'\)\{[\s\S]*state\.alerts\.enabled=false;state\.alerts\.pushEnabled=false;write\(state\);[\s\S]*return false;/,'blocked browser notification permission must keep the alert preference OFF');
 assert.match(hub,/function alertPermissionGranted\(\)/,'runtime notification permission guard missing');
 assert.match(hub,/function disableUnavailableAlerts\(state\)/,'revoked notification permission must disable persisted alerts');
 assert.equal((hub.match(/if\(disableUnavailableAlerts\(state\)\)return;/g)||[]).length,2,'both live and schedule checks must stop after notification permission is revoked');
