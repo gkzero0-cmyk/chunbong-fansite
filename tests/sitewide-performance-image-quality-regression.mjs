@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+const appShell=sw.slice(sw.indexOf('const APP_SHELL'),sw.indexOf('];',sw.indexOf('const APP_SHELL'))+2);
 import fs from 'node:fs';
 
 const improvements=fs.readFileSync(new URL('../site-improvements.js',import.meta.url),'utf8');
@@ -12,7 +13,7 @@ assert.match(improvements,/fetchpriority.*high/,'critical high-priority images m
 assert.doesNotMatch(improvements,/quality\s*=|toDataURL|canvas|getImageData|createImageBitmap/,'image optimizer must not recompress or raster-transform images');
 
 for(const heavy of ['/tarot.html','/data.html','/vod.html','/clips.html','/youtube.html','/fanart.html']){
-  assert.ok(!sw.includes("'"+heavy+"'"),'heavy feature should not be install-precached: '+heavy);
+  assert.ok(!appShell.includes("'"+heavy+"'"),'heavy feature should not be install-precached: '+heavy);
 }
 assert.match(sw,/staleWhileRevalidate/,'full-quality visual runtime cache missing');
 assert.match(sw,/\['image','font'\]/,'image/font runtime cache route missing');
