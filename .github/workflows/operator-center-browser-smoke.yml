@@ -62,7 +62,12 @@ jobs:
             });
 
             await page.goto(process.env.BASE_URL+'/operator.html',{waitUntil:'networkidle'});
-            await page.waitForFunction(()=>!document.querySelector('#operator-dashboard')?.hidden);
+            try{
+              await page.waitForFunction(()=>!document.querySelector('#operator-dashboard')?.hidden,{timeout:10000});
+            }catch(error){
+              const body=(await page.locator('body').innerText()).slice(0,4000);
+              throw new Error('operator dashboard did not open | page errors: '+errors.join(' | ')+' | body: '+body+' | '+error.message);
+            }
             assert.match(await page.locator('#operator-login').textContent(),/1년/,'1-year login persistence copy missing');
             assert.equal((await page.locator('#metric-active').textContent())?.trim(),'3');
             assert.equal((await page.locator('#metric-visitors').textContent())?.trim(),'42');
