@@ -10,8 +10,7 @@ assert.match(js,/mobile-home-dashboard-mode/,'all mobile home must use the app d
 assert.match(js,/mobile-compact-header/,'all mobile pages must get the compact app header');
 assert.match(js,/data-mobile-theme-toggle/,'More sheet must expose theme control');
 
-assert.match(css,/body\.mobile-home-dashboard-mode \.hero\{[^}]*display:none!important/s,'mobile marketing hero should be removed from app-style home');
-assert.match(css,/body\.mobile-home-dashboard-mode \.portal-section\{[^}]*display:none!important/s,'mobile duplicate portal section should be removed');
+assert.match(css,/body\.mobile-home-dashboard-mode \.home-dday-strip,[\s\S]*body\.mobile-home-dashboard-mode \.hero,[\s\S]*body\.mobile-home-dashboard-mode \.portal-section\{display:none!important\}/,'mobile marketing and duplicate portal sections should be removed from app-style home');
 assert.match(css,/body\.mobile-tabbar-mode footer\{[^}]*display:none!important/s,'mobile footer should not duplicate app navigation');
 assert.match(css,/\.mobile-compact-header[^}]*flex-wrap:nowrap!important/s,'mobile compact header must remain one row');
 
