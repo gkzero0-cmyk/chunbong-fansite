@@ -342,10 +342,25 @@
   scheduleIdle(()=>{ void checkDeploymentSync(); });
 })();
 
-/* Operator center analytics + feedback runtime loader */
+/* Non-critical analytics + feedback runtime loader.
+   Keep first paint and primary navigation free from optional telemetry/UI work. */
 (()=>{
-  for(const src of ['site-analytics.js','feedback-widget.js']){
-    if(document.querySelector('script[src="'+src+'"]'))continue;
-    const script=document.createElement('script');script.src=src;script.defer=true;document.head.appendChild(script);
-  }
+  const loadScript=src=>new Promise(resolve=>{
+    if(document.querySelector('script[src="'+src+'"]'))return resolve();
+    const script=document.createElement('script');
+    script.src=src;script.defer=true;script.dataset.deferredRuntime='true';
+    script.addEventListener('load',resolve,{once:true});
+    script.addEventListener('error',resolve,{once:true});
+    document.head.appendChild(script);
+  });
+  const runIdle=callback=>{
+    if('requestIdleCallback' in window)window.requestIdleCallback(callback,{timeout:2500});
+    else setTimeout(callback,900);
+  };
+  const start=()=>runIdle(()=>{
+    void loadScript('site-analytics.js');
+    void loadScript('feedback-widget.js');
+  });
+  if(document.readyState==='complete')start();
+  else window.addEventListener('load',start,{once:true});
 })();
