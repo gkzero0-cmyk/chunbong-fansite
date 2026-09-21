@@ -75,3 +75,7 @@ const danglingSource=normalizeArchiveItem({...monthOnly,id:'dangling-source',tim
   {id:'a',type:'article',title:'A',date:'2026-06',datePrecision:'month',url:'https://example.com/a',sourceId:'missing'}
 ]});
 assert.ok(validateArchiveItem(danglingSource,{publishing:true}).includes('unknown_source_id'),'published materials must not reference missing sources');
+
+
+const koreanId=normalizeArchiveItem({...monthOnly,id:'그냥서버'});
+assert.equal(koreanId.id,'그냥서버','Korean archive ids created by the operator UI must survive server normalization');
