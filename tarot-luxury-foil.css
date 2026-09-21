@@ -50,11 +50,11 @@
   z-index:5;
   left:var(--foil-x);
   top:var(--foil-y);
-  width:42px;
-  height:26px;
-  border:1px solid rgba(237,211,137,.32);
+  width:54px;
+  height:34px;
+  border:1px solid rgba(237,211,137,.46);
   border-radius:50%;
-  box-shadow:0 0 0 1px rgba(111,103,205,.10),0 0 12px rgba(75,169,208,.09);
+  box-shadow:0 0 0 1px rgba(111,103,205,.18),0 0 18px rgba(75,169,208,.17),0 0 28px rgba(235,191,78,.08);
   pointer-events:none;
   opacity:0;
   transform:translate(-50%,-50%) scale(.6);
@@ -64,7 +64,7 @@
   filter:saturate(1.025) contrast(1.015);
   box-shadow:0 22px 60px #000c,0 0 0 1px rgba(236,195,87,.34),0 0 22px rgba(95,83,190,.15);
 }
-.tarot-card-foil.is-foil-active::after{opacity:.48}
+.tarot-card-foil.is-foil-active::after{opacity:.68}
 .tarot-card-foil.is-foil-rippling::before{animation:tarotLuxuryRipple .68s cubic-bezier(.16,.72,.2,1) forwards}
 @keyframes tarotLuxuryRipple{
   0%{opacity:.48;transform:translate(-50%,-50%) scale(.55)}
@@ -117,4 +117,45 @@
 @media(prefers-reduced-motion:reduce){
   .tarot-card-foil{transform:none!important;transition:none!important}
   .tarot-card-foil::before,.tarot-card-foil::after{display:none!important}
+}
+
+
+/* Deck selection foil — restrained on 78 cards, unmistakable on hover. */
+.tarot-card-back[data-tarot-foil]{
+  --foil-x:50%;--foil-y:50%;--foil-tilt-x:0deg;--foil-tilt-y:0deg;
+  position:relative;overflow:hidden;isolation:isolate;
+}
+.tarot-card-back[data-tarot-foil]::before{
+  content:"";position:absolute;z-index:3;inset:-18%;pointer-events:none;opacity:0;
+  background:
+    radial-gradient(circle at var(--foil-x) var(--foil-y),rgba(255,232,159,.38) 0 3%,rgba(232,180,77,.12) 8%,transparent 23%),
+    linear-gradient(118deg,transparent 20%,rgba(73,188,222,.13) 32%,rgba(125,100,220,.26) 43%,rgba(223,105,183,.15) 50%,rgba(240,202,94,.28) 58%,rgba(79,174,218,.13) 67%,transparent 80%);
+  background-size:170% 170%;background-position:var(--foil-x) var(--foil-y);
+  mix-blend-mode:screen;transition:opacity .18s ease;
+}
+.tarot-card-back[data-tarot-foil]::after{
+  content:"";position:absolute;z-index:4;left:var(--foil-x);top:var(--foil-y);width:34px;height:22px;
+  border:1px solid rgba(245,216,130,.52);border-radius:50%;pointer-events:none;opacity:0;
+  transform:translate(-50%,-50%) scale(.55);box-shadow:0 0 14px rgba(99,185,221,.20),0 0 24px rgba(117,94,210,.15);
+}
+.tarot-card-back[data-tarot-foil].is-foil-active:not(.selected){
+  transform:translateY(-12px) perspective(800px) rotateX(var(--foil-tilt-x)) rotateY(var(--foil-tilt-y)) scale(1.025);
+  border-color:rgba(242,200,91,.88);box-shadow:0 16px 38px #000b,0 0 0 1px rgba(239,199,92,.26),0 0 24px rgba(100,86,198,.22);
+}
+.tarot-card-back[data-tarot-foil].is-foil-active:not(.selected)::before{opacity:.72}
+.tarot-card-back[data-tarot-foil].is-foil-rippling:not(.selected)::after{animation:tarotDeckPrismRipple .72s cubic-bezier(.14,.68,.18,1) forwards}
+@keyframes tarotDeckPrismRipple{0%{opacity:.7;transform:translate(-50%,-50%) scale(.5)}100%{opacity:0;transform:translate(-50%,-50%) scale(5.8)}}
+
+/* Result + zoom cards receive a stronger inner sheen than border glow. */
+.tarot-card-foil.is-foil-active::after{
+  background:
+    radial-gradient(circle at var(--foil-x) var(--foil-y),rgba(255,239,171,.28) 0 4%,rgba(230,172,67,.10) 9%,transparent 25%),
+    linear-gradient(118deg,transparent 22%,rgba(71,187,219,.12) 34%,rgba(118,96,213,.23) 42%,rgba(220,104,178,.13) 49%,rgba(239,201,96,.24) 56%,rgba(80,176,217,.11) 65%,transparent 75%);
+  mix-blend-mode:screen;
+}
+.tarot-card-foil.is-foil-active .tarot-card-art{filter:saturate(1.045) brightness(1.025)!important}
+.tarot-card-foil-dialog.is-foil-active{box-shadow:0 26px 75px #000d,0 0 0 1px rgba(236,195,87,.42),0 0 34px rgba(95,83,190,.24)}
+@media(prefers-reduced-motion:reduce){
+  .tarot-card-back[data-tarot-foil]::before,.tarot-card-back[data-tarot-foil]::after{display:none!important}
+  .tarot-card-back[data-tarot-foil].is-foil-active:not(.selected){transform:none!important}
 }

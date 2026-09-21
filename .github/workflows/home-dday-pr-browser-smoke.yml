@@ -122,22 +122,34 @@ jobs:
 
               const header=await page.locator('.site-header').boundingBox();
               const strip=await page.locator('.home-dday-strip').boundingBox();
-              assert.ok(header&&strip,'header or D-day strip missing');
-              assert.ok(Math.abs(strip.y-(header.y+header.height))<=2,'D-day strip is not directly below the menu bar');
+              assert.ok(header,'header missing');
+              if(viewport.width>390){
+                assert.ok(strip,'desktop D-day strip missing');
+                assert.ok(Math.abs(strip.y-(header.y+header.height))<=2,'D-day strip is not directly below the menu bar');
+              }else{
+                assert.equal(strip,null,'mobile dashboard intentionally hides the redundant D-day strip');
+                assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('mobile-home-dashboard-mode')),true,'mobile home dashboard mode missing');
+              }
 
-              await page.locator('#home-dday-trigger').click();
-              assert.ok(await page.locator('#home-dday-dialog').evaluate(el=>el.open),'D-day dialog did not open');
-              assert.equal((await page.locator('#home-dday-first-years').textContent())?.trim(),values.expected.firstYears);
-              assert.equal((await page.locator('#home-dday-soop-years').textContent())?.trim(),values.expected.soopYears);
-              await page.locator('[data-home-dday-close]').click();
-              assert.equal(await page.locator('#home-dday-dialog').evaluate(el=>el.open),false,'D-day dialog did not close');
+              if(viewport.width>390){
+                await page.locator('#home-dday-trigger').click();
+                assert.ok(await page.locator('#home-dday-dialog').evaluate(el=>el.open),'D-day dialog did not open');
+                assert.equal((await page.locator('#home-dday-first-years').textContent())?.trim(),values.expected.firstYears);
+                assert.equal((await page.locator('#home-dday-soop-years').textContent())?.trim(),values.expected.soopYears);
+                await page.locator('[data-home-dday-close]').click();
+                assert.equal(await page.locator('#home-dday-dialog').evaluate(el=>el.open),false,'D-day dialog did not close');
+              }
 
               const homeOfficial=page.locator('.status-card-link');
               assert.equal(await homeOfficial.getAttribute('href'),'https://www.sooplive.com/station/chunbongtv');
               assert.equal(await homeOfficial.getAttribute('target'),'_blank');
               assert.match((await homeOfficial.locator('.status-service-mark').textContent())||'',/SOOP/);
               assert.match((await homeOfficial.textContent())||'',/OFFLINE|LIVE/);
-              assert.ok(await homeOfficial.isVisible(),'home official profile card not visible');
+              if(viewport.width>390){
+                assert.ok(await homeOfficial.isVisible(),'desktop home official profile card not visible');
+              }else{
+                assert.equal(await homeOfficial.isVisible(),false,'mobile dashboard intentionally hides the legacy hero profile card');
+              }
               assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'home horizontal overflow');
 
               assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);

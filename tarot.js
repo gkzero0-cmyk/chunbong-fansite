@@ -446,7 +446,7 @@ if (typeof document !== 'undefined') {
   }
 
   function renderDeck() {
-    byId('tarot-deck').innerHTML = state.deck.slice(0, 78).map((card, index) => `<button class="tarot-card-back" type="button" data-card-index="${index}" aria-pressed="false" aria-label="뒤집힌 타로 카드 ${index + 1} 선택"><span class="tarot-card-back-number" aria-hidden="true">${index + 1}</span></button>`).join('');
+    byId('tarot-deck').innerHTML = state.deck.slice(0, 78).map((card, index) => `<button class="tarot-card-back" type="button" data-card-index="${index}" data-tarot-foil aria-pressed="false" aria-label="뒤집힌 타로 카드 ${index + 1} 선택"><span class="tarot-card-back-number" aria-hidden="true">${index + 1}</span></button>`).join('');
     updateDirectSelectionUI();
   }
 
@@ -939,6 +939,7 @@ if (typeof document !== 'undefined') {
       const trigger = event.target.closest('[data-tarot-zoom]');
       if (trigger) openCardZoom(trigger);
     });
+    installTarotFoilEvents(byId('tarot-deck'));
     installTarotFoilEvents(readingGrid);
     installTarotFoilEvents(byId('tarot-card-zoom-art'));
     window.addEventListener('resize', fitTarotZoom, { passive: true });

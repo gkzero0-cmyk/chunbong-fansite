@@ -2,8 +2,8 @@
   --text-primary:#F8F5F2;
   --text-secondary:#D1CBC5;
   --text-muted:#AAA29B;
-  --text-meta:#88817B;
-  --text-disabled:#68635F;
+  --text-meta:#9A938D;
+  --text-disabled:#827B75;
   --accent-schedule:#4ADE80;
   --accent-notice:#FF8A3D;
   --accent-replay:#4CC9FF;
@@ -30,9 +30,9 @@
 [data-theme="light"]{
   --text-primary:#1D1815;
   --text-secondary:#4B433D;
-  --text-muted:#69605A;
-  --text-meta:#827971;
-  --text-disabled:#A49C95;
+  --text-muted:#625951;
+  --text-meta:#625951;
+  --text-disabled:#817870;
   --accent-schedule:#168447;
   --accent-notice:#C9500A;
   --accent-replay:#0876A8;
@@ -82,3 +82,16 @@ body[data-page="data"]{--page-accent:var(--accent-data)}
 .portal-compact-grid em,.home-all-links summary small,.activity-item-copy>small,.activity-item-meta time,.personal-panel header>a,.personal-panel header>span,.personal-recent span,.personal-challenge span,.personal-tarot-latest span,.personal-empty{color:var(--text-muted)}
 .site-search-results a strong{color:var(--text-primary)}
 .site-search-results a small,.site-search-help{color:var(--text-muted)}
+
+
+/* Site-wide readable copy hierarchy — dark/light safe */
+:where(.footer-brand p,.footer-links,.copyright,.status-card-copy small,.status-card-copy [data-status-action],
+.site-search-results a small,.site-search-help,.site-search-empty,.personal-summary span,.personal-saved-grid span,
+.personal-achievement-grid small,.personal-tarot-latest small,.personal-tarot-list time,.personal-tarot-list span,
+.personal-alert-default,.personal-alert-lead,.personal-collection-tabs button,.personal-backup-bar span,
+.app-home-grid small,.personal-shortcuts span){color:var(--text-muted)!important}
+:where(.player-info p,.fanart-copy small,.fanart-modal-copy p,.source-note,.history-guide p,
+.data-page small,.data-page .data-rank-list span,.tarot-disclaimer){color:var(--text-muted)}
+:where(.site-search-go,.personal-saved-grid button,.personal-achievement-grid article:not(.is-earned)){color:var(--text-meta)!important}
+[data-theme="light"] :where(.copyright,.site-search-help,.site-search-results a small,.personal-alert-default,
+.personal-summary span,.personal-saved-grid span,.personal-tarot-list time,.personal-tarot-list span){color:var(--text-muted)!important}

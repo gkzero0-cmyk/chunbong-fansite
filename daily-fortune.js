@@ -151,25 +151,25 @@
       const filter = ctx.createBiquadFilter();
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(120, start);
-      osc.frequency.exponentialRampToValueAtTime(1180, start + 0.78);
-      osc.frequency.exponentialRampToValueAtTime(210, start + 1.66);
+      osc.frequency.exponentialRampToValueAtTime(1240, start + 0.92);
+      osc.frequency.exponentialRampToValueAtTime(185, start + 2.52);
       filter.type = 'lowpass';
       filter.frequency.setValueAtTime(760, start);
-      filter.frequency.exponentialRampToValueAtTime(3600, start + 0.82);
-      filter.frequency.exponentialRampToValueAtTime(620, start + 1.66);
+      filter.frequency.exponentialRampToValueAtTime(3900, start + 0.96);
+      filter.frequency.exponentialRampToValueAtTime(560, start + 2.52);
       gain.gain.setValueAtTime(0.0001, start);
       gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, 0.022 * masterVolume), start + 0.08);
-      gain.gain.setValueAtTime(Math.max(0.0002, 0.022 * masterVolume), start + 0.98);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + 1.70);
+      gain.gain.setValueAtTime(Math.max(0.0002, 0.022 * masterVolume), start + 1.48);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 2.58);
       osc.connect(filter).connect(gain).connect(ctx.destination);
       osc.start(start);
-      osc.stop(start + 1.74);
+      osc.stop(start + 2.62);
     } catch (_) {}
 
     let tickAt = 0.035;
-    for (let index = 0; index < 26; index += 1) {
-      const progress = index / 25;
-      const interval = 0.036 + progress * progress * 0.055;
+    for (let index = 0; index < 34; index += 1) {
+      const progress = index / 33;
+      const interval = 0.032 + progress * progress * 0.090;
       playTone(ctx, 980 - progress * 360, start + tickAt, 0.032 + progress * 0.018, 0.012, 'triangle');
       tickAt += interval;
     }
@@ -251,8 +251,8 @@
     const result = document.querySelector('[data-daily-fortune-result]');
     if (!dialog || !cardButton || !stage || !holo || !fx || !closeButton || !launcher || !result) return;
 
-    const SPIN_MS = 1720;
-    const RESULT_MS = 2350;
+    const SPIN_MS = 2600;
+    const RESULT_MS = 3150;
     let state = readState();
     let drawing = false;
     let autoOpenTimer = 0;
@@ -274,7 +274,7 @@
     const spawnHoloRipple = (px, py) => {
       if (reducedMotion()) return;
       const now = performance.now();
-      if (now - lastRippleAt < 2200) return;
+      if (now - lastRippleAt < 1050) return;
       lastRippleAt = now;
       lastRippleX = px;
       lastRippleY = py;
@@ -402,7 +402,7 @@
         playStopSound(audioCtx);
         spawnBurst('stop');
         dialog.classList.add('is-revealing');
-      }, 1310);
+      }, 1880);
 
       setTimeout(() => {
         if (run !== animationRun) return;
@@ -427,7 +427,7 @@
         if (run !== animationRun) return;
         dialog.classList.remove('is-bursting','is-revealing');
         try { audioCtx?.close?.(); } catch (_) {}
-      }, 3250);
+      }, 4050);
     };
 
     const openDialog = () => {
@@ -482,7 +482,8 @@
       stage.style.setProperty('--glow-x', (px * 100).toFixed(1) + '%');
       stage.style.setProperty('--glow-y', (py * 100).toFixed(1) + '%');
       stage.classList.add('is-prism-active');
-      if (lastRippleX < 0) spawnHoloRipple(px, py);
+      const rippleDistance = lastRippleX < 0 ? 1 : Math.hypot(px - lastRippleX, py - lastRippleY);
+      if (rippleDistance > 0.18) spawnHoloRipple(px, py);
     });
     stage.addEventListener('pointerleave', resetPrism);
 

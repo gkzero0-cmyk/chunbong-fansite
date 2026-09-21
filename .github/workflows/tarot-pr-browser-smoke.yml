@@ -108,6 +108,20 @@ jobs:
             assert.equal(deckState[1].text,'78');
 
             const cards=page.locator('#tarot-deck [data-card-index]');
+            await cards.nth(0).hover();
+            await page.waitForFunction(()=>{
+              const card=document.querySelector('#tarot-deck [data-card-index]');
+              return card?.classList.contains('is-foil-active')&&Number(getComputedStyle(card,'::before').opacity)>=0.6;
+            });
+            const deckFoil=await cards.nth(0).evaluate(card=>({
+              beforeOpacity:Number(getComputedStyle(card,'::before').opacity),
+              border:getComputedStyle(card).borderTopColor,
+              transform:getComputedStyle(card).transform
+            }));
+            assert.ok(deckFoil.beforeOpacity>=0.6,'deck hover must expose a visible inner prism');
+            assert.notEqual(deckFoil.transform,'none','deck hover must visibly lift/tilt the card');
+            await page.mouse.move(5,5);
+
             await cards.nth(0).click();
             const selectedState=await cards.nth(0).evaluate(card=>{
               const style=getComputedStyle(card);
