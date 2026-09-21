@@ -53,7 +53,7 @@ assert.match(sw, /\/site-meta\.js/, 'PWA app shell must cache runtime metadata l
 assert.match(sw, /\/site-health\.js/, 'PWA app shell must cache runtime health checks loaded by site-shell.js');
 assert.match(sw, /\/mobile-site\.js/, 'PWA app shell must cache mobile-site.js');
 assert.match(sw, /\/personal-hub\.js/, 'PWA app shell must cache personal hub runtime');
-assert.doesNotMatch(sw, /\/myhub\.html/, 'route-specific pages should runtime-cache after first visit');
+assert.match(sw, /\/myhub\.html/, 'PWA app shell must keep My Fan Hub available offline');
 assert.doesNotMatch(sw, /\/tarot\.js/, 'heavy tarot runtime should not block PWA installation');
 assert.doesNotMatch(sw, /\/data\.js/, 'data dashboard runtime should not block PWA installation');
 assert.doesNotMatch(sw, /\/timeline(?:\.html|\.css|\.js)/, 'retired timeline must not remain in the PWA app shell');
