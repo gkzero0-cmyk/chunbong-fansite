@@ -1354,3 +1354,29 @@
   /* Mobile app should not expose accidental document-level sideways scrolling. */
   body.mobile-tabbar-mode:not([data-game]) main{max-width:100vw!important;overflow-x:clip!important}
 }
+
+
+/* ===== Mobile overlay coordination =====
+   Modal/sheet states suppress competing fixed controls. Image assets remain untouched. */
+@media(max-width:760px){
+  body.mobile-tabbar-mode{
+    --mobile-tabbar-clearance:calc(78px + env(safe-area-inset-bottom));
+  }
+  body:is(.pwa-app-more-open,.feedback-open) :is(
+    .daily-fortune-launcher,
+    .video-viewer.is-mobile-mini,
+    .mobile-tarot-dock,
+    .pwa-update-toast,
+    .pwa-install-chip,
+    .pwa-ios-install-chip,
+    .deploy-sync-chip
+  ){
+    opacity:0!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+  body.feedback-open .pwa-app-tabbar{
+    opacity:.22!important;
+    pointer-events:none!important;
+  }
+}
