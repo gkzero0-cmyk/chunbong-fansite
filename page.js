@@ -87,7 +87,7 @@
   }
 
   function setupReveal() {
-    const nodes = $('.reveal');
+    const nodes = [...document.querySelectorAll('.reveal')];
     if (!nodes.length) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       nodes.forEach(node => node.classList.add('visible'));
