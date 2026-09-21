@@ -1,1 +1,1 @@
-2026-09-22 perf-ux-operator-pwa-v29-recovery
+2026-09-22 remaining-site-optimization-image-quality-recovery
