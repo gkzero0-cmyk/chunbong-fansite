@@ -43,7 +43,7 @@ assert.match(sw, /\/offline\.html/);
 assert.match(sw, /url\.pathname\.startsWith\('\/api\/'\)/);
 assert.match(sw, /networkFirst/);
 assert.match(sw, /request\.destination === 'document'[\s\S]*staleWhileRevalidate\(request, event, '\/offline\.html'\)/, 'repeat document navigation should use stale-while-revalidate with offline fallback');
-assert.match(sw, /\['script','style'\][\s\S]*staleWhileRevalidate\(request, event\)/, 'runtime JS/CSS should use stale-while-revalidate for repeat navigation');
+assert.match(sw, /APP_SHELL_PATHS\.has\(url\.pathname\)[\s\S]*staleWhileRevalidate\(request, event\)[\s\S]*networkFirst\(request, event\)/, 'common shell JS/CSS should use stale-while-revalidate while feature runtimes stay network-first');
 assert.match(sw, /request\.destination === 'worker'[\s\S]*networkFirst\(request, event\)/, 'workers should remain network-first');
 assert.match(sw, /\['image','font'\]/, 'heavy visual assets should keep stale-while-revalidate');
 assert.match(page, /standalone[\s\S]*registration\.waiting[\s\S]*SKIP_WAITING/, 'installed PWA should activate a waiting update on app launch');
