@@ -104,6 +104,7 @@ assert.match(operatorJs,/operator-endpoint-health/,'endpoint response renderer m
 assert.match(operatorJs,/text\/csv/,'analytics CSV export missing');
 assert.match(operatorJs,/renderOverallStatus/,'operator overall status renderer missing');
 assert.match(operatorJs,/aria-selected/,'operator tab selection accessibility missing');
+assert.match(operatorJs,/\$\$\('\[data-operator-tab\]'\)\.forEach/,'operator tab bindings must iterate the full tab NodeList');
 assert.match(operatorJs,/aria-pressed/,'operator period accessibility missing');
 assert.match(operatorJs,/Promise\.allSettled/,'operator overview health must not make login brittle');
 assert.match(api,/accounts:sendOobCode/,'Firebase email link dispatch missing');
