@@ -2,13 +2,14 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const sw = await readFile(new URL('../service-worker.js', import.meta.url), 'utf8');
-assert.ok(sw.includes("chunbong-pwa-20260921-v28"), 'PWA cache version must advance after broadcast alert changes');
+const appShell = sw.match(/const APP_SHELL = \[([\s\S]*?)\n\]/)?.[1] || '';
+assert.ok(sw.includes("chunbong-pwa-20260922-v29"), 'PWA cache version must advance after broadcast alert changes');
 for (const asset of [
   '/content-filter.css','/content-filter.js','/schedule.html','/schedule-enhancements.css',
   '/live-fixes.js','/tarot.html','/tarot.css','/tarot.js','/tarot-quality.css','/tarot-composite.css','/tarot-data.js','/tarot-composite.js','/tarot-sfx-v2.js',
   '/data.html','/data.css','/data.js','/data-core.js','/data-soop-periods-v3.js','/data-recent-session-metrics.js','/data-enhancements.js','/data-enhancements.css',
   '/vod.html','/clips.html','/youtube.html','/fanart.html'
 ]) {
-  assert.ok(sw.includes("'"+asset+"'"), 'offline shell missing '+asset);
+  assert.ok(!appShell.includes("'"+asset+"'"), 'feature asset should runtime-cache after first visit instead of initial PWA install: '+asset);
 }
 console.log('pwa-offline-wave1-regression: ok');

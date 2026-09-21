@@ -96,3 +96,59 @@ body[data-page="operator"]{background:radial-gradient(circle at 80% 0,color-mix(
 .operator-endpoint-result{font-size:11px;font-weight:900}
 .operator-endpoint-result.ok{color:var(--op-good)}
 .operator-endpoint-result.bad{color:var(--op-bad)}
+
+
+/* Operator quick status + keyboard/mobile accessibility */
+.operator-skip-link{
+  position:fixed;z-index:999;left:12px;top:10px;transform:translateY(-160%);
+  padding:10px 13px;border-radius:10px;background:var(--op-accent,#ff6b18);color:#fff;font-weight:900;text-decoration:none
+}
+.operator-skip-link:focus{transform:none}
+.operator-attention{
+  margin:0 0 14px;padding:18px;border:1px solid var(--op-border);border-radius:18px;
+  background:linear-gradient(180deg,var(--op-card),var(--op-card-2))
+}
+.operator-attention>header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px}
+.operator-attention>header small{display:block;color:var(--op-meta);font-size:10px;font-weight:900;letter-spacing:.12em}
+.operator-attention>header h2{margin:4px 0 0;font-size:18px}
+#operator-attention-state{padding:5px 9px;border-radius:999px;background:color-mix(in srgb,var(--op-border) 45%,transparent);color:var(--op-muted);font-size:10px;font-weight:900}
+#operator-attention-state.is-ok{background:color-mix(in srgb,var(--op-good) 14%,transparent);color:var(--op-good)}
+#operator-attention-state.is-warn{background:color-mix(in srgb,var(--op-warn) 14%,transparent);color:var(--op-warn)}
+#operator-attention-state.is-bad{background:color-mix(in srgb,var(--op-bad) 14%,transparent);color:var(--op-bad)}
+#operator-attention-state.is-info{background:color-mix(in srgb,#75a7ff 14%,transparent);color:#8cb8ff}
+.operator-attention-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.operator-attention-item{
+  appearance:none;width:100%;min-width:0;display:grid;grid-template-columns:28px minmax(0,1fr) 18px;align-items:center;gap:9px;
+  padding:12px;border:1px solid color-mix(in srgb,var(--op-border) 75%,transparent);border-radius:13px;
+  background:var(--op-card-2);color:var(--op-text);font:inherit;text-align:left;cursor:pointer
+}
+.operator-attention-item>span{display:grid;place-items:center;width:26px;height:26px;border-radius:9px;font-weight:950}
+.operator-attention-item>div{display:grid;gap:3px;min-width:0}
+.operator-attention-item strong{font-size:12px;line-height:1.35}
+.operator-attention-item small{color:var(--op-muted);font-size:10px;line-height:1.45;overflow-wrap:anywhere}
+.operator-attention-item>b{color:var(--op-meta)}
+.operator-attention-item.is-ok{cursor:default;grid-template-columns:28px minmax(0,1fr)}
+.operator-attention-item.is-ok>span{background:color-mix(in srgb,var(--op-good) 13%,transparent);color:var(--op-good)}
+.operator-attention-item.is-warn>span{background:color-mix(in srgb,var(--op-warn) 13%,transparent);color:var(--op-warn)}
+.operator-attention-item.is-bad>span{background:color-mix(in srgb,var(--op-bad) 13%,transparent);color:var(--op-bad)}
+.operator-attention-item.is-info>span{background:color-mix(in srgb,#75a7ff 13%,transparent);color:#8cb8ff}
+.operator-attention-item:not(.is-ok):hover{border-color:color-mix(in srgb,var(--op-accent) 45%,var(--op-border));background:color-mix(in srgb,var(--op-accent) 6%,var(--op-card-2))}
+.operator-tabs [role="tab"]:focus-visible,.operator-period button:focus-visible,.operator-attention-item:focus-visible{
+  outline:3px solid color-mix(in srgb,var(--op-accent) 55%,transparent);outline-offset:2px
+}
+
+@media(max-width:760px){
+  .operator-period{
+    width:100%;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    overflow:visible!important
+  }
+  .operator-period button{min-width:0!important;padding:8px 4px!important;font-size:11px!important}
+  .operator-tabs{
+    width:100%;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:4px!important;overflow:visible!important;white-space:normal!important
+  }
+  .operator-tabs button{min-width:0!important;min-height:44px;padding:7px 3px!important;font-size:10.5px!important;line-height:1.2}
+  .operator-attention{padding:14px;border-radius:15px}
+  .operator-attention-list{grid-template-columns:1fr}
+  .operator-attention>header h2{font-size:17px}
+}

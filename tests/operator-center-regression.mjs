@@ -70,6 +70,9 @@ assert.match(operatorHtml,/시스템 상태/,'operator system status tab missing
 assert.match(operatorHtml,/metric-sessions/,'session KPI missing');
 assert.match(operatorHtml,/metric-new/,'new-visitor pageview KPI missing');
 assert.match(operatorHtml,/operator-hourly/,'hourly usage chart missing');
+assert.match(operatorHtml,/operator-attention-list/,'operator attention summary missing');
+assert.match(operatorHtml,/role="tablist"/,'operator tabs must expose tablist semantics');
+assert.match(operatorHtml,/aria-selected="true"/,'active operator tab must expose aria-selected');
 assert.match(operatorHtml,/operator-funnel/,'feature funnel missing');
 assert.match(operatorHtml,/operator-feedback-search/,'feedback search control missing');
 assert.match(operatorHtml,/feedback-memo/,'operator feedback memo UI missing');
@@ -91,6 +94,10 @@ assert.match(operatorJs,/operator-system-status/,'protected system health runtim
 assert.match(operatorJs,/operator-session-revoke/,'individual session revoke runtime missing');
 assert.match(operatorJs,/renderHourly/,'hourly analytics renderer missing');
 assert.match(operatorJs,/renderFunnel/,'feature funnel renderer missing');
+assert.match(operatorJs,/renderOperatorAttention/,'operator attention summary renderer missing');
+assert.match(operatorJs,/activateOperatorTab/,'operator accessible tab controller missing');
+assert.match(operatorJs,/\$\$\('\[data-operator-tab\]'\)\.forEach/,'operator tab binding must iterate a NodeList');
+assert.doesNotMatch(operatorJs,/(^|\n)\$\('\[data-operator-tab\]'\)\.forEach/,'operator tab binding must not call forEach on querySelector result');
 assert.match(operatorJs,/comparison/,'previous-period comparison rendering missing');
 assert.match(operatorJs,/operator-feedback-status-filter/,'feedback status filtering missing');
 assert.match(operatorJs,/operator-feedback-category-filter/,'feedback category filtering missing');
@@ -156,7 +163,7 @@ assert.match(improvements,/site-analytics\.js/,'sitewide analytics runtime not l
 assert.match(improvements,/feedback-widget\.js/,'sitewide feedback runtime not loaded');
 assert.match(mobile,/data-feedback-open/,'mobile More feedback entry missing');
 
-assert.match(sw,/chunbong-pwa-20260921-v28/,'PWA cache must include the latest operator and alert assets');
+assert.match(sw,/chunbong-pwa-20260922-v29/,'PWA cache must include the latest operator and alert assets');
 for(const asset of ['/site-analytics.js','/feedback-widget.js','/feedback-widget.css']) assert.ok(sw.includes(asset),'PWA shell missing '+asset);
 
 new Function(api);
