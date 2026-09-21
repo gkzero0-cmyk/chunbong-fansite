@@ -1,6 +1,13 @@
 /* Shared minigame layout system.
    Game-specific visuals stay in each game stylesheet; viewport sizing lives here. */
 
+/* Keep the desktop score-game board hidden only until the synchronous first fit runs.
+   This avoids exposing the larger CSS fallback for a frame before JS applies the viewport cap. */
+@media(min-width:900px){
+  body[data-game-layout-ready="pending"][data-game="chungwagame"] .chungwagame-layout,
+  body[data-game-layout-ready="pending"][data-game="chuncortile"] .ct-layout{visibility:hidden!important}
+}
+
 :root{
   --game-shell-gutter:36px;
   --game-shell-gutter-wide:44px
