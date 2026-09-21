@@ -35,10 +35,12 @@ assert.match(api,/code_challenge_method','S256'/,'GitHub PKCE challenge missing'
 assert.match(api,/code_verifier:verifier/,'GitHub PKCE verifier missing');
 assert.match(api,/AUTH_EPOCH_KEY/,'operator session revocation epoch missing');
 assert.match(api,/SESSION_INDEX/,'operator active session index missing');
+assert.match(api,/ZSCORE.*SESSION_INDEX/,'signed operator session must also remain active server-side');
 assert.match(api,/set\('scope','read:user'\)/,'GitHub OAuth must request only the minimum profile scope');
 assert.doesNotMatch(api,/read:user user:email/,'GitHub OAuth must not request email scope');
 assert.match(api,/api\.github\.com\/user/,'GitHub identity verification missing');
 assert.match(api,/accounts:lookup/,'Firebase ID token lookup missing');
+assert.match(api,/emailVerified!==true/,'Firebase email owner login must require explicit verified-email state');
 assert.match(api,/sha256/,'owner email comparison must use hash');
 assert.match(api,/operator:session-secret:v1/,'server-managed session secret missing');
 assert.match(api,/operator:analytics:start:v1/,'analytics collection start marker missing');
