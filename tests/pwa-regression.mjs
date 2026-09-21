@@ -53,7 +53,7 @@ assert.match(sw, /\/site-meta\.js/, 'PWA app shell must cache runtime metadata l
 assert.match(sw, /\/site-health\.js/, 'PWA app shell must cache runtime health checks loaded by site-shell.js');
 assert.match(sw, /\/mobile-site\.js/, 'PWA app shell must cache mobile-site.js');
 assert.match(sw, /\/personal-hub\.js/, 'PWA app shell must cache personal hub runtime');
-assert.match(sw, /\/myhub\.html/, 'installed fan hub should keep My Hub available offline');
+assert.doesNotMatch(sw, /\/myhub\.html/, 'My Hub page should runtime-cache after first visit instead of bloating initial PWA install');
 assert.match(sw, /\/assets\/chunbong-main\.webp/, 'installed home should preserve the original hero asset offline');
 for (const optional of ['/site-analytics.js','/feedback-widget.js','/feedback-widget.css']) assert.ok(!sw.includes(optional), optional+' must not block the initial PWA install');
 for (const heavy of ['/tarot.html','/data.html','/minigames.html','/chuntris.html','/chunbak.html']) assert.ok(!sw.includes(heavy), heavy+' must stay out of the initial PWA precache');
