@@ -135,10 +135,10 @@
   function playMagicRippleSound(ctx) {
     if (!ctx) return;
     const start = ctx.currentTime;
-    // Low, restrained magical resonance: one soft chord on entry, never on pointer-move.
-    playTone(ctx, 174.6, start, 0.64, 0.014, 'sine', 220);
-    playTone(ctx, 349.2, start + 0.035, 0.72, 0.010, 'triangle', 440);
-    playTone(ctx, 523.25, start + 0.10, 0.78, 0.006, 'sine', 659.25);
+    // Quiet crystal/air resonance. Movement is rate-limited so the card never chirps continuously.
+    playTone(ctx, 196, start, 0.70, 0.012, 'sine', 246.94);
+    playTone(ctx, 392, start + 0.045, 0.78, 0.009, 'triangle', 523.25);
+    playTone(ctx, 659.25, start + 0.14, 0.72, 0.0055, 'sine', 783.99);
   }
 
   function playSpinSound(ctx) {
@@ -150,37 +150,44 @@
       const gain = ctx.createGain();
       const filter = ctx.createBiquadFilter();
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(120, start);
-      osc.frequency.exponentialRampToValueAtTime(1180, start + 0.78);
-      osc.frequency.exponentialRampToValueAtTime(210, start + 1.66);
+      osc.frequency.setValueAtTime(105, start);
+      osc.frequency.exponentialRampToValueAtTime(1320, start + 0.92);
+      osc.frequency.setValueAtTime(1180, start + 1.42);
+      osc.frequency.exponentialRampToValueAtTime(170, start + 2.56);
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(760, start);
-      filter.frequency.exponentialRampToValueAtTime(3600, start + 0.82);
-      filter.frequency.exponentialRampToValueAtTime(620, start + 1.66);
+      filter.frequency.setValueAtTime(620, start);
+      filter.frequency.exponentialRampToValueAtTime(4100, start + 0.96);
+      filter.frequency.setValueAtTime(3600, start + 1.50);
+      filter.frequency.exponentialRampToValueAtTime(520, start + 2.56);
       gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, 0.022 * masterVolume), start + 0.08);
-      gain.gain.setValueAtTime(Math.max(0.0002, 0.022 * masterVolume), start + 0.98);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + 1.70);
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, 0.020 * masterVolume), start + 0.11);
+      gain.gain.setValueAtTime(Math.max(0.0002, 0.020 * masterVolume), start + 1.58);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 2.60);
       osc.connect(filter).connect(gain).connect(ctx.destination);
       osc.start(start);
-      osc.stop(start + 1.74);
+      osc.stop(start + 2.64);
     } catch (_) {}
 
-    let tickAt = 0.035;
-    for (let index = 0; index < 26; index += 1) {
-      const progress = index / 25;
-      const interval = 0.036 + progress * progress * 0.055;
-      playTone(ctx, 980 - progress * 360, start + tickAt, 0.032 + progress * 0.018, 0.012, 'triangle');
+    let tickAt = 0.04;
+    for (let index = 0; index < 32; index += 1) {
+      const progress = index / 31;
+      const interval = 0.045 + progress * progress * 0.09;
+      playTone(ctx, 1040 - progress * 510, start + tickAt, 0.032 + progress * 0.026, 0.0105, 'triangle');
       tickAt += interval;
     }
+    // Three audible deceleration pulses mirror the final visible turns.
+    playTone(ctx, 392, start + 1.86, 0.16, 0.010, 'sine', 330);
+    playTone(ctx, 330, start + 2.16, 0.18, 0.010, 'sine', 262);
+    playTone(ctx, 262, start + 2.43, 0.22, 0.011, 'sine', 196);
   }
 
   function playStopSound(ctx) {
     if (!ctx) return;
     const start = ctx.currentTime;
-    playTone(ctx, 160, start, 0.28, 0.065, 'sine', 72);
-    playTone(ctx, 520, start + 0.03, 0.18, 0.035, 'triangle', 260);
-    playTone(ctx, 1040, start + 0.08, 0.13, 0.022, 'sine', 720);
+    playTone(ctx, 130.81, start, 0.34, 0.030, 'sine', 98);
+    playTone(ctx, 523.25, start + 0.025, 0.42, 0.022, 'triangle', 659.25);
+    playTone(ctx, 1046.5, start + 0.07, 0.46, 0.016, 'sine', 1318.5);
+    playTone(ctx, 1568, start + 0.12, 0.52, 0.010, 'sine', 2093);
   }
 
   function playRevealSound(ctx) {
@@ -251,14 +258,16 @@
     const result = document.querySelector('[data-daily-fortune-result]');
     if (!dialog || !cardButton || !stage || !holo || !fx || !closeButton || !launcher || !result) return;
 
-    const SPIN_MS = 1720;
-    const RESULT_MS = 2350;
+    const SPIN_MS = 2640;
+    const BRAKE_MS = 1940;
+    const RESULT_MS = 3380;
     let state = readState();
     let drawing = false;
     let autoOpenTimer = 0;
     let animationRun = 0;
     let hoverAudioCtx = null;
     let lastRippleAt = 0;
+    let lastRippleSoundAt = 0;
     let lastRippleX = -1;
     let lastRippleY = -1;
     const reducedMotion = () => Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
@@ -271,10 +280,10 @@
       return hoverAudioCtx;
     };
 
-    const spawnHoloRipple = (px, py) => {
+    const spawnHoloRipple = (px, py, playSound = false) => {
       if (reducedMotion()) return;
       const now = performance.now();
-      if (now - lastRippleAt < 2200) return;
+      if (now - lastRippleAt < 420) return;
       lastRippleAt = now;
       lastRippleX = px;
       lastRippleY = py;
@@ -283,9 +292,28 @@
       ripple.className = 'daily-fortune-holo-ripple';
       ripple.style.left = (px * 100).toFixed(1) + '%';
       ripple.style.top = (py * 100).toFixed(1) + '%';
+      ripple.style.setProperty('--ripple-hue', Math.round((px - py) * 34) + 'deg');
       holo.appendChild(ripple);
-      playMagicRippleSound(ensureHoverAudio());
-      setTimeout(() => ripple.remove(), 780);
+
+      for (let index = 0; index < 3; index += 1) {
+        const spark = document.createElement('i');
+        spark.className = 'daily-fortune-holo-spark';
+        spark.style.left = (px * 100).toFixed(1) + '%';
+        spark.style.top = (py * 100).toFixed(1) + '%';
+        const angle = ((Math.PI * 2) / 3) * index + px * 1.7;
+        const distance = 16 + index * 7;
+        spark.style.setProperty('--spark-x', (Math.cos(angle) * distance).toFixed(1) + 'px');
+        spark.style.setProperty('--spark-y', (Math.sin(angle) * distance).toFixed(1) + 'px');
+        spark.style.setProperty('--spark-delay', (index * 55) + 'ms');
+        holo.appendChild(spark);
+        setTimeout(() => spark.remove(), 900);
+      }
+
+      if (playSound && now - lastRippleSoundAt > 1700) {
+        lastRippleSoundAt = now;
+        playMagicRippleSound(ensureHoverAudio());
+      }
+      setTimeout(() => ripple.remove(), 900);
     };
 
     const showLauncher = () => {
@@ -364,7 +392,7 @@
       resetPrism();
 
       if (!state) {
-        dialog.classList.remove('has-result','is-bursting','is-spinning','is-revealing');
+        dialog.classList.remove('has-result','is-bursting','is-spinning','is-braking','is-revealing');
         stage.classList.remove('is-spinning','is-interactive');
         cardButton.classList.remove('is-revealed');
         result.hidden = true;
@@ -389,7 +417,7 @@
       }
 
       result.hidden = true;
-      dialog.classList.remove('has-result','is-bursting','is-revealing');
+      dialog.classList.remove('has-result','is-bursting','is-braking','is-revealing');
       cardButton.classList.remove('is-revealed');
       stage.classList.remove('is-interactive');
       stage.classList.add('is-spinning');
@@ -399,20 +427,20 @@
 
       setTimeout(() => {
         if (run !== animationRun) return;
-        playStopSound(audioCtx);
+        dialog.classList.add('is-braking');
         spawnBurst('stop');
-        dialog.classList.add('is-revealing');
-      }, 1310);
+      }, BRAKE_MS);
 
       setTimeout(() => {
         if (run !== animationRun) return;
         stage.classList.remove('is-spinning');
-        dialog.classList.remove('is-spinning');
+        dialog.classList.remove('is-spinning','is-braking');
         dialog.classList.add('is-bursting','is-revealing');
         requestAnimationFrame(() => cardButton.classList.add('is-revealed'));
-        playRevealSound(audioCtx);
+        playStopSound(audioCtx);
+        setTimeout(() => { if (run === animationRun) playRevealSound(audioCtx); }, 110);
         spawnBurst('reveal');
-        try { navigator.vibrate?.([28, 30, 60]); } catch (_) {}
+        try { navigator.vibrate?.([22, 26, 46]); } catch (_) {}
       }, SPIN_MS);
 
       setTimeout(() => {
@@ -427,7 +455,7 @@
         if (run !== animationRun) return;
         dialog.classList.remove('is-bursting','is-revealing');
         try { audioCtx?.close?.(); } catch (_) {}
-      }, 3250);
+      }, 4300);
     };
 
     const openDialog = () => {
@@ -466,7 +494,7 @@
       stage.style.setProperty('--glow-x', (point.px * 100).toFixed(1) + '%');
       stage.style.setProperty('--glow-y', (point.py * 100).toFixed(1) + '%');
       stage.classList.add('is-prism-active');
-      spawnHoloRipple(point.px, point.py);
+      spawnHoloRipple(point.px, point.py, true);
     });
 
     stage.addEventListener('pointermove', event => {
@@ -482,7 +510,8 @@
       stage.style.setProperty('--glow-x', (px * 100).toFixed(1) + '%');
       stage.style.setProperty('--glow-y', (py * 100).toFixed(1) + '%');
       stage.classList.add('is-prism-active');
-      if (lastRippleX < 0) spawnHoloRipple(px, py);
+      const rippleDistance = lastRippleX < 0 ? 1 : Math.hypot(px - lastRippleX, py - lastRippleY);
+      if (rippleDistance > 0.11) spawnHoloRipple(px, py, true);
     });
     stage.addEventListener('pointerleave', resetPrism);
 
