@@ -89,3 +89,10 @@ body[data-page="operator"]{background:radial-gradient(circle at 80% 0,color-mix(
   .operator-system-summary{grid-template-columns:1fr 1fr}.operator-system-kpis{grid-template-columns:1fr 1fr}.operator-system-meta div{grid-template-columns:1fr;gap:3px}
   .operator-session-list article{align-items:flex-start;flex-direction:column}.operator-session-list article>button{width:100%}
 }
+
+.operator-system-meta dt small{font-size:9px;color:var(--op-meta);font-weight:700}
+.operator-endpoint-health>div>span:first-child{display:flex;align-items:center;gap:7px}
+.operator-endpoint-health small{font-size:10px;color:var(--op-meta);font-weight:700}
+.operator-endpoint-result{font-size:11px;font-weight:900}
+.operator-endpoint-result.ok{color:var(--op-good)}
+.operator-endpoint-result.bad{color:var(--op-bad)}
