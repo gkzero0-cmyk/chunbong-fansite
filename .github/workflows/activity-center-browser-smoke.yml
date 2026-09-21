@@ -134,8 +134,11 @@ jobs:
           await mobile.route('**/api/content?type=activity',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:activityItems})}));
           await mobile.goto(process.env.BASE_URL+'/index.html?_mobile='+Date.now(),{waitUntil:'networkidle'});
           await closeFortuneIfOpen(mobile);
-          assert.ok(await mobile.locator('.changelog-button').isVisible(),'mobile changelog gear missing');
-          assert.equal(await mobile.locator('.changelog-button span').isVisible(),false,'mobile changelog text should collapse to icon only');
+          assert.equal(await mobile.locator('.changelog-button').isVisible(),false,'mobile changelog control should move out of the compact app header');
+          assert.ok(await mobile.locator('.activity-bell').isVisible(),'mobile activity bell must remain in the compact app header');
+          await mobile.locator('[data-pwa-app-more-toggle]').click();
+          assert.ok(await mobile.locator('[data-pwa-app-more] [data-more-page="changelog"]').isVisible(),'mobile More sheet must expose the changelog');
+          await mobile.keyboard.press('Escape');
           await mobile.locator('.activity-bell').click();
           const panelBox=await mobile.locator('.activity-panel').boundingBox();
           assert.ok(panelBox&&panelBox.x>=0&&panelBox.x+panelBox.width<=390&&panelBox.y>=0&&panelBox.y+panelBox.height<=844,'mobile activity panel clips viewport');
