@@ -18,8 +18,10 @@ assert.ok(personal.includes("action:'unsubscribe'"), 'turning alerts off must re
 assert.ok(sw.includes("chunbong-pwa-20260921-v28"), 'PWA cache must be v28');
 assert.ok(sw.includes("self.addEventListener('push'"), 'service worker push receiver missing');
 for (const asset of ['/page-media.js','/fanart-gallery.js','/fanart-gallery.css']) {
-  assert.ok(sw.includes("'"+asset+"'"), 'PWA shell missing '+asset);
+  assert.ok(!sw.includes("'"+asset+"'"), 'heavy media runtime should not be install-precached: '+asset);
 }
+assert.ok(sw.includes("['script','style','worker']"), 'media JS/CSS must be cached on first visit');
+assert.ok(sw.includes("['image','font']"), 'media imagery must retain full-quality runtime caching');
 
 assert.ok(media.includes('setupMobileMiniPlayer'), 'mobile mini player missing');
 assert.ok(media.includes('mobile-mini-player-close'), 'mini player close control missing');
