@@ -109,7 +109,10 @@ jobs:
 
             const cards=page.locator('#tarot-deck [data-card-index]');
             await cards.nth(0).hover();
-            await page.waitForFunction(()=>document.querySelector('#tarot-deck [data-card-index]')?.classList.contains('is-foil-active'));
+            await page.waitForFunction(()=>{
+              const card=document.querySelector('#tarot-deck [data-card-index]');
+              return card?.classList.contains('is-foil-active')&&Number(getComputedStyle(card,'::before').opacity)>=0.6;
+            });
             const deckFoil=await cards.nth(0).evaluate(card=>({
               beforeOpacity:Number(getComputedStyle(card,'::before').opacity),
               border:getComputedStyle(card).borderTopColor,
