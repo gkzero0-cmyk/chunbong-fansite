@@ -55,7 +55,7 @@ jobs:
               if(type==='operator-analytics')return json({collectionStartedAt:'2026-09-21T08:00:00.000Z',activeNow:3,visitors:42,sessions:55,newVisitors:24,returningVisits:96,averageDailyVisitors:14,pageviews:120,averageActiveSeconds:185,topPages:[{key:'/schedule.html',value:50}],topMenus:[{key:'방송 일정',value:31}],topFeatures:[{key:'game_start:chungwagame',value:8}],devices:[{key:'device:mobile',value:80}],daily:[{date:'2026-09-21',visitors:42,sessions:55,pageviews:120}],hourly:[{key:'20',value:44}],funnel:{game:{start:10,finish:8},tarot:{start:6,finish:5},feedback:{start:4,finish:1}},comparison:{visitorsPct:12.5,sessionsPct:10,pageviewsPct:-5,averageActiveSecondsPct:3.2},feedbackCounts:{new:1}});
               if(type==='operator-feedback-update'){const body=JSON.parse(route.request().postData()||'{}');Object.assign(feedback[0],body.status?{status:body.status}:{},body.memo!==undefined?{operatorMemo:body.memo}:{});return json({ok:true,item:feedback[0]});}
               if(type==='operator-feedback')return json({items:feedback});
-              if(type==='operator-system-status')return json({checkedAt:'2026-09-21T12:00:00.000Z',deployment:{environment:'production',sha:'1234567890abcdef',url:'chunbong-fansite.vercel.app',mainSha:'1234567890abcdef',synced:true},storage:{redisConfigured:true,redisOk:true,analyticsRecordedDays:20,feedbackTotal:5},services:{githubAuth:true,emailAuth:true,push:true,analytics:true,feedback:true},traffic:{visitors:12,sessions:15,pageviews:39,activeNow:2},repository:{sizeKb:12345,updatedAt:'2026-09-21T11:00:00.000Z'},vercelUsage:{available:false}});
+              if(type==='operator-system-status')return json({checkedAt:'2026-09-21T12:00:00.000Z',deployment:{environment:'production',sha:'1234567890abcdef',url:'chunbong-fansite.vercel.app',mainSha:'1234567890abcdef',synced:true},storage:{redisConfigured:true,redisOk:true,analyticsRecordedDays:20,feedbackTotal:5,keyCount:128,usedMemory:1048576,usedMemoryHuman:'1.00M',maxMemory:null,maxMemoryHuman:null},services:{githubAuth:true,emailAuth:true,push:true,analytics:true,feedback:true},endpoints:[{label:'버전',path:'/api/version',ok:true,status:200,ms:42},{label:'LIVE',path:'/api/content?type=live',ok:true,status:200,ms:81},{label:'방송 일정',path:'/api/content?type=schedule',ok:true,status:200,ms:93},{label:'Push',path:'/api/content?type=push-config',ok:true,status:200,ms:51}],traffic:{visitors:12,sessions:15,pageviews:39,activeNow:2},repository:{sizeKb:12345,updatedAt:'2026-09-21T11:00:00.000Z'},vercelUsage:{available:false}});
               if(type==='operator-session-revoke')return json({ok:true,current:false});
               if(type==='operator-logout'||type==='operator-logout-all')return json({ok:true});
               return route.fulfill({status:404,contentType:'application/json',body:'{}'});
@@ -97,6 +97,11 @@ jobs:
             assert.match((await page.locator('#system-production').textContent())||'',/READY/);
             assert.match((await page.locator('#system-storage').textContent())||'',/정상/);
             assert.equal((await page.locator('#system-visitors').textContent())?.trim(),'12');
+            assert.equal((await page.locator('#system-redis-keys').textContent())?.trim(),'128개');
+            assert.match((await page.locator('#system-redis-memory').textContent())||'',/1\.00M/);
+            assert.equal(await page.locator('#operator-endpoint-health>div').count(),4,'public API health rows missing');
+            assert.match((await page.locator('#operator-endpoint-health').textContent())||'',/LIVE/);
+            assert.match((await page.locator('#operator-endpoint-health').textContent())||'',/81ms/);
 
             await page.locator('[data-operator-tab="security"]').click();
             assert.equal((await page.locator('#security-github').textContent())?.trim(),'gkzero0-cmyk');
