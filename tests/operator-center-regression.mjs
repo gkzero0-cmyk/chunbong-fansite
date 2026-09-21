@@ -80,6 +80,9 @@ assert.match(operatorJs,/signInWithEmailLink/,'Firebase email link completion mi
 assert.doesNotMatch(operatorJs,/eligible/,'operator email registration state must not be exposed to the client');
 assert.match(operatorHtml,/90일/);
 assert.match(operatorHtml,/data-days="all"/,'all-time analytics control missing');
+assert.match(operatorHtml,/metric-average-daily/,'average daily visitor KPI missing');
+assert.match(operatorJs,/averageDailyVisitors/,'average daily visitor rendering missing');
+assert.match(api,/dailyVisitorCounts/,'all-time daily average must use all recorded days');
 assert.match(operatorCss,/operator-dashboard/);
 assert.match(operatorCss,/operator-auth-button\.is-unavailable/,'unavailable auth provider style missing');
 assert.match(operatorCss,/operator-metric-grid/);
