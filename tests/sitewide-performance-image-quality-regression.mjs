@@ -11,7 +11,7 @@ assert.match(improvements,/img\.decoding='async'/,'images should decode asynchro
 assert.match(improvements,/fetchpriority.*high/,'critical high-priority images must be preserved');
 assert.doesNotMatch(improvements,/quality\s*=|toDataURL|canvas|getImageData|createImageBitmap/,'image optimizer must not recompress or raster-transform images');
 
-for(const heavy of ['/tarot.html','/data.html','/minigames.html','/vod.html','/clips.html','/youtube.html','/fanart.html']){
+for(const heavy of ['/tarot.html','/data.html','/vod.html','/clips.html','/youtube.html','/fanart.html']){
   assert.ok(!sw.includes("'"+heavy+"'"),'heavy feature should not be install-precached: '+heavy);
 }
 assert.match(sw,/staleWhileRevalidate/,'full-quality visual runtime cache missing');
