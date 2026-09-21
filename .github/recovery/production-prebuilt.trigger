@@ -1,1 +1,1 @@
-2026-09-21 operator-1.1-room-busy-final-recovery
+2026-09-22 perf-ux-operator-pwa-v29-recovery
