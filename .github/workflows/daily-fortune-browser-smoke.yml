@@ -126,7 +126,7 @@ jobs:
           assert.equal(await page.locator('[data-daily-fortune-holo]').count(),1,'hologram surface must exist');
           await page.waitForFunction(() => document.querySelectorAll('.daily-fortune-holo-ripple').length > 0);
           assert.equal(await page.locator('.daily-fortune-holo-spark').count(),0,'luxury hover should not emit noisy spark particles');
-          await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('.daily-fortune-holo-film')).opacity) > 0.25);
+          await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('.daily-fortune-holo-film')).opacity) >= 0.60);
           const holoOpacity=await page.locator('.daily-fortune-holo-film').evaluate(el=>getComputedStyle(el).opacity);
           assert.ok(Number(holoOpacity)>=0.60&&Number(holoOpacity)<=0.75,'inner prism should be clearly visible without becoming a white wash');
           await page.mouse.move(20,20);
