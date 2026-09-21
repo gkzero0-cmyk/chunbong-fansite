@@ -7,6 +7,8 @@
   const mediaRoot=root.querySelector('[data-home-overview-card="media"]');
   const challengeRoot=root.querySelector('[data-home-overview-card="challenge"]');
   const statsRoot=root.querySelector('[data-home-quick-stats]');
+  const archiveRoot=document.querySelector('[data-home-content-archive]');
+  const archiveList=archiveRoot?.querySelector('[data-home-content-list]');
   const esc=value=>String(value??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#039;");
   const todayKey=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   const timeText=value=>{
@@ -31,6 +33,41 @@
     return response.json();
   }
   const minutesText=value=>{const total=Math.max(0,Math.round(Number(value)||0)),h=Math.floor(total/60),m=total%60;return h?(h+'시간'+(m?' '+m+'분':'')):(m+'분')};
+  const archiveCategoryLabel=value=>({minecraft:'마인크래프트',song:'노래대회',broadcast:'방송 기획','class-event':'클래스 · 이벤트',other:'기타'}[value]||'콘텐츠');
+  const archiveDateText=item=>{
+    const start=String(item?.startDate||''),end=String(item?.endDate||'');
+    if(!start)return'날짜 확인 중';
+    const format=value=>{
+      if(!value)return'';
+      const parts=value.split('-');
+      if(parts.length===1)return parts[0]+'년';
+      if(parts.length===2)return parts[0]+'.'+parts[1];
+      return parts[0]+'.'+parts[1]+'.'+parts[2];
+    };
+    return end&&end!==start?format(start)+' — '+format(end):format(start);
+  };
+  function renderArchivePreview(payload){
+    if(!archiveList)return;
+    const items=(Array.isArray(payload?.items)?payload.items:[])
+      .slice()
+      .sort((a,b)=>String(b?.startDate||'').localeCompare(String(a?.startDate||''))||String(a?.title||'').localeCompare(String(b?.title||''),'ko'))
+      .slice(0,3);
+    archiveList.setAttribute('aria-busy','false');
+    if(!items.length){
+      archiveList.innerHTML='<a class="home-content-card home-content-card-empty" href="chunbong-contents.html"><div class="home-content-card-copy"><small>CONTENT ARCHIVE</small><strong>콘텐츠 기록 준비 중</strong><p>검증이 끝난 기록부터 차례로 공개합니다.</p><span>아카이브 보기 →</span></div></a>';
+      return;
+    }
+    archiveList.innerHTML=items.map(item=>{
+      const href='chunbong-contents.html?id='+encodeURIComponent(String(item.id||''));
+      const image=item?.heroImage?.src?'<img src="'+esc(item.heroImage.src)+'" alt="'+esc(item.heroImage.alt||item.title||'춘봉 콘텐츠 대표 이미지')+'" loading="lazy" decoding="async">':'<span class="home-content-card-image-fallback" aria-hidden="true">CB</span>';
+      return '<a class="home-content-card reveal" href="'+href+'"><div class="home-content-card-media">'+image+'<div class="home-content-card-badges"><span>'+esc(archiveCategoryLabel(item.category))+'</span><span>'+esc(item.role||'기록')+'</span></div></div><div class="home-content-card-copy"><small>'+esc(archiveDateText(item))+'</small><strong>'+esc(item.title||'춘봉 콘텐츠')+'</strong><p>'+esc(item.summary||'콘텐츠 기록을 확인해 보세요.')+'</p><span>기록 보기 →</span></div></a>';
+    }).join('');
+    archiveList.querySelectorAll('img').forEach(image=>image.addEventListener('error',()=>{
+      const media=image.closest('.home-content-card-media');
+      image.remove();
+      if(media&&!media.querySelector('.home-content-card-image-fallback'))media.insertAdjacentHTML('afterbegin','<span class="home-content-card-image-fallback" aria-hidden="true">CB</span>');
+    },{once:true}));
+  }
   function renderChallenge(){
     const challenge=window.ChunbongPersonal?.dailyChallenge?.();
     if(!challenge){setCard(challengeRoot,{label:'DAILY MISSION',title:'오늘의 미니게임 도전',desc:'미니게임에서 오늘의 도전을 확인해 보세요.',href:'minigames.html',time:'도전 보기'});return;}
@@ -49,7 +86,7 @@
   renderChallenge();
   document.addEventListener('chunbong:personal-updated',renderChallenge);
   async function load(){
-    const [liveResult,scheduleResult,activityResult,dataResult]=await Promise.allSettled([get('live'),get('schedule'),get('activity'),get('data')]);
+    const [liveResult,scheduleResult,activityResult,dataResult,archiveResult]=await Promise.allSettled([get('live'),get('schedule'),get('activity'),get('data'),get('chunbong-contents')]);
     const live=liveResult.status==='fulfilled'&&liveResult.value?.live===true?liveResult.value:null;
     if(live){
       const viewers=Number.isFinite(Number(live.viewerCount))&&Number(live.viewerCount)>0?Number(live.viewerCount).toLocaleString('ko-KR')+'명 시청 중':'지금 방송 중';
@@ -76,6 +113,7 @@
       setCard(mediaRoot,{label:'LATEST MEDIA',title:'최근 콘텐츠를 불러오지 못했습니다.',desc:'다시보기·핫클립·유튜브에서 확인해 주세요.',href:'vod.html'});
     }
     if(dataResult.status==='fulfilled')renderQuickStats(dataResult.value);
+    if(archiveResult.status==='fulfilled')renderArchivePreview(archiveResult.value);else renderArchivePreview({items:[]});
   }
   void load();
 })();

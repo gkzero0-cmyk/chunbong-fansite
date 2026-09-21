@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+<title id="title">싸이감성 노래자랑 팬사이트 아카이브 커버</title>
+<desc id="desc">춘봉 콘텐츠 아카이브에서 사용하는 비공식 싸이감성 노래자랑 대표 커버</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#17101b"/><stop offset=".56" stop-color="#24172a"/><stop offset="1" stop-color="#0c0a0e"/></linearGradient>
+  <linearGradient id="pink" x1="0" x2="1"><stop stop-color="#ff94c8"/><stop offset=".5" stop-color="#f5b15c"/><stop offset="1" stop-color="#9c8cff"/></linearGradient>
+  <radialGradient id="glow" cx=".78" cy=".36" r=".56"><stop offset="0" stop-color="#f46ba8" stop-opacity=".30"/><stop offset=".7" stop-color="#7e5cff" stop-opacity=".08"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="1600" height="900" fill="url(#bg)"/><rect width="1600" height="900" fill="url(#glow)"/>
+<g transform="translate(1110 165)" fill="none" stroke="url(#pink)" stroke-linecap="round">
+  <path d="M145 38v315" stroke-width="24"/><path d="M145 65c118-22 153-4 185 28v205c-34-31-72-47-185-22" stroke-width="16"/>
+  <circle cx="84" cy="390" r="62" stroke-width="18"/><circle cx="270" cy="337" r="62" stroke-width="18"/>
+  <path d="M52 500c77 45 180 53 271 5" stroke-width="8" opacity=".55"/>
+</g>
+<g opacity=".16" fill="#ff9bc7"><circle cx="995" cy="160" r="10"/><circle cx="1450" cy="650" r="16"/><circle cx="1340" cy="730" r="8"/><circle cx="1040" cy="650" r="6"/></g>
+<g font-family="system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <text x="110" y="150" fill="#f49bc4" font-size="28" font-weight="850" letter-spacing="5">CHUNBONG CONTENT ARCHIVE</text>
+  <text x="110" y="320" fill="#fff5fa" font-size="96" font-weight="950" letter-spacing="-5">싸이감성</text>
+  <text x="110" y="420" fill="url(#pink)" font-size="78" font-weight="950" letter-spacing="-4">노래자랑</text>
+  <rect x="110" y="482" width="590" height="6" rx="3" fill="url(#pink)"/>
+  <text x="110" y="575" fill="#ddd0db" font-size="31" font-weight="700">노래 경연 콘텐츠</text>
+  <text x="110" y="635" fill="#9e909c" font-size="27">2026.04.28</text>
+  <g transform="translate(110 712)"><rect width="210" height="58" rx="29" fill="#f47dae" fill-opacity=".12" stroke="#f47dae" stroke-opacity=".5"/><text x="105" y="38" text-anchor="middle" fill="#ffabd0" font-size="22" font-weight="800">춘봉 개최</text></g>
+  <text x="110" y="825" fill="#756b73" font-size="18">팬사이트 아카이브용 비공식 커버 · 상세 페이지에서 출처 확인 가능</text>
+</g>
+</svg>
