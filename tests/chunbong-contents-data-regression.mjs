@@ -112,3 +112,49 @@ assert.ok((justserver?.media||[]).length>=2,'JustServer should include multiple 
 assert.ok((justserver?.gallery||[]).length>=2,'JustServer detail should have visual archive material');
 assert.ok((psyContest?.participants||[]).includes('시로코'),'song contest should include confirmed participant evidence');
 assert.ok((psyContest?.gallery||[]).length>=2,'song contest detail should have visual archive material');
+
+
+const {validateArchiveRelationships}=require('../lib/chunbong-content-archive-core.js');
+const seriesSample=normalizeArchiveItem({...monthOnly,id:'series-sample',archiveType:'series',featured:true});
+const editionSample=normalizeArchiveItem({...monthOnly,id:'series-sample-1',archiveType:'edition',parentId:'series-sample',editionLabel:'1회',editionOrder:1});
+assert.equal(seriesSample.archiveType,'series');
+assert.equal(seriesSample.featured,true);
+assert.equal(editionSample.archiveType,'edition');
+assert.equal(editionSample.parentId,'series-sample');
+assert.deepEqual(validateArchiveRelationships([seriesSample,editionSample]),[]);
+assert.ok(validateArchiveRelationships([editionSample]).includes('unknown_parent_id'));
+assert.ok(validateArchiveRelationships([{...seriesSample,parentId:'bad'}]).includes('series_parent_not_allowed'));
+
+const grouped=archiveApi._internals.groupPublicRows([seriesSample,editionSample]);
+assert.equal(grouped.series.length,1);
+assert.equal(grouped.series[0].editionCount,1);
+assert.deepEqual(grouped.editionsByParent['series-sample'].map(row=>row.id),['series-sample-1']);
+
+const requiredSeries=['leopel','justserver','psy-emotion-song-contest','chuntacle'];
+for(const id of requiredSeries){
+  const row=seed.items.find(item=>item.id===id);
+  assert.ok(row?.published,`series parent missing: ${id}`);
+  assert.equal(row?.archiveType,'series',`${id} should be a series parent`);
+}
+for(const id of ['justserver-original','justserver-moneygame','justserver-survival']){
+  const row=seed.items.find(item=>item.id===id);
+  assert.ok(row?.published,`JustServer edition missing: ${id}`);
+  assert.equal(row?.parentId,'justserver');
+}
+for(const id of ['psy-emotion-song-contest-1','psy-emotion-song-contest-2']){
+  const row=seed.items.find(item=>item.id===id);
+  assert.ok(row?.published,`song contest edition missing: ${id}`);
+  assert.equal(row?.parentId,'psy-emotion-song-contest');
+}
+for(let n=1;n<=5;n++){
+  const row=seed.items.find(item=>item.id===`chuntacle-${n}`);
+  assert.ok(row?.published,`ChunTaClass session ${n} missing`);
+  assert.equal(row?.parentId,'chuntacle');
+  assert.match(String(row?.heroImage?.src||''),/^\/assets\/chunbong-contents\/chuntacle\//);
+}
+assert.equal(seed.items.find(item=>item.id==='chuntacle-1')?.startDate,'2026-07-12');
+assert.equal(seed.items.find(item=>item.id==='chuntacle-5')?.startDate,'2026-09-14');
+assert.ok(seed.items.find(item=>item.id==='psy-emotion-song-contest-1')?.sources?.some(x=>/124321185/.test(x.url)),'song contest 1 should preserve official recruitment post');
+assert.ok(seed.items.find(item=>item.id==='psy-emotion-song-contest-1')?.media?.some(x=>/127480069/.test(x.url)),'song contest 1 should link official VOD');
+assert.ok(seed.items.find(item=>item.id==='psy-emotion-song-contest-2')?.sources?.some(x=>/192031471/.test(x.url)),'song contest 2 should preserve official recruitment post');
+assert.ok(seed.items.find(item=>item.id==='psy-emotion-song-contest-2')?.media?.some(x=>/194116989/.test(x.url)),'song contest 2 should link official VOD');
