@@ -7,8 +7,8 @@ const dialog=document.createElement('div');dialog.className='feedback-dialog';di
 const form=dialog.querySelector('#feedback-form'),status=dialog.querySelector('.feedback-status'),success=dialog.querySelector('.feedback-success');
 const visitor=()=>{try{return localStorage.getItem('chunbong:analytics:visitor:v1')||''}catch{return''}};
 const device=()=>Math.min(innerWidth,screen.width||innerWidth)<=760?'mobile':Math.min(innerWidth,screen.width||innerWidth)<=1100?'tablet':'desktop';
-function open(){dialog.hidden=false;document.body.style.overflow='hidden';form.hidden=false;success.hidden=true;setTimeout(()=>dialog.querySelector('#feedback-message')?.focus(),30)}
-function close(){dialog.hidden=true;document.body.style.overflow='';status.textContent=''}
+function open(){dialog.hidden=false;document.body.classList.add('feedback-open');document.body.style.overflow='hidden';form.hidden=false;success.hidden=true;setTimeout(()=>dialog.querySelector('#feedback-message')?.focus(),30)}
+function close(){dialog.hidden=true;document.body.classList.remove('feedback-open');document.body.style.overflow='';status.textContent=''}
 document.addEventListener('click',e=>{if(e.target.closest('[data-feedback-open]')){e.preventDefault();open()}});
 dialog.querySelector('.feedback-close').addEventListener('click',close);dialog.querySelector('[data-feedback-done]').addEventListener('click',close);dialog.addEventListener('click',e=>{if(e.target===dialog)close()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!dialog.hidden)close()});
