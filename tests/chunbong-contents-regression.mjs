@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
+const html=read('chunbong-contents.html');
+const css=read('chunbong-contents.css');
+assert.match(html,/data-page="contents"/);
+for(const hook of ['data-archive-search','data-archive-category','data-archive-year','data-archive-sort','data-archive-list','data-archive-detail','data-archive-lightbox']) assert.ok(html.includes(hook),hook);
+assert.match(html,/춘봉 콘텐츠/);
+assert.match(css,/grid-template-columns/);
+assert.match(css,/@media\(max-width:760px\)/);
+assert.match(css,/prefers-reduced-motion/);
+assert.match(css,/object-fit:cover/);
+assert.match(css,/\[data-theme="light"\]/);
+console.log('chunbong contents page regression passed');
