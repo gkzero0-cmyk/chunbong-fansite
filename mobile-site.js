@@ -115,6 +115,7 @@
           <a href="changelog.html" data-more-page="changelog"><span>업데이트</span><small>변경 기록</small></a>
           <a href="myhub.html" data-more-page="myhub"><span>내 팬허브</span><small>보관함 · 기록</small></a>
           <button type="button" class="pwa-app-more-action" data-mobile-theme-toggle><span>화면 테마</span><small>라이트 · 다크 전환</small></button>
+          <button type="button" class="pwa-app-more-action" data-feedback-open><span>건의 · 피드백</span><small>버그 신고 · 기능 제안</small></button>
         </div>
       </section>`;
 

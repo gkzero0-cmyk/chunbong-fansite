@@ -17,6 +17,7 @@ const handleChuncortileRanking = require('../lib/chuncortile-ranking-api');
 const handleMinigameMultiplayer = require('../lib/minigame-multiplayer-api');
 const handleChangelogHistory = require('../lib/changelog-history-api');
 const pushNotifications = require('../lib/push-notifications-api');
+const operatorCenter=require('../lib/operator-center-api');
 const youtubeEngagementCache = require('../data/youtube-engagement-cache.json');
 const soopMetricHistory = require('../data/soop-follower-history.json');
 const { buildEngagementRankings } = require('../lib/youtube-engagement');
@@ -257,6 +258,19 @@ async function handler(req,res) {
   if(type==='push-config') return pushNotifications.handleConfig(req,res);
   if(type==='push-subscription') return pushNotifications.handleSubscription(req,res);
   if(type==='push-dispatch') return pushNotifications.handleDispatch(req,res);
+  if(type==='site-analytics-event') return operatorCenter.handleAnalyticsEvent(req,res);
+  if(type==='feedback-submit') return operatorCenter.handleFeedbackSubmit(req,res);
+  if(type==='operator-auth-config') return operatorCenter.handleAuthConfig(req,res);
+  if(type==='operator-session') return operatorCenter.handleSession(req,res);
+  if(type==='operator-github-start') return operatorCenter.handleGithubStart(req,res);
+  if(type==='operator-github-callback') return operatorCenter.handleGithubCallback(req,res);
+  if(type==='operator-email-start') return operatorCenter.handleEmailStart(req,res);
+  if(type==='operator-email-complete') return operatorCenter.handleEmailComplete(req,res);
+  if(type==='operator-analytics') return operatorCenter.handleOperatorAnalytics(req,res);
+  if(type==='operator-feedback') return operatorCenter.handleOperatorFeedback(req,res);
+  if(type==='operator-feedback-update') return operatorCenter.handleOperatorFeedbackUpdate(req,res);
+  if(type==='operator-logout') return operatorCenter.handleLogout(req,res);
+  if(type==='operator-logout-all') return operatorCenter.handleLogoutAll(req,res);
   if(type==='live'){
     res.setHeader('Cache-Control','s-maxage=30, stale-while-revalidate=30');
     try{
