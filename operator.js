@@ -236,10 +236,17 @@ async function setupFirebaseEmail(){
  const form=$('#operator-email-form');form.addEventListener('submit',async e=>{e.preventDefault();const email=$('#operator-email').value.trim().toLowerCase();status.textContent='인증 메일 요청 중…';try{await json(API+'operator-email-start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});localStorage.setItem('chunbong:operator:email',email);status.textContent='등록된 운영자 계정이라면 인증 메일이 발송됩니다. 메일함을 확인해 주세요.'}catch(err){status.textContent=err.message==='email_auth_not_configured'?'이메일 인증 설정이 아직 완료되지 않았습니다.':'인증 요청을 처리하지 못했습니다.'}})
  if(new URLSearchParams(location.search).get('email')==='complete'){try{const config=await json(API+'operator-auth-config');if(!config.providers.email||!config.firebase)return;const email=localStorage.getItem('chunbong:operator:email')||prompt('인증 메일을 받은 주소를 입력하세요')||'';if(!email)return;const {initializeApp}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js');const {getAuth,isSignInWithEmailLink,signInWithEmailLink}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js');const app=initializeApp(config.firebase,'operator-email-complete');const auth=getAuth(app);if(!isSignInWithEmailLink(auth,location.href))throw new Error('invalid_link');const credential=await signInWithEmailLink(auth,email,location.href);const idToken=await credential.user.getIdToken();await json(API+'operator-email-complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken})});localStorage.removeItem('chunbong:operator:email');history.replaceState(null,'','/operator.html');await boot()}catch{status.textContent='이메일 인증 링크를 확인하지 못했습니다.'}}
 }
+let operatorContentsPromise=null;
+function loadOperatorContents(){
+  if(operatorContentsPromise)return operatorContentsPromise;
+  operatorContentsPromise=import('./operator-contents.js').then(module=>module.bootOperatorContents());
+  return operatorContentsPromise;
+}
 async function activateOperatorTab(tab){
   const target=String(tab||'overview');
   $$('[data-operator-tab]').forEach(button=>{const active=button.dataset.operatorTab===target;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1});
   $$('[data-operator-panel]').forEach(panel=>panel.hidden=panel.dataset.operatorPanel!==target);
+  if(target==='contents')await loadOperatorContents();
   if(target==='performance'&&!currentAnalytics)await loadAnalytics();
   if(target==='system'&&!currentSystem)await loadSystemStatus();
   if(target==='security')await Promise.allSettled([refreshSession(),loadSecurityLog()]);
