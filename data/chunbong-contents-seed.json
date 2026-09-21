@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T08:35:00+09:00",
+  "updatedAt": "2026-09-22T08:48:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -377,40 +377,177 @@
       "endDate": "",
       "datePrecision": "day",
       "summary": "2026년 4월 9일 춘봉이 개최한 첫 다이아 서버 「그냥서버」.",
-      "description": "그냥서버 시리즈의 첫 시즌입니다. 현재 공개적으로 교차 확인되는 개최일과 주최 기록을 우선 보존하고, 방송국 모집글·다시보기·이미지는 원문이 확인되는 대로 추가합니다.",
+      "description": "그냥서버 시리즈의 첫 시즌입니다. 춘봉 SOOP 방송국의 관련 게시글, 공개 Notion 자료, 그리고 실제 SOOP VOD 7건을 한 회차에 묶어 기록합니다. 영상 제목은 원문 메타데이터가 확인되기 전까지 추측하지 않고 순번으로 표시합니다.",
       "heroImage": null,
       "participants": [],
       "results": [],
       "timeline": [
         {
-          "id": "open",
-          "type": "reference",
-          "title": "첫 그냥서버 개최 기록",
-          "date": "2026-04-09",
-          "datePrecision": "day",
-          "url": "https://namu.wiki/w/%EC%B6%98%EB%B4%89",
+          "id": "soop-post",
+          "type": "notice",
+          "title": "그냥서버 1 관련 SOOP 방송국 게시글",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/192179233",
           "thumbnail": "",
-          "sourceId": "namu-chunbong",
-          "note": "춘봉 활동 이력에서 4월 9일 다이아 서버 그냥서버 개최 기록이 확인됩니다."
+          "sourceId": "soop-post",
+          "note": "춘봉 방송국의 그냥서버 1 관련 공식 게시글입니다."
+        },
+        {
+          "id": "notion-page",
+          "type": "reference",
+          "title": "그냥서버 1 공개 Notion 자료",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://sdmv.notion.site/what",
+          "thumbnail": "",
+          "sourceId": "public-notion",
+          "note": "그냥서버 1 관련 공개 Notion 자료입니다."
         }
       ],
-      "media": [],
+      "media": [
+        {
+          "id": "soop-vod-1",
+          "type": "vod",
+          "title": "그냥서버 1 관련 SOOP VOD 1",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/192233707",
+          "thumbnail": "",
+          "sourceId": "soop-vod-source-1",
+          "note": "춘봉의 그냥서버 1 관련 SOOP 다시보기입니다. 원문 제목과 썸네일 메타데이터가 확인되면 자동 보강할 수 있도록 원본 링크를 보존합니다."
+        },
+        {
+          "id": "soop-vod-2",
+          "type": "vod",
+          "title": "그냥서버 1 관련 SOOP VOD 2",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/192317079",
+          "thumbnail": "",
+          "sourceId": "soop-vod-source-2",
+          "note": "춘봉의 그냥서버 1 관련 SOOP 다시보기입니다. 원문 제목과 썸네일 메타데이터가 확인되면 자동 보강할 수 있도록 원본 링크를 보존합니다."
+        },
+        {
+          "id": "soop-vod-3",
+          "type": "vod",
+          "title": "그냥서버 1 관련 SOOP VOD 3",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/192401771",
+          "thumbnail": "",
+          "sourceId": "soop-vod-source-3",
+          "note": "춘봉의 그냥서버 1 관련 SOOP 다시보기입니다. 원문 제목과 썸네일 메타데이터가 확인되면 자동 보강할 수 있도록 원본 링크를 보존합니다."
+        },
+        {
+          "id": "soop-vod-4",
+          "type": "vod",
+          "title": "그냥서버 1 관련 SOOP VOD 4",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/192510763",
+          "thumbnail": "",
+          "sourceId": "soop-vod-source-4",
+          "note": "춘봉의 그냥서버 1 관련 SOOP 다시보기입니다. 원문 제목과 썸네일 메타데이터가 확인되면 자동 보강할 수 있도록 원본 링크를 보존합니다."
+        },
+        {
+          "id": "soop-vod-5",
+          "type": "vod",
+          "title": "그냥서버 1 관련 SOOP VOD 5",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/192581897",
+          "thumbnail": "",
+          "sourceId": "soop-vod-source-5",
+          "note": "춘봉의 그냥서버 1 관련 SOOP 다시보기입니다. 원문 제목과 썸네일 메타데이터가 확인되면 자동 보강할 수 있도록 원본 링크를 보존합니다."
+        },
+        {
+          "id": "soop-vod-6",
+          "type": "vod",
+          "title": "그냥서버 1 관련 SOOP VOD 6",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/192845469",
+          "thumbnail": "",
+          "sourceId": "soop-vod-source-6",
+          "note": "춘봉의 그냥서버 1 관련 SOOP 다시보기입니다. 원문 제목과 썸네일 메타데이터가 확인되면 자동 보강할 수 있도록 원본 링크를 보존합니다."
+        },
+        {
+          "id": "soop-vod-7",
+          "type": "vod",
+          "title": "그냥서버 1 관련 SOOP VOD 7",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/192962357",
+          "thumbnail": "",
+          "sourceId": "soop-vod-source-7",
+          "note": "춘봉의 그냥서버 1 관련 SOOP 다시보기입니다. 원문 제목과 썸네일 메타데이터가 확인되면 자동 보강할 수 있도록 원본 링크를 보존합니다."
+        }
+      ],
       "gallery": [],
       "sources": [
         {
-          "id": "namu-chunbong",
+          "id": "soop-post",
+          "kind": "official",
+          "label": "춘봉 SOOP · 그냥서버 1 관련 게시글",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/192179233"
+        },
+        {
+          "id": "public-notion",
           "kind": "reference",
-          "label": "namu.wiki · 춘봉 활동 이력",
-          "url": "https://namu.wiki/w/%EC%B6%98%EB%B4%89"
+          "label": "공개 Notion · 그냥서버 1 자료",
+          "url": "https://sdmv.notion.site/what"
+        },
+        {
+          "id": "soop-vod-source-1",
+          "kind": "official",
+          "label": "SOOP VOD · 그냥서버 1 관련 영상 1",
+          "url": "https://vod.sooplive.com/player/192233707"
+        },
+        {
+          "id": "soop-vod-source-2",
+          "kind": "official",
+          "label": "SOOP VOD · 그냥서버 1 관련 영상 2",
+          "url": "https://vod.sooplive.com/player/192317079"
+        },
+        {
+          "id": "soop-vod-source-3",
+          "kind": "official",
+          "label": "SOOP VOD · 그냥서버 1 관련 영상 3",
+          "url": "https://vod.sooplive.com/player/192401771"
+        },
+        {
+          "id": "soop-vod-source-4",
+          "kind": "official",
+          "label": "SOOP VOD · 그냥서버 1 관련 영상 4",
+          "url": "https://vod.sooplive.com/player/192510763"
+        },
+        {
+          "id": "soop-vod-source-5",
+          "kind": "official",
+          "label": "SOOP VOD · 그냥서버 1 관련 영상 5",
+          "url": "https://vod.sooplive.com/player/192581897"
+        },
+        {
+          "id": "soop-vod-source-6",
+          "kind": "official",
+          "label": "SOOP VOD · 그냥서버 1 관련 영상 6",
+          "url": "https://vod.sooplive.com/player/192845469"
+        },
+        {
+          "id": "soop-vod-source-7",
+          "kind": "official",
+          "label": "SOOP VOD · 그냥서버 1 관련 영상 7",
+          "url": "https://vod.sooplive.com/player/192962357"
         }
       ],
       "verification": {
         "state": "cross_checked",
-        "verifiedAt": "2026-09-22T08:35:00+09:00",
+        "verifiedAt": "2026-09-22T08:48:00+09:00",
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T08:35:00+09:00"
+      "updatedAt": "2026-09-22T08:48:00+09:00"
     },
     {
       "id": "justserver-survival",
