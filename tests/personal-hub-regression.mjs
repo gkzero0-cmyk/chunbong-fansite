@@ -32,6 +32,11 @@ assert.match(hub,/function recordGameStart/);
 assert.match(hub,/function gameSnapshot/);
 assert.match(hub,/function dailyChallenge/);
 assert.match(hub,/Notification\.requestPermission/,'broadcast reminder must ask permission only after opt-in');
+assert.match(hub,/state\.alerts\.enabled=true;state\.alerts\.pushEnabled=false;write\(state\);/,'alert toggle must persist ON immediately after permission grant');
+assert.match(hub,/void syncPushSubscription\(true,state\)\.then/,'background push setup must not block the ON toggle');
+assert.match(hub,/state\.alerts\.enabled=false;state\.alerts\.pushEnabled=false;write\(state\);[\s\S]*void syncPushSubscription\(false,state\)/,'OFF toggle must persist before background unsubscribe');
+assert.match(hub,/브라우저 알림 권한 차단됨 · 설정에서 허용 필요/,'blocked notification permission must show actionable UI copy');
+assert.match(hub,/aria-busy/,'alert toggle must show immediate busy feedback');
 assert.match(hub,/async function ensurePushServiceWorker\(\)/,'push alerts must ensure a service worker instead of depending on page load timing');
 assert.match(hub,/navigator\.serviceWorker\.register\('\/service-worker\.js'/,'push alerts must be able to register the service worker directly');
 assert.match(hub,/data-personal-push-retry/,'failed background push setup must expose a retry action');
@@ -101,6 +106,7 @@ assert.match(sw,/chunbong-pwa-20260921-v27/,'timeline retirement must advance PW
 for(const asset of ['/personal-hub.css','/personal-hub.js','/myhub.html']){
   assert.ok(sw.includes("'"+asset+"'"),'PWA app shell missing '+asset);
 }
+assert.match(sw,/chunbong-pwa-20260921-v28/,'alert toggle fix must refresh the PWA cache');
 assert.match(sw,/notificationclick/,'notification click routing missing');
 
 
