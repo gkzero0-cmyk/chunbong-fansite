@@ -11,7 +11,7 @@ const operatorCss=read('operator.css');
 const analytics=read('site-analytics.js');
 const feedback=read('feedback-widget.js');
 const feedbackCss=read('feedback-widget.css');
-const shell=read('site-shell.js');
+const improvements=read('site-improvements.js');
 const mobile=read('mobile-site.js');
 const sw=read('service-worker.js');
 
@@ -89,8 +89,8 @@ assert.match(feedback,/feedback-submit/);
 assert.match(feedback,/data-feedback-open/);
 assert.match(feedbackCss,/feedback-dialog/);
 
-assert.match(shell,/site-analytics\.js/,'sitewide analytics runtime not loaded');
-assert.match(shell,/feedback-widget\.js/,'sitewide feedback runtime not loaded');
+assert.match(improvements,/site-analytics\.js/,'sitewide analytics runtime not loaded');
+assert.match(improvements,/feedback-widget\.js/,'sitewide feedback runtime not loaded');
 assert.match(mobile,/data-feedback-open/,'mobile More feedback entry missing');
 
 assert.match(sw,/chunbong-pwa-20260921-v27/,'PWA cache must advance for operator center');
