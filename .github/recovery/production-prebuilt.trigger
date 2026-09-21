@@ -1,1 +1,1 @@
-2026-09-21T19:37+09:00 operator-auth-final-recovery
+2026-09-21T19:40+09:00 vercel-token-enabled-final-recovery
