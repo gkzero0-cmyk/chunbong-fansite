@@ -80,7 +80,7 @@
   }
   for(const src of['site-meta.js','site-health.js','site-improvements.js','personal-hub.js','site-analytics.js','feedback-widget.js']){
     if(document.querySelector('script[src="'+src+'"]'))continue;
-    const script=document.createElement('script');script.src=src;script.defer=true;document.head.appendChild(script);
+    const script=document.createElement('script');script.src=src;document.head.appendChild(script);
   }
 })();
 (() => {
