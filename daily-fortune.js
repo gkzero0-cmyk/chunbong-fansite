@@ -252,7 +252,7 @@
     if (!dialog || !cardButton || !stage || !holo || !fx || !closeButton || !launcher || !result) return;
 
     const SPIN_MS = 2600;
-    const RESULT_MS = 2350;
+    const RESULT_MS = 3150;
     let state = readState();
     let drawing = false;
     let autoOpenTimer = 0;
@@ -427,7 +427,7 @@
         if (run !== animationRun) return;
         dialog.classList.remove('is-bursting','is-revealing');
         try { audioCtx?.close?.(); } catch (_) {}
-      }, 3250);
+      }, 4050);
     };
 
     const openDialog = () => {
