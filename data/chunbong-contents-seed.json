@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T07:12:00+09:00",
+  "updatedAt": "2026-09-22T08:35:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -150,7 +150,12 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T07:05:00+09:00"
+      "updatedAt": "2026-09-22T07:05:00+09:00",
+      "archiveType": "series",
+      "parentId": "",
+      "editionLabel": "",
+      "editionOrder": 0,
+      "featured": true
     },
     {
       "id": "justserver-moneygame",
@@ -294,11 +299,250 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T07:05:00+09:00"
+      "updatedAt": "2026-09-22T07:05:00+09:00",
+      "archiveType": "edition",
+      "parentId": "justserver",
+      "editionLabel": "머니게임",
+      "editionOrder": 2,
+      "featured": false
     },
     {
-      "id": "psy-emotion-song-contest-2026",
-      "title": "싸이감성 노래자랑 (2026)",
+      "id": "justserver",
+      "title": "그냥서버",
+      "aliases": [
+        "그냥서버 시리즈",
+        "다이아 서버 그냥서버"
+      ],
+      "category": "minecraft",
+      "archiveType": "series",
+      "parentId": "",
+      "editionLabel": "",
+      "editionOrder": 0,
+      "featured": true,
+      "role": "주최",
+      "status": "ongoing",
+      "startDate": "2026-04-09",
+      "endDate": "2026-10-21",
+      "datePrecision": "day",
+      "summary": "춘봉이 직접 주최한 마인크래프트 스트리머 서버 시리즈. 첫 그냥서버, 머니게임, 적자생존을 시즌별로 기록합니다.",
+      "description": "2026년 4월 첫 다이아 서버 「그냥서버」를 시작으로, 6~7월 「그냥서버 : 머니게임」과 9~10월 「그냥서버 : 적자생존」으로 이어진 춘봉 주최 마인크래프트 서버 시리즈입니다. 각 시즌의 모집·설명회·방송·Catch·이미지는 서로 섞이지 않도록 회차별로 분리해 보관합니다.",
+      "heroImage": {
+        "src": "/assets/chunbong-contents/justserver-moneygame-cover.svg",
+        "alt": "그냥서버 머니게임 팬사이트 아카이브 커버",
+        "sourceId": ""
+      },
+      "participants": [],
+      "results": [],
+      "timeline": [],
+      "media": [],
+      "gallery": [],
+      "sources": [
+        {
+          "id": "justserver-namuwiki",
+          "kind": "reference",
+          "label": "namu.wiki · 춘봉 활동 이력",
+          "url": "https://namu.wiki/w/%EC%B6%98%EB%B4%89"
+        },
+        {
+          "id": "justserver-soop",
+          "kind": "official",
+          "label": "춘봉 SOOP 방송국",
+          "url": "https://www.sooplive.com/station/chunbongtv"
+        }
+      ],
+      "verification": {
+        "state": "cross_checked",
+        "verifiedAt": "2026-09-22T08:35:00+09:00",
+        "conflicts": []
+      },
+      "published": true,
+      "updatedAt": "2026-09-22T08:35:00+09:00"
+    },
+    {
+      "id": "justserver-original",
+      "title": "그냥서버",
+      "aliases": [
+        "그냥서버 1",
+        "다이아 서버 그냥서버"
+      ],
+      "category": "minecraft",
+      "archiveType": "edition",
+      "parentId": "justserver",
+      "editionLabel": "그냥서버",
+      "editionOrder": 1,
+      "featured": false,
+      "role": "주최",
+      "status": "ended",
+      "startDate": "2026-04-09",
+      "endDate": "",
+      "datePrecision": "day",
+      "summary": "2026년 4월 9일 춘봉이 개최한 첫 다이아 서버 「그냥서버」.",
+      "description": "그냥서버 시리즈의 첫 시즌입니다. 현재 공개적으로 교차 확인되는 개최일과 주최 기록을 우선 보존하고, 방송국 모집글·다시보기·이미지는 원문이 확인되는 대로 추가합니다.",
+      "heroImage": null,
+      "participants": [],
+      "results": [],
+      "timeline": [
+        {
+          "id": "open",
+          "type": "reference",
+          "title": "첫 그냥서버 개최 기록",
+          "date": "2026-04-09",
+          "datePrecision": "day",
+          "url": "https://namu.wiki/w/%EC%B6%98%EB%B4%89",
+          "thumbnail": "",
+          "sourceId": "namu-chunbong",
+          "note": "춘봉 활동 이력에서 4월 9일 다이아 서버 그냥서버 개최 기록이 확인됩니다."
+        }
+      ],
+      "media": [],
+      "gallery": [],
+      "sources": [
+        {
+          "id": "namu-chunbong",
+          "kind": "reference",
+          "label": "namu.wiki · 춘봉 활동 이력",
+          "url": "https://namu.wiki/w/%EC%B6%98%EB%B4%89"
+        }
+      ],
+      "verification": {
+        "state": "cross_checked",
+        "verifiedAt": "2026-09-22T08:35:00+09:00",
+        "conflicts": []
+      },
+      "published": true,
+      "updatedAt": "2026-09-22T08:35:00+09:00"
+    },
+    {
+      "id": "justserver-survival",
+      "title": "그냥서버 : 적자생존",
+      "aliases": [
+        "그냥서버 적자생존",
+        "적자생존"
+      ],
+      "category": "minecraft",
+      "archiveType": "edition",
+      "parentId": "justserver",
+      "editionLabel": "적자생존",
+      "editionOrder": 3,
+      "featured": false,
+      "role": "주최",
+      "status": "recruiting",
+      "startDate": "2026-09-30",
+      "endDate": "2026-10-21",
+      "datePrecision": "day",
+      "summary": "2026년 9월 30일부터 10월 21일까지 예정된 그냥서버 세 번째 시즌.",
+      "description": "그냥서버 시리즈의 세 번째 시즌 「적자생존」입니다. 춘봉 일정의 서버 기간과 9월 중순 실제 신청자 확인·작업 방송·설명회 방송 기록을 함께 보존합니다.",
+      "heroImage": null,
+      "participants": [],
+      "results": [],
+      "timeline": [
+        {
+          "id": "applicant-review",
+          "type": "reference",
+          "title": "그냥서버 신청자 살펴보기 방송",
+          "date": "2026-09-15",
+          "datePrecision": "day",
+          "url": "https://streamscharts.com/channels/chunbongtv/streams?platform=afreecatv",
+          "thumbnail": "",
+          "sourceId": "stream-history",
+          "note": "춘봉 방송 이력에서 신청자 확인 방송이 기록되어 있습니다."
+        },
+        {
+          "id": "work-stream",
+          "type": "reference",
+          "title": "그냥서버:적자생존 작업방송",
+          "date": "2026-09-18",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "stream-history",
+          "note": "「그냥서버:적자생존 궁금한거 물어보세요 (작업방송)」 방송 이력이 확인됩니다."
+        },
+        {
+          "id": "briefing",
+          "type": "reference",
+          "title": "그냥서버:적자생존 설명회",
+          "date": "2026-09-19",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "stream-history",
+          "note": "「7시 그냥서버:적자생존 설명회」 방송 이력이 확인됩니다."
+        }
+      ],
+      "media": [],
+      "gallery": [],
+      "sources": [
+        {
+          "id": "stream-history",
+          "kind": "reference",
+          "label": "Streams Charts · 춘봉 SOOP 방송 이력",
+          "url": "https://streamscharts.com/channels/chunbongtv/streams?platform=afreecatv"
+        },
+        {
+          "id": "soop-station",
+          "kind": "official",
+          "label": "춘봉 SOOP 방송국",
+          "url": "https://www.sooplive.com/station/chunbongtv"
+        }
+      ],
+      "verification": {
+        "state": "cross_checked",
+        "verifiedAt": "2026-09-22T08:35:00+09:00",
+        "conflicts": []
+      },
+      "published": true,
+      "updatedAt": "2026-09-22T08:35:00+09:00"
+    },
+    {
+      "id": "psy-emotion-song-contest",
+      "title": "싸이감성 노래자랑",
+      "aliases": [
+        "싸이감성",
+        "싸이감성 노래대회"
+      ],
+      "category": "song",
+      "archiveType": "series",
+      "parentId": "",
+      "editionLabel": "",
+      "editionOrder": 0,
+      "featured": true,
+      "role": "개최",
+      "status": "ended",
+      "startDate": "2024",
+      "endDate": "2026",
+      "datePrecision": "year",
+      "summary": "춘봉이 두 차례 개최한 노래 경연 콘텐츠. 각 회차의 모집글·방송·참가 기록을 나눠 보관합니다.",
+      "description": "싸이감성 노래자랑은 춘봉이 개최한 노래 경연 시리즈입니다. 1회와 2회를 별도 회차로 나누고, SOOP 공식 모집글과 관련 VOD를 우선 출처로 연결합니다.",
+      "heroImage": {
+        "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
+        "alt": "싸이감성 노래자랑 2026 팬사이트 아카이브 커버",
+        "sourceId": ""
+      },
+      "participants": [],
+      "results": [],
+      "timeline": [],
+      "media": [],
+      "gallery": [],
+      "sources": [
+        {
+          "id": "soop-station",
+          "kind": "official",
+          "label": "춘봉 SOOP 방송국",
+          "url": "https://www.sooplive.com/station/chunbongtv"
+        }
+      ],
+      "verification": {
+        "state": "cross_checked",
+        "verifiedAt": "2026-09-22T08:35:00+09:00",
+        "conflicts": []
+      },
+      "published": true,
+      "updatedAt": "2026-09-22T08:35:00+09:00"
+    },
+    {
+      "id": "psy-emotion-song-contest-1",
+      "title": "싸이감성 노래자랑 1회",
       "aliases": [
         "싸이감성 노래자랑",
         "싸이감성"
@@ -306,11 +550,11 @@
       "category": "song",
       "role": "개최",
       "status": "ended",
-      "startDate": "2026-04-28",
-      "endDate": "2026-04-28",
-      "datePrecision": "day",
-      "summary": "춘봉이 2026년 4월 28일 개최한 노래 경연 콘텐츠로, 개최 기록과 당시 심사 방송 기록을 교차 확인했습니다.",
-      "description": "2026년 4월 28일 진행된 춘봉 주최 노래 경연 콘텐츠입니다. 같은 이름의 과거 기록과 혼동하지 않도록 2026년 개최분을 별도 항목으로 정리했으며, 현재는 개최일과 주최 사실처럼 교차 확인 가능한 정보만 공개합니다. 참가자·수상 결과는 원문 근거가 더 확보되기 전까지 확정 표기하지 않습니다.",
+      "startDate": "2024",
+      "endDate": "",
+      "datePrecision": "year",
+      "summary": "춘봉 SOOP 방송국의 1회 모집글과 관련 VOD가 남아 있는 싸이감성 노래자랑 첫 회차.",
+      "description": "싸이감성 노래자랑 1회 기록입니다. 공식 모집글과 SOOP 관련 VOD를 핵심 자료로 보존합니다.",
       "heroImage": {
         "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
         "alt": "싸이감성 노래자랑 2026 팬사이트 아카이브 커버",
@@ -327,103 +571,380 @@
       ],
       "timeline": [
         {
-          "id": "contest-date",
-          "type": "reference",
-          "title": "싸이감성 노래자랑 개최 기록",
-          "date": "2026-04-28",
-          "datePrecision": "day",
-          "url": "https://www.namu.moe/w/%EC%B6%98%EB%B4%89",
+          "id": "recruit",
+          "type": "notice",
+          "title": "싸이감성 노래자랑 1회 모집글",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/124321185",
           "thumbnail": "",
-          "sourceId": "source-chunbong-record",
-          "note": "춘봉 활동 이력에서 2026년 4월 28일 개최 기록을 확인할 수 있습니다."
-        },
-        {
-          "id": "judge-stream",
-          "type": "reference",
-          "title": "당일 심사 방송 기록",
-          "date": "2026-04-28",
-          "datePrecision": "day",
-          "url": "https://streamscharts.com/channels/lilpa0309/streams/293582583?platform=afreecatv",
-          "thumbnail": "/assets/chunbong-contents/psy-song-judge-stream.svg",
-          "sourceId": "source-judge-stream",
-          "note": "당일 '싸이감성 노래자랑 심사합니다'라는 방송 제목과 방송 시간이 기록되어 있습니다."
-        },
-        {
-          "id": "participant-siroko",
-          "type": "reference",
-          "title": "시로코 참가 기록",
-          "date": "2026-04-28",
-          "datePrecision": "day",
-          "url": "https://www.namu.moe/w/%EC%8B%9C%EB%A1%9C%EC%BD%94(%EC%9D%B8%ED%84%B0%EB%84%B7%20%EB%B0%A9%EC%86%A1%EC%9D%B8)",
-          "thumbnail": "",
-          "sourceId": "source-siroko",
-          "note": "시로코가 제1회 싸이감성 노래자랑에 ‘신데렐라’로 참가한 기록입니다."
+          "sourceId": "soop-post-1",
+          "note": "춘봉 SOOP 방송국에 남아 있는 1회 모집 공지입니다."
         }
       ],
-      "media": [],
-      "gallery": [
+      "media": [
         {
-          "id": "psy-cover",
-          "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
-          "alt": "싸이감성 노래자랑 2026 팬사이트 아카이브 커버",
-          "caption": "싸이감성 노래자랑 2026 아카이브 커버",
-          "sourceId": ""
-        },
-        {
-          "id": "psy-judge-stream",
-          "src": "/assets/chunbong-contents/psy-song-judge-stream.svg",
-          "alt": "싸이감성 노래자랑 심사 방송 아카이브 이미지",
-          "caption": "2026년 4월 28일 심사 방송 기록",
-          "sourceId": "source-judge-stream"
+          "id": "soop-vod-1",
+          "type": "vod",
+          "title": "싸이감성 노래자랑 1회 관련 VOD",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/127480069",
+          "thumbnail": "",
+          "sourceId": "soop-vod-1-source",
+          "note": "사용자가 제공한 SOOP 1회 관련 영상입니다."
         }
       ],
+      "gallery": [],
       "sources": [
         {
-          "id": "source-chunbong-record",
-          "kind": "reference",
-          "label": "나무위키 · 춘봉 활동 이력",
-          "url": "https://www.namu.moe/w/%EC%B6%98%EB%B4%89"
+          "id": "soop-post-1",
+          "kind": "official",
+          "label": "춘봉 SOOP · 싸이감성 노래자랑 1회 모집글",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/124321185"
         },
         {
-          "id": "source-judge-stream",
-          "kind": "reference",
-          "label": "Streams Charts · 2026-04-28 심사 방송 기록",
-          "url": "https://streamscharts.com/channels/lilpa0309/streams/293582583?platform=afreecatv"
+          "id": "soop-vod-1-source",
+          "kind": "official",
+          "label": "SOOP VOD · 싸이감성 노래자랑 1회 관련 영상",
+          "url": "https://vod.sooplive.com/player/127480069"
+        }
+      ],
+      "verification": {
+        "state": "official",
+        "verifiedAt": "2026-09-22T08:35:00+09:00",
+        "conflicts": []
+      },
+      "published": true,
+      "updatedAt": "2026-09-22T08:35:00+09:00",
+      "archiveType": "edition",
+      "parentId": "psy-emotion-song-contest",
+      "editionLabel": "1회",
+      "editionOrder": 1,
+      "featured": false
+    },
+    {
+      "id": "psy-emotion-song-contest-2",
+      "title": "싸이감성 노래자랑 2회",
+      "aliases": [
+        "싸이감성 2회"
+      ],
+      "category": "song",
+      "archiveType": "edition",
+      "parentId": "psy-emotion-song-contest",
+      "editionLabel": "2회",
+      "editionOrder": 2,
+      "featured": false,
+      "role": "개최",
+      "status": "ended",
+      "startDate": "2026",
+      "endDate": "",
+      "datePrecision": "year",
+      "summary": "춘봉 SOOP 방송국 모집글과 관련 VOD, 커뮤니티 기록으로 확인되는 싸이감성 노래자랑 2회.",
+      "description": "싸이감성 노래자랑 2회 기록입니다. SOOP 공식 모집글과 VOD를 1차 자료로, FM코리아 게시글은 이미지·참여 기록 보조 자료로 사용합니다.",
+      "heroImage": null,
+      "participants": [],
+      "results": [],
+      "timeline": [
+        {
+          "id": "recruit",
+          "type": "notice",
+          "title": "싸이감성 노래자랑 2회 모집글",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/192031471",
+          "thumbnail": "",
+          "sourceId": "soop-post-2",
+          "note": "춘봉 SOOP 방송국의 2회 모집 공지입니다."
         },
         {
-          "id": "source-siroko",
+          "id": "community-record",
+          "type": "reference",
+          "title": "싸이감성 노래자랑 2회 이미지·참여 기록",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://www.fmkorea.com/9750851296",
+          "thumbnail": "",
+          "sourceId": "fmkorea-2",
+          "note": "모집·참여자·이미지 교차 확인에 사용하는 보조 자료입니다."
+        }
+      ],
+      "media": [
+        {
+          "id": "soop-vod-2",
+          "type": "vod",
+          "title": "싸이감성 노래자랑 2회 관련 VOD",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/194116989",
+          "thumbnail": "",
+          "sourceId": "soop-vod-2-source",
+          "note": "사용자가 제공한 SOOP 2회 관련 영상입니다."
+        }
+      ],
+      "gallery": [],
+      "sources": [
+        {
+          "id": "soop-post-2",
+          "kind": "official",
+          "label": "춘봉 SOOP · 싸이감성 노래자랑 2회 모집글",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/192031471"
+        },
+        {
+          "id": "soop-vod-2-source",
+          "kind": "official",
+          "label": "SOOP VOD · 싸이감성 노래자랑 2회 관련 영상",
+          "url": "https://vod.sooplive.com/player/194116989"
+        },
+        {
+          "id": "fmkorea-2",
           "kind": "reference",
-          "label": "나무위키 · 시로코 참가 기록",
-          "url": "https://www.namu.moe/w/%EC%8B%9C%EB%A1%9C%EC%BD%94(%EC%9D%B8%ED%84%B0%EB%84%B7%20%EB%B0%A9%EC%86%A1%EC%9D%B8)"
+          "label": "FM코리아 · 싸이감성 노래자랑 2회 참고 글",
+          "url": "https://www.fmkorea.com/9750851296"
         }
       ],
       "verification": {
         "state": "cross_checked",
-        "verifiedAt": "2026-09-22T06:00:00+09:00",
+        "verifiedAt": "2026-09-22T08:35:00+09:00",
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T07:05:00+09:00"
+      "updatedAt": "2026-09-22T08:35:00+09:00"
     },
     {
-      "id": "chuntacle-2026",
-      "title": "춘타클 · 춘봉 타로 클래스",
+      "id": "chuntacle",
+      "title": "춘타클",
       "aliases": [
-        "춘타클",
         "춘봉 타로 클래스",
         "춘봉 타로클래스"
       ],
       "category": "class-event",
+      "archiveType": "series",
+      "parentId": "",
+      "editionLabel": "",
+      "editionOrder": 0,
+      "featured": true,
       "role": "주최 · 강의",
       "status": "ended",
-      "startDate": "2026-07",
-      "endDate": "2026-09",
-      "datePrecision": "month",
-      "summary": "춘봉이 VRChat에서 스트리머 수강생들과 타로 카드 해석과 리딩을 함께 배우는 회차형 타로 클래스.",
-      "description": "춘타클은 춘봉이 진행한 스트리머 대상 타로 클래스 시리즈입니다. 회차별로 수강생이 함께 VRChat에 모여 카드 해석과 리딩을 배우는 형식으로 진행됐습니다. 팬사이트에서는 사용자가 확정한 회차 포스터 기록과 공개 방송 이력을 분리해 보관하며, 번호나 날짜가 서로 다른 외부 기록은 하나로 억지로 합치지 않습니다.",
+      "startDate": "2026-07-12",
+      "endDate": "2026-09-14",
+      "datePrecision": "day",
+      "summary": "춘봉이 VRChat에서 진행한 스트리머 대상 타로 클래스 시리즈. 2026년 1회부터 5회까지의 포스터·수강생·방송 기록을 보관합니다.",
+      "description": "춘타클은 타로를 쉽고 재미있게 배우고 싶은 스트리머를 대상으로 춘봉이 진행한 타로 클래스입니다. 회차별 실제 포스터와 SOOP VOD, YouTube 관련 영상을 분리해 기록합니다.",
       "heroImage": {
-        "src": "/assets/chunbong-contents/chuntacle-cover.svg",
-        "alt": "춘타클 춘봉 타로 클래스 팬사이트 아카이브 커버",
+        "src": "/assets/chunbong-contents/chuntacle/logo.webp",
+        "alt": "춘타클 춘봉 타로 클래스 로고",
+        "sourceId": ""
+      },
+      "participants": [],
+      "results": [],
+      "timeline": [],
+      "media": [
+        {
+          "id": "youtube-1",
+          "type": "youtube",
+          "title": "춘타클 YouTube 관련 영상 1",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://www.youtube.com/watch?v=b-jlKXqLakU",
+          "thumbnail": "",
+          "sourceId": "youtube-1-source",
+          "note": "춘타클 관련 YouTube 영상입니다."
+        },
+        {
+          "id": "youtube-2",
+          "type": "youtube",
+          "title": "춘타클 YouTube 관련 영상 2",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://www.youtube.com/watch?v=gJKw13B7ydc",
+          "thumbnail": "",
+          "sourceId": "youtube-2-source",
+          "note": "춘타클 관련 YouTube 영상입니다."
+        },
+        {
+          "id": "youtube-3",
+          "type": "youtube",
+          "title": "춘타클 YouTube 관련 영상 3",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://www.youtube.com/watch?v=8rnQKGwa1qw&t=4s",
+          "thumbnail": "",
+          "sourceId": "youtube-3-source",
+          "note": "춘타클 관련 YouTube 영상입니다."
+        }
+      ],
+      "gallery": [
+        {
+          "id": "logo",
+          "src": "/assets/chunbong-contents/chuntacle/logo.webp",
+          "alt": "춘타클 로고",
+          "caption": "춘타클 · 춘봉 타로 클래스 로고",
+          "sourceId": ""
+        },
+        {
+          "id": "recruit",
+          "src": "/assets/chunbong-contents/chuntacle/recruit.webp",
+          "alt": "춘타클 제1기 수강생 모집 안내",
+          "caption": "춘타클 수강생 모집 안내",
+          "sourceId": "fmkorea-recruit"
+        }
+      ],
+      "sources": [
+        {
+          "id": "fmkorea-recruit",
+          "kind": "reference",
+          "label": "FM코리아 · 춘타클 모집·참여 기록",
+          "url": "https://www.fmkorea.com/10058760229"
+        },
+        {
+          "id": "youtube-1-source",
+          "kind": "official",
+          "label": "YouTube · 춘타클 관련 영상 1",
+          "url": "https://www.youtube.com/watch?v=b-jlKXqLakU"
+        },
+        {
+          "id": "youtube-2-source",
+          "kind": "official",
+          "label": "YouTube · 춘타클 관련 영상 2",
+          "url": "https://www.youtube.com/watch?v=gJKw13B7ydc"
+        },
+        {
+          "id": "youtube-3-source",
+          "kind": "official",
+          "label": "YouTube · 춘타클 관련 영상 3",
+          "url": "https://www.youtube.com/watch?v=8rnQKGwa1qw&t=4s"
+        }
+      ],
+      "verification": {
+        "state": "cross_checked",
+        "verifiedAt": "2026-09-22T08:35:00+09:00",
+        "conflicts": []
+      },
+      "published": true,
+      "updatedAt": "2026-09-22T08:35:00+09:00"
+    },
+    {
+      "id": "chuntacle-1",
+      "title": "춘타클 1회",
+      "aliases": [
+        "춘타클 제1회"
+      ],
+      "category": "class-event",
+      "archiveType": "edition",
+      "parentId": "chuntacle",
+      "editionLabel": "1회",
+      "editionOrder": 1,
+      "featured": false,
+      "role": "주최 · 강의",
+      "status": "ended",
+      "startDate": "2026-07-12",
+      "endDate": "2026-07-12",
+      "datePrecision": "day",
+      "summary": "2026년 7월 12일 오전 8시 VRChat에서 진행된 춘타클 1회.",
+      "description": "춘타클 1회 수업 기록입니다. 실제 회차 포스터에 표기된 날짜·수강생 명단을 기준으로 정리했습니다.",
+      "heroImage": {
+        "src": "/assets/chunbong-contents/chuntacle/session-1.webp",
+        "alt": "춘타클 1회 포스터",
+        "sourceId": ""
+      },
+      "participants": [
+        "김잇딥",
+        "네아",
+        "마로",
+        "소하",
+        "슬윤",
+        "이투",
+        "도람지",
+        "문이유",
+        "체리몽",
+        "흠냥"
+      ],
+      "results": [
+        {
+          "title": "수업 정보",
+          "value": "2026-07-12 08:00 · VRChat · 수강생 10명"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "class-session",
+          "type": "result",
+          "title": "춘타클 1회 수업",
+          "date": "2026-07-12",
+          "datePrecision": "day",
+          "url": "https://vod.sooplive.com/player/201292605",
+          "thumbnail": "/assets/chunbong-contents/chuntacle/session-1.webp",
+          "sourceId": "soop-vod",
+          "note": "VRChat · 수강생 김잇딥, 네아, 마로, 소하, 슬윤, 이투, 도람지, 문이유, 체리몽, 흠냥"
+        }
+      ],
+      "media": [
+        {
+          "id": "soop-vod",
+          "type": "vod",
+          "title": "춘타클 1회 SOOP VOD",
+          "date": "2026-07-12",
+          "datePrecision": "day",
+          "url": "https://vod.sooplive.com/player/201292605",
+          "thumbnail": "/assets/chunbong-contents/chuntacle/session-1.webp",
+          "sourceId": "soop-vod",
+          "note": "춘타클 1회 관련 SOOP VOD입니다."
+        }
+      ],
+      "gallery": [
+        {
+          "id": "poster",
+          "src": "/assets/chunbong-contents/chuntacle/session-1.webp",
+          "alt": "춘타클 1회 포스터",
+          "caption": "춘타클 1회 · 2026-07-12 08:00 · VRChat",
+          "sourceId": ""
+        }
+      ],
+      "sources": [
+        {
+          "id": "soop-vod",
+          "kind": "official",
+          "label": "SOOP VOD · 춘타클 1회",
+          "url": "https://vod.sooplive.com/player/201292605"
+        },
+        {
+          "id": "fmkorea",
+          "kind": "reference",
+          "label": "FM코리아 · 춘타클 모집·참여 기록",
+          "url": "https://www.fmkorea.com/10058760229"
+        }
+      ],
+      "verification": {
+        "state": "cross_checked",
+        "verifiedAt": "2026-09-22T08:35:00+09:00",
+        "conflicts": []
+      },
+      "published": true,
+      "updatedAt": "2026-09-22T08:35:00+09:00"
+    },
+    {
+      "id": "chuntacle-2",
+      "title": "춘타클 2회",
+      "aliases": [
+        "춘타클 제2회"
+      ],
+      "category": "class-event",
+      "archiveType": "edition",
+      "parentId": "chuntacle",
+      "editionLabel": "2회",
+      "editionOrder": 2,
+      "featured": false,
+      "role": "주최 · 강의",
+      "status": "ended",
+      "startDate": "2026-07-22",
+      "endDate": "2026-07-22",
+      "datePrecision": "day",
+      "summary": "2026년 7월 22일 오전 8시 VRChat에서 진행된 춘타클 2회.",
+      "description": "춘타클 2회 수업 기록입니다. 실제 회차 포스터에 표기된 날짜·수강생 명단을 기준으로 정리했습니다.",
+      "heroImage": {
+        "src": "/assets/chunbong-contents/chuntacle/session-2.webp",
+        "alt": "춘타클 2회 포스터",
         "sourceId": ""
       },
       "participants": [
@@ -437,120 +958,342 @@
         "유리",
         "멍보리",
         "투미츠",
-        "소하",
-        "김뽁분",
-        "김잇딥"
+        "소하"
       ],
       "results": [
         {
-          "title": "2회 수강 기록",
-          "value": "11명 · 모이사, 다키, 연주홍, 문이유, 슬윤, 흠냥, 클라비스, 유리, 멍보리, 투미츠, 소하"
-        },
-        {
-          "title": "4회 최종 포스터 기록",
-          "value": "5명 · 김뽁분, 김잇딥, 문이유, 연주홍, 클라비스"
-        },
-        {
-          "title": "수업 공간",
-          "value": "VRChat"
+          "title": "수업 정보",
+          "value": "2026-07-22 08:00 · VRChat · 수강생 11명"
         }
       ],
       "timeline": [
         {
-          "id": "session-2",
+          "id": "class-session",
           "type": "result",
-          "title": "춘타클 2회",
-          "date": "2026-07-21",
+          "title": "춘타클 2회 수업",
+          "date": "2026-07-22",
           "datePrecision": "day",
-          "url": "",
-          "thumbnail": "",
-          "sourceId": "",
-          "note": "08:00 진행 · 수강생 11명: 모이사, 다키, 연주홍, 문이유, 슬윤, 흠냥, 클라비스, 유리, 멍보리, 투미츠, 소하."
-        },
-        {
-          "id": "session-3-broadcast-record",
-          "type": "reference",
-          "title": "‘춘봉 타로 클래스 세번째 수업’ 방송 기록",
-          "date": "2026-08-02",
-          "datePrecision": "day",
-          "url": "",
-          "thumbnail": "",
-          "sourceId": "source-moon-streams",
-          "note": "문이유 방송 이력에서 ‘춘봉 타로 클래스🔮 세번째 수업’ 제목이 확인됩니다."
-        },
-        {
-          "id": "session-4-broadcast-record",
-          "type": "reference",
-          "title": "‘춘타클 네번째수업’ 방송 기록",
-          "date": "2026-08-11",
-          "datePrecision": "day",
-          "url": "",
-          "thumbnail": "",
-          "sourceId": "source-moon-streams",
-          "note": "문이유 방송 이력에서 ‘춘타클 네번째수업🔮 다시보기’ 제목이 확인됩니다. 최종 9월 포스터 기록과는 별개의 방송 이력으로 보관합니다."
-        },
-        {
-          "id": "session-4-final-poster",
-          "type": "result",
-          "title": "춘타클 4회 · 최종 포스터 기록",
-          "date": "2026-09-14",
-          "datePrecision": "day",
-          "url": "",
-          "thumbnail": "/assets/chunbong-contents/chuntacle-session-4.svg",
-          "sourceId": "",
-          "note": "08:00 · VRChat · 김뽁분, 김잇딥, 문이유, 연주홍, 클라비스."
+          "url": "https://vod.sooplive.com/player/202198589",
+          "thumbnail": "/assets/chunbong-contents/chuntacle/session-2.webp",
+          "sourceId": "soop-vod",
+          "note": "VRChat · 수강생 모이사, 다키, 연주홍, 문이유, 슬윤, 흠냥, 클라비스, 유리, 멍보리, 투미츠, 소하"
         }
       ],
       "media": [
         {
-          "id": "moon-stream-history",
-          "type": "reference",
-          "title": "문이유 방송 이력 · 춘타클 수업 기록",
-          "date": "2026-08-11",
+          "id": "soop-vod",
+          "type": "vod",
+          "title": "춘타클 2회 SOOP VOD",
+          "date": "2026-07-22",
           "datePrecision": "day",
-          "url": "https://streamscharts.com/channels/moon26/streams?platform=afreecatv",
-          "thumbnail": "/assets/chunbong-contents/chuntacle-session-4.svg",
-          "sourceId": "source-moon-streams",
-          "note": "8월 2일 ‘세번째 수업’, 8월 11일 ‘네번째수업 다시보기’ 방송 제목을 확인할 수 있는 외부 방송 이력입니다."
+          "url": "https://vod.sooplive.com/player/202198589",
+          "thumbnail": "/assets/chunbong-contents/chuntacle/session-2.webp",
+          "sourceId": "soop-vod",
+          "note": "춘타클 2회 관련 SOOP VOD입니다."
         }
       ],
       "gallery": [
         {
-          "id": "chuntacle-cover",
-          "src": "/assets/chunbong-contents/chuntacle-cover.svg",
-          "alt": "춘타클 춘봉 타로 클래스 아카이브 커버",
-          "caption": "춘타클 2026 아카이브 커버",
-          "sourceId": ""
-        },
-        {
-          "id": "chuntacle-session-4",
-          "src": "/assets/chunbong-contents/chuntacle-session-4.svg",
-          "alt": "춘타클 4회 수강생 기록 카드",
-          "caption": "2026년 9월 14일 춘타클 4회 · 최종 포스터 기록 기반",
+          "id": "poster",
+          "src": "/assets/chunbong-contents/chuntacle/session-2.webp",
+          "alt": "춘타클 2회 포스터",
+          "caption": "춘타클 2회 · 2026-07-22 08:00 · VRChat",
           "sourceId": ""
         }
       ],
       "sources": [
         {
-          "id": "source-moon-streams",
-          "kind": "reference",
-          "label": "Streams Charts · 문이유 2026 방송 이력",
-          "url": "https://streamscharts.com/channels/moon26/streams?platform=afreecatv"
+          "id": "soop-vod",
+          "kind": "official",
+          "label": "SOOP VOD · 춘타클 2회",
+          "url": "https://vod.sooplive.com/player/202198589"
         },
         {
-          "id": "source-chunbong-tarot",
+          "id": "fmkorea",
           "kind": "reference",
-          "label": "나무위키 · 춘봉 / 스트리머 타로상담 목록",
-          "url": "https://m.namu.moe/w/%EC%B6%98%EB%B4%89/%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%A8%B8%20%ED%83%80%EB%A1%9C%EC%83%81%EB%8B%B4%20%EB%AA%A9%EB%A1%9D"
+          "label": "FM코리아 · 춘타클 모집·참여 기록",
+          "url": "https://www.fmkorea.com/10058760229"
         }
       ],
       "verification": {
         "state": "cross_checked",
-        "verifiedAt": "2026-09-22T07:05:00+09:00",
+        "verifiedAt": "2026-09-22T08:35:00+09:00",
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T07:05:00+09:00"
+      "updatedAt": "2026-09-22T08:35:00+09:00"
+    },
+    {
+      "id": "chuntacle-3",
+      "title": "춘타클 3회",
+      "aliases": [
+        "춘타클 제3회"
+      ],
+      "category": "class-event",
+      "archiveType": "edition",
+      "parentId": "chuntacle",
+      "editionLabel": "3회",
+      "editionOrder": 3,
+      "featured": false,
+      "role": "주최 · 강의",
+      "status": "ended",
+      "startDate": "2026-08-02",
+      "endDate": "2026-08-02",
+      "datePrecision": "day",
+      "summary": "2026년 8월 2일 오전 8시 VRChat에서 진행된 춘타클 3회.",
+      "description": "춘타클 3회 수업 기록입니다. 실제 회차 포스터에 표기된 날짜·수강생 명단을 기준으로 정리했습니다.",
+      "heroImage": {
+        "src": "/assets/chunbong-contents/chuntacle/session-3.webp",
+        "alt": "춘타클 3회 포스터",
+        "sourceId": ""
+      },
+      "participants": [
+        "흠냥",
+        "문이유",
+        "김잇딥",
+        "클라비스",
+        "소하",
+        "멍보리",
+        "나밍",
+        "유리",
+        "모이사",
+        "도람지"
+      ],
+      "results": [
+        {
+          "title": "수업 정보",
+          "value": "2026-08-02 08:00 · VRChat · 수강생 10명"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "class-session",
+          "type": "result",
+          "title": "춘타클 3회 수업",
+          "date": "2026-08-02",
+          "datePrecision": "day",
+          "url": "https://vod.sooplive.com/player/203211299",
+          "thumbnail": "/assets/chunbong-contents/chuntacle/session-3.webp",
+          "sourceId": "soop-vod",
+          "note": "VRChat · 수강생 흠냥, 문이유, 김잇딥, 클라비스, 소하, 멍보리, 나밍, 유리, 모이사, 도람지"
+        }
+      ],
+      "media": [
+        {
+          "id": "soop-vod",
+          "type": "vod",
+          "title": "춘타클 3회 SOOP VOD",
+          "date": "2026-08-02",
+          "datePrecision": "day",
+          "url": "https://vod.sooplive.com/player/203211299",
+          "thumbnail": "/assets/chunbong-contents/chuntacle/session-3.webp",
+          "sourceId": "soop-vod",
+          "note": "춘타클 3회 관련 SOOP VOD입니다."
+        }
+      ],
+      "gallery": [
+        {
+          "id": "poster",
+          "src": "/assets/chunbong-contents/chuntacle/session-3.webp",
+          "alt": "춘타클 3회 포스터",
+          "caption": "춘타클 3회 · 2026-08-02 08:00 · VRChat",
+          "sourceId": ""
+        }
+      ],
+      "sources": [
+        {
+          "id": "soop-vod",
+          "kind": "official",
+          "label": "SOOP VOD · 춘타클 3회",
+          "url": "https://vod.sooplive.com/player/203211299"
+        },
+        {
+          "id": "fmkorea",
+          "kind": "reference",
+          "label": "FM코리아 · 춘타클 모집·참여 기록",
+          "url": "https://www.fmkorea.com/10058760229"
+        }
+      ],
+      "verification": {
+        "state": "cross_checked",
+        "verifiedAt": "2026-09-22T08:35:00+09:00",
+        "conflicts": []
+      },
+      "published": true,
+      "updatedAt": "2026-09-22T08:35:00+09:00"
+    },
+    {
+      "id": "chuntacle-4",
+      "title": "춘타클 4회",
+      "aliases": [
+        "춘타클 제4회"
+      ],
+      "category": "class-event",
+      "archiveType": "edition",
+      "parentId": "chuntacle",
+      "editionLabel": "4회",
+      "editionOrder": 4,
+      "featured": false,
+      "role": "주최 · 강의",
+      "status": "ended",
+      "startDate": "2026-08-11",
+      "endDate": "2026-08-11",
+      "datePrecision": "day",
+      "summary": "2026년 8월 11일 오전 8시 VRChat에서 진행된 춘타클 4회.",
+      "description": "춘타클 4회 수업 기록입니다. 실제 회차 포스터에 표기된 날짜·수강생 명단을 기준으로 정리했습니다.",
+      "heroImage": {
+        "src": "/assets/chunbong-contents/chuntacle/session-4.webp",
+        "alt": "춘타클 4회 포스터",
+        "sourceId": ""
+      },
+      "participants": [
+        "소하",
+        "투미츠",
+        "연주홍",
+        "네아",
+        "김잇딥",
+        "클라비스",
+        "멍보리",
+        "나밍"
+      ],
+      "results": [
+        {
+          "title": "수업 정보",
+          "value": "2026-08-11 08:00 · VRChat · 수강생 8명"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "class-session",
+          "type": "result",
+          "title": "춘타클 4회 수업",
+          "date": "2026-08-11",
+          "datePrecision": "day",
+          "url": "https://vod.sooplive.com/player/204037695",
+          "thumbnail": "/assets/chunbong-contents/chuntacle/session-4.webp",
+          "sourceId": "soop-vod",
+          "note": "VRChat · 수강생 소하, 투미츠, 연주홍, 네아, 김잇딥, 클라비스, 멍보리, 나밍"
+        }
+      ],
+      "media": [
+        {
+          "id": "soop-vod",
+          "type": "vod",
+          "title": "춘타클 4회 SOOP VOD",
+          "date": "2026-08-11",
+          "datePrecision": "day",
+          "url": "https://vod.sooplive.com/player/204037695",
+          "thumbnail": "/assets/chunbong-contents/chuntacle/session-4.webp",
+          "sourceId": "soop-vod",
+          "note": "춘타클 4회 관련 SOOP VOD입니다."
+        }
+      ],
+      "gallery": [
+        {
+          "id": "poster",
+          "src": "/assets/chunbong-contents/chuntacle/session-4.webp",
+          "alt": "춘타클 4회 포스터",
+          "caption": "춘타클 4회 · 2026-08-11 08:00 · VRChat",
+          "sourceId": ""
+        }
+      ],
+      "sources": [
+        {
+          "id": "soop-vod",
+          "kind": "official",
+          "label": "SOOP VOD · 춘타클 4회",
+          "url": "https://vod.sooplive.com/player/204037695"
+        },
+        {
+          "id": "fmkorea",
+          "kind": "reference",
+          "label": "FM코리아 · 춘타클 모집·참여 기록",
+          "url": "https://www.fmkorea.com/10058760229"
+        }
+      ],
+      "verification": {
+        "state": "cross_checked",
+        "verifiedAt": "2026-09-22T08:35:00+09:00",
+        "conflicts": []
+      },
+      "published": true,
+      "updatedAt": "2026-09-22T08:35:00+09:00"
+    },
+    {
+      "id": "chuntacle-5",
+      "title": "춘타클 5회",
+      "aliases": [
+        "춘타클 제5회"
+      ],
+      "category": "class-event",
+      "archiveType": "edition",
+      "parentId": "chuntacle",
+      "editionLabel": "5회",
+      "editionOrder": 5,
+      "featured": false,
+      "role": "주최 · 강의",
+      "status": "ended",
+      "startDate": "2026-09-14",
+      "endDate": "2026-09-14",
+      "datePrecision": "day",
+      "summary": "2026년 9월 14일 오전 8시 VRChat에서 진행된 춘타클 5회.",
+      "description": "춘타클 5회 수업 기록입니다. 실제 회차 포스터에 표기된 날짜·수강생 명단을 기준으로 정리했습니다.",
+      "heroImage": {
+        "src": "/assets/chunbong-contents/chuntacle/session-5.webp",
+        "alt": "춘타클 5회 포스터",
+        "sourceId": ""
+      },
+      "participants": [
+        "김뽁분",
+        "김잇딥",
+        "문이유",
+        "연주홍",
+        "클라비스"
+      ],
+      "results": [
+        {
+          "title": "수업 정보",
+          "value": "2026-09-14 08:00 · VRChat · 수강생 5명"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "class-session",
+          "type": "result",
+          "title": "춘타클 5회 수업",
+          "date": "2026-09-14",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "/assets/chunbong-contents/chuntacle/session-5.webp",
+          "sourceId": "",
+          "note": "VRChat · 수강생 김뽁분, 김잇딥, 문이유, 연주홍, 클라비스"
+        }
+      ],
+      "media": [],
+      "gallery": [
+        {
+          "id": "poster",
+          "src": "/assets/chunbong-contents/chuntacle/session-5.webp",
+          "alt": "춘타클 5회 포스터",
+          "caption": "춘타클 5회 · 2026-09-14 08:00 · VRChat",
+          "sourceId": ""
+        }
+      ],
+      "sources": [
+        {
+          "id": "fmkorea",
+          "kind": "reference",
+          "label": "FM코리아 · 춘타클 모집·참여 기록",
+          "url": "https://www.fmkorea.com/10058760229"
+        }
+      ],
+      "verification": {
+        "state": "cross_checked",
+        "verifiedAt": "2026-09-22T08:35:00+09:00",
+        "conflicts": []
+      },
+      "published": true,
+      "updatedAt": "2026-09-22T08:35:00+09:00"
     }
   ]
 }
