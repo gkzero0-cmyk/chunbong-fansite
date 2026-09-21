@@ -12,8 +12,10 @@ const workflow = read('.github/workflows/production-version-sync.yml');
 const recoveryWorkflow = read('.github/workflows/production-prebuilt-recovery.yml');
 const versionApi = read('api/version.js');
 
-assert.match(history, /09 \/ BROADCAST HISTORY/, 'history portal number must be 09');
-assert.match(data, /10 \/ DATA/, 'data portal number must be 10');
+assert.match(history, /↺<\/span> BROADCAST HISTORY/, 'history page must use the semantic history identity');
+assert.match(data, /▥<\/span> DATA/, 'data page must use the semantic data identity');
+assert.doesNotMatch(history, /\d{2} \/ BROADCAST HISTORY/, 'history page must not restore decorative navigation numbers');
+assert.doesNotMatch(data, /\d{2} \/ DATA/, 'data page must not restore decorative navigation numbers');
 assert.match(home, /TODAY · CHUNBONG/, 'home today overview missing');
 assert.match(home, /home-overview\.css/, 'home overview stylesheet missing');
 assert.match(home, /home-overview\.js/, 'home overview runtime missing');
