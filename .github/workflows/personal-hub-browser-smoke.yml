@@ -58,11 +58,32 @@ jobs:
           const browser=await chromium.launch({headless:true});
           const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
           const page=await context.newPage();
+          await page.addInitScript(()=>{
+            const NativeNotification=window.Notification;
+            if(NativeNotification){
+              try{Object.defineProperty(NativeNotification,'permission',{get:()=> 'granted',configurable:true})}catch(_){}
+              try{NativeNotification.requestPermission=async()=> 'granted'}catch(_){}
+            }else{
+              function MockNotification(){}
+              Object.defineProperty(MockNotification,'permission',{value:'granted'});
+              MockNotification.requestPermission=async()=> 'granted';
+              window.Notification=MockNotification;
+            }
+          });
           const errors=[];
           page.on('pageerror',error=>errors.push(error.message));
 
           await page.goto(process.env.BASE_URL+'/myhub.html',{waitUntil:'domcontentloaded'});
           await page.waitForFunction(()=>Boolean(window.ChunbongPersonal));
+          const alertToggle=page.locator('[data-personal-alert-toggle]');
+          assert.equal(await alertToggle.getAttribute('aria-pressed'),'false','broadcast alert must default OFF');
+          await alertToggle.click();
+          await page.waitForFunction(()=>document.querySelector('[data-personal-alert-toggle]')?.getAttribute('aria-pressed')==='true');
+          assert.equal(await page.locator('[data-personal-alert-toggle]').getAttribute('aria-pressed'),'true','broadcast alert must turn ON immediately after permission grant');
+          await page.locator('[data-personal-alert-toggle]').click();
+          await page.waitForFunction(()=>document.querySelector('[data-personal-alert-toggle]')?.getAttribute('aria-pressed')==='false');
+          assert.equal(await page.locator('[data-personal-alert-toggle]').getAttribute('aria-pressed'),'false','broadcast alert must turn OFF immediately');
+
           await page.evaluate(()=>{
             const p=window.ChunbongPersonal;
             p.favoriteItem({id:'video-1',type:'youtube',title:'저장 테스트 영상',meta:'YOUTUBE',href:'youtube.html?open=video-1'});

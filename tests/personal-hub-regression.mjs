@@ -32,11 +32,16 @@ assert.match(hub,/function recordGameStart/);
 assert.match(hub,/function gameSnapshot/);
 assert.match(hub,/function dailyChallenge/);
 assert.match(hub,/Notification\.requestPermission/,'broadcast reminder must ask permission only after opt-in');
+assert.match(hub,/state\.alerts\.enabled=true;state\.alerts\.pushEnabled=false;write\(state\);/,'alert toggle must persist ON immediately after permission grant');
+assert.match(hub,/void syncPushSubscription\(true,state\)\.then/,'background push setup must not block the ON toggle');
+assert.match(hub,/state\.alerts\.enabled=false;state\.alerts\.pushEnabled=false;write\(state\);[\s\S]*void syncPushSubscription\(false,state\)/,'OFF toggle must persist before background unsubscribe');
+assert.match(hub,/브라우저 알림 권한 차단됨 · 설정에서 허용 필요/,'blocked notification permission must show actionable UI copy');
+assert.match(hub,/aria-busy/,'alert toggle must show immediate busy feedback');
 assert.match(hub,/async function ensurePushServiceWorker\(\)/,'push alerts must ensure a service worker instead of depending on page load timing');
 assert.match(hub,/navigator\.serviceWorker\.register\('\/service-worker\.js'/,'push alerts must be able to register the service worker directly');
 assert.match(hub,/data-personal-push-retry/,'failed background push setup must expose a retry action');
-assert.match(hub,/백그라운드 Push 연결 실패/,'failed background push setup must be visible to the user');
-assert.match(hub,/else if\(permission!=='granted'\)enabled=false/,'blocked browser notification permission must keep the alert preference OFF');
+assert.match(hub,/알림 ON · 백그라운드 Push 연결 중\/확인 필요/,'background push setup state must be visible to the user');
+assert.match(hub,/if\(permission!=='granted'\)\{[\s\S]*state\.alerts\.enabled=false;state\.alerts\.pushEnabled=false;write\(state\);[\s\S]*return false;/,'blocked browser notification permission must keep the alert preference OFF');
 assert.match(hub,/function alertPermissionGranted\(\)/,'runtime notification permission guard missing');
 assert.match(hub,/function disableUnavailableAlerts\(state\)/,'revoked notification permission must disable persisted alerts');
 assert.equal((hub.match(/if\(disableUnavailableAlerts\(state\)\)return;/g)||[]).length,2,'both live and schedule checks must stop after notification permission is revoked');
@@ -97,10 +102,10 @@ for(const asset of ['/timeline.html','/timeline.css','/timeline.js']) assert.ok(
 
 assert.match(shell,/personal-hub\.css/,'shared shell must load personal hub styles');
 assert.match(shell,/personal-hub\.js/,'shared shell must load personal hub runtime');
-assert.match(sw,/chunbong-pwa-20260921-v27/,'timeline retirement must advance PWA cache');
 for(const asset of ['/personal-hub.css','/personal-hub.js','/myhub.html']){
   assert.ok(sw.includes("'"+asset+"'"),'PWA app shell missing '+asset);
 }
+assert.match(sw,/chunbong-pwa-20260921-v28/,'alert toggle fix must refresh the PWA cache');
 assert.match(sw,/notificationclick/,'notification click routing missing');
 
 

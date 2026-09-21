@@ -112,7 +112,7 @@ assert.match(improvements,/site-analytics\.js/,'sitewide analytics runtime not l
 assert.match(improvements,/feedback-widget\.js/,'sitewide feedback runtime not loaded');
 assert.match(mobile,/data-feedback-open/,'mobile More feedback entry missing');
 
-assert.match(sw,/chunbong-pwa-20260921-v27/,'PWA cache must advance for operator center');
+assert.match(sw,/chunbong-pwa-20260921-v28/,'PWA cache must include the latest operator and alert assets');
 for(const asset of ['/site-analytics.js','/feedback-widget.js','/feedback-widget.css']) assert.ok(sw.includes(asset),'PWA shell missing '+asset);
 
 new Function(api);
