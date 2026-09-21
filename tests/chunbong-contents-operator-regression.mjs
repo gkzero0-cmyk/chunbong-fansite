@@ -12,3 +12,12 @@ assert.throws(()=>archive._internals.prepareForSave({...base,sources:[]},{publis
 assert.throws(()=>archive._internals.prepareForSave({...base,verification:{state:'needs_review',conflicts:[{field:'date'}]}},{publish:true}),/unresolved_conflict/);
 for(const type of ['operator-content-archive','operator-content-archive-save','operator-content-archive-publish','operator-content-archive-delete']) assert.ok(content.includes(type),'missing '+type);
 console.log('chunbong contents operator API regression passed');
+
+const operatorHtml=fs.readFileSync(new URL('../operator.html',import.meta.url),'utf8');
+const operatorJs=fs.readFileSync(new URL('../operator.js',import.meta.url),'utf8');
+const operatorContents=fs.readFileSync(new URL('../operator-contents.js',import.meta.url),'utf8');
+assert.match(operatorHtml,/data-operator-tab="contents"/);
+assert.match(operatorHtml,/data-operator-panel="contents"/);
+assert.match(operatorHtml,/콘텐츠 아카이브/);
+assert.match(operatorJs,/loadOperatorContents/);
+for(const text of ['operator-content-archive','초안 저장','공개하기','정보 충돌','원문 URL']) assert.ok(operatorContents.includes(text),text);
