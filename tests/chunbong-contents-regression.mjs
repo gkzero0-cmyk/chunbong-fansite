@@ -20,3 +20,10 @@ for(const text of ['/api/content?type=chunbong-contents','/api/content?type=chun
 const archive=require('../chunbong-contents.js');
 assert.equal(archive.formatDate('2026-06','month'),'2026년 6월');
 assert.equal(archive.filterItems([{title:'레오펠',aliases:[],participants:['춘봉'],category:'minecraft',startDate:'2025-06'}],{q:'춘봉',category:'all',year:'all'}).length,1);
+
+const shell=read('site-shell.js');
+const home=read('index.html');
+const sw=read('service-worker.js');
+assert.match(shell,/items:\['contents','history','data'\]/);
+assert.match(home,/href="chunbong-contents\.html"/);
+for(const asset of ['/chunbong-contents.html','/chunbong-contents.css','/chunbong-contents.js']) assert.ok(sw.includes(asset),asset);
