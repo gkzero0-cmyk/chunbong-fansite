@@ -41,6 +41,35 @@ async function assertNoHorizontalOverflow(page,label){
   assert.ok(state.scrollWidth<=state.clientWidth+1,label+' horizontal overflow: '+state.scrollWidth+' > '+state.clientWidth);
 }
 
+async function installOperatorApi(page){
+  let adminItems=[{...items[0],verification:{state:'cross_checked',verifiedAt:'2026-09-22T00:00:00.000Z',conflicts:[]},published:true}];
+  await page.route('**/api/content?type=*',async route=>{
+    const url=new URL(route.request().url()),type=url.searchParams.get('type');
+    const respond=(value,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(value)});
+    if(type==='operator-auth-config')return respond({authenticated:true,provider:'github',providers:{github:true,email:true},storage:true,ownerRegistered:true});
+    if(type==='operator-session')return respond({authenticated:true,provider:'github',expiresAt:'2027-09-22T00:00:00.000Z',activeSessions:1,currentSessionId:'session-current',sessions:[{id:'session-current',current:true,provider:'github',createdAt:'2026-09-22T00:00:00.000Z',expiresAt:'2027-09-22T00:00:00.000Z'}],owner:{githubLogin:'gkzero0-cmyk',githubId:322299248,emailRegistered:true}});
+    if(type==='operator-analytics')return respond({collectionStartedAt:'2026-09-22T00:00:00.000Z',activeNow:0,visitors:0,sessions:0,newVisitors:0,returningVisits:0,averageDailyVisitors:0,pageviews:0,averageActiveSeconds:0,topPages:[],topMenus:[],topFeatures:[],devices:[],daily:[],hourly:[],funnel:{game:{start:0,finish:0},tarot:{start:0,finish:0},feedback:{start:0,finish:0}},comparison:null,performance:{averageMs:0,samples:0,pages:[]},feedbackCounts:{}});
+    if(type==='operator-feedback')return respond({items:[]});
+    if(type==='operator-system-status')return respond({checkedAt:'2026-09-22T00:00:00.000Z',deployment:{environment:'preview',sha:'test',url:'preview',mainSha:'test',synced:true,rateLimited:false,retryAfter:null,vercel:{state:'success',description:'ready'}},storage:{redisConfigured:true,redisOk:true,analyticsRecordedDays:0,feedbackTotal:0,keyCount:1,usedMemory:0,usedMemoryHuman:'0B',maxMemory:null,maxMemoryHuman:null},services:{githubAuth:true,emailAuth:true,push:true,analytics:true,feedback:true},endpoints:[],traffic:{visitors:0,sessions:0,pageviews:0,activeNow:0},repository:{sizeKb:1},health:{level:'ok',issues:[],history:[]},vercelUsage:{available:false}});
+    if(type==='operator-content-archive')return respond({items:adminItems});
+    if(type==='operator-content-archive-save'){
+      const body=JSON.parse(route.request().postData()||'{}'),item={...body.item,published:false,verification:body.item?.verification||{state:'needs_review',conflicts:[]}};
+      adminItems=[...adminItems.filter(row=>row.id!==item.id),item];
+      return respond({ok:true,item});
+    }
+    if(type==='operator-content-archive-publish'){
+      const body=JSON.parse(route.request().postData()||'{}');
+      if(!Array.isArray(body.item?.sources)||body.item.sources.length===0)return respond({error:'published_source_required'},400);
+      const item={...body.item,published:true,verification:{...(body.item.verification||{}),state:'official',conflicts:[]}};
+      adminItems=[...adminItems.filter(row=>row.id!==item.id),item];
+      return respond({ok:true,item});
+    }
+    if(type==='operator-content-archive-delete')return respond({ok:true});
+    if(type==='operator-security-log')return respond({items:[]});
+    return respond({});
+  });
+}
+
 const browser=await chromium.launch({headless:true});
 try{
   {
@@ -109,6 +138,40 @@ try{
     assert.equal(columns,1,'mobile detail hero should collapse to one column');
     assert.deepEqual(errors,[],errors.join(' | '));
   }
+  {
+    const page=await browser.newPage({viewport:{width:1440,height:900}});
+    const errors=[];page.on('pageerror',error=>errors.push(error.message));
+    await installOperatorApi(page);
+    await page.goto(base+'/operator.html',{waitUntil:'networkidle'});
+    await page.waitForFunction(()=>!document.querySelector('#operator-dashboard')?.hidden);
+    await page.locator('[data-operator-tab="contents"]').click();
+    await page.locator('[data-operator-panel="contents"]').waitFor({state:'visible'});
+    await page.waitForFunction(()=>document.querySelectorAll('[data-archive-select]').length===1);
+    assert.match((await page.locator('[data-archive-admin-list]').textContent())||'',/레오펠/,'operator archive list should show records');
+
+    await page.locator('[data-archive-select="leopel"]').click();
+    assert.equal(await page.locator('[name="title"]').inputValue(),'레오펠: 사자의 노래','operator should load selected record');
+    assert.match((await page.locator('.operator-archive-state').textContent())||'',/공개/);
+
+    await page.locator('[data-archive-new]').click();
+    await page.locator('[name="title"]').fill('새 콘텐츠 테스트');
+    await page.locator('[name="id"]').fill('new-content-test');
+    await page.locator('[name="summary"]').fill('새 콘텐츠 설명');
+    await page.locator('[name="verificationState"]').selectOption('official');
+    await page.locator('[data-archive-publish]').click();
+    await page.waitForFunction(()=>document.querySelector('[data-archive-admin-message]')?.textContent?.includes('출처'));
+    assert.match((await page.locator('[data-archive-admin-message]').textContent())||'',/출처가 1개 이상 필요/,'publish should block records without sources');
+
+    await page.locator('[data-add-row="source"]').click();
+    const sourceRow=page.locator('[data-source-row]').last();
+    await sourceRow.locator('[name="source-label"]').fill('춘봉 SOOP 공식');
+    await sourceRow.locator('[name="source-url"]').fill('https://www.sooplive.com/station/chunbongtv');
+    await page.locator('[data-archive-publish]').click();
+    await page.waitForFunction(()=>document.querySelector('[data-archive-admin-message]')?.textContent?.includes('공개되었습니다'));
+    assert.match((await page.locator('[data-archive-admin-message]').textContent())||'',/공개되었습니다/,'verified record should publish');
+    assert.deepEqual(errors,[],errors.join(' | '));
+  }
+
 }finally{
   await browser.close();
 }
