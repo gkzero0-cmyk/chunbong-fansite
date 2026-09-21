@@ -137,7 +137,9 @@
             <div><dt>Production SHA</dt><dd id="system-sha">-</dd></div>
             <div><dt>GitHub main SHA</dt><dd id="system-main-sha">-</dd></div>
             <div><dt>배포 URL</dt><dd id="system-url">-</dd></div>
-            <div><dt>Git 저장소 크기</dt><dd id="system-repo-size">-</dd></div>
+            <div><dt>Git 저장소 크기 <small>(참고)</small></dt><dd id="system-repo-size">-</dd></div>
+            <div><dt>Redis 키 수</dt><dd id="system-redis-keys">-</dd></div>
+            <div><dt>Redis 메모리</dt><dd id="system-redis-memory">-</dd></div>
             <div><dt>분석 기록 일수</dt><dd id="system-analytics-days">-</dd></div>
             <div><dt>저장된 피드백</dt><dd id="system-feedback-total">-</dd></div>
           </dl>
@@ -146,10 +148,14 @@
           <header><h2>주요 서비스 상태</h2><span>서버 측 설정 기준</span></header>
           <div id="operator-service-health" class="operator-service-health"></div>
         </article>
+        <article class="operator-card">
+          <header><h2>핵심 API 응답</h2><span>실제 서버 요청 · 최대 3.5초</span></header>
+          <div id="operator-endpoint-health" class="operator-service-health operator-endpoint-health"></div>
+        </article>
         <article class="operator-card operator-usage-card">
           <header><h2>Vercel 사용량</h2><a href="https://vercel.com/gkzero0-9465/chunbong-fansite" target="_blank" rel="noopener">Vercel 열기 ↗</a></header>
           <p>Fast Data Transfer, Edge Requests, Functions 실행량 같은 Vercel 상세 사용량은 숫자를 추정하지 않습니다. 전용 Usage 연동이 없는 동안에는 Vercel 대시보드의 공식 수치를 확인합니다.</p>
-          <div class="operator-usage-note"><strong>현재 운영자 센터에서 정확히 확인 가능</strong><span>실사용 방문자·세션·페이지뷰 · Production SHA · Git 동기화 · Redis/KV · Push · 인증 상태</span></div>
+          <div class="operator-usage-note"><strong>현재 운영자 센터에서 정확히 확인 가능</strong><span>실사용 방문자·세션·페이지뷰 · Production SHA · Git 동기화 · Redis/KV 키·메모리 · 핵심 API 응답시간 · Push · 인증 상태</span></div>
         </article>
       </div>
     </section>
