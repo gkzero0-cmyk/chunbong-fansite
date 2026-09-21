@@ -40,10 +40,11 @@ function friendlyKey(key=''){
   return map[key]||key;
 }
 function renderRows(el,rows=[]){el.innerHTML=rows.length?rows.map((row,i)=>`<li><em>${i+1}</em><strong title="${escapeHtml(row.key)}">${escapeHtml(friendlyKey(row.key))}</strong><b>${fmt(row.value)}${Number.isFinite(row.averageActiveSeconds)?' · '+shortTime(row.averageActiveSeconds):''}</b></li>`).join(''):'<li><em>–</em><strong>아직 데이터가 없습니다.</strong><b>0</b></li>'}
-function renderDaily(rows=[]){const el=$('#operator-daily'),max=Math.max(1,...rows.map(x=>Math.max(x.pageviews,x.visitors)));el.innerHTML=rows.length?rows.map(x=>`<div class="operator-day"><div class="operator-day-bars" title="${x.date} · 방문자 ${fmt(x.visitors)} · 페이지뷰 ${fmt(x.pageviews)}"><i style="height:${Math.max(3,x.pageviews/max*100)}%"></i><i style="height:${Math.max(3,x.visitors/max*100)}%"></i></div><small>${x.date.slice(5)}</small></div>`).join(''):'<p class="operator-empty">아직 일별 데이터가 없습니다.</p>'}
+function renderDaily(rows=[]){const el=$('#operator-daily'),max=Math.max(1,...rows.map(x=>Math.max(x.pageviews,x.visitors)));const totals=rows.reduce((acc,row)=>({pageviews:acc.pageviews+(Number(row.pageviews)||0),visitors:acc.visitors+(Number(row.visitors)||0)}),{pageviews:0,visitors:0});el.setAttribute('aria-label',rows.length?'일별 이용량 차트 · 방문자 합계 '+fmt(totals.visitors)+' · 페이지뷰 합계 '+fmt(totals.pageviews):'일별 이용량 차트 · 데이터 없음');el.innerHTML=rows.length?rows.map(x=>`<div class="operator-day"><div class="operator-day-bars" title="${x.date} · 방문자 ${fmt(x.visitors)} · 페이지뷰 ${fmt(x.pageviews)}"><i style="height:${Math.max(3,x.pageviews/max*100)}%"></i><i style="height:${Math.max(3,x.visitors/max*100)}%"></i></div><small>${x.date.slice(5)}</small></div>`).join(''):'<p class="operator-empty">아직 일별 데이터가 없습니다.</p>'}
 function renderHourly(rows=[]){
   const map=Object.fromEntries((rows||[]).map(row=>[String(row.key).padStart(2,'0'),Number(row.value)||0])),values=Array.from({length:24},(_,h)=>({hour:String(h).padStart(2,'0'),value:map[String(h).padStart(2,'0')]||0}));
-  const max=Math.max(1,...values.map(x=>x.value)),el=$('#operator-hourly');
+  const max=Math.max(1,...values.map(x=>x.value)),el=$('#operator-hourly'),peak=values.reduce((best,row)=>row.value>best.value?row:best,values[0]||{hour:'00',value:0});
+  el.setAttribute('aria-label','시간대별 이용량 차트 · 최고 '+peak.hour+'시 '+fmt(peak.value)+' 페이지뷰');
   el.innerHTML=values.map(x=>`<div class="operator-hour" title="${x.hour}시 · ${fmt(x.value)} 페이지뷰"><i style="height:${x.value?Math.max(6,x.value/max*100):2}%"></i><small>${Number(x.hour)%3===0?x.hour:''}</small></div>`).join('');
 }
 function completionRate(row){const start=Number(row?.start)||0,finish=Number(row?.finish)||0;return start?Math.min(100,Math.round(finish/start*100)):0}
@@ -169,7 +170,7 @@ async function setupFirebaseEmail(){
 async function boot(){
   try{
     await refreshSession();showDashboard();
-    await Promise.all([loadAnalytics(),loadFeedback(),loadSystemStatus()]);
+    await Promise.allSettled([loadAnalytics(),loadFeedback(),loadSystemStatus()]);renderOverallStatus();
   }catch{showLogin()}
 }
 $('#operator-github-login')?.addEventListener('click',event=>{if(event.currentTarget.getAttribute('aria-disabled')==='true')event.preventDefault()});
