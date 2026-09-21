@@ -77,7 +77,11 @@ async function staleWhileRevalidate(request, event, fallback = '') {
   const cached = await cache.match(request);
   const network = (async () => {
     const preload = request.mode === 'navigate' && event ? await event.preloadResponse : null;
-    const response = preload || await fetch(request);
+    if (preload?.ok) {
+      await cache.put(request, preload.clone());
+      return preload;
+    }
+    const response = await fetch(request);
     if (response?.ok) await cache.put(request, response.clone());
     return response;
   })().catch(() => null);
