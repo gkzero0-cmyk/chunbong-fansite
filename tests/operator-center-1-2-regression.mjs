@@ -49,6 +49,7 @@ assert.match(api,/HEALTH_INDEX/,'health change history missing');
 assert.match(api,/recordHealthState/,'health transition recorder missing');
 assert.match(api,/rateLimited/,'Vercel rate-limit status missing');
 assert.match(api,/retryAfter/,'safe automatic retry time missing');
+assert.match(api,/GITHUB_STATE_CACHE_KEY/,'GitHub deployment state cache missing');
 assert.match(router,/operator-security-log/,'operator security route missing');
 
 assert.match(analytics,/navigation_timing/,'client page timing event missing');
@@ -56,6 +57,7 @@ assert.match(analytics,/domContentLoadedEventEnd/,'navigation timing must use DO
 assert.doesNotMatch(analytics,/email|nickname/i,'performance analytics must remain anonymous');
 
 assert.match(improvements,/operator-session/,'quick access must verify operator session');
+assert.match(improvements,/chunbong:operator:access-hint:v1/,'operator browser hint missing');
 assert.match(improvements,/operator-quick-link/,'desktop operator entry missing');
 assert.match(improvements,/data-more-page="operator"/,'mobile operator entry missing');
 assert.match(improvements,/event\.pointerType!=='touch'/,'MY long-press must be touch-only');
