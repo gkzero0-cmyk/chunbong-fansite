@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 
 const personal = await readFile(new URL('../personal-hub.js', import.meta.url), 'utf8');
 const sw = await readFile(new URL('../service-worker.js', import.meta.url), 'utf8');
+const appShell=sw.slice(sw.indexOf('const APP_SHELL'),sw.indexOf('];',sw.indexOf('const APP_SHELL'))+2);
 const media = await readFile(new URL('../page-media.js', import.meta.url), 'utf8');
 const mobile = await readFile(new URL('../mobile-site.js', import.meta.url), 'utf8');
 const fanart = await readFile(new URL('../fanart-gallery.js', import.meta.url), 'utf8');
@@ -18,7 +19,7 @@ assert.ok(personal.includes("action:'unsubscribe'"), 'turning alerts off must re
 assert.ok(sw.includes("chunbong-pwa-20260921-v28"), 'PWA cache must be v28');
 assert.ok(sw.includes("self.addEventListener('push'"), 'service worker push receiver missing');
 for (const asset of ['/page-media.js','/fanart-gallery.js','/fanart-gallery.css']) {
-  assert.ok(!sw.includes("'"+asset+"'"), 'heavy media runtime should not be install-precached: '+asset);
+  assert.ok(!appShell.includes("'"+asset+"'"), 'heavy media runtime should not be install-precached: '+asset);
 }
 assert.ok(sw.includes("['script','style','worker']"), 'media JS/CSS must be cached on first visit');
 assert.ok(sw.includes("['image','font']"), 'media imagery must retain full-quality runtime caching');
