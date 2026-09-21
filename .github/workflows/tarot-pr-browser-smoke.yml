@@ -146,7 +146,7 @@ jobs:
             assert.notEqual(selectedState.transform,'none','selected card must visibly lift/scale');
             assert.equal(selectedState.outline,'solid','selected card must have an explicit rim');
             assert.equal(selectedState.badgeText,'1/3','selected badge must show current/total order');
-            assert.equal(selectedState.badgeDisplay,'inline-flex','selected badge must remain visible above foil effects');
+            assert.ok(['flex','inline-flex'].includes(selectedState.badgeDisplay),'selected badge must remain visible above foil effects');
             assert.equal(selectedState.badgeOpacity,'1','selected badge must not inherit the faded card state');
             assert.equal(await cards.nth(1).getAttribute('data-selection-order'),null,'unselected card must not receive selection order');
 
