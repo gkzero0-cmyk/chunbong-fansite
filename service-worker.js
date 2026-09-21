@@ -74,10 +74,12 @@ async function networkFirst(request, event) {
 async function staleWhileRevalidate(request, event, fallback = '') {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
-  const network = fetch(request).then(async response => {
+  const network = (async () => {
+    const preload = request.mode === 'navigate' && event ? await event.preloadResponse : null;
+    const response = preload || await fetch(request);
     if (response?.ok) await cache.put(request, response.clone());
     return response;
-  }).catch(() => null);
+  })().catch(() => null);
   if (cached) {
     event?.waitUntil(network);
     return cached;
