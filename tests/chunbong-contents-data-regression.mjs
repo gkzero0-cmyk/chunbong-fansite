@@ -127,11 +127,11 @@ const expectedStudents={
 for(const session of chuntacleSessions){
   assert.deepEqual(session.participants,expectedStudents[session.number],`춘타클 ${session.number}회 수강생은 실제 포스터와 일치해야 합니다`);
   assert.equal(session.poster?.status,'verified',`춘타클 ${session.number}회 실제 포스터가 검증 상태여야 합니다`);
-  assert.equal(session.poster?.src,`/assets/chunbong-contents/chuntacle-session-${session.number}.png`);
-  assert.equal(fs.existsSync(new URL(`../assets/chunbong-contents/chuntacle-session-${session.number}.png`,import.meta.url)),true,`춘타클 ${session.number}회 원본 포스터 파일이 필요합니다`);
+  assert.match(session.poster?.src||'',/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/chuntacle\/session-[1-5]\.webp$/,`춘타클 ${session.number}회 실제 포스터 영구 자산 URL이 필요합니다`);
 }
 assert.ok((chuntacle?.timeline||[]).some(row=>row.id==='session-5-final-poster'&&row.date==='2026-09-14'),'춘타클 5회 최종 포스터 기록이 필요합니다');
 assert.ok(!(chuntacle?.timeline||[]).some(row=>row.date==='2026-09-14'&&/4회/.test(row.title||'')),'9월 14일 기록을 4회로 잘못 표기하면 안 됩니다');
+for(const row of chuntacle?.gallery||[]) assert.match(row.src||'',/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/chuntacle\/session-[1-5]\.webp$/,'춘타클 갤러리는 실제 고해상도 포스터 자산만 사용해야 합니다');
 
 
 assert.ok((leopel?.media||[]).some(row=>/159711687/.test(row.url)),'Leopel should link the verified SOOP presentation VOD');
