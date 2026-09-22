@@ -8,7 +8,7 @@ const items=[
     id:'leopel',title:'레오펠: 사자의 노래',aliases:['레오펠'],category:'minecraft',role:'주최 · 기획',status:'ended',series:{id:'leopel',title:'레오펠',subtitle:'사자의 노래',description:'레오펠 시리즈',order:40,cover:{src:'/assets/chunbong-contents/leopel-cover.svg',alt:'레오펠'}},
     startDate:'2025-06-05',endDate:'2025-07-06',datePrecision:'day',summary:'플랫폼 통합 마인크래프트 서버',
     description:'레오펠 소개',heroImage:{src:'/assets/chunbong-contents/leopel-cover.svg',alt:'레오펠 커버'},
-    participants:['춘봉','테스트 참가자'],sourceCount:2,
+    participants:[],participantGroups:[{id:'entry-1',label:'1차 입주 · SOOP',stage:'1차 입주',platform:'SOOP',count:2,participants:['가습기','춘봉']},{id:'entry-3',label:'3차 입주 · 치지직·YouTube',stage:'3차 입주',platform:'치지직 · YouTube',count:1,participants:['김홀리']}],sourceCount:2,
     timeline:[{id:'open',type:'article',title:'레오펠 서버 오픈',date:'2025-06-06',datePrecision:'day',url:'https://pick.sooplive.com/daily/view/162435',thumbnail:'',sourceId:'s1',note:'오픈 기록'}],
     media:[],
     gallery:[{id:'poster',src:'/assets/chunbong-contents/leopel-cover.svg',url:'https://pick.sooplive.com/daily/view/162209',alt:'레오펠 포스터',caption:'레오펠 대표 이미지',sourceId:'s2'}],
@@ -143,6 +143,10 @@ try{
     assert.equal(await page.locator('.archive-card').count(),1,'search should narrow results');
     assert.match((await page.locator('.archive-card h2').textContent())||'',/레오펠/);
 
+    await page.locator('[data-archive-search]').fill('가습기');
+    assert.equal(await page.locator('.archive-card').count(),1,'participant-group search should find nested names');
+    assert.match((await page.locator('.archive-card h2').textContent())||'',/레오펠/);
+
     await page.locator('[data-archive-reset]').first().click();
     assert.equal(await page.locator('.archive-card').count(),5,'reset should restore results');
     await page.locator('[data-archive-category]').selectOption('song');
@@ -168,6 +172,11 @@ try{
     await page.waitForURL(/\?id=leopel/);
     assert.equal(await page.locator('[data-archive-detail] h1').textContent(),'레오펠: 사자의 노래');
     assert.ok(await page.locator('[data-archive-browser]').isHidden(),'list should hide in detail mode');
+    assert.match((await page.locator('.archive-summary-grid').textContent())||'',/3명/,'structured participant count should appear in the detail summary');
+    await page.locator('[data-archive-tab="people"]').click();
+    assert.equal(await page.locator('.archive-participant-group').count(),2,'participant groups should render as readable sections');
+    assert.match((await page.locator('[data-archive-panel]').textContent())||'',/가습기/);
+    assert.match((await page.locator('[data-archive-panel]').textContent())||'',/김홀리/);
     await assertNoHorizontalOverflow(page,'desktop detail');
 
     await page.locator('[data-archive-tab="timeline"]').click();
