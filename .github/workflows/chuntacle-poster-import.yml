@@ -1,4 +1,4 @@
-name: Chuntacle poster import probe
+name: Chuntacle original poster import
 
 on:
   pull_request:
@@ -11,43 +11,75 @@ permissions:
   contents: write
 
 jobs:
-  probe:
+  import:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Inspect transfer page
+        with:
+          ref: feat/chuntacle-original-posters
+          fetch-depth: 0
+      - name: Import original posters without recompression
         env:
-          SHARE_URL: https://firestorage.ai/ja/f/pbUqT2KJziaz
+          API_BASE: https://api.firestorage.ai/dev/file
+          SHARE_ID: pbUqT2KJziaz
         run: |
           set -euo pipefail
+          mkdir -p assets/chunbong-contents
           python - <<'PY'
-          import os, re, urllib.request, urllib.parse
-          url=os.environ['SHARE_URL']
+          import json, os, pathlib, urllib.request
+
+          api=os.environ['API_BASE'].rstrip('/')
+          share=os.environ['SHARE_ID']
+          expected={
+            'chuntacle-session-1.png':3390799,
+            'chuntacle-session-2.png':3054074,
+            'chuntacle-session-3.png':3256630,
+            'chuntacle-session-4.png':3120212,
+            'chuntacle-session-5.png':3407281,
+          }
           headers={'User-Agent':'Mozilla/5.0'}
-          def get(u):
-              req=urllib.request.Request(u,headers=headers)
-              with urllib.request.urlopen(req,timeout=30) as r:
-                  return r.geturl(),r.headers.get('content-type'),r.read().decode('utf-8','replace')
-          final,ctype,body=get(url)
-          scripts=re.findall(r'<script[^>]+src=["\']([^"\']+)["\']',body)
-          for src in scripts:
-              full=urllib.parse.urljoin(final,src)
-              try:
-                  _,_,js=get(full)
-              except Exception:
-                  continue
-              i=js.find('async function v()')
-              if i<0:
-                  continue
-              print('BUNDLE',full)
-              print('AROUND_V',js[max(0,i-5000):i+2500])
-              prefix=js[max(0,i-12000):i]
-              for pat in [
-                  r'(?:let|const|var)\s+f\s*=\s*["\']([^"\']+)["\']',
-                  r'f\s*=\s*["\']([^"\']+)["\']',
-                  r'["\']([^"\']*api[^"\']*)["\']'
-              ]:
-                  vals=re.findall(pat,prefix)
-                  if vals: print('CANDIDATE',pat,vals[-20:])
-              break
+
+          def req(url, method='GET'):
+              r=urllib.request.Request(url,method=method,headers=headers)
+              with urllib.request.urlopen(r,timeout=60) as res:
+                  return res.read(),res.headers
+
+          raw,_=req(f'{api}/shares/{share}/files?maxResults=1000')
+          payload=json.loads(raw)
+          files={row['fileName']:row for row in payload.get('files',[])}
+          missing=sorted(set(expected)-set(files))
+          if missing:
+              raise SystemExit(f'missing transfer files: {missing}')
+
+          root=pathlib.Path('assets/chunbong-contents')
+          for name,size in expected.items():
+              row=files[name]
+              meta_raw,_=req(f"{api}/shares/{share}/files/{row['fileId']}/download",'POST')
+              meta=json.loads(meta_raw)
+              url=meta.get('downloadUrl')
+              if not url:
+                  raise SystemExit(f'no downloadUrl for {name}')
+              data,_=req(url)
+              if len(data)!=size:
+                  raise SystemExit(f'{name}: size {len(data)} != {size}')
+              if data[:8] != b'\x89PNG\r\n\x1a\n':
+                  raise SystemExit(f'{name}: invalid PNG signature')
+              (root/name).write_bytes(data)
+              print(f'IMPORTED {name} {len(data)} bytes')
           PY
+      - name: Commit original poster assets
+        run: |
+          set -euo pipefail
+          git add assets/chunbong-contents/chuntacle-session-1.png \
+                  assets/chunbong-contents/chuntacle-session-2.png \
+                  assets/chunbong-contents/chuntacle-session-3.png \
+                  assets/chunbong-contents/chuntacle-session-4.png \
+                  assets/chunbong-contents/chuntacle-session-5.png
+          if git diff --cached --quiet; then
+            echo 'Original poster assets already match; nothing to commit.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'assets: add original chuntacle session posters'
+          git push origin HEAD:feat/chuntacle-original-posters
