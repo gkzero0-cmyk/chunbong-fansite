@@ -4,6 +4,7 @@ import {createRequire} from 'node:module';
 
 const require=createRequire(import.meta.url);
 const {normalizeArchiveItem,validateArchiveItem,formatArchiveDate,toPublicArchiveItem}=require('../lib/chunbong-content-archive-core.js');
+const autoIngest=require('../lib/chunbong-content-auto-ingest.js');
 
 const monthOnly=normalizeArchiveItem({
   id:'sample',title:'샘플',category:'minecraft',role:'주최',status:'ended',
@@ -34,6 +35,32 @@ assert.equal(localArt.heroImage?.src,'/assets/chunbong-contents/leopel-cover.svg
 const seriesArt=normalizeArchiveItem({...monthOnly,id:'series-art',series:{id:'justserver',title:'그냥서버',subtitle:'마인크래프트 서버 시리즈',description:'시리즈 설명',order:10,cover:{src:'/assets/chunbong-contents/justserver-moneygame-cover.svg',alt:'그냥서버'}}});
 assert.equal(seriesArt.series?.id,'justserver','series metadata should survive normalization');
 assert.equal(seriesArt.series?.cover?.src,'/assets/chunbong-contents/justserver-moneygame-cover.svg','series cover path should survive normalization');
+
+assert.equal(autoIngest.genericTitle('춘타클 관련 YouTube 영상 1'),true,'numbered Chuntacle YouTube placeholders should be treated as generic');
+assert.equal(autoIngest.genericTitle('그냥서버 : 머니게임 공식 게시글 1'),true,'numbered official post placeholders should be treated as generic');
+assert.equal(autoIngest.genericTitle('레오펠 공식 게시글 · 159705141'),true,'ID-based official post placeholders should be treated as generic');
+assert.equal(autoIngest.canonicalMaterialUrl({type:'youtube',url:'https://www.youtube.com/watch?v=8rnQKGwa1qw&t=4s'}),'youtube:8rnQKGwa1qw','YouTube timestamp parameters should not prevent metadata merging');
+assert.equal(autoIngest.canonicalMaterialUrl({type:'youtube',url:'https://youtu.be/8rnQKGwa1qw?si=test'}),'youtube:8rnQKGwa1qw','youtu.be URLs should share the same archive identity');
+
+const youtubePlaceholderMerge=autoIngest.attachOfficialDiscoveries([
+  {id:'chuntacle-placeholder-test',timeline:[],media:[{id:'seed-youtube',type:'youtube',title:'춘타클 관련 YouTube 영상 3',date:'',datePrecision:'unknown',url:'https://www.youtube.com/watch?v=8rnQKGwa1qw&t=4s',thumbnail:''}]}
+],[
+  {id:'auto-youtube-youtube-8rnQKGwa1qw',type:'youtube',title:'춘타클 실제 영상 제목',date:'2026-08-11',datePrecision:'day',url:'https://www.youtube.com/watch?v=8rnQKGwa1qw',thumbnail:'https://i.ytimg.com/vi/8rnQKGwa1qw/hq720.jpg'}
+]);
+assert.equal(youtubePlaceholderMerge.rows[0].media.length,1,'same YouTube video with a timestamp URL should merge instead of duplicating');
+assert.equal(youtubePlaceholderMerge.rows[0].media[0].title,'춘타클 실제 영상 제목','official YouTube metadata should replace a generic curated title');
+assert.equal(youtubePlaceholderMerge.rows[0].media[0].date,'2026-08-11','official YouTube metadata should fill a missing date');
+assert.match(youtubePlaceholderMerge.rows[0].media[0].thumbnail,/i\.ytimg\.com/,'official YouTube metadata should fill a missing thumbnail');
+
+const postPlaceholderMerge=autoIngest.attachOfficialDiscoveries([
+  {id:'leopel-placeholder-test',timeline:[{id:'seed-post',type:'post',title:'레오펠 공식 게시글 · 159705141',date:'',datePrecision:'unknown',url:'https://www.sooplive.com/station/chunbongtv/post/159705141',thumbnail:''}],media:[]}
+],[
+  {id:'auto-soop-post-159705141',type:'post',title:'레오펠 모험가 모집 공지',date:'2025-05-11',datePrecision:'day',url:'https://www.sooplive.com/station/chunbongtv/post/159705141',thumbnail:'https://stimg.sooplive.com/example.png'}
+]);
+assert.equal(postPlaceholderMerge.rows[0].timeline.length,1,'same SOOP post should merge instead of duplicating');
+assert.equal(postPlaceholderMerge.rows[0].timeline[0].title,'레오펠 모험가 모집 공지','official SOOP metadata should replace an ID placeholder title');
+assert.equal(postPlaceholderMerge.rows[0].timeline[0].date,'2025-05-11','official SOOP metadata should fill a missing post date');
+
 
 const seed=JSON.parse(fs.readFileSync(new URL('../data/chunbong-contents-seed.json',import.meta.url),'utf8'));
 assert.ok(Array.isArray(seed.items));
