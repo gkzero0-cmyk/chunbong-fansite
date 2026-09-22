@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T22:12:00+09:00",
+  "updatedAt": "2026-09-23T00:00:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -697,7 +697,7 @@
       "endDate": "2026-07-15",
       "datePrecision": "day",
       "summary": "춘봉이 주최한 2026년 마인크래프트 스트리머 서버로, 6월 24일부터 7월 15일까지 진행된 기록이 확인됩니다.",
-      "description": "2026년 6월 24일부터 7월 15일 23:59:59까지 진행된 마인크래프트 스트리머 서버입니다. 공개 Notion 원문에는 난파 후 사자마을에서 발생한 빚을 갚고 탈출하는 ‘빚 청산 탈출기’ 콘셉트가 정리되어 있으며, 채광·요리·낚시·도감·미니게임·보물·갬블과 땅 구매·빚 갚기·장비수리·램프·강화 시스템이 안내되어 있습니다. 네이버 입주순서 공지에서는 6월 24일 18시부터 10분 간격으로 1~5차 입주 명단이 확인됩니다.",
+      "description": "2026년 6월 24일부터 7월 15일 23:59:59까지 진행된 마인크래프트 스트리머 서버입니다. 공개 Notion 원문에는 난파 후 사자마을에서 발생한 빚을 갚고 탈출하는 ‘빚 청산 탈출기’ 콘셉트와 서버 규칙·API·채광·요리·낚시·도감·미니게임·보물·갬블·땅 구매·빚 갚기·장비수리·램프·강화 시스템이 정리되어 있습니다. 네이버 입주순서 공지에서는 6월 24일 18시부터 10분 간격으로 1~5차 입주 명단이 확인되며, 방통실 스트리머 페이지에서는 191명 등록을 별도로 확인했습니다. 두 자료는 집계 기준이 달라 서로 합산하지 않습니다.",
       "heroImage": {
         "src": "/assets/chunbong-contents/justserver-moneygame-cover.svg",
         "alt": "그냥서버 머니게임 팬사이트 아카이브 커버",
@@ -728,6 +728,22 @@
         {
           "title": "주요 시스템",
           "value": "땅 구매 · 빚 갚기 · 장비수리 · 램프 · 강화"
+        },
+        {
+          "title": "방통실 등록 참가자",
+          "value": "191명 · BNGTS 스트리머 페이지 4페이지 기준 · 입주순서 공지와 집계 기준이 달라 별도 표기"
+        },
+        {
+          "title": "서버 규칙",
+          "value": "비방 플레이 가능·생산활동 금지 · X-ray/일자굴/겉날개/자동화/인챈트 테이블·모루 금지 · 농사는 한 층만 사용"
+        },
+        {
+          "title": "플레이어 API",
+          "value": "33 장비수리권 · 50/51 빚 증감 · 100 보급상자 · 444 괴롭히기 · 500/510 대왕 빚 증감 · 1000 보급상자 11개 · 4444 즉사 + 전체 보급"
+        },
+        {
+          "title": "가이드 핵심",
+          "value": "광물 판매·곡괭이 구매 · 요리·낚시·도감 · 점프맵 · 땅 구매 · 세금 징수관 빚 갚기 · 장비수리권"
         }
       ],
       "timeline": [
@@ -1572,7 +1588,7 @@
       "endDate": "2026-10-21",
       "datePrecision": "day",
       "summary": "춘봉의 그냥서버 세 번째 시즌 ‘적자생존’. 2026년 9월 30일 오픈 예정으로 모집·신청·설명회·UP 랭킹 관련 공식 자료를 준비 단계부터 기록합니다.",
-      "description": "아직 종료된 콘텐츠가 아니라 예정 콘텐츠입니다. 사용자 제공 SOOP 게시글 7개, 공개 Notion 일정·기획 자료, 설명회 VOD를 기반으로 모집 → 신청 → 설명회 → UP 랭킹 → 서버 오픈 준비 흐름으로 정리합니다. 게시글별 정확한 제목은 원문 확인이 가능한 항목만 확정하고, 확인되지 않은 세부 정보는 임의 작성하지 않습니다.",
+      "description": "2026년 9월 30일 오픈 예정인 그냥서버 : 적자생존 기록입니다. 공개 Notion 기획 자료와 춘봉 SOOP 공식 게시글·설명회 VOD를 중심으로 모집 → 신청 → 합격자 안내 → 설명회 → 2차 입주 모집 → 서버 오픈 준비 흐름을 정리합니다. 애청자 공개 게시글은 공개 자료와 분리해 내부 검증용으로 보관하며, 세부 내용은 로그인된 브라우저 수집으로 확인될 때만 구조화합니다.",
       "heroImage": {
         "src": "/assets/chunbong-contents/justserver-survival-cover.svg",
         "alt": "그냥서버 적자생존 팬사이트 아카이브 커버",
@@ -1595,6 +1611,10 @@
         {
           "title": "준비 방송 기록",
           "value": "9월 15일 신청자 확인 → 16일 오픈 전 준비 → 18일 Q&A·작업 방송 → 19일 설명회"
+        },
+        {
+          "title": "2차 입주 모집",
+          "value": "2026년 9월 19일 공지 · 서버 안정화 후 진행 예정"
         }
       ],
       "timeline": [
@@ -1685,14 +1705,14 @@
         {
           "id": "survival-soop-post-207564735",
           "type": "post",
-          "title": "그냥서버 : 적자생존 공식 게시글 7",
+          "title": "적자생존 애청자 공개 게시글 · 207564735",
           "date": "",
           "datePrecision": "unknown",
           "url": "https://www.sooplive.com/station/chunbongtv/post/207564735",
           "thumbnail": "",
           "sourceId": "source-survival-post-207564735",
-          "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다.",
-          "visibility": "public"
+          "note": "SOOP 원문 API에서 애청자 공개/권한 필요 글로 확인됐습니다. 인증된 브라우저 수집 전까지 세부 내용은 확정하지 않습니다.",
+          "visibility": "internal"
         },
         {
           "id": "survival-planned-end",
@@ -1753,6 +1773,18 @@
           "sourceId": "source-survival-streams",
           "note": "적자생존 설명회를 진행한 방송 기록입니다.",
           "visibility": "public"
+        },
+        {
+          "id": "survival-soop-post-207564927",
+          "type": "post",
+          "title": "[모집] 그냥서버:적자생존 2차입주 모집공지",
+          "date": "2026-09-19",
+          "datePrecision": "day",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/207564927",
+          "thumbnail": "https://stimg.sooplive.com/NORMAL_BBS/3/24883333/83091789821197973.png",
+          "sourceId": "source-survival-post-207564927",
+          "note": "서버 오픈 전 문의가 많아 미리 올린 2차 입주 모집 공지입니다. 서버 안정화 뒤 2차 입주 신청을 진행할 예정이라고 안내했습니다.",
+          "visibility": "public"
         }
       ],
       "media": [
@@ -1776,6 +1808,13 @@
           "alt": "그냥서버 적자생존 팬사이트 아카이브 커버",
           "caption": "그냥서버 : 적자생존 팬사이트 아카이브 커버",
           "sourceId": ""
+        },
+        {
+          "id": "survival-second-entry-recruit",
+          "src": "https://stimg.sooplive.com/NORMAL_BBS/3/24883333/83091789821197973.png",
+          "alt": "그냥서버 적자생존 2차입주 모집공지 이미지",
+          "caption": "2026년 9월 19일 SOOP 2차입주 모집공지 첨부 이미지",
+          "sourceId": "source-survival-post-207564927"
         }
       ],
       "sources": [
@@ -1831,9 +1870,9 @@
         {
           "id": "source-survival-post-207564735",
           "kind": "official",
-          "label": "SOOP 방송국 게시글 · 207564735",
+          "label": "SOOP 애청자 공개 게시글 · 207564735 · 내부 검증용",
           "url": "https://www.sooplive.com/station/chunbongtv/post/207564735",
-          "visibility": "public"
+          "visibility": "internal"
         },
         {
           "id": "source-survival-notion",
@@ -1848,6 +1887,13 @@
           "label": "Streams Charts · 춘봉 방송 이력",
           "url": "https://streamscharts.com/channels/chunbongtv/streams?platform=afreecatv",
           "visibility": "internal"
+        },
+        {
+          "id": "source-survival-post-207564927",
+          "kind": "official",
+          "label": "SOOP 방송국 · 적자생존 2차입주 모집공지",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/207564927",
+          "visibility": "public"
         }
       ],
       "verification": {
