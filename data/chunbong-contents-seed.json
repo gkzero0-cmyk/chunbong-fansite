@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T21:30:00+09:00",
+  "updatedAt": "2026-09-22T22:12:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -697,14 +697,39 @@
       "endDate": "2026-07-15",
       "datePrecision": "day",
       "summary": "춘봉이 주최한 2026년 마인크래프트 스트리머 서버로, 6월 24일부터 7월 15일까지 진행된 기록이 확인됩니다.",
-      "description": "2026년 6월 24일부터 7월 15일까지 진행된 마인크래프트 스트리머 서버입니다. 춘봉 방송국 공식 게시글, 관련 공유 자료, 방통실 콘텐츠·참가자 아카이브와 SOOP 다시보기를 한곳에서 따라볼 수 있도록 기록합니다. 게시글·VOD의 세부 제목과 날짜는 원문에서 확인되는 항목부터 순차적으로 보강합니다.",
+      "description": "2026년 6월 24일부터 7월 15일 23:59:59까지 진행된 마인크래프트 스트리머 서버입니다. 공개 Notion 원문에는 난파 후 사자마을에서 발생한 빚을 갚고 탈출하는 ‘빚 청산 탈출기’ 콘셉트가 정리되어 있으며, 채광·요리·낚시·도감·미니게임·보물·갬블과 땅 구매·빚 갚기·장비수리·램프·강화 시스템이 안내되어 있습니다. 네이버 입주순서 공지에서는 6월 24일 18시부터 10분 간격으로 1~5차 입주 명단이 확인됩니다.",
       "heroImage": {
         "src": "/assets/chunbong-contents/justserver-moneygame-cover.svg",
         "alt": "그냥서버 머니게임 팬사이트 아카이브 커버",
         "sourceId": ""
       },
       "participants": [],
-      "results": [],
+      "results": [
+        {
+          "title": "서버 기간",
+          "value": "2026년 6월 24일 18:00 ~ 7월 15일 23:59:59"
+        },
+        {
+          "title": "입주 순서",
+          "value": "1차 18:00 · 2차 18:10 · 3차 18:20 · 4차 18:30 · 5차 18:40"
+        },
+        {
+          "title": "입주 명단 표기",
+          "value": "원문 닉네임 표기 243개 · 붙어쓰기 항목은 임의 분리하지 않음"
+        },
+        {
+          "title": "핵심 목표",
+          "value": "빚을 갚고 사자마을에서 탈출"
+        },
+        {
+          "title": "주요 콘텐츠",
+          "value": "채광 · 요리 · 낚시 · 도감 · 미니게임 · 보물 · 갬블"
+        },
+        {
+          "title": "주요 시스템",
+          "value": "땅 구매 · 빚 갚기 · 장비수리 · 램프 · 강화"
+        }
+      ],
       "timeline": [
         {
           "id": "money-soop-post-197785319",
@@ -764,6 +789,18 @@
           "thumbnail": "",
           "sourceId": "",
           "note": "팬사이트에 확인된 머니게임 서버 종료일 기록입니다.",
+          "visibility": "public"
+        },
+        {
+          "id": "money-entry-order",
+          "type": "reference",
+          "title": "머니게임 1~5차 입주 순서 공지",
+          "date": "2026-06-21",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "source-money-naver-fbvx1u7z",
+          "note": "6월 24일 18:00부터 10분 간격으로 1~5차 입주를 진행하도록 안내한 공지입니다. 서버 안정성을 위해 입장 후 로비에서 야생·마을·목장·미니게임 등으로 이동하도록 안내했습니다.",
           "visibility": "public"
         }
       ],
@@ -1208,12 +1245,12 @@
         }
       ],
       "verification": {
-        "state": "official",
-        "verifiedAt": "2026-09-22T09:50:00+09:00",
+        "state": "cross_checked",
+        "verifiedAt": "2026-09-22T22:12:00+09:00",
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T18:58:00+09:00",
+      "updatedAt": "2026-09-22T22:12:00+09:00",
       "series": {
         "id": "justserver",
         "title": "그냥서버",
@@ -1224,7 +1261,302 @@
           "src": "/assets/chunbong-contents/justserver-moneygame-cover.svg",
           "alt": "그냥서버 시리즈 대표 이미지"
         }
-      }
+      },
+      "participantGroups": [
+        {
+          "id": "money-entry-1",
+          "title": "1차 입주 · 18:00",
+          "platform": "SOOP",
+          "participants": [
+            "김무무",
+            "바세린",
+            "셀키_",
+            "네이",
+            "하링!",
+            "묵아",
+            "래노♬",
+            "슈슈슈앙",
+            "오늘님",
+            "땡지+",
+            "강다래",
+            "꽃님＆",
+            "예요예요",
+            "도람지",
+            "귤잉e",
+            "템템♥",
+            "황정민",
+            "고춘자↗",
+            "룬레이",
+            "따땨",
+            "레티아030",
+            "키젤_",
+            "냥쿠미",
+            "뽐나연",
+            "9해도",
+            "퍼드",
+            "애사비_",
+            "에이레네",
+            "김옹삼",
+            "돗챠",
+            "모이사",
+            "이엘리",
+            "조아라",
+            "냐쵸♥",
+            ":신우",
+            "사모_",
+            "복춘이з",
+            "르미루~",
+            "찐랑",
+            "서현음",
+            "연푸_",
+            "김복당",
+            "달타!",
+            "더블링",
+            "콧시_",
+            "류새콤",
+            "푸릉_",
+            "그냥세진",
+            "카린야",
+            "김뚜야_"
+          ],
+          "count": 50,
+          "sourceId": "source-money-naver-fbvx1u7z",
+          "note": "네이버 입주순서 공지의 원문 표기를 보존했습니다. 붙어 표기된 닉네임은 임의 분리하지 않았으므로 표시 개수는 실제 인원수와 다를 수 있습니다."
+        },
+        {
+          "id": "money-entry-2",
+          "title": "2차 입주 · 18:10",
+          "platform": "SOOP",
+          "participants": [
+            "깅태",
+            "죠아써",
+            "아라냥",
+            "이깨굴",
+            "서라0",
+            "손진석.",
+            "방덕순_",
+            "채하",
+            "혀니일세",
+            "빈쫑",
+            "도덕이도덕이",
+            "연주홍_",
+            "모몽또",
+            "놈삐_",
+            "앨리스얌",
+            "깅무우",
+            "소라Sora",
+            "하비:b",
+            "찌로리",
+            "플리ㆍ",
+            "쨈도은",
+            "카푸_",
+            "땡글땡글포포",
+            "마왕0216",
+            "뜨사.",
+            "두부랑_",
+            "깅도일",
+            "이쌍도",
+            "갱이쁨",
+            "하로로.",
+            "소호",
+            "됴시기",
+            "이지수^^",
+            "투미츠",
+            "제복이_",
+            "한자리♪유챠5050",
+            "뮤서아",
+            "김부각º",
+            "리네샤",
+            "탱자ω",
+            "수닝∀",
+            "쿠아♪",
+            "세기",
+            "묭땅",
+            "연우얌z",
+            "수힛",
+            "또니´",
+            "멜로딩딩",
+            "_해이_"
+          ],
+          "count": 49,
+          "sourceId": "source-money-naver-fbvx1u7z",
+          "note": "네이버 입주순서 공지의 원문 표기를 보존했습니다. 붙어 표기된 닉네임은 임의 분리하지 않았으므로 표시 개수는 실제 인원수와 다를 수 있습니다."
+        },
+        {
+          "id": "money-entry-3",
+          "title": "3차 입주 · 18:20",
+          "platform": "SOOP",
+          "participants": [
+            "이백조",
+            "강삐닝",
+            "마다옴_",
+            "마리엘",
+            "다운♥",
+            "우마이:>",
+            "체리베",
+            "♥쥬링",
+            "쏭이♥",
+            "힌콕",
+            "시로♥",
+            "김마렌",
+            "리르",
+            "코에♬",
+            "머라냥",
+            "서윤",
+            "우사기당",
+            "고백일",
+            "킴아연",
+            "토뤼",
+            "산호♬",
+            "김은거.",
+            "돌애정",
+            "유리ºˇº",
+            "하눙씌",
+            "히키☆",
+            "새라새라♥",
+            "만조",
+            "슨미.",
+            "인루앙",
+            "숩니찡",
+            "이진냐_",
+            "루얀",
+            "히무루",
+            "부잉이!",
+            "김혀니",
+            "시로v",
+            "윤루트_",
+            "와앙이♬",
+            "에냐_",
+            "차밍챠",
+            "김웰로",
+            "솔밍",
+            "이첼이",
+            "김띵수",
+            "피아__",
+            "냐르!",
+            "빅순덕",
+            "찰리씨",
+            "도담히"
+          ],
+          "count": 50,
+          "sourceId": "source-money-naver-fbvx1u7z",
+          "note": "네이버 입주순서 공지의 원문 표기를 보존했습니다. 붙어 표기된 닉네임은 임의 분리하지 않았으므로 표시 개수는 실제 인원수와 다를 수 있습니다."
+        },
+        {
+          "id": "money-entry-4",
+          "title": "4차 입주 · 18:30",
+          "platform": "SOOP",
+          "participants": [
+            "비재",
+            "시라유리",
+            "영쨩♥",
+            "복순덕",
+            "#필메",
+            "PD대정령",
+            "스노",
+            "첫눈에뿅",
+            "희희덕",
+            "한스비.",
+            "츠먀",
+            "싸형.",
+            "쿠리_KURI",
+            "킹냥이",
+            "도히짠",
+            "이낭♥",
+            "채윤아",
+            "꾸야",
+            "냥냥두둥",
+            "지맘대로리나",
+            "효든",
+            "도페",
+            "현자군",
+            "서곱철",
+            "도희린♪김뭉글♥",
+            "문이유",
+            "토치와",
+            "삐요코",
+            "라율",
+            "수정과양",
+            "떵규_",
+            "산동@",
+            "김냐깽",
+            "김박하◇",
+            "체리즈",
+            "강하나",
+            "쏭아야",
+            "고호.",
+            "은초롱.",
+            "쥐돌이쥐돌이",
+            "이귤락",
+            "이라★",
+            "새마요",
+            "반히._.",
+            "렉스___",
+            "슈아♥",
+            "용아리_",
+            "효야",
+            "감초♥"
+          ],
+          "count": 49,
+          "sourceId": "source-money-naver-fbvx1u7z",
+          "note": "네이버 입주순서 공지의 원문 표기를 보존했습니다. 붙어 표기된 닉네임은 임의 분리하지 않았으므로 표시 개수는 실제 인원수와 다를 수 있습니다."
+        },
+        {
+          "id": "money-entry-5",
+          "title": "5차 입주 · 18:40",
+          "platform": "SOOP",
+          "participants": [
+            "밀크티냠",
+            "모아?",
+            "잭잭",
+            "미카잖아",
+            "주드",
+            "하요.",
+            "단비가최고야",
+            "요나카YONAKA",
+            "망난희",
+            "제이제이잉",
+            "망야_",
+            "토끼예나",
+            "김나오!",
+            "캬앙",
+            "고여름_",
+            "강주이",
+            "사과몽",
+            "조디악악악",
+            "철쑤_",
+            "리츠_LITZ",
+            "따스히",
+            "뇽이♥",
+            "BJ공파리파",
+            "흐여름",
+            "코코양",
+            "임민트♥",
+            "로또비",
+            "임뀨",
+            "하밍",
+            "유혜미♥",
+            "냐밍_",
+            "루루시",
+            "차투리",
+            "단굼",
+            "유하띠",
+            "묭씨",
+            "뽀뽀_",
+            "히츠메",
+            "케쿠",
+            "여백º",
+            "케른",
+            "강칠득",
+            "연아리.",
+            "두두양",
+            "뚜닝"
+          ],
+          "count": 45,
+          "sourceId": "source-money-naver-fbvx1u7z",
+          "note": "네이버 입주순서 공지의 원문 표기를 보존했습니다. 붙어 표기된 닉네임은 임의 분리하지 않았으므로 표시 개수는 실제 인원수와 다를 수 있습니다."
+        }
+      ]
     },
     {
       "id": "justserver-survival",
@@ -1535,7 +1867,8 @@
           "src": "/assets/chunbong-contents/justserver-moneygame-cover.svg",
           "alt": "그냥서버 시리즈 대표 이미지"
         }
-      }
+      },
+      "participantGroups": []
     },
     {
       "id": "chuntacle-2026",
@@ -1818,13 +2151,6 @@
           "visibility": "public"
         },
         {
-          "id": "source-chuntacle-fmkorea",
-          "kind": "reference",
-          "label": "FM코리아 · 춘타클 모집·참여자·이미지 자료",
-          "url": "https://www.fmkorea.com/10058760229",
-          "visibility": "internal"
-        },
-        {
           "id": "source-chuntacle-vod-1",
           "kind": "official",
           "label": "SOOP VOD · 춘타클 제1회 SOOP 다시보기",
@@ -2032,7 +2358,8 @@
           "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042682/chunbong-fansite/chuntacle/session-5.webp",
           "alt": "춘타클 춘봉 타로 클래스 대표 포스터"
         }
-      }
+      },
+      "participantGroups": []
     },
     {
       "id": "psy-emotion-song-contest-1",
@@ -2048,17 +2375,60 @@
       "startDate": "",
       "endDate": "",
       "datePrecision": "unknown",
-      "summary": "춘봉이 개최한 싸이감성 노래자랑 제1회 기록으로, 이전 대화에서 지정한 SOOP 모집글과 공식 VOD를 우선 출처로 보존합니다.",
-      "description": "싸이감성 노래자랑 제1회를 제2회와 섞지 않고 별도 기록으로 정리했습니다. SOOP 모집글과 VOD를 공식 우선 자료로 사용하고, 시로코 참가 기록 및 사용자 제공 FM코리아 참가자 참고 자료를 교차 확인 자료로 연결합니다. 원문에서 직접 확인되지 않은 참가자 이름은 임의로 추가하지 않습니다.",
+      "summary": "춘봉이 개최한 싸이감성 노래자랑 제1회 기록으로, SOOP 모집글·공식 VOD와 보존된 원문 참가 순서를 기준으로 정리합니다.",
+      "description": "싸이감성 노래자랑 제1회를 제2회와 분리해 기록합니다. 보존된 원문에서 참가자 36명과 핀볼로 정한 경연 순서를 확인했으며, 곡은 본인 순서에 공개하고 참가자에게 디스코드 안내를 전달하는 방식이었습니다. 정확한 행사 시작 일시는 해당 자료에서 확인되지 않아 추정하지 않습니다.",
       "heroImage": {
         "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
         "alt": "싸이감성 노래자랑 2026 팬사이트 아카이브 커버",
         "sourceId": ""
       },
       "participants": [
-        "시로코"
+        "이무지_",
+        "딥화이트",
+        "쨈도은",
+        "차하나_",
+        "난워니-_-+",
+        "류키",
+        "유엘섬",
+        "캬앙",
+        "스노",
+        "린코♥",
+        "제복이_",
+        "하티하티",
+        "니즈__",
+        "미링_",
+        "달체솜",
+        "유아냥E",
+        "셀라._.",
+        "츄쨩_",
+        "뉴냥이",
+        "상어히나",
+        "최또",
+        "진청옥",
+        "유채린_",
+        "하쿠마",
+        "츄즈.",
+        "싱유♪",
+        "해사♥",
+        "리브레ㆍ",
+        "퀸례례",
+        "BJ딸기밈♥",
+        "윤이제",
+        "헤다ㆍ",
+        "바나베리",
+        "나나링",
+        "시네_",
+        "플리ㆍ"
       ],
       "results": [
+        {
+          "title": "참가자",
+          "value": "36명 · 핀볼 경연 순서 확인"
+        },
+        {
+          "title": "총상금 표기",
+          "value": "12,000개 · 순위별 배분은 해당 자료에서 확인되지 않음"
+        },
         {
           "title": "확인된 참가 기록 · 시로코",
           "value": "서인영의 ‘신데렐라’로 참가 · 입상하지 못함"
@@ -2088,18 +2458,6 @@
           "sourceId": "source-psy1-siroko",
           "note": "시로코 문서에 제1회 싸이감성 노래자랑 참가와 선곡 기록이 명시되어 있습니다.",
           "visibility": "public"
-        },
-        {
-          "id": "psy1-fmkorea",
-          "type": "reference",
-          "title": "싸이감성 노래자랑 제1회 참가자 참고 자료",
-          "date": "",
-          "datePrecision": "unknown",
-          "url": "https://www.fmkorea.com/7042989434",
-          "thumbnail": "",
-          "sourceId": "source-psy1-fmkorea",
-          "note": "사용자가 제1회 참가자 명단 확인용으로 제공한 FM코리아 자료입니다. 현재 자동 수집 경로에서 본문을 안정적으로 읽지 못해 참가자 이름은 원문 확인 후 구조화합니다.",
-          "visibility": "internal"
         }
       ],
       "media": [
@@ -2148,20 +2506,20 @@
           "visibility": "public"
         },
         {
-          "id": "source-psy1-fmkorea",
+          "id": "source-psy1-soop-archive-copy",
           "kind": "reference",
-          "label": "FM코리아 · 싸이감성 노래자랑 제1회 참가자 참고 자료",
-          "url": "https://www.fmkorea.com/7042989434",
+          "label": "SOOP 보관 재게시 · 싸이감성 노래자랑 참가 순서 원문",
+          "url": "https://www.sooplive.com/station/gkzero/post/207829703",
           "visibility": "internal"
         }
       ],
       "verification": {
         "state": "cross_checked",
-        "verifiedAt": "2026-09-22T11:50:00+09:00",
+        "verifiedAt": "2026-09-22T22:12:00+09:00",
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T18:58:00+09:00",
+      "updatedAt": "2026-09-22T22:12:00+09:00",
       "series": {
         "id": "psy-emotion-song-contest",
         "title": "싸이감성 노래자랑",
@@ -2172,7 +2530,55 @@
           "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
           "alt": "싸이감성 노래자랑 대표 이미지"
         }
-      }
+      },
+      "participantGroups": [
+        {
+          "id": "psy1-confirmed-order",
+          "title": "확인된 참가 순서",
+          "platform": "SOOP",
+          "participants": [
+            "이무지_",
+            "딥화이트",
+            "쨈도은",
+            "차하나_",
+            "난워니-_-+",
+            "류키",
+            "유엘섬",
+            "캬앙",
+            "스노",
+            "린코♥",
+            "제복이_",
+            "하티하티",
+            "니즈__",
+            "미링_",
+            "달체솜",
+            "유아냥E",
+            "셀라._.",
+            "츄쨩_",
+            "뉴냥이",
+            "상어히나",
+            "최또",
+            "진청옥",
+            "유채린_",
+            "하쿠마",
+            "츄즈.",
+            "싱유♪",
+            "해사♥",
+            "리브레ㆍ",
+            "퀸례례",
+            "BJ딸기밈♥",
+            "윤이제",
+            "헤다ㆍ",
+            "바나베리",
+            "나나링",
+            "시네_",
+            "플리ㆍ"
+          ],
+          "count": 36,
+          "sourceId": "source-psy1-soop-archive-copy",
+          "note": "SOOP에 보존한 원문 재게시 자료에서 참가자 36명과 핀볼 경연 순서를 확인했습니다. 정확한 행사 시작 일시는 이 자료에서 확인되지 않습니다."
+        }
+      ]
     },
     {
       "id": "psy-emotion-song-contest-2",
@@ -2188,18 +2594,57 @@
       "startDate": "2026-04-28",
       "endDate": "2026-04-28",
       "datePrecision": "day",
-      "summary": "춘봉이 개최한 싸이감성 노래자랑 제2회 기록으로, 이전 대화에서 지정한 SOOP 모집글·공식 VOD와 FM코리아 보조 자료를 회차별로 분리해 보존합니다.",
-      "description": "싸이감성 노래자랑 제2회를 제1회와 별도 기록으로 정리했습니다. SOOP 모집글과 VOD를 공식 우선 출처로 두고, 사용자 제공 FM코리아 자료는 참가자·이미지 확인용 보조 출처로 구분합니다. 원문에서 직접 확인하지 못한 날짜·참가자 정보는 임의로 확정하지 않습니다.",
+      "summary": "춘봉이 개최한 싸이감성 노래자랑 제2회 기록으로, 2026년 4월 28일 오후 5시 개최와 참가자 22명·심사위원·상금 계획을 확인했습니다.",
+      "description": "싸이감성 노래자랑 제2회는 2026년 4월 28일 오후 5시에 진행됐습니다. 참가자는 22명이며 핀볼로 경연 순서를 정했고, 심사위원은 춘봉·릴파·추르미·이사호입니다. 사전 공지 기준 총상금은 현금 100만 원과 별풍선 13,000개이며, 참가자는 디스코드 대기실에서 기다리다 본인 순서에 참가방으로 이동해 자기소개 후 도방으로 진행하도록 안내됐습니다.",
       "heroImage": {
         "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
         "alt": "싸이감성 노래자랑 2026 팬사이트 아카이브 커버",
         "sourceId": ""
       },
-      "participants": [],
+      "participants": [
+        "노아란",
+        "꿈틀",
+        "한초월",
+        "한세현",
+        "코에",
+        "올어바웃설이",
+        "코이",
+        "멍보리",
+        "키치즈",
+        "스노",
+        "덕이형",
+        "미현영",
+        "허추인",
+        "삐요코",
+        "안아영",
+        "두막이",
+        "말론님",
+        "치비",
+        "양지랖",
+        "이채원",
+        "바세린",
+        "이루희"
+      ],
       "results": [
         {
           "title": "개최일",
-          "value": "2026년 4월 28일"
+          "value": "2026년 4월 28일 오후 5시"
+        },
+        {
+          "title": "참가자",
+          "value": "22명 · 1부 11명 / 2부 11명"
+        },
+        {
+          "title": "심사위원",
+          "value": "춘봉 · 릴파 · 추르미 · 이사호"
+        },
+        {
+          "title": "총상금",
+          "value": "현금 100만 원 + 별풍선 13,000개"
+        },
+        {
+          "title": "진행 방식",
+          "value": "디스코드 대기실 → 본인 순서에 참가방 이동 → 자기소개 후 도방 진행"
         }
       ],
       "timeline": [
@@ -2214,18 +2659,6 @@
           "sourceId": "source-psy2-recruit",
           "note": "이전 대화에서 제2회 모집글로 지정한 춘봉 SOOP 방송국 공식 게시글입니다.",
           "visibility": "public"
-        },
-        {
-          "id": "psy2-fmkorea",
-          "type": "reference",
-          "title": "싸이감성 노래자랑 제2회 참가자·이미지 참고 자료",
-          "date": "",
-          "datePrecision": "unknown",
-          "url": "https://www.fmkorea.com/9750851296",
-          "thumbnail": "",
-          "sourceId": "source-psy2-fmkorea",
-          "note": "사용자가 제2회 참가자 및 이미지 확인용으로 제공한 FM코리아 자료입니다. 현재 자동 수집 경로에서 본문을 안정적으로 읽지 못해 참가자 이름은 원문 확인 후 구조화합니다.",
-          "visibility": "internal"
         },
         {
           "id": "psy2-event-day",
@@ -2261,6 +2694,34 @@
           "alt": "싸이감성 노래자랑 제2회 아카이브 커버",
           "caption": "싸이감성 노래자랑 제2회 기록 커버",
           "sourceId": ""
+        },
+        {
+          "id": "psy2-original-title",
+          "src": "https://stimg.sooplive.com/NORMAL_BBS/7/22573757/50621790084066936.png",
+          "alt": "싸이감성 노래자랑 타이틀",
+          "caption": "싸이감성 노래자랑 원문 타이틀 이미지",
+          "sourceId": "source-psy2-soop-archive-copy"
+        },
+        {
+          "id": "psy2-schedule-judges",
+          "src": "https://stimg.sooplive.com/NORMAL_BBS/7/22573757/90371790084072331.png",
+          "alt": "2026년 4월 28일 오후 5시 및 심사위원 안내",
+          "caption": "제2회 일정·심사위원 안내 이미지",
+          "sourceId": "source-psy2-soop-archive-copy"
+        },
+        {
+          "id": "psy2-prize-plan",
+          "src": "https://stimg.sooplive.com/NORMAL_BBS/7/22573757/32861790084076817.png",
+          "alt": "싸이감성 노래자랑 총상금 안내",
+          "caption": "제2회 사전 상금 배분 안내 이미지",
+          "sourceId": "source-psy2-soop-archive-copy"
+        },
+        {
+          "id": "psy2-participants-22",
+          "src": "https://stimg.sooplive.com/NORMAL_BBS/7/22573757/67361790084080714.png",
+          "alt": "싸이감성 노래자랑 참가자 22명 안내",
+          "caption": "제2회 참가자 안내 이미지",
+          "sourceId": "source-psy2-soop-archive-copy"
         }
       ],
       "sources": [
@@ -2279,13 +2740,6 @@
           "visibility": "public"
         },
         {
-          "id": "source-psy2-fmkorea",
-          "kind": "reference",
-          "label": "FM코리아 · 싸이감성 노래자랑 제2회 참가자·이미지 참고 자료",
-          "url": "https://www.fmkorea.com/9750851296",
-          "visibility": "internal"
-        },
-        {
           "id": "source-psy2-chunbong-history",
           "kind": "reference",
           "label": "나무위키 · 춘봉 활동 이력",
@@ -2298,15 +2752,22 @@
           "label": "Streams Charts · 싸이감성 노래자랑 심사 방송 기록",
           "url": "https://streamscharts.com/channels/lilpa0309/streams/293582583?platform=afreecatv",
           "visibility": "internal"
+        },
+        {
+          "id": "source-psy2-soop-archive-copy",
+          "kind": "reference",
+          "label": "SOOP 보관 재게시 · 싸이감성 노래자랑 최종 공지 원문",
+          "url": "https://www.sooplive.com/station/gkzero/post/207830229",
+          "visibility": "internal"
         }
       ],
       "verification": {
-        "state": "official",
-        "verifiedAt": "2026-09-22T11:50:00+09:00",
+        "state": "cross_checked",
+        "verifiedAt": "2026-09-22T22:12:00+09:00",
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T20:38:00+09:00",
+      "updatedAt": "2026-09-22T22:12:00+09:00",
       "series": {
         "id": "psy-emotion-song-contest",
         "title": "싸이감성 노래자랑",
@@ -2317,7 +2778,41 @@
           "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
           "alt": "싸이감성 노래자랑 대표 이미지"
         }
-      }
+      },
+      "participantGroups": [
+        {
+          "id": "psy2-confirmed-order",
+          "title": "확인된 경연 순서",
+          "platform": "SOOP",
+          "participants": [
+            "노아란",
+            "꿈틀",
+            "한초월",
+            "한세현",
+            "코에",
+            "올어바웃설이",
+            "코이",
+            "멍보리",
+            "키치즈",
+            "스노",
+            "덕이형",
+            "미현영",
+            "허추인",
+            "삐요코",
+            "안아영",
+            "두막이",
+            "말론님",
+            "치비",
+            "양지랖",
+            "이채원",
+            "바세린",
+            "이루희"
+          ],
+          "count": 22,
+          "sourceId": "source-psy2-soop-archive-copy",
+          "note": "SOOP에 보존한 원문 재게시 자료에서 1부 11명·2부 11명, 총 22명의 경연 순서를 확인했습니다."
+        }
+      ]
     },
     {
       "id": "justserver-diamond",
@@ -2346,7 +2841,7 @@
       "endDate": "2026-04-16",
       "datePrecision": "day",
       "summary": "춘봉이 2026년 4월 9일부터 4월 16일까지 개최한 그냥서버 첫 시즌 ‘다이아’ 기록입니다.",
-      "description": "그냥서버 시리즈의 첫 시즌입니다. 사용자 제공 SOOP 모집 게시글, 공개 Notion, SOOP 다시보기 7개, 방통실 콘텐츠·참가 스트리머 아카이브를 함께 연결했습니다. 일정은 외부 교차 자료에서 2026년 4월 9일~4월 16일로 확인되며, 참가자 이름은 원문에서 직접 회수되는 항목부터 순차적으로 구조화합니다.",
+      "description": "2026년 4월 9일부터 4월 16일까지 진행된 그냥서버 제1시즌입니다. SOOP 모집 원문에서 초기 모집 정원 50명, 댓글 신청·입장비 없음, ‘다이아 & 도감 힐링 티키타카’ 콘셉트가 확인됩니다. RPG·히든은 없다고 안내했으며 변경 가능성을 명시했고, 광물 증감·버프·귀환·인벤세이브·몬스터 소환·텔레포트·수선·즉사 등 후원 연동 API도 공지했습니다. 이후 방통실 참가 스트리머 목록에서는 SOOP 189명이 확인됩니다.",
       "heroImage": null,
       "participants": [],
       "results": [
@@ -2373,6 +2868,22 @@
         {
           "title": "관측 기록",
           "value": "183명 · 전체의 97%"
+        },
+        {
+          "title": "초기 모집 정원",
+          "value": "50명 · SOOP 모집 공지 기준"
+        },
+        {
+          "title": "모집 방식",
+          "value": "댓글 신청 · 입장비 없음 · 뉴걸 환영"
+        },
+        {
+          "title": "서버 컨셉",
+          "value": "다이아 & 도감 · 힐링 티키타카"
+        },
+        {
+          "title": "API 예시",
+          "value": "32 광물 추가 · 33 광물 감소 · 200 버프/스테이크/귀환/인벤세이브 · 4444 즉사"
         }
       ],
       "seriesSessions": [],
@@ -2380,13 +2891,13 @@
         {
           "id": "diamond-recruit-post",
           "type": "post",
-          "title": "그냥서버 : 다이아 모집·안내 게시글",
-          "date": "",
-          "datePrecision": "unknown",
+          "title": "그냥 서버 열었습니다..",
+          "date": "2026-04-09",
+          "datePrecision": "day",
           "url": "https://www.sooplive.com/station/chunbongtv/post/192179233",
-          "thumbnail": "",
+          "thumbnail": "https://stimg.sooplive.com/NORMAL_BBS/3/24883333/276969d66b48e4b72.png",
           "sourceId": "source-diamond-recruit",
-          "note": "사용자가 그냥서버 1 모집글로 제공한 춘봉 SOOP 방송국 공식 게시글입니다.",
+          "note": "춘봉이 2026년 4월 9일 게시한 그냥서버 모집 공지입니다. 초기 모집 정원 50명, 다이아·도감 중심 힐링 티키타카 콘셉트와 후원 연동 API 규칙을 안내했습니다.",
           "visibility": "public"
         },
         {
@@ -2500,7 +3011,15 @@
           "visibility": "public"
         }
       ],
-      "gallery": [],
+      "gallery": [
+        {
+          "id": "diamond-recruit-promo",
+          "src": "https://stimg.sooplive.com/NORMAL_BBS/3/24883333/276969d66b48e4b72.png",
+          "alt": "그냥서버 춘봉이의 그냥 다이아 서버 모집 홍보 이미지",
+          "caption": "SOOP 모집 공지에 첨부된 그냥서버 : 다이아 홍보 이미지",
+          "sourceId": "source-diamond-recruit"
+        }
+      ],
       "sources": [
         {
           "id": "source-diamond-recruit",
@@ -2589,11 +3108,11 @@
       ],
       "verification": {
         "state": "cross_checked",
-        "verifiedAt": "2026-09-22T17:45:00+09:00",
+        "verifiedAt": "2026-09-22T22:12:00+09:00",
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T21:30:00+09:00",
+      "updatedAt": "2026-09-22T22:12:00+09:00",
       "participantGroups": [
         {
           "id": "diamond-soop-participants",
