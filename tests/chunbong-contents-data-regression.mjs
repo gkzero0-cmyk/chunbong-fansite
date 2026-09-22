@@ -110,7 +110,7 @@ assert.equal(archiveCore.blockedArchiveSourceUrl('https://namu.wiki/w/test'),fal
 assert.equal(archiveApi._internals.shouldForcePublicAutoSync({githubOidc:true,migrationMarker:''}),true,'the first authenticated GitHub archive sync after this migration should run a full rescan');
 assert.equal(archiveApi._internals.shouldForcePublicAutoSync({githubOidc:true,migrationMarker:'done'}),false,'completed migration should return to incremental archive sync');
 assert.equal(archiveApi._internals.shouldForcePublicAutoSync({githubOidc:false,migrationMarker:''}),false,'same-site/browser sync must never trigger the expensive migration full scan');
-assert.match(archiveApi._internals.AUTO_FULL_MIGRATION_KEY,/notion-guides/,'Notion guide migration should have an explicit versioned key');
+assert.match(archiveApi._internals.AUTO_FULL_MIGRATION_KEY,/bngts-hidden-ingestion/,'BNGTS hidden-ingestion migration should have an explicit versioned key');
 const rows=archiveApi._internals.publicRows([
   {...monthOnly,id:'visible',published:true},
   {...monthOnly,id:'draft',published:false}
