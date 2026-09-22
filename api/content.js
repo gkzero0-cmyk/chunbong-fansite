@@ -330,8 +330,24 @@ async function handler(req,res) {
     }
     return res.status(200).json({pageId,out});
   }
+  if(type==='soop-board-probe'&&process.env.VERCEL_ENV!=='production'){
+    const hosts=['https://chapi.sooplive.com','https://chapi.sooplive.co.kr'];
+    const params=new URLSearchParams({per_page:'100',start_date:'2026-04-01',end_date:'2026-04-30',field:'title,contents,user_nick,user_id',keyword:'그냥서버',type:'all',order_by:'reg_date',page:'1'});
+    const out=[];
+    for(const host of hosts){
+      try{
+        const response=await fetch(`${host}/api/chunbongtv/board/?${params}`,{headers:{'User-Agent':'Mozilla/5.0','Accept':'application/json,text/plain,*/*','Referer':'https://www.sooplive.com/'}});
+        const raw=await response.text();let parsed=null;try{parsed=JSON.parse(raw)}catch{}
+        const rows=Array.isArray(parsed?.data)?parsed.data:Array.isArray(parsed?.contents)?parsed.contents:Array.isArray(parsed?.data?.contents)?parsed.data.contents:[];
+        const compact=rows.map(x=>({id:String(x?.title_no??x?.post_no??x?.bbs_no??''),title:String(x?.title_name??x?.title??x?.subject??''),date:String(x?.reg_date??x?.write_date??'').slice(0,19),board:String(x?.board_number??x?.bbs_no??'')})).filter(x=>x.id||x.title);
+        out.push({host,status:response.status,length:raw.length,rows:compact.slice(0,50),target:compact.find(x=>x.id==='192179233')||null,sample:raw.slice(0,1200)});
+      }catch(error){out.push({host,error:String(error?.message||error)})}
+    }
+    return res.status(200).json({out});
+  }
   if(type==='bngts-probe'&&process.env.VERCEL_ENV!=='production'){
-    const response=await fetch('https://bngts.com/contents/just/streamers',{headers:{'User-Agent':'Mozilla/5.0','Accept':'text/html'}});
+    const page=Math.min(10,Math.max(1,Number(requestUrl.searchParams.get('page')||1)));
+    const response=await fetch(`https://bngts.com/contents/just/streamers?page=${page}`,{headers:{'User-Agent':'Mozilla/5.0','Accept':'text/html'}});
     const raw=await response.text();
     const names=[...raw.matchAll(/<div class=["']streamer-name["'][^>]*>([\s\S]*?)<\/div>/gi)].map(m=>m[1].replace(/<[^>]+>/g,' ').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/\s+/g,' ').trim()).filter(Boolean);
     return res.status(200).json({status:response.status,count:names.length,uniqueCount:new Set(names).size,names});
