@@ -456,9 +456,9 @@ for(const item of seed.items){
 }
 
 const leopelGroupsItem=seed.items.find(item=>item.id==='leopel');
-assert.equal(leopelGroupsItem?.participantGroups?.length,3,'레오펠은 1차/2차 플랫폼별 참가자 그룹을 제공해야 합니다');
-assert.deepEqual((leopelGroupsItem?.participantGroups||[]).map(group=>group.count),[140,127,44],'레오펠 참가자 그룹 인원수가 교차 자료와 일치해야 합니다');
-assert.equal((leopelGroupsItem?.participantGroups||[]).reduce((sum,group)=>sum+(group.participants||[]).length,0),311,'레오펠 1·2차 확인 명단은 총 311명이어야 합니다');
+assert.equal(leopelGroupsItem?.participantGroups?.length,7,'레오펠은 1~3차 입주와 플랫폼·번외 참가자 그룹을 제공해야 합니다');
+assert.deepEqual((leopelGroupsItem?.participantGroups||[]).map(group=>group.count),[140,68,17,127,44,104,60],'레오펠 참가자 그룹 인원수가 교차 자료와 일치해야 합니다');
+assert.equal((leopelGroupsItem?.participantGroups||[]).reduce((sum,group)=>sum+(group.participants||[]).length,0),560,'레오펠 1~3차 구조화 명단은 총 560명이어야 합니다');
 assert.match(String(leopelGroupsItem?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/leopel\/presentation-source\.jpg$/,'레오펠 대표 이미지는 실제 SOOP 발표회 기반 16:9 자산을 사용해야 합니다');
 
 const survivalEnriched=seed.items.find(item=>item.id==='justserver-survival');
