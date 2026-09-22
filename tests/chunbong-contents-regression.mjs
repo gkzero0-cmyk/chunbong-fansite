@@ -43,3 +43,7 @@ for(const token of ['archive-series-home-grid','archive-series-card','archive-se
 
 for(const token of ['archive-hero-actions','archive-series-skeleton','grid-template-columns:repeat(4','overflow-x:auto']) assert.ok(css.includes(token),token);
 assert.ok(html.includes('대표 시리즈 바로 보기 ↓'),'compact archive hero should link directly to real series content');
+
+for(const token of ['class="archive-hero-copy reveal"','class="archive-series-home reveal"','class="archive-toolbar reveal"']) {
+  assert.ok(!html.includes(token),'critical archive sections must not depend on reveal: '+token);
+}
