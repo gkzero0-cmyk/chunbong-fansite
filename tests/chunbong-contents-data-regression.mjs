@@ -55,6 +55,7 @@ assert.deepEqual(rows.map(row=>row.id),['visible']);
 assert.ok(!('verification' in rows[0]));
 const mergedSeries=archiveApi._internals.mergeArchiveRows([{...monthOnly,id:'series-merge',series:{id:'justserver',title:'그냥서버'}}],[{...monthOnly,id:'series-merge'}]);
 assert.equal(mergedSeries[0]?.series?.id,'justserver','stored rows without series metadata should inherit curated seed series metadata');
+assert.ok(archiveApi._internals.curatedHiddenIds().includes('psy-emotion-song-contest-2026'),'curated hidden ids should include legacy psy record');
 
 
 const impossibleDate=normalizeArchiveItem({...monthOnly,id:'impossible-date',startDate:'2026-02-31',datePrecision:'day'});
@@ -88,19 +89,31 @@ assert.equal(koreanId.id,'그냥서버','Korean archive ids created by the opera
 
 
 const publishedIds=new Set(seed.items.filter(item=>item.published===true).map(item=>item.id));
-for(const id of ['leopel','justserver-moneygame','psy-emotion-song-contest-2026']){
+for(const id of ['leopel','justserver-moneygame','psy-emotion-song-contest-1','psy-emotion-song-contest-2']){
   assert.ok(publishedIds.has(id),`verified archive seed missing ${id}`);
 }
+assert.ok(Array.isArray(seed.hiddenIds)&&seed.hiddenIds.includes('psy-emotion-song-contest-2026'),'legacy 싸이감성 단일 레코드는 공개에서 숨겨야 합니다');
 const justserver=seed.items.find(item=>item.id==='justserver-moneygame');
 assert.equal(justserver?.startDate,'2026-06-24');
 assert.equal(justserver?.endDate,'2026-07-15');
 assert.ok((justserver?.sources||[]).some(source=>/sooplive\.com/.test(source.url)),'JustServer should include a SOOP source');
 assert.match(String(justserver?.heroImage?.src||''),/^\/assets\/chunbong-contents\//);
 
-const psyContest=seed.items.find(item=>item.id==='psy-emotion-song-contest-2026');
-assert.equal(psyContest?.startDate,'2026-04-28');
-assert.ok((psyContest?.sources||[]).length>=2,'song contest should be cross-checked');
-assert.match(String(psyContest?.heroImage?.src||''),/^\/assets\/chunbong-contents\//);
+const psyContest1=seed.items.find(item=>item.id==='psy-emotion-song-contest-1');
+const psyContest2=seed.items.find(item=>item.id==='psy-emotion-song-contest-2');
+assert.ok(psyContest1?.published&&psyContest2?.published,'싸이감성 노래자랑 1·2회는 각각 공개 레코드여야 합니다');
+assert.equal(psyContest1?.series?.id,'psy-emotion-song-contest');
+assert.equal(psyContest2?.series?.id,'psy-emotion-song-contest');
+assert.equal(psyContest1?.datePrecision,'unknown','1회 날짜는 원문 확인 전 임의 확정하지 않습니다');
+assert.equal(psyContest2?.datePrecision,'unknown','2회 날짜는 원문 확인 전 임의 확정하지 않습니다');
+assert.ok((psyContest1?.sources||[]).some(row=>row.url==='https://www.sooplive.com/station/chunbongtv/post/124321185'),'1회 SOOP 모집글이 필요합니다');
+assert.ok((psyContest1?.media||[]).some(row=>row.url==='https://vod.sooplive.com/player/127480069'),'1회 SOOP VOD가 필요합니다');
+assert.ok((psyContest1?.participants||[]).includes('시로코'),'제1회 참가가 교차 확인된 시로코 기록이 필요합니다');
+assert.ok((psyContest2?.sources||[]).some(row=>row.url==='https://www.sooplive.com/station/chunbongtv/post/192031471'),'2회 SOOP 모집글이 필요합니다');
+assert.ok((psyContest2?.media||[]).some(row=>row.url==='https://vod.sooplive.com/player/194116989'),'2회 SOOP VOD가 필요합니다');
+assert.ok((psyContest2?.sources||[]).some(row=>row.url==='https://www.fmkorea.com/9750851296'&&row.kind==='reference'),'2회 FM코리아 자료는 보조 출처로 유지해야 합니다');
+assert.match(String(psyContest1?.heroImage?.src||''),/^\/assets\/chunbong-contents\//);
+assert.match(String(psyContest2?.heroImage?.src||''),/^\/assets\/chunbong-contents\//);
 
 
 const chuntacle=seed.items.find(item=>item.id==='chuntacle-2026');
@@ -155,7 +168,8 @@ assert.equal(survival?.series?.id,'justserver','적자생존은 그냥서버 시
 assert.equal(justserver?.series?.title,'그냥서버','머니게임과 적자생존은 그냥서버 시리즈로 묶여야 합니다');
 assert.equal(chuntacle?.series?.id,'chuntacle','춘타클은 독립 시리즈 메타데이터를 가져야 합니다');
 assert.equal(leopel?.series?.id,'leopel','레오펠은 대표 시리즈 메타데이터를 가져야 합니다');
-assert.equal(psyContest?.series?.id,'psy-emotion-song-contest','싸이감성 노래자랑은 대표 시리즈 메타데이터를 가져야 합니다');
+assert.equal(psyContest1?.series?.id,'psy-emotion-song-contest','싸이감성 노래자랑 제1회는 대표 시리즈 메타데이터를 가져야 합니다');
+assert.equal(psyContest2?.series?.id,'psy-emotion-song-contest','싸이감성 노래자랑 제2회는 같은 대표 시리즈에 속해야 합니다');
 assert.ok((survival?.media||[]).some(row=>row.url==='https://vod.sooplive.com/player/207560243'&&/적자생존 설명회/.test(row.title||'')),'적자생존 설명회 VOD가 필요합니다');
 const moneyVodIds=['199701961','199731549','199911259','200010937','200150005','200191013','200238669','200257689','200295759','200393761','200401503','200477587','200609959','200775197','200812787','200857709','200893769','200917923','200956235','201043833','201146469','201223669','201329381','201384951','201524161','201595413'];
 for(const id of moneyVodIds) assert.ok((justserver?.media||[]).some(row=>row.url===`https://vod.sooplive.com/player/${id}`),`머니게임 VOD 누락: ${id}`);
@@ -164,5 +178,6 @@ for(const url of ['https://naver.me/5qLX1yQ1','https://buly.kr/2ffytJ1','https:/
 for(const id of ['203683207','204093563','204274449','206972857','207425471','207516943','207564735']) assert.ok((survival?.timeline||[]).some(row=>row.url===`https://www.sooplive.com/station/chunbongtv/post/${id}`),`적자생존 SOOP 게시글 누락: ${id}`);
 assert.ok((survival?.sources||[]).some(row=>row.url==='https://daisy-grouse-ac0.notion.site/3dad57d6a55c80469f3de9730cb88975'),'적자생존 Notion 자료가 필요합니다');
 
-assert.ok((psyContest?.participants||[]).includes('시로코'),'song contest should include confirmed participant evidence');
-assert.ok((psyContest?.gallery||[]).length>=2,'song contest detail should have visual archive material');
+assert.ok((psyContest1?.participants||[]).includes('시로코'),'제1회는 시로코 참가 교차 기록을 유지해야 합니다');
+assert.ok((psyContest1?.gallery||[]).length>=1,'제1회 아카이브 커버가 필요합니다');
+assert.ok((psyContest2?.gallery||[]).length>=1,'제2회 아카이브 커버가 필요합니다');
