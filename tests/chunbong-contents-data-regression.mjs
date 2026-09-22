@@ -85,7 +85,7 @@ for(const row of diamondBackfill?.media||[]){
 assert.ok((diamondBackfill?.results||[]).some(row=>row.title==='초기 모집 정원'&&/50명/.test(row.value||'')),'그냥서버 1은 SOOP 모집 공지의 초기 정원 정보를 유지해야 합니다');
 
 for(const item of seed.items){
-  assert.equal((item.sources||[]).some(row=>/bngts\.com|namu\.moe/i.test(String(row.url||''))),false,`금지된 공개/내부 출처가 남아 있습니다: ${item.id}`);
+  assert.equal((item.sources||[]).some(row=>/namu\.moe/i.test(String(row.url||''))),false,`나무미러 출처가 남아 있습니다: ${item.id}`);
 }
 for(const id of ['chuntacle-2026','psy-emotion-song-contest-1','psy-emotion-song-contest-2','justserver-diamond']){
   const item=seed.items.find(row=>row.id===id);if(!item)continue;
@@ -285,7 +285,7 @@ for(const id of moneyVodIds){
 
 for(const id of ['197785319','199568663','199830351']) assert.ok((justserver?.timeline||[]).some(row=>row.url===`https://www.sooplive.com/station/chunbongtv/post/${id}`),`머니게임 SOOP 게시글 누락: ${id}`);
 for(const url of ['https://naver.me/5qLX1yQ1','https://naver.me/FbVX1U7z','https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d','https://buly.kr/2ffytJ1']) assert.ok((justserver?.sources||[]).some(row=>row.url===url),`머니게임 참고 자료 누락: ${url}`);
-assert.equal((justserver?.sources||[]).some(row=>/bngts\.com/i.test(String(row.url||''))),false,'머니게임은 방통실을 출처로 사용하지 않아야 합니다');
+assert.ok((justserver?.sources||[]).filter(row=>/bngts\.com/i.test(String(row.url||''))).every(row=>row.visibility==='internal'),'머니게임 BNGTS 자료는 내부 자동수집용으로만 유지해야 합니다');
 for(const url of ['https://naver.me/5qLX1yQ1','https://naver.me/FbVX1U7z','https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d']) assert.equal((justserver?.sources||[]).find(row=>row.url===url)?.visibility,'internal',`머니게임 내부 자료원은 공개 출처로 노출하면 안 됩니다: ${url}`);
 const moneygamePublic=toPublicArchiveItem(normalizeArchiveItem(justserver));
 assert.equal((moneygamePublic.sources||[]).some(row=>/naver\.me|app\.notion\.com/.test(String(row.url||''))),false,'머니게임 Naver/Notion 내부 자료원은 공개 API에서 제거되어야 합니다');
@@ -320,7 +320,8 @@ assert.equal(justserverDiamond?.endDate,'2026-04-16');
 assert.equal(justserverDiamond?.series?.id,'justserver');
 for(const id of ['192233707','192317079','192401771','192510763','192581897','192845469','192962357']) assert.ok((justserverDiamond?.media||[]).some(row=>row.url===`https://vod.sooplive.com/player/${id}`),`그냥서버 1 VOD 누락: ${id}`);
 for(const url of ['https://www.sooplive.com/station/chunbongtv/post/192179233','https://sdmv.notion.site/what']) assert.ok((justserverDiamond?.sources||[]).some(row=>row.url===url),`그냥서버 1 출처 누락: ${url}`);
-assert.equal((justserverDiamond?.sources||[]).some(row=>/bngts\.com|namu\.moe/i.test(String(row.url||''))),false,'그냥서버 1은 방통실·나무미러를 출처로 사용하지 않아야 합니다');
+assert.equal((justserverDiamond?.sources||[]).some(row=>/namu\.moe/i.test(String(row.url||''))),false,'그냥서버 1은 나무미러를 출처로 사용하지 않아야 합니다');
+assert.ok((justserverDiamond?.sources||[]).filter(row=>/bngts\.com/i.test(String(row.url||''))).every(row=>row.visibility==='internal'),'그냥서버 1 BNGTS 자료는 내부 자동수집용이어야 합니다');
 assert.ok((justserverDiamond?.sources||[]).some(row=>/^https:\/\/namu\.wiki\//i.test(String(row.url||''))),'그냥서버 1 나무 계열 출처는 나무위키 원문을 사용해야 합니다');
 const diamondRecruit=(justserverDiamond?.timeline||[]).find(row=>row.id==='diamond-recruit-post');
 assert.equal(diamondRecruit?.title,'그냥 서버 열었습니다..','그냥서버 1 SOOP 원문 제목을 사용해야 합니다');
@@ -361,11 +362,31 @@ const mergeVisibility=archiveApi._internals.mergeArchiveRows(
   [{...hiddenSourceItem,id:'visibility-merge'}],
   [{...hiddenSourceItem,id:'visibility-merge',sources:hiddenSourceItem.sources.map(row=>({...row,visibility:'public'})),timeline:hiddenSourceItem.timeline.map(row=>({...row,visibility:'public'}))}]
 );
-assert.equal(mergeVisibility[0].sources.some(row=>row.id==='internal-source'),false,'Bangtongsil-backed sources should be removed from merged archive records');
+assert.equal(mergeVisibility[0].sources.find(row=>row.id==='internal-source')?.visibility,'internal','Bangtongsil-backed sources should survive internally while staying hidden publicly');
 assert.equal(mergeVisibility[0].timeline.find(row=>row.id==='internal-row')?.visibility,'internal','internal Bangtongsil timeline provenance may survive storage but must stay hidden publicly');
 
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://www.sooplive.com/station/chunbongtv/post/1'),'SOOP source metadata URL should be allowed');
-assert.equal(archiveApi._internals.allowedSourceMetaUrl('https://bngts.com/contents/just'),null,'방통실은 source metadata allowlist에서 제외되어야 합니다');
+assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://bngts.com/contents/just'),'방통실은 내부 자동 자료 수집 대상이어야 합니다');
+const bngtsItem={id:'bngts-test',participants:[],participantGroups:[]};
+const bngtsChanged=archiveApi._internals.applyBngtsParticipantSnapshot(
+  bngtsItem,
+  {id:'source-bngts-test',url:'https://bngts.com/contents/test/streamers'},
+  {participants:['가','나','가'],participantCount:2}
+);
+assert.equal(bngtsChanged,true,'BNGTS participant snapshot should enrich an empty archive item');
+assert.equal(bngtsItem.participantGroups[0].count,2);
+assert.equal(bngtsItem.participantGroups[0].sourceId,'source-bngts-test');
+const bngtsPublic=toPublicArchiveItem(normalizeArchiveItem({
+  id:'bngts-public-test',type:'minecraft_server',title:'테스트',role:'주최',startDate:'2026-01-01',endDate:'2026-01-01',
+  summary:'테스트',description:'방통실(BNGTS) 자료를 참고해 참가자를 정리했습니다.',heroImage:null,participants:['가','나'],results:[],seriesSessions:[],
+  participantGroups:bngtsItem.participantGroups,timeline:[],media:[],gallery:[],
+  sources:[{id:'source-public',kind:'official',label:'공식',url:'https://www.sooplive.com/station/chunbongtv',visibility:'public'},{id:'source-bngts-test',kind:'reference',label:'내부',url:'https://bngts.com/contents/test/streamers',visibility:'internal'}],
+  verification:{state:'official',verifiedAt:'2026-01-01',conflicts:[]},published:true
+}));
+assert.equal(bngtsPublic.sources.some(row=>/bngts\.com/.test(String(row.url||''))),false,'BNGTS must never appear in public source list');
+assert.equal(bngtsPublic.participantGroups[0].count,2,'BNGTS-derived structured data may remain visible');
+assert.equal(bngtsPublic.participantGroups[0].sourceId,'','hidden internal source id must not leak publicly');
+assert.equal(/방통실|BNGTS/.test(bngtsPublic.description),false,'provider name must not leak into public copy');
 assert.equal(archiveApi._internals.allowedSourceMetaUrl('https://namu.moe/w/test'),null,'나무미러는 source metadata allowlist에서 제외되어야 합니다');
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://namu.wiki/w/test'),'나무위키는 source metadata allowlist에 포함되어야 합니다');
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://example.notion.site/example'),'public Notion source metadata URL should be allowed');

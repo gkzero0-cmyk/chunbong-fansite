@@ -1254,6 +1254,20 @@
           "label": "SOOP VOD · 그냥서버 : 머니게임 Catch",
           "url": "https://vod.sooplive.com/player/198012777/catch",
           "visibility": "public"
+        },
+        {
+          "id": "source-money-bngts",
+          "kind": "reference",
+          "label": "내부 자동수집 자료",
+          "url": "https://bngts.com/contents/geunyangseobeo-meonigeim",
+          "visibility": "internal"
+        },
+        {
+          "id": "source-money-bngts-streamers",
+          "kind": "reference",
+          "label": "내부 자동수집 참가자 자료",
+          "url": "https://bngts.com/contents/geunyangseobeo-meonigeim/streamers",
+          "visibility": "internal"
         }
       ],
       "verification": {
@@ -4191,6 +4205,20 @@
           "label": "SOOP VOD · 192962357",
           "url": "https://vod.sooplive.com/player/192962357",
           "visibility": "public"
+        },
+        {
+          "id": "source-diamond-bngts",
+          "kind": "reference",
+          "label": "내부 자동수집 자료",
+          "url": "https://bngts.com/contents/just",
+          "visibility": "internal"
+        },
+        {
+          "id": "source-diamond-bngts-streamers",
+          "kind": "reference",
+          "label": "내부 자동수집 참가자 자료",
+          "url": "https://bngts.com/contents/just/streamers",
+          "visibility": "internal"
         }
       ],
       "verification": {
