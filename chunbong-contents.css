@@ -388,3 +388,29 @@ button.archive-series-poster{cursor:zoom-in}
  .archive-detail-hero{align-items:start}
  .archive-detail-copy{height:auto}
 }
+
+/* 2026-09-23 · Notion structured guide archive */
+.archive-notion-preview{margin-top:30px;padding-top:24px;border-top:1px solid #272727}
+.archive-notion-preview .archive-section-heading p,.archive-notion-panel .archive-section-heading p{margin:6px 0 0;color:var(--text-muted,#aaa29b);font-size:11px;line-height:1.55}
+.archive-notion-preview-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+.archive-notion-preview-grid article{min-width:0;padding:15px;border:1px solid #2a2a2a;border-radius:16px;background:linear-gradient(145deg,color-mix(in srgb,var(--page-accent,#f2a65a) 5%,#111),#101010)}
+.archive-notion-preview-grid small{display:block;color:var(--page-accent,#f2a65a);font-size:9px;font-weight:950;letter-spacing:.1em}
+.archive-notion-preview-grid strong{display:block;margin-top:7px;font-size:14px;line-height:1.4}
+.archive-notion-preview-grid p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;margin:8px 0 0;color:var(--text-secondary,#d1cbc5);font-size:11px;line-height:1.65}
+.archive-notion-groups{display:grid;gap:10px;margin-top:16px}
+.archive-notion-group{overflow:hidden;border:1px solid #2b2b2b;border-radius:17px;background:#111}
+.archive-notion-group>summary{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 17px;cursor:pointer;list-style:none}
+.archive-notion-group>summary::-webkit-details-marker{display:none}
+.archive-notion-group>summary span{min-width:0}
+.archive-notion-group>summary small{display:block;color:var(--page-accent,#f2a65a);font-size:8px;font-weight:950;letter-spacing:.12em}
+.archive-notion-group>summary strong{display:block;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.archive-notion-group>summary b{flex:0 0 auto;color:var(--text-muted,#aaa29b);font-size:10px}
+.archive-notion-sections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:0 12px 12px}
+.archive-notion-sections article{padding:15px;border:1px solid #282828;border-radius:14px;background:#0d0d0d}
+.archive-notion-sections article>small{color:var(--text-muted,#aaa29b);font-size:8px;font-weight:850}
+.archive-notion-sections h3{margin:5px 0 0;font-size:15px;line-height:1.4}
+.archive-notion-sections p{margin:9px 0 0;color:var(--text-secondary,#d1cbc5);font-size:12px;line-height:1.72}
+@media(max-width:760px){
+ .archive-notion-preview-grid,.archive-notion-sections{grid-template-columns:1fr}
+ .archive-notion-group>summary{padding:14px}
+}

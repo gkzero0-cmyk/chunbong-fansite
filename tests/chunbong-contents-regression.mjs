@@ -35,6 +35,8 @@ for(const asset of ['/chunbong-contents.html','/chunbong-contents.css','/chunbon
 
 for(const token of ['archive-overview-highlight-grid','archive-people-chips','archive-record-strip','archive-media-visual']) assert.ok(css.includes(token),token);
 for(const token of ['주요 기록','기록 하이라이트','영상 · 방송','자료 이미지']) assert.ok(js.includes(token),token);
+for(const token of ['renderNotionGuide','renderNotionPreview','data-archive-tab="guide"','Notion 가이드']) assert.ok(js.includes(token),token);
+for(const token of ['archive-notion-preview-grid','archive-notion-group','archive-notion-sections']) assert.ok(css.includes(token),token);
 assert.match(js,/renderOverviewHighlights/);
 assert.match(js,/renderRecordStrip/);
 

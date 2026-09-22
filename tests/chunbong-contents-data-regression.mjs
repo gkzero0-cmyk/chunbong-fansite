@@ -93,6 +93,15 @@ assert.ok((diamondBackfill?.results||[]).some(row=>row.title==='명단 구조화
 console.log('chunbong contents data regression passed');
 
 const archiveApi=require('../lib/chunbong-content-archive-api.js');
+const notionGuideSample=archiveApi._internals.notionGuideRows({
+  title:'테스트 Notion',pageId:'page-root',
+  sections:[{id:'page-root',title:'테스트 Notion',depth:0,blocks:[{title:'서버 규칙',text:'자동화 금지\n비방 생산활동 금지'},{title:'주요 시스템',text:'채광\n요리\n낚시'}]}]
+},{id:'source-notion-test',url:'https://example.notion.site/test'});
+assert.equal(notionGuideSample.length,2,'Notion blocks should become readable guide sections');
+assert.equal(notionGuideSample[0].sourceId,'source-notion-test');
+assert.match(notionGuideSample[0].text,/자동화 금지/);
+assert.equal(archiveApi._internals.isNotionSourceUrl('https://example.notion.site/test'),true);
+
 assert.equal(archiveApi._internals.shouldForcePublicAutoSync({githubOidc:true,migrationMarker:''}),true,'the first authenticated GitHub archive sync after this migration should run a full rescan');
 assert.equal(archiveApi._internals.shouldForcePublicAutoSync({githubOidc:true,migrationMarker:'done'}),false,'completed migration should return to incremental archive sync');
 assert.equal(archiveApi._internals.shouldForcePublicAutoSync({githubOidc:false,migrationMarker:''}),false,'same-site/browser sync must never trigger the expensive migration full scan');
