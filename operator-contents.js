@@ -21,7 +21,8 @@ function field(label,name,value='',type='text',extra=''){return `<label class="o
 function selectField(label,name,value,options){return `<label class="operator-archive-field"><span>${label}</span><select name="${name}">${options.map(([v,l])=>`<option value="${v}" ${v===value?'selected':''}>${l}</option>`).join('')}</select></label>`}
 function rowControls(){return `<div class="operator-archive-row-controls"><button type="button" data-move-row="up" aria-label="위로 이동">↑</button><button type="button" data-move-row="down" aria-label="아래로 이동">↓</button><button type="button" data-remove-row aria-label="항목 삭제">삭제</button></div>`}
 function sourceRow(row={},index=0){return `<div class="operator-archive-repeater-row" data-source-row>${field('ID','source-id',row.id||`source-${index+1}`)}${field('출처 이름','source-label',row.label||'')}${selectField('종류','source-kind',row.kind||'official',[['official','공식'],['platform','플랫폼'],['relation','관계자'],['article','기사'],['reference','참고']])}${selectField('공개 범위','source-visibility',row.visibility||'public',[['public','팬사이트에 표시'],['internal','내부 검증용 · 숨김']])}${field('원문 URL','source-url',row.url||'','url')}<div class="operator-source-meta-actions"><button type="button" data-source-fetch-meta>메타 가져오기</button><small data-source-meta-status></small></div>${rowControls()}</div>`}
-function materialRow(row={},kind='timeline',index=0){const types=kind==='media'?[['vod','다시보기'],['catch','Catch'],['clip','클립'],['youtube','YouTube'],['shorts','Shorts']]:[['notice','공지'],['post','게시글'],['article','기사'],['result','결과'],['reference','참고 자료']];return `<div class="operator-archive-repeater-row operator-archive-material-row" data-${kind}-row>${field('ID',`${kind}-id`,row.id||`${kind}-${index+1}`)}${selectField('유형',`${kind}-type`,row.type||types[0][0],types)}${field('제목',`${kind}-title`,row.title||'')}${field('날짜',`${kind}-date`,row.date||'')}${selectField('날짜 정확도',`${kind}-precision`,row.datePrecision||'unknown',[['day','일'],['month','월'],['year','연도'],['unknown','확인 중']])}${field('원문 URL',`${kind}-url`,row.url||'','url')}${field('썸네일',`${kind}-thumbnail`,row.thumbnail||'','url')}${field('출처 ID',`${kind}-source`,row.sourceId||'')}${selectField('공개 범위',`${kind}-visibility`,row.visibility||'public',[['public','팬사이트에 표시'],['internal','내부 검증용 · 숨김']])}${field('메모',`${kind}-note`,row.note||'')}${rowControls()}</div>`}
+function isGenericMaterialTitle(value=''){return /\b\d{8,}\b/.test(String(value||''))||/관련 youtube 영상 \d|다시보기 \d{2}|공식 게시글(?: ·)? \d+$/i.test(String(value||''))}
+function materialRow(row={},kind='timeline',index=0){const types=kind==='media'?[['vod','다시보기'],['catch','Catch'],['clip','클립'],['youtube','YouTube'],['shorts','Shorts']]:[['notice','공지'],['post','게시글'],['article','기사'],['result','결과'],['reference','참고 자료']];return `<div class="operator-archive-repeater-row operator-archive-material-row" data-${kind}-row>${field('ID',`${kind}-id`,row.id||`${kind}-${index+1}`)}${selectField('유형',`${kind}-type`,row.type||types[0][0],types)}${field('제목',`${kind}-title`,row.title||'')}${field('날짜',`${kind}-date`,row.date||'')}${selectField('날짜 정확도',`${kind}-precision`,row.datePrecision||'unknown',[['day','일'],['month','월'],['year','연도'],['unknown','확인 중']])}${field('원문 URL',`${kind}-url`,row.url||'','url')}${field('썸네일',`${kind}-thumbnail`,row.thumbnail||'','url')}${field('출처 ID',`${kind}-source`,row.sourceId||'')}${selectField('공개 범위',`${kind}-visibility`,row.visibility||'public',[['public','팬사이트에 표시'],['internal','내부 검증용 · 숨김']])}${field('메모',`${kind}-note`,row.note||'')}<div class="operator-source-meta-actions"><button type="button" data-material-fetch-meta>원문 메타 가져오기</button><small data-material-meta-status></small></div>${rowControls()}</div>`}
 function galleryRow(row={},index=0){return `<div class="operator-archive-repeater-row" data-gallery-row>${field('ID','gallery-id',row.id||`image-${index+1}`)}${field('이미지 URL / /assets 경로','gallery-src',row.src||row.url||'')}${field('대체 텍스트','gallery-alt',row.alt||'')}${field('설명','gallery-caption',row.caption||'')}${field('출처 ID','gallery-source',row.sourceId||'')}${rowControls()}</div>`}
 function resultRow(row={},index=0){return `<div class="operator-archive-repeater-row operator-archive-result-row" data-result-row>${field('제목','result-title',row.title||row.label||`기록 ${index+1}`)}${field('내용','result-value',row.value||row.name||'')}${rowControls()}</div>`}
 function archiveAudit(item){
@@ -31,12 +32,25 @@ function archiveAudit(item){
   const participantGroupCount=(Array.isArray(item.participantGroups)?item.participantGroups:[]).reduce((sum,row)=>sum+(Array.isArray(row.participants)?row.participants.length:Number(row.count)||0),0);
   const urls=sources.map(row=>String(row.url||'').toLowerCase());
   const labels=sources.map(row=>String(row.label||'').toLowerCase());
-  const hasParticipantReference=urls.some(url=>url.includes('/streamers'))||labels.some(label=>label.includes('참가자')||label.includes('참여자'));
-  if(hasParticipantReference&&participants.length===0&&participantGroupCount===0)issues.push(['참가자 미수집','참가자 명단용 참고 자료가 있지만 참가자 데이터가 0명입니다.']);
+  const knownParticipantCount=participants.length+participantGroupCount;
+  const hasBngtsParticipantReference=urls.some(url=>url.includes('bngts.com')&&url.includes('/streamers'));
+  const hasFmParticipantReference=sources.some((row,index)=>urls[index].includes('fmkorea.com')&&(labels[index].includes('참가자')||labels[index].includes('참여자')));
+  const hasParticipantReference=hasBngtsParticipantReference||hasFmParticipantReference||labels.some(label=>label.includes('참가자')||label.includes('참여자'));
+  if(hasBngtsParticipantReference&&knownParticipantCount===0)issues.push(['방통실 참가자 명단 미수집','방통실 참가 스트리머 원문이 연결돼 있지만 구조화된 참가자 명단이 아직 없습니다.']);
+  else if(hasFmParticipantReference&&participantGroupCount===0&&participants.length<2)issues.push(['FM코리아 참가자 명단 미수집',`FM코리아 참가자 참고 자료가 연결돼 있지만 현재 확인된 참가자는 ${participants.length}명뿐입니다.`]);
+  else if(hasParticipantReference&&knownParticipantCount===0)issues.push(['참가자 미수집','참가자 명단용 참고 자료가 있지만 참가자 데이터가 0명입니다.']);
   const hasNotion=urls.some(url=>url.includes('notion.'));
-  if(hasNotion&&!/(규칙|시스템|참가 조건|진행 방식|일정)/.test(String(item.description||'')))issues.push(['Notion 본문 미구조화','Notion 자료가 연결돼 있지만 규칙·시스템·일정 데이터 반영 여부를 확인해야 합니다.']);
-  const genericMedia=(item.media||[]).filter(row=>/\b\d{8,}\b/.test(String(row.title||''))||/관련 youtube 영상 \d|다시보기 \d{2}$/i.test(String(row.title||'')));
-  if(genericMedia.length)issues.push(['미디어 메타데이터 확인',`${genericMedia.length}개 영상의 실제 제목·날짜·썸네일 확인이 남아 있습니다.`]);
+  const structuredText=[item.description||'',...(item.results||[]).flatMap(row=>[row.title||row.label||'',row.value||row.name||'']),...(item.timeline||[]).flatMap(row=>[row.title||'',row.note||''])].join(' ');
+  const hasRuleStructure=/(규칙|참가 조건|신청 조건|제한|금지|허용)/.test(structuredText);
+  const hasSystemStructure=/(시스템|경제|재화|진행 방식|게임 방식|승리 조건|정산|랭킹|상점|강화)/.test(structuredText);
+  if(hasNotion&&!(hasRuleStructure&&hasSystemStructure))issues.push(['Notion 본문 미구조화','Notion 자료가 연결돼 있지만 규칙과 핵심 시스템이 모두 구조화되었는지 확인해야 합니다.']);
+  const soopPosts=(item.timeline||[]).filter(row=>/sooplive\.com\/station\//i.test(String(row.url||''))&&(!String(row.date||'').trim()||isGenericMaterialTitle(row.title)));
+  if(soopPosts.length)issues.push(['SOOP 게시글 메타데이터 확인',`${soopPosts.length}개 게시글의 실제 제목·게시일 확인이 남아 있습니다.`]);
+  const incompleteMedia=(item.media||[]).filter(row=>{
+    const thumbnail=String(row.thumbnail||'');
+    return isGenericMaterialTitle(row.title)||!String(row.date||'').trim()||!thumbnail||thumbnail.includes('/assets/chunbong-contents/')||/\.svg(?:\?|$)/i.test(thumbnail);
+  });
+  if(incompleteMedia.length)issues.push(['미디어 메타데이터 확인',`${incompleteMedia.length}개 영상의 실제 제목·날짜·원본 썸네일 확인이 남아 있습니다.`]);
   const syntheticMedia=(item.media||[]).filter(row=>String(row.thumbnail||'').includes('/assets/chunbong-contents/')||/\.svg(?:\?|$)/i.test(String(row.thumbnail||'')));
   if(syntheticMedia.length)issues.push(['실제 영상 썸네일 확인',`${syntheticMedia.length}개 영상이 자체 제작/임시 썸네일을 사용 중입니다.`]);
   const hasExternalVisual=(item.gallery||[]).some(row=>/^https:\/\//i.test(String(row.src||'')))||(item.media||[]).some(row=>/^https:\/\//i.test(String(row.thumbnail||'')));
@@ -103,11 +117,39 @@ async function fetchSourceMetaForRow(row){
   }finally{if(button)button.disabled=false}
 }
 function bindSourceMeta(){$$('[data-source-fetch-meta]',root).forEach(button=>{if(button.dataset.bound)return;button.dataset.bound='1';button.addEventListener('click',()=>void fetchSourceMetaForRow(button.closest('[data-source-row]')))})}
+async function fetchMaterialMetaForRow(row){
+  const kind=row?.hasAttribute('data-media-row')?'media':'timeline';
+  const url=$(`[name="${kind}-url"]`,row)?.value.trim()||'',status=$('[data-material-meta-status]',row),button=$('[data-material-fetch-meta]',row);
+  if(!url){if(status)status.textContent='URL을 먼저 입력하세요.';return}
+  if(button)button.disabled=true;if(status)status.textContent='원문 확인 중…';
+  try{
+    const payload=await json('operator-content-source-meta',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
+    const meta=payload.meta||{},title=$(`[name="${kind}-title"]`,row),date=$(`[name="${kind}-date"]`,row),precision=$(`[name="${kind}-precision"]`,row),thumbnail=$(`[name="${kind}-thumbnail"]`,row);
+    const applied=[];
+    if(title&&meta.title&&(!title.value.trim()||isGenericMaterialTitle(title.value))){title.value=meta.title;applied.push('제목')}
+    const sourceDate=meta.publishedDate||meta.date||'';
+    if(date&&sourceDate&&!date.value.trim()){date.value=sourceDate;if(precision)precision.value='day';applied.push('날짜')}
+    if(thumbnail&&meta.image&&(!thumbnail.value.trim()||thumbnail.value.includes('/assets/chunbong-contents/')||/\.svg(?:\?|$)/i.test(thumbnail.value))){thumbnail.value=meta.image;applied.push('썸네일')}
+    if(status)status.textContent=applied.length?`${applied.join('·')} 반영`:'새로 반영할 메타데이터 없음';
+    renderPreview();
+  }catch(error){
+    if(status){
+      const code=String(error?.message||'');
+      if(code==='source_meta_human_verification_required')status.textContent='사람 확인이 필요한 원문입니다.';
+      else if(code==='source_meta_auth_required')status.textContent='로그인 권한이 필요한 원문입니다.';
+      else if(code==='source_meta_client_render_required')status.textContent='브라우저 렌더링이 필요한 원문입니다.';
+      else if(code==='source_meta_timeout')status.textContent='원문 응답 시간이 길어 수집이 중단됐습니다.';
+      else if(code.startsWith('source_meta_fetch_'))status.textContent='원문 서버가 자동 요청을 거부했습니다.';
+      else status.textContent='메타데이터를 가져오지 못했습니다.';
+    }
+  }finally{if(button)button.disabled=false}
+}
+function bindMaterialMeta(){$$('[data-material-fetch-meta]',root).forEach(button=>{if(button.dataset.bound)return;button.dataset.bound='1';button.addEventListener('click',()=>void fetchMaterialMetaForRow(button.closest('.operator-archive-material-row')))})}
 function renderPreview(){const item=collect(),box=$('[data-archive-admin-preview] div',root);box.innerHTML=`<article><div class="operator-archive-preview-image">${item.heroImage?.src?`<img src="${esc(item.heroImage.src)}" alt="${esc(item.heroImage.alt||item.title)}">`:'<span>대표 이미지 없음</span>'}</div><div><small>${esc(item.category)} · ${esc(item.role)}</small><strong>${esc(item.title||'제목 없음')}</strong><p>${esc(item.summary||'소개를 입력하세요.')}</p><em>${esc(item.startDate||'날짜 확인 중')}</em></div></article>`}
 function bindRowControls(){$$('[data-remove-row]',root).forEach(b=>b.addEventListener('click',()=>{b.closest('.operator-archive-repeater-row')?.remove();renderPreview()}));$$('[data-move-row]',root).forEach(b=>b.addEventListener('click',()=>{const row=b.closest('.operator-archive-repeater-row'),wrap=row?.parentElement;if(!row||!wrap)return;if(b.dataset.moveRow==='up'&&row.previousElementSibling)wrap.insertBefore(row,row.previousElementSibling);if(b.dataset.moveRow==='down'&&row.nextElementSibling)wrap.insertBefore(row.nextElementSibling,row);renderPreview()}))}
-function addRow(kind){const map={result:['[data-results]',resultRow({},$$('[data-result-row]',root).length)],source:['[data-sources]',sourceRow({},$$('[data-source-row]',root).length)],timeline:['[data-timeline]',materialRow({},'timeline',$$('[data-timeline-row]',root).length)],media:['[data-media]',materialRow({},'media',$$('[data-media-row]',root).length)],gallery:['[data-gallery]',galleryRow({},$$('[data-gallery-row]',root).length)]};const [sel,html]=map[kind]||[];$(sel,root)?.insertAdjacentHTML('beforeend',html);bindRowControls();bindSourceMeta()}
+function addRow(kind){const map={result:['[data-results]',resultRow({},$$('[data-result-row]',root).length)],source:['[data-sources]',sourceRow({},$$('[data-source-row]',root).length)],timeline:['[data-timeline]',materialRow({},'timeline',$$('[data-timeline-row]',root).length)],media:['[data-media]',materialRow({},'media',$$('[data-media-row]',root).length)],gallery:['[data-gallery]',galleryRow({},$$('[data-gallery-row]',root).length)]};const [sel,html]=map[kind]||[];$(sel,root)?.insertAdjacentHTML('beforeend',html);bindRowControls();bindSourceMeta();bindMaterialMeta()}
 async function persist(type){const item=collect();setMessage(type.includes('publish')?'공개 검증 중…':'초안 저장 중…');try{const p=await json(type,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({item})});selected=p.item;setMessage(type.includes('publish')?'공개되었습니다.':'초안으로 저장했습니다.','ok');await load();selectItem(selected.id)}catch(e){setMessage(errorLabel[e.message]||`저장하지 못했습니다: ${e.message}`,'bad')}}
-function bindEditor(){const form=$('[data-archive-form]',root);form.addEventListener('input',()=>renderPreview());bindSourceMeta();$$('[data-add-row]',root).forEach(b=>b.addEventListener('click',()=>addRow(b.dataset.addRow)));bindRowControls();$$('[data-resolve-conflict]',root).forEach(b=>b.addEventListener('click',()=>{selected.verification.conflicts.splice(Number(b.dataset.resolveConflict),1);renderEditor(selected)}));$('[data-archive-preview]',root)?.addEventListener('click',renderPreview);$('[data-archive-save]',root)?.addEventListener('click',()=>persist('operator-content-archive-save'));$('[data-archive-publish]',root)?.addEventListener('click',()=>persist('operator-content-archive-publish'));$('[data-archive-delete]',root)?.addEventListener('click',async()=>{if(!selected?.id||!confirm('이 콘텐츠 기록을 삭제할까요?'))return;try{await json('operator-content-archive-delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:selected.id})});selected=null;await load();renderEditor(emptyItem())}catch(e){setMessage(errorLabel[e.message]||'삭제하지 못했습니다.','bad')}})}
+function bindEditor(){const form=$('[data-archive-form]',root);form.addEventListener('input',()=>renderPreview());bindSourceMeta();bindMaterialMeta();$$('[data-add-row]',root).forEach(b=>b.addEventListener('click',()=>addRow(b.dataset.addRow)));bindRowControls();$$('[data-resolve-conflict]',root).forEach(b=>b.addEventListener('click',()=>{selected.verification.conflicts.splice(Number(b.dataset.resolveConflict),1);renderEditor(selected)}));$('[data-archive-preview]',root)?.addEventListener('click',renderPreview);$('[data-archive-save]',root)?.addEventListener('click',()=>persist('operator-content-archive-save'));$('[data-archive-publish]',root)?.addEventListener('click',()=>persist('operator-content-archive-publish'));$('[data-archive-delete]',root)?.addEventListener('click',async()=>{if(!selected?.id||!confirm('이 콘텐츠 기록을 삭제할까요?'))return;try{await json('operator-content-archive-delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:selected.id})});selected=null;await load();renderEditor(emptyItem())}catch(e){setMessage(errorLabel[e.message]||'삭제하지 못했습니다.','bad')}})}
 function selectItem(id){const item=items.find(x=>x.id===id);if(item){renderEditor(item);renderList()}}
 function renderAutoSyncState(){
   const el=$('[data-archive-auto-state]',root);if(!el)return;
@@ -237,7 +279,7 @@ async function submitSoopImport(action){
   if(!browserImport)return;
   const box=$('[data-soop-import]',root),itemId=$('[data-soop-import-target]',box)?.value||'';
   if(action==='connect'&&!itemId){alert('연결할 콘텐츠를 선택해 주세요.');return}
-  const buttons=$('[data-soop-import-connect],[data-soop-import-draft]',box);buttons.forEach(button=>button.disabled=true);
+  const buttons=$$('[data-soop-import-connect],[data-soop-import-draft]',box);buttons.forEach(button=>button.disabled=true);
   try{
     const result=await json('operator-content-browser-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,itemId,payload:browserImport})});
     browserImport=null;await load();renderSoopHelper();
