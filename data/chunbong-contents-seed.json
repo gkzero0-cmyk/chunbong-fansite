@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T10:55:00+09:00",
+  "updatedAt": "2026-09-22T11:05:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -982,7 +982,7 @@
           "date": "2026-07-12",
           "datePrecision": "day",
           "url": "",
-          "thumbnail": "/assets/chunbong-contents/chuntacle-session-1.png",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042557/chunbong-fansite/chuntacle/session-1.webp",
           "sourceId": "",
           "note": "08:00 · VRChat · 김잇딥, 네아, 마로, 소하, 슬윤, 이투, 도람지, 문이유, 체리몽, 흠냥."
         },
@@ -993,7 +993,7 @@
           "date": "2026-07-22",
           "datePrecision": "day",
           "url": "",
-          "thumbnail": "/assets/chunbong-contents/chuntacle-session-2.png",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042600/chunbong-fansite/chuntacle/session-2.webp",
           "sourceId": "",
           "note": "08:00 · VRChat · 모이사, 다키, 연주홍, 문이유, 슬윤, 흠냥, 클라비스, 유리, 멍보리, 투미츠, 소하."
         },
@@ -1004,7 +1004,7 @@
           "date": "2026-08-02",
           "datePrecision": "day",
           "url": "",
-          "thumbnail": "/assets/chunbong-contents/chuntacle-session-3.png",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042605/chunbong-fansite/chuntacle/session-3.webp",
           "sourceId": "source-moon-streams",
           "note": "포스터에는 8시로 표기되어 있으며 방송 이력은 20:00 수업 기록과 일치합니다. 수강생 10명: 흠냥, 문이유, 김잇딥, 클라비스, 소하, 멍보리, 나밍, 유리, 모이사, 도람지."
         },
@@ -1015,7 +1015,7 @@
           "date": "2026-08-11",
           "datePrecision": "day",
           "url": "",
-          "thumbnail": "/assets/chunbong-contents/chuntacle-session-4.png",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042611/chunbong-fansite/chuntacle/session-4.webp",
           "sourceId": "source-moon-streams",
           "note": "08:00 · VRChat · 소하, 투미츠, 연주홍, 네아, 김잇딥, 클라비스, 멍보리, 나밍."
         },
@@ -1026,7 +1026,7 @@
           "date": "2026-09-14",
           "datePrecision": "day",
           "url": "",
-          "thumbnail": "/assets/chunbong-contents/chuntacle-session-5.png",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042682/chunbong-fansite/chuntacle/session-5.webp",
           "sourceId": "",
           "note": "08:00 · VRChat · 김뽁분, 김잇딥, 문이유, 연주홍, 클라비스."
         }
@@ -1047,35 +1047,35 @@
       "gallery": [
         {
           "id": "chuntacle-session-1",
-          "src": "/assets/chunbong-contents/chuntacle-session-1.png",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042557/chunbong-fansite/chuntacle/session-1.webp",
           "alt": "춘타클 제1회 포스터",
           "caption": "2026-07-12 · 춘타클 제1회 실제 포스터",
           "sourceId": ""
         },
         {
           "id": "chuntacle-session-2",
-          "src": "/assets/chunbong-contents/chuntacle-session-2.png",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042600/chunbong-fansite/chuntacle/session-2.webp",
           "alt": "춘타클 제2회 포스터",
           "caption": "2026-07-22 · 춘타클 제2회 실제 포스터",
           "sourceId": ""
         },
         {
           "id": "chuntacle-session-3",
-          "src": "/assets/chunbong-contents/chuntacle-session-3.png",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042605/chunbong-fansite/chuntacle/session-3.webp",
           "alt": "춘타클 제3회 포스터",
           "caption": "2026-08-02 · 춘타클 제3회 실제 포스터",
           "sourceId": "source-moon-streams"
         },
         {
           "id": "chuntacle-session-4",
-          "src": "/assets/chunbong-contents/chuntacle-session-4.png",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042611/chunbong-fansite/chuntacle/session-4.webp",
           "alt": "춘타클 제4회 포스터",
           "caption": "2026-08-11 · 춘타클 제4회 실제 포스터",
           "sourceId": "source-moon-streams"
         },
         {
           "id": "chuntacle-session-5",
-          "src": "/assets/chunbong-contents/chuntacle-session-5.png",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042682/chunbong-fansite/chuntacle/session-5.webp",
           "alt": "춘타클 제5회 별빛 타로 클래스 포스터",
           "caption": "2026-09-14 · 춘타클 제5회 실제 포스터",
           "sourceId": ""
@@ -1101,7 +1101,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T10:55:00+09:00",
+      "updatedAt": "2026-09-22T11:05:00+09:00",
       "seriesSessions": [
         {
           "id": "session-1",
@@ -1125,7 +1125,7 @@
           ],
           "participantCount": 10,
           "poster": {
-            "src": "/assets/chunbong-contents/chuntacle-session-1.png",
+            "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042557/chunbong-fansite/chuntacle/session-1.webp",
             "alt": "춘타클 제1회 포스터",
             "status": "verified"
           },
@@ -1155,7 +1155,7 @@
           ],
           "participantCount": 11,
           "poster": {
-            "src": "/assets/chunbong-contents/chuntacle-session-2.png",
+            "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042600/chunbong-fansite/chuntacle/session-2.webp",
             "alt": "춘타클 제2회 포스터",
             "status": "verified"
           },
@@ -1184,7 +1184,7 @@
           ],
           "participantCount": 10,
           "poster": {
-            "src": "/assets/chunbong-contents/chuntacle-session-3.png",
+            "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042605/chunbong-fansite/chuntacle/session-3.webp",
             "alt": "춘타클 제3회 포스터",
             "status": "verified"
           },
@@ -1211,7 +1211,7 @@
           ],
           "participantCount": 8,
           "poster": {
-            "src": "/assets/chunbong-contents/chuntacle-session-4.png",
+            "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042611/chunbong-fansite/chuntacle/session-4.webp",
             "alt": "춘타클 제4회 포스터",
             "status": "verified"
           },
@@ -1235,7 +1235,7 @@
           ],
           "participantCount": 5,
           "poster": {
-            "src": "/assets/chunbong-contents/chuntacle-session-5.png",
+            "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042682/chunbong-fansite/chuntacle/session-5.webp",
             "alt": "춘타클 제5회 별빛 타로 클래스 포스터",
             "status": "verified"
           },
