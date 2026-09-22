@@ -46,6 +46,25 @@ assert.equal(curatedMerge[0].timeline.length,3,'curated seed rows and stored aut
 assert.equal(curatedMerge[0].timeline.find(row=>/post\/1/.test(row.url||''))?.title,'공식 글 A','curated exact metadata should replace stale generic stored metadata');
 assert.equal(curatedMerge[0].gallery.length,1,'new curated gallery rows must survive stale stored records');
 assert.equal(curatedMerge[0].results.find(row=>row.title==='참가자')?.value,'100명','new curated result rows must survive stale stored records');
+const visualMerge=archive._internals.mergeArchiveRows([
+  {...base,id:'visual-merge',published:true,
+    heroImage:{src:'https://stimg.sooplive.com/official-hero.png',alt:'공식 대표',sourceId:'s1'},
+    gallery:[{id:'official-gallery',src:'https://stimg.sooplive.com/official-gallery.png',alt:'공식 이미지',sourceId:'s1'}],
+    sources:[{id:'s1',kind:'official',label:'SOOP 공식글',url:'https://www.sooplive.com/station/chunbongtv/post/10',visibility:'public'}]
+  }
+],[
+  {...base,id:'visual-merge',published:true,
+    heroImage:{src:'/assets/chunbong-contents/old-cover.svg',alt:'옛 커버'},
+    gallery:[
+      {id:'old-cover',src:'/assets/chunbong-contents/old-cover.svg',alt:'옛 자체제작 이미지'},
+      {id:'old-catch',src:'/assets/chunbong-contents/old-catch.svg',alt:'옛 자체제작 이미지'}
+    ],
+    sources:[{id:'s1',kind:'official',label:'SOOP 공식글',url:'https://www.sooplive.com/station/chunbongtv/post/10',visibility:'public'}]
+  }
+]);
+assert.equal(visualMerge[0].heroImage?.src,'https://stimg.sooplive.com/official-hero.png','새 공식 대표 이미지는 오래된 자체 제작 hero보다 우선해야 합니다');
+assert.deepEqual(visualMerge[0].gallery.map(row=>row.src),['https://stimg.sooplive.com/official-gallery.png'],'seed에서 제거된 오래된 자체 제작 갤러리가 Redis 저장본 때문에 다시 나타나면 안 됩니다');
+
 
 assert.match(String(archive._internals.DRAFT_PREFIX||''),/content-archive:draft:v1:/,'draft storage must be separate from public records');
 assert.match(String(archive._internals.DRAFT_INDEX||''),/content-archive:draft-index:v1/,'draft index missing');
