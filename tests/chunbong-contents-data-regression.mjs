@@ -405,6 +405,10 @@ const staleSameLengthChuntacle={...chuntacle,seriesSessions:(chuntacle.seriesSes
 const sameLengthChuntacleMerge=archiveApi._internals.mergeArchiveRows([chuntacle],[staleSameLengthChuntacle]);
 assert.equal(sameLengthChuntacleMerge[0].seriesSessions.length,5,'same-length stored Chuntacle sessions should keep all five curated sessions');
 assert.equal(sameLengthChuntacleMerge[0].seriesSessions[0]?.poster?.src,chuntacle.seriesSessions[0]?.poster?.src,'curated 16:9 poster refresh must override stale same-length stored Chuntacle sessions');
+const staleSameIdGallery={...chuntacle,gallery:(chuntacle.gallery||[]).map(row=>({...row,src:String(row.src||'').replace('/c_fill,g_center,h_900,w_1600/f_webp/q_auto:best','')}))};
+const sameIdGalleryMerge=archiveApi._internals.mergeArchiveRows([chuntacle],[staleSameIdGallery]);
+assert.equal(sameIdGalleryMerge[0].gallery.length,chuntacle.gallery.length,'same-id stale Chuntacle gallery rows must not duplicate curated 16:9 refreshes');
+assert.equal(sameIdGalleryMerge[0].gallery[0]?.src,chuntacle.gallery[0]?.src,'curated 16:9 Chuntacle gallery asset must override stale same-id stored gallery source');
 assert.equal(chuntacleMerge[0].heroImage?.src,chuntacle.heroImage?.src,'오래된 저장 hero가 최신 공식 로고 기반 16:9 대표 이미지를 덮어쓰면 안 됩니다');
 assert.equal(chuntacleMerge[0].series?.cover?.src,chuntacle.series?.cover?.src,'오래된 저장 series cover가 최신 공식 16:9 시리즈 커버를 덮어쓰면 안 됩니다');
 
