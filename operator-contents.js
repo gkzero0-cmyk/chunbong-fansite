@@ -212,6 +212,24 @@ function renderSoopHelper(){
   const connect=$('[data-soop-import-connect]',box);if(connect&&!connect.dataset.bound){connect.dataset.bound='1';connect.addEventListener('click',()=>void submitSoopImport('connect'))}
   const draft=$('[data-soop-import-draft]',box);if(draft&&!draft.dataset.bound){draft.dataset.bound='1';draft.addEventListener('click',()=>void submitSoopImport('draft'))}
 }
+async function autoRouteSoopImport(){
+  if(!browserImport)return false;
+  try{
+    const result=await json('operator-content-browser-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'auto',payload:browserImport})});
+    if(!result?.matched){
+      renderSoopHelper();
+      setMessage('애청자 글을 내부 원문으로 보관했습니다. 자동 매칭이 확실하지 않아 연결할 콘텐츠를 확인해 주세요.','ok');
+      return false;
+    }
+    const title=result.item?.title||'춘봉 콘텐츠';
+    browserImport=null;await load();renderSoopHelper();
+    if(result.item?.id)selectItem(result.item.id);
+    setMessage('애청자 글을 자동으로 '+title+'에 연결했습니다.','ok');
+    return true;
+  }catch(error){
+    renderSoopHelper();setMessage('애청자 글 자동 매칭에 실패했습니다. 직접 연결할 수 있습니다: '+error.message,'bad');return false;
+  }
+}
 async function submitSoopImport(action){
   if(!browserImport)return;
   const box=$('[data-soop-import]',root),itemId=$('[data-soop-import-target]',box)?.value||'';
@@ -237,4 +255,4 @@ async function runOfficialSync(){
   }finally{if(button)button.disabled=false}
 }
 async function load(){try{const p=await json('operator-content-archive');items=Array.isArray(p.items)?p.items:[];autoSyncMeta=p.autoSync||null;autoCandidates=Array.isArray(p.candidates)?p.candidates:[];renderList();renderAutoSyncState();renderCandidates();renderSoopHelper()}catch(e){setMessage(e.message==='archive_storage_unavailable'?'콘텐츠 저장소를 사용할 수 없습니다.':'콘텐츠 목록을 불러오지 못했습니다.','bad')}}
-export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;browserImport=readSoopImportHash();$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);$('[data-archive-admin-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-archive-select]');if(button)selectItem(button.dataset.archiveSelect)});$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());renderEditor(emptyItem());await load();renderSoopHelper()}
+export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;browserImport=readSoopImportHash();$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);$('[data-archive-admin-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-archive-select]');if(button)selectItem(button.dataset.archiveSelect)});$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());renderEditor(emptyItem());await load();if(browserImport)await autoRouteSoopImport();else renderSoopHelper()}
