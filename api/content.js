@@ -250,31 +250,6 @@ function compactDataPayload(payload, options = {}) {
 async function handler(req,res) {
   const requestUrl=new URL(req.url||'/','https://chunbong.local');
   const type=requestUrl.searchParams.get('type')||'';
-  if(type==='debug-archive-remaining'&&process.env.VERCEL_ENV!=='production'){
-    const mode=requestUrl.searchParams.get('mode')||'';
-    try{
-      if(mode==='money-bngts'){
-        const meta=await contentArchive._internals.fetchSourceMeta('https://bngts.com/contents/geunyangseobeo-meonigeim/streamers');
-        const start=Math.max(0,Number(requestUrl.searchParams.get('start')||0)),limit=Math.min(60,Math.max(1,Number(requestUrl.searchParams.get('limit')||50)));
-        return res.status(200).json({title:meta.title,total:meta.participantCount,pages:meta.pages,start,participants:(meta.participants||[]).slice(start,start+limit)});
-      }
-      if(mode==='survival-posts'){
-        const urls=['https://www.sooplive.com/station/chunbongtv/post/207564735','https://www.sooplive.com/station/chunbongtv/post/207564927'];
-        const rows=[];for(const url of urls){try{rows.push({url,meta:await contentArchive._internals.fetchSourceMeta(url)})}catch(error){rows.push({url,error:String(error?.message||error)})}}
-        return res.status(200).json({rows});
-      }
-      if(mode==='money-vods'){
-        const autoIngest=require('../lib/chunbong-content-auto-ingest');
-        const ids=new Set(['199701961','199731549','199911259','200010937','200150005','200191013','200238669','200257689','200295759','200393761','200401503','200477587','200609959','200775197','200812787','200857709','200893769','200917923','200956235','201043833','201146469','201223669','201329381','201384951','201524161','201595413']);
-        const rows=(await autoIngest.fetchPagedSoopVideos('vod',{maxPages:60})).filter(row=>ids.has(String(row.id)));
-        return res.status(200).json({count:rows.length,rows});
-      }
-      if(mode==='money-notion'){
-        return res.status(200).json(await contentArchive._internals.fetchSourceMeta('https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d'));
-      }
-      return res.status(400).json({error:'unknown_debug_mode'});
-    }catch(error){return res.status(500).json({error:String(error?.message||error)})}
-  }
   if(type==='chuntris-ranking') return handleChuntrisRanking(req,res);
   if(type==='chunbak-ranking') return handleChunbakRanking(req,res);
   if(type==='chungwagame-ranking') return handleChungwagameRanking(req,res);
