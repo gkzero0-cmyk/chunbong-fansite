@@ -105,7 +105,8 @@ assert.ok(psyContest1?.published&&psyContest2?.published,'싸이감성 노래자
 assert.equal(psyContest1?.series?.id,'psy-emotion-song-contest');
 assert.equal(psyContest2?.series?.id,'psy-emotion-song-contest');
 assert.equal(psyContest1?.datePrecision,'unknown','1회 날짜는 원문 확인 전 임의 확정하지 않습니다');
-assert.equal(psyContest2?.datePrecision,'unknown','2회 날짜는 원문 확인 전 임의 확정하지 않습니다');
+assert.equal(psyContest2?.datePrecision,'day','2회 날짜는 교차 확인된 개최일 기준으로 일 단위여야 합니다');
+assert.equal(psyContest2?.startDate,'2026-04-28','2회 개최일은 2026-04-28이어야 합니다');
 assert.ok((psyContest1?.sources||[]).some(row=>row.url==='https://www.sooplive.com/station/chunbongtv/post/124321185'),'1회 SOOP 모집글이 필요합니다');
 assert.ok((psyContest1?.media||[]).some(row=>row.url==='https://vod.sooplive.com/player/127480069'),'1회 SOOP VOD가 필요합니다');
 assert.ok((psyContest1?.participants||[]).includes('시로코'),'제1회 참가가 교차 확인된 시로코 기록이 필요합니다');
