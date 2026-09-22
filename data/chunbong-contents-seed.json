@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-23T06:35:00+09:00",
+  "updatedAt": "2026-09-23T07:02:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -4166,8 +4166,8 @@
       "summary": "춘봉이 2026년 4월 9일부터 4월 16일까지 개최한 그냥서버 첫 시즌 ‘다이아’ 기록입니다.",
       "description": "2026년 4월 9일부터 4월 16일까지 진행된 그냥서버 제1시즌입니다. SOOP 모집 원문에서 초기 모집 정원 50명, 댓글 신청·입장비 없음, ‘다이아 & 도감 힐링 티키타카’ 콘셉트가 확인됩니다. RPG·히든은 없다고 안내했으며 변경 가능성을 명시했고, 광물 증감·버프·귀환·인벤세이브·몬스터 소환·텔레포트·수선·즉사 등 후원 연동 API도 공지했습니다. 이후 방통실 참가 스트리머 목록에서는 SOOP 189명이 확인됩니다.",
       "heroImage": {
-        "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_auto,h_900,w_1600/f_webp/q_auto:best/v1790112141/chunbong-fansite/justserver/diamond-material-source.webp",
-        "alt": "그냥서버 : 다이아 자료 이미지 원본 기반 16:9 대표 이미지",
+        "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790114383/chunbong-fansite/justserver/diamond-user-selected-16x9.webp",
+        "alt": "그냥서버 : 다이아 사용자 지정 16:9 대표 이미지",
         "sourceId": "source-diamond-recruit"
       },
       "participants": [],
@@ -4439,7 +4439,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-23T06:35:00+09:00",
+      "updatedAt": "2026-09-23T07:02:00+09:00",
       "participantGroups": [
         {
           "id": "diamond-soop-participants",

@@ -81,7 +81,7 @@ assert.equal(diamondParticipantGroup?.participants?.length,189,'그냥서버 1 �
 assert.equal(new Set(diamondParticipantGroup?.participants||[]).size,189,'그냥서버 1 참가자 명단에 중복이 없어야 합니다');
 for(const name of ['BJ공파리파','냥냥두둥','모이사','쏭아야','춘봉_','하밍','히키모?!']) assert.ok(diamondParticipantGroup?.participants?.includes(name),`그냥서버 1 확인 참가자 누락: ${name}`);
 assert.equal(diamondParticipantGroup?.sourceId,'source-diamond-bngts-streamers','전체 참가자 명단은 내부 검증 출처와 연결되어야 합니다');
-assert.match(String(diamondBackfill?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/c_fill,g_auto,h_900,w_1600\/f_webp\/q_auto:best\/v\d+\/chunbong-fansite\/justserver\/diamond-material-source\.webp$/,'그냥서버 다이아는 자료 이미지 원본을 기반으로 만든 16:9 대표 이미지를 사용해야 합니다');
+assert.match(String(diamondBackfill?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/justserver\/diamond-user-selected-16x9\.webp$/,'그냥서버 다이아는 사용자가 지정한 두 번째 16:9 이미지를 대표 이미지로 사용해야 합니다');
 for(const row of diamondBackfill?.media||[]){
   if(!/vod\.sooplive\.com\/player\/(192233707|192317079|192401771|192510763|192581897|192845469|192962357)/.test(row.url||''))continue;
   assert.match(String(row.thumbnail||''),/^https:\/\/videoimg\.sooplive\.com\//,'다이아 VOD는 실제 SOOP 썸네일을 사용해야 합니다');
