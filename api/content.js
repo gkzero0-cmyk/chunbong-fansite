@@ -280,6 +280,7 @@ async function handler(req,res) {
   if(type==='operator-content-archive') return contentArchive.handleOperatorList(req,res);
   if(type==='operator-content-archive-save') return contentArchive.handleOperatorSave(req,res);
   if(type==='operator-content-archive-publish') return contentArchive.handleOperatorPublish(req,res);
+  if(type==='operator-content-source-meta') return contentArchive.handleOperatorSourceMeta(req,res);
   if(type==='operator-content-archive-delete') return contentArchive.handleOperatorDelete(req,res);
   if(type==='live'){
     res.setHeader('Cache-Control','s-maxage=30, stale-while-revalidate=30');

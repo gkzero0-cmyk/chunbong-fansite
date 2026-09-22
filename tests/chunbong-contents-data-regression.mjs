@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import {createRequire} from 'node:module';
 
 const require=createRequire(import.meta.url);
-const {normalizeArchiveItem,validateArchiveItem,formatArchiveDate}=require('../lib/chunbong-content-archive-core.js');
+const {normalizeArchiveItem,validateArchiveItem,formatArchiveDate,toPublicArchiveItem}=require('../lib/chunbong-content-archive-core.js');
 
 const monthOnly=normalizeArchiveItem({
   id:'sample',title:'샘플',category:'minecraft',role:'주최',status:'ended',
@@ -120,7 +120,7 @@ assert.match(String(psyContest2?.heroImage?.src||''),/^\/assets\/chunbong-conten
 const chuntacle=seed.items.find(item=>item.id==='chuntacle-2026');
 assert.ok(chuntacle?.published,'춘타클 should be included in the public content archive');
 assert.equal(chuntacle?.category,'class-event');
-assert.match(String(chuntacle?.heroImage?.src||''),/^\/assets\/chunbong-contents\/chuntacle-/);
+assert.match(String(chuntacle?.heroImage?.src||''),/^(?:\/assets\/chunbong-contents\/chuntacle-|https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/.*\/chunbong-fansite\/chuntacle\/session-5\.webp$)/,'춘타클 대표 이미지는 실제 제5회 포스터 또는 로컬 대체 자산이어야 합니다');
 assert.ok((chuntacle?.timeline||[]).length>=5,'춘타클 should expose all five class sessions in its timeline');
 assert.ok((chuntacle?.participants||[]).length>=19,'춘타클 should list students confirmed by the five archived posters');
 assert.ok((chuntacle?.results||[]).length>=5,'춘타클 should summarize all five confirmed class sessions');
@@ -203,3 +203,37 @@ assert.ok((chuntacle?.sources||[]).some(row=>row.url==='https://www.fmkorea.com/
 assert.ok((leopel?.results||[]).some(row=>/671명/.test(row.value||'')),'레오펠 최종 참여자 671명 기록이 필요합니다');
 assert.ok((leopel?.results||[]).some(row=>/1차 입주/.test(row.title||'')&&/140명/.test(row.value||'')),'레오펠 1차 입주 140명 기록이 필요합니다');
 assert.ok((leopel?.results||[]).some(row=>/2차 입주/.test(row.title||'')&&/171명/.test(row.value||'')),'레오펠 2차 입주 171명 기록이 필요합니다');
+
+const hiddenSourceItem=normalizeArchiveItem({
+  id:'hidden-provenance',title:'숨김 출처 테스트',category:'other',role:'주최',status:'ended',startDate:'2026',endDate:'2026',datePrecision:'year',
+  summary:'테스트',description:'테스트',heroImage:null,participants:[],results:[],seriesSessions:[],
+  timeline:[{id:'internal-row',type:'reference',title:'내부 타임라인',date:'',datePrecision:'unknown',url:'https://www.fmkorea.com/1',sourceId:'internal-source',visibility:'internal'}],
+  media:[],gallery:[],
+  sources:[
+    {id:'public-source',kind:'official',label:'공개',url:'https://www.sooplive.com/station/chunbongtv',visibility:'public'},
+    {id:'internal-source',kind:'reference',label:'내부',url:'https://www.fmkorea.com/1',visibility:'internal'}
+  ],
+  verification:{state:'official',verifiedAt:'2026-09-22',conflicts:[]},published:true
+});
+const hiddenPublic=toPublicArchiveItem(hiddenSourceItem);
+assert.equal(hiddenPublic.sources.length,1,'internal provenance sources must stay hidden from the public archive');
+assert.equal(hiddenPublic.timeline.length,0,'internal-only reference timeline rows must stay hidden from the public archive');
+assert.equal(hiddenPublic.sourceCount,1,'public source count must exclude internal provenance');
+
+const mergeVisibility=archiveApi._internals.mergeArchiveRows(
+  [{...hiddenSourceItem,id:'visibility-merge'}],
+  [{...hiddenSourceItem,id:'visibility-merge',sources:hiddenSourceItem.sources.map(row=>({...row,visibility:'public'})),timeline:hiddenSourceItem.timeline.map(row=>({...row,visibility:'public'}))}]
+);
+assert.equal(mergeVisibility[0].sources.find(row=>row.id==='internal-source')?.visibility,'internal','curated internal source visibility must survive stored records');
+assert.equal(mergeVisibility[0].timeline.find(row=>row.id==='internal-row')?.visibility,'internal','curated internal material visibility must survive stored records');
+
+assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://www.sooplive.com/station/chunbongtv/post/1'),'SOOP source metadata URL should be allowed');
+assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://example.notion.site/example'),'public Notion source metadata URL should be allowed');
+assert.equal(archiveApi._internals.allowedSourceMetaUrl('http://127.0.0.1/private'),null,'local/non-HTTPS source metadata URL must be rejected');
+
+for(const item of seed.items){
+  for(const source of item.sources||[]){
+    const internal=/bngts\.com|fmkorea\.com|streamscharts\.com/.test(String(source.url||''));
+    if(internal)assert.equal(source.visibility,'internal',`internal reference source should not be public: ${source.url}`);
+  }
+}
