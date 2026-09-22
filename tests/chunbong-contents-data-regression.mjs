@@ -73,6 +73,15 @@ const leopel=seed.items.find(item=>item.id==='leopel');
 assert.ok(leopel?.published,'verified Leopol record should be publicly seeded');
 assert.ok((leopel?.sources||[]).length>=2,'Leopol should be cross-checked with multiple public sources');
 assert.equal(leopel?.role,'주최 · 기획','Leopol role should match directly supported source wording');
+assert.equal(leopel?.participantCount,671,'레오펠 최종 참여자 수는 671명이어야 합니다');
+assert.equal((leopel?.participantGroups||[]).reduce((sum,row)=>sum+Number(row.count||0),0),560,'레오펠 1~3차 구조화 입주 명단 합계는 560명이어야 합니다');
+assert.deepEqual([...new Set((leopel?.participantGroups||[]).map(row=>row.stage))],['1차 입주','2차 입주','3차 입주'],'레오펠 참가자 그룹은 1~3차 입주 계층으로 표시해야 합니다');
+assert.deepEqual((leopel?.participantGroups||[]).map(row=>row.count),[140,68,17,127,44,104,60],'레오펠 플랫폼·번외 그룹별 인원수가 교차확인 자료와 일치해야 합니다');
+assert.equal(new Set((leopel?.participantGroups||[]).flatMap(row=>row.participants||[])).size,560,'레오펠 구조화 입주 명단 560명은 중복 없이 유지되어야 합니다');
+assert.ok((leopel?.participantGroups||[]).find(row=>row.id==='leopel-entry-1-other')?.participants.includes('다비'),'레오펠 1차 치지직·YouTube 누락 명단이 보강되어야 합니다');
+assert.ok((leopel?.participantGroups||[]).find(row=>row.id==='leopel-entry-3-soop')?.participants.includes('강다래'),'레오펠 3차 SOOP 명단이 보강되어야 합니다');
+assert.ok((leopel?.participantGroups||[]).find(row=>row.id==='leopel-entry-3-other')?.participants.includes('아야 AYA'),'레오펠 3차 치지직·YouTube 명단이 보강되어야 합니다');
+assert.ok((leopel?.sources||[]).some(row=>row.id==='source-nemopix-leopel'&&/nemopix\.xyz\/content\/leopel/i.test(row.url||'')),'Nemopix 레오펠 지통실을 교차확인 출처로 유지해야 합니다');
 for(const item of seed.items) assert.deepEqual(validateArchiveItem(normalizeArchiveItem(item),{publishing:true}),[]);
 
 
@@ -120,6 +129,18 @@ assert.equal(mergedMoneygame.participantCount,658,'머니게임 참가자 수는
 assert.ok((mergedMoneygame.participantGroups||[]).every(row=>row.stage==='1차 입주'),'머니게임 1차 입주 단계 정보가 오래된 저장값에 의해 사라지면 안 됩니다');
 assert.equal((mergedMoneygame.results||[]).some(row=>row.title==='입주 순서'||row.title==='등록 참가자'),false,'머니게임의 오래된 입주/참가자 결과 행은 공개 데이터에 남으면 안 됩니다');
 assert.match(String((mergedMoneygame.timeline||[]).find(row=>row.id==='money-entry-order')?.title||''),/1차 입주 입장 순서/,'머니게임 입주 타임라인도 1차 입주 하위 순서로 표시해야 합니다');
+
+const mergedLeopel=archiveApi._internals.mergeArchiveRows([leopel],[{
+  ...leopel,
+  description:'stale leopel description',
+  participantCount:311,
+  participantGroups:(leopel.participantGroups||[]).slice(0,3).map(row=>({...row,stage:''})),
+  results:[{title:'총 참여자',value:'671명 · 외부 교차 자료 최종 집계'},{title:'1차 입주',value:'SOOP 140명'}]
+}])[0];
+assert.equal(mergedLeopel.description,leopel.description,'레오펠 설명은 오래된 저장값보다 교정된 seed를 우선해야 합니다');
+assert.equal(mergedLeopel.participantCount,671,'레오펠 전체 참가자 수는 오래된 311명 저장값보다 671명 교정값을 우선해야 합니다');
+assert.equal((mergedLeopel.participantGroups||[]).reduce((sum,row)=>sum+Number(row.count||0),0),560,'레오펠 저장 명단이 불완전해도 1~3차 560명 구조를 복원해야 합니다');
+assert.ok((mergedLeopel.results||[]).some(row=>row.title==='3차 입주'&&/164명/.test(row.value||'')),'레오펠 3차 입주 요약이 공개 데이터에 유지되어야 합니다');
 
 const notionGuideSample=archiveApi._internals.notionGuideRows({
   title:'테스트 Notion',pageId:'page-root',
