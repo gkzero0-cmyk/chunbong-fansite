@@ -245,6 +245,7 @@ assert.equal(mergeVisibility[0].timeline.find(row=>row.id==='internal-row')?.vis
 
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://www.sooplive.com/station/chunbongtv/post/1'),'SOOP source metadata URL should be allowed');
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://example.notion.site/example'),'public Notion source metadata URL should be allowed');
+assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d'),'public app.notion.com source metadata URL should be allowed');
 assert.equal(archiveApi._internals.allowedSourceMetaUrl('http://127.0.0.1/private'),null,'local/non-HTTPS source metadata URL must be rejected');
 
 for(const item of seed.items){
