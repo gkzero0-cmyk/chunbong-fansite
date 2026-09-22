@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T08:46:00+09:00",
+  "updatedAt": "2026-09-22T09:12:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -377,7 +377,7 @@
       "endDate": "",
       "datePrecision": "day",
       "summary": "2026년 4월 9일 춘봉이 개최한 첫 다이아 서버 「그냥서버」.",
-      "description": "그냥서버 시리즈의 첫 시즌입니다. 춘봉 SOOP 방송국의 관련 게시글, 공개 Notion 자료, 7개의 SOOP VOD를 회차 자료로 연결합니다. VOD 제목과 세부 날짜는 원문 메타데이터가 확인되는 범위에서만 표시하고, 확인되지 않은 정보는 추측하지 않습니다.",
+      "description": "그냥서버 시리즈의 첫 시즌입니다. 춘봉 SOOP 방송국의 관련 게시글, 공개 Notion 자료, 7개의 SOOP VOD를 핵심 기록으로 연결하고, 방통실의 콘텐츠·스트리머 아카이브를 참가자 및 콘텐츠 구조 교차확인용 보조 자료로 사용합니다. VOD 제목과 세부 날짜, 참가자 명단은 원문에서 직접 확인되는 범위에서만 표시합니다.",
       "heroImage": null,
       "participants": [],
       "results": [],
@@ -403,6 +403,28 @@
           "thumbnail": "",
           "sourceId": "notion-guide",
           "note": "그냥서버 1 관련 공개 Notion 자료입니다."
+        },
+        {
+          "id": "bngts-content",
+          "type": "reference",
+          "title": "그냥서버 콘텐츠 아카이브",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://bngts.com/contents/just",
+          "thumbnail": "",
+          "sourceId": "bngts-content",
+          "note": "콘텐츠 전체 정보와 시청 기록을 보조 확인하는 외부 아카이브입니다."
+        },
+        {
+          "id": "bngts-streamers",
+          "type": "reference",
+          "title": "그냥서버 참가 스트리머 목록",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://bngts.com/contents/just/streamers",
+          "thumbnail": "",
+          "sourceId": "bngts-streamers",
+          "note": "참가 스트리머의 플랫폼·역할 정보를 교차 확인하는 보조 자료입니다."
         }
       ],
       "media": [
@@ -539,6 +561,18 @@
           "kind": "official",
           "label": "SOOP VOD · 그냥서버 1 관련 영상 7",
           "url": "https://vod.sooplive.com/player/192962357"
+        },
+        {
+          "id": "bngts-content",
+          "kind": "reference",
+          "label": "방통실 · 그냥서버 콘텐츠 아카이브",
+          "url": "https://bngts.com/contents/just"
+        },
+        {
+          "id": "bngts-streamers",
+          "kind": "reference",
+          "label": "방통실 · 그냥서버 참가 스트리머 목록",
+          "url": "https://bngts.com/contents/just/streamers"
         }
       ],
       "verification": {
@@ -547,7 +581,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T08:46:00+09:00"
+      "updatedAt": "2026-09-22T09:12:00+09:00"
     },
     {
       "id": "justserver-survival",
