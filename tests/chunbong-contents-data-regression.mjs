@@ -81,7 +81,7 @@ assert.equal(diamondParticipantGroup?.participants?.length,189,'그냥서버 1 �
 assert.equal(new Set(diamondParticipantGroup?.participants||[]).size,189,'그냥서버 1 참가자 명단에 중복이 없어야 합니다');
 for(const name of ['BJ공파리파','냥냥두둥','모이사','쏭아야','춘봉_','하밍','히키모?!']) assert.ok(diamondParticipantGroup?.participants?.includes(name),`그냥서버 1 확인 참가자 누락: ${name}`);
 assert.equal(diamondParticipantGroup?.sourceId,'source-diamond-bngts-streamers','전체 참가자 명단은 내부 검증 출처와 연결되어야 합니다');
-assert.match(String(diamondBackfill?.heroImage?.src||''),/^https:\/\/stimg\.sooplive\.com\//,'그냥서버 다이아는 공식 모집 이미지를 대표로 사용해야 합니다');
+assert.match(String(diamondBackfill?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/justserver\/diamond-cover-16x9\.jpg$/,'그냥서버 다이아는 실제 SOOP 자료 기반 16:9 대표 이미지를 사용해야 합니다');
 for(const row of diamondBackfill?.media||[]){
   if(!/vod\.sooplive\.com\/player\/(192233707|192317079|192401771|192510763|192581897|192845469|192962357)/.test(row.url||''))continue;
   assert.match(String(row.thumbnail||''),/^https:\/\/videoimg\.sooplive\.com\//,'다이아 VOD는 실제 SOOP 썸네일을 사용해야 합니다');
@@ -148,12 +148,16 @@ assert.equal(justserver?.startDate,'2026-06-24');
 assert.equal(justserver?.endDate,'2026-07-15');
 assert.ok((justserver?.sources||[]).some(source=>/sooplive\.com/.test(source.url)),'JustServer should include a SOOP source');
 assert.match(String(justserver?.heroImage?.src||''),/^https:\/\//,'머니게임 대표 이미지는 실제 공식/방송 이미지여야 합니다');
+assert.match(String(justserver?.heroImage?.src||''),/justserver\/moneygame-selected-source\.jpg$/,'머니게임 사용자 지정 16:9 실제 방송 이미지를 대표로 사용해야 합니다');
+assert.match(String(justserver?.series?.cover?.src||''),/justserver\/moneygame-selected-source\.jpg$/,'그냥서버 시리즈 왼쪽 대표 이미지도 사용자 지정 머니게임 실제 자료여야 합니다');
 
 const psyContest1=seed.items.find(item=>item.id==='psy-emotion-song-contest-1');
 const psyContest2=seed.items.find(item=>item.id==='psy-emotion-song-contest-2');
 assert.ok(psyContest1?.published&&psyContest2?.published,'싸이감성 노래자랑 1·2회는 각각 공개 레코드여야 합니다');
 assert.equal(psyContest1?.series?.id,'psy-emotion-song-contest');
 assert.equal(psyContest2?.series?.id,'psy-emotion-song-contest');
+assert.match(String(psyContest1?.series?.cover?.src||''),/psy\/series-selected-source\.jpg$/,'싸이감성 시리즈 대표 이미지는 사용자가 지정한 제1회 실제 VOD 이미지를 사용해야 합니다');
+assert.equal(psyContest2?.series?.cover?.src,psyContest1?.series?.cover?.src,'싸이감성 제1·2회는 같은 실제 자료 기반 시리즈 커버를 사용해야 합니다');
 assert.equal(psyContest1?.datePrecision,'unknown','1회 날짜는 원문 확인 전 임의 확정하지 않습니다');
 assert.equal(psyContest2?.datePrecision,'day','2회 날짜는 교차 확인된 개최일 기준으로 일 단위여야 합니다');
 assert.equal(psyContest2?.startDate,'2026-04-28','2회 개최일은 2026-04-28이어야 합니다');
@@ -172,7 +176,7 @@ assert.equal((psyContest2?.participantGroups||[]).find(row=>row.id==='psy2-confi
 assert.ok((psyContest2?.results||[]).some(row=>row.title==='심사위원'&&/춘봉/.test(row.value||'')&&/릴파/.test(row.value||'')),'2회 심사위원 정보가 필요합니다');
 assert.ok((psyContest2?.results||[]).some(row=>row.title==='총상금'&&/100만 원/.test(row.value||'')&&/13,000개/.test(row.value||'')),'2회 상금 계획이 필요합니다');
 assert.match(String(psyContest1?.heroImage?.src||''),/^https:\/\//,'싸이감성 1회 대표 이미지는 실제 SOOP VOD 이미지여야 합니다');
-assert.match(String(psyContest2?.heroImage?.src||''),/^https:\/\/stimg\.sooplive\.com\//,'싸이감성 2회 대표 이미지는 공식 타이틀 이미지를 사용해야 합니다');
+assert.match(String(psyContest2?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/psy\/session-2-cover-16x9\.jpg$/,'싸이감성 2회 대표 이미지는 실제 SOOP 방송 기반 16:9 자산을 사용해야 합니다');
 
 
 const chuntacle=seed.items.find(item=>item.id==='chuntacle-2026');
@@ -212,11 +216,11 @@ const expectedStudents={
 for(const session of chuntacleSessions){
   assert.deepEqual(session.participants,expectedStudents[session.number],`춘타클 ${session.number}회 수강생은 실제 포스터와 일치해야 합니다`);
   assert.equal(session.poster?.status,'verified',`춘타클 ${session.number}회 실제 포스터가 검증 상태여야 합니다`);
-  assert.match(session.poster?.src||'',/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/chuntacle\/session-[1-5]\.webp$/,`춘타클 ${session.number}회 실제 포스터 영구 자산 URL이 필요합니다`);
+  assert.match(session.poster?.src||'',/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/c_fill,g_center,h_900,w_1600\/f_webp\/q_auto:best\/v\d+\/chunbong-fansite\/chuntacle\/session-[1-5]\.webp$/,`춘타클 ${session.number}회 포스터는 동일한 1600×900 표시 자산을 사용해야 합니다`);
 }
 assert.ok((chuntacle?.timeline||[]).some(row=>row.id==='session-5-final-poster'&&row.date==='2026-09-14'),'춘타클 5회 최종 포스터 기록이 필요합니다');
 assert.ok(!(chuntacle?.timeline||[]).some(row=>row.date==='2026-09-14'&&/4회/.test(row.title||'')),'9월 14일 기록을 4회로 잘못 표기하면 안 됩니다');
-for(const row of chuntacle?.gallery||[]) assert.match(row.src||'',/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/chuntacle\/session-[1-5]\.webp$/,'춘타클 갤러리는 실제 고해상도 포스터 자산만 사용해야 합니다');
+for(const row of chuntacle?.gallery||[]) assert.match(row.src||'',/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/c_fill,g_center,h_900,w_1600\/f_webp\/q_auto:best\/v\d+\/chunbong-fansite\/chuntacle\/session-[1-5]\.webp$/,'춘타클 갤러리는 동일한 1600×900 실제 포스터 자산을 사용해야 합니다');
 
 
 for(const id of ['159705141','161715755','163281747','165257051']) assert.ok((leopel?.timeline||[]).some(row=>row.url===`https://www.sooplive.com/station/chunbongtv/post/${id}`),`레오펠 SOOP 게시글 누락: ${id}`);
@@ -244,7 +248,7 @@ assert.equal(leopel?.series?.id,'leopel','레오펠은 대표 시리즈 메타�
 assert.equal(psyContest1?.series?.id,'psy-emotion-song-contest','싸이감성 노래자랑 제1회는 대표 시리즈 메타데이터를 가져야 합니다');
 assert.equal(psyContest2?.series?.id,'psy-emotion-song-contest','싸이감성 노래자랑 제2회는 같은 대표 시리즈에 속해야 합니다');
 assert.ok((survival?.media||[]).some(row=>row.url==='https://vod.sooplive.com/player/207560243'&&/적자생존 설명회/.test(row.title||'')),'적자생존 설명회 VOD가 필요합니다');
-assert.match(String(survival?.heroImage?.src||''),/^https:\/\/stimg\.sooplive\.com\//,'적자생존 대표 이미지는 공식 SOOP 첨부 이미지를 사용해야 합니다');
+assert.match(String(survival?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/c_fill,g_auto,h_900,w_1600\/f_webp\/q_auto:best\/v\d+\/chunbong-fansite\/justserver\/survival-source\.webp$/,'적자생존 대표 이미지는 공식 SOOP 첨부 이미지 기반 16:9 자산이어야 합니다');
 assert.deepEqual((survival?.participantGroups||[]).map(row=>row.count),[100,100,100,100,100],'적자생존 1차 입주자는 100명씩 5개조여야 합니다');
 assert.equal((survival?.participantGroups||[]).reduce((sum,row)=>sum+(row.participants||[]).length,0),500,'적자생존 1차 입주자 500명 전체 명단을 구조화해야 합니다');
 assert.equal((survival?.participants||[]).length,500,'적자생존 검색용 참가자 명단도 500명이어야 합니다');
@@ -363,7 +367,7 @@ const leopelGroupsItem=seed.items.find(item=>item.id==='leopel');
 assert.equal(leopelGroupsItem?.participantGroups?.length,3,'레오펠은 1차/2차 플랫폼별 참가자 그룹을 제공해야 합니다');
 assert.deepEqual((leopelGroupsItem?.participantGroups||[]).map(group=>group.count),[140,127,44],'레오펠 참가자 그룹 인원수가 교차 자료와 일치해야 합니다');
 assert.equal((leopelGroupsItem?.participantGroups||[]).reduce((sum,group)=>sum+(group.participants||[]).length,0),311,'레오펠 1·2차 확인 명단은 총 311명이어야 합니다');
-assert.match(String(leopelGroupsItem?.heroImage?.src||''),/res\.cloudinary\.com\/lyppgyei\/.*\/leopel\/logo\.webp$/,'레오펠 대표 이미지는 실제 보존 로고를 사용해야 합니다');
+assert.match(String(leopelGroupsItem?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/leopel\/presentation-source\.jpg$/,'레오펠 대표 이미지는 실제 SOOP 발표회 기반 16:9 자산을 사용해야 합니다');
 
 const survivalEnriched=seed.items.find(item=>item.id==='justserver-survival');
 for(const id of ['survival-prep-applicants','survival-prep-before-open','survival-prep-qa','survival-prep-briefing']){
