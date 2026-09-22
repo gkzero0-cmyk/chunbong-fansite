@@ -330,6 +330,13 @@ async function handler(req,res) {
     }
     return res.status(200).json({pageId,out});
   }
+  if(type==='soop-script-list'&&process.env.VERCEL_ENV!=='production'){
+    const page='https://www.sooplive.com/station/chunbongtv/post/192179233';
+    const response=await fetch(page,{headers:{'User-Agent':'Mozilla/5.0','Accept':'text/html'}});
+    const raw=await response.text();
+    const scripts=[...raw.matchAll(/<script\\b[^>]*src=["']([^"']+)["']/gi)].map(m=>m[1]);
+    return res.status(200).json({count:scripts.length,scripts});
+  }
   if(type==='soop-board-probe'&&process.env.VERCEL_ENV!=='production'){
     const hosts=['https://chapi.sooplive.com','https://chapi.sooplive.co.kr'];
     const params=new URLSearchParams({per_page:'100',start_date:'2026-04-01',end_date:'2026-04-30',field:'title,contents,user_nick,user_id',keyword:'그냥서버',type:'all',order_by:'reg_date',page:'1'});
