@@ -8,7 +8,7 @@ const items=[
     id:'leopel',title:'레오펠: 사자의 노래',aliases:['레오펠'],category:'minecraft',role:'주최 · 기획',status:'ended',series:{id:'leopel',title:'레오펠',subtitle:'사자의 노래',description:'레오펠 시리즈',order:40,cover:{src:'/assets/chunbong-contents/leopel-cover.svg',alt:'레오펠'}},
     startDate:'2025-06-05',endDate:'2025-07-06',datePrecision:'day',summary:'플랫폼 통합 마인크래프트 서버',
     description:'레오펠 소개',heroImage:{src:'/assets/chunbong-contents/leopel-cover.svg',alt:'레오펠 커버'},
-    participants:['춘봉','테스트 참가자'],sourceCount:2,
+    participants:['춘봉','테스트 참가자'],participantGroups:[{id:'g1',title:'1차 입주자',platform:'SOOP',count:3,participants:['가습기','감블러','강단해'],sourceId:'s2',note:'테스트 입주 명단'}],sourceCount:2,
     timeline:[{id:'open',type:'article',title:'레오펠 서버 오픈',date:'2025-06-06',datePrecision:'day',url:'https://pick.sooplive.com/daily/view/162435',thumbnail:'',sourceId:'s1',note:'오픈 기록'}],
     media:[],
     gallery:[{id:'poster',src:'/assets/chunbong-contents/leopel-cover.svg',url:'https://pick.sooplive.com/daily/view/162209',alt:'레오펠 포스터',caption:'레오펠 대표 이미지',sourceId:'s2'}],
@@ -170,6 +170,12 @@ try{
     assert.ok(await page.locator('[data-archive-browser]').isHidden(),'list should hide in detail mode');
     await assertNoHorizontalOverflow(page,'desktop detail');
 
+    await page.locator('[data-archive-tab="people"]').click();
+    assert.equal(await page.locator('.archive-participant-group').count(),1,'participant groups should render in people tab');
+    await page.locator('.archive-participant-group summary').click();
+    assert.match((await page.locator('.archive-participant-group').textContent())||'',/가습기/,'participant group should reveal names');
+    await assertNoHorizontalOverflow(page,'desktop participant groups');
+
     await page.locator('[data-archive-tab="timeline"]').click();
     assert.equal(await page.locator('.archive-timeline-item').count(),1,'timeline should render');
     assert.match((await page.locator('.archive-timeline-item').textContent())||'',/SOOP PICK 오픈/);
@@ -207,6 +213,9 @@ try{
     await assertNoHorizontalOverflow(page,'mobile detail');
     const columns=await page.locator('.archive-detail-hero').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length);
     assert.equal(columns,1,'mobile detail hero should collapse to one column');
+    await page.locator('[data-archive-tab="people"]').click();
+    await page.locator('.archive-participant-group summary').click();
+    await assertNoHorizontalOverflow(page,'mobile participant groups');
     assert.deepEqual(errors,[],errors.join(' | '));
   }
   {
