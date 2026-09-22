@@ -33,6 +33,13 @@ const items=[
     gallery:[],sources:[{id:'p2s',kind:'official',label:'SOOP 모집글',url:'https://www.sooplive.com/station/chunbongtv/post/192031471'},{id:'v2s',kind:'official',label:'SOOP VOD',url:'https://vod.sooplive.com/player/194116989'},{id:'f2s',kind:'reference',label:'FM코리아 보조 자료',url:'https://www.fmkorea.com/9750851296'}]
   },
   {
+    id:'justserver-1',title:'그냥서버 1 · 다이아',aliases:['그냥서버 1','다이아'],category:'minecraft',role:'주최',status:'ended',
+    series:{id:'justserver',title:'그냥서버',subtitle:'마인크래프트 서버 시리즈',description:'그냥서버 시즌 기록',order:10,cover:{src:'/assets/chunbong-contents/justserver-moneygame-cover.svg',alt:'그냥서버'}},
+    startDate:'2026-04-09',endDate:'2026-04-16',datePrecision:'day',summary:'그냥서버 첫 시즌',description:'그냥서버 1 소개',
+    heroImage:null,participants:[],participantCount:0,sourceCount:2,timeline:[],media:[{id:'j1v',type:'vod',title:'그냥서버 1 다시보기',date:'',datePrecision:'unknown',url:'https://vod.sooplive.com/player/192233707',thumbnail:'',sourceId:'',note:'다시보기'}],gallery:[],
+    sources:[{id:'j1s',kind:'official',label:'SOOP 공식',url:'https://www.sooplive.com/station/chunbongtv/post/192179233'},{id:'j1r',kind:'reference',label:'방통실 참가자',url:'https://bngts.com/contents/just/streamers'}]
+  },
+  {
     id:'justserver-moneygame',title:'그냥서버 : 머니게임',aliases:['머니게임'],category:'minecraft',role:'주최',status:'ended',
     series:{id:'justserver',title:'그냥서버',subtitle:'마인크래프트 서버 시리즈',description:'그냥서버 시즌 기록',order:10,cover:{src:'/assets/chunbong-contents/justserver-moneygame-cover.svg',alt:'그냥서버'}},
     startDate:'2026-06-24',endDate:'2026-07-15',datePrecision:'day',summary:'머니게임 기록',description:'머니게임 소개',
@@ -40,9 +47,9 @@ const items=[
     sources:[{id:'jm1',kind:'official',label:'SOOP 공식',url:'https://www.sooplive.com/station/chunbongtv'}]
   },
   {
-    id:'justserver-survival',title:'그냥서버 : 적자생존',aliases:['적자생존'],category:'minecraft',role:'주최',status:'ended',
+    id:'justserver-survival',title:'그냥서버 : 적자생존',aliases:['적자생존'],category:'minecraft',role:'주최',status:'upcoming',
     series:{id:'justserver',title:'그냥서버',subtitle:'마인크래프트 서버 시리즈',description:'그냥서버 시즌 기록',order:10,cover:{src:'/assets/chunbong-contents/justserver-moneygame-cover.svg',alt:'그냥서버'}},
-    startDate:'2026',endDate:'2026',datePrecision:'year',summary:'적자생존 기록',description:'적자생존 소개',
+    startDate:'2026-09-30',endDate:'2026-10-21',datePrecision:'day',summary:'적자생존 예정 기록',description:'적자생존 소개',
     heroImage:{src:'/assets/chunbong-contents/justserver-survival-cover.svg',alt:'적자생존'},participants:[],sourceCount:1,timeline:[],media:[],gallery:[],
     sources:[{id:'js1',kind:'official',label:'SOOP 공식',url:'https://www.sooplive.com/station/chunbongtv'}]
   }
@@ -57,7 +64,7 @@ const chuntacleItem={
     {id:'session-2',number:2,title:'춘타클 제2회',date:'2026-07-22',datePrecision:'day',time:'08:00',venue:'VRChat',participants:['모이사','문이유'],participantCount:11,poster:{src:'',alt:'춘타클 제2회 포스터',status:'pending'},note:'2회 기록'},
     {id:'session-5',number:5,title:'춘타클 제5회',date:'2026-09-14',datePrecision:'day',time:'08:00',venue:'VRChat',participants:['김뽁분','김잇딥','문이유','연주홍','클라비스'],participantCount:5,poster:{src:'https://res.cloudinary.com/lyppgyei/image/upload/v1/chunbong-fansite/chuntacle/session-5.webp',alt:'춘타클 제5회 포스터',status:'verified'},note:'5회 기록'}
   ],
-  timeline:[],media:[],gallery:[],sources:[{id:'s4',kind:'reference',label:'방송 이력',url:'https://streamscharts.com/channels/moon26/streams?platform=afreecatv'}]
+  timeline:[],media:[{id:'cv1',type:'vod',title:'춘타클 제1회 SOOP 다시보기',date:'2026-07-12',datePrecision:'day',url:'https://vod.sooplive.com/player/201292605',thumbnail:'',sourceId:'',note:'1회 다시보기'},{id:'cy1',type:'youtube',title:'춘타클 관련 YouTube 영상',date:'',datePrecision:'unknown',url:'https://www.youtube.com/watch?v=b-jlKXqLakU',thumbnail:'https://i.ytimg.com/vi/b-jlKXqLakU/hqdefault.jpg',sourceId:'',note:'관련 영상'}],gallery:[],sources:[{id:'s4',kind:'reference',label:'방송 이력',url:'https://streamscharts.com/channels/moon26/streams?platform=afreecatv'}]
 };
 
 async function installApi(page){
@@ -116,17 +123,19 @@ try{
     await installApi(page);
     await page.goto(base+'/chunbong-contents.html',{waitUntil:'networkidle'});
 
-    assert.equal(await page.locator('.archive-card').count(),5,'desktop should render archive cards');
-    assert.match((await page.locator('[data-archive-count]').textContent())||'',/전체 5개/);
-    assert.equal(await page.locator('.archive-series-card').count(),3,'series home should group five records into three series');
+    assert.equal(await page.locator('.archive-card').count(),6,'desktop should render archive cards');
+    assert.match((await page.locator('[data-archive-count]').textContent())||'',/전체 6개/);
+    assert.equal(await page.locator('.archive-series-card').count(),3,'series home should group six records into three series');
     await page.locator('[data-archive-series-open="justserver"]').click();
     await page.waitForURL(/series=justserver/);
-    assert.equal(await page.locator('.archive-card').count(),2,'그냥서버 시리즈에는 머니게임과 적자생존 두 시즌만 보여야 합니다');
-    assert.equal(await page.locator('.archive-series-child-links [data-archive-open]').count(),2,'그냥서버 시리즈 랜딩에 두 시즌 바로가기가 있어야 합니다');
+    assert.equal(await page.locator('.archive-card').count(),3,'그냥서버 시리즈에는 그냥서버 1·머니게임·적자생존 세 시즌이 보여야 합니다');
+    assert.equal(await page.locator('.archive-series-child-links [data-archive-open]').count(),3,'그냥서버 시리즈 랜딩에 세 시즌 바로가기가 있어야 합니다');
+    assert.match((await page.locator('.archive-series-child-links').textContent())||'',/그냥서버 1/);
+    assert.match((await page.locator('.archive-series-child-links').textContent())||'',/예정/,'적자생존은 예정 상태로 보여야 합니다');
     await page.locator('.archive-series-child-links [data-archive-open="justserver-survival"]').click();
     await page.waitForURL(/id=justserver-survival/);
     await page.locator('.archive-sibling-series-nav').waitFor({state:'visible'});
-    assert.equal(await page.locator('.archive-sibling-series-nav [data-archive-sibling]').count(),2,'그냥서버 상세에서 시즌 간 전환이 가능해야 합니다');
+    assert.equal(await page.locator('.archive-sibling-series-nav [data-archive-sibling]').count(),3,'그냥서버 상세에서 세 시즌 간 전환이 가능해야 합니다');
     await page.locator('[data-archive-back]').click();
     await page.waitForFunction(()=>!document.querySelector('[data-archive-browser]')?.hidden);
     await page.locator('[data-archive-series-back]').click();
@@ -137,7 +146,7 @@ try{
     assert.match((await page.locator('.archive-card h2').textContent())||'',/레오펠/);
 
     await page.locator('[data-archive-reset]').first().click();
-    assert.equal(await page.locator('.archive-card').count(),5,'reset should restore results');
+    assert.equal(await page.locator('.archive-card').count(),6,'reset should restore results');
     await page.locator('[data-archive-category]').selectOption('song');
     assert.equal(await page.locator('.archive-card').count(),2,'song category should show both 싸이감성 editions');
     assert.equal(await page.locator('.archive-card h2').count(),2,'싸이감성 1·2회가 각각 카드로 보여야 합니다');
@@ -185,7 +194,7 @@ try{
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
     await installApi(page);
     await page.goto(base+'/chunbong-contents.html',{waitUntil:'networkidle'});
-    assert.equal(await page.locator('.archive-card').count(),5,'mobile should render archive cards');
+    assert.equal(await page.locator('.archive-card').count(),6,'mobile should render archive cards');
     await assertNoHorizontalOverflow(page,'mobile list');
 
     const boxes=await page.locator('.archive-card').evaluateAll(nodes=>nodes.map(node=>{
@@ -216,6 +225,11 @@ try{
     assert.equal(new URL(page.url()).searchParams.get('session'),'5','회차 선택은 URL 상태에 남아야 합니다');
     assert.match((await page.locator('.archive-series-copy h3').textContent())||'',/제5회/);
     assert.ok(await page.locator('[data-archive-series-poster]').isVisible(),'5회 실제 포스터 버튼이 보여야 합니다');
+    await page.locator('[data-archive-tab="media"]').click();
+    assert.equal(await page.locator('[data-archive-media-filter]').count(),3,'media type filters should appear for 전체·다시보기·YouTube');
+    await page.locator('[data-archive-media-filter="youtube"]').click();
+    assert.equal(await page.locator('[data-archive-media-type="youtube"]:visible').count(),1,'YouTube 필터는 YouTube 영상만 보여야 합니다');
+    assert.equal(await page.locator('[data-archive-media-type="vod"]:visible').count(),0,'YouTube 필터에서 VOD는 숨겨야 합니다');
     await assertNoHorizontalOverflow(page,'desktop chuntacle series detail');
     assert.deepEqual(errors,[],errors.join(' | '));
   }
