@@ -35,7 +35,7 @@ function archiveAudit(item){
   const structuredText=[item.description||'',...(item.results||[]).flatMap(row=>[row.title||row.label||'',row.value||row.name||'']),...(item.timeline||[]).flatMap(row=>[row.title||'',row.note||''])].join(' ');
   const hasRuleStructure=/(규칙|참가 조건|신청 조건|제한|금지|허용)/.test(structuredText);
   const hasSystemStructure=/(시스템|경제|재화|진행 방식|게임 방식|승리 조건|정산|랭킹|상점|강화)/.test(structuredText);
-  if(hasNotion&&!(hasRuleStructure&&hasSystemStructure))issues.push(['Notion 규칙·시스템 미구조화','Notion 자료가 연결돼 있지만 규칙과 핵심 시스템이 모두 구조화되었는지 확인해야 합니다.']);
+  if(hasNotion&&!(hasRuleStructure&&hasSystemStructure))issues.push(['Notion 본문 미구조화','Notion 자료가 연결돼 있지만 규칙과 핵심 시스템이 모두 구조화되었는지 확인해야 합니다.']);
   const soopPosts=(item.timeline||[]).filter(row=>/sooplive\.com\/station\//i.test(String(row.url||''))&&(!String(row.date||'').trim()||isGenericMaterialTitle(row.title)));
   if(soopPosts.length)issues.push(['SOOP 게시글 메타데이터 확인',`${soopPosts.length}개 게시글의 실제 제목·게시일 확인이 남아 있습니다.`]);
   const incompleteMedia=(item.media||[]).filter(row=>{
