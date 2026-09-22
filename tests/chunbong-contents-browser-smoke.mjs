@@ -238,9 +238,15 @@ try{
   {
     const page=await browser.newPage({serviceWorkers:'block',viewport:{width:1440,height:900}});
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
+    const requestFailures=[];page.on('requestfailed',request=>requestFailures.push(request.url()+': '+(request.failure()?.errorText||'failed')));
     await installOperatorApi(page);
     await page.goto(base+'/operator.html',{waitUntil:'networkidle'});
-    await page.waitForFunction(()=>!document.querySelector('#operator-dashboard')?.hidden);
+    try{
+      await page.waitForFunction(()=>!document.querySelector('#operator-dashboard')?.hidden,null,{timeout:10000});
+    }catch(error){
+      const state=await page.evaluate(()=>({dashboardHidden:document.querySelector('#operator-dashboard')?.hidden,loginHidden:document.querySelector('#operator-login')?.hidden,status:document.querySelector('#operator-login-status')?.textContent||''}));
+      throw new Error('operator dashboard did not open: '+JSON.stringify(state)+'; pageErrors='+errors.join(' | ')+'; requestFailures='+requestFailures.join(' | ')+'; '+error.message);
+    }
     await page.locator('[data-operator-tab="contents"]').click();
     await page.locator('[data-operator-panel="contents"]').waitFor({state:'visible'});
     await page.waitForFunction(()=>document.querySelectorAll('[data-archive-select]').length===1);
