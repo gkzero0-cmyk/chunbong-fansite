@@ -47,3 +47,9 @@ assert.ok(html.includes('대표 시리즈 바로 보기 ↓'),'compact archive h
 for(const token of ['class="archive-hero-copy reveal"','class="archive-series-home reveal"','class="archive-toolbar reveal"']) {
   assert.ok(!html.includes(token),'critical archive sections must not depend on reveal: '+token);
 }
+
+const serviceWorker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');
+assert.ok(serviceWorker.includes("chunbong-pwa-20260922-v32"),'service worker cache version should advance after archive cache fix');
+assert.ok(serviceWorker.includes("event.respondWith(networkFirst(request, event));"),'documents/scripts/styles should prefer network to avoid stale markup/style mismatches');
+assert.ok(serviceWorker.includes("await self.skipWaiting();"),'new service worker should activate immediately after install');
+assert.ok(css.includes('Archive stale-markup compatibility'),'archive CSS should explicitly recover stale reveal markup');
