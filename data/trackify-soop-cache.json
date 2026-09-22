@@ -1,55 +1,55 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-21T06:30:14.131Z",
+  "capturedAt": "2026-09-22T06:27:38.950Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 30562,
+    "followerCount": 30598,
     "fanclubCount": 7677,
     "subscriberCount": 49,
     "supporterCount": 24,
     "averageViewers": 58,
     "maxViewers": 173,
-    "airtimeMinutes": 10038,
-    "viewershipHours": 9717,
-    "cumulativeUpCount": 80533,
+    "airtimeMinutes": 10692,
+    "viewershipHours": 10269,
+    "cumulativeUpCount": 80612,
     "totalAirtimeMinutes": 625247,
-    "monthlyStarCount": 85128,
-    "starsPerHour": 509,
-    "monthlySupporterCount": 197,
-    "monthlyChatCount": 41930,
+    "monthlyStarCount": 86726,
+    "starsPerHour": 487,
+    "monthlySupporterCount": 206,
+    "monthlyChatCount": 44132,
     "monthlyMuteCount": 6,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-09-19T17:55:57",
+    "latestBroadcastDate": "2026-09-21T18:14:26",
     "categories": [
       {
         "name": "버추얼",
-        "minutes": 9027,
-        "streamCount": 23,
-        "sharePercent": 43.5
-      },
-      {
-        "name": "오버워치",
-        "minutes": 5450,
-        "streamCount": 10,
-        "sharePercent": 26.2
+        "minutes": 9681,
+        "streamCount": 25,
+        "sharePercent": 47.9
       },
       {
         "name": "마인크래프트",
         "minutes": 4844,
         "streamCount": 8,
-        "sharePercent": 23.3
+        "sharePercent": 24
+      },
+      {
+        "name": "오버워치",
+        "minutes": 4678,
+        "streamCount": 9,
+        "sharePercent": 23.1
       },
       {
         "name": "PUBG: 배틀그라운드",
-        "minutes": 1076,
-        "streamCount": 5,
-        "sharePercent": 5.2
+        "minutes": 634,
+        "streamCount": 4,
+        "sharePercent": 3.1
       },
       {
         "name": "아르마 3",
         "minutes": 376,
         "streamCount": 2,
-        "sharePercent": 1.8
+        "sharePercent": 1.9
       }
     ]
   },
@@ -11783,6 +11783,74 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/297239283"
+    },
+    {
+      "id": "trackify-297287325",
+      "broadcastId": "297287325",
+      "date": "2026-09-21",
+      "startedAt": "2026-09-21T18:14:26+09:00",
+      "endedAt": "2026-09-22T04:53:20+09:00",
+      "durationMinutes": 639,
+      "averageViewers": 51,
+      "maxViewers": 127,
+      "viewerSampleCount": 128,
+      "uniqueViewers": null,
+      "starCount": 1410,
+      "supporterCount": 13,
+      "chatCount": 2057,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "마병대 4 간부 합격 감사합니다.",
+      "categories": [
+        {
+          "id": "00810000",
+          "name": "버추얼",
+          "minutes": 639,
+          "sampleCount": 128,
+          "averageViewers": 51,
+          "maxViewers": 127
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297287325"
+    },
+    {
+      "id": "trackify-297300373",
+      "broadcastId": "297300373",
+      "date": "2026-09-22",
+      "startedAt": "2026-09-22T05:39:38+09:00",
+      "endedAt": "2026-09-22T05:55:06+09:00",
+      "durationMinutes": 15,
+      "averageViewers": 47,
+      "maxViewers": 64,
+      "viewerSampleCount": 3,
+      "uniqueViewers": null,
+      "starCount": 188,
+      "supporterCount": 2,
+      "chatCount": 145,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "예? 행정관이요?",
+      "categories": [
+        {
+          "id": "00810000",
+          "name": "버추얼",
+          "minutes": 15,
+          "sampleCount": 3,
+          "averageViewers": 47,
+          "maxViewers": 64
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297300373"
     }
   ]
 }
