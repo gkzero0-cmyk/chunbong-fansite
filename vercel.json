@@ -101,16 +101,6 @@
     {
       "source": "/api/operator/github/callback",
       "destination": "/api/content?type=operator-github-callback"
-    },
-    {
-      "source": "/api/archive/auto-sync",
-      "destination": "/api/content?type=content-archive-auto-sync"
-    }
-  ],
-  "crons": [
-    {
-      "path": "/api/archive/auto-sync",
-      "schedule": "20 5 * * *"
     }
   ]
 }
