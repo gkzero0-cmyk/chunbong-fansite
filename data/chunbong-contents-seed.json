@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T17:45:00+09:00",
+  "updatedAt": "2026-09-22T17:55:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -1524,7 +1524,7 @@
       "endDate": "",
       "datePrecision": "unknown",
       "summary": "춘봉이 개최한 싸이감성 노래자랑 제1회 기록으로, 이전 대화에서 지정한 SOOP 모집글과 공식 VOD를 우선 출처로 보존합니다.",
-      "description": "싸이감성 노래자랑 제1회를 제2회와 섞지 않고 별도 기록으로 정리했습니다. SOOP 모집글과 VOD를 공식 우선 자료로 사용하고, 참가자 정보는 회차가 명시된 교차 자료에서 확인되는 항목만 추가합니다.",
+      "description": "싸이감성 노래자랑 제1회를 제2회와 섞지 않고 별도 기록으로 정리했습니다. SOOP 모집글과 VOD를 공식 우선 자료로 사용하고, 시로코 참가 기록 및 사용자 제공 FM코리아 참가자 참고 자료를 교차 확인 자료로 연결합니다. 원문에서 직접 확인되지 않은 참가자 이름은 임의로 추가하지 않습니다.",
       "heroImage": {
         "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
         "alt": "싸이감성 노래자랑 2026 팬사이트 아카이브 커버",
@@ -1561,6 +1561,17 @@
           "thumbnail": "",
           "sourceId": "source-psy1-siroko",
           "note": "시로코 문서에 제1회 싸이감성 노래자랑 참가와 선곡 기록이 명시되어 있습니다."
+        },
+        {
+          "id": "psy1-fmkorea",
+          "type": "reference",
+          "title": "싸이감성 노래자랑 제1회 참가자 참고 자료",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://www.fmkorea.com/7042989434",
+          "thumbnail": "",
+          "sourceId": "source-psy1-fmkorea",
+          "note": "사용자가 제1회 참가자 명단 확인용으로 제공한 FM코리아 자료입니다. 현재 자동 수집 경로에서 본문을 안정적으로 읽지 못해 참가자 이름은 원문 확인 후 구조화합니다."
         }
       ],
       "media": [
@@ -1603,6 +1614,12 @@
           "kind": "reference",
           "label": "나무위키 · 시로코 제1회 참가 기록",
           "url": "https://www.namu.moe/w/%EC%8B%9C%EB%A1%9C%EC%BD%94(%EC%9D%B8%ED%84%B0%EB%84%B7%20%EB%B0%A9%EC%86%A1%EC%9D%B8)"
+        },
+        {
+          "id": "source-psy1-fmkorea",
+          "kind": "reference",
+          "label": "FM코리아 · 싸이감성 노래자랑 제1회 참가자 참고 자료",
+          "url": "https://www.fmkorea.com/7042989434"
         }
       ],
       "verification": {
@@ -1611,7 +1628,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T11:50:00+09:00",
+      "updatedAt": "2026-09-22T17:55:00+09:00",
       "series": {
         "id": "psy-emotion-song-contest",
         "title": "싸이감성 노래자랑",
@@ -1639,7 +1656,7 @@
       "endDate": "",
       "datePrecision": "unknown",
       "summary": "춘봉이 개최한 싸이감성 노래자랑 제2회 기록으로, 이전 대화에서 지정한 SOOP 모집글·공식 VOD와 FM코리아 보조 자료를 회차별로 분리해 보존합니다.",
-      "description": "싸이감성 노래자랑 제2회를 제1회와 별도 기록으로 정리했습니다. SOOP 모집글과 VOD를 공식 우선 출처로 두고, FM코리아 자료는 이미지·참가자 확인을 위한 보조 출처로 구분합니다. 현재 원문에서 직접 확인하지 못한 날짜·참가자 정보는 임의로 확정하지 않습니다.",
+      "description": "싸이감성 노래자랑 제2회를 제1회와 별도 기록으로 정리했습니다. SOOP 모집글과 VOD를 공식 우선 출처로 두고, 사용자 제공 FM코리아 자료는 참가자·이미지 확인용 보조 출처로 구분합니다. 원문에서 직접 확인하지 못한 날짜·참가자 정보는 임의로 확정하지 않습니다.",
       "heroImage": {
         "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
         "alt": "싸이감성 노래자랑 2026 팬사이트 아카이브 커버",
@@ -1662,13 +1679,13 @@
         {
           "id": "psy2-fmkorea",
           "type": "reference",
-          "title": "싸이감성 노래자랑 제2회 보조 자료",
+          "title": "싸이감성 노래자랑 제2회 참가자·이미지 참고 자료",
           "date": "",
           "datePrecision": "unknown",
           "url": "https://www.fmkorea.com/9750851296",
           "thumbnail": "",
           "sourceId": "source-psy2-fmkorea",
-          "note": "이전 대화에서 제2회 이미지·참가자 확인용 보조 자료로 지정한 FM코리아 게시물입니다."
+          "note": "사용자가 제2회 참가자 및 이미지 확인용으로 제공한 FM코리아 자료입니다. 현재 자동 수집 경로에서 본문을 안정적으로 읽지 못해 참가자 이름은 원문 확인 후 구조화합니다."
         }
       ],
       "media": [
@@ -1709,7 +1726,7 @@
         {
           "id": "source-psy2-fmkorea",
           "kind": "reference",
-          "label": "FM코리아 · 싸이감성 노래자랑 제2회 보조 자료",
+          "label": "FM코리아 · 싸이감성 노래자랑 제2회 참가자·이미지 참고 자료",
           "url": "https://www.fmkorea.com/9750851296"
         }
       ],
@@ -1719,7 +1736,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T11:50:00+09:00",
+      "updatedAt": "2026-09-22T17:55:00+09:00",
       "series": {
         "id": "psy-emotion-song-contest",
         "title": "싸이감성 노래자랑",
