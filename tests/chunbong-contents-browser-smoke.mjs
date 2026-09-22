@@ -249,7 +249,12 @@ try{
     }
     await page.locator('[data-operator-tab="contents"]').click();
     await page.locator('[data-operator-panel="contents"]').waitFor({state:'visible'});
-    await page.waitForFunction(()=>document.querySelectorAll('[data-archive-select]').length===1);
+    try{
+      await page.waitForFunction(()=>document.querySelectorAll('[data-archive-select]').length===1,null,{timeout:10000});
+    }catch(error){
+      const state=await page.evaluate(()=>({panelText:document.querySelector('[data-operator-panel="contents"]')?.textContent||'',listHtml:document.querySelector('[data-archive-admin-list]')?.innerHTML||''}));
+      throw new Error('operator archive list did not load: '+JSON.stringify(state)+'; pageErrors='+errors.join(' | ')+'; requestFailures='+requestFailures.join(' | ')+'; '+error.message);
+    }
     assert.match((await page.locator('[data-archive-admin-list]').textContent())||'',/레오펠/,'operator archive list should show records');
 
     await page.locator('[data-archive-select="leopel"]').click();
