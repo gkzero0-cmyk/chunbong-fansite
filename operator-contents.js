@@ -79,10 +79,11 @@ async function fetchSourceMetaForRow(row){
       const details=[];
       if(meta.participantCount)details.push(`참가자 ${meta.participantCount}명`);
       if(Array.isArray(meta.outline)&&meta.outline.length)details.push(`Notion 구조 ${meta.outline.length}개`);
+      if(Array.isArray(meta.sections)&&meta.sections.length)details.push(`Notion 섹션 ${meta.sections.length}개`);
       if(meta.image)details.push('이미지 후보');
       if(!details.length)details.push(meta.title?'제목 확인':'추출 가능한 메타 없음');
       status.textContent=details.join(' · ');
-      if(Array.isArray(meta.outline)&&meta.outline.length)status.title=meta.outline.join(' · ');
+      if(Array.isArray(meta.sections)&&meta.sections.length)status.title=meta.sections.map(section=>section.title).filter(Boolean).join(' · ');else if(Array.isArray(meta.outline)&&meta.outline.length)status.title=meta.outline.join(' · ');
     }
     renderPreview();
   }catch(error){
