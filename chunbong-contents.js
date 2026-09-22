@@ -85,7 +85,7 @@ function bindSeriesArchive(item){
     const session=button.dataset.archiveSession||'';
     writeState({...queryState(),session},{push:true});
     renderDetail(item);
-    els.detail.querySelector('[data-archive-series]')?.scrollIntoView({block:'nearest'});
+    els.detail.querySelector('[data-archive-series]')?.scrollIntoView?.({block:'nearest'});
   }));
   const posterButton=els.detail.querySelector('[data-archive-series-poster]');
   if(posterButton&&selected?.poster?.src)posterButton.addEventListener('click',()=>openLightbox(selected.poster.src,selected.poster.alt||selected.title,'',selected.title));
