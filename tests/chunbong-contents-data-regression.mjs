@@ -106,6 +106,26 @@ assert.ok((chuntacle?.participants||[]).length>=10,'춘타클 should list confir
 assert.ok((chuntacle?.results||[]).length>=2,'춘타클 should summarize confirmed class sessions');
 assert.ok((chuntacle?.gallery||[]).length>=2,'춘타클 should include visual archive material');
 
+const chuntacleSessions=chuntacle?.seriesSessions||[];
+assert.equal(chuntacleSessions.length,5,'춘타클 should expose sessions 1 through 5');
+assert.deepEqual(chuntacleSessions.map(row=>row.number),[1,2,3,4,5],'춘타클 session order should stay chronological');
+assert.deepEqual(chuntacleSessions.map(row=>row.date),['2026-07-11','2026-07-21','2026-08-02','2026-08-11','2026-09-14'],'춘타클 session dates should stay corrected');
+assert.equal(chuntacleSessions.find(row=>row.number===2)?.time,'08:00');
+assert.equal(chuntacleSessions.find(row=>row.number===3)?.time,'20:00');
+assert.equal(chuntacleSessions.find(row=>row.number===4)?.time,'08:00');
+const chuntacleSession5=chuntacleSessions.find(row=>row.number===5);
+assert.equal(chuntacleSession5?.time,'08:00');
+assert.equal(chuntacleSession5?.participantCount,5);
+for(const name of ['김뽁분','김잇딥','문이유','연주홍','클라비스']) assert.ok((chuntacleSession5?.participants||[]).includes(name),`춘타클 5회 수강생 누락: ${name}`);
+assert.equal(chuntacleSession5?.poster?.status,'verified');
+assert.equal(chuntacleSession5?.poster?.src,'/assets/chunbong-contents/chuntacle-session-5.svg');
+assert.ok((chuntacle?.timeline||[]).some(row=>row.id==='session-5-final-poster'&&row.date==='2026-09-14'),'춘타클 5회 최종 포스터 기록이 필요합니다');
+assert.ok(!(chuntacle?.timeline||[]).some(row=>row.date==='2026-09-14'&&/4회/.test(row.title||'')),'9월 14일 기록을 4회로 잘못 표기하면 안 됩니다');
+const chuntaclePosterSvg=fs.readFileSync(new URL('../assets/chunbong-contents/chuntacle-session-5.svg',import.meta.url),'utf8');
+assert.match(chuntaclePosterSvg,/data:image\/webp;base64,UklG/,'춘타클 5회 실제 포스터 이미지가 내부 자산에 포함되어야 합니다');
+assert.ok(chuntaclePosterSvg.length>14000,'춘타클 5회 포스터 자산이 비정상적으로 잘리면 안 됩니다');
+
+
 assert.ok((leopel?.media||[]).some(row=>/159711687/.test(row.url)),'Leopel should link the verified SOOP presentation VOD');
 assert.ok((leopel?.gallery||[]).length>=2,'Leopel detail should have visual archive material');
 assert.ok((justserver?.media||[]).length>=2,'JustServer should include multiple verified SOOP Catch records');

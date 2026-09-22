@@ -21,6 +21,18 @@ const items=[
     sources:[{id:'s3',kind:'official',label:'공식 공지',url:'https://www.sooplive.com/station/chunbongtv'}]
   }
 ];
+;
+const chuntacleItem={
+  id:'chuntacle-2026',title:'춘타클 · 춘봉 타로 클래스',aliases:['춘타클'],category:'class-event',role:'주최 · 강의',status:'ended',
+  startDate:'2026-07',endDate:'2026-09',datePrecision:'month',summary:'춘봉 타로 클래스 시리즈',description:'회차형 타로 클래스',
+  heroImage:{src:'/assets/chunbong-contents/chuntacle-cover.svg',alt:'춘타클 커버'},participants:[],sourceCount:1,
+  seriesSessions:[
+    {id:'session-1',number:1,title:'춘타클 제1회',date:'2026-07-11',datePrecision:'day',time:'',venue:'VRChat',participants:[],participantCount:10,poster:{src:'',alt:'춘타클 제1회 포스터',status:'pending'},note:'1회 기록'},
+    {id:'session-2',number:2,title:'춘타클 제2회',date:'2026-07-21',datePrecision:'day',time:'08:00',venue:'VRChat',participants:['모이사','문이유'],participantCount:11,poster:{src:'',alt:'춘타클 제2회 포스터',status:'pending'},note:'2회 기록'},
+    {id:'session-5',number:5,title:'춘타클 제5회',date:'2026-09-14',datePrecision:'day',time:'08:00',venue:'VRChat',participants:['김뽁분','김잇딥','문이유','연주홍','클라비스'],participantCount:5,poster:{src:'/assets/chunbong-contents/chuntacle-session-5.svg',alt:'춘타클 제5회 포스터',status:'verified'},note:'5회 기록'}
+  ],
+  timeline:[],media:[],gallery:[],sources:[{id:'s4',kind:'reference',label:'방송 이력',url:'https://streamscharts.com/channels/moon26/streams?platform=afreecatv'}]
+};
 
 async function installApi(page){
   await page.route('**/api/content?type=chunbong-contents',route=>route.fulfill({
@@ -28,7 +40,7 @@ async function installApi(page){
   }));
   await page.route('**/api/content?type=chunbong-content&id=*',route=>{
     const id=new URL(route.request().url()).searchParams.get('id');
-    const item=items.find(row=>row.id===id);
+    const item=[...items,chuntacleItem].find(row=>row.id===id);
     return route.fulfill({
       status:item?200:404,contentType:'application/json',
       body:JSON.stringify(item?{item,source:'chunbong-content'}:{error:'content_not_found'})
@@ -136,6 +148,23 @@ try{
     await assertNoHorizontalOverflow(page,'mobile detail');
     const columns=await page.locator('.archive-detail-hero').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length);
     assert.equal(columns,1,'mobile detail hero should collapse to one column');
+    assert.deepEqual(errors,[],errors.join(' | '));
+  }
+  {
+    const page=await browser.newPage({viewport:{width:1440,height:900}});
+    const errors=[];page.on('pageerror',error=>errors.push(error.message));
+    await installApi(page);
+    await page.goto(base+'/chunbong-contents.html?id=chuntacle-2026&session=2',{waitUntil:'networkidle'});
+    assert.equal(await page.locator('[data-archive-series]').count(),1,'춘타클 상세에 회차형 상단 UI가 있어야 합니다');
+    assert.equal(await page.locator('[data-archive-session]').count(),3,'mocked 춘타클 회차 버튼이 렌더링되어야 합니다');
+    assert.equal(await page.locator('[data-archive-session="2"]').getAttribute('aria-selected'),'true','URL session=2를 선택 상태로 복원해야 합니다');
+    assert.match((await page.locator('.archive-series-copy h3').textContent())||'',/제2회/);
+    await page.locator('[data-archive-session="5"]').click();
+    await page.waitForURL(/session=5/);
+    assert.equal(new URL(page.url()).searchParams.get('session'),'5','회차 선택은 URL 상태에 남아야 합니다');
+    assert.match((await page.locator('.archive-series-copy h3').textContent())||'',/제5회/);
+    assert.ok(await page.locator('[data-archive-series-poster]').isVisible(),'5회 실제 포스터 버튼이 보여야 합니다');
+    await assertNoHorizontalOverflow(page,'desktop chuntacle series detail');
     assert.deepEqual(errors,[],errors.join(' | '));
   }
   {

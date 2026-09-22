@@ -33,3 +33,7 @@ for(const token of ['archive-overview-highlight-grid','archive-people-chips','ar
 for(const token of ['주요 기록','기록 하이라이트','영상 · 방송','자료 이미지']) assert.ok(js.includes(token),token);
 assert.match(js,/renderOverviewHighlights/);
 assert.match(js,/renderRecordStrip/);
+
+for(const token of ['renderSeriesArchive','data-archive-series','data-archive-session',"p.get('session')","p.set('session'"]) assert.ok(js.includes(token),token);
+for(const token of ['archive-series','archive-series-nav','archive-series-focus','overflow-x:auto']) assert.ok(css.includes(token),token);
+
