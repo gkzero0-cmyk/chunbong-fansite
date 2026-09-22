@@ -28,11 +28,11 @@ jobs:
               print('FINAL_URL',r.geturl())
               print('CONTENT_TYPE',r.headers.get('content-type'))
               print('BODY_LEN',len(body))
-          urls=sorted(set(re.findall(r'https?://[^"\\'<> ]+',body)))
+          urls=sorted(set(re.findall(r"https?://[^\\s\\\"<>]+",body)))
           for u in urls:
               if 'firestorage' in u or 'download' in u:
                   print('URL',u[:1500])
-          hrefs=sorted(set(re.findall(r'href=["\\']([^"\\']+)["\\']',body)))
+          hrefs=sorted(set(re.findall(r"href=[\\\"']([^\\\"']+)[\\\"']",body)))
           for h in hrefs:
               if 'download' in h or '/api/' in h or '/file' in h:
                   print('HREF',h[:1500])
