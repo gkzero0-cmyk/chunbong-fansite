@@ -55,6 +55,13 @@ assert.deepEqual(rows.map(row=>row.id),['visible']);
 assert.ok(!('verification' in rows[0]));
 const mergedSeries=archiveApi._internals.mergeArchiveRows([{...monthOnly,id:'series-merge',series:{id:'justserver',title:'그냥서버'}}],[{...monthOnly,id:'series-merge'}]);
 assert.equal(mergedSeries[0]?.series?.id,'justserver','stored rows without series metadata should inherit curated seed series metadata');
+const mergedProvenance=archiveApi._internals.mergeArchiveRows([
+  {...monthOnly,id:'provenance-merge',participantGroups:[{id:'g',label:'명단',participants:['가나다'],count:1,sourceId:'ref'}],sources:[{id:'s1',kind:'official',url:'https://www.sooplive.com/station/chunbongtv'},{id:'ref',kind:'reference',url:'https://www.fmkorea.com/1',visibility:'internal'}]}
+],[
+  {...monthOnly,id:'provenance-merge',sources:[{id:'s1',kind:'official',url:'https://www.sooplive.com/station/chunbongtv'},{id:'ref',kind:'reference',url:'https://www.fmkorea.com/1'}]}
+]);
+assert.equal(mergedProvenance[0]?.sources.find(row=>row.id==='ref')?.visibility,'internal','curated internal provenance should survive stored-row merge');
+assert.equal(mergedProvenance[0]?.participantGroups?.[0]?.participants?.[0],'가나다','curated participant groups should survive stored-row merge');
 assert.ok(archiveApi._internals.curatedHiddenIds().includes('psy-emotion-song-contest-2026'),'curated hidden ids should include legacy psy record');
 
 const internalSourceSample=normalizeArchiveItem({
