@@ -150,3 +150,9 @@ assert.ok(seed.items.find(item=>item.id==='psy-emotion-song-contest-1')?.sources
 assert.ok(seed.items.find(item=>item.id==='psy-emotion-song-contest-1')?.media?.some(x=>/127480069/.test(x.url)),'song contest 1 should link official VOD');
 assert.ok(seed.items.find(item=>item.id==='psy-emotion-song-contest-2')?.sources?.some(x=>/192031471/.test(x.url)),'song contest 2 should preserve official recruitment post');
 assert.ok(seed.items.find(item=>item.id==='psy-emotion-song-contest-2')?.media?.some(x=>/194116989/.test(x.url)),'song contest 2 should link official VOD');
+
+const justOriginal=seed.items.find(item=>item.id==='justserver-original');
+assert.ok(justOriginal?.sources?.some(x=>x.url==='https://bngts.com/contents/just'),'JustServer 1 should include the bngts content archive reference');
+assert.ok(justOriginal?.sources?.some(x=>x.url==='https://bngts.com/contents/just/streamers'),'JustServer 1 should include the bngts streamer archive reference');
+assert.ok((justOriginal?.media||[]).length>=7,'JustServer 1 should preserve all seven supplied SOOP VOD records');
+assert.ok(justOriginal?.sources?.some(x=>/sdmv\.notion\.site\/what/.test(x.url)),'JustServer 1 should preserve its public Notion reference');
