@@ -255,3 +255,9 @@ const groupMerge=archiveApi._internals.mergeArchiveRows(
   [{...leopel,id:'group-merge',participantGroups:[]}]
 );
 assert.equal(groupMerge[0].participantGroups.length,3,'기존 저장 레코드가 비어 있어도 seed 참가자 그룹을 보존해야 합니다');
+
+const psy2Confirmed=seed.items.find(item=>item.id==='psy-emotion-song-contest-2');
+assert.equal(psy2Confirmed?.startDate,'2026-04-28','싸이감성 2회 개최일은 2026-04-28로 교차 확인되어야 합니다');
+assert.equal(psy2Confirmed?.endDate,'2026-04-28','싸이감성 2회 단일 개최일 종료일이 일치해야 합니다');
+assert.ok((psy2Confirmed?.sources||[]).some(row=>row.id==='source-psy2-streams'&&row.visibility==='internal'),'싸이감성 2회 Streams Charts는 내부 검증용이어야 합니다');
+assert.ok((psy2Confirmed?.timeline||[]).some(row=>row.id==='psy2-event-day'&&row.date==='2026-04-28'),'싸이감성 2회 개최일 타임라인이 필요합니다');
