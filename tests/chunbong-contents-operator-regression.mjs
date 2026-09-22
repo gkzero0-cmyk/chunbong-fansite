@@ -11,7 +11,7 @@ const draft=archive._internals.prepareForSave(base,{publish:false});
 assert.equal(draft.item.published,false);
 assert.throws(()=>archive._internals.prepareForSave({...base,sources:[]},{publish:true}),/published_source_required/);
 assert.throws(()=>archive._internals.prepareForSave({...base,verification:{state:'needs_review',conflicts:[{field:'date'}]}},{publish:true}),/unresolved_conflict/);
-for(const type of ['operator-content-archive','operator-content-archive-save','operator-content-archive-publish','operator-content-archive-delete','operator-content-auto-sync','content-archive-auto-sync']) assert.ok(content.includes(type),'missing '+type);
+for(const type of ['operator-content-archive','operator-content-archive-save','operator-content-archive-publish','operator-content-archive-delete','operator-content-auto-sync','operator-content-auto-candidate','content-archive-auto-sync']) assert.ok(content.includes(type),'missing '+type);
 console.log('chunbong contents operator API regression passed');
 
 const operatorHtml=fs.readFileSync(new URL('../operator.html',import.meta.url),'utf8');
@@ -93,6 +93,15 @@ assert.equal(archive._internals.allowedSourceMetaUrl('https://www.fmkorea.com/70
 assert.match(archiveSource,/AUTO_CANDIDATES_KEY/,'auto-ingest candidate storage should exist');
 assert.match(operatorHtml,/data-archive-auto-sync/,'operator center should expose official-source sync');
 assert.match(operatorContents,/SOOP · YouTube 공식 자료를 동기화/,'operator sync UI should explain official source refresh');
+assert.match(operatorHtml,/data-archive-candidates/,'operator center should expose auto-ingest candidates');
+assert.match(operatorHtml,/data-archive-admin-quality/,'operator center should filter incomplete archive records');
+for(const token of ['renderCandidates','data-candidate-action','새 콘텐츠 초안','관련 없음','operator-content-auto-candidate']) assert.ok(operatorContents.includes(token)||content.includes(token),token);
+assert.match(archiveSource,/status:'failed'/,'auto-sync failures should be persisted');
+assert.match(archiveSource,/lastSuccessAt/,'auto-sync should preserve the last successful run time');
+const workflow=fs.readFileSync(new URL('../.github/workflows/push-dispatch.yml',import.meta.url),'utf8');
+const archiveCurl=workflow.split('ARCHIVE_SYNC_URL')[2]||'';
+assert.ok(!/\|\| true/.test(archiveCurl),'archive sync failures must not be hidden by the workflow');
+
 
 const autoRows=[
   {id:'diamond',title:'그냥서버 : 다이아',aliases:['그냥서버 다이아'],series:{id:'justserver',title:'그냥서버'},startDate:'2026-04-09',endDate:'2026-04-16',timeline:[],media:[]},
