@@ -55,3 +55,8 @@ assert.ok(serviceWorker.includes("await self.skipWaiting();"),'new service worke
 assert.ok(css.includes('Archive stale-markup compatibility'),'archive CSS should explicitly recover stale reveal markup');
 
 for(const token of ['participantNames','participantGroups','archive-participant-groups','archive-participant-group']) assert.ok((js+'\n'+css).includes(token),token);
+
+const operatorContents=read('operator-contents.js');
+const operatorCss=read('operator.css');
+for(const token of ['archiveAudit','자료 반영 상태','source-visibility',"['planned','예정']"]) assert.ok(operatorContents.includes(token),token);
+assert.ok(operatorCss.includes('.operator-archive-audit'),'operator archive audit styling should exist');
