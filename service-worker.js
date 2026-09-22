@@ -1,5 +1,5 @@
 /* CHUNBONG_PWA v1 */
-const CACHE_NAME = 'chunbong-pwa-20260922-v31';
+const CACHE_NAME = 'chunbong-pwa-20260922-v32';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -41,10 +41,11 @@ const APP_SHELL = [
 const APP_SHELL_PATHS = new Set(APP_SHELL.map(asset => new URL(asset, self.location.origin).pathname));
 
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    await cache.addAll(APP_SHELL);
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', event => {
@@ -103,14 +104,12 @@ self.addEventListener('fetch', event => {
   if (url.pathname.startsWith('/api/')) return;
 
   if (request.mode === 'navigate' || request.destination === 'document') {
-    event.respondWith(staleWhileRevalidate(request, event, '/offline.html'));
+    event.respondWith(networkFirst(request, event));
     return;
   }
 
   if (['script','style'].includes(request.destination)) {
-    event.respondWith(APP_SHELL_PATHS.has(url.pathname)
-      ? staleWhileRevalidate(request, event)
-      : networkFirst(request, event));
+    event.respondWith(networkFirst(request, event));
     return;
   }
 
