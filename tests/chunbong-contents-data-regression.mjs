@@ -163,7 +163,7 @@ assert.ok((leopel?.media||[]).some(row=>/159711687/.test(row.url)),'Leopel shoul
 assert.ok((leopel?.gallery||[]).length>=2,'Leopel detail should have visual archive material');
 assert.ok((justserver?.media||[]).length>=2,'JustServer should include multiple verified SOOP Catch records');
 assert.ok((justserver?.gallery||[]).length>=2,'JustServer detail should have visual archive material');
-const survivalEnriched=seed.items.find(item=>item.id==='justserver-survival');
+const survival=seed.items.find(item=>item.id==='justserver-survival');
 assert.ok(survival,'적자생존 콘텐츠 항목이 필요합니다');
 assert.equal(justserver?.series?.id,'justserver','머니게임은 그냥서버 시리즈에 속해야 합니다');
 assert.equal(survival?.series?.id,'justserver','적자생존은 그냥서버 시리즈에 속해야 합니다');
@@ -245,7 +245,7 @@ assert.deepEqual((leopelGroupsItem?.participantGroups||[]).map(group=>group.coun
 assert.equal((leopelGroupsItem?.participantGroups||[]).reduce((sum,group)=>sum+(group.participants||[]).length,0),311,'레오펠 1·2차 확인 명단은 총 311명이어야 합니다');
 assert.match(String(leopelGroupsItem?.heroImage?.src||''),/res\.cloudinary\.com\/lyppgyei\/.*\/leopel\/logo\.webp$/,'레오펠 대표 이미지는 실제 보존 로고를 사용해야 합니다');
 
-const survival=seed.items.find(item=>item.id==='justserver-survival');
+const survivalEnriched=seed.items.find(item=>item.id==='justserver-survival');
 for(const id of ['survival-prep-applicants','survival-prep-before-open','survival-prep-qa','survival-prep-briefing']){
   assert.ok((survivalEnriched?.timeline||[]).some(row=>row.id===id),`적자생존 준비 방송 타임라인 누락: ${id}`);
 }
