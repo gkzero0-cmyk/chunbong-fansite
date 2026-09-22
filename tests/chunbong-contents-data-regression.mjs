@@ -181,3 +181,24 @@ assert.ok((survival?.sources||[]).some(row=>row.url==='https://daisy-grouse-ac0.
 assert.ok((psyContest1?.participants||[]).includes('시로코'),'제1회는 시로코 참가 교차 기록을 유지해야 합니다');
 assert.ok((psyContest1?.gallery||[]).length>=1,'제1회 아카이브 커버가 필요합니다');
 assert.ok((psyContest2?.gallery||[]).length>=1,'제2회 아카이브 커버가 필요합니다');
+
+const justserverDiamond=seed.items.find(item=>item.id==='justserver-diamond');
+assert.ok(justserverDiamond?.published,'그냥서버 1 아카이브가 공개되어야 합니다');
+assert.equal(justserverDiamond?.startDate,'2026-04-09');
+assert.equal(justserverDiamond?.endDate,'2026-04-16');
+assert.equal(justserverDiamond?.series?.id,'justserver');
+for(const id of ['192233707','192317079','192401771','192510763','192581897','192845469','192962357']) assert.ok((justserverDiamond?.media||[]).some(row=>row.url===`https://vod.sooplive.com/player/${id}`),`그냥서버 1 VOD 누락: ${id}`);
+for(const url of ['https://www.sooplive.com/station/chunbongtv/post/192179233','https://sdmv.notion.site/what','https://bngts.com/contents/just','https://bngts.com/contents/just/streamers']) assert.ok((justserverDiamond?.sources||[]).some(row=>row.url===url),`그냥서버 1 출처 누락: ${url}`);
+
+assert.equal(survival?.status,'planned','적자생존은 예정 콘텐츠 상태여야 합니다');
+assert.equal(survival?.startDate,'2026-09-30');
+assert.equal(survival?.endDate,'2026-10-21');
+assert.ok((survival?.timeline||[]).some(row=>row.url==='https://www.sooplive.com/station/chunbongtv/post/204274449'&&/UP 랭킹/.test(row.title||'')),'적자생존 신청/UP 랭킹 원문 역할이 표시되어야 합니다');
+
+for(const id of ['201292605','202198589','203211299','204037695']) assert.ok((chuntacle?.media||[]).some(row=>row.url===`https://vod.sooplive.com/player/${id}`),`춘타클 VOD 누락: ${id}`);
+for(const url of ['https://www.youtube.com/watch?v=b-jlKXqLakU','https://www.youtube.com/watch?v=gJKw13B7ydc','https://www.youtube.com/watch?v=8rnQKGwa1qw&t=4s']) assert.ok((chuntacle?.media||[]).some(row=>row.url===url),`춘타클 YouTube 누락: ${url}`);
+assert.ok((chuntacle?.sources||[]).some(row=>row.url==='https://www.fmkorea.com/10058760229'),'춘타클 FM코리아 모집·참여자 자료가 필요합니다');
+
+assert.ok((leopel?.results||[]).some(row=>/671명/.test(row.value||'')),'레오펠 최종 참여자 671명 기록이 필요합니다');
+assert.ok((leopel?.results||[]).some(row=>/1차 입주/.test(row.title||'')&&/140명/.test(row.value||'')),'레오펠 1차 입주 140명 기록이 필요합니다');
+assert.ok((leopel?.results||[]).some(row=>/2차 입주/.test(row.title||'')&&/171명/.test(row.value||'')),'레오펠 2차 입주 171명 기록이 필요합니다');
