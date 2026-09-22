@@ -11,6 +11,11 @@ const draft=archive._internals.prepareForSave(base,{publish:false});
 assert.equal(draft.item.published,false);
 assert.throws(()=>archive._internals.prepareForSave({...base,sources:[]},{publish:true}),/published_source_required/);
 assert.throws(()=>archive._internals.prepareForSave({...base,verification:{state:'needs_review',conflicts:[{field:'date'}]}},{publish:true}),/unresolved_conflict/);
+assert.equal(archive._internals.normalizePublishedDate('2026-09-22T10:30:00+09:00'),'2026-09-22','ISO publication date should normalize to a day');
+assert.equal(archive._internals.normalizePublishedDate('2026-02-31'),'','impossible publication dates must be rejected');
+assert.equal(archive._internals.readPublishedDate('<meta property="article:published_time" content="2026-04-28T19:00:00+09:00">'),'2026-04-28','article publication metadata should be detected');
+assert.equal(archive._internals.readPublishedDate('<script type="application/ld+json">{"@type":"VideoObject","uploadDate":"2026-06-24T18:00:00+09:00"}</script>'),'2026-06-24','JSON-LD upload dates should be detected');
+assert.equal(archive._internals.readPublishedDate('<time datetime="2025-06-05T20:00:00+09:00">오픈</time>'),'2025-06-05','time datetime should be used as a fallback');
 for(const type of ['operator-content-archive','operator-content-archive-save','operator-content-archive-publish','operator-content-archive-delete','operator-content-auto-sync','operator-content-auto-candidate','operator-content-browser-import','content-archive-auto-sync']) assert.ok(content.includes(type),'missing '+type);
 console.log('chunbong contents operator API regression passed');
 
@@ -93,9 +98,14 @@ assert.match(archiveSource,/SADD['\",\s]+HIDDEN_KEY/,'delete must create a seed 
 assert.match(archiveSource,/SREM['\",\s]+HIDDEN_KEY/,'publish must clear a seed tombstone');
 
 
-for(const token of ['별칭','결과 · 회차 기록','data-result-row','data-move-row','공개 페이지 열기']) assert.ok(operatorContents.includes(token),token);
+for(const token of ['별칭','결과 · 회차 기록','data-result-row','data-move-row','공개 페이지 열기','data-material-fetch-meta','원문 메타 가져오기','방통실 참가자 명단 미수집','FM코리아 참가자 명단 미수집','Notion 본문 미구조화','SOOP 게시글 메타데이터 확인']) assert.ok(operatorContents.includes(token),token);
 assert.match(operatorContents,/item\.aliases=/,'operator must collect aliases');
 assert.match(operatorContents,/item\.results=/,'operator must collect results');
+
+assert.match(operatorContents,/meta\.publishedDate/,'material source metadata should populate publication dates');
+assert.match(operatorContents,/meta\.image/,'material source metadata should populate original thumbnails');
+assert.ok(operatorContents.includes("function bindMaterialMeta(){$('[data-material-fetch-meta]',root).forEach"),'material metadata controls must bind as a node list');
+assert.ok(operatorContents.includes("bindSourceMeta();bindMaterialMeta();$('[data-add-row]',root).forEach"),'archive add-row controls must remain a node list');
 
 
 assert.equal(typeof archive._internals.extractNotionPageId,'function','Notion page id extractor missing');
