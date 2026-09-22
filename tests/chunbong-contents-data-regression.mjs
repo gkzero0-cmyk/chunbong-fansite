@@ -31,6 +31,10 @@ const localArt=normalizeArchiveItem({
 });
 assert.equal(localArt.heroImage?.src,'/assets/chunbong-contents/leopel-cover.svg','local archive artwork path should be preserved');
 
+const seriesArt=normalizeArchiveItem({...monthOnly,id:'series-art',series:{id:'justserver',title:'그냥서버',subtitle:'마인크래프트 서버 시리즈',description:'시리즈 설명',order:10,cover:{src:'/assets/chunbong-contents/justserver-moneygame-cover.svg',alt:'그냥서버'}}});
+assert.equal(seriesArt.series?.id,'justserver','series metadata should survive normalization');
+assert.equal(seriesArt.series?.cover?.src,'/assets/chunbong-contents/justserver-moneygame-cover.svg','series cover path should survive normalization');
+
 const seed=JSON.parse(fs.readFileSync(new URL('../data/chunbong-contents-seed.json',import.meta.url),'utf8'));
 assert.ok(Array.isArray(seed.items));
 assert.ok(seed.items.some(item=>item.published===true),'at least one verified archive item should ship publicly');
@@ -49,6 +53,8 @@ const rows=archiveApi._internals.publicRows([
 ]);
 assert.deepEqual(rows.map(row=>row.id),['visible']);
 assert.ok(!('verification' in rows[0]));
+const mergedSeries=archiveApi._internals.mergeArchiveRows([{...monthOnly,id:'series-merge',series:{id:'justserver',title:'그냥서버'}}],[{...monthOnly,id:'series-merge'}]);
+assert.equal(mergedSeries[0]?.series?.id,'justserver','stored rows without series metadata should inherit curated seed series metadata');
 
 
 const impossibleDate=normalizeArchiveItem({...monthOnly,id:'impossible-date',startDate:'2026-02-31',datePrecision:'day'});
@@ -144,6 +150,12 @@ assert.ok((justserver?.media||[]).length>=2,'JustServer should include multiple 
 assert.ok((justserver?.gallery||[]).length>=2,'JustServer detail should have visual archive material');
 const survival=seed.items.find(item=>item.id==='justserver-survival');
 assert.ok(survival,'적자생존 콘텐츠 항목이 필요합니다');
+assert.equal(justserver?.series?.id,'justserver','머니게임은 그냥서버 시리즈에 속해야 합니다');
+assert.equal(survival?.series?.id,'justserver','적자생존은 그냥서버 시리즈에 속해야 합니다');
+assert.equal(justserver?.series?.title,'그냥서버','머니게임과 적자생존은 그냥서버 시리즈로 묶여야 합니다');
+assert.equal(chuntacle?.series?.id,'chuntacle','춘타클은 독립 시리즈 메타데이터를 가져야 합니다');
+assert.equal(leopel?.series?.id,'leopel','레오펠은 대표 시리즈 메타데이터를 가져야 합니다');
+assert.equal(psyContest?.series?.id,'psy-emotion-song-contest','싸이감성 노래자랑은 대표 시리즈 메타데이터를 가져야 합니다');
 assert.ok((survival?.media||[]).some(row=>row.url==='https://vod.sooplive.com/player/207560243'&&/적자생존 설명회/.test(row.title||'')),'적자생존 설명회 VOD가 필요합니다');
 const moneyVodIds=['199701961','199731549','199911259','200010937','200150005','200191013','200238669','200257689','200295759','200393761','200401503','200477587','200609959','200775197','200812787','200857709','200893769','200917923','200956235','201043833','201146469','201223669','201329381','201384951','201524161','201595413'];
 for(const id of moneyVodIds) assert.ok((justserver?.media||[]).some(row=>row.url===`https://vod.sooplive.com/player/${id}`),`머니게임 VOD 누락: ${id}`);
