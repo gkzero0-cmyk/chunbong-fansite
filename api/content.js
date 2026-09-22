@@ -312,6 +312,25 @@ async function handler(req,res) {
   const requestUrl=new URL(req.url||'/','https://chunbong.local');
   const type=requestUrl.searchParams.get('type')||'';
   if(type==='source-probe'&&process.env.VERCEL_ENV!=='production'){const key=requestUrl.searchParams.get('target')||'';try{return res.status(200).json(await sourceProbe(key))}catch(error){return res.status(400).json({error:String(error?.message||error)})}};
+  if(type==='notion-text-probe'&&process.env.VERCEL_ENV!=='production'){
+    const which=requestUrl.searchParams.get('target')||'diamond';
+    const pageId=which==='survival'?'3dad57d6-a55c-8046-9f3d-e9730cb88975':'33de955a-d773-802f-9f64-f1d63fcff3a4';
+    const response=await fetch('https://www.notion.so/api/v3/loadCachedPageChunk',{method:'POST',headers:{'User-Agent':'Mozilla/5.0','Accept':'application/json','Content-Type':'application/json','Origin':'https://www.notion.so','Referer':'https://www.notion.so/'},body:JSON.stringify({pageId,limit:100,cursor:{stack:[]},chunkNumber:0,verticalColumns:false})});
+    const payload=await response.json();
+    const map=payload?.recordMap?.block||{};
+    const blockValue=id=>map[id]?.value?.value||map[id]?.value||{};
+    const rich=v=>Array.isArray(v)?v.map(x=>Array.isArray(x)?String(x[0]??''):String(x??'')).join(''):String(v??'');
+    const rows=[];const seen=new Set();
+    const walk=(id,depth=0)=>{
+      if(!id||seen.has(id)||depth>20)return;seen.add(id);
+      const b=blockValue(id);const props=b.properties||{};
+      const text=rich(props.title||props.caption||props.description||'').replace(/\s+/g,' ').trim();
+      rows.push({id,type:String(b.type||''),text,depth,contentCount:Array.isArray(b.content)?b.content.length:0});
+      for(const child of Array.isArray(b.content)?b.content:[])walk(child,depth+1);
+    };
+    walk(pageId,0);
+    return res.status(200).json({pageId,status:response.status,rowCount:rows.length,rows});
+  }
   if(type==='notion-probe'&&process.env.VERCEL_ENV!=='production'){
     const which=requestUrl.searchParams.get('target')||'diamond';
     const pageId=which==='survival'?'3dad57d6-a55c-8046-9f3d-e9730cb88975':'33de955a-d773-802f-9f64-f1d63fcff3a4';
