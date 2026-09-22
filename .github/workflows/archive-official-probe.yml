@@ -1,0 +1,49 @@
+name: Archive official source probe
+
+on:
+  push:
+    branches:
+      - content/archive-official-assets-quality-20260923
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Fetch public SOOP archive metadata
+        run: |
+          node <<'NODE'
+          const archive=require('./lib/chunbong-content-archive-api');
+          const urls=[
+            'https://www.sooplive.com/station/chunbongtv/post/197785319',
+            'https://www.sooplive.com/station/chunbongtv/post/199568663',
+            'https://www.sooplive.com/station/chunbongtv/post/199830351',
+            'https://www.sooplive.com/station/chunbongtv/post/124321185',
+            'https://www.sooplive.com/station/chunbongtv/post/207425471',
+            'https://www.sooplive.com/station/chunbongtv/post/207516943',
+            'https://www.sooplive.com/station/chunbongtv/post/207564927',
+            'https://vod.sooplive.com/player/127480069',
+            'https://vod.sooplive.com/player/159711687',
+            'https://vod.sooplive.com/player/159715611',
+            'https://vod.sooplive.com/player/165343833',
+            'https://vod.sooplive.com/player/167705699',
+            'https://vod.sooplive.com/player/207560243'
+          ];
+          (async()=>{
+            for(const url of urls){
+              try{
+                const meta=await archive._internals.fetchSourceMeta(url);
+                console.log('ARCHIVE_PROBE '+JSON.stringify({url,meta}));
+              }catch(error){
+                console.log('ARCHIVE_PROBE '+JSON.stringify({url,error:String(error?.message||error)}));
+              }
+            }
+          })().catch(error=>{console.error(error);process.exitCode=1});
+          NODE
