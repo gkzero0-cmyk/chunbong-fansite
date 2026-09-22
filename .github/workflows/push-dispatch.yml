@@ -58,5 +58,5 @@ jobs:
           )"
           curl -fsS --retry 2 --retry-delay 2 --max-time 55             -H "Authorization: Bearer $token"             -H "User-Agent: chunbong-github-actions-push"             "$PUSH_URL"
           echo
-          curl -fsS --retry 1 --retry-delay 2 --max-time 55             -X POST             -H "Authorization: Bearer $token"             -H "Content-Type: application/json"             -H "User-Agent: chunbong-github-actions-archive-sync"             -d '{}'             "$ARCHIVE_SYNC_URL" || true
+          curl -fsS --retry 2 --retry-delay 2 --max-time 55             -X POST             -H "Authorization: Bearer $token"             -H "Content-Type: application/json"             -H "User-Agent: chunbong-github-actions-archive-sync"             -d '{}'             "$ARCHIVE_SYNC_URL"
           echo

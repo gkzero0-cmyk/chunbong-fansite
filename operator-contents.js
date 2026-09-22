@@ -8,7 +8,15 @@ const errorLabel={published_source_required:'공개하려면 공식 또는 확�
 async function json(type,options={}){const r=await fetch(API+type,{headers:{accept:'application/json',...(options.headers||{})},...options});let p={};try{p=await r.json()}catch{}if(!r.ok)throw new Error(p.error||'request_failed');return p}
 function statusText(item){if(item.published)return'공개';if(item.verification?.state==='needs_review'||item.verification?.conflicts?.length)return'확인 필요';return'초안'}
 function setMessage(text,type=''){const el=$('[data-archive-admin-message]',root);if(!el)return;el.textContent=text||'';el.dataset.state=type}
-function renderList(){const list=$('[data-archive-admin-list]',root),q=String($('[data-archive-admin-search]',root)?.value||'').toLowerCase();const rows=items.filter(i=>!q||[i.title,i.id,...(i.aliases||[])].join(' ').toLowerCase().includes(q));list.innerHTML=rows.length?rows.map(i=>`<button type="button" class="operator-archive-list-item ${selected?.id===i.id?'active':''}" data-archive-select="${esc(i.id)}"><span><strong>${esc(i.title||i.id)}</strong><small>${esc(i.id)} · ${esc(i.category||'기타')}</small></span><b data-state="${esc(statusText(i))}">${esc(statusText(i))}</b></button>`).join(''):'<p class="operator-empty">등록된 콘텐츠가 없습니다.</p>';$$('[data-archive-select]',list).forEach(b=>b.addEventListener('click',()=>selectItem(b.dataset.archiveSelect)))}
+function renderList(){
+  const list=$('[data-archive-admin-list]',root),q=String($('[data-archive-admin-search]',root)?.value||'').toLowerCase(),quality=$('[data-archive-admin-quality]',root)?.value||'all';
+  const rows=items.filter(i=>{const issues=archiveAudit(i).length;if(quality==='issues'&&!issues)return false;if(quality==='complete'&&issues)return false;return !q||[i.title,i.id,...(i.aliases||[])].join(' ').toLowerCase().includes(q)});
+  list.innerHTML=rows.length?rows.map(i=>{
+    const issues=archiveAudit(i).length,issueText=issues?'보강 '+issues+'건':'주요 누락 없음';
+    return '<button type="button" class="operator-archive-list-item '+(selected?.id===i.id?'active':'')+'" data-archive-select="'+esc(i.id)+'"><span><strong>'+esc(i.title||i.id)+'</strong><small>'+esc(i.id)+' · '+esc(i.category||'기타')+' · '+esc(issueText)+'</small></span><b data-state="'+esc(statusText(i))+'">'+esc(statusText(i))+'</b></button>';
+  }).join(''):'<p class="operator-empty">조건에 맞는 콘텐츠가 없습니다.</p>';
+  
+}
 function field(label,name,value='',type='text',extra=''){return `<label class="operator-archive-field"><span>${label}</span><input type="${type}" name="${name}" value="${esc(value)}" ${extra}></label>`}
 function selectField(label,name,value,options){return `<label class="operator-archive-field"><span>${label}</span><select name="${name}">${options.map(([v,l])=>`<option value="${v}" ${v===value?'selected':''}>${l}</option>`).join('')}</select></label>`}
 function rowControls(){return `<div class="operator-archive-row-controls"><button type="button" data-move-row="up" aria-label="위로 이동">↑</button><button type="button" data-move-row="down" aria-label="아래로 이동">↓</button><button type="button" data-remove-row aria-label="항목 삭제">삭제</button></div>`}
@@ -99,12 +107,29 @@ function bindEditor(){const form=$('[data-archive-form]',root);form.addEventList
 function selectItem(id){const item=items.find(x=>x.id===id);if(item){renderEditor(item);renderList()}}
 function renderAutoSyncState(){
   const el=$('[data-archive-auto-state]',root);if(!el)return;
-  const when=String(autoSyncMeta?.completedAt||'').slice(0,16).replace('T',' ');
-  const d=autoSyncMeta?.discovered||{};
-  const total=['posts','vods','catches','clips','youtube','shorts'].reduce((sum,key)=>sum+Number(d[key]||0),0);
-  el.innerHTML=autoSyncMeta
-    ? `<strong>공식 자료 자동 수집</strong><span>마지막 동기화 ${esc(when||'확인 중')} · 발견 ${total}건 · 자동 연결 ${Number(autoSyncMeta.attachedCount||0)}건 · 검토 후보 ${autoCandidates.length}건</span><small>우선순위: SOOP 게시글·VOD·Catch·Clip → 춘봉TV YouTube·Shorts</small>`
-    : '<strong>공식 자료 자동 수집</strong><span>아직 동기화 기록이 없습니다.</span><small>SOOP 방송국을 최우선으로 수집합니다.</small>';
+  const failed=autoSyncMeta?.status==='failed',when=String((failed?autoSyncMeta?.failedAt:autoSyncMeta?.completedAt)||'').slice(0,16).replace('T',' '),lastOk=String(autoSyncMeta?.lastSuccessAt||'').slice(0,16).replace('T',' ');
+  const d=autoSyncMeta?.discovered||{},total=['posts','vods','catches','clips','youtube','shorts'].reduce((sum,key)=>sum+Number(d[key]||0),0);
+  el.dataset.state=failed?'bad':autoSyncMeta?'ok':'';
+  if(!autoSyncMeta){el.innerHTML='<strong>공식 자료 자동 수집</strong><span>아직 동기화 기록이 없습니다.</span><small>SOOP 방송국을 최우선으로 수집합니다.</small>';return}
+  if(failed){el.innerHTML='<strong>공식 자료 자동 수집 · 실패</strong><span>실패 '+esc(when||'확인 중')+' · 마지막 성공 '+esc(lastOk||'없음')+' · 검토 후보 '+autoCandidates.length+'건</span><small>'+esc(autoSyncMeta.error||'원인을 확인해 주세요.')+'</small>';return}
+  el.innerHTML='<strong>공식 자료 자동 수집 · 정상</strong><span>마지막 성공 '+esc(when||'확인 중')+' · 발견 '+total+'건 · 자동 연결 '+Number(autoSyncMeta.attachedCount||0)+'건 · 검토 후보 '+autoCandidates.length+'건 · '+Number(autoSyncMeta.durationMs||0)+'ms</span><small>우선순위: SOOP 게시글·VOD·Catch·Clip → 춘봉TV YouTube·Shorts</small>';
+}
+function renderCandidates(){
+  const wrap=$('[data-archive-candidate-list]',root),count=$('[data-archive-candidate-count]',root);if(count)count.textContent=autoCandidates.length+'건';if(!wrap)return;
+  if(!autoCandidates.length){wrap.innerHTML='<p class="operator-empty">검토 후보가 없습니다.</p>';return}
+  const options=items.map(item=>'<option value="'+esc(item.id)+'">'+esc(item.title)+'</option>').join('');
+  wrap.innerHTML=autoCandidates.slice(0,80).map(row=>{
+    const thumb=row.thumbnail?'<img src="'+esc(row.thumbnail)+'" alt="">':'';
+    return '<article class="operator-archive-candidate" data-candidate-url="'+esc(row.url)+'"><div class="operator-archive-candidate-main">'+thumb+'<div><small>'+esc(String(row.platform||'official').toUpperCase())+' · '+esc(row.type||'자료')+' · '+esc(row.date||'날짜 확인 중')+'</small><strong>'+esc(row.title||'제목 없음')+'</strong><a href="'+esc(row.url)+'" target="_blank" rel="noreferrer">원문 보기 ↗</a></div></div><label><span>연결할 콘텐츠</span><select data-candidate-target><option value="">선택</option>'+options+'</select></label><div class="operator-archive-candidate-actions"><button type="button" data-candidate-action="connect">기존 콘텐츠에 연결</button><button type="button" data-candidate-action="draft">새 콘텐츠 초안</button><button type="button" data-candidate-action="ignore">관련 없음</button></div></article>';
+  }).join('');
+  $('[data-candidate-action]',wrap).forEach(button=>button.addEventListener('click',()=>void processCandidate(button)));
+}
+async function processCandidate(button){
+  const card=button.closest('[data-candidate-url]'),action=button.dataset.candidateAction||'',url=card?.dataset.candidateUrl||'',itemId=$('[data-candidate-target]',card)?.value||'';
+  if(action==='connect'&&!itemId){alert('연결할 콘텐츠를 선택해 주세요.');return}
+  button.disabled=true;
+  try{const p=await json('operator-content-auto-candidate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,url,itemId})});await load();if(action==='draft'&&p.item?.id)selectItem(p.item.id)}
+  catch(e){setMessage('후보 처리에 실패했습니다: '+e.message,'bad')}finally{button.disabled=false}
 }
 async function runOfficialSync(){
   const button=$('[data-archive-auto-sync]',root);if(button)button.disabled=true;
@@ -117,5 +142,5 @@ async function runOfficialSync(){
     if(el){el.textContent='공식 자료 동기화에 실패했습니다: '+e.message;el.dataset.state='bad'}
   }finally{if(button)button.disabled=false}
 }
-async function load(){try{const p=await json('operator-content-archive');items=Array.isArray(p.items)?p.items:[];autoSyncMeta=p.autoSync||null;autoCandidates=Array.isArray(p.candidates)?p.candidates:[];renderList();renderAutoSyncState()}catch(e){setMessage(e.message==='archive_storage_unavailable'?'콘텐츠 저장소를 사용할 수 없습니다.':'콘텐츠 목록을 불러오지 못했습니다.','bad')}}
-export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());renderEditor(emptyItem());await load()}
+async function load(){try{const p=await json('operator-content-archive');items=Array.isArray(p.items)?p.items:[];autoSyncMeta=p.autoSync||null;autoCandidates=Array.isArray(p.candidates)?p.candidates:[];renderList();renderAutoSyncState();renderCandidates()}catch(e){setMessage(e.message==='archive_storage_unavailable'?'콘텐츠 저장소를 사용할 수 없습니다.':'콘텐츠 목록을 불러오지 못했습니다.','bad')}}
+export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);$('[data-archive-admin-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-archive-select]');if(button)selectItem(button.dataset.archiveSelect)});$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());renderEditor(emptyItem());await load()}

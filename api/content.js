@@ -282,6 +282,7 @@ async function handler(req,res) {
   if(type==='operator-content-archive-save') return contentArchive.handleOperatorSave(req,res);
   if(type==='operator-content-archive-publish') return contentArchive.handleOperatorPublish(req,res);
   if(type==='operator-content-auto-sync') return contentArchive.handleOperatorAutoSync(req,res);
+  if(type==='operator-content-auto-candidate') return contentArchive.handleOperatorCandidate(req,res);
   if(type==='operator-content-source-meta') return contentArchive.handleOperatorSourceMeta(req,res);
   if(type==='operator-content-archive-delete') return contentArchive.handleOperatorDelete(req,res);
   if(type==='live'){
