@@ -53,3 +53,13 @@ assert.ok(serviceWorker.includes("chunbong-pwa-20260922-v31"),'service worker ca
 assert.ok(serviceWorker.includes("event.respondWith(networkFirst(request, event));"),'documents/scripts/styles should prefer network to avoid stale markup/style mismatches');
 assert.ok(serviceWorker.includes("await self.skipWaiting();"),'new service worker should activate immediately after install');
 assert.ok(css.includes('Archive stale-markup compatibility'),'archive CSS should explicitly recover stale reveal markup');
+
+for(const token of ['archive-series-statuses','archive-media-groups','archive-media-group']) assert.ok(css.includes(token),token);
+for(const token of ['seriesStatusMarkup','mediaCardMarkup','archive-media-group']) assert.ok(js.includes(token),token);
+
+const operatorContents=read('operator-contents.js');
+const operatorCss=read('operator.css');
+const contentApi=read('api/content.js');
+for(const token of ['자료 반영 상태','참가자 미수집','Notion 본문 미구조화','실제 대표 이미지 확인','data-source-fetch-meta','내부 검증용 · 숨김']) assert.ok(operatorContents.includes(token),token);
+for(const token of ['operator-archive-audit','operator-source-meta-actions']) assert.ok(operatorCss.includes(token),token);
+assert.ok(contentApi.includes("operator-content-source-meta"),'source metadata operator API route missing');
