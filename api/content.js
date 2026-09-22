@@ -349,6 +349,22 @@ async function handler(req,res) {
     }
     return res.status(200).json({pageId,out});
   }
+  if(type==='soop-current-api-probe'&&process.env.VERCEL_ENV!=='production'){
+    const stationId='chunbongtv',target='192179233';
+    const headers={'User-Agent':'Mozilla/5.0','Accept':'application/json, text/plain, */*','Referer':'https://www.sooplive.com/station/chunbongtv/board','Origin':'https://www.sooplive.com'};
+    const exact=[
+      'https://api-channel.sooplive.com/v1.1/channel/'+stationId+'/board/'+target,
+      'https://api-channel.sooplive.com/v1.1/channel/'+stationId+'/post/'+target,
+      'https://api-channel.sooplive.com/v1.1/channel/'+stationId+'/posts/'+target,
+      'https://api-channel.sooplive.com/v1.1/channel/'+stationId+'/board/post/'+target,
+      'https://api-channel.sooplive.com/v1.1/channel/'+stationId+'/home/section/post'
+    ];
+    const inspect=async url=>{try{const response=await fetch(url,{headers});const raw=await response.text();return{url,status:response.status,length:raw.length,hasTarget:raw.includes(target),sample:raw.slice(0,1800)}}catch(error){return{url,error:String(error?.message||error)}}};
+    const exactResults=await Promise.all(exact.map(inspect));
+    const pages=await Promise.all(Array.from({length:24},(_,i)=>inspect('https://api-channel.sooplive.com/v1.1/channel/'+stationId+'/board?per_page=30&page='+(i+1))));
+    const hits=pages.filter(row=>row.hasTarget||/"(?:post_no|title_no|bbs_no|no)"\s*:\s*"?192179233"?/i.test(row.sample||''));
+    return res.status(200).json({exact:exactResults,pages:pages.map((row,i)=>({page:i+1,status:row.status,length:row.length,hasTarget:row.hasTarget,sample:row.hasTarget?row.sample:''})),hits});
+  }
   if(type==='soop-script-list'&&process.env.VERCEL_ENV!=='production'){
     const page='https://www.sooplive.com/station/chunbongtv/post/192179233';
     const response=await fetch(page,{headers:{'User-Agent':'Mozilla/5.0','Accept':'text/html'}});
