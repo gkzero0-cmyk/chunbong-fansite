@@ -29,35 +29,25 @@ jobs:
               with urllib.request.urlopen(req,timeout=30) as r:
                   return r.geturl(),r.headers.get('content-type'),r.read().decode('utf-8','replace')
           final,ctype,body=get(url)
-          print('STATUS 200')
-          print('FINAL_URL',final)
-          print('CONTENT_TYPE',ctype)
-          print('BODY_LEN',len(body))
-          for term in ['chuntacle-session-','01a0c6b','download','pbUqT2KJziaz']:
-              pos=0
-              count=0
-              while True:
-                  i=body.lower().find(term.lower(),pos)
-                  if i<0: break
-                  print('CONTEXT',term,body[max(0,i-700):i+1400].replace('\\n',' ')[:2200])
-                  pos=i+len(term);count+=1
-                  if count>=12: break
-          scripts=re.findall(r'<script[^>]+src=["\\\']([^"\\\']+)["\\\']',body)
+          scripts=re.findall(r'<script[^>]+src=["\']([^"\']+)["\']',body)
           for src in scripts:
-              if 'app/(files)' not in src and '8437-' not in src and '5841-' not in src and '4899-' not in src:
-                  continue
               full=urllib.parse.urljoin(final,src)
               try:
                   _,_,js=get(full)
-              except Exception as e:
-                  print('SCRIPT_ERROR',full,repr(e));continue
-              print('SCRIPT',full,'LEN',len(js))
-              for term in ['download','/api/','shareId','fileId','files/']:
-                  pos=0;count=0
-                  while True:
-                      i=js.find(term,pos)
-                      if i<0: break
-                      print('JS_CONTEXT',term,js[max(0,i-500):i+1100][:1700])
-                      pos=i+len(term);count+=1
-                      if count>=10: break
+              except Exception:
+                  continue
+              i=js.find('async function v()')
+              if i<0:
+                  continue
+              print('BUNDLE',full)
+              print('AROUND_V',js[max(0,i-5000):i+2500])
+              prefix=js[max(0,i-12000):i]
+              for pat in [
+                  r'(?:let|const|var)\s+f\s*=\s*["\']([^"\']+)["\']',
+                  r'f\s*=\s*["\']([^"\']+)["\']',
+                  r'["\']([^"\']*api[^"\']*)["\']'
+              ]:
+                  vals=re.findall(pat,prefix)
+                  if vals: print('CANDIDATE',pat,vals[-20:])
+              break
           PY
