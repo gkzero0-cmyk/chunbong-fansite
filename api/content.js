@@ -288,6 +288,22 @@ async function sourceProbe(targetKey){
       });
     }catch(error){out.push({profile,error:String(error?.name||'Error')+': '+String(error?.message||error),durationMs:Date.now()-started});}
   }
+  if(out[0]&&!out[0].error){
+    try{
+      const response=await fetch(url,{redirect:'follow',headers:{'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/153.0.0.0 Safari/537.36','Accept':'text/html,application/xhtml+xml','Accept-Language':'ko-KR,ko;q=0.9'}});
+      const raw=await response.text();
+      const uuids=[...new Set((raw.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi)||[]))].slice(0,30);
+      const compactIds=[...new Set((raw.match(/[0-9a-f]{32}/gi)||[]))].slice(0,30);
+      const canonical=(raw.match(/<link\\b[^>]*rel=["']canonical["'][^>]*href=["']([^"']+)["']/i)||[])[1]||'';
+      const contexts={};
+      for(const needle of ['BJ공파리파','돗챠','pageId','spaceId','recordMap','__NEXT_DATA__']){
+        const i=raw.indexOf(needle);if(i>=0)contexts[needle]=raw.slice(Math.max(0,i-350),Math.min(raw.length,i+750));
+      }
+      const trCount=(raw.match(/<tr\\b/gi)||[]).length;
+      const liCount=(raw.match(/<li\\b/gi)||[]).length;
+      return{targetKey,url,results:out,deep:{canonical,uuids,compactIds,trCount,liCount,contexts}};
+    }catch{}
+  }
   return{targetKey,url,results:out};
 }
 
