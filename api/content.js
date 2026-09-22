@@ -254,7 +254,9 @@ async function handler(req,res) {
     const mode=requestUrl.searchParams.get('mode')||'';
     try{
       if(mode==='money-bngts'){
-        return res.status(200).json(await contentArchive._internals.fetchSourceMeta('https://bngts.com/contents/geunyangseobeo-meonigeim/streamers'));
+        const meta=await contentArchive._internals.fetchSourceMeta('https://bngts.com/contents/geunyangseobeo-meonigeim/streamers');
+        const start=Math.max(0,Number(requestUrl.searchParams.get('start')||0)),limit=Math.min(60,Math.max(1,Number(requestUrl.searchParams.get('limit')||50)));
+        return res.status(200).json({title:meta.title,total:meta.participantCount,pages:meta.pages,start,participants:(meta.participants||[]).slice(start,start+limit)});
       }
       if(mode==='survival-posts'){
         const urls=['https://www.sooplive.com/station/chunbongtv/post/207564735','https://www.sooplive.com/station/chunbongtv/post/207564927'];
@@ -262,6 +264,7 @@ async function handler(req,res) {
         return res.status(200).json({rows});
       }
       if(mode==='money-vods'){
+        const autoIngest=require('../lib/chunbong-content-auto-ingest');
         const ids=new Set(['199701961','199731549','199911259','200010937','200150005','200191013','200238669','200257689','200295759','200393761','200401503','200477587','200609959','200775197','200812787','200857709','200893769','200917923','200956235','201043833','201146469','201223669','201329381','201384951','201524161','201595413']);
         const rows=(await autoIngest.fetchPagedSoopVideos('vod',{maxPages:60})).filter(row=>ids.has(String(row.id)));
         return res.status(200).json({count:rows.length,rows});
