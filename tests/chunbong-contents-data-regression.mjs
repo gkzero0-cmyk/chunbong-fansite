@@ -237,3 +237,62 @@ for(const item of seed.items){
     if(internal)assert.equal(source.visibility,'internal',`internal reference source should not be public: ${source.url}`);
   }
 }
+
+
+const leopelGroups=leopel?.participantGroups||[];
+assert.equal(leopelGroups.reduce((sum,row)=>sum+Number(row.count||0),0),475,'Leopel verified 1st-3rd entry groups should total 475');
+assert.deepEqual(leopelGroups.map(row=>row.count),[140,127,44,104,60],'Leopel entry-group counts should stay source-faithful');
+assert.match(String(leopel?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/leopel\/logo\.webp$/,'Leopel should use the preserved real representative logo instead of a fan SVG cover');
+
+const survivalGroups=survival?.participantGroups||[];
+assert.equal(survivalGroups.length,5,'survival should expose five first-entry groups');
+assert.ok(survivalGroups.every(row=>row.count===100&&row.participants?.length===100),'each survival first-entry group should contain exactly 100 names');
+assert.equal(survivalGroups.reduce((sum,row)=>sum+row.participants.length,0),500,'survival participant groups should total 500');
+assert.deepEqual(survivalGroups.map(row=>row.label),['1조 · 18:00 입장','2조 · 18:30 입장','3조 · 19:00 입장','4조 · 19:30 입장','5조 · 20:00 입장']);
+assert.ok(survivalGroups.flatMap(row=>row.participants).includes('김잇딥'),'official survival first-entry list should include 김잇딥');
+assert.ok(survivalGroups.flatMap(row=>row.participants).includes('철쑤_'),'official survival first-entry list should include 철쑤_');
+assert.match(String(survival?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/first-entry-notice\.png$/,'survival should use the preserved official first-entry notice image');
+assert.ok((survival?.timeline||[]).some(row=>row.id==='survival-soop-post-207425471'&&row.date==='2026-09-18'&&/1차 입주자 공지/.test(row.title||'')),'survival official first-entry post metadata should be exact');
+assert.ok((survival?.timeline||[]).some(row=>row.id==='survival-soop-post-206972857'&&row.date==='2026-09-13'&&/일정 변경 공지/.test(row.title||'')),'survival schedule-change post metadata should be exact');
+assert.ok((survival?.timeline||[]).some(row=>row.id==='survival-soop-post-207516943'&&row.date==='2026-09-19'&&/설명회 공지/.test(row.title||'')),'survival same-day explanation notice should be exact');
+const survivalVod=(survival?.media||[]).find(row=>row.id==='survival-presentation-vod-207560243');
+assert.equal(survivalVod?.title,'7시 그냥서버:적자생존 설명회');
+assert.equal(survivalVod?.date,'2026-09-19');
+assert.match(String(survivalVod?.thumbnail||''),/^https:\/\/videoimg\.sooplive\.com\//);
+
+const expectedYoutube=new Map([
+ ['b-jlKXqLakU','타로 0번부터 시작합니다｜버츄얼 스트리머 타로 클래스 1화 ‘THE FOOL’'],
+ ['gJKw13B7ydc','모든 가능성을 현실로 만드는 카드｜THE MAGICIAN'],
+ ['8rnQKGwa1qw','직감은 이미 답을 알고 있다｜THE HIGH PRIESTESS']
+]);
+for(const [id,title] of expectedYoutube){
+  const row=(chuntacle?.media||[]).find(media=>String(media.url||'').includes(id));
+  assert.equal(row?.title,title,`춘타클 YouTube title mismatch: ${id}`);
+  assert.equal(row?.thumbnail,`https://i.ytimg.com/vi/${id}/hqdefault.jpg`,`춘타클 YouTube thumbnail mismatch: ${id}`);
+}
+
+const normalizedParticipantGroups=normalizeArchiveItem({
+  id:'participant-group-sample',title:'참가자 그룹 샘플',category:'minecraft',role:'주최',status:'ended',
+  startDate:'2026',endDate:'2026',datePrecision:'year',summary:'샘플',description:'샘플',
+  participants:[],participantGroups:[{id:'g1',title:'1차',label:'A조 · 18:00',platform:'SOOP',participants:['가','나'],count:2,sourceId:'s1'}],
+  results:[],timeline:[],media:[],gallery:[],sources:[{id:'s1',kind:'official',label:'원문',url:'https://www.sooplive.com/station/chunbongtv/post/1'}],
+  verification:{state:'official',conflicts:[]},published:true
+});
+assert.equal(normalizedParticipantGroups.participantGroups[0].label,'A조 · 18:00');
+assert.deepEqual(normalizedParticipantGroups.participantGroups[0].participants,['가','나']);
+assert.equal(validateArchiveItem(normalizedParticipantGroups,{publishing:true}).length,0);
+
+const staleSurvivalStored={
+  ...survival,
+  participantGroups:[],
+  heroImage:{src:'/assets/chunbong-contents/justserver-survival-cover.svg',alt:'old',sourceId:''},
+  gallery:[],
+  results:[],
+  timeline:(survival.timeline||[]).map(row=>row.id==='survival-soop-post-207425471'?{...row,title:'그냥서버 : 적자생존 공식 게시글 5',date:'',datePrecision:'unknown',thumbnail:'',note:'춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다.'}:row),
+  media:(survival.media||[]).map(row=>row.id==='survival-presentation-vod-207560243'?{...row,title:'그냥서버 : 적자생존 설명회',date:'',datePrecision:'unknown',thumbnail:'/assets/chunbong-contents/justserver-survival-cover.svg'}:row)
+};
+const mergedSurvival=archiveApi._internals.mergeArchiveRows([survival],[staleSurvivalStored])[0];
+assert.equal(mergedSurvival.participantGroups.reduce((sum,row)=>sum+row.participants.length,0),500,'seed participant groups must survive stale Redis records');
+assert.match(String(mergedSurvival.heroImage?.src||''),/first-entry-notice\.png$/,'official survival hero must replace a stale generic Redis cover');
+assert.equal(mergedSurvival.timeline.find(row=>row.id==='survival-soop-post-207425471')?.date,'2026-09-18','exact official date must enrich stale stored timeline');
+assert.equal(mergedSurvival.media.find(row=>row.id==='survival-presentation-vod-207560243')?.title,'7시 그냥서버:적자생존 설명회','exact official VOD title must enrich stale stored media');
