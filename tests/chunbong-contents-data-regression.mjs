@@ -36,6 +36,10 @@ const seriesArt=normalizeArchiveItem({...monthOnly,id:'series-art',series:{id:'j
 assert.equal(seriesArt.series?.id,'justserver','series metadata should survive normalization');
 assert.equal(seriesArt.series?.cover?.src,'/assets/chunbong-contents/justserver-moneygame-cover.svg','series cover path should survive normalization');
 
+const participantTotal=normalizeArchiveItem({...monthOnly,id:'participant-total',participantCount:658,participantGroups:[{id:'entry-1',stage:'1차 입주',title:'입장 순서 1 · 18:00',count:50}]});
+assert.equal(participantTotal.participantCount,658,'verified participant total should survive normalization');
+assert.equal(participantTotal.participantGroups[0]?.stage,'1차 입주','participant group stage should survive normalization');
+
 assert.equal(autoIngest.genericTitle('춘타클 관련 YouTube 영상 1'),true,'numbered Chuntacle YouTube placeholders should be treated as generic');
 assert.equal(autoIngest.genericTitle('그냥서버 : 머니게임 공식 게시글 1'),true,'numbered official post placeholders should be treated as generic');
 assert.equal(autoIngest.genericTitle('레오펠 공식 게시글 · 159705141'),true,'ID-based official post placeholders should be treated as generic');
@@ -71,6 +75,16 @@ assert.ok((leopel?.sources||[]).length>=2,'Leopol should be cross-checked with m
 assert.equal(leopel?.role,'주최 · 기획','Leopol role should match directly supported source wording');
 for(const item of seed.items) assert.deepEqual(validateArchiveItem(normalizeArchiveItem(item),{publishing:true}),[]);
 
+
+const moneygame=seed.items.find(item=>item.id==='justserver-moneygame');
+assert.equal(moneygame?.participantCount,658,'머니게임 참가자는 섭주 춘봉을 제외한 658명이어야 합니다');
+assert.equal((moneygame?.participantGroups||[]).reduce((sum,row)=>sum+Number(row.count||0),0),243,'머니게임 1차 입주 명단은 243명이어야 합니다');
+assert.ok((moneygame?.participantGroups||[]).every(row=>row.stage==='1차 입주'),'머니게임 5개 시간대 그룹은 모두 1차 입주에 속해야 합니다');
+assert.deepEqual((moneygame?.participantGroups||[]).map(row=>row.title),['입장 순서 1 · 18:00','입장 순서 2 · 18:10','입장 순서 3 · 18:20','입장 순서 4 · 18:30','입장 순서 5 · 18:40'],'1차 입주 시간대는 입주 차수가 아니라 입장 순서로 표시해야 합니다');
+assert.ok((moneygame?.results||[]).some(row=>row.title==='전체 참가자'&&/658명/.test(row.value||'')),'머니게임 전체 참가자 658명 기록이 있어야 합니다');
+
+const contentsUi=require('../chunbong-contents.js');
+assert.equal(contentsUi.itemPeopleCount({participantCount:658,participantGroups:[{count:50},{count:49},{count:50},{count:49},{count:45}]}),658,'상단 참가자 통계는 부분 입주 명단 243명이 아니라 검증된 전체 658명을 사용해야 합니다');
 
 const diamondBackfill=seed.items.find(item=>item.id==='justserver-diamond');
 assert.equal((diamondBackfill?.results||[]).some(row=>/방통실|BNGTS|189명|183명/i.test(String(row.title||'')+' '+String(row.value||''))),false,'그냥서버 1은 방통실 기반 참가자 집계를 공개 기록에 사용하지 않아야 합니다');
@@ -110,7 +124,11 @@ assert.equal(archiveCore.blockedArchiveSourceUrl('https://namu.wiki/w/test'),fal
 assert.equal(archiveApi._internals.shouldForcePublicAutoSync({githubOidc:true,migrationMarker:''}),true,'the first authenticated GitHub archive sync after this migration should run a full rescan');
 assert.equal(archiveApi._internals.shouldForcePublicAutoSync({githubOidc:true,migrationMarker:'done'}),false,'completed migration should return to incremental archive sync');
 assert.equal(archiveApi._internals.shouldForcePublicAutoSync({githubOidc:false,migrationMarker:''}),false,'same-site/browser sync must never trigger the expensive migration full scan');
-assert.match(archiveApi._internals.AUTO_FULL_MIGRATION_KEY,/bngts-hidden-ingestion/,'BNGTS hidden-ingestion migration should have an explicit versioned key');
+assert.match(archiveApi._internals.AUTO_FULL_MIGRATION_KEY,/moneygame-participant-count/,'moneygame participant-count migration should have an explicit versioned key');
+const moneygameSnapshot={id:'justserver-moneygame',participantCount:243,participantGroups:[{id:'entry',stage:'1차 입주',title:'입장 순서 1',count:50}]};
+assert.equal(archiveApi._internals.applyBngtsParticipantSnapshot(moneygameSnapshot,{id:'source-money-bngts-streamers'},{participantCount:659,participants:['춘봉','참가자A']}),true,'머니게임 방통실 스냅샷은 참가자 수를 갱신해야 합니다');
+assert.equal(moneygameSnapshot.participantCount,658,'방통실 659명에서 섭주 춘봉 1명을 제외해야 합니다');
+assert.equal(moneygameSnapshot.participantGroups.length,1,'방통실 자동수집이 1차 입주 그룹을 덮어쓰면 안 됩니다');
 const rows=archiveApi._internals.publicRows([
   {...monthOnly,id:'visible',published:true},
   {...monthOnly,id:'draft',published:false}
