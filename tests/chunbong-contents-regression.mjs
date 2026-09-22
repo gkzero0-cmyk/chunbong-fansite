@@ -20,6 +20,7 @@ for(const text of ['/api/content?type=chunbong-contents','/api/content?type=chun
 const archive=require('../chunbong-contents.js');
 assert.equal(archive.formatDate('2026-06','month'),'2026년 6월');
 assert.equal(archive.filterItems([{title:'레오펠',aliases:[],participants:['춘봉'],category:'minecraft',startDate:'2025-06'}],{q:'춘봉',category:'all',year:'all'}).length,1);
+assert.equal(archive.filterItems([{title:'적자생존',aliases:[],participants:[],participantGroups:[{participants:['김잇딥','철쑤_']}],category:'minecraft',startDate:'2026-09'}],{q:'철쑤',category:'all',year:'all'}).length,1,'participantGroups grouped search should find a content record');
 
 const shell=read('site-shell.js');
 const home=read('index.html');
@@ -63,3 +64,5 @@ const contentApi=read('api/content.js');
 for(const token of ['자료 반영 상태','참가자 미수집','Notion 본문 미구조화','실제 대표 이미지 확인','data-source-fetch-meta','내부 검증용 · 숨김']) assert.ok(operatorContents.includes(token),token);
 for(const token of ['operator-archive-audit','operator-source-meta-actions']) assert.ok(operatorCss.includes(token),token);
 assert.ok(contentApi.includes("operator-content-source-meta"),'source metadata operator API route missing');
+
+for(const token of ['renderParticipantGroups','participantGroups','archive-participant-wave','archive-participant-groups']) assert.ok((js+'\n'+css).includes(token),token);
