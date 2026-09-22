@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-23T03:46:00+09:00",
+  "updatedAt": "2026-09-23T05:02:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -18,8 +18,8 @@
       "summary": "춘봉이 기획·운영한 SOOP·치지직·YouTube 플랫폼 통합 대규모 스트리머 마인크래프트 서버.",
       "description": "2025년 6월 5일부터 7월 6일까지 진행된 플랫폼 통합 대규모 마인크래프트 서버입니다. 춘봉이 총괄 기획·주최했으며 SOOP·치지직·YouTube 통합 서버로 운영됐습니다. 공식 게시글·VOD·SOOP PICK 자료에 더해 나무위키 계열 교차 자료에서 최종 참여자 671명, 1차 SOOP 140명, 2차 171명 등의 규모를 확인해 함께 기록합니다.",
       "heroImage": {
-        "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
-        "alt": "레오펠 사자의 노래 대표 로고",
+        "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,h_900,w_1600/e_blur:700/l_chunbong-fansite:leopel:logo/c_fit,h_760,w_1300/fl_layer_apply,g_center/f_webp/q_auto:best/v1790043451/chunbong-fansite/leopel/logo.webp",
+        "alt": "레오펠 사자의 노래 공식 로고 기반 16:9 대표 이미지",
         "sourceId": ""
       },
       "participants": [],
@@ -334,7 +334,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T20:31:00+09:00",
+      "updatedAt": "2026-09-23T05:02:00+09:00",
       "series": {
         "id": "leopel",
         "title": "레오펠",
@@ -342,8 +342,8 @@
         "description": "플랫폼 통합 대규모 스트리머 마인크래프트 서버의 기획·오픈·방송 기록을 모아봅니다.",
         "order": 40,
         "cover": {
-          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
-          "alt": "레오펠 사자의 노래 로고"
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,h_900,w_1600/e_blur:700/l_chunbong-fansite:leopel:logo/c_fit,h_760,w_1300/fl_layer_apply,g_center/f_webp/q_auto:best/v1790043451/chunbong-fansite/leopel/logo.webp",
+          "alt": "레오펠 사자의 노래 공식 로고 기반 16:9 대표 이미지"
         }
       },
       "participantGroups": [
