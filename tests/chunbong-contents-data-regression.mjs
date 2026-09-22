@@ -105,7 +105,8 @@ assert.ok(psyContest1?.published&&psyContest2?.published,'싸이감성 노래자
 assert.equal(psyContest1?.series?.id,'psy-emotion-song-contest');
 assert.equal(psyContest2?.series?.id,'psy-emotion-song-contest');
 assert.equal(psyContest1?.datePrecision,'unknown','1회 날짜는 원문 확인 전 임의 확정하지 않습니다');
-assert.equal(psyContest2?.datePrecision,'unknown','2회 날짜는 원문 확인 전 임의 확정하지 않습니다');
+assert.equal(psyContest2?.datePrecision,'day','2회 날짜는 교차 확인된 개최일 기준으로 일 단위여야 합니다');
+assert.equal(psyContest2?.startDate,'2026-04-28','2회 개최일은 2026-04-28이어야 합니다');
 assert.ok((psyContest1?.sources||[]).some(row=>row.url==='https://www.sooplive.com/station/chunbongtv/post/124321185'),'1회 SOOP 모집글이 필요합니다');
 assert.ok((psyContest1?.media||[]).some(row=>row.url==='https://vod.sooplive.com/player/127480069'),'1회 SOOP VOD가 필요합니다');
 assert.ok((psyContest1?.participants||[]).includes('시로코'),'제1회 참가가 교차 확인된 시로코 기록이 필요합니다');
@@ -237,3 +238,27 @@ for(const item of seed.items){
     if(internal)assert.equal(source.visibility,'internal',`internal reference source should not be public: ${source.url}`);
   }
 }
+
+const leopelGroupsItem=seed.items.find(item=>item.id==='leopel');
+assert.equal(leopelGroupsItem?.participantGroups?.length,3,'레오펠은 1차/2차 플랫폼별 참가자 그룹을 제공해야 합니다');
+assert.deepEqual((leopelGroupsItem?.participantGroups||[]).map(group=>group.count),[140,127,44],'레오펠 참가자 그룹 인원수가 교차 자료와 일치해야 합니다');
+assert.equal((leopelGroupsItem?.participantGroups||[]).reduce((sum,group)=>sum+(group.participants||[]).length,0),311,'레오펠 1·2차 확인 명단은 총 311명이어야 합니다');
+assert.match(String(leopelGroupsItem?.heroImage?.src||''),/res\.cloudinary\.com\/lyppgyei\/.*\/leopel\/logo\.webp$/,'레오펠 대표 이미지는 실제 보존 로고를 사용해야 합니다');
+
+const survivalEnriched=seed.items.find(item=>item.id==='justserver-survival');
+for(const id of ['survival-prep-applicants','survival-prep-before-open','survival-prep-qa','survival-prep-briefing']){
+  assert.ok((survivalEnriched?.timeline||[]).some(row=>row.id===id),`적자생존 준비 방송 타임라인 누락: ${id}`);
+}
+assert.ok((survivalEnriched?.sources||[]).some(row=>row.id==='source-survival-streams'&&row.visibility==='internal'),'적자생존 Streams Charts 근거는 내부 검증용이어야 합니다');
+
+const groupMerge=archiveApi._internals.mergeArchiveRows(
+  [{...leopelGroupsItem,id:'group-merge'}],
+  [{...leopelGroupsItem,id:'group-merge',participantGroups:[]}]
+);
+assert.equal(groupMerge[0].participantGroups.length,3,'기존 저장 레코드가 비어 있어도 seed 참가자 그룹을 보존해야 합니다');
+
+const psy2Confirmed=seed.items.find(item=>item.id==='psy-emotion-song-contest-2');
+assert.equal(psy2Confirmed?.startDate,'2026-04-28','싸이감성 2회 개최일은 2026-04-28로 교차 확인되어야 합니다');
+assert.equal(psy2Confirmed?.endDate,'2026-04-28','싸이감성 2회 단일 개최일 종료일이 일치해야 합니다');
+assert.ok((psy2Confirmed?.sources||[]).some(row=>row.id==='source-psy2-streams'&&row.visibility==='internal'),'싸이감성 2회 Streams Charts는 내부 검증용이어야 합니다');
+assert.ok((psy2Confirmed?.timeline||[]).some(row=>row.id==='psy2-event-day'&&row.date==='2026-04-28'),'싸이감성 2회 개최일 타임라인이 필요합니다');
