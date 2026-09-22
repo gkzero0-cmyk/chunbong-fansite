@@ -127,7 +127,8 @@ async function fetchMaterialMetaForRow(row){
     const meta=payload.meta||{},title=$(`[name="${kind}-title"]`,row),date=$(`[name="${kind}-date"]`,row),precision=$(`[name="${kind}-precision"]`,row),thumbnail=$(`[name="${kind}-thumbnail"]`,row);
     const applied=[];
     if(title&&meta.title&&(!title.value.trim()||isGenericMaterialTitle(title.value))){title.value=meta.title;applied.push('제목')}
-    if(date&&meta.publishedDate&&!date.value.trim()){date.value=meta.publishedDate;if(precision)precision.value='day';applied.push('날짜')}
+    const sourceDate=meta.publishedDate||meta.date||'';
+    if(date&&sourceDate&&!date.value.trim()){date.value=sourceDate;if(precision)precision.value='day';applied.push('날짜')}
     if(thumbnail&&meta.image&&(!thumbnail.value.trim()||thumbnail.value.includes('/assets/chunbong-contents/')||/\.svg(?:\?|$)/i.test(thumbnail.value))){thumbnail.value=meta.image;applied.push('썸네일')}
     if(status)status.textContent=applied.length?`${applied.join('·')} 반영`:'새로 반영할 메타데이터 없음';
     renderPreview();
