@@ -1153,9 +1153,23 @@
         {
           "id": "source-money-naver",
           "kind": "reference",
-          "label": "머니게임 관련 Naver 공유 자료",
+          "label": "머니게임 관련 Naver 자료 · 내부 검증용",
           "url": "https://naver.me/5qLX1yQ1",
-          "visibility": "public"
+          "visibility": "internal"
+        },
+        {
+          "id": "source-money-naver-fbvx1u7z",
+          "kind": "reference",
+          "label": "머니게임 관련 Naver 자료 · 내부 검증용",
+          "url": "https://naver.me/FbVX1U7z",
+          "visibility": "internal"
+        },
+        {
+          "id": "source-money-notion-217d57d6",
+          "kind": "reference",
+          "label": "머니게임 Notion 원문 · 내부 검증용",
+          "url": "https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d",
+          "visibility": "internal"
         },
         {
           "id": "source-money-buly",
