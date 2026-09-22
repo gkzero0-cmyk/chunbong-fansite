@@ -361,12 +361,12 @@ const mergeVisibility=archiveApi._internals.mergeArchiveRows(
   [{...hiddenSourceItem,id:'visibility-merge'}],
   [{...hiddenSourceItem,id:'visibility-merge',sources:hiddenSourceItem.sources.map(row=>({...row,visibility:'public'})),timeline:hiddenSourceItem.timeline.map(row=>({...row,visibility:'public'}))}]
 );
-assert.equal(mergeVisibility[0].sources.find(row=>row.id==='internal-source')?.visibility,'internal','curated internal source visibility must survive stored records');
-assert.equal(mergeVisibility[0].timeline.find(row=>row.id==='internal-row')?.visibility,'internal','curated internal material visibility must survive stored records');
+assert.equal(mergeVisibility[0].sources.some(row=>row.id==='internal-source'),false,'Bangtongsil-backed sources should be removed from merged archive records');
+assert.equal(mergeVisibility[0].timeline.some(row=>row.id==='internal-row'),false,'Bangtongsil-backed timeline rows should be removed from merged archive records');
 
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://www.sooplive.com/station/chunbongtv/post/1'),'SOOP source metadata URL should be allowed');
 assert.equal(archiveApi._internals.allowedSourceMetaUrl('https://bngts.com/contents/just'),null,'방통실은 source metadata allowlist에서 제외되어야 합니다');
-assert.equal(archiveApi._internals.allowedSourceMetaUrl('https://namu.wiki/w/test'),null,'나무미러는 source metadata allowlist에서 제외되어야 합니다');
+assert.equal(archiveApi._internals.allowedSourceMetaUrl('https://namu.moe/w/test'),null,'나무미러는 source metadata allowlist에서 제외되어야 합니다');
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://namu.wiki/w/test'),'나무위키는 source metadata allowlist에 포함되어야 합니다');
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://example.notion.site/example'),'public Notion source metadata URL should be allowed');
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d'),'public app.notion.com source metadata URL should be allowed');
