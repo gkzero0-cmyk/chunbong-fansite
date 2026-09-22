@@ -297,3 +297,8 @@ button.archive-series-poster{cursor:zoom-in}
 [data-theme="light"] .archive-history{background:#fff;border-color:#e8ddd5}
 [data-theme="light"] .archive-history-years button{background:#fffaf7;border-color:#e8ddd5}
 @media(max-width:760px){.archive-history{padding:14px}.archive-history-years>section{grid-template-columns:1fr;gap:5px}.archive-history-years>section>strong{padding-top:0}.archive-history-years button{min-width:160px}}
+
+.archive-tabs,.archive-media-filter,.archive-history,.archive-history-years,.archive-history-years>section,.archive-history-years>section>div{min-width:0;max-width:100%;box-sizing:border-box}
+.archive-tabs,.archive-media-filter,.archive-history-years>section>div{width:100%}
+.archive-related-grid>*{min-width:0}
+@media(max-width:760px){.archive-tabs{margin-left:0;margin-right:0}.archive-history-years>section>div{max-width:100%;overflow-x:auto}}
