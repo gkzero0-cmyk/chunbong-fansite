@@ -350,7 +350,7 @@ async function handler(req,res) {
     return res.status(200).json({pageId,out});
   }
   if(type==='soop-current-api-probe'&&process.env.VERCEL_ENV!=='production'){
-    const stationId='chunbongtv',target='192179233';
+    const stationId='chunbongtv',target=String(requestUrl.searchParams.get('post')||'192179233').replace(/\D/g,'').slice(0,12)||'192179233';
     const headers={'User-Agent':'Mozilla/5.0','Accept':'application/json, text/plain, */*','Referer':'https://www.sooplive.com/station/chunbongtv/board','Origin':'https://www.sooplive.com'};
     const exact=[
       'https://api-channel.sooplive.com/v1.1/channel/'+stationId+'/board/'+target,
