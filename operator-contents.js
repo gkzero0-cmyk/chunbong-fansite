@@ -81,6 +81,7 @@ async function fetchSourceMetaForRow(row){
     if(status){
       const code=String(error?.message||'');
       if(code==='source_meta_human_verification_required')status.textContent='사람 확인(Turnstile)이 필요합니다. 브라우저 확인 또는 수동 등록이 필요합니다.';
+      else if(code==='source_meta_auth_required')status.textContent='SOOP 애청자 공개 등 로그인 권한이 필요한 글입니다. 인증된 브라우저에서 확인 후 수동 등록해 주세요.';
       else if(code==='source_meta_client_render_required')status.textContent='JavaScript로 본문을 불러오는 페이지입니다. 전용 API 또는 브라우저 수집이 필요합니다.';
       else if(code==='source_meta_timeout')status.textContent='원문 응답 시간이 길어 수집이 중단됐습니다.';
       else if(code.startsWith('source_meta_notion_'))status.textContent='Notion 공개 데이터 조회에 실패했습니다.';
