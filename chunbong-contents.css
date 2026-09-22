@@ -175,3 +175,31 @@ button.archive-series-poster{cursor:zoom-in}
   opacity:1!important;
   transform:none!important;
 }
+
+
+/* Archive series status and media groups */
+.archive-series-statuses{display:flex;flex-wrap:wrap;gap:5px;margin:9px 0 2px}
+.archive-series-statuses>span{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;border:1px solid #ffffff17;border-radius:999px;background:#0d0d0d}
+.archive-series-statuses b{font-size:9px;font-weight:900;color:var(--text-secondary,#d1cbc5)}
+.archive-series-statuses small{font-size:8px;font-weight:900;color:var(--text-muted,#8f8780)}
+.archive-series-statuses [data-status="planned"] small{color:#f3b26b}
+.archive-series-statuses [data-status="ongoing"] small,.archive-series-statuses [data-status="recruiting"] small{color:#91d79f}
+.archive-series-child-links button{display:grid;gap:2px}
+.archive-series-child-links button>span{font-size:10px;font-weight:900}
+.archive-series-child-links button>small{color:var(--text-muted,#aaa29b);font-size:8px;font-weight:750}
+.archive-media-groups{display:grid;gap:10px}
+.archive-media-group{overflow:hidden;border:1px solid #292929;border-radius:15px;background:#101010}
+.archive-media-group>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:0 14px;cursor:pointer;list-style:none}
+.archive-media-group>summary::-webkit-details-marker{display:none}
+.archive-media-group>summary span{display:flex;align-items:center;gap:7px}
+.archive-media-group>summary b{font-size:12px}
+.archive-media-group>summary small{padding:4px 7px;border:1px solid #ffffff17;border-radius:999px;color:var(--text-muted,#aaa29b);font-size:8px;font-weight:850}
+.archive-media-group>summary i{color:var(--page-accent,#f2a65a);font-size:9px;font-style:normal;font-weight:900}
+.archive-media-group[open]>summary{border-bottom:1px solid #292929}
+.archive-media-group[open]>summary i{font-size:0}
+.archive-media-group[open]>summary i:after{content:'접기';font-size:9px}
+.archive-media-group .archive-media-grid{padding:12px}
+.archive-section-heading p{margin:5px 0 0;color:var(--text-muted,#aaa29b);font-size:10px;line-height:1.55}
+[data-theme="light"] .archive-series-statuses>span,[data-theme="light"] .archive-media-group{background:#fffaf7;border-color:#eadfd7}
+[data-theme="light"] .archive-media-group[open]>summary{border-bottom-color:#eadfd7}
+@media(max-width:760px){.archive-series-statuses{gap:4px}.archive-series-statuses>span{padding:4px 6px}.archive-media-group>summary{min-height:48px;padding:0 11px}.archive-media-group .archive-media-grid{padding:8px}}
