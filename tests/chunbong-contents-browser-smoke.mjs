@@ -5,7 +5,7 @@ try{({chromium}=await import('playwright'));}catch{console.log('chunbong content
 const base=process.env.BASE_URL||'http://127.0.0.1:4173';
 const items=[
   {
-    id:'leopel',title:'레오펠: 사자의 노래',aliases:['레오펠'],category:'minecraft',role:'주최 · 기획',status:'ended',
+    id:'leopel',title:'레오펠: 사자의 노래',aliases:['레오펠'],category:'minecraft',role:'주최 · 기획',status:'ended',series:{id:'leopel',title:'레오펠',subtitle:'사자의 노래',description:'레오펠 시리즈',order:40,cover:{src:'/assets/chunbong-contents/leopel-cover.svg',alt:'레오펠'}},
     startDate:'2025-06-05',endDate:'2025-07-06',datePrecision:'day',summary:'플랫폼 통합 마인크래프트 서버',
     description:'레오펠 소개',heroImage:{src:'/assets/chunbong-contents/leopel-cover.svg',alt:'레오펠 커버'},
     participants:['춘봉','테스트 참가자'],sourceCount:2,
@@ -15,21 +15,35 @@ const items=[
     sources:[{id:'s1',kind:'article',label:'SOOP PICK 오픈',url:'https://pick.sooplive.com/daily/view/162435'},{id:'s2',kind:'article',label:'SOOP PICK 발표회',url:'https://pick.sooplive.com/daily/view/162209'}]
   },
   {
-    id:'song-test',title:'노래대회 테스트',aliases:[],category:'song',role:'주최',status:'ended',
+    id:'song-test',title:'노래대회 테스트',aliases:[],category:'song',role:'주최',status:'ended',series:{id:'song-series',title:'노래대회',subtitle:'노래 경연 시리즈',description:'노래대회 시리즈',order:30,cover:null},
     startDate:'2026-01',endDate:'',datePrecision:'month',summary:'노래대회 기록',description:'노래대회 소개',
     heroImage:null,participants:[],sourceCount:1,timeline:[],media:[],gallery:[],
     sources:[{id:'s3',kind:'official',label:'공식 공지',url:'https://www.sooplive.com/station/chunbongtv'}]
+  },
+  {
+    id:'justserver-moneygame',title:'그냥서버 : 머니게임',aliases:['머니게임'],category:'minecraft',role:'주최',status:'ended',
+    series:{id:'justserver',title:'그냥서버',subtitle:'마인크래프트 서버 시리즈',description:'그냥서버 시즌 기록',order:10,cover:{src:'/assets/chunbong-contents/justserver-moneygame-cover.svg',alt:'그냥서버'}},
+    startDate:'2026-06-24',endDate:'2026-07-15',datePrecision:'day',summary:'머니게임 기록',description:'머니게임 소개',
+    heroImage:{src:'/assets/chunbong-contents/justserver-moneygame-cover.svg',alt:'머니게임'},participants:[],sourceCount:1,timeline:[],media:[],gallery:[],
+    sources:[{id:'jm1',kind:'official',label:'SOOP 공식',url:'https://www.sooplive.com/station/chunbongtv'}]
+  },
+  {
+    id:'justserver-survival',title:'그냥서버 : 적자생존',aliases:['적자생존'],category:'minecraft',role:'주최',status:'ended',
+    series:{id:'justserver',title:'그냥서버',subtitle:'마인크래프트 서버 시리즈',description:'그냥서버 시즌 기록',order:10,cover:{src:'/assets/chunbong-contents/justserver-moneygame-cover.svg',alt:'그냥서버'}},
+    startDate:'2026',endDate:'2026',datePrecision:'year',summary:'적자생존 기록',description:'적자생존 소개',
+    heroImage:{src:'/assets/chunbong-contents/justserver-survival-cover.svg',alt:'적자생존'},participants:[],sourceCount:1,timeline:[],media:[],gallery:[],
+    sources:[{id:'js1',kind:'official',label:'SOOP 공식',url:'https://www.sooplive.com/station/chunbongtv'}]
   }
 ];
 ;
 const chuntacleItem={
-  id:'chuntacle-2026',title:'춘타클 · 춘봉 타로 클래스',aliases:['춘타클'],category:'class-event',role:'주최 · 강의',status:'ended',
+  id:'chuntacle-2026',title:'춘타클 · 춘봉 타로 클래스',aliases:['춘타클'],category:'class-event',role:'주최 · 강의',status:'ended',series:{id:'chuntacle',title:'춘타클',subtitle:'춘봉 타로 클래스',description:'회차형 타로 클래스',order:20,cover:null},
   startDate:'2026-07',endDate:'2026-09',datePrecision:'month',summary:'춘봉 타로 클래스 시리즈',description:'회차형 타로 클래스',
   heroImage:{src:'/assets/chunbong-contents/chuntacle-cover.svg',alt:'춘타클 커버'},participants:[],sourceCount:1,
   seriesSessions:[
-    {id:'session-1',number:1,title:'춘타클 제1회',date:'2026-07-11',datePrecision:'day',time:'',venue:'VRChat',participants:[],participantCount:10,poster:{src:'',alt:'춘타클 제1회 포스터',status:'pending'},note:'1회 기록'},
-    {id:'session-2',number:2,title:'춘타클 제2회',date:'2026-07-21',datePrecision:'day',time:'08:00',venue:'VRChat',participants:['모이사','문이유'],participantCount:11,poster:{src:'',alt:'춘타클 제2회 포스터',status:'pending'},note:'2회 기록'},
-    {id:'session-5',number:5,title:'춘타클 제5회',date:'2026-09-14',datePrecision:'day',time:'08:00',venue:'VRChat',participants:['김뽁분','김잇딥','문이유','연주홍','클라비스'],participantCount:5,poster:{src:'/assets/chunbong-contents/chuntacle-session-5.svg',alt:'춘타클 제5회 포스터',status:'verified'},note:'5회 기록'}
+    {id:'session-1',number:1,title:'춘타클 제1회',date:'2026-07-12',datePrecision:'day',time:'',venue:'VRChat',participants:[],participantCount:10,poster:{src:'',alt:'춘타클 제1회 포스터',status:'pending'},note:'1회 기록'},
+    {id:'session-2',number:2,title:'춘타클 제2회',date:'2026-07-22',datePrecision:'day',time:'08:00',venue:'VRChat',participants:['모이사','문이유'],participantCount:11,poster:{src:'',alt:'춘타클 제2회 포스터',status:'pending'},note:'2회 기록'},
+    {id:'session-5',number:5,title:'춘타클 제5회',date:'2026-09-14',datePrecision:'day',time:'08:00',venue:'VRChat',participants:['김뽁분','김잇딥','문이유','연주홍','클라비스'],participantCount:5,poster:{src:'https://res.cloudinary.com/lyppgyei/image/upload/v1/chunbong-fansite/chuntacle/session-5.webp',alt:'춘타클 제5회 포스터',status:'verified'},note:'5회 기록'}
   ],
   timeline:[],media:[],gallery:[],sources:[{id:'s4',kind:'reference',label:'방송 이력',url:'https://streamscharts.com/channels/moon26/streams?platform=afreecatv'}]
 };
@@ -90,8 +104,19 @@ try{
     await installApi(page);
     await page.goto(base+'/chunbong-contents.html',{waitUntil:'networkidle'});
 
-    assert.equal(await page.locator('.archive-card').count(),2,'desktop should render archive cards');
-    assert.match((await page.locator('[data-archive-count]').textContent())||'',/전체 2개/);
+    assert.equal(await page.locator('.archive-card').count(),4,'desktop should render archive cards');
+    assert.match((await page.locator('[data-archive-count]').textContent())||'',/전체 4개/);
+    assert.equal(await page.locator('.archive-series-card').count(),3,'series home should group four records into three series');
+    await page.locator('[data-archive-series-open="justserver"]').click();
+    await page.waitForURL(/series=justserver/);
+    assert.equal(await page.locator('.archive-card').count(),2,'그냥서버 시리즈에는 머니게임과 적자생존 두 시즌만 보여야 합니다');
+    assert.equal(await page.locator('.archive-series-child-links [data-archive-open]').count(),2,'그냥서버 시리즈 랜딩에 두 시즌 바로가기가 있어야 합니다');
+    await page.locator('.archive-series-child-links [data-archive-open="justserver-survival"]').click();
+    await page.waitForURL(/id=justserver-survival/);
+    assert.equal(await page.locator('.archive-sibling-series-nav [data-archive-sibling]').count(),2,'그냥서버 상세에서 시즌 간 전환이 가능해야 합니다');
+    await page.locator('[data-archive-back]').click();
+    await page.waitForFunction(()=>!document.querySelector('[data-archive-browser]')?.hidden);
+    await page.locator('[data-archive-series-back]').click();
     await assertNoHorizontalOverflow(page,'desktop list');
 
     await page.locator('[data-archive-search]').fill('레오펠');
@@ -99,7 +124,7 @@ try{
     assert.match((await page.locator('.archive-card h2').textContent())||'',/레오펠/);
 
     await page.locator('[data-archive-reset]').first().click();
-    assert.equal(await page.locator('.archive-card').count(),2,'reset should restore results');
+    assert.equal(await page.locator('.archive-card').count(),4,'reset should restore results');
     await page.locator('[data-archive-category]').selectOption('song');
     assert.equal(await page.locator('.archive-card').count(),1,'category filter should narrow results');
     assert.match((await page.locator('.archive-card h2').textContent())||'',/노래대회/);
@@ -133,7 +158,7 @@ try{
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
     await installApi(page);
     await page.goto(base+'/chunbong-contents.html',{waitUntil:'networkidle'});
-    assert.equal(await page.locator('.archive-card').count(),2,'mobile should render archive cards');
+    assert.equal(await page.locator('.archive-card').count(),4,'mobile should render archive cards');
     await assertNoHorizontalOverflow(page,'mobile list');
 
     const boxes=await page.locator('.archive-card').evaluateAll(nodes=>nodes.map(node=>{
