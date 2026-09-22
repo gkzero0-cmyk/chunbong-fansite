@@ -108,6 +108,19 @@ for(const id of ['chuntacle-2026','psy-emotion-song-contest-1','psy-emotion-song
 console.log('chunbong contents data regression passed');
 
 const archiveApi=require('../lib/chunbong-content-archive-api.js');
+const mergedMoneygame=archiveApi._internals.mergeArchiveRows([moneygame],[{
+  ...moneygame,
+  description:'stale moneygame description',
+  participantCount:243,
+  participantGroups:(moneygame.participantGroups||[]).map((row,index)=>({...row,stage:'',title:`${index+1}차 입주 · ${['18:00','18:10','18:20','18:30','18:40'][index]}`})),
+  results:[...(moneygame.results||[]),{title:'입주 순서',value:'1차 18:00 · 2차 18:10 · 3차 18:20 · 4차 18:30 · 5차 18:40'},{title:'등록 참가자',value:'191명'}]
+}])[0];
+assert.equal(mergedMoneygame.description,moneygame.description,'머니게임 설명은 오래된 Redis 저장값보다 교정된 seed를 우선해야 합니다');
+assert.equal(mergedMoneygame.participantCount,658,'머니게임 참가자 수는 오래된 243명 저장값보다 658명 교정값을 우선해야 합니다');
+assert.ok((mergedMoneygame.participantGroups||[]).every(row=>row.stage==='1차 입주'),'머니게임 1차 입주 단계 정보가 오래된 저장값에 의해 사라지면 안 됩니다');
+assert.equal((mergedMoneygame.results||[]).some(row=>row.title==='입주 순서'||row.title==='등록 참가자'),false,'머니게임의 오래된 입주/참가자 결과 행은 공개 데이터에 남으면 안 됩니다');
+assert.match(String((mergedMoneygame.timeline||[]).find(row=>row.id==='money-entry-order')?.title||''),/1차 입주 입장 순서/,'머니게임 입주 타임라인도 1차 입주 하위 순서로 표시해야 합니다');
+
 const notionGuideSample=archiveApi._internals.notionGuideRows({
   title:'테스트 Notion',pageId:'page-root',
   sections:[{id:'page-root',title:'테스트 Notion',depth:0,blocks:[{title:'서버 규칙',text:'자동화 금지\n비방 생산활동 금지'},{title:'주요 시스템',text:'채광\n요리\n낚시'}]}]
