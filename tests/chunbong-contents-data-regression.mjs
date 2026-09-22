@@ -131,5 +131,14 @@ assert.ok((leopel?.media||[]).some(row=>/159711687/.test(row.url)),'Leopel shoul
 assert.ok((leopel?.gallery||[]).length>=2,'Leopel detail should have visual archive material');
 assert.ok((justserver?.media||[]).length>=2,'JustServer should include multiple verified SOOP Catch records');
 assert.ok((justserver?.gallery||[]).length>=2,'JustServer detail should have visual archive material');
+const survival=data.items.find(item=>item.id==='justserver-survival');
+assert.ok(survival,'적자생존 콘텐츠 항목이 필요합니다');
+const moneyVodIds=['199701961','199731549','199911259','200010937','200150005','200191013','200238669','200257689','200295759','200393761','200401503','200477587','200609959','200775197','200812787','200857709','200893769','200917923','200956235','201043833','201146469','201223669','201329381','201384951','201524161','201595413'];
+for(const id of moneyVodIds) assert.ok((justserver?.media||[]).some(row=>row.url===`https://vod.sooplive.com/player/${id}`),`머니게임 VOD 누락: ${id}`);
+for(const id of ['197785319','199568663','199830351']) assert.ok((justserver?.timeline||[]).some(row=>row.url===`https://www.sooplive.com/station/chunbongtv/post/${id}`),`머니게임 SOOP 게시글 누락: ${id}`);
+for(const url of ['https://naver.me/5qLX1yQ1','https://buly.kr/2ffytJ1','https://bngts.com/contents/geunyangseobeo-meonigeim','https://bngts.com/contents/geunyangseobeo-meonigeim/streamers']) assert.ok((justserver?.sources||[]).some(row=>row.url===url),`머니게임 참고 자료 누락: ${url}`);
+for(const id of ['203683207','204093563','204274449','206972857','207425471','207516943','207564735']) assert.ok((survival?.timeline||[]).some(row=>row.url===`https://www.sooplive.com/station/chunbongtv/post/${id}`),`적자생존 SOOP 게시글 누락: ${id}`);
+assert.ok((survival?.sources||[]).some(row=>row.url==='https://daisy-grouse-ac0.notion.site/3dad57d6a55c80469f3de9730cb88975'),'적자생존 Notion 자료가 필요합니다');
+
 assert.ok((psyContest?.participants||[]).includes('시로코'),'song contest should include confirmed participant evidence');
 assert.ok((psyContest?.gallery||[]).length>=2,'song contest detail should have visual archive material');
