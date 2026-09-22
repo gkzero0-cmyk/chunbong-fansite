@@ -81,7 +81,7 @@ assert.equal(diamondParticipantGroup?.participants?.length,189,'그냥서버 1 �
 assert.equal(new Set(diamondParticipantGroup?.participants||[]).size,189,'그냥서버 1 참가자 명단에 중복이 없어야 합니다');
 for(const name of ['BJ공파리파','냥냥두둥','모이사','쏭아야','춘봉_','하밍','히키모?!']) assert.ok(diamondParticipantGroup?.participants?.includes(name),`그냥서버 1 확인 참가자 누락: ${name}`);
 assert.equal(diamondParticipantGroup?.sourceId,'source-diamond-bngts-streamers','전체 참가자 명단은 내부 검증 출처와 연결되어야 합니다');
-assert.match(String(diamondBackfill?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/justserver\/diamond-cover-16x9\.jpg$/,'그냥서버 다이아는 실제 SOOP 자료 기반 16:9 대표 이미지를 사용해야 합니다');
+assert.match(String(diamondBackfill?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/c_fill,g_auto,h_900,w_1600\/f_webp\/q_auto:best\/v\d+\/chunbong-fansite\/justserver\/diamond-material-source\.webp$/,'그냥서버 다이아는 자료 이미지 원본을 기반으로 만든 16:9 대표 이미지를 사용해야 합니다');
 for(const row of diamondBackfill?.media||[]){
   if(!/vod\.sooplive\.com\/player\/(192233707|192317079|192401771|192510763|192581897|192845469|192962357)/.test(row.url||''))continue;
   assert.match(String(row.thumbnail||''),/^https:\/\/videoimg\.sooplive\.com\//,'다이아 VOD는 실제 SOOP 썸네일을 사용해야 합니다');
@@ -148,8 +148,8 @@ assert.equal(justserver?.startDate,'2026-06-24');
 assert.equal(justserver?.endDate,'2026-07-15');
 assert.ok((justserver?.sources||[]).some(source=>/sooplive\.com/.test(source.url)),'JustServer should include a SOOP source');
 assert.match(String(justserver?.heroImage?.src||''),/^https:\/\//,'머니게임 대표 이미지는 실제 공식/방송 이미지여야 합니다');
-assert.match(String(justserver?.heroImage?.src||''),/justserver\/moneygame-selected-source\.jpg$/,'머니게임 사용자 지정 16:9 실제 방송 이미지를 대표로 사용해야 합니다');
-assert.match(String(justserver?.series?.cover?.src||''),/justserver\/moneygame-selected-source\.jpg$/,'그냥서버 시리즈 왼쪽 대표 이미지도 사용자 지정 머니게임 실제 자료여야 합니다');
+assert.match(String(justserver?.heroImage?.src||''),/justserver\/moneygame-selected-vod-200917923\.jpg$/,'머니게임은 사용자가 지정한 다시보기 이미지를 대표로 사용해야 합니다');
+assert.match(String(justserver?.series?.cover?.src||''),/justserver\/moneygame-selected-vod-200917923\.jpg$/,'그냥서버 시리즈 대표 이미지도 사용자 지정 머니게임 다시보기여야 합니다');
 
 const psyContest1=seed.items.find(item=>item.id==='psy-emotion-song-contest-1');
 const psyContest2=seed.items.find(item=>item.id==='psy-emotion-song-contest-2');
@@ -162,6 +162,7 @@ assert.equal(psyContest1?.datePrecision,'unknown','1회 날짜는 원문 확인 
 assert.equal(psyContest2?.datePrecision,'day','2회 날짜는 교차 확인된 개최일 기준으로 일 단위여야 합니다');
 assert.equal(psyContest2?.startDate,'2026-04-28','2회 개최일은 2026-04-28이어야 합니다');
 assert.ok((psyContest1?.sources||[]).some(row=>row.url==='https://www.sooplive.com/station/chunbongtv/post/124321185'),'1회 SOOP 모집글이 필요합니다');
+assert.ok((psyContest1?.gallery||[]).some(row=>row.id==='psy1-official-poster'&&/psy\/session-1-official-poster\.webp$/.test(String(row.src||''))&&row.sourceId==='source-psy1-recruit'),'1회 자료 이미지에는 SOOP 게시글 124321185의 공식 포스터가 포함되어야 합니다');
 assert.ok((psyContest1?.media||[]).some(row=>row.url==='https://vod.sooplive.com/player/127480069'),'1회 SOOP VOD가 필요합니다');
 assert.ok((psyContest1?.participants||[]).includes('시네_'),'제1회 원문 참가명 시네_가 필요합니다');
 assert.equal((psyContest1?.participants||[]).includes('시로코'),false,'시네_와 동일 인물인 시로코를 별도 인원으로 중복 계산하면 안 됩니다');
@@ -176,7 +177,7 @@ assert.equal((psyContest2?.participantGroups||[]).find(row=>row.id==='psy2-confi
 assert.ok((psyContest2?.results||[]).some(row=>row.title==='심사위원'&&/춘봉/.test(row.value||'')&&/릴파/.test(row.value||'')),'2회 심사위원 정보가 필요합니다');
 assert.ok((psyContest2?.results||[]).some(row=>row.title==='총상금'&&/100만 원/.test(row.value||'')&&/13,000개/.test(row.value||'')),'2회 상금 계획이 필요합니다');
 assert.match(String(psyContest1?.heroImage?.src||''),/^https:\/\//,'싸이감성 1회 대표 이미지는 실제 SOOP VOD 이미지여야 합니다');
-assert.match(String(psyContest2?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/psy\/session-2-cover-16x9\.jpg$/,'싸이감성 2회 대표 이미지는 실제 SOOP 방송 기반 16:9 자산을 사용해야 합니다');
+assert.match(String(psyContest2?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/psy\/session-2-selected-first-material\.png$/,'싸이감성 2회 대표 이미지는 자료 이미지 첫 번째 공식 이미지를 사용해야 합니다');
 
 
 const chuntacle=seed.items.find(item=>item.id==='chuntacle-2026');
