@@ -312,6 +312,30 @@ async function handler(req,res) {
   const requestUrl=new URL(req.url||'/','https://chunbong.local');
   const type=requestUrl.searchParams.get('type')||'';
   if(type==='source-probe'&&process.env.VERCEL_ENV!=='production'){const key=requestUrl.searchParams.get('target')||'';try{return res.status(200).json(await sourceProbe(key))}catch(error){return res.status(400).json({error:String(error?.message||error)})}};
+  if(type==='notion-probe'&&process.env.VERCEL_ENV!=='production'){
+    const which=requestUrl.searchParams.get('target')||'diamond';
+    const pageId=which==='survival'?'3dad57d6-a55c-8046-9f3d-e9730cb88975':'33de955a-d773-802f-9f64-f1d63fcff3a4';
+    const attempts=[
+      ['loadCachedPageChunk','https://www.notion.so/api/v3/loadCachedPageChunk',{pageId,limit:100,cursor:{stack:[]},chunkNumber:0,verticalColumns:false}],
+      ['loadPageChunk','https://www.notion.so/api/v3/loadPageChunk',{pageId,limit:100,cursor:{stack:[]},chunkNumber:0,verticalColumns:false}],
+      ['getPublicPageData','https://www.notion.so/api/v3/getPublicPageData',{blockId:pageId}]
+    ];
+    const out=[];
+    for(const [name,url,body] of attempts){
+      try{
+        const response=await fetch(url,{method:'POST',headers:{'User-Agent':'Mozilla/5.0','Accept':'application/json','Content-Type':'application/json','Origin':'https://www.notion.so','Referer':'https://www.notion.so/'},body:JSON.stringify(body)});
+        const raw=await response.text();
+        out.push({name,status:response.status,contentType:response.headers.get('content-type')||'',length:raw.length,sample:raw.slice(0,1800)});
+      }catch(error){out.push({name,error:String(error?.message||error)})}
+    }
+    return res.status(200).json({pageId,out});
+  }
+  if(type==='bngts-probe'&&process.env.VERCEL_ENV!=='production'){
+    const response=await fetch('https://bngts.com/contents/just/streamers',{headers:{'User-Agent':'Mozilla/5.0','Accept':'text/html'}});
+    const raw=await response.text();
+    const names=[...raw.matchAll(/<div class=["']streamer-name["'][^>]*>([\s\S]*?)<\/div>/gi)].map(m=>m[1].replace(/<[^>]+>/g,' ').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/\s+/g,' ').trim()).filter(Boolean);
+    return res.status(200).json({status:response.status,count:names.length,uniqueCount:new Set(names).size,names});
+  }
   if(type==='chuntris-ranking') return handleChuntrisRanking(req,res);
   if(type==='chunbak-ranking') return handleChunbakRanking(req,res);
   if(type==='chungwagame-ranking') return handleChungwagameRanking(req,res);
