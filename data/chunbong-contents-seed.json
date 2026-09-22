@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T21:00:00+09:00",
+  "updatedAt": "2026-09-22T21:05:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -2427,36 +2427,36 @@
         {
           "id": "chuntacle-youtube-1",
           "type": "youtube",
-          "title": "춘타클 관련 YouTube 영상 1",
+          "title": "타로 0번부터 시작합니다｜버츄얼 스트리머 타로 클래스 1화 ‘THE FOOL’",
           "url": "https://www.youtube.com/watch?v=b-jlKXqLakU",
-          "note": "사용자가 춘타클 아카이브 자료로 제공한 YouTube 영상입니다.",
+          "note": "춘타클 타로 클래스 연계 YouTube 영상입니다.",
           "date": "",
           "datePrecision": "unknown",
-          "thumbnail": "",
+          "thumbnail": "https://i.ytimg.com/vi/b-jlKXqLakU/hqdefault.jpg",
           "sourceId": "source-chuntacle-youtube-1",
           "visibility": "public"
         },
         {
           "id": "chuntacle-youtube-2",
           "type": "youtube",
-          "title": "춘타클 관련 YouTube 영상 2",
+          "title": "모든 가능성을 현실로 만드는 카드｜THE MAGICIAN",
           "url": "https://www.youtube.com/watch?v=gJKw13B7ydc",
-          "note": "사용자가 춘타클 아카이브 자료로 제공한 YouTube 영상입니다.",
+          "note": "춘타클 타로 클래스 연계 YouTube 영상입니다.",
           "date": "",
           "datePrecision": "unknown",
-          "thumbnail": "",
+          "thumbnail": "https://i.ytimg.com/vi/gJKw13B7ydc/hqdefault.jpg",
           "sourceId": "source-chuntacle-youtube-2",
           "visibility": "public"
         },
         {
           "id": "chuntacle-youtube-3",
           "type": "youtube",
-          "title": "춘타클 관련 YouTube 영상 3",
+          "title": "직감은 이미 답을 알고 있다｜THE HIGH PRIESTESS",
           "url": "https://www.youtube.com/watch?v=8rnQKGwa1qw&t=4s",
-          "note": "사용자가 춘타클 아카이브 자료로 제공한 YouTube 영상입니다.",
+          "note": "춘타클 타로 클래스 연계 YouTube 영상입니다.",
           "date": "",
           "datePrecision": "unknown",
-          "thumbnail": "",
+          "thumbnail": "https://i.ytimg.com/vi/8rnQKGwa1qw/hqdefault.jpg",
           "sourceId": "source-chuntacle-youtube-3",
           "visibility": "public"
         }
@@ -2576,7 +2576,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T18:58:00+09:00",
+      "updatedAt": "2026-09-22T21:05:00+09:00",
       "seriesSessions": [
         {
           "id": "session-1",
