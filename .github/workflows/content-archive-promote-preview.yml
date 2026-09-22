@@ -1,0 +1,73 @@
+name: Promote content archive preview
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/content-archive-promote-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PREVIEW_URL: https://chunbong-fansite-cepskxyyt-gkzero0-9465.vercel.app
+      PROD_URL: https://chunbong-fansite.vercel.app
+      VERCEL_SCOPE: gkzero0-9465
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - name: Require Vercel token
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${VERCEL_TOKEN:-}" ]]; then
+            echo 'VERCEL_TOKEN repository secret is not configured.' >&2
+            exit 2
+          fi
+
+      - name: Confirm validated preview exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes vercel@latest inspect "$PREVIEW_URL" --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
+
+      - name: Promote validated content archive preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes vercel@latest promote "$PREVIEW_URL" --yes --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
+
+      - name: Verify production content archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 30); do
+            stamp=$(date +%s)
+            if curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/chunbong-contents.js?_promote_check=$stamp" -o /tmp/archive.js && \
+               curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/chunbong-contents.css?_promote_check=$stamp" -o /tmp/archive.css && \
+               curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/api/content?type=chunbong-contents&_promote_check=$stamp" -o /tmp/archive.json; then
+              if grep -Fq 'normalizedImageMarkup' /tmp/archive.js && \
+                 grep -Fq 'unified 16:9 archive media' /tmp/archive.css && \
+                 grep -Fq 'series-cover-16x9.webp' /tmp/archive.json && \
+                 grep -Fq 'session-5.webp' /tmp/archive.json; then
+                node - <<'NODE'
+          const fs=require('fs');
+          const payload=JSON.parse(fs.readFileSync('/tmp/archive.json','utf8'));
+          const item=(payload.items||[]).find(row=>row.id==='chuntacle-2026');
+          if(!item)throw new Error('Chuntacle item missing');
+          if(!String(item.heroImage?.src||'').includes('series-cover-16x9.webp'))throw new Error('Chuntacle 16:9 series cover missing');
+          if(!String(item.series?.cover?.src||'').includes('series-cover-16x9.webp'))throw new Error('Chuntacle series cover mismatch');
+          if((item.seriesSessions||[]).length!==5)throw new Error('Chuntacle session count changed');
+          console.log('production content archive promotion verified');
+          NODE
+                exit 0
+              fi
+            fi
+            sleep 5
+          done
+          echo 'Production did not receive the validated content archive preview in time.' >&2
+          exit 1
