@@ -105,3 +105,13 @@ assert.equal(diamondMatch?.itemId,'diamond','generic JustServer title should use
 const applied=autoIngest.attachOfficialDiscoveries(autoRows,[autoIngest.materialFromVideo({id:'207560243',title:'7시 그냥서버:적자생존 설명회',date:'2026-09-19',thumb:'//videoimg.sooplive.com/a.jpg',link:'https://vod.sooplive.com/player/207560243'},'vod')]);
 assert.equal(applied.rows.find(row=>row.id==='survival')?.media?.length,1,'matched official VOD should be attached automatically');
 assert.equal(applied.candidates.length,0,'high-confidence official match should not remain a review candidate');
+assert.equal(typeof autoIngest.fetchPagedSoopVideos,'function','full SOOP video pagination helper missing');
+assert.equal(typeof autoIngest.fetchPagedSoopPosts,'function','full SOOP board pagination helper missing');
+assert.equal(typeof autoIngest.fetchAllYoutubeOfficial,'function','full ChunbongTV history helper missing');
+const autoSource=fs.readFileSync(new URL('../lib/chunbong-content-auto-ingest.js',import.meta.url),'utf8');
+assert.match(autoSource,/vods\/\$\{path\}.*per_page=\$\{SOOP_VIDEO_PAGE_SIZE\}/s,'SOOP VOD/Catch/Clip discovery should paginate channel history');
+assert.match(autoSource,/fetchAllChannelItems\('videos'/,'ChunbongTV videos should use full channel pagination');
+assert.match(autoSource,/fetchAllChannelItems\('shorts'/,'ChunbongTV Shorts should use full channel pagination');
+assert.match(autoSource,/user_id.*SOOP_ID/s,'SOOP board discovery should keep broadcaster-authored posts');
+assert.match(autoSource,/scope:\{soop:'full-channel-history',youtube:'full-channel-history'\}/,'auto-sync should report full-history scope');
+
