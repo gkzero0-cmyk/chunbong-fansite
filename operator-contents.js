@@ -63,10 +63,31 @@ async function fetchSourceMetaForRow(row){
         form.elements.heroSourceId.value=sourceId;
       }
     }
-    if(status)status.textContent=meta.image?'제목·이미지 후보 반영':'제목 확인 · 이미지 없음';
+    const form=$('[data-archive-form]',root);
+    if(Array.isArray(meta.participants)&&meta.participants.length&&form&&!String(form.elements.participants?.value||'').trim()){
+      form.elements.participants.value=meta.participants.join(', ');
+    }
+    if(status){
+      const details=[];
+      if(meta.participantCount)details.push(`참가자 ${meta.participantCount}명`);
+      if(Array.isArray(meta.outline)&&meta.outline.length)details.push(`Notion 구조 ${meta.outline.length}개`);
+      if(meta.image)details.push('이미지 후보');
+      if(!details.length)details.push(meta.title?'제목 확인':'추출 가능한 메타 없음');
+      status.textContent=details.join(' · ');
+      if(Array.isArray(meta.outline)&&meta.outline.length)status.title=meta.outline.join(' · ');
+    }
     renderPreview();
   }catch(error){
-    if(status)status.textContent=error.message?.startsWith('source_meta_fetch_')?'사이트에서 자동 수집을 차단했습니다.':'메타데이터를 가져오지 못했습니다.';
+    if(status){
+      const code=String(error?.message||'');
+      if(code==='source_meta_human_verification_required')status.textContent='사람 확인(Turnstile)이 필요합니다. 브라우저 확인 또는 수동 등록이 필요합니다.';
+      else if(code==='source_meta_auth_required')status.textContent='SOOP 애청자 공개 등 로그인 권한이 필요한 글입니다. 인증된 브라우저에서 확인 후 수동 등록해 주세요.';
+      else if(code==='source_meta_client_render_required')status.textContent='JavaScript로 본문을 불러오는 페이지입니다. 전용 API 또는 브라우저 수집이 필요합니다.';
+      else if(code==='source_meta_timeout')status.textContent='원문 응답 시간이 길어 수집이 중단됐습니다.';
+      else if(code.startsWith('source_meta_notion_'))status.textContent='Notion 공개 데이터 조회에 실패했습니다.';
+      else if(code.startsWith('source_meta_fetch_'))status.textContent='원문 서버가 자동 요청을 거부했습니다 ('+code.replace('source_meta_fetch_','HTTP ')+').';
+      else status.textContent='메타데이터를 가져오지 못했습니다.';
+    }
   }finally{if(button)button.disabled=false}
 }
 function bindSourceMeta(){$$('[data-source-fetch-meta]',root).forEach(button=>{if(button.dataset.bound)return;button.dataset.bound='1';button.addEventListener('click',()=>void fetchSourceMetaForRow(button.closest('[data-source-row]')))})}
