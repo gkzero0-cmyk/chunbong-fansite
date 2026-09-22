@@ -73,14 +73,8 @@ for(const item of seed.items) assert.deepEqual(validateArchiveItem(normalizeArch
 
 
 const diamondBackfill=seed.items.find(item=>item.id==='justserver-diamond');
-assert.ok((diamondBackfill?.results||[]).some(row=>row.title==='전체 참가자'&&/189명/.test(row.value||'')),'그냥서버 1 전체 참가자 189명 기록이 필요합니다');
-assert.ok((diamondBackfill?.results||[]).some(row=>row.title==='관측 기록'&&/183명/.test(row.value||'')),'그냥서버 1 방통실 관측 183명 기록이 필요합니다');
-const diamondParticipantGroup=(diamondBackfill?.participantGroups||[]).find(row=>row.id==='diamond-soop-participants');
-assert.equal(diamondParticipantGroup?.count,189,'그냥서버 1 전체 확인 명단은 189명이어야 합니다');
-assert.equal(diamondParticipantGroup?.participants?.length,189,'그냥서버 1 참가자 배열도 189명이어야 합니다');
-assert.equal(new Set(diamondParticipantGroup?.participants||[]).size,189,'그냥서버 1 참가자 명단에 중복이 없어야 합니다');
-for(const name of ['BJ공파리파','냥냥두둥','모이사','쏭아야','춘봉_','하밍','히키모?!']) assert.ok(diamondParticipantGroup?.participants?.includes(name),`그냥서버 1 확인 참가자 누락: ${name}`);
-assert.equal(diamondParticipantGroup?.sourceId,'source-diamond-bngts-streamers','전체 참가자 명단은 내부 검증 출처와 연결되어야 합니다');
+assert.equal((diamondBackfill?.results||[]).some(row=>/방통실|BNGTS|189명|183명/i.test(String(row.title||'')+' '+String(row.value||''))),false,'그냥서버 1은 방통실 기반 참가자 집계를 공개 기록에 사용하지 않아야 합니다');
+assert.equal((diamondBackfill?.participantGroups||[]).some(row=>/bngts/i.test(String(row.sourceId||''))||/방통실|BNGTS/i.test(String(row.note||''))),false,'그냥서버 1 참가자 그룹은 방통실 출처를 사용하지 않아야 합니다');
 assert.match(String(diamondBackfill?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/justserver\/diamond-user-selected-16x9\.webp$/,'그냥서버 다이아는 사용자가 지정한 두 번째 16:9 이미지를 대표 이미지로 사용해야 합니다');
 for(const row of diamondBackfill?.media||[]){
   if(!/vod\.sooplive\.com\/player\/(192233707|192317079|192401771|192510763|192581897|192845469|192962357)/.test(row.url||''))continue;
@@ -88,8 +82,15 @@ for(const row of diamondBackfill?.media||[]){
   assert.ok(!/다시보기 \d{2}$/.test(String(row.title||'')),'다이아 VOD 임시 제목이 남으면 안 됩니다');
 }
 
-assert.ok((diamondBackfill?.results||[]).some(row=>row.title==='명단 구조화'&&/189명 확인/.test(row.value||'')),'그냥서버 1 명단 구조화는 전체 189명 완료 상태여야 합니다');
+assert.ok((diamondBackfill?.results||[]).some(row=>row.title==='초기 모집 정원'&&/50명/.test(row.value||'')),'그냥서버 1은 SOOP 모집 공지의 초기 정원 정보를 유지해야 합니다');
 
+for(const item of seed.items){
+  assert.equal((item.sources||[]).some(row=>/bngts\.com|namu\.moe/i.test(String(row.url||''))),false,`금지된 공개/내부 출처가 남아 있습니다: ${item.id}`);
+}
+for(const id of ['chuntacle-2026','psy-emotion-song-contest-1','psy-emotion-song-contest-2','justserver-diamond']){
+  const item=seed.items.find(row=>row.id===id);if(!item)continue;
+  assert.equal((item.sources||[]).some(row=>/namu\.moe/i.test(String(row.url||''))),false,`나무미러 출처가 남아 있습니다: ${id}`);
+}
 console.log('chunbong contents data regression passed');
 
 const archiveApi=require('../lib/chunbong-content-archive-api.js');
@@ -279,16 +280,15 @@ for(const id of moneyVodIds){
 }
 
 for(const id of ['197785319','199568663','199830351']) assert.ok((justserver?.timeline||[]).some(row=>row.url===`https://www.sooplive.com/station/chunbongtv/post/${id}`),`머니게임 SOOP 게시글 누락: ${id}`);
-for(const url of ['https://naver.me/5qLX1yQ1','https://naver.me/FbVX1U7z','https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d','https://buly.kr/2ffytJ1','https://bngts.com/contents/geunyangseobeo-meonigeim','https://bngts.com/contents/geunyangseobeo-meonigeim/streamers']) assert.ok((justserver?.sources||[]).some(row=>row.url===url),`머니게임 참고 자료 누락: ${url}`);
+for(const url of ['https://naver.me/5qLX1yQ1','https://naver.me/FbVX1U7z','https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d','https://buly.kr/2ffytJ1']) assert.ok((justserver?.sources||[]).some(row=>row.url===url),`머니게임 참고 자료 누락: ${url}`);
+assert.equal((justserver?.sources||[]).some(row=>/bngts\.com/i.test(String(row.url||''))),false,'머니게임은 방통실을 출처로 사용하지 않아야 합니다');
 for(const url of ['https://naver.me/5qLX1yQ1','https://naver.me/FbVX1U7z','https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d']) assert.equal((justserver?.sources||[]).find(row=>row.url===url)?.visibility,'internal',`머니게임 내부 자료원은 공개 출처로 노출하면 안 됩니다: ${url}`);
 const moneygamePublic=toPublicArchiveItem(normalizeArchiveItem(justserver));
 assert.equal((moneygamePublic.sources||[]).some(row=>/naver\.me|app\.notion\.com/.test(String(row.url||''))),false,'머니게임 Naver/Notion 내부 자료원은 공개 API에서 제거되어야 합니다');
 assert.deepEqual((justserver?.participantGroups||[]).map(row=>row.count),[50,49,50,49,45],'머니게임 입주 공지의 원문 표기 그룹 개수를 보존해야 합니다');
 assert.equal((justserver?.participantGroups||[]).reduce((sum,row)=>sum+(row.participants||[]).length,0),243,'머니게임 입주 공지에서 분리 가능한 닉네임 표기는 243개여야 합니다');
-assert.equal((justserver?.participants||[]).length,191,'머니게임 BNGTS 교차 참가자 명단은 191명이어야 합니다');
-assert.equal(new Set(justserver?.participants||[]).size,191,'머니게임 BNGTS 참가자 명단은 중복이 없어야 합니다');
-for(const name of ['#시나몬','강다래','김뽁분','냥냥두둥','도람지','뚜닝','래노♬']) assert.ok((justserver?.participants||[]).includes(name),`머니게임 BNGTS 참가자 누락: ${name}`);
-assert.ok((justserver?.results||[]).some(row=>row.title==='방통실 등록 참가자'&&/191명/.test(row.value||'')),'머니게임 방통실 191명 교차 집계를 별도 표기해야 합니다');
+assert.equal((justserver?.participants||[]).length,0,'머니게임은 방통실 기반 직접 참가자 목록을 사용하지 않아야 합니다');
+assert.equal((justserver?.results||[]).some(row=>/방통실|BNGTS/i.test(String(row.title||'')+' '+String(row.value||''))),false,'머니게임 결과에서 방통실 기반 집계를 제거해야 합니다');
 
 assert.ok((justserver?.timeline||[]).some(row=>row.id==='money-entry-order'&&row.date==='2026-06-21'),'머니게임 입주 순서 공지 날짜를 보존해야 합니다');
 assert.ok((justserver?.results||[]).some(row=>row.title==='주요 콘텐츠'&&/채광/.test(row.value||'')&&/갬블/.test(row.value||'')),'머니게임 Notion의 주요 콘텐츠 구조를 반영해야 합니다');
@@ -315,7 +315,9 @@ assert.equal(justserverDiamond?.startDate,'2026-04-09');
 assert.equal(justserverDiamond?.endDate,'2026-04-16');
 assert.equal(justserverDiamond?.series?.id,'justserver');
 for(const id of ['192233707','192317079','192401771','192510763','192581897','192845469','192962357']) assert.ok((justserverDiamond?.media||[]).some(row=>row.url===`https://vod.sooplive.com/player/${id}`),`그냥서버 1 VOD 누락: ${id}`);
-for(const url of ['https://www.sooplive.com/station/chunbongtv/post/192179233','https://sdmv.notion.site/what','https://bngts.com/contents/just','https://bngts.com/contents/just/streamers']) assert.ok((justserverDiamond?.sources||[]).some(row=>row.url===url),`그냥서버 1 출처 누락: ${url}`);
+for(const url of ['https://www.sooplive.com/station/chunbongtv/post/192179233','https://sdmv.notion.site/what']) assert.ok((justserverDiamond?.sources||[]).some(row=>row.url===url),`그냥서버 1 출처 누락: ${url}`);
+assert.equal((justserverDiamond?.sources||[]).some(row=>/bngts\.com|namu\.moe/i.test(String(row.url||''))),false,'그냥서버 1은 방통실·나무미러를 출처로 사용하지 않아야 합니다');
+assert.ok((justserverDiamond?.sources||[]).some(row=>/^https:\/\/namu\.wiki\//i.test(String(row.url||''))),'그냥서버 1 나무 계열 출처는 나무위키 원문을 사용해야 합니다');
 const diamondRecruit=(justserverDiamond?.timeline||[]).find(row=>row.id==='diamond-recruit-post');
 assert.equal(diamondRecruit?.title,'그냥 서버 열었습니다..','그냥서버 1 SOOP 원문 제목을 사용해야 합니다');
 assert.equal(diamondRecruit?.date,'2026-04-09','그냥서버 1 모집글 작성일을 반영해야 합니다');
@@ -359,6 +361,9 @@ assert.equal(mergeVisibility[0].sources.find(row=>row.id==='internal-source')?.v
 assert.equal(mergeVisibility[0].timeline.find(row=>row.id==='internal-row')?.visibility,'internal','curated internal material visibility must survive stored records');
 
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://www.sooplive.com/station/chunbongtv/post/1'),'SOOP source metadata URL should be allowed');
+assert.equal(archiveApi._internals.allowedSourceMetaUrl('https://bngts.com/contents/just'),null,'방통실은 source metadata allowlist에서 제외되어야 합니다');
+assert.equal(archiveApi._internals.allowedSourceMetaUrl('https://namu.moe/w/test'),null,'나무미러는 source metadata allowlist에서 제외되어야 합니다');
+assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://namu.wiki/w/test'),'나무위키는 source metadata allowlist에 포함되어야 합니다');
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://example.notion.site/example'),'public Notion source metadata URL should be allowed');
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d'),'public app.notion.com source metadata URL should be allowed');
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://naver.me/FbVX1U7z'),'Naver source metadata URL should be allowed');
