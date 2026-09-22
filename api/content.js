@@ -252,6 +252,7 @@ const SOURCE_PROBE_TARGETS={
   soopVod:'https://vod.sooplive.com/player/192233707',
   notionDiamond:'https://sdmv.notion.site/what',
   notionSurvival:'https://daisy-grouse-ac0.notion.site/3dad57d6a55c80469f3de9730cb88975',
+  notionMoneygame:'https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d',
   fmkorea1:'https://www.fmkorea.com/7042989434',
   fmkorea2:'https://www.fmkorea.com/9750851296',
   bngts:'https://bngts.com/contents/just/streamers'
@@ -314,7 +315,7 @@ async function handler(req,res) {
   if(type==='source-probe'&&process.env.VERCEL_ENV!=='production'){const key=requestUrl.searchParams.get('target')||'';try{return res.status(200).json(await sourceProbe(key))}catch(error){return res.status(400).json({error:String(error?.message||error)})}};
   if(type==='notion-text-probe'&&process.env.VERCEL_ENV!=='production'){
     const which=requestUrl.searchParams.get('target')||'diamond';
-    const pageId=which==='survival'?'3dad57d6-a55c-8046-9f3d-e9730cb88975':'33de955a-d773-802f-9f64-f1d63fcff3a4';
+    const pageId=which==='survival'?'3dad57d6-a55c-8046-9f3d-e9730cb88975':which==='moneygame'?'217d57d6-a55c-80d6-8958-c2ce1762308d':'33de955a-d773-802f-9f64-f1d63fcff3a4';
     const response=await fetch('https://www.notion.so/api/v3/loadCachedPageChunk',{method:'POST',headers:{'User-Agent':'Mozilla/5.0','Accept':'application/json','Content-Type':'application/json','Origin':'https://www.notion.so','Referer':'https://www.notion.so/'},body:JSON.stringify({pageId,limit:100,cursor:{stack:[]},chunkNumber:0,verticalColumns:false})});
     const payload=await response.json();
     const map=payload?.recordMap?.block||{};
@@ -333,7 +334,7 @@ async function handler(req,res) {
   }
   if(type==='notion-probe'&&process.env.VERCEL_ENV!=='production'){
     const which=requestUrl.searchParams.get('target')||'diamond';
-    const pageId=which==='survival'?'3dad57d6-a55c-8046-9f3d-e9730cb88975':'33de955a-d773-802f-9f64-f1d63fcff3a4';
+    const pageId=which==='survival'?'3dad57d6-a55c-8046-9f3d-e9730cb88975':which==='moneygame'?'217d57d6-a55c-80d6-8958-c2ce1762308d':'33de955a-d773-802f-9f64-f1d63fcff3a4';
     const attempts=[
       ['loadCachedPageChunk','https://www.notion.so/api/v3/loadCachedPageChunk',{pageId,limit:100,cursor:{stack:[]},chunkNumber:0,verticalColumns:false}],
       ['loadPageChunk','https://www.notion.so/api/v3/loadPageChunk',{pageId,limit:100,cursor:{stack:[]},chunkNumber:0,verticalColumns:false}],
