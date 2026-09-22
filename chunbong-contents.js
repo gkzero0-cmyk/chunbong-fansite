@@ -21,7 +21,7 @@ function itemPeopleCount(item={}){
   const verified=Number(item.participantCount||0);
   const direct=(item.participants||[]).length;
   const grouped=(item.participantGroups||[]).reduce((sum,row)=>sum+Number(row.count||row.participants?.length||0),0);
-  if(verified>0)return Math.max(verified,direct,grouped);
+  if(verified>0)return verified;
   if(direct||grouped)return Math.max(direct,grouped);
   return allPeople(item).length;
 }
