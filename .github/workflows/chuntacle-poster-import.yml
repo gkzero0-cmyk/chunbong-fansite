@@ -30,10 +30,10 @@ jobs:
               print('FINAL_URL',r.geturl())
               print('CONTENT_TYPE',r.headers.get('content-type'))
               print('BODY_LEN',len(body))
-          for m in sorted(set(re.findall(r'https?://[^"\\'<> ]+',body))):
+          for m in sorted(set(re.findall(r"https?://[^\\s\\\"<>]+",body))):
               if 'firestorage' in m or 'download' in m:
                   print('URL',m[:1000])
-          for m in sorted(set(re.findall(r'href=["\\']([^"\\']+)["\\']',body))):
+          for m in sorted(set(re.findall(r"href=[\\\"']([^\\\"']+)[\\\"']",body))):
               if 'download' in m or '/api/' in m or '/d/' in m or '/file' in m:
                   print('HREF',m[:1000])
           for line in body.splitlines():
