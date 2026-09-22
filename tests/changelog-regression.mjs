@@ -58,7 +58,7 @@ for(const group of groups){
   assert.ok(Array.isArray(group.items)&&group.items.length>0,'each date must contain updates');
 }
 const sorted=[...groups].sort((a,b)=>b.date.localeCompare(a.date));
-assert.equal(sorted[0].date,'2026-09-22','latest curated changelog date should be first');
+assert.equal(sorted[0].date,'2026-09-23','latest curated changelog date should be first');
 assert.equal(sorted.at(-1).date,'2026-08-30','first-day site record must be preserved');
 assert.ok(groups.some(group=>group.date==='2026-09-17'&&group.items.some(item=>item.title==='춘박게임 추가')),'actual 2026-09-17 Chunbak entry missing');
 assert.ok(groups.some(group=>group.date==='2026-08-31'&&group.items.some(item=>item.title==='78장 타로 리딩 기능 추가')),'initial Tarot launch backfill missing');
