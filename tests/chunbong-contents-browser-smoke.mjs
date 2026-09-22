@@ -113,6 +113,7 @@ try{
     assert.equal(await page.locator('.archive-series-child-links [data-archive-open]').count(),2,'그냥서버 시리즈 랜딩에 두 시즌 바로가기가 있어야 합니다');
     await page.locator('.archive-series-child-links [data-archive-open="justserver-survival"]').click();
     await page.waitForURL(/id=justserver-survival/);
+    await page.locator('.archive-sibling-series-nav').waitFor({state:'visible'});
     assert.equal(await page.locator('.archive-sibling-series-nav [data-archive-sibling]').count(),2,'그냥서버 상세에서 시즌 간 전환이 가능해야 합니다');
     await page.locator('[data-archive-back]').click();
     await page.waitForFunction(()=>!document.querySelector('[data-archive-browser]')?.hidden);
