@@ -250,6 +250,10 @@ function compactDataPayload(payload, options = {}) {
 async function handler(req,res) {
   const requestUrl=new URL(req.url||'/','https://chunbong.local');
   const type=requestUrl.searchParams.get('type')||'';
+  if(type==='debug-moneygame-notion'&&process.env.VERCEL_ENV!=='production'){
+    try{return res.status(200).json(await contentArchive._internals.fetchSourceMeta('https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d'))}
+    catch(error){return res.status(500).json({error:String(error?.message||error)})}
+  }
   if(type==='chuntris-ranking') return handleChuntrisRanking(req,res);
   if(type==='chunbak-ranking') return handleChunbakRanking(req,res);
   if(type==='chungwagame-ranking') return handleChungwagameRanking(req,res);
