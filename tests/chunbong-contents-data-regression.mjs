@@ -48,11 +48,13 @@ for(const item of seed.items) assert.deepEqual(validateArchiveItem(normalizeArch
 const diamondBackfill=seed.items.find(item=>item.id==='justserver-diamond');
 assert.ok((diamondBackfill?.results||[]).some(row=>row.title==='전체 참가자'&&/189명/.test(row.value||'')),'그냥서버 1 전체 참가자 189명 기록이 필요합니다');
 assert.ok((diamondBackfill?.results||[]).some(row=>row.title==='관측 기록'&&/183명/.test(row.value||'')),'그냥서버 1 방통실 관측 183명 기록이 필요합니다');
-const diamondPartialGroup=(diamondBackfill?.participantGroups||[]).find(row=>row.id==='diamond-bngts-page-1');
-assert.equal(diamondPartialGroup?.count,48,'그냥서버 1 방통실 1페이지 확인 명단은 48명이어야 합니다');
-assert.equal(diamondPartialGroup?.participants?.length,48,'그냥서버 1 확인 명단 배열도 48명이어야 합니다');
-for(const name of ['BJ공파리파','냥냥두둥','김띵수','돗챠']) assert.ok(diamondPartialGroup?.participants?.includes(name),`그냥서버 1 확인 참가자 누락: ${name}`);
-assert.equal(diamondPartialGroup?.sourceId,'source-diamond-bngts-streamers','부분 참가자 명단은 내부 방통실 출처와 연결되어야 합니다');
+const diamondParticipantGroup=(diamondBackfill?.participantGroups||[]).find(row=>row.id==='diamond-soop-participants');
+assert.equal(diamondParticipantGroup?.count,189,'그냥서버 1 전체 확인 명단은 189명이어야 합니다');
+assert.equal(diamondParticipantGroup?.participants?.length,189,'그냥서버 1 참가자 배열도 189명이어야 합니다');
+assert.equal(new Set(diamondParticipantGroup?.participants||[]).size,189,'그냥서버 1 참가자 명단에 중복이 없어야 합니다');
+for(const name of ['BJ공파리파','냥냥두둥','모이사','쏭아야','춘봉_','하밍','히키모?!']) assert.ok(diamondParticipantGroup?.participants?.includes(name),`그냥서버 1 확인 참가자 누락: ${name}`);
+assert.equal(diamondParticipantGroup?.sourceId,'source-diamond-bngts-streamers','전체 참가자 명단은 내부 검증 출처와 연결되어야 합니다');
+assert.ok((diamondBackfill?.results||[]).some(row=>row.title==='명단 구조화'&&/189명 확인/.test(row.value||'')),'그냥서버 1 명단 구조화는 전체 189명 완료 상태여야 합니다');
 
 console.log('chunbong contents data regression passed');
 
