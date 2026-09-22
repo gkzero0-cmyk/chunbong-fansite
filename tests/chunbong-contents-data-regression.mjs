@@ -100,7 +100,7 @@ assert.match(String(psyContest?.heroImage?.src||''),/^\/assets\/chunbong-content
 const chuntacle=seed.items.find(item=>item.id==='chuntacle-2026');
 assert.ok(chuntacle?.published,'춘타클 should be included in the public content archive');
 assert.equal(chuntacle?.category,'class-event');
-assert.match(String(chuntacle?.heroImage?.src||''),/^\\/assets\\/chunbong-contents\\/chuntacle-/);
+assert.match(String(chuntacle?.heroImage?.src||''),/^\/assets\/chunbong-contents\/chuntacle-/);
 assert.ok((chuntacle?.timeline||[]).length>=5,'춘타클 should expose all five class sessions in its timeline');
 assert.ok((chuntacle?.participants||[]).length>=19,'춘타클 should list students confirmed by the five archived posters');
 assert.ok((chuntacle?.results||[]).length>=5,'춘타클 should summarize all five confirmed class sessions');
