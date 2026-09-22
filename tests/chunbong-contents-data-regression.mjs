@@ -237,11 +237,11 @@ assert.ok((leopel?.results||[]).some(row=>/2차 입주/.test(row.title||'')&&/17
 const hiddenSourceItem=normalizeArchiveItem({
   id:'hidden-provenance',title:'숨김 출처 테스트',category:'other',role:'주최',status:'ended',startDate:'2026',endDate:'2026',datePrecision:'year',
   summary:'테스트',description:'테스트',heroImage:null,participants:[],results:[],seriesSessions:[],
-  timeline:[{id:'internal-row',type:'reference',title:'내부 타임라인',date:'',datePrecision:'unknown',url:'https://www.fmkorea.com/1',sourceId:'internal-source',visibility:'internal'}],
+  timeline:[{id:'internal-row',type:'reference',title:'내부 타임라인',date:'',datePrecision:'unknown',url:'https://bngts.com/internal-test',sourceId:'internal-source',visibility:'internal'}],
   media:[],gallery:[],
   sources:[
     {id:'public-source',kind:'official',label:'공개',url:'https://www.sooplive.com/station/chunbongtv',visibility:'public'},
-    {id:'internal-source',kind:'reference',label:'내부',url:'https://www.fmkorea.com/1',visibility:'internal'}
+    {id:'internal-source',kind:'reference',label:'내부',url:'https://bngts.com/internal-test',visibility:'internal'}
   ],
   verification:{state:'official',verifiedAt:'2026-09-22',conflicts:[]},published:true
 });
@@ -260,12 +260,14 @@ assert.equal(mergeVisibility[0].timeline.find(row=>row.id==='internal-row')?.vis
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://www.sooplive.com/station/chunbongtv/post/1'),'SOOP source metadata URL should be allowed');
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://example.notion.site/example'),'public Notion source metadata URL should be allowed');
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d'),'public app.notion.com source metadata URL should be allowed');
+assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://naver.me/FbVX1U7z'),'Naver source metadata URL should be allowed');
+assert.equal(archiveApi._internals.allowedSourceMetaUrl('https://www.fmkorea.com/7042989434'),null,'FM Korea must stay excluded from archive source ingestion');
 assert.equal(archiveApi._internals.allowedSourceMetaUrl('http://127.0.0.1/private'),null,'local/non-HTTPS source metadata URL must be rejected');
 
 for(const item of seed.items){
   assert.equal((item.sources||[]).some(source=>/fmkorea\.com/i.test(String(source.url||''))),false,`FM코리아 출처는 사용하지 않아야 합니다: ${item.id}`);
   for(const source of item.sources||[]){
-    const internal=/bngts\.com|fmkorea\.com|streamscharts\.com/.test(String(source.url||''));
+    const internal=/bngts\.com|streamscharts\.com/.test(String(source.url||''));
     if(internal)assert.equal(source.visibility,'internal',`internal reference source should not be public: ${source.url}`);
   }
 }
@@ -300,3 +302,9 @@ assert.equal(psy2Confirmed?.startDate,'2026-04-28','싸이감성 2회 개최일�
 assert.equal(psy2Confirmed?.endDate,'2026-04-28','싸이감성 2회 단일 개최일 종료일이 일치해야 합니다');
 assert.ok((psy2Confirmed?.sources||[]).some(row=>row.id==='source-psy2-streams'&&row.visibility==='internal'),'싸이감성 2회 Streams Charts는 내부 검증용이어야 합니다');
 assert.ok((psy2Confirmed?.timeline||[]).some(row=>row.id==='psy2-event-day'&&row.date==='2026-04-28'),'싸이감성 2회 개최일 타임라인이 필요합니다');
+
+const archiveCss=fs.readFileSync(new URL('../chunbong-contents.css',import.meta.url),'utf8');
+assert.match(archiveCss,/archive-card\{display:grid;grid-template-rows:auto 1fr;height:100%\}/,'archive cards should use a uniform height layout');
+assert.match(archiveCss,/@media\(min-width:1280px\)\{\.archive-grid\{grid-template-columns:repeat\(4,minmax\(0,1fr\)\)\}\}/,'desktop archive should use a consistent four-column card grid');
+const vercelConfig=JSON.parse(fs.readFileSync(new URL('../vercel.json',import.meta.url),'utf8'));
+assert.ok((vercelConfig.crons||[]).some(row=>row.path==='/api/archive/auto-sync'),'official archive sync should have a scheduled safety refresh');
