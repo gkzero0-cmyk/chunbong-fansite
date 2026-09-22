@@ -63,3 +63,6 @@ const contentApi=read('api/content.js');
 for(const token of ['자료 반영 상태','참가자 미수집','Notion 본문 미구조화','실제 대표 이미지 확인','data-source-fetch-meta','내부 검증용 · 숨김']) assert.ok(operatorContents.includes(token),token);
 for(const token of ['operator-archive-audit','operator-source-meta-actions']) assert.ok(operatorCss.includes(token),token);
 assert.ok(contentApi.includes("operator-content-source-meta"),'source metadata operator API route missing');
+
+for(const token of ['archive-participant-groups','archive-participant-group']) assert.ok(css.includes(token),token);
+for(const token of ['renderParticipantGroups','participantGroups']) assert.ok(js.includes(token),token);
