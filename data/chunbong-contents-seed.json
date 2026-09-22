@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T11:25:00+09:00",
+  "updatedAt": "2026-09-22T11:40:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -259,7 +259,18 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T11:25:00+09:00"
+      "updatedAt": "2026-09-22T11:40:00+09:00",
+      "series": {
+        "id": "leopel",
+        "title": "레오펠",
+        "subtitle": "사자의 노래",
+        "description": "플랫폼 통합 대규모 스트리머 마인크래프트 서버의 기획·오픈·방송 기록을 모아봅니다.",
+        "order": 40,
+        "cover": {
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
+          "alt": "레오펠 사자의 노래 로고"
+        }
+      }
     },
     {
       "id": "justserver-moneygame",
@@ -735,7 +746,18 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T09:50:00+09:00"
+      "updatedAt": "2026-09-22T11:40:00+09:00",
+      "series": {
+        "id": "justserver",
+        "title": "그냥서버",
+        "subtitle": "마인크래프트 서버 시리즈",
+        "description": "춘봉이 주최한 그냥서버의 시즌별 기록을 모집·방송·진행 자료와 함께 이어서 봅니다.",
+        "order": 10,
+        "cover": {
+          "src": "/assets/chunbong-contents/justserver-moneygame-cover.svg",
+          "alt": "그냥서버 시리즈 대표 이미지"
+        }
+      }
     },
     {
       "id": "justserver-survival",
@@ -922,7 +944,18 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T11:25:00+09:00"
+      "updatedAt": "2026-09-22T11:40:00+09:00",
+      "series": {
+        "id": "justserver",
+        "title": "그냥서버",
+        "subtitle": "마인크래프트 서버 시리즈",
+        "description": "춘봉이 주최한 그냥서버의 시즌별 기록을 모집·방송·진행 자료와 함께 이어서 봅니다.",
+        "order": 10,
+        "cover": {
+          "src": "/assets/chunbong-contents/justserver-moneygame-cover.svg",
+          "alt": "그냥서버 시리즈 대표 이미지"
+        }
+      }
     },
     {
       "id": "psy-emotion-song-contest-2026",
@@ -1031,7 +1064,18 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T07:05:00+09:00"
+      "updatedAt": "2026-09-22T11:40:00+09:00",
+      "series": {
+        "id": "psy-emotion-song-contest",
+        "title": "싸이감성 노래자랑",
+        "subtitle": "노래 경연 시리즈",
+        "description": "춘봉이 개최한 노래 경연 콘텐츠의 개최·심사·참가 기록을 실제 자료 중심으로 모아봅니다.",
+        "order": 30,
+        "cover": {
+          "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
+          "alt": "싸이감성 노래자랑 대표 이미지"
+        }
+      }
     },
     {
       "id": "chuntacle-2026",
@@ -1228,7 +1272,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T11:05:00+09:00",
+      "updatedAt": "2026-09-22T11:40:00+09:00",
       "seriesSessions": [
         {
           "id": "session-1",
@@ -1369,7 +1413,18 @@
           "sourceId": "",
           "note": "실제 첨부 최종 포스터 기준 기록."
         }
-      ]
+      ],
+      "series": {
+        "id": "chuntacle",
+        "title": "춘타클",
+        "subtitle": "춘봉 타로 클래스",
+        "description": "실제 포스터를 기준으로 제1회부터 제5회까지 날짜·수강생·회차 기록을 이어서 봅니다.",
+        "order": 20,
+        "cover": {
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042682/chunbong-fansite/chuntacle/session-5.webp",
+          "alt": "춘타클 춘봉 타로 클래스 대표 포스터"
+        }
+      }
     }
   ]
 }

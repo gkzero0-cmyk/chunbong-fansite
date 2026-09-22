@@ -6,7 +6,7 @@ const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const html=read('chunbong-contents.html');
 const css=read('chunbong-contents.css');
 assert.match(html,/data-page="contents"/);
-for(const hook of ['data-archive-search','data-archive-category','data-archive-year','data-archive-sort','data-archive-list','data-archive-detail','data-archive-lightbox']) assert.ok(html.includes(hook),hook);
+for(const hook of ['data-archive-search','data-archive-category','data-archive-year','data-archive-sort','data-archive-list','data-archive-detail','data-archive-lightbox','data-archive-series-home','data-archive-series-list','data-archive-series-landing']) assert.ok(html.includes(hook),hook);
 assert.match(html,/춘봉 콘텐츠/);
 assert.match(css,/grid-template-columns/);
 assert.match(css,/@media\(max-width:760px\)/);
@@ -37,3 +37,6 @@ assert.match(js,/renderRecordStrip/);
 for(const token of ['renderSeriesArchive','data-archive-series','data-archive-session',"p.get('session')","p.set('session'"]) assert.ok(js.includes(token),token);
 for(const token of ['archive-series','archive-series-nav','archive-series-focus','overflow-x:auto']) assert.ok(css.includes(token),token);
 
+
+for(const token of ['buildSeriesGroups','renderSeriesNavigation','renderSiblingSeriesNav',"p.get('series')","p.set('series'",'sourceKindLabel']) assert.ok(js.includes(token),token);
+for(const token of ['archive-series-home-grid','archive-series-card','archive-series-landing','archive-sibling-series','archive-source-kind']) assert.ok(css.includes(token),token);
