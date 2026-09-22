@@ -307,4 +307,6 @@ const archiveCss=fs.readFileSync(new URL('../chunbong-contents.css',import.meta.
 assert.match(archiveCss,/archive-card\{display:grid;grid-template-rows:auto 1fr;height:100%\}/,'archive cards should use a uniform height layout');
 assert.match(archiveCss,/@media\(min-width:1280px\)\{\.archive-grid\{grid-template-columns:repeat\(4,minmax\(0,1fr\)\)\}\}/,'desktop archive should use a consistent four-column card grid');
 const vercelConfig=JSON.parse(fs.readFileSync(new URL('../vercel.json',import.meta.url),'utf8'));
-assert.ok((vercelConfig.crons||[]).some(row=>row.path==='/api/archive/auto-sync'),'official archive sync should have a scheduled safety refresh');
+assert.ok(!Array.isArray(vercelConfig.crons)||vercelConfig.crons.length===0,'Hobby deployment must keep scheduled work in GitHub Actions, not Vercel cron');
+const pushWorkflow=fs.readFileSync(new URL('../.github/workflows/push-dispatch.yml',import.meta.url),'utf8');
+assert.match(pushWorkflow,/content-archive-auto-sync/,'scheduled GitHub OIDC workflow should refresh the official content archive');
