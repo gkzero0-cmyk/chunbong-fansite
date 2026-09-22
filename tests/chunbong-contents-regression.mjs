@@ -40,3 +40,9 @@ for(const token of ['archive-series','archive-series-nav','archive-series-focus'
 
 for(const token of ['buildSeriesGroups','renderSeriesNavigation','renderSiblingSeriesNav',"p.get('series')","p.set('series'",'sourceKindLabel']) assert.ok(js.includes(token),token);
 for(const token of ['archive-series-home-grid','archive-series-card','archive-series-landing','archive-sibling-series','archive-source-kind']) assert.ok(css.includes(token),token);
+
+assert.ok(!html.includes('archive-stack-card-a'),'첫 화면 장식용 POSTER/VOD/ARCHIVE 카드가 다시 생기면 안 됩니다');
+for(const token of ['archive-series-skeleton','archive-series-card-seasons','archive-media-filters','archive-people-summary']) assert.ok(css.includes(token),token);
+for(const token of ['upcoming:\'예정\'','bindMediaFilters','data-archive-media-filter','peopleCount','platform:\'플랫폼 자료\'']) assert.ok(js.includes(token),token);
+const operatorContents=read('operator-contents.js');
+assert.ok(operatorContents.includes("['upcoming','예정']"),'운영자 센터에서 예정 상태를 편집할 수 있어야 합니다');
