@@ -15,10 +15,22 @@ const items=[
     sources:[{id:'s1',kind:'article',label:'SOOP PICK 오픈',url:'https://pick.sooplive.com/daily/view/162435'},{id:'s2',kind:'article',label:'SOOP PICK 발표회',url:'https://pick.sooplive.com/daily/view/162209'}]
   },
   {
-    id:'song-test',title:'노래대회 테스트',aliases:[],category:'song',role:'주최',status:'ended',series:{id:'song-series',title:'노래대회',subtitle:'노래 경연 시리즈',description:'노래대회 시리즈',order:30,cover:null},
-    startDate:'2026-01',endDate:'',datePrecision:'month',summary:'노래대회 기록',description:'노래대회 소개',
-    heroImage:null,participants:[],sourceCount:1,timeline:[],media:[],gallery:[],
-    sources:[{id:'s3',kind:'official',label:'공식 공지',url:'https://www.sooplive.com/station/chunbongtv'}]
+    id:'psy-emotion-song-contest-1',title:'싸이감성 노래자랑 제1회',aliases:['싸이감성 1회'],category:'song',role:'개최',status:'ended',
+    series:{id:'psy-emotion-song-contest',title:'싸이감성 노래자랑',subtitle:'노래 경연 시리즈',description:'싸이감성 노래자랑 회차 기록',order:30,cover:{src:'/assets/chunbong-contents/psy-emotion-song-contest-cover.svg',alt:'싸이감성'}},
+    startDate:'',endDate:'',datePrecision:'unknown',summary:'제1회 기록',description:'제1회 소개',
+    heroImage:{src:'/assets/chunbong-contents/psy-emotion-song-contest-cover.svg',alt:'싸이감성 1회'},participants:['시로코'],sourceCount:3,
+    timeline:[{id:'p1',type:'post',title:'싸이감성 노래자랑 제1회 모집글',date:'',datePrecision:'unknown',url:'https://www.sooplive.com/station/chunbongtv/post/124321185',thumbnail:'',sourceId:'p1s',note:'1회 모집'}],
+    media:[{id:'v1',type:'vod',title:'싸이감성 노래자랑 제1회 SOOP VOD',date:'',datePrecision:'unknown',url:'https://vod.sooplive.com/player/127480069',thumbnail:'',sourceId:'v1s',note:'1회 VOD'}],
+    gallery:[],sources:[{id:'p1s',kind:'official',label:'SOOP 모집글',url:'https://www.sooplive.com/station/chunbongtv/post/124321185'},{id:'v1s',kind:'official',label:'SOOP VOD',url:'https://vod.sooplive.com/player/127480069'}]
+  },
+  {
+    id:'psy-emotion-song-contest-2',title:'싸이감성 노래자랑 제2회',aliases:['싸이감성 2회'],category:'song',role:'개최',status:'ended',
+    series:{id:'psy-emotion-song-contest',title:'싸이감성 노래자랑',subtitle:'노래 경연 시리즈',description:'싸이감성 노래자랑 회차 기록',order:30,cover:{src:'/assets/chunbong-contents/psy-emotion-song-contest-cover.svg',alt:'싸이감성'}},
+    startDate:'',endDate:'',datePrecision:'unknown',summary:'제2회 기록',description:'제2회 소개',
+    heroImage:{src:'/assets/chunbong-contents/psy-emotion-song-contest-cover.svg',alt:'싸이감성 2회'},participants:[],sourceCount:3,
+    timeline:[{id:'p2',type:'post',title:'싸이감성 노래자랑 제2회 모집글',date:'',datePrecision:'unknown',url:'https://www.sooplive.com/station/chunbongtv/post/192031471',thumbnail:'',sourceId:'p2s',note:'2회 모집'}],
+    media:[{id:'v2',type:'vod',title:'싸이감성 노래자랑 제2회 SOOP VOD',date:'',datePrecision:'unknown',url:'https://vod.sooplive.com/player/194116989',thumbnail:'',sourceId:'v2s',note:'2회 VOD'}],
+    gallery:[],sources:[{id:'p2s',kind:'official',label:'SOOP 모집글',url:'https://www.sooplive.com/station/chunbongtv/post/192031471'},{id:'v2s',kind:'official',label:'SOOP VOD',url:'https://vod.sooplive.com/player/194116989'},{id:'f2s',kind:'reference',label:'FM코리아 보조 자료',url:'https://www.fmkorea.com/9750851296'}]
   },
   {
     id:'justserver-moneygame',title:'그냥서버 : 머니게임',aliases:['머니게임'],category:'minecraft',role:'주최',status:'ended',
@@ -104,9 +116,9 @@ try{
     await installApi(page);
     await page.goto(base+'/chunbong-contents.html',{waitUntil:'networkidle'});
 
-    assert.equal(await page.locator('.archive-card').count(),4,'desktop should render archive cards');
-    assert.match((await page.locator('[data-archive-count]').textContent())||'',/전체 4개/);
-    assert.equal(await page.locator('.archive-series-card').count(),3,'series home should group four records into three series');
+    assert.equal(await page.locator('.archive-card').count(),5,'desktop should render archive cards');
+    assert.match((await page.locator('[data-archive-count]').textContent())||'',/전체 5개/);
+    assert.equal(await page.locator('.archive-series-card').count(),3,'series home should group five records into three series');
     await page.locator('[data-archive-series-open="justserver"]').click();
     await page.waitForURL(/series=justserver/);
     assert.equal(await page.locator('.archive-card').count(),2,'그냥서버 시리즈에는 머니게임과 적자생존 두 시즌만 보여야 합니다');
@@ -125,12 +137,26 @@ try{
     assert.match((await page.locator('.archive-card h2').textContent())||'',/레오펠/);
 
     await page.locator('[data-archive-reset]').first().click();
-    assert.equal(await page.locator('.archive-card').count(),4,'reset should restore results');
+    assert.equal(await page.locator('.archive-card').count(),5,'reset should restore results');
     await page.locator('[data-archive-category]').selectOption('song');
-    assert.equal(await page.locator('.archive-card').count(),1,'category filter should narrow results');
-    assert.match((await page.locator('.archive-card h2').textContent())||'',/노래대회/);
+    assert.equal(await page.locator('.archive-card').count(),2,'song category should show both 싸이감성 editions');
+    assert.equal(await page.locator('.archive-card h2').count(),2,'싸이감성 1·2회가 각각 카드로 보여야 합니다');
 
     await page.locator('[data-archive-reset]').first().click();
+    await page.locator('[data-archive-series-open="psy-emotion-song-contest"]').click();
+    await page.waitForURL(/series=psy-emotion-song-contest/);
+    assert.equal(await page.locator('.archive-card').count(),2,'싸이감성 시리즈에는 1·2회 두 기록만 보여야 합니다');
+    assert.equal(await page.locator('.archive-series-child-links [data-archive-open]').count(),2,'싸이감성 시리즈 랜딩에서 1·2회를 선택할 수 있어야 합니다');
+    assert.match((await page.locator('.archive-series-child-links').textContent())||'',/제1회/);
+    assert.match((await page.locator('.archive-series-child-links').textContent())||'',/제2회/);
+    await page.locator('.archive-series-child-links [data-archive-open="psy-emotion-song-contest-2"]').click();
+    await page.waitForURL(/id=psy-emotion-song-contest-2/);
+    await page.locator('.archive-sibling-series-nav').waitFor({state:'visible'});
+    assert.equal(await page.locator('.archive-sibling-series-nav [data-archive-sibling]').count(),2,'싸이감성 상세에서 1회와 2회를 바로 전환할 수 있어야 합니다');
+    await page.locator('[data-archive-back]').click();
+    await page.waitForFunction(()=>!document.querySelector('[data-archive-browser]')?.hidden);
+    await page.locator('[data-archive-series-back]').click();
+
     await page.locator('[data-archive-open="leopel"]').click();
     await page.waitForURL(/\?id=leopel/);
     assert.equal(await page.locator('[data-archive-detail] h1').textContent(),'레오펠: 사자의 노래');
@@ -159,7 +185,7 @@ try{
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
     await installApi(page);
     await page.goto(base+'/chunbong-contents.html',{waitUntil:'networkidle'});
-    assert.equal(await page.locator('.archive-card').count(),4,'mobile should render archive cards');
+    assert.equal(await page.locator('.archive-card').count(),5,'mobile should render archive cards');
     await assertNoHorizontalOverflow(page,'mobile list');
 
     const boxes=await page.locator('.archive-card').evaluateAll(nodes=>nodes.map(node=>{
