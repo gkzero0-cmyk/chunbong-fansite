@@ -60,3 +60,6 @@ const operatorContents=read('operator-contents.js');
 const operatorCss=read('operator.css');
 for(const token of ['archiveAudit','자료 반영 상태','source-visibility',"['planned','예정']"]) assert.ok(operatorContents.includes(token),token);
 assert.ok(operatorCss.includes('.operator-archive-audit'),'operator archive audit styling should exist');
+
+assert.ok(operatorContents.includes("$$('[data-archive-select]',list).forEach"),'operator content list must keep multi-element selector');
+assert.ok(operatorContents.includes("function sourceValues(){return $$('[data-source-row]',root).map"),'operator source editor must serialize every source row');
