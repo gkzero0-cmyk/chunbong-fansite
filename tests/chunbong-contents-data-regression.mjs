@@ -14,6 +14,9 @@ const monthOnly=normalizeArchiveItem({
 assert.equal(formatArchiveDate(monthOnly.startDate,monthOnly.datePrecision),'2026년 6월');
 assert.deepEqual(validateArchiveItem(monthOnly,{publishing:true}),[]);
 assert.ok(validateArchiveItem({...monthOnly,id:'bad',sources:[]},{publishing:true}).includes('published_source_required'));
+const upcomingItem=normalizeArchiveItem({...monthOnly,id:'upcoming-item',status:'upcoming',participantCount:671});
+assert.equal(upcomingItem.status,'upcoming','예정 콘텐츠 상태를 보존해야 합니다');
+assert.equal(upcomingItem.participantCount,671,'전체 참가자 수를 별도로 보존해야 합니다');
 
 const duplicateUrl={...monthOnly,id:'dup',timeline:[
   {id:'a',type:'vod',title:'A',url:'https://example.com/a',date:'2026-06',datePrecision:'month',sourceId:'s1'},
@@ -89,10 +92,20 @@ assert.equal(koreanId.id,'그냥서버','Korean archive ids created by the opera
 
 
 const publishedIds=new Set(seed.items.filter(item=>item.published===true).map(item=>item.id));
-for(const id of ['leopel','justserver-moneygame','psy-emotion-song-contest-1','psy-emotion-song-contest-2']){
+for(const id of ['leopel','justserver-1','justserver-moneygame','justserver-survival','chuntacle-2026','psy-emotion-song-contest-1','psy-emotion-song-contest-2']){
   assert.ok(publishedIds.has(id),`verified archive seed missing ${id}`);
 }
 assert.ok(Array.isArray(seed.hiddenIds)&&seed.hiddenIds.includes('psy-emotion-song-contest-2026'),'legacy 싸이감성 단일 레코드는 공개에서 숨겨야 합니다');
+const justserver1=seed.items.find(item=>item.id==='justserver-1');
+assert.ok(justserver1?.published,'그냥서버 1은 공개 아카이브에 포함되어야 합니다');
+assert.equal(justserver1?.startDate,'2026-04-09');
+assert.equal(justserver1?.endDate,'2026-04-16');
+assert.equal(justserver1?.series?.id,'justserver');
+assert.ok((justserver1?.sources||[]).some(row=>row.url==='https://www.sooplive.com/station/chunbongtv/post/192179233'),'그냥서버 1 SOOP 공식 게시글이 필요합니다');
+assert.ok((justserver1?.sources||[]).some(row=>row.url==='https://sdmv.notion.site/what'),'그냥서버 1 Notion 자료가 필요합니다');
+assert.ok((justserver1?.sources||[]).some(row=>row.url==='https://bngts.com/contents/just/streamers'),'그냥서버 1 참가 스트리머 참고 페이지가 필요합니다');
+for(const id of ['192233707','192317079','192401771','192510763','192581897','192845469','192962357']) assert.ok((justserver1?.media||[]).some(row=>row.url===`https://vod.sooplive.com/player/${id}`),`그냥서버 1 VOD 누락: ${id}`);
+
 const justserver=seed.items.find(item=>item.id==='justserver-moneygame');
 assert.equal(justserver?.startDate,'2026-06-24');
 assert.equal(justserver?.endDate,'2026-07-15');
@@ -124,6 +137,9 @@ assert.ok((chuntacle?.timeline||[]).length>=5,'춘타클 should expose all five 
 assert.ok((chuntacle?.participants||[]).length>=19,'춘타클 should list students confirmed by the five archived posters');
 assert.ok((chuntacle?.results||[]).length>=5,'춘타클 should summarize all five confirmed class sessions');
 assert.equal((chuntacle?.gallery||[]).length,5,'춘타클 gallery should contain the five actual posters');
+for(const id of ['201292605','202198589','203211299','204037695']) assert.ok((chuntacle?.media||[]).some(row=>row.url===`https://vod.sooplive.com/player/${id}`),`춘타클 1~4회 SOOP 다시보기 누락: ${id}`);
+for(const id of ['b-jlKXqLakU','gJKw13B7ydc','8rnQKGwa1qw']) assert.ok((chuntacle?.media||[]).some(row=>row.url===`https://www.youtube.com/watch?v=${id}`&&row.type==='youtube'),`춘타클 YouTube 누락: ${id}`);
+assert.ok((chuntacle?.sources||[]).some(row=>row.url==='https://www.fmkorea.com/10058760229'),'춘타클 FM코리아 참고 자료가 필요합니다');
 
 const chuntacleSessions=chuntacle?.seriesSessions||[];
 assert.equal(chuntacleSessions.length,5,'춘타클 should expose sessions 1 through 5');
@@ -159,13 +175,21 @@ assert.ok((leopel?.sources||[]).some(row=>row.url==='https://namu.wiki/w/%EB%A0%
 assert.ok((leopel?.gallery||[]).some(row=>/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/leopel\/logo\.webp$/.test(row.src||'')),'레오펠 실제 로고 자산이 갤러리에 필요합니다');
 assert.ok((leopel?.media||[]).some(row=>/159711687/.test(row.url)),'Leopel should link the verified SOOP presentation VOD');
 assert.ok((leopel?.gallery||[]).length>=2,'Leopel detail should have visual archive material');
+assert.equal(leopel?.participantCount,671,'레오펠 총 참여자 671명 기록을 보존해야 합니다');
+assert.ok((leopel?.results||[]).some(row=>row.title==='플랫폼'&&/SOOP/.test(row.value||'')),'레오펠 3플랫폼 통합 기록이 필요합니다');
+assert.ok((leopel?.results||[]).some(row=>row.title==='셧다운'&&/06:00/.test(row.value||'')),'레오펠 셧다운 기록이 필요합니다');
 assert.ok((justserver?.media||[]).length>=2,'JustServer should include multiple verified SOOP Catch records');
 assert.ok((justserver?.gallery||[]).length>=2,'JustServer detail should have visual archive material');
 const survival=seed.items.find(item=>item.id==='justserver-survival');
 assert.ok(survival,'적자생존 콘텐츠 항목이 필요합니다');
+assert.equal(survival?.status,'upcoming','적자생존은 아직 예정 콘텐츠로 표시해야 합니다');
+assert.equal(survival?.startDate,'2026-09-30');
+assert.equal(survival?.endDate,'2026-10-21');
+assert.ok((survival?.timeline||[]).some(row=>row.url==='https://www.sooplive.com/station/chunbongtv/post/204274449'&&/실시간 UP 랭킹/.test(row.title||'')),'적자생존 UP 랭킹 게시글 제목을 구조화해야 합니다');
 assert.equal(justserver?.series?.id,'justserver','머니게임은 그냥서버 시리즈에 속해야 합니다');
 assert.equal(survival?.series?.id,'justserver','적자생존은 그냥서버 시리즈에 속해야 합니다');
 assert.equal(justserver?.series?.title,'그냥서버','머니게임과 적자생존은 그냥서버 시리즈로 묶여야 합니다');
+assert.equal(justserver1?.series?.id,'justserver','그냥서버 1도 같은 그냥서버 시리즈에 속해야 합니다');
 assert.equal(chuntacle?.series?.id,'chuntacle','춘타클은 독립 시리즈 메타데이터를 가져야 합니다');
 assert.equal(leopel?.series?.id,'leopel','레오펠은 대표 시리즈 메타데이터를 가져야 합니다');
 assert.equal(psyContest1?.series?.id,'psy-emotion-song-contest','싸이감성 노래자랑 제1회는 대표 시리즈 메타데이터를 가져야 합니다');
