@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T07:12:00+09:00",
+  "updatedAt": "2026-09-22T09:14:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -420,7 +420,7 @@
       "endDate": "2026-09",
       "datePrecision": "month",
       "summary": "춘봉이 VRChat에서 스트리머 수강생들과 타로 카드 해석과 리딩을 함께 배우는 회차형 타로 클래스.",
-      "description": "춘타클은 춘봉이 진행한 스트리머 대상 타로 클래스 시리즈입니다. 회차별로 수강생이 함께 VRChat에 모여 카드 해석과 리딩을 배우는 형식으로 진행됐습니다. 팬사이트에서는 사용자가 확정한 회차 포스터 기록과 공개 방송 이력을 분리해 보관하며, 번호나 날짜가 서로 다른 외부 기록은 하나로 억지로 합치지 않습니다.",
+      "description": "춘타클은 춘봉이 진행한 스트리머 대상 타로 클래스 시리즈입니다. 회차별로 수강생이 함께 VRChat에 모여 카드 해석과 리딩을 배우는 형식으로 진행됐습니다. 팬사이트에서는 제1회부터 제5회까지를 하나의 시리즈 안에서 회차별로 분리해 보관하고, 날짜·시간·수강생·포스터처럼 확인된 정보만 각 회차에 표시합니다.",
       "heroImage": {
         "src": "/assets/chunbong-contents/chuntacle-cover.svg",
         "alt": "춘타클 춘봉 타로 클래스 팬사이트 아카이브 커버",
@@ -447,7 +447,7 @@
           "value": "11명 · 모이사, 다키, 연주홍, 문이유, 슬윤, 흠냥, 클라비스, 유리, 멍보리, 투미츠, 소하"
         },
         {
-          "title": "4회 최종 포스터 기록",
+          "title": "5회 수강 기록",
           "value": "5명 · 김뽁분, 김잇딥, 문이유, 연주홍, 클라비스"
         },
         {
@@ -457,9 +457,20 @@
       ],
       "timeline": [
         {
+          "id": "session-1",
+          "type": "result",
+          "title": "춘타클 제1회",
+          "date": "2026-07-11",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "",
+          "note": "수강 인원 10명 기록. 원본 포스터와 전체 수강생 명단은 추가 확인 중입니다."
+        },
+        {
           "id": "session-2",
           "type": "result",
-          "title": "춘타클 2회",
+          "title": "춘타클 제2회",
           "date": "2026-07-21",
           "datePrecision": "day",
           "url": "",
@@ -470,33 +481,33 @@
         {
           "id": "session-3-broadcast-record",
           "type": "reference",
-          "title": "‘춘봉 타로 클래스 세번째 수업’ 방송 기록",
+          "title": "춘타클 제3회 · ‘춘봉 타로 클래스 세번째 수업’ 방송 기록",
           "date": "2026-08-02",
           "datePrecision": "day",
           "url": "",
           "thumbnail": "",
           "sourceId": "source-moon-streams",
-          "note": "문이유 방송 이력에서 ‘춘봉 타로 클래스🔮 세번째 수업’ 제목이 확인됩니다."
+          "note": "20:00 진행. 문이유 방송 이력에서 ‘춘봉 타로 클래스🔮 세번째 수업’ 제목이 확인됩니다."
         },
         {
           "id": "session-4-broadcast-record",
           "type": "reference",
-          "title": "‘춘타클 네번째수업’ 방송 기록",
+          "title": "춘타클 제4회 · ‘춘타클 네번째수업’ 방송 기록",
           "date": "2026-08-11",
           "datePrecision": "day",
           "url": "",
           "thumbnail": "",
           "sourceId": "source-moon-streams",
-          "note": "문이유 방송 이력에서 ‘춘타클 네번째수업🔮 다시보기’ 제목이 확인됩니다. 최종 9월 포스터 기록과는 별개의 방송 이력으로 보관합니다."
+          "note": "08:00 진행. 문이유 방송 이력에서 ‘춘타클 네번째수업🔮 다시보기’ 제목이 확인됩니다."
         },
         {
-          "id": "session-4-final-poster",
+          "id": "session-5-final-poster",
           "type": "result",
-          "title": "춘타클 4회 · 최종 포스터 기록",
+          "title": "춘타클 제5회 · 최종 포스터 기록",
           "date": "2026-09-14",
           "datePrecision": "day",
           "url": "",
-          "thumbnail": "/assets/chunbong-contents/chuntacle-session-4.svg",
+          "thumbnail": "/assets/chunbong-contents/chuntacle-session-5.svg",
           "sourceId": "",
           "note": "08:00 · VRChat · 김뽁분, 김잇딥, 문이유, 연주홍, 클라비스."
         }
@@ -509,7 +520,7 @@
           "date": "2026-08-11",
           "datePrecision": "day",
           "url": "https://streamscharts.com/channels/moon26/streams?platform=afreecatv",
-          "thumbnail": "/assets/chunbong-contents/chuntacle-session-4.svg",
+          "thumbnail": "/assets/chunbong-contents/chuntacle-cover.svg",
           "sourceId": "source-moon-streams",
           "note": "8월 2일 ‘세번째 수업’, 8월 11일 ‘네번째수업 다시보기’ 방송 제목을 확인할 수 있는 외부 방송 이력입니다."
         }
@@ -519,14 +530,14 @@
           "id": "chuntacle-cover",
           "src": "/assets/chunbong-contents/chuntacle-cover.svg",
           "alt": "춘타클 춘봉 타로 클래스 아카이브 커버",
-          "caption": "춘타클 2026 아카이브 커버",
+          "caption": "춘타클 2026 시리즈 아카이브 커버",
           "sourceId": ""
         },
         {
-          "id": "chuntacle-session-4",
-          "src": "/assets/chunbong-contents/chuntacle-session-4.svg",
-          "alt": "춘타클 4회 수강생 기록 카드",
-          "caption": "2026년 9월 14일 춘타클 4회 · 최종 포스터 기록 기반",
+          "id": "chuntacle-session-5",
+          "src": "/assets/chunbong-contents/chuntacle-session-5.svg",
+          "alt": "춘타클 제5회 별빛 타로 클래스 포스터",
+          "caption": "2026년 9월 14일 춘타클 제5회 · 최종 포스터",
           "sourceId": ""
         }
       ],
@@ -546,11 +557,121 @@
       ],
       "verification": {
         "state": "cross_checked",
-        "verifiedAt": "2026-09-22T07:05:00+09:00",
+        "verifiedAt": "2026-09-22T09:14:00+09:00",
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T07:05:00+09:00"
+      "updatedAt": "2026-09-22T09:14:00+09:00",
+      "seriesSessions": [
+        {
+          "id": "session-1",
+          "number": 1,
+          "title": "춘타클 제1회",
+          "date": "2026-07-11",
+          "datePrecision": "day",
+          "time": "",
+          "venue": "VRChat",
+          "participants": [],
+          "participantCount": 10,
+          "poster": {
+            "src": "",
+            "alt": "춘타클 제1회 포스터",
+            "status": "pending"
+          },
+          "sourceId": "",
+          "note": "제1회 수강 인원 10명 기록. 정확한 수강생 명단과 원본 포스터는 추가 확인 후 연결합니다."
+        },
+        {
+          "id": "session-2",
+          "number": 2,
+          "title": "춘타클 제2회",
+          "date": "2026-07-21",
+          "datePrecision": "day",
+          "time": "08:00",
+          "venue": "VRChat",
+          "participants": [
+            "모이사",
+            "다키",
+            "연주홍",
+            "문이유",
+            "슬윤",
+            "흠냥",
+            "클라비스",
+            "유리",
+            "멍보리",
+            "투미츠",
+            "소하"
+          ],
+          "participantCount": 11,
+          "poster": {
+            "src": "",
+            "alt": "춘타클 제2회 포스터",
+            "status": "pending"
+          },
+          "sourceId": "",
+          "note": "08:00 진행 · 수강생 11명 기록."
+        },
+        {
+          "id": "session-3",
+          "number": 3,
+          "title": "춘타클 제3회",
+          "date": "2026-08-02",
+          "datePrecision": "day",
+          "time": "20:00",
+          "venue": "VRChat",
+          "participants": [],
+          "participantCount": 0,
+          "poster": {
+            "src": "",
+            "alt": "춘타클 제3회 포스터",
+            "status": "pending"
+          },
+          "sourceId": "source-moon-streams",
+          "note": "20:00 진행. 문이유 방송 이력에서 ‘춘봉 타로 클래스 세번째 수업’ 기록이 확인됩니다."
+        },
+        {
+          "id": "session-4",
+          "number": 4,
+          "title": "춘타클 제4회",
+          "date": "2026-08-11",
+          "datePrecision": "day",
+          "time": "08:00",
+          "venue": "VRChat",
+          "participants": [],
+          "participantCount": 0,
+          "poster": {
+            "src": "",
+            "alt": "춘타클 제4회 포스터",
+            "status": "pending"
+          },
+          "sourceId": "source-moon-streams",
+          "note": "08:00 진행. 문이유 방송 이력에서 ‘춘타클 네번째수업’ 기록이 확인됩니다."
+        },
+        {
+          "id": "session-5",
+          "number": 5,
+          "title": "춘타클 제5회",
+          "date": "2026-09-14",
+          "datePrecision": "day",
+          "time": "08:00",
+          "venue": "VRChat",
+          "participants": [
+            "김뽁분",
+            "김잇딥",
+            "문이유",
+            "연주홍",
+            "클라비스"
+          ],
+          "participantCount": 5,
+          "poster": {
+            "src": "/assets/chunbong-contents/chuntacle-session-5.svg",
+            "alt": "춘타클 제5회 별빛 타로 클래스 포스터",
+            "status": "verified"
+          },
+          "sourceId": "",
+          "note": "08:00 진행 · 최종 포스터 기준 수강생 5명."
+        }
+      ]
     }
   ]
 }
