@@ -1,9 +1,9 @@
 name: Chuntacle poster import probe
 
 on:
-  push:
+  pull_request:
     branches:
-      - feat/chuntacle-original-posters
+      - main
     paths:
       - .github/workflows/chuntacle-poster-import.yml
 
