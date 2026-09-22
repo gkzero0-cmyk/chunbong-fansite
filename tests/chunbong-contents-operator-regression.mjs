@@ -71,3 +71,20 @@ assert.match(archiveSource,/source_meta_client_render_required/,'client-render-o
 assert.match(operatorContents,/사람 확인\(Turnstile\)/,'operator UI should explain FMKorea human verification');
 assert.match(operatorContents,/JavaScript로 본문을 불러오는 페이지/,'operator UI should explain client-render-only pages');
 assert.match(operatorContents,/meta\.participants\.join/,'operator meta import should be able to populate participant names');
+
+
+const soopRef=archive._internals.extractSoopPostRef('https://www.sooplive.com/station/chunbongtv/post/207425471');
+assert.deepEqual({stationId:soopRef?.stationId,postId:soopRef?.postId},{stationId:'chunbongtv',postId:'207425471'},'SOOP station post URL should become station/post ids');
+const soopMeta=archive._internals.parseSoopPostPayload({
+  titleName:'🦁그냥서버:적자생존 1차 입주자 공지🐱',
+  regDate:'2026-09-18 06:15:49',
+  content:{textContent:'1차 입주자는 총 500명으로 진행할 예정입니다.'},
+  photos:[{url:'https://stimg.sooplive.com/test.png'}]
+},'https://www.sooplive.com/station/chunbongtv/post/207425471');
+assert.equal(soopMeta.title,'🦁그냥서버:적자생존 1차 입주자 공지🐱');
+assert.equal(soopMeta.date,'2026-09-18');
+assert.match(soopMeta.description,/500명/);
+assert.equal(soopMeta.image,'https://stimg.sooplive.com/test.png');
+assert.match(archiveSource,/api-channel\.sooplive\.com\/v1\.1\/channel/,'SOOP post extraction should use the current channel API');
+assert.match(archiveSource,/source_meta_auth_required/,'protected SOOP posts must be classified as auth-required');
+assert.match(operatorContents,/SOOP 애청자 공개/,'operator UI should explain protected SOOP posts');
