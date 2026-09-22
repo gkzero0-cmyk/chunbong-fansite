@@ -192,6 +192,13 @@ assert.equal(psyContest2?.series?.id,'psy-emotion-song-contest','싸이감성 �
 assert.ok((survival?.media||[]).some(row=>row.url==='https://vod.sooplive.com/player/207560243'&&/적자생존 설명회/.test(row.title||'')),'적자생존 설명회 VOD가 필요합니다');
 const moneyVodIds=['199701961','199731549','199911259','200010937','200150005','200191013','200238669','200257689','200295759','200393761','200401503','200477587','200609959','200775197','200812787','200857709','200893769','200917923','200956235','201043833','201146469','201223669','201329381','201384951','201524161','201595413'];
 for(const id of moneyVodIds) assert.ok((justserver?.media||[]).some(row=>row.url===`https://vod.sooplive.com/player/${id}`),`머니게임 VOD 누락: ${id}`);
+for(const id of moneyVodIds){
+  const row=(justserver?.media||[]).find(item=>item.url===`https://vod.sooplive.com/player/${id}`);
+  assert.ok(row?.date&&row.datePrecision==='day',`머니게임 VOD 날짜 메타 누락: ${id}`);
+  assert.match(String(row?.thumbnail||''),/^https:\/\/videoimg\.sooplive\.com\//,`머니게임 VOD 썸네일 메타 누락: ${id}`);
+  assert.ok(!/다시보기 \d{2}$/.test(String(row?.title||'')),`머니게임 VOD 임시 제목이 남아 있습니다: ${id}`);
+}
+
 for(const id of ['197785319','199568663','199830351']) assert.ok((justserver?.timeline||[]).some(row=>row.url===`https://www.sooplive.com/station/chunbongtv/post/${id}`),`머니게임 SOOP 게시글 누락: ${id}`);
 for(const url of ['https://naver.me/5qLX1yQ1','https://naver.me/FbVX1U7z','https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d','https://buly.kr/2ffytJ1','https://bngts.com/contents/geunyangseobeo-meonigeim','https://bngts.com/contents/geunyangseobeo-meonigeim/streamers']) assert.ok((justserver?.sources||[]).some(row=>row.url===url),`머니게임 참고 자료 누락: ${url}`);
 for(const url of ['https://naver.me/5qLX1yQ1','https://naver.me/FbVX1U7z','https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d']) assert.equal((justserver?.sources||[]).find(row=>row.url===url)?.visibility,'internal',`머니게임 내부 자료원은 공개 출처로 노출하면 안 됩니다: ${url}`);
@@ -199,9 +206,24 @@ const moneygamePublic=toPublicArchiveItem(normalizeArchiveItem(justserver));
 assert.equal((moneygamePublic.sources||[]).some(row=>/naver\.me|app\.notion\.com/.test(String(row.url||''))),false,'머니게임 Naver/Notion 내부 자료원은 공개 API에서 제거되어야 합니다');
 assert.deepEqual((justserver?.participantGroups||[]).map(row=>row.count),[50,49,50,49,45],'머니게임 입주 공지의 원문 표기 그룹 개수를 보존해야 합니다');
 assert.equal((justserver?.participantGroups||[]).reduce((sum,row)=>sum+(row.participants||[]).length,0),243,'머니게임 입주 공지에서 분리 가능한 닉네임 표기는 243개여야 합니다');
+assert.equal((justserver?.participants||[]).length,191,'머니게임 BNGTS 교차 참가자 명단은 191명이어야 합니다');
+assert.equal(new Set(justserver?.participants||[]).size,191,'머니게임 BNGTS 참가자 명단은 중복이 없어야 합니다');
+for(const name of ['#시나몬','강다래','김뽁분','냥냥두둥','도람지','뚜닝','래노♬']) assert.ok((justserver?.participants||[]).includes(name),`머니게임 BNGTS 참가자 누락: ${name}`);
+assert.ok((justserver?.results||[]).some(row=>row.title==='방통실 등록 참가자'&&/191명/.test(row.value||'')),'머니게임 방통실 191명 교차 집계를 별도 표기해야 합니다');
+
 assert.ok((justserver?.timeline||[]).some(row=>row.id==='money-entry-order'&&row.date==='2026-06-21'),'머니게임 입주 순서 공지 날짜를 보존해야 합니다');
 assert.ok((justserver?.results||[]).some(row=>row.title==='주요 콘텐츠'&&/채광/.test(row.value||'')&&/갬블/.test(row.value||'')),'머니게임 Notion의 주요 콘텐츠 구조를 반영해야 합니다');
-for(const id of ['203683207','204093563','204274449','206972857','207425471','207516943','207564735']) assert.ok((survival?.timeline||[]).some(row=>row.url===`https://www.sooplive.com/station/chunbongtv/post/${id}`),`적자생존 SOOP 게시글 누락: ${id}`);
+for(const id of ['203683207','204093563','204274449','206972857','207425471','207516943','207564927']) assert.ok((survival?.timeline||[]).some(row=>row.url===`https://www.sooplive.com/station/chunbongtv/post/${id}`&&row.visibility!=='internal'),`적자생존 공개 SOOP 게시글 누락: ${id}`);
+const protectedSurvival=(survival?.timeline||[]).find(row=>row.id==='survival-soop-post-207564735');
+assert.equal(protectedSurvival?.visibility,'internal','207564735는 애청자 공개글이므로 내부 검증 자료로 분리해야 합니다');
+assert.equal((survival?.sources||[]).find(row=>row.id==='source-survival-post-207564735')?.visibility,'internal','207564735 출처도 공개 목록에서 숨겨야 합니다');
+const secondEntry=(survival?.timeline||[]).find(row=>row.id==='survival-soop-post-207564927');
+assert.equal(secondEntry?.title,'[모집] 그냥서버:적자생존 2차입주 모집공지');
+assert.equal(secondEntry?.date,'2026-09-19');
+assert.match(String(secondEntry?.thumbnail||''),/83091789821197973\.png$/,'2차 입주 모집 공지 이미지를 보존해야 합니다');
+const survivalPublic=toPublicArchiveItem(normalizeArchiveItem(survival));
+assert.equal((survivalPublic.timeline||[]).some(row=>/207564735/.test(String(row.url||''))||row.id==='survival-soop-post-207564735'),false,'애청자 공개글은 공개 타임라인에서 숨겨야 합니다');
+assert.ok((survivalPublic.timeline||[]).some(row=>/207564927/.test(String(row.url||''))),'공개 2차 입주 모집글은 팬사이트에 표시해야 합니다');
 assert.ok((survival?.sources||[]).some(row=>row.url==='https://daisy-grouse-ac0.notion.site/3dad57d6a55c80469f3de9730cb88975'),'적자생존 Notion 자료가 필요합니다');
 
 assert.ok((psyContest1?.participants||[]).includes('시로코'),'제1회는 시로코 참가 교차 기록을 유지해야 합니다');
@@ -296,6 +318,14 @@ const diamondGroupMerge=archiveApi._internals.mergeArchiveRows(
 );
 assert.equal(diamondGroupMerge[0]?.participantGroups?.[0]?.count,189,'더 완전한 seed 참가자 그룹이 예전 부분 저장 레코드보다 우선해야 합니다');
 assert.equal(diamondGroupMerge[0]?.participantGroups?.[0]?.participants?.length,189,'189명 전체 명단이 저장 레코드 병합 뒤에도 보존되어야 합니다');
+const chuntacleMerge=archiveApi._internals.mergeArchiveRows(
+  [chuntacle],
+  [{...chuntacle,timeline:(chuntacle.timeline||[]).slice(0,3),gallery:(chuntacle.gallery||[]).slice(0,3),seriesSessions:(chuntacle.seriesSessions||[]).slice(0,4)}]
+);
+assert.ok(chuntacleMerge[0].timeline.length>=5,'최신 seed 춘타클 타임라인이 오래된 저장본에 의해 누락되면 안 됩니다');
+assert.equal(chuntacleMerge[0].gallery.length,5,'최신 seed 춘타클 포스터 5장이 오래된 저장본에 의해 누락되면 안 됩니다');
+assert.equal(chuntacleMerge[0].seriesSessions.length,5,'최신 seed 춘타클 5회 구조가 오래된 저장본보다 우선해야 합니다');
+
 
 const psy2Confirmed=seed.items.find(item=>item.id==='psy-emotion-song-contest-2');
 assert.equal(psy2Confirmed?.startDate,'2026-04-28','싸이감성 2회 개최일은 2026-04-28로 교차 확인되어야 합니다');
