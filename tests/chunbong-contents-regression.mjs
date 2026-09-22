@@ -6,7 +6,7 @@ const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const html=read('chunbong-contents.html');
 const css=read('chunbong-contents.css');
 assert.match(html,/data-page="contents"/);
-for(const hook of ['data-archive-search','data-archive-category','data-archive-year','data-archive-sort','data-archive-list','data-archive-detail','data-archive-lightbox','data-archive-series-home','data-archive-series-list','data-archive-series-landing']) assert.ok(html.includes(hook),hook);
+for(const hook of ['data-archive-search','data-archive-category','data-archive-status','data-archive-year','data-archive-sort','data-archive-list','data-archive-detail','data-archive-lightbox','data-archive-series-home','data-archive-series-list','data-archive-series-landing']) assert.ok(html.includes(hook),hook);
 assert.match(html,/춘봉 콘텐츠/);
 assert.match(css,/grid-template-columns/);
 assert.match(css,/@media\(max-width:760px\)/);
@@ -19,7 +19,9 @@ const js=read('chunbong-contents.js');
 for(const text of ['/api/content?type=chunbong-contents','/api/content?type=chunbong-content&id=','URLSearchParams','history.replaceState','loading="lazy"','decoding="async"','showModal','Escape']) assert.ok(js.includes(text),text);
 const archive=require('../chunbong-contents.js');
 assert.equal(archive.formatDate('2026-06','month'),'2026년 6월');
-assert.equal(archive.filterItems([{title:'레오펠',aliases:[],participants:['춘봉'],category:'minecraft',startDate:'2025-06'}],{q:'춘봉',category:'all',year:'all'}).length,1);
+assert.equal(archive.filterItems([{title:'레오펠',aliases:[],participants:['춘봉'],participantGroups:[],timeline:[],media:[],results:[],seriesSessions:[],category:'minecraft',status:'ended',startDate:'2025-06'}],{q:'춘봉',category:'all',status:'all',year:'all'}).length,1);
+assert.equal(archive.filterItems([{title:'그냥서버',aliases:[],participants:[],participantGroups:[{participants:['냥냥두둥']}],timeline:[],media:[],results:[],seriesSessions:[],category:'minecraft',status:'ended',startDate:'2026-04'}],{q:'냥냥두둥',category:'all',status:'all',year:'all'}).length,1,'participantGroups should be searchable');
+assert.equal(archive.filterItems([{title:'적자생존',aliases:[],participants:[],participantGroups:[],timeline:[],media:[{title:'7시 그냥서버 적자생존 설명회'}],results:[],seriesSessions:[],category:'minecraft',status:'planned',startDate:'2026-09'}],{q:'설명회',category:'all',status:'planned',year:'all'}).length,1,'media titles and status should be searchable/filterable');
 
 const shell=read('site-shell.js');
 const home=read('index.html');
@@ -54,8 +56,8 @@ assert.ok(serviceWorker.includes("event.respondWith(networkFirst(request, event)
 assert.ok(serviceWorker.includes("await self.skipWaiting();"),'new service worker should activate immediately after install');
 assert.ok(css.includes('Archive stale-markup compatibility'),'archive CSS should explicitly recover stale reveal markup');
 
-for(const token of ['archive-series-statuses','archive-media-groups','archive-media-group']) assert.ok(css.includes(token),token);
-for(const token of ['seriesStatusMarkup','mediaCardMarkup','archive-media-group']) assert.ok(js.includes(token),token);
+for(const token of ['archive-series-statuses','archive-media-filter','archive-participant-search','archive-related-grid','position:sticky']) assert.ok(css.includes(token),token);
+for(const token of ['seriesStatusMarkup','mediaCardMarkup','data-media-filter','data-participant-search','renderRelated','searchableText','allPeople']) assert.ok(js.includes(token),token);
 
 const operatorContents=read('operator-contents.js');
 const operatorCss=read('operator.css');
@@ -66,3 +68,6 @@ assert.ok(contentApi.includes("operator-content-source-meta"),'source metadata o
 
 for(const token of ['archive-participant-groups','archive-participant-group']) assert.ok(css.includes(token),token);
 for(const token of ['renderParticipantGroups','participantGroups']) assert.ok(js.includes(token),token);
+
+assert.match(css,/archive-series-card-visual:not\(\.is-multi\).*object-fit:cover/s,'single series cards should use cover for consistent image framing');
+assert.match(css,/\.archive-tabs\{position:sticky/,'detail tabs should stay accessible while scrolling');
