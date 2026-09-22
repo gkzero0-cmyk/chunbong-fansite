@@ -53,3 +53,5 @@ assert.ok(serviceWorker.includes("chunbong-pwa-20260922-v31"),'service worker ca
 assert.ok(serviceWorker.includes("event.respondWith(networkFirst(request, event));"),'documents/scripts/styles should prefer network to avoid stale markup/style mismatches');
 assert.ok(serviceWorker.includes("await self.skipWaiting();"),'new service worker should activate immediately after install');
 assert.ok(css.includes('Archive stale-markup compatibility'),'archive CSS should explicitly recover stale reveal markup');
+
+for(const token of ['participantNames','participantGroups','archive-participant-groups','archive-participant-group']) assert.ok((js+'\n'+css).includes(token),token);
