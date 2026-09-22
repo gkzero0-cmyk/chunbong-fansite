@@ -64,6 +64,7 @@ const bngtsNames=archive._internals.extractBngtsStreamerNames(
 assert.deepEqual(bngtsNames,['BJ공파리파','♡효구리♡'],'BNGTS streamer parser should dedupe SSR rows');
 
 assert.match(archiveSource,/loadCachedPageChunk/,'Notion source extraction must use public page recordMap');
+assert.match(archiveSource,/notion-record-map-recursive/,'Notion extraction should recurse into linked public subpages');
 assert.match(archiveSource,/bngts-pagination/,'BNGTS source extraction must paginate streamer pages');
 assert.match(archiveSource,/source_meta_human_verification_required/,'human verification failures must be classified');
 assert.match(archiveSource,/source_meta_client_render_required/,'client-render-only failures must be classified');
