@@ -53,3 +53,6 @@ assert.match(operatorContents,/item\.results=/,'operator must collect results');
 
 assert.match(operatorContents,/meta\.publishedDate/,'material source metadata should populate publication dates');
 assert.match(operatorContents,/meta\.image/,'material source metadata should populate original thumbnails');
+
+assert.ok(operatorContents.includes("function bindMaterialMeta(){$$('[data-material-fetch-meta]',root).forEach"),'material metadata controls must bind as a node list');
+assert.ok(operatorContents.includes("bindSourceMeta();bindMaterialMeta();$$('[data-add-row]',root).forEach"),'archive add-row controls must remain a node list');
