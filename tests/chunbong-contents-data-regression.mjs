@@ -147,7 +147,8 @@ assert.match(String(psyContest2?.heroImage?.src||''),/^https:\/\/stimg\.sooplive
 const chuntacle=seed.items.find(item=>item.id==='chuntacle-2026');
 assert.ok(chuntacle?.published,'춘타클 should be included in the public content archive');
 assert.equal(chuntacle?.category,'class-event');
-assert.match(String(chuntacle?.heroImage?.src||''),/^(?:\/assets\/chunbong-contents\/chuntacle-|https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/.*\/chunbong-fansite\/chuntacle\/session-5\.webp$)/,'춘타클 대표 이미지는 실제 제5회 포스터 또는 로컬 대체 자산이어야 합니다');
+assert.match(String(chuntacle?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/chuntacle\/series-cover-16x9\.webp$/,'춘타클 대표 이미지는 공식 로고 기반 16:9 영구 자산이어야 합니다');
+assert.equal(chuntacle?.series?.cover?.src,chuntacle?.heroImage?.src,'춘타클 시리즈 카드와 상세 대표 이미지는 같은 공식 16:9 자산을 사용해야 합니다');
 assert.ok((chuntacle?.timeline||[]).length>=5,'춘타클 should expose all five class sessions in its timeline');
 assert.ok((chuntacle?.participants||[]).length>=19,'춘타클 should list students confirmed by the five archived posters');
 assert.ok((chuntacle?.results||[]).length>=5,'춘타클 should summarize all five confirmed class sessions');
