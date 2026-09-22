@@ -104,7 +104,7 @@ assert.match(notionGuideSample[0].text,/자동화 금지/);
 assert.equal(archiveApi._internals.isNotionSourceUrl('https://example.notion.site/test'),true);
 const archiveCore=require('../lib/chunbong-content-archive-core');
 assert.equal(archiveCore.blockedArchiveSourceUrl('https://bngts.com/contents/just'),true,'Bangtongsil must be excluded from public sources');
-assert.equal(archiveCore.blockedArchiveSourceUrl('https://namu.wiki/w/test'),true,'namu.moe mirror must be excluded from public sources');
+assert.equal(archiveCore.blockedArchiveSourceUrl('https://namu.moe/w/test'),true,'namu.moe mirror must be excluded from public sources');
 assert.equal(archiveCore.blockedArchiveSourceUrl('https://namu.wiki/w/test'),false,'namu.wiki should remain a valid source');
 
 assert.equal(archiveApi._internals.shouldForcePublicAutoSync({githubOidc:true,migrationMarker:''}),true,'the first authenticated GitHub archive sync after this migration should run a full rescan');
