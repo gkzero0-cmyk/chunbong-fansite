@@ -22,6 +22,8 @@ assert.equal(archive.formatDate('2026-06','month'),'2026년 6월');
 assert.equal(archive.filterItems([{title:'레오펠',aliases:[],participants:['춘봉'],participantGroups:[],timeline:[],media:[],results:[],seriesSessions:[],category:'minecraft',status:'ended',startDate:'2025-06'}],{q:'춘봉',category:'all',status:'all',year:'all'}).length,1);
 assert.equal(archive.filterItems([{title:'그냥서버',aliases:[],participants:[],participantGroups:[{participants:['냥냥두둥']}],timeline:[],media:[],results:[],seriesSessions:[],category:'minecraft',status:'ended',startDate:'2026-04'}],{q:'냥냥두둥',category:'all',status:'all',year:'all'}).length,1,'participantGroups should be searchable');
 assert.equal(archive.filterItems([{title:'적자생존',aliases:[],participants:[],participantGroups:[],timeline:[],media:[{title:'7시 그냥서버 적자생존 설명회',type:'vod'}],results:[],seriesSessions:[],category:'minecraft',status:'planned',startDate:'2026-09'}],{q:'설명회',category:'all',status:'planned',year:'all',mediaKind:'vod'}).length,1,'media titles, status and media availability should be searchable/filterable');
+assert.equal(archive.itemPeopleCount({participants:Array.from({length:191},(_,i)=>'참가'+i),participantGroups:[{count:50},{count:49},{count:50},{count:49},{count:45}],seriesSessions:[]}),243,'overlapping cross-check participant lists must not inflate the primary entry count');
+
 
 const shell=read('site-shell.js');
 const home=read('index.html');
