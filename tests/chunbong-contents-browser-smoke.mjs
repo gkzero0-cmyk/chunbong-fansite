@@ -111,7 +111,7 @@ async function installOperatorApi(page){
 const browser=await chromium.launch({headless:true});
 try{
   {
-    const page=await browser.newPage({viewport:{width:1440,height:900}});
+    const page=await browser.newPage({serviceWorkers:'block',viewport:{width:1440,height:900}});
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
     await installApi(page);
     await page.goto(base+'/chunbong-contents.html',{waitUntil:'networkidle'});
@@ -194,7 +194,7 @@ try{
   }
 
   {
-    const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true});
+    const page=await browser.newPage({serviceWorkers:'block',viewport:{width:390,height:844},isMobile:true});
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
     await installApi(page);
     await page.goto(base+'/chunbong-contents.html',{waitUntil:'networkidle'});
@@ -219,7 +219,7 @@ try{
     assert.deepEqual(errors,[],errors.join(' | '));
   }
   {
-    const page=await browser.newPage({viewport:{width:1440,height:900}});
+    const page=await browser.newPage({serviceWorkers:'block',viewport:{width:1440,height:900}});
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
     await installApi(page);
     await page.goto(base+'/chunbong-contents.html?id=chuntacle-2026&session=2',{waitUntil:'networkidle'});
@@ -236,7 +236,7 @@ try{
     assert.deepEqual(errors,[],errors.join(' | '));
   }
   {
-    const page=await browser.newPage({viewport:{width:1440,height:900}});
+    const page=await browser.newPage({serviceWorkers:'block',viewport:{width:1440,height:900}});
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
     await installOperatorApi(page);
     await page.goto(base+'/operator.html',{waitUntil:'networkidle'});
