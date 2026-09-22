@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T20:50:00+09:00",
+  "updatedAt": "2026-09-22T21:00:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -1453,6 +1453,10 @@
         {
           "title": "입장 방식",
           "value": "18:00부터 30분 간격으로 1조~5조 순차 입장"
+        },
+        {
+          "title": "설명회",
+          "value": "2026년 9월 19일 19:00 · 당일 최종 공지 기준"
         }
       ],
       "timeline": [
@@ -1507,13 +1511,13 @@
         {
           "id": "survival-soop-post-206972857",
           "type": "post",
-          "title": "그냥서버 : 적자생존 공식 게시글 4",
-          "date": "",
-          "datePrecision": "unknown",
+          "title": "🦁 그냥서버:적자생존 일정 변경 공지",
+          "date": "2026-09-13",
+          "datePrecision": "day",
           "url": "https://www.sooplive.com/station/chunbongtv/post/206972857",
           "thumbnail": "",
           "sourceId": "source-survival-post-206972857",
-          "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다.",
+          "note": "서버 기간 9월 30일~10월 21일, 신청 마감 9월 16일 00시, 당시 설명회는 9월 19일 20:00으로 안내되었습니다.",
           "visibility": "public"
         },
         {
@@ -1531,13 +1535,13 @@
         {
           "id": "survival-soop-post-207516943",
           "type": "post",
-          "title": "그냥서버 : 적자생존 공식 게시글 6",
-          "date": "",
-          "datePrecision": "unknown",
+          "title": "🦁 그냥서버 : 적자생존 서버 설명회 공지",
+          "date": "2026-09-19",
+          "datePrecision": "day",
           "url": "https://www.sooplive.com/station/chunbongtv/post/207516943",
           "thumbnail": "",
           "sourceId": "source-survival-post-207516943",
-          "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다.",
+          "note": "당일 최종 공지에서 서버 설명회와 Q&A를 오후 7시로 안내했습니다. 이전 8시 안내에서 변경된 최종 시간입니다.",
           "visibility": "public"
         },
         {
@@ -1569,13 +1573,13 @@
         {
           "id": "survival-presentation-vod-207560243",
           "type": "vod",
-          "title": "그냥서버 : 적자생존 설명회",
-          "date": "",
-          "datePrecision": "unknown",
+          "title": "7시 그냥서버:적자생존 설명회",
+          "date": "2026-09-19",
+          "datePrecision": "day",
           "url": "https://vod.sooplive.com/player/207560243",
-          "thumbnail": "/assets/chunbong-contents/justserver-survival-cover.svg",
+          "thumbnail": "https://videoimg.sooplive.com/php/SnapshotLoad.php?rowKey=20260919_1EF75F62_297239283_1_r",
           "sourceId": "source-survival-presentation-vod",
-          "note": "사용자가 지정한 적자생존 설명회 SOOP 공식 VOD입니다.",
+          "note": "9월 19일 진행된 적자생존 설명회 및 Q&A 다시보기입니다.",
           "visibility": "public"
         }
       ],
@@ -1659,7 +1663,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T20:50:00+09:00",
+      "updatedAt": "2026-09-22T21:00:00+09:00",
       "series": {
         "id": "justserver",
         "title": "그냥서버",
