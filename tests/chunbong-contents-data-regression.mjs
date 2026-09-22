@@ -269,6 +269,13 @@ const groupMerge=archiveApi._internals.mergeArchiveRows(
 );
 assert.equal(groupMerge[0].participantGroups.length,3,'기존 저장 레코드가 비어 있어도 seed 참가자 그룹을 보존해야 합니다');
 
+const diamondGroupMerge=archiveApi._internals.mergeArchiveRows(
+  [diamondBackfill],
+  [{...diamondBackfill,participantGroups:[{id:'old-partial',title:'부분 명단',platform:'SOOP',count:48,participants:(diamondParticipantGroup?.participants||[]).slice(0,48)}]}]
+);
+assert.equal(diamondGroupMerge[0]?.participantGroups?.[0]?.count,189,'더 완전한 seed 참가자 그룹이 예전 부분 저장 레코드보다 우선해야 합니다');
+assert.equal(diamondGroupMerge[0]?.participantGroups?.[0]?.participants?.length,189,'189명 전체 명단이 저장 레코드 병합 뒤에도 보존되어야 합니다');
+
 const psy2Confirmed=seed.items.find(item=>item.id==='psy-emotion-song-contest-2');
 assert.equal(psy2Confirmed?.startDate,'2026-04-28','싸이감성 2회 개최일은 2026-04-28로 교차 확인되어야 합니다');
 assert.equal(psy2Confirmed?.endDate,'2026-04-28','싸이감성 2회 단일 개최일 종료일이 일치해야 합니다');
