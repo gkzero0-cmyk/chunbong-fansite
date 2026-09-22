@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-23T05:17:00+09:00",
+  "updatedAt": "2026-09-23T06:35:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -706,8 +706,8 @@
       "summary": "춘봉이 주최한 2026년 마인크래프트 스트리머 서버로, 6월 24일부터 7월 15일까지 진행된 기록이 확인됩니다.",
       "description": "2026년 6월 24일부터 7월 15일 23:59:59까지 진행된 마인크래프트 스트리머 서버입니다. 공개 Notion 원문에는 난파 후 사자마을에서 발생한 빚을 갚고 탈출하는 ‘빚 청산 탈출기’ 콘셉트와 서버 규칙·API·채광·요리·낚시·도감·미니게임·보물·갬블·땅 구매·빚 갚기·장비수리·램프·강화 시스템이 정리되어 있습니다. 네이버 입주순서 공지에서는 6월 24일 18시부터 10분 간격으로 1~5차 입주 명단이 확인되며, 방통실 스트리머 페이지에서는 191명 등록을 별도로 확인했습니다. 두 자료는 집계 기준이 달라 서로 합산하지 않습니다.",
       "heroImage": {
-        "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109557/chunbong-fansite/justserver/moneygame-selected-source.jpg",
-        "alt": "그냥서버 : 머니게임 빚 랭킹 CCTV 실제 방송 기반 16:9 대표 이미지",
+        "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790112150/chunbong-fansite/justserver/moneygame-selected-vod-200917923.jpg",
+        "alt": "그냥서버 : 머니게임 지정 다시보기 기반 16:9 대표 이미지",
         "sourceId": ""
       },
       "participants": [
@@ -1472,7 +1472,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-23T05:17:00+09:00",
+      "updatedAt": "2026-09-23T06:35:00+09:00",
       "series": {
         "id": "justserver",
         "title": "그냥서버",
@@ -1480,8 +1480,8 @@
         "description": "춘봉이 주최한 그냥서버를 ‘그냥서버 : 다이아 → 머니게임 → 적자생존’ 순으로 시즌별 모집·방송·참가자·진행 자료와 함께 이어서 봅니다.",
         "order": 10,
         "cover": {
-          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109557/chunbong-fansite/justserver/moneygame-selected-source.jpg",
-          "alt": "그냥서버 시리즈 실제 자료 기반 16:9 대표 이미지"
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790112150/chunbong-fansite/justserver/moneygame-selected-vod-200917923.jpg",
+          "alt": "그냥서버 시리즈 · 머니게임 지정 다시보기 기반 대표 이미지"
         }
       },
       "participantGroups": [
@@ -2632,8 +2632,8 @@
         "description": "춘봉이 주최한 그냥서버를 ‘그냥서버 : 다이아 → 머니게임 → 적자생존’ 순으로 시즌별 모집·방송·참가자·진행 자료와 함께 이어서 봅니다.",
         "order": 10,
         "cover": {
-          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109557/chunbong-fansite/justserver/moneygame-selected-source.jpg",
-          "alt": "그냥서버 시리즈 실제 자료 기반 16:9 대표 이미지"
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790112150/chunbong-fansite/justserver/moneygame-selected-vod-200917923.jpg",
+          "alt": "그냥서버 시리즈 · 머니게임 지정 다시보기 기반 대표 이미지"
         }
       },
       "participantGroups": [
@@ -3799,6 +3799,13 @@
       ],
       "gallery": [
         {
+          "id": "psy1-official-poster",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790112850/chunbong-fansite/psy/session-1-official-poster.webp",
+          "alt": "싸이감성 노래자랑 제1회 공식 포스터",
+          "caption": "SOOP 게시글 124321185의 싸이감성 노래자랑 제1회 포스터",
+          "sourceId": "source-psy1-recruit"
+        },
+        {
           "id": "psy1-vod-official-thumb",
           "src": "https://iflv14.afreecatv.com/save/afreeca/station/2024/0613/14/thumb/1718256019104033_R_7.jpg",
           "alt": "제1회 싸이감성 노래자랑 공식 편집 VOD 썸네일",
@@ -3842,7 +3849,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-23T05:17:00+09:00",
+      "updatedAt": "2026-09-23T06:35:00+09:00",
       "series": {
         "id": "psy-emotion-song-contest",
         "title": "싸이감성 노래자랑",
@@ -3920,9 +3927,9 @@
       "summary": "춘봉이 개최한 싸이감성 노래자랑 제2회 기록으로, 2026년 4월 28일 오후 5시 개최와 참가자 22명·심사위원·상금 계획을 확인했습니다.",
       "description": "싸이감성 노래자랑 제2회는 2026년 4월 28일 오후 5시에 진행됐습니다. 참가자는 22명이며 핀볼로 경연 순서를 정했고, 심사위원은 춘봉·릴파·추르미·이사호입니다. 사전 공지 기준 총상금은 현금 100만 원과 별풍선 13,000개이며, 참가자는 디스코드 대기실에서 기다리다 본인 순서에 참가방으로 이동해 자기소개 후 도방으로 진행하도록 안내됐습니다.",
       "heroImage": {
-        "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109710/chunbong-fansite/psy/session-2-cover-16x9.jpg",
-        "alt": "싸이감성 노래자랑 제2회 실제 SOOP 방송 기반 16:9 대표 이미지",
-        "sourceId": "source-psy2-vod"
+        "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790112116/chunbong-fansite/psy/session-2-selected-first-material.png",
+        "alt": "싸이감성 노래자랑 제2회 자료 이미지 첫 번째 공식 이미지",
+        "sourceId": "source-psy2-recruit"
       },
       "participants": [
         "노아란",
@@ -4083,7 +4090,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-23T05:17:00+09:00",
+      "updatedAt": "2026-09-23T06:35:00+09:00",
       "series": {
         "id": "psy-emotion-song-contest",
         "title": "싸이감성 노래자랑",
@@ -4147,8 +4154,8 @@
         "description": "춘봉이 주최한 그냥서버를 ‘그냥서버 : 다이아 → 머니게임 → 적자생존’ 순으로 시즌별 모집·방송·참가자·진행 자료와 함께 이어서 봅니다.",
         "order": 10,
         "cover": {
-          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109557/chunbong-fansite/justserver/moneygame-selected-source.jpg",
-          "alt": "그냥서버 시리즈 실제 자료 기반 16:9 대표 이미지"
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790112150/chunbong-fansite/justserver/moneygame-selected-vod-200917923.jpg",
+          "alt": "그냥서버 시리즈 · 머니게임 지정 다시보기 기반 대표 이미지"
         }
       },
       "role": "주최",
@@ -4159,9 +4166,9 @@
       "summary": "춘봉이 2026년 4월 9일부터 4월 16일까지 개최한 그냥서버 첫 시즌 ‘다이아’ 기록입니다.",
       "description": "2026년 4월 9일부터 4월 16일까지 진행된 그냥서버 제1시즌입니다. SOOP 모집 원문에서 초기 모집 정원 50명, 댓글 신청·입장비 없음, ‘다이아 & 도감 힐링 티키타카’ 콘셉트가 확인됩니다. RPG·히든은 없다고 안내했으며 변경 가능성을 명시했고, 광물 증감·버프·귀환·인벤세이브·몬스터 소환·텔레포트·수선·즉사 등 후원 연동 API도 공지했습니다. 이후 방통실 참가 스트리머 목록에서는 SOOP 189명이 확인됩니다.",
       "heroImage": {
-        "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109701/chunbong-fansite/justserver/diamond-cover-16x9.jpg",
-        "alt": "그냥서버 : 다이아 실제 SOOP 방송 기반 16:9 대표 이미지",
-        "sourceId": "source-diamond-vod-192233707"
+        "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_auto,h_900,w_1600/f_webp/q_auto:best/v1790112141/chunbong-fansite/justserver/diamond-material-source.webp",
+        "alt": "그냥서버 : 다이아 자료 이미지 원본 기반 16:9 대표 이미지",
+        "sourceId": "source-diamond-recruit"
       },
       "participants": [],
       "results": [
@@ -4432,7 +4439,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-23T05:17:00+09:00",
+      "updatedAt": "2026-09-23T06:35:00+09:00",
       "participantGroups": [
         {
           "id": "diamond-soop-participants",
