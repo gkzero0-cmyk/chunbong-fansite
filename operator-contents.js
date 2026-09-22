@@ -1,5 +1,5 @@
 const API='/api/content?type=';
-let root=null,items=[],selected=null,booted=false,autoSyncMeta=null,autoCandidates=[];
+let root=null,items=[],selected=null,booted=false,autoSyncMeta=null,autoCandidates=[],browserImport=null;
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const slug=v=>String(v||'').toLowerCase().trim().replace(/[^a-z0-9가-힣]+/g,'-').replace(/^-|-$/g,'');
@@ -79,10 +79,11 @@ async function fetchSourceMetaForRow(row){
       const details=[];
       if(meta.participantCount)details.push(`참가자 ${meta.participantCount}명`);
       if(Array.isArray(meta.outline)&&meta.outline.length)details.push(`Notion 구조 ${meta.outline.length}개`);
+      if(Array.isArray(meta.sections)&&meta.sections.length)details.push(`Notion 섹션 ${meta.sections.length}개`);
       if(meta.image)details.push('이미지 후보');
       if(!details.length)details.push(meta.title?'제목 확인':'추출 가능한 메타 없음');
       status.textContent=details.join(' · ');
-      if(Array.isArray(meta.outline)&&meta.outline.length)status.title=meta.outline.join(' · ');
+      if(Array.isArray(meta.sections)&&meta.sections.length)status.title=meta.sections.map(section=>section.title).filter(Boolean).join(' · ');else if(Array.isArray(meta.outline)&&meta.outline.length)status.title=meta.outline.join(' · ');
     }
     renderPreview();
   }catch(error){
@@ -122,7 +123,7 @@ function renderCandidates(){
     const thumb=row.thumbnail?'<img src="'+esc(row.thumbnail)+'" alt="">':'';
     return '<article class="operator-archive-candidate" data-candidate-url="'+esc(row.url)+'"><div class="operator-archive-candidate-main">'+thumb+'<div><small>'+esc(String(row.platform||'official').toUpperCase())+' · '+esc(row.type||'자료')+' · '+esc(row.date||'날짜 확인 중')+'</small><strong>'+esc(row.title||'제목 없음')+'</strong><a href="'+esc(row.url)+'" target="_blank" rel="noreferrer">원문 보기 ↗</a></div></div><label><span>연결할 콘텐츠</span><select data-candidate-target><option value="">선택</option>'+options+'</select></label><div class="operator-archive-candidate-actions"><button type="button" data-candidate-action="connect">기존 콘텐츠에 연결</button><button type="button" data-candidate-action="draft">새 콘텐츠 초안</button><button type="button" data-candidate-action="ignore">관련 없음</button></div></article>';
   }).join('');
-  $('[data-candidate-action]',wrap).forEach(button=>button.addEventListener('click',()=>void processCandidate(button)));
+  $$('[data-candidate-action]',wrap).forEach(button=>button.addEventListener('click',()=>void processCandidate(button)));
 }
 async function processCandidate(button){
   const card=button.closest('[data-candidate-url]'),action=button.dataset.candidateAction||'',url=card?.dataset.candidateUrl||'',itemId=$('[data-candidate-target]',card)?.value||'';
@@ -130,6 +131,99 @@ async function processCandidate(button){
   button.disabled=true;
   try{const p=await json('operator-content-auto-candidate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,url,itemId})});await load();if(action==='draft'&&p.item?.id)selectItem(p.item.id)}
   catch(e){setMessage('후보 처리에 실패했습니다: '+e.message,'bad')}finally{button.disabled=false}
+}
+function utf8ToBase64(value=''){
+  const bytes=new TextEncoder().encode(String(value));let binary='';
+  for(const byte of bytes)binary+=String.fromCharCode(byte);
+  return btoa(binary);
+}
+function base64ToUtf8(value=''){
+  const binary=atob(String(value));const bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+function soopCollectorBookmarklet(){
+  const target=location.origin+'/operator.html?tab=contents';
+  const script=`(()=>{try{
+    const okHost=location.hostname==='www.sooplive.com'||location.hostname==='sooplive.com';
+    const match=location.pathname.match(/^\\/station\\/chunbongtv\\/post\\/(\\d+)\\/?$/i);
+    if(!okHost||!match){alert('춘봉 SOOP 방송국 게시글에서 실행해 주세요.');return}
+    const meta=(selector)=>document.querySelector(selector)?.getAttribute('content')||'';
+    const title=(meta('meta[property="og:title"]')||document.querySelector('h1')?.textContent||document.title||'').replace(/\\s*[|｜-]\\s*SOOP.*$/i,'').trim();
+    const pageText=(document.body?.innerText||'').replace(/\\u00a0/g,' ');
+    const dateRaw=meta('meta[property="article:published_time"]')||document.querySelector('time[datetime]')?.getAttribute('datetime')||(pageText.match(/20\\d{2}[.\\/-]\\d{1,2}[.\\/-]\\d{1,2}/)||[])[0]||'';
+    const nodes=[...document.querySelectorAll('article,main,[class*="post-content"],[class*="article-content"],[class*="board-content"],[class*="viewer"],[class*="content"]')];
+    const candidates=nodes.map(el=>({el,text:(el.innerText||'').trim()})).filter(row=>row.text.length>80).sort((a,b)=>b.text.length-a.text.length);
+    const chosen=candidates[0]?.el||document.querySelector('main')||document.body;
+    const body=((chosen?.innerText||pageText).trim()).slice(0,40000);
+    const imageSet=new Set();
+    const og=meta('meta[property="og:image"]');if(og)imageSet.add(og);
+    for(const img of [...(chosen?.querySelectorAll?.('img')||[])].slice(0,80)){
+      const src=img.currentSrc||img.src||'';if(/^https:\\/\\//i.test(src))imageSet.add(src);
+    }
+    const payload={version:1,source:'soop-authenticated-browser',url:location.href.split('#')[0],title,date:dateRaw,body,images:[...imageSet].slice(0,24),capturedAt:new Date().toISOString()};
+    const bytes=new TextEncoder().encode(JSON.stringify(payload));let binary='';for(const byte of bytes)binary+=String.fromCharCode(byte);
+    const encoded=btoa(binary);window.open(${JSON.stringify(target)}+'#soop-import='+encodeURIComponent(encoded),'_blank','noopener');
+  }catch(error){alert('SOOP 글 수집에 실패했습니다: '+(error?.message||error))}})()`;
+  return 'javascript:'+script.replace(/\s+/g,' ');
+}
+function readSoopImportHash(){
+  const match=location.hash.match(/^#soop-import=(.+)$/);if(!match)return null;
+  try{
+    const payload=JSON.parse(base64ToUtf8(decodeURIComponent(match[1])));
+    history.replaceState(null,'',location.pathname+location.search);
+    if(payload?.source!=='soop-authenticated-browser'||!/https:\/\/(?:www\.)?sooplive\.com\/station\/chunbongtv\/post\/\d+/i.test(String(payload.url||'')))return null;
+    return payload;
+  }catch{
+    history.replaceState(null,'',location.pathname+location.search);return null;
+  }
+}
+function analyzeSoopImport(payload={}){
+  const lines=String(payload.body||'').split(/\n+/).map(line=>line.replace(/\s+/g,' ').trim()).filter(Boolean);
+  const dates=[...new Set((String(payload.body||'').match(/20\d{2}[.\/-]\d{1,2}[.\/-]\d{1,2}/g)||[]))].slice(0,12);
+  const headingRx=/(공지|일정|기간|규칙|진행|참가|입주|수강|결과|상금|시간|모집|안내|서버|콘텐츠)/;
+  const headings=[...new Set(lines.filter(line=>line.length<=70&&headingRx.test(line)))].slice(0,14);
+  const listCount=lines.filter(line=>/^(?:[-*•·]|\d+[.)]|[①-⑳])\s*/.test(line)).length;
+  return{lineCount:lines.length,dates,headings,listCount};
+}
+function renderSoopHelper(){
+  const link=$('[data-soop-bookmarklet]',root),copy=$('[data-soop-bookmarklet-copy]',root);
+  const href=soopCollectorBookmarklet();if(link)link.href=href;
+  if(copy&&!copy.dataset.bound){copy.dataset.bound='1';copy.addEventListener('click',async()=>{
+    try{await navigator.clipboard.writeText(href);copy.textContent='복사됨';setTimeout(()=>copy.textContent='북마크 코드 복사',1400)}
+    catch{prompt('아래 코드를 북마크 URL에 붙여넣으세요.',href)}
+  })}
+  const box=$('[data-soop-import]',root);if(!box)return;
+  if(!browserImport){box.hidden=true;return}
+  box.hidden=false;
+  const facts=analyzeSoopImport(browserImport),target=$('[data-soop-import-target]',box);
+  $('[data-soop-import-title]',box).textContent=browserImport.title||'제목 확인 필요';
+  $('[data-soop-import-meta]',box).textContent='SOOP 애청자 공개글 · '+(browserImport.date||'날짜 확인 중');
+  $('[data-soop-import-summary]',box).textContent=String(browserImport.body||'').slice(0,420)||(browserImport.url||'');
+  $('[data-soop-import-facts]',box).innerHTML=[
+    '<span>본문 '+facts.lineCount+'줄</span>',
+    '<span>날짜 후보 '+facts.dates.length+'개</span>',
+    '<span>구조 제목 '+facts.headings.length+'개</span>',
+    '<span>목록형 문장 '+facts.listCount+'개</span>',
+    '<span>이미지 '+(browserImport.images||[]).length+'개</span>'
+  ].join('');
+  if(target)target.innerHTML='<option value="">연결할 콘텐츠 선택</option>'+items.map(item=>'<option value="'+esc(item.id)+'">'+esc(item.title)+'</option>').join('');
+  const dismiss=$('[data-soop-import-dismiss]',box);if(dismiss&&!dismiss.dataset.bound){dismiss.dataset.bound='1';dismiss.addEventListener('click',()=>{browserImport=null;renderSoopHelper()})}
+  const connect=$('[data-soop-import-connect]',box);if(connect&&!connect.dataset.bound){connect.dataset.bound='1';connect.addEventListener('click',()=>void submitSoopImport('connect'))}
+  const draft=$('[data-soop-import-draft]',box);if(draft&&!draft.dataset.bound){draft.dataset.bound='1';draft.addEventListener('click',()=>void submitSoopImport('draft'))}
+}
+async function submitSoopImport(action){
+  if(!browserImport)return;
+  const box=$('[data-soop-import]',root),itemId=$('[data-soop-import-target]',box)?.value||'';
+  if(action==='connect'&&!itemId){alert('연결할 콘텐츠를 선택해 주세요.');return}
+  const buttons=$('[data-soop-import-connect],[data-soop-import-draft]',box);buttons.forEach(button=>button.disabled=true);
+  try{
+    const result=await json('operator-content-browser-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,itemId,payload:browserImport})});
+    browserImport=null;await load();renderSoopHelper();
+    if(result.item?.id)selectItem(result.item.id);
+    setMessage(action==='connect'?'애청자 글을 내부 원문으로 보관하고 콘텐츠 기록에 연결했습니다.':'애청자 글을 내부 원문으로 보관하고 새 초안을 만들었습니다.','ok');
+  }catch(error){setMessage('SOOP 브라우저 수집 자료를 저장하지 못했습니다: '+error.message,'bad')}
+  finally{buttons.forEach(button=>button.disabled=false)}
 }
 async function runOfficialSync(){
   const button=$('[data-archive-auto-sync]',root);if(button)button.disabled=true;
@@ -142,5 +236,5 @@ async function runOfficialSync(){
     if(el){el.textContent='공식 자료 동기화에 실패했습니다: '+e.message;el.dataset.state='bad'}
   }finally{if(button)button.disabled=false}
 }
-async function load(){try{const p=await json('operator-content-archive');items=Array.isArray(p.items)?p.items:[];autoSyncMeta=p.autoSync||null;autoCandidates=Array.isArray(p.candidates)?p.candidates:[];renderList();renderAutoSyncState();renderCandidates()}catch(e){setMessage(e.message==='archive_storage_unavailable'?'콘텐츠 저장소를 사용할 수 없습니다.':'콘텐츠 목록을 불러오지 못했습니다.','bad')}}
-export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);$('[data-archive-admin-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-archive-select]');if(button)selectItem(button.dataset.archiveSelect)});$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());renderEditor(emptyItem());await load()}
+async function load(){try{const p=await json('operator-content-archive');items=Array.isArray(p.items)?p.items:[];autoSyncMeta=p.autoSync||null;autoCandidates=Array.isArray(p.candidates)?p.candidates:[];renderList();renderAutoSyncState();renderCandidates();renderSoopHelper()}catch(e){setMessage(e.message==='archive_storage_unavailable'?'콘텐츠 저장소를 사용할 수 없습니다.':'콘텐츠 목록을 불러오지 못했습니다.','bad')}}
+export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;browserImport=readSoopImportHash();$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);$('[data-archive-admin-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-archive-select]');if(button)selectItem(button.dataset.archiveSelect)});$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());renderEditor(emptyItem());await load();renderSoopHelper()}

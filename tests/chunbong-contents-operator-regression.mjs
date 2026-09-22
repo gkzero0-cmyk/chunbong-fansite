@@ -11,7 +11,7 @@ const draft=archive._internals.prepareForSave(base,{publish:false});
 assert.equal(draft.item.published,false);
 assert.throws(()=>archive._internals.prepareForSave({...base,sources:[]},{publish:true}),/published_source_required/);
 assert.throws(()=>archive._internals.prepareForSave({...base,verification:{state:'needs_review',conflicts:[{field:'date'}]}},{publish:true}),/unresolved_conflict/);
-for(const type of ['operator-content-archive','operator-content-archive-save','operator-content-archive-publish','operator-content-archive-delete','operator-content-auto-sync','operator-content-auto-candidate','content-archive-auto-sync']) assert.ok(content.includes(type),'missing '+type);
+for(const type of ['operator-content-archive','operator-content-archive-save','operator-content-archive-publish','operator-content-archive-delete','operator-content-auto-sync','operator-content-auto-candidate','operator-content-browser-import','content-archive-auto-sync']) assert.ok(content.includes(type),'missing '+type);
 console.log('chunbong contents operator API regression passed');
 
 const operatorHtml=fs.readFileSync(new URL('../operator.html',import.meta.url),'utf8');
@@ -31,6 +31,22 @@ let merged=archive._internals.mergeArchiveRows([seedPublished],[storedOther]);
 assert.deepEqual(merged.map(item=>item.id).sort(),['leopel','other'],'stored records must not hide verified seed records');
 merged=archive._internals.mergeArchiveRows([seedPublished],[storedOverride]);
 assert.equal(merged.find(item=>item.id==='leopel').title,'운영자 레오펠','stored published record should override the seed with the same id');
+const curatedMerge=archive._internals.mergeArchiveRows([
+  {...base,id:'curated-merge',published:true,timeline:[
+    {id:'seed-a',type:'post',title:'공식 글 A',date:'2026-06-01',datePrecision:'day',url:'https://www.sooplive.com/station/chunbongtv/post/1',sourceId:'s1',visibility:'public'},
+    {id:'seed-b',type:'post',title:'공식 글 B',date:'2026-06-02',datePrecision:'day',url:'https://www.sooplive.com/station/chunbongtv/post/2',sourceId:'s1',visibility:'public'}
+  ],gallery:[{id:'g1',src:'https://stimg.sooplive.com/a.png',alt:'A'}],results:[{title:'참가자',value:'100명'}]},
+],[
+  {...base,id:'curated-merge',published:true,timeline:[
+    {id:'old-a',type:'post',title:'공식 게시글 1',date:'',datePrecision:'unknown',url:'https://www.sooplive.com/station/chunbongtv/post/1',sourceId:'s1',visibility:'public'},
+    {id:'auto-c',type:'post',title:'자동 발견 C',date:'2026-06-03',datePrecision:'day',url:'https://www.sooplive.com/station/chunbongtv/post/3',sourceId:'',visibility:'public'}
+  ],gallery:[],results:[]}
+]);
+assert.equal(curatedMerge[0].timeline.length,3,'curated seed rows and stored auto rows should both survive merging');
+assert.equal(curatedMerge[0].timeline.find(row=>/post\/1/.test(row.url||''))?.title,'공식 글 A','curated exact metadata should replace stale generic stored metadata');
+assert.equal(curatedMerge[0].gallery.length,1,'new curated gallery rows must survive stale stored records');
+assert.equal(curatedMerge[0].results.find(row=>row.title==='참가자')?.value,'100명','new curated result rows must survive stale stored records');
+
 assert.match(String(archive._internals.DRAFT_PREFIX||''),/content-archive:draft:v1:/,'draft storage must be separate from public records');
 assert.match(String(archive._internals.DRAFT_INDEX||''),/content-archive:draft-index:v1/,'draft index missing');
 
@@ -58,6 +74,17 @@ const notionRows=archive._internals.notionPageRows({block:{
   child:{value:{value:{id:'child',type:'sub_header',properties:{title:[['서버규칙']]},content:[]}}}
 }},'root');
 assert.deepEqual(notionRows.map(row=>[row.type,row.text]),[['page','루트'],['sub_header','서버규칙']],'Notion recordMap should become ordered readable rows');
+const notionSections=archive._internals.notionStructuredSections([{id:'root',depth:0,rows:[
+  {id:'root',type:'page',text:'루트',depth:0},
+  {id:'h1',type:'header',text:'서버규칙',depth:1},
+  {id:'t1',type:'text',text:'X-ray 사용 금지',depth:2},
+  {id:'h2',type:'sub_header',text:'API',depth:1},
+  {id:'t2',type:'text',text:'100개 보급상자',depth:2}
+]}]);
+assert.equal(notionSections.length,1,'Notion pages should become structured sections');
+assert.deepEqual(notionSections[0].headings,['루트','서버규칙','API'],'Notion headings should preserve ordered page structure');
+assert.match(notionSections[0].blocks.find(row=>row.title==='서버규칙')?.text||'',/X-ray/,'Notion section body should remain readable');
+
 
 const bngtsNames=archive._internals.extractBngtsStreamerNames(
   '<div class="streamer-name">BJ공파리파</div><div class="streamer-name">♡효구리♡</div><div class="streamer-name">BJ공파리파</div>'
@@ -87,6 +114,30 @@ assert.equal(soopMeta.image,'https://stimg.sooplive.com/test.png');
 assert.match(archiveSource,/api-channel\.sooplive\.com\/v1\.1\/channel/,'SOOP post extraction should use the current channel API');
 assert.match(archiveSource,/source_meta_auth_required/,'protected SOOP posts must be classified as auth-required');
 assert.match(operatorContents,/SOOP 애청자 공개/,'operator UI should explain protected SOOP posts');
+assert.match(operatorHtml,/data-soop-helper/,'operator should expose the authenticated SOOP browser collector');
+for(const token of ['soopCollectorBookmarklet','readSoopImportHash','operator-content-browser-import','data-soop-import-connect','data-soop-import-draft']) assert.ok(operatorContents.includes(token)||operatorHtml.includes(token)||content.includes(token),token);
+assert.ok(!/document\.cookie/.test(operatorContents),'SOOP browser collector must never read cookies');
+assert.ok(!/localStorage/.test(operatorContents),'SOOP browser collector must not read localStorage');
+assert.ok(!/sessionStorage/.test(operatorContents),'SOOP browser collector must not read sessionStorage');
+assert.match(operatorContents,/history\.replaceState/,'browser import fragment should be removed from the address immediately');
+assert.match(operatorContents,/\$\$\('\[data-candidate-action\]'/,'candidate actions must bind through the multi-element selector');
+
+const browserPayload=archive._internals.normalizeBrowserImportPayload({
+  source:'soop-authenticated-browser',
+  url:'https://www.sooplive.com/station/chunbongtv/post/192179233',
+  title:'그냥 서버 열었습니다..',date:'2026.04.09',
+  body:'애청자 공개 본문 테스트',images:['https://stimg.sooplive.com/test.png'],
+  capturedAt:'2026-09-23T00:00:00+09:00'
+});
+assert.equal(browserPayload?.postId,'192179233','protected SOOP post id should be recovered from browser handoff');
+assert.equal(browserPayload?.date,'2026-04-09','browser handoff date should normalize to ISO day');
+assert.equal(archive._internals.normalizeBrowserImportPayload({...browserPayload,url:'https://www.sooplive.com/station/other/post/1'}),null,'browser handoff must be restricted to Chunbong SOOP posts');
+const browserApplied=archive._internals.applyBrowserImportToItem({...base,id:'browser-import',timeline:[],sources:[]},browserPayload);
+assert.equal(browserApplied.sources[0]?.visibility,'internal','authenticated source URL must remain internal');
+assert.equal(browserApplied.timeline[0]?.visibility,'public','confirmed title/date may become a public factual timeline record');
+assert.equal(browserApplied.timeline[0]?.url,'','protected post URL must not be copied into the public timeline material');
+assert.match(String(archive._internals.BROWSER_IMPORT_PREFIX||''),/browser-import:v1/,'browser import raw storage must be isolated from public archive records');
+
 
 assert.ok(archive._internals.allowedSourceMetaUrl('https://naver.me/FbVX1U7z'),'Naver short links should be eligible for source metadata extraction');
 assert.equal(archive._internals.allowedSourceMetaUrl('https://www.fmkorea.com/7042989434'),null,'FM Korea should no longer be accepted as an archive source');

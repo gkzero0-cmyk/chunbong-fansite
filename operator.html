@@ -110,6 +110,31 @@
         <aside class="operator-card operator-archive-list-card">
           <header><div><h2>콘텐츠 아카이브</h2><small>SOOP 최우선 · YouTube 자동 수집</small></div><div class="operator-archive-head-actions"><button type="button" data-archive-auto-sync>공식 자료 동기화</button><button type="button" data-archive-new>새 콘텐츠</button></div></header>
           <div class="operator-archive-auto-state" data-archive-auto-state>공식 자료 자동 수집 상태를 확인하고 있습니다.</div>
+          <details class="operator-soop-helper" data-soop-helper>
+            <summary><span>SOOP 애청자 글 수집 도우미</span><b>로그인 정보 저장 안 함</b></summary>
+            <div class="operator-soop-helper-body">
+              <p>브라우저에 이미 로그인된 SOOP 글에서 제목·작성일·본문·이미지만 읽습니다. 비밀번호·쿠키·세션 토큰은 읽거나 전송하지 않습니다.</p>
+              <div class="operator-soop-helper-actions">
+                <a href="#" data-soop-bookmarklet draggable="true">SOOP 글 수집</a>
+                <button type="button" data-soop-bookmarklet-copy>북마크 코드 복사</button>
+              </div>
+              <ol>
+                <li><b>SOOP 글 수집</b> 링크를 브라우저 북마크바로 끌어놓습니다.</li>
+                <li>애청자 공개글을 로그인된 상태로 연 뒤 그 북마크를 누릅니다.</li>
+                <li>운영자 센터로 돌아오면 수집 결과를 확인하고 기존 콘텐츠에 연결하거나 새 초안으로 만듭니다.</li>
+              </ol>
+              <div class="operator-soop-import" data-soop-import hidden>
+                <header><div><small data-soop-import-meta>SOOP 인증 브라우저 수집</small><strong data-soop-import-title>수집 결과</strong></div><button type="button" data-soop-import-dismiss>닫기</button></header>
+                <p data-soop-import-summary></p>
+                <div class="operator-soop-import-facts" data-soop-import-facts></div>
+                <label><span>연결할 콘텐츠</span><select data-soop-import-target><option value="">선택</option></select></label>
+                <div class="operator-soop-import-buttons">
+                  <button type="button" data-soop-import-connect>기존 콘텐츠에 연결</button>
+                  <button type="button" data-soop-import-draft>새 콘텐츠 초안</button>
+                </div>
+              </div>
+            </div>
+          </details>
           <details class="operator-archive-candidates" data-archive-candidates>
             <summary><span>자동수집 검토 후보</span><b data-archive-candidate-count>0건</b></summary>
             <div data-archive-candidate-list><p class="operator-empty">검토 후보가 없습니다.</p></div>

@@ -18,9 +18,10 @@ function allPeople(item={}){
   return [...new Set(names.map(v=>String(v||'').trim()).filter(Boolean))];
 }
 function itemPeopleCount(item={}){
-  const direct=allPeople(item).length;
-  if(direct)return direct;
-  return (item.participantGroups||[]).reduce((sum,row)=>sum+Number(row.count||0),0);
+  const direct=(item.participants||[]).length;
+  const grouped=(item.participantGroups||[]).reduce((sum,row)=>sum+Number(row.count||row.participants?.length||0),0);
+  if(direct||grouped)return Math.max(direct,grouped);
+  return allPeople(item).length;
 }
 function searchableText(item={}){
   const values=[
