@@ -178,5 +178,6 @@ for(const url of ['https://naver.me/5qLX1yQ1','https://buly.kr/2ffytJ1','https:/
 for(const id of ['203683207','204093563','204274449','206972857','207425471','207516943','207564735']) assert.ok((survival?.timeline||[]).some(row=>row.url===`https://www.sooplive.com/station/chunbongtv/post/${id}`),`적자생존 SOOP 게시글 누락: ${id}`);
 assert.ok((survival?.sources||[]).some(row=>row.url==='https://daisy-grouse-ac0.notion.site/3dad57d6a55c80469f3de9730cb88975'),'적자생존 Notion 자료가 필요합니다');
 
-assert.ok((psyContest?.participants||[]).includes('시로코'),'song contest should include confirmed participant evidence');
-assert.ok((psyContest?.gallery||[]).length>=2,'song contest detail should have visual archive material');
+assert.ok((psyContest1?.participants||[]).includes('시로코'),'제1회는 시로코 참가 교차 기록을 유지해야 합니다');
+assert.ok((psyContest1?.gallery||[]).length>=1,'제1회 아카이브 커버가 필요합니다');
+assert.ok((psyContest2?.gallery||[]).length>=1,'제2회 아카이브 커버가 필요합니다');
