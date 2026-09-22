@@ -47,7 +47,7 @@ assert.match(archiveSource,/SADD['\",\s]+HIDDEN_KEY/,'delete must create a seed 
 assert.match(archiveSource,/SREM['\",\s]+HIDDEN_KEY/,'publish must clear a seed tombstone');
 
 
-for(const token of ['별칭','결과 · 회차 기록','data-result-row','data-move-row','공개 페이지 열기','data-material-fetch-meta','원문 메타 가져오기','방통실 참가자 명단 미수집','FM코리아 참가자 명단 미수집','Notion 규칙·시스템 미구조화','SOOP 게시글 메타데이터 확인']) assert.ok(operatorContents.includes(token),token);
+for(const token of ['별칭','결과 · 회차 기록','data-result-row','data-move-row','공개 페이지 열기','data-material-fetch-meta','원문 메타 가져오기','방통실 참가자 명단 미수집','FM코리아 참가자 명단 미수집','Notion 본문 미구조화','SOOP 게시글 메타데이터 확인']) assert.ok(operatorContents.includes(token),token);
 assert.match(operatorContents,/item\.aliases=/,'operator must collect aliases');
 assert.match(operatorContents,/item\.results=/,'operator must collect results');
 
