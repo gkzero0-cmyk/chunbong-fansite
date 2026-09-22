@@ -109,6 +109,7 @@ assert.equal(psyContest2?.datePrecision,'unknown','2회 날짜는 원문 확인 
 assert.ok((psyContest1?.sources||[]).some(row=>row.url==='https://www.sooplive.com/station/chunbongtv/post/124321185'),'1회 SOOP 모집글이 필요합니다');
 assert.ok((psyContest1?.media||[]).some(row=>row.url==='https://vod.sooplive.com/player/127480069'),'1회 SOOP VOD가 필요합니다');
 assert.ok((psyContest1?.participants||[]).includes('시로코'),'제1회 참가가 교차 확인된 시로코 기록이 필요합니다');
+assert.ok((psyContest1?.sources||[]).some(row=>row.url==='https://www.fmkorea.com/7042989434'&&row.kind==='reference'),'1회 FM코리아 참가자 참고 자료를 유지해야 합니다');
 assert.ok((psyContest2?.sources||[]).some(row=>row.url==='https://www.sooplive.com/station/chunbongtv/post/192031471'),'2회 SOOP 모집글이 필요합니다');
 assert.ok((psyContest2?.media||[]).some(row=>row.url==='https://vod.sooplive.com/player/194116989'),'2회 SOOP VOD가 필요합니다');
 assert.ok((psyContest2?.sources||[]).some(row=>row.url==='https://www.fmkorea.com/9750851296'&&row.kind==='reference'),'2회 FM코리아 자료는 보조 출처로 유지해야 합니다');
