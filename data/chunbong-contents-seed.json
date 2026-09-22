@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T11:50:00+09:00",
+  "updatedAt": "2026-09-22T17:45:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -16,14 +16,35 @@
       "endDate": "2025-07-06",
       "datePrecision": "day",
       "summary": "춘봉이 기획·운영한 SOOP·치지직·YouTube 플랫폼 통합 대규모 스트리머 마인크래프트 서버.",
-      "description": "2025년 6월 5일부터 7월 6일까지 진행된 플랫폼 통합 마인크래프트 서버입니다. 기존 SOOP PICK 발표회·오픈 기록과 함께 춘봉 방송국 공식 게시글, SOOP VOD, 트레일러, 나무위키 기록을 한곳에서 교차 확인할 수 있도록 확장했습니다. 원문에서 직접 확인되지 않은 게시글 제목·날짜는 임의로 확정하지 않습니다.",
+      "description": "2025년 6월 5일부터 7월 6일까지 진행된 플랫폼 통합 대규모 마인크래프트 서버입니다. 춘봉이 총괄 기획·주최했으며 SOOP·치지직·YouTube 통합 서버로 운영됐습니다. 공식 게시글·VOD·SOOP PICK 자료에 더해 나무위키 계열 교차 자료에서 최종 참여자 671명, 1차 SOOP 140명, 2차 171명 등의 규모를 확인해 함께 기록합니다.",
       "heroImage": {
         "src": "/assets/chunbong-contents/leopel-cover.svg",
         "alt": "레오펠: 사자의 노래 팬사이트 아카이브 커버",
         "sourceId": ""
       },
       "participants": [],
-      "results": [],
+      "results": [
+        {
+          "title": "총 참여자",
+          "value": "671명 · 외부 교차 자료 최종 집계"
+        },
+        {
+          "title": "1차 입주",
+          "value": "SOOP 140명"
+        },
+        {
+          "title": "2차 입주",
+          "value": "SOOP 127명 + 치지직·YouTube 44명 · 합계 171명"
+        },
+        {
+          "title": "플랫폼",
+          "value": "SOOP · 치지직 · YouTube 통합 서버"
+        },
+        {
+          "title": "진행 기간",
+          "value": "2025년 6월 5일 ~ 7월 6일 · 32일"
+        }
+      ],
       "timeline": [
         {
           "id": "soop-pick-presentation",
@@ -101,6 +122,28 @@
           "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
           "sourceId": "source-leopel-post-165257051",
           "note": "춘봉 SOOP 방송국에 게시된 레오펠 관련 공식 기록입니다. 원문 제목과 게시일은 확인 가능한 범위에서 보강합니다."
+        },
+        {
+          "id": "leopel-1st-entry",
+          "type": "reference",
+          "title": "레오펠 1차 입주 · SOOP 140명",
+          "date": "2025-06-01",
+          "datePrecision": "day",
+          "url": "https://namu.moe/w/%EB%A0%88%EC%98%A4%ED%8E%A0",
+          "thumbnail": "",
+          "sourceId": "source-reference",
+          "note": "레오펠 외부 교차 자료의 1차 입주자 집계입니다."
+        },
+        {
+          "id": "leopel-2nd-entry",
+          "type": "reference",
+          "title": "레오펠 2차 입주 · 171명",
+          "date": "2025-06-09",
+          "datePrecision": "day",
+          "url": "https://namu.moe/w/%EB%A0%88%EC%98%A4%ED%8E%A0",
+          "thumbnail": "",
+          "sourceId": "source-reference",
+          "note": "SOOP 127명, 치지직·YouTube 44명으로 정리된 2차 입주 기록입니다."
         }
       ],
       "media": [
@@ -259,7 +302,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T11:40:00+09:00",
+      "updatedAt": "2026-09-22T17:45:00+09:00",
       "series": {
         "id": "leopel",
         "title": "레오펠",
@@ -751,7 +794,7 @@
         "id": "justserver",
         "title": "그냥서버",
         "subtitle": "마인크래프트 서버 시리즈",
-        "description": "춘봉이 주최한 그냥서버의 시즌별 기록을 모집·방송·진행 자료와 함께 이어서 봅니다.",
+        "description": "춘봉이 주최한 그냥서버를 ‘그냥서버 : 다이아 → 머니게임 → 적자생존’ 순으로 시즌별 모집·방송·참가자·진행 자료와 함께 이어서 봅니다.",
         "order": 10,
         "cover": {
           "src": "/assets/chunbong-contents/justserver-moneygame-cover.svg",
@@ -768,20 +811,44 @@
       ],
       "category": "minecraft",
       "role": "주최",
-      "status": "ended",
-      "startDate": "2026",
-      "endDate": "2026",
-      "datePrecision": "year",
-      "summary": "춘봉의 그냥서버 시리즈 ‘적자생존’ 기록을 SOOP 공식 게시글과 공개 자료를 중심으로 모아보는 아카이브.",
-      "description": "그냥서버 : 적자생존의 모집·안내·진행 관련 SOOP 방송국 게시글, 공개 Notion 자료와 함께 설명회 SOOP VOD를 연결한 기록입니다. 현재는 사용자가 지정한 공식 원문 링크를 우선 보존하며, 게시글별 정확한 제목·날짜·참가자 정보는 원문 확인이 가능한 범위부터 순차적으로 보강합니다.",
+      "status": "planned",
+      "startDate": "2026-09-30",
+      "endDate": "2026-10-21",
+      "datePrecision": "day",
+      "summary": "춘봉의 그냥서버 세 번째 시즌 ‘적자생존’. 2026년 9월 30일 오픈 예정으로 모집·신청·설명회·UP 랭킹 관련 공식 자료를 준비 단계부터 기록합니다.",
+      "description": "아직 종료된 콘텐츠가 아니라 예정 콘텐츠입니다. 사용자 제공 SOOP 게시글 7개, 공개 Notion 일정·기획 자료, 설명회 VOD를 기반으로 모집 → 신청 → 설명회 → UP 랭킹 → 서버 오픈 준비 흐름으로 정리합니다. 게시글별 정확한 제목은 원문 확인이 가능한 항목만 확정하고, 확인되지 않은 세부 정보는 임의 작성하지 않습니다.",
       "heroImage": {
         "src": "/assets/chunbong-contents/justserver-survival-cover.svg",
         "alt": "그냥서버 적자생존 팬사이트 아카이브 커버",
         "sourceId": ""
       },
       "participants": [],
-      "results": [],
+      "results": [
+        {
+          "title": "예정 기간",
+          "value": "2026년 9월 30일 ~ 10월 21일"
+        },
+        {
+          "title": "현재 단계",
+          "value": "모집·신청·설명회 및 오픈 준비"
+        },
+        {
+          "title": "UP 랭킹 원문",
+          "value": "SOOP 게시글 204274449 댓글 기반"
+        }
+      ],
       "timeline": [
+        {
+          "id": "survival-planned-open",
+          "type": "result",
+          "title": "적자생존 서버 오픈 예정",
+          "date": "2026-09-30",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "source-survival-notion",
+          "note": "이전 대화에서 제공된 Notion 일정 기준 예정 시작일입니다."
+        },
         {
           "id": "survival-soop-post-203683207",
           "type": "post",
@@ -807,13 +874,13 @@
         {
           "id": "survival-soop-post-204274449",
           "type": "post",
-          "title": "그냥서버 : 적자생존 공식 게시글 3",
+          "title": "적자생존 참가 신청 · UP 랭킹 원문",
           "date": "",
           "datePrecision": "unknown",
           "url": "https://www.sooplive.com/station/chunbongtv/post/204274449",
           "thumbnail": "",
           "sourceId": "source-survival-post-204274449",
-          "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다."
+          "note": "이 게시글 댓글을 기반으로 실시간 UP 랭킹 페이지가 운영된 모집·신청 원문입니다."
         },
         {
           "id": "survival-soop-post-206972857",
@@ -858,6 +925,17 @@
           "thumbnail": "",
           "sourceId": "source-survival-post-207564735",
           "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다."
+        },
+        {
+          "id": "survival-planned-end",
+          "type": "result",
+          "title": "적자생존 예정 종료일",
+          "date": "2026-10-21",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "source-survival-notion",
+          "note": "이전 대화에서 제공된 Notion 일정 기준 예정 종료일입니다."
         }
       ],
       "media": [
@@ -939,17 +1017,17 @@
         }
       ],
       "verification": {
-        "state": "official",
-        "verifiedAt": "2026-09-22T11:25:00+09:00",
+        "state": "cross_checked",
+        "verifiedAt": "2026-09-22T17:45:00+09:00",
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T11:40:00+09:00",
+      "updatedAt": "2026-09-22T17:45:00+09:00",
       "series": {
         "id": "justserver",
         "title": "그냥서버",
         "subtitle": "마인크래프트 서버 시리즈",
-        "description": "춘봉이 주최한 그냥서버의 시즌별 기록을 모집·방송·진행 자료와 함께 이어서 봅니다.",
+        "description": "춘봉이 주최한 그냥서버를 ‘그냥서버 : 다이아 → 머니게임 → 적자생존’ 순으로 시즌별 모집·방송·참가자·진행 자료와 함께 이어서 봅니다.",
         "order": 10,
         "cover": {
           "src": "/assets/chunbong-contents/justserver-moneygame-cover.svg",
@@ -972,7 +1050,7 @@
       "endDate": "2026-09",
       "datePrecision": "month",
       "summary": "춘봉이 VRChat에서 스트리머 수강생들과 타로 카드 해석과 리딩을 함께 배우는 회차형 타로 클래스.",
-      "description": "춘타클은 춘봉이 진행한 스트리머 대상 타로 클래스 시리즈입니다. 회차별 실제 첨부 포스터를 기준으로 제1회부터 제5회까지 날짜·시간·수강생·이미지를 분리해 보관하고, 방송 이력처럼 별도 근거가 있는 자료는 함께 교차 기록합니다.",
+      "description": "춘타클은 춘봉이 진행한 스트리머 대상 타로 클래스 시리즈입니다. 실제 1~5회 포스터와 수강생 기록을 중심으로 회차별 SOOP 다시보기, YouTube 영상, FM코리아 모집·참여자 자료까지 한곳에서 확인할 수 있도록 구성합니다.",
       "heroImage": {
         "src": "/assets/chunbong-contents/chuntacle-cover.svg",
         "alt": "춘타클 춘봉 타로 클래스 팬사이트 아카이브 커버",
@@ -1093,6 +1171,83 @@
           "thumbnail": "/assets/chunbong-contents/chuntacle-cover.svg",
           "sourceId": "source-moon-streams",
           "note": "8월 2일 ‘세번째 수업’, 8월 11일 ‘네번째수업 다시보기’ 방송 제목을 확인할 수 있는 외부 방송 이력입니다."
+        },
+        {
+          "id": "chuntacle-vod-1",
+          "type": "vod",
+          "title": "춘타클 제1회 SOOP 다시보기",
+          "url": "https://vod.sooplive.com/player/201292605",
+          "note": "사용자가 춘타클 제1회 방송 기록으로 제공한 SOOP VOD입니다.",
+          "date": "",
+          "datePrecision": "unknown",
+          "thumbnail": "",
+          "sourceId": "source-chuntacle-vod-1"
+        },
+        {
+          "id": "chuntacle-vod-2",
+          "type": "vod",
+          "title": "춘타클 제2회 SOOP 다시보기",
+          "url": "https://vod.sooplive.com/player/202198589",
+          "note": "사용자가 춘타클 제2회 방송 기록으로 제공한 SOOP VOD입니다.",
+          "date": "",
+          "datePrecision": "unknown",
+          "thumbnail": "",
+          "sourceId": "source-chuntacle-vod-2"
+        },
+        {
+          "id": "chuntacle-vod-3",
+          "type": "vod",
+          "title": "춘타클 제3회 SOOP 다시보기",
+          "url": "https://vod.sooplive.com/player/203211299",
+          "note": "사용자가 춘타클 제3회 방송 기록으로 제공한 SOOP VOD입니다.",
+          "date": "",
+          "datePrecision": "unknown",
+          "thumbnail": "",
+          "sourceId": "source-chuntacle-vod-3"
+        },
+        {
+          "id": "chuntacle-vod-4",
+          "type": "vod",
+          "title": "춘타클 제4회 SOOP 다시보기",
+          "url": "https://vod.sooplive.com/player/204037695",
+          "note": "사용자가 춘타클 제4회 방송 기록으로 제공한 SOOP VOD입니다.",
+          "date": "",
+          "datePrecision": "unknown",
+          "thumbnail": "",
+          "sourceId": "source-chuntacle-vod-4"
+        },
+        {
+          "id": "chuntacle-youtube-1",
+          "type": "youtube",
+          "title": "춘타클 관련 YouTube 영상 1",
+          "url": "https://www.youtube.com/watch?v=b-jlKXqLakU",
+          "note": "사용자가 춘타클 아카이브 자료로 제공한 YouTube 영상입니다.",
+          "date": "",
+          "datePrecision": "unknown",
+          "thumbnail": "",
+          "sourceId": "source-chuntacle-youtube-1"
+        },
+        {
+          "id": "chuntacle-youtube-2",
+          "type": "youtube",
+          "title": "춘타클 관련 YouTube 영상 2",
+          "url": "https://www.youtube.com/watch?v=gJKw13B7ydc",
+          "note": "사용자가 춘타클 아카이브 자료로 제공한 YouTube 영상입니다.",
+          "date": "",
+          "datePrecision": "unknown",
+          "thumbnail": "",
+          "sourceId": "source-chuntacle-youtube-2"
+        },
+        {
+          "id": "chuntacle-youtube-3",
+          "type": "youtube",
+          "title": "춘타클 관련 YouTube 영상 3",
+          "url": "https://www.youtube.com/watch?v=8rnQKGwa1qw&t=4s",
+          "note": "사용자가 춘타클 아카이브 자료로 제공한 YouTube 영상입니다.",
+          "date": "",
+          "datePrecision": "unknown",
+          "thumbnail": "",
+          "sourceId": "source-chuntacle-youtube-3"
         }
       ],
       "gallery": [
@@ -1144,6 +1299,54 @@
           "kind": "reference",
           "label": "나무위키 · 춘봉 / 스트리머 타로상담 목록",
           "url": "https://m.namu.moe/w/%EC%B6%98%EB%B4%89/%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%A8%B8%20%ED%83%80%EB%A1%9C%EC%83%81%EB%8B%B4%20%EB%AA%A9%EB%A1%9D"
+        },
+        {
+          "id": "source-chuntacle-fmkorea",
+          "kind": "reference",
+          "label": "FM코리아 · 춘타클 모집·참여자·이미지 자료",
+          "url": "https://www.fmkorea.com/10058760229"
+        },
+        {
+          "id": "source-chuntacle-vod-1",
+          "kind": "official",
+          "label": "SOOP VOD · 춘타클 제1회 SOOP 다시보기",
+          "url": "https://vod.sooplive.com/player/201292605"
+        },
+        {
+          "id": "source-chuntacle-vod-2",
+          "kind": "official",
+          "label": "SOOP VOD · 춘타클 제2회 SOOP 다시보기",
+          "url": "https://vod.sooplive.com/player/202198589"
+        },
+        {
+          "id": "source-chuntacle-vod-3",
+          "kind": "official",
+          "label": "SOOP VOD · 춘타클 제3회 SOOP 다시보기",
+          "url": "https://vod.sooplive.com/player/203211299"
+        },
+        {
+          "id": "source-chuntacle-vod-4",
+          "kind": "official",
+          "label": "SOOP VOD · 춘타클 제4회 SOOP 다시보기",
+          "url": "https://vod.sooplive.com/player/204037695"
+        },
+        {
+          "id": "source-chuntacle-youtube-1",
+          "kind": "reference",
+          "label": "YouTube · 춘타클 관련 YouTube 영상 1",
+          "url": "https://www.youtube.com/watch?v=b-jlKXqLakU"
+        },
+        {
+          "id": "source-chuntacle-youtube-2",
+          "kind": "reference",
+          "label": "YouTube · 춘타클 관련 YouTube 영상 2",
+          "url": "https://www.youtube.com/watch?v=gJKw13B7ydc"
+        },
+        {
+          "id": "source-chuntacle-youtube-3",
+          "kind": "reference",
+          "label": "YouTube · 춘타클 관련 YouTube 영상 3",
+          "url": "https://www.youtube.com/watch?v=8rnQKGwa1qw&t=4s"
         }
       ],
       "verification": {
@@ -1152,7 +1355,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T11:40:00+09:00",
+      "updatedAt": "2026-09-22T17:45:00+09:00",
       "seriesSessions": [
         {
           "id": "session-1",
@@ -1528,6 +1731,244 @@
           "alt": "싸이감성 노래자랑 대표 이미지"
         }
       }
+    },
+    {
+      "id": "justserver-diamond",
+      "title": "그냥서버 : 다이아",
+      "aliases": [
+        "그냥서버 1",
+        "그냥서버1",
+        "그냥서버 다이아",
+        "다이아 서버 그냥서버"
+      ],
+      "category": "minecraft",
+      "series": {
+        "id": "justserver",
+        "title": "그냥서버",
+        "subtitle": "마인크래프트 서버 시리즈",
+        "description": "춘봉이 주최한 그냥서버를 ‘그냥서버 : 다이아 → 머니게임 → 적자생존’ 순으로 시즌별 모집·방송·참가자·진행 자료와 함께 이어서 봅니다.",
+        "order": 10,
+        "cover": {
+          "src": "/assets/chunbong-contents/justserver-moneygame-cover.svg",
+          "alt": "그냥서버 시리즈 대표 이미지"
+        }
+      },
+      "role": "주최",
+      "status": "ended",
+      "startDate": "2026-04-09",
+      "endDate": "2026-04-16",
+      "datePrecision": "day",
+      "summary": "춘봉이 2026년 4월 9일부터 4월 16일까지 개최한 그냥서버 첫 시즌 ‘다이아’ 기록입니다.",
+      "description": "그냥서버 시리즈의 첫 시즌입니다. 사용자 제공 SOOP 모집 게시글, 공개 Notion, SOOP 다시보기 7개, 방통실 콘텐츠·참가 스트리머 아카이브를 함께 연결했습니다. 일정은 외부 교차 자료에서 2026년 4월 9일~4월 16일로 확인되며, 참가자 이름은 원문에서 직접 회수되는 항목부터 순차적으로 구조화합니다.",
+      "heroImage": null,
+      "participants": [],
+      "results": [
+        {
+          "title": "진행 기간",
+          "value": "2026년 4월 9일 ~ 4월 16일"
+        },
+        {
+          "title": "시리즈 위치",
+          "value": "그냥서버 제1시즌 · 다이아"
+        }
+      ],
+      "seriesSessions": [],
+      "timeline": [
+        {
+          "id": "diamond-recruit-post",
+          "type": "post",
+          "title": "그냥서버 : 다이아 모집·안내 게시글",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/192179233",
+          "thumbnail": "",
+          "sourceId": "source-diamond-recruit",
+          "note": "사용자가 그냥서버 1 모집글로 제공한 춘봉 SOOP 방송국 공식 게시글입니다."
+        },
+        {
+          "id": "diamond-open",
+          "type": "result",
+          "title": "그냥서버 : 다이아 시작",
+          "date": "2026-04-09",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "source-minecraft-server-list",
+          "note": "외부 교차 자료에서 춘봉 개최 및 시작일을 확인했습니다."
+        },
+        {
+          "id": "diamond-end",
+          "type": "result",
+          "title": "그냥서버 : 다이아 종료",
+          "date": "2026-04-16",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "source-minecraft-server-list",
+          "note": "외부 교차 자료의 진행 기간 기준 종료일입니다."
+        }
+      ],
+      "media": [
+        {
+          "id": "diamond-vod-192233707",
+          "type": "vod",
+          "title": "그냥서버 : 다이아 SOOP 다시보기 01",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/192233707",
+          "thumbnail": "",
+          "sourceId": "source-diamond-vod-192233707",
+          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다."
+        },
+        {
+          "id": "diamond-vod-192317079",
+          "type": "vod",
+          "title": "그냥서버 : 다이아 SOOP 다시보기 02",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/192317079",
+          "thumbnail": "",
+          "sourceId": "source-diamond-vod-192317079",
+          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다."
+        },
+        {
+          "id": "diamond-vod-192401771",
+          "type": "vod",
+          "title": "그냥서버 : 다이아 SOOP 다시보기 03",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/192401771",
+          "thumbnail": "",
+          "sourceId": "source-diamond-vod-192401771",
+          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다."
+        },
+        {
+          "id": "diamond-vod-192510763",
+          "type": "vod",
+          "title": "그냥서버 : 다이아 SOOP 다시보기 04",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/192510763",
+          "thumbnail": "",
+          "sourceId": "source-diamond-vod-192510763",
+          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다."
+        },
+        {
+          "id": "diamond-vod-192581897",
+          "type": "vod",
+          "title": "그냥서버 : 다이아 SOOP 다시보기 05",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/192581897",
+          "thumbnail": "",
+          "sourceId": "source-diamond-vod-192581897",
+          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다."
+        },
+        {
+          "id": "diamond-vod-192845469",
+          "type": "vod",
+          "title": "그냥서버 : 다이아 SOOP 다시보기 06",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/192845469",
+          "thumbnail": "",
+          "sourceId": "source-diamond-vod-192845469",
+          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다."
+        },
+        {
+          "id": "diamond-vod-192962357",
+          "type": "vod",
+          "title": "그냥서버 : 다이아 SOOP 다시보기 07",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/192962357",
+          "thumbnail": "",
+          "sourceId": "source-diamond-vod-192962357",
+          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다."
+        }
+      ],
+      "gallery": [],
+      "sources": [
+        {
+          "id": "source-diamond-recruit",
+          "kind": "official",
+          "label": "SOOP 모집글 · 그냥서버 : 다이아",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/192179233"
+        },
+        {
+          "id": "source-diamond-notion",
+          "kind": "reference",
+          "label": "공개 Notion · 그냥서버 1 기획 자료",
+          "url": "https://sdmv.notion.site/what"
+        },
+        {
+          "id": "source-diamond-bngts",
+          "kind": "reference",
+          "label": "방통실 · 그냥서버 콘텐츠 아카이브",
+          "url": "https://bngts.com/contents/just"
+        },
+        {
+          "id": "source-diamond-bngts-streamers",
+          "kind": "reference",
+          "label": "방통실 · 그냥서버 참가 스트리머",
+          "url": "https://bngts.com/contents/just/streamers"
+        },
+        {
+          "id": "source-minecraft-server-list",
+          "kind": "reference",
+          "label": "나무위키 계열 · 마인크래프트 인터넷 방송인 서버 목록",
+          "url": "https://namu.moe/w/%EB%A7%88%EC%9D%B8%ED%81%AC%EB%9E%98%ED%94%84%ED%8A%B8%20%EC%9D%B8%ED%84%B0%EB%84%B7%20%EB%B0%A9%EC%86%A1%EC%9D%B8%20%EC%84%9C%EB%B2%84"
+        },
+        {
+          "id": "source-diamond-vod-192233707",
+          "kind": "official",
+          "label": "SOOP VOD · 192233707",
+          "url": "https://vod.sooplive.com/player/192233707"
+        },
+        {
+          "id": "source-diamond-vod-192317079",
+          "kind": "official",
+          "label": "SOOP VOD · 192317079",
+          "url": "https://vod.sooplive.com/player/192317079"
+        },
+        {
+          "id": "source-diamond-vod-192401771",
+          "kind": "official",
+          "label": "SOOP VOD · 192401771",
+          "url": "https://vod.sooplive.com/player/192401771"
+        },
+        {
+          "id": "source-diamond-vod-192510763",
+          "kind": "official",
+          "label": "SOOP VOD · 192510763",
+          "url": "https://vod.sooplive.com/player/192510763"
+        },
+        {
+          "id": "source-diamond-vod-192581897",
+          "kind": "official",
+          "label": "SOOP VOD · 192581897",
+          "url": "https://vod.sooplive.com/player/192581897"
+        },
+        {
+          "id": "source-diamond-vod-192845469",
+          "kind": "official",
+          "label": "SOOP VOD · 192845469",
+          "url": "https://vod.sooplive.com/player/192845469"
+        },
+        {
+          "id": "source-diamond-vod-192962357",
+          "kind": "official",
+          "label": "SOOP VOD · 192962357",
+          "url": "https://vod.sooplive.com/player/192962357"
+        }
+      ],
+      "verification": {
+        "state": "cross_checked",
+        "verifiedAt": "2026-09-22T17:45:00+09:00",
+        "conflicts": []
+      },
+      "published": true,
+      "updatedAt": "2026-09-22T17:45:00+09:00"
     }
   ],
   "hiddenIds": [
