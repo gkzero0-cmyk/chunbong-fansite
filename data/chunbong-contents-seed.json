@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-23T05:02:00+09:00",
+  "updatedAt": "2026-09-23T05:17:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -18,9 +18,9 @@
       "summary": "춘봉이 기획·운영한 SOOP·치지직·YouTube 플랫폼 통합 대규모 스트리머 마인크래프트 서버.",
       "description": "2025년 6월 5일부터 7월 6일까지 진행된 플랫폼 통합 대규모 마인크래프트 서버입니다. 춘봉이 총괄 기획·주최했으며 SOOP·치지직·YouTube 통합 서버로 운영됐습니다. 공식 게시글·VOD·SOOP PICK 자료에 더해 나무위키 계열 교차 자료에서 최종 참여자 671명, 1차 SOOP 140명, 2차 171명 등의 규모를 확인해 함께 기록합니다.",
       "heroImage": {
-        "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,h_900,w_1600/e_blur:700/l_chunbong-fansite:leopel:logo/c_fit,h_760,w_1300/fl_layer_apply,g_center/f_webp/q_auto:best/v1790043451/chunbong-fansite/leopel/logo.webp",
-        "alt": "레오펠 사자의 노래 공식 로고 기반 16:9 대표 이미지",
-        "sourceId": ""
+        "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109600/chunbong-fansite/leopel/presentation-source.jpg",
+        "alt": "레오펠 서버 발표회 실제 SOOP VOD 기반 16:9 대표 이미지",
+        "sourceId": "source-presentation-vod"
       },
       "participants": [],
       "results": [
@@ -334,7 +334,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-23T05:02:00+09:00",
+      "updatedAt": "2026-09-23T05:17:00+09:00",
       "series": {
         "id": "leopel",
         "title": "레오펠",
@@ -342,8 +342,8 @@
         "description": "플랫폼 통합 대규모 스트리머 마인크래프트 서버의 기획·오픈·방송 기록을 모아봅니다.",
         "order": 40,
         "cover": {
-          "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,h_900,w_1600/e_blur:700/l_chunbong-fansite:leopel:logo/c_fit,h_760,w_1300/fl_layer_apply,g_center/f_webp/q_auto:best/v1790043451/chunbong-fansite/leopel/logo.webp",
-          "alt": "레오펠 사자의 노래 공식 로고 기반 16:9 대표 이미지"
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109600/chunbong-fansite/leopel/presentation-source.jpg",
+          "alt": "레오펠 실제 SOOP VOD 기반 16:9 대표 이미지"
         }
       },
       "participantGroups": [
@@ -706,8 +706,8 @@
       "summary": "춘봉이 주최한 2026년 마인크래프트 스트리머 서버로, 6월 24일부터 7월 15일까지 진행된 기록이 확인됩니다.",
       "description": "2026년 6월 24일부터 7월 15일 23:59:59까지 진행된 마인크래프트 스트리머 서버입니다. 공개 Notion 원문에는 난파 후 사자마을에서 발생한 빚을 갚고 탈출하는 ‘빚 청산 탈출기’ 콘셉트와 서버 규칙·API·채광·요리·낚시·도감·미니게임·보물·갬블·땅 구매·빚 갚기·장비수리·램프·강화 시스템이 정리되어 있습니다. 네이버 입주순서 공지에서는 6월 24일 18시부터 10분 간격으로 1~5차 입주 명단이 확인되며, 방통실 스트리머 페이지에서는 191명 등록을 별도로 확인했습니다. 두 자료는 집계 기준이 달라 서로 합산하지 않습니다.",
       "heroImage": {
-        "src": "https://videoimg.sooplive.com/php/SnapshotLoad.php?rowKey=20260624_06490C12_295065823_4_r",
-        "alt": "그냥서버 : 머니게임 공식 SOOP 다시보기 썸네일",
+        "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109557/chunbong-fansite/justserver/moneygame-selected-source.jpg",
+        "alt": "그냥서버 : 머니게임 빚 랭킹 CCTV 실제 방송 기반 16:9 대표 이미지",
         "sourceId": ""
       },
       "participants": [
@@ -1359,6 +1359,13 @@
       ],
       "gallery": [
         {
+          "id": "money-user-selected-cover",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109557/chunbong-fansite/justserver/moneygame-selected-source.jpg",
+          "alt": "그냥서버 : 머니게임 빚 랭킹 CCTV 실제 방송 이미지",
+          "caption": "사용자가 지정한 그냥서버 : 머니게임 16:9 대표 이미지",
+          "sourceId": ""
+        },
+        {
           "id": "money-vod-official",
           "src": "https://videoimg.sooplive.com/php/SnapshotLoad.php?rowKey=20260624_06490C12_295065823_4_r",
           "alt": "그냥서버 머니게임 SOOP 공식 다시보기 썸네일",
@@ -1465,7 +1472,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T22:12:00+09:00",
+      "updatedAt": "2026-09-23T05:17:00+09:00",
       "series": {
         "id": "justserver",
         "title": "그냥서버",
@@ -1473,8 +1480,8 @@
         "description": "춘봉이 주최한 그냥서버를 ‘그냥서버 : 다이아 → 머니게임 → 적자생존’ 순으로 시즌별 모집·방송·참가자·진행 자료와 함께 이어서 봅니다.",
         "order": 10,
         "cover": {
-          "src": "/assets/chunbong-contents/justserver-moneygame-cover.svg",
-          "alt": "그냥서버 시리즈 대표 이미지"
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109557/chunbong-fansite/justserver/moneygame-selected-source.jpg",
+          "alt": "그냥서버 시리즈 실제 자료 기반 16:9 대표 이미지"
         }
       },
       "participantGroups": [
@@ -1789,8 +1796,8 @@
       "summary": "춘봉의 그냥서버 세 번째 시즌 ‘적자생존’. 2026년 9월 30일 오픈 예정으로 모집·신청·설명회·UP 랭킹 관련 공식 자료를 준비 단계부터 기록합니다.",
       "description": "2026년 9월 30일 오픈 예정인 그냥서버 : 적자생존 기록입니다. 공개 Notion 기획 자료와 춘봉 SOOP 공식 게시글·설명회 VOD를 중심으로 모집 → 신청 → 합격자 안내 → 설명회 → 2차 입주 모집 → 서버 오픈 준비 흐름을 정리합니다. 애청자 공개 게시글은 공개 자료와 분리해 내부 검증용으로 보관하며, 세부 내용은 로그인된 브라우저 수집으로 확인될 때만 구조화합니다.",
       "heroImage": {
-        "src": "https://stimg.sooplive.com/NORMAL_BBS/3/24883333/83091789821197973.png",
-        "alt": "그냥서버 : 적자생존 2차 입주 공식 모집 이미지",
+        "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_auto,h_900,w_1600/f_webp/q_auto:best/v1790109594/chunbong-fansite/justserver/survival-source.webp",
+        "alt": "그냥서버 : 적자생존 공식 모집 이미지 기반 16:9 대표 이미지",
         "sourceId": "source-survival-post-207564927"
       },
       "participants": [
@@ -2617,7 +2624,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T20:25:00+09:00",
+      "updatedAt": "2026-09-23T05:17:00+09:00",
       "series": {
         "id": "justserver",
         "title": "그냥서버",
@@ -2625,8 +2632,8 @@
         "description": "춘봉이 주최한 그냥서버를 ‘그냥서버 : 다이아 → 머니게임 → 적자생존’ 순으로 시즌별 모집·방송·참가자·진행 자료와 함께 이어서 봅니다.",
         "order": 10,
         "cover": {
-          "src": "/assets/chunbong-contents/justserver-moneygame-cover.svg",
-          "alt": "그냥서버 시리즈 대표 이미지"
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109557/chunbong-fansite/justserver/moneygame-selected-source.jpg",
+          "alt": "그냥서버 시리즈 실제 자료 기반 16:9 대표 이미지"
         }
       },
       "participantGroups": [
@@ -3258,7 +3265,7 @@
           "date": "2026-07-12",
           "datePrecision": "day",
           "url": "",
-          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042557/chunbong-fansite/chuntacle/session-1.webp",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_center,h_900,w_1600/f_webp/q_auto:best/v1790042557/chunbong-fansite/chuntacle/session-1.webp",
           "sourceId": "",
           "note": "08:00 · VRChat · 김잇딥, 네아, 마로, 소하, 슬윤, 이투, 도람지, 문이유, 체리몽, 흠냥.",
           "visibility": "public"
@@ -3270,7 +3277,7 @@
           "date": "2026-07-22",
           "datePrecision": "day",
           "url": "",
-          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042600/chunbong-fansite/chuntacle/session-2.webp",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_center,h_900,w_1600/f_webp/q_auto:best/v1790042600/chunbong-fansite/chuntacle/session-2.webp",
           "sourceId": "",
           "note": "08:00 · VRChat · 모이사, 다키, 연주홍, 문이유, 슬윤, 흠냥, 클라비스, 유리, 멍보리, 투미츠, 소하.",
           "visibility": "public"
@@ -3282,7 +3289,7 @@
           "date": "2026-08-02",
           "datePrecision": "day",
           "url": "",
-          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042605/chunbong-fansite/chuntacle/session-3.webp",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_center,h_900,w_1600/f_webp/q_auto:best/v1790042605/chunbong-fansite/chuntacle/session-3.webp",
           "sourceId": "source-moon-streams",
           "note": "포스터에는 8시로 표기되어 있으며 방송 이력은 20:00 수업 기록과 일치합니다. 수강생 10명: 흠냥, 문이유, 김잇딥, 클라비스, 소하, 멍보리, 나밍, 유리, 모이사, 도람지.",
           "visibility": "internal"
@@ -3294,7 +3301,7 @@
           "date": "2026-08-11",
           "datePrecision": "day",
           "url": "",
-          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042611/chunbong-fansite/chuntacle/session-4.webp",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_center,h_900,w_1600/f_webp/q_auto:best/v1790042611/chunbong-fansite/chuntacle/session-4.webp",
           "sourceId": "source-moon-streams",
           "note": "08:00 · VRChat · 소하, 투미츠, 연주홍, 네아, 김잇딥, 클라비스, 멍보리, 나밍.",
           "visibility": "internal"
@@ -3306,7 +3313,7 @@
           "date": "2026-09-14",
           "datePrecision": "day",
           "url": "",
-          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042682/chunbong-fansite/chuntacle/session-5.webp",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_center,h_900,w_1600/f_webp/q_auto:best/v1790042682/chunbong-fansite/chuntacle/session-5.webp",
           "sourceId": "",
           "note": "08:00 · VRChat · 김뽁분, 김잇딥, 문이유, 연주홍, 클라비스.",
           "visibility": "public"
@@ -3413,35 +3420,35 @@
       "gallery": [
         {
           "id": "chuntacle-session-1",
-          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042557/chunbong-fansite/chuntacle/session-1.webp",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_center,h_900,w_1600/f_webp/q_auto:best/v1790042557/chunbong-fansite/chuntacle/session-1.webp",
           "alt": "춘타클 제1회 포스터",
           "caption": "2026-07-12 · 춘타클 제1회 실제 포스터",
           "sourceId": ""
         },
         {
           "id": "chuntacle-session-2",
-          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042600/chunbong-fansite/chuntacle/session-2.webp",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_center,h_900,w_1600/f_webp/q_auto:best/v1790042600/chunbong-fansite/chuntacle/session-2.webp",
           "alt": "춘타클 제2회 포스터",
           "caption": "2026-07-22 · 춘타클 제2회 실제 포스터",
           "sourceId": ""
         },
         {
           "id": "chuntacle-session-3",
-          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042605/chunbong-fansite/chuntacle/session-3.webp",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_center,h_900,w_1600/f_webp/q_auto:best/v1790042605/chunbong-fansite/chuntacle/session-3.webp",
           "alt": "춘타클 제3회 포스터",
           "caption": "2026-08-02 · 춘타클 제3회 실제 포스터",
           "sourceId": "source-moon-streams"
         },
         {
           "id": "chuntacle-session-4",
-          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042611/chunbong-fansite/chuntacle/session-4.webp",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_center,h_900,w_1600/f_webp/q_auto:best/v1790042611/chunbong-fansite/chuntacle/session-4.webp",
           "alt": "춘타클 제4회 포스터",
           "caption": "2026-08-11 · 춘타클 제4회 실제 포스터",
           "sourceId": "source-moon-streams"
         },
         {
           "id": "chuntacle-session-5",
-          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042682/chunbong-fansite/chuntacle/session-5.webp",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_center,h_900,w_1600/f_webp/q_auto:best/v1790042682/chunbong-fansite/chuntacle/session-5.webp",
           "alt": "춘타클 제5회 별빛 타로 클래스 포스터",
           "caption": "2026-09-14 · 춘타클 제5회 실제 포스터",
           "sourceId": ""
@@ -3518,7 +3525,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-23T03:46:00+09:00",
+      "updatedAt": "2026-09-23T05:17:00+09:00",
       "seriesSessions": [
         {
           "id": "session-1",
@@ -3542,7 +3549,7 @@
           ],
           "participantCount": 10,
           "poster": {
-            "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042557/chunbong-fansite/chuntacle/session-1.webp",
+            "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_center,h_900,w_1600/f_webp/q_auto:best/v1790042557/chunbong-fansite/chuntacle/session-1.webp",
             "alt": "춘타클 제1회 포스터",
             "status": "verified"
           },
@@ -3572,7 +3579,7 @@
           ],
           "participantCount": 11,
           "poster": {
-            "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042600/chunbong-fansite/chuntacle/session-2.webp",
+            "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_center,h_900,w_1600/f_webp/q_auto:best/v1790042600/chunbong-fansite/chuntacle/session-2.webp",
             "alt": "춘타클 제2회 포스터",
             "status": "verified"
           },
@@ -3601,7 +3608,7 @@
           ],
           "participantCount": 10,
           "poster": {
-            "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042605/chunbong-fansite/chuntacle/session-3.webp",
+            "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_center,h_900,w_1600/f_webp/q_auto:best/v1790042605/chunbong-fansite/chuntacle/session-3.webp",
             "alt": "춘타클 제3회 포스터",
             "status": "verified"
           },
@@ -3628,7 +3635,7 @@
           ],
           "participantCount": 8,
           "poster": {
-            "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042611/chunbong-fansite/chuntacle/session-4.webp",
+            "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_center,h_900,w_1600/f_webp/q_auto:best/v1790042611/chunbong-fansite/chuntacle/session-4.webp",
             "alt": "춘타클 제4회 포스터",
             "status": "verified"
           },
@@ -3652,7 +3659,7 @@
           ],
           "participantCount": 5,
           "poster": {
-            "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042682/chunbong-fansite/chuntacle/session-5.webp",
+            "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_center,h_900,w_1600/f_webp/q_auto:best/v1790042682/chunbong-fansite/chuntacle/session-5.webp",
             "alt": "춘타클 제5회 별빛 타로 클래스 포스터",
             "status": "verified"
           },
@@ -3690,8 +3697,8 @@
       "summary": "춘봉이 개최한 싸이감성 노래자랑 제1회 기록으로, SOOP 모집글·공식 VOD와 보존된 원문 참가 순서를 기준으로 정리합니다.",
       "description": "싸이감성 노래자랑 제1회 기록입니다. SOOP에 보존된 원문에서 참가자 36명과 핀볼 경연 순서를 확인했습니다. 원문 순서의 ‘시네_’와 별도 참가 기록의 ‘시로코’는 동일 인물로 확인되어 중복 인원으로 계산하지 않습니다. 시로코는 서인영 ‘신데렐라’로 참가한 기록이 확인됩니다. 정확한 행사 시작 일시는 현재 자료에서 확인되지 않아 추정하지 않습니다.",
       "heroImage": {
-        "src": "https://iflv14.afreecatv.com/save/afreeca/station/2024/0613/14/thumb/1718256019104033_R_7.jpg",
-        "alt": "제1회 싸이감성 노래자랑 공식 편집 VOD 썸네일",
+        "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109567/chunbong-fansite/psy/series-selected-source.jpg",
+        "alt": "싸이감성 노래자랑 제1회 실제 SOOP VOD 기반 16:9 대표 이미지",
         "sourceId": "source-psy1-vod"
       },
       "participants": [
@@ -3835,7 +3842,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T22:12:00+09:00",
+      "updatedAt": "2026-09-23T05:17:00+09:00",
       "series": {
         "id": "psy-emotion-song-contest",
         "title": "싸이감성 노래자랑",
@@ -3843,8 +3850,8 @@
         "description": "춘봉이 개최한 싸이감성 노래자랑을 제1회·제2회로 분리해 모집 공지, 공식 VOD, 참가 기록을 회차별로 섞이지 않게 정리합니다.",
         "order": 30,
         "cover": {
-          "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
-          "alt": "싸이감성 노래자랑 대표 이미지"
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109567/chunbong-fansite/psy/series-selected-source.jpg",
+          "alt": "싸이감성 노래자랑 실제 자료 기반 16:9 대표 이미지"
         }
       },
       "participantGroups": [
@@ -3913,9 +3920,9 @@
       "summary": "춘봉이 개최한 싸이감성 노래자랑 제2회 기록으로, 2026년 4월 28일 오후 5시 개최와 참가자 22명·심사위원·상금 계획을 확인했습니다.",
       "description": "싸이감성 노래자랑 제2회는 2026년 4월 28일 오후 5시에 진행됐습니다. 참가자는 22명이며 핀볼로 경연 순서를 정했고, 심사위원은 춘봉·릴파·추르미·이사호입니다. 사전 공지 기준 총상금은 현금 100만 원과 별풍선 13,000개이며, 참가자는 디스코드 대기실에서 기다리다 본인 순서에 참가방으로 이동해 자기소개 후 도방으로 진행하도록 안내됐습니다.",
       "heroImage": {
-        "src": "https://stimg.sooplive.com/NORMAL_BBS/7/22573757/50621790084066936.png",
-        "alt": "싸이감성 노래자랑 공식 타이틀 이미지",
-        "sourceId": "source-psy2-soop-archive-copy"
+        "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109710/chunbong-fansite/psy/session-2-cover-16x9.jpg",
+        "alt": "싸이감성 노래자랑 제2회 실제 SOOP 방송 기반 16:9 대표 이미지",
+        "sourceId": "source-psy2-vod"
       },
       "participants": [
         "노아란",
@@ -4076,7 +4083,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T22:12:00+09:00",
+      "updatedAt": "2026-09-23T05:17:00+09:00",
       "series": {
         "id": "psy-emotion-song-contest",
         "title": "싸이감성 노래자랑",
@@ -4084,8 +4091,8 @@
         "description": "춘봉이 개최한 싸이감성 노래자랑을 제1회·제2회로 분리해 모집 공지, 공식 VOD, 참가 기록을 회차별로 섞이지 않게 정리합니다.",
         "order": 30,
         "cover": {
-          "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
-          "alt": "싸이감성 노래자랑 대표 이미지"
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109567/chunbong-fansite/psy/series-selected-source.jpg",
+          "alt": "싸이감성 노래자랑 실제 자료 기반 16:9 대표 이미지"
         }
       },
       "participantGroups": [
@@ -4140,8 +4147,8 @@
         "description": "춘봉이 주최한 그냥서버를 ‘그냥서버 : 다이아 → 머니게임 → 적자생존’ 순으로 시즌별 모집·방송·참가자·진행 자료와 함께 이어서 봅니다.",
         "order": 10,
         "cover": {
-          "src": "/assets/chunbong-contents/justserver-moneygame-cover.svg",
-          "alt": "그냥서버 시리즈 대표 이미지"
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109557/chunbong-fansite/justserver/moneygame-selected-source.jpg",
+          "alt": "그냥서버 시리즈 실제 자료 기반 16:9 대표 이미지"
         }
       },
       "role": "주최",
@@ -4152,9 +4159,9 @@
       "summary": "춘봉이 2026년 4월 9일부터 4월 16일까지 개최한 그냥서버 첫 시즌 ‘다이아’ 기록입니다.",
       "description": "2026년 4월 9일부터 4월 16일까지 진행된 그냥서버 제1시즌입니다. SOOP 모집 원문에서 초기 모집 정원 50명, 댓글 신청·입장비 없음, ‘다이아 & 도감 힐링 티키타카’ 콘셉트가 확인됩니다. RPG·히든은 없다고 안내했으며 변경 가능성을 명시했고, 광물 증감·버프·귀환·인벤세이브·몬스터 소환·텔레포트·수선·즉사 등 후원 연동 API도 공지했습니다. 이후 방통실 참가 스트리머 목록에서는 SOOP 189명이 확인됩니다.",
       "heroImage": {
-        "src": "https://stimg.sooplive.com/NORMAL_BBS/3/24883333/276969d66b48e4b72.png",
-        "alt": "그냥서버 : 다이아 SOOP 공식 모집 홍보 이미지",
-        "sourceId": "source-diamond-recruit"
+        "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109701/chunbong-fansite/justserver/diamond-cover-16x9.jpg",
+        "alt": "그냥서버 : 다이아 실제 SOOP 방송 기반 16:9 대표 이미지",
+        "sourceId": "source-diamond-vod-192233707"
       },
       "participants": [],
       "results": [
@@ -4425,7 +4432,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T22:12:00+09:00",
+      "updatedAt": "2026-09-23T05:17:00+09:00",
       "participantGroups": [
         {
           "id": "diamond-soop-participants",
