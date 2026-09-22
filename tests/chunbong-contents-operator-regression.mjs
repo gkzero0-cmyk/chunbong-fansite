@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
 const archive=require('../lib/chunbong-content-archive-api.js');
+const autoIngest=require('../lib/chunbong-content-auto-ingest.js');
 const content=fs.readFileSync(new URL('../api/content.js',import.meta.url),'utf8');
 assert.equal(typeof archive._internals.prepareForSave,'function','prepareForSave missing');
 const base={id:'sample',title:'샘플',category:'minecraft',role:'주최',status:'ended',startDate:'2026-06',datePrecision:'month',summary:'설명',sources:[{id:'s1',kind:'official',url:'https://www.sooplive.com/station/chunbongtv'}],verification:{state:'official',conflicts:[]},published:false};
@@ -10,7 +11,7 @@ const draft=archive._internals.prepareForSave(base,{publish:false});
 assert.equal(draft.item.published,false);
 assert.throws(()=>archive._internals.prepareForSave({...base,sources:[]},{publish:true}),/published_source_required/);
 assert.throws(()=>archive._internals.prepareForSave({...base,verification:{state:'needs_review',conflicts:[{field:'date'}]}},{publish:true}),/unresolved_conflict/);
-for(const type of ['operator-content-archive','operator-content-archive-save','operator-content-archive-publish','operator-content-archive-delete']) assert.ok(content.includes(type),'missing '+type);
+for(const type of ['operator-content-archive','operator-content-archive-save','operator-content-archive-publish','operator-content-archive-delete','operator-content-auto-sync','content-archive-auto-sync']) assert.ok(content.includes(type),'missing '+type);
 console.log('chunbong contents operator API regression passed');
 
 const operatorHtml=fs.readFileSync(new URL('../operator.html',import.meta.url),'utf8');
@@ -66,9 +67,7 @@ assert.deepEqual(bngtsNames,['BJ공파리파','♡효구리♡'],'BNGTS streamer
 assert.match(archiveSource,/loadCachedPageChunk/,'Notion source extraction must use public page recordMap');
 assert.match(archiveSource,/notion-record-map-recursive/,'Notion extraction should recurse into linked public subpages');
 assert.match(archiveSource,/bngts-pagination/,'BNGTS source extraction must paginate streamer pages');
-assert.match(archiveSource,/source_meta_human_verification_required/,'human verification failures must be classified');
 assert.match(archiveSource,/source_meta_client_render_required/,'client-render-only failures must be classified');
-assert.match(operatorContents,/사람 확인\(Turnstile\)/,'operator UI should explain FMKorea human verification');
 assert.match(operatorContents,/JavaScript로 본문을 불러오는 페이지/,'operator UI should explain client-render-only pages');
 assert.match(operatorContents,/meta\.participants\.join/,'operator meta import should be able to populate participant names');
 
@@ -88,3 +87,21 @@ assert.equal(soopMeta.image,'https://stimg.sooplive.com/test.png');
 assert.match(archiveSource,/api-channel\.sooplive\.com\/v1\.1\/channel/,'SOOP post extraction should use the current channel API');
 assert.match(archiveSource,/source_meta_auth_required/,'protected SOOP posts must be classified as auth-required');
 assert.match(operatorContents,/SOOP 애청자 공개/,'operator UI should explain protected SOOP posts');
+
+assert.ok(archive._internals.allowedSourceMetaUrl('https://naver.me/FbVX1U7z'),'Naver short links should be eligible for source metadata extraction');
+assert.equal(archive._internals.allowedSourceMetaUrl('https://www.fmkorea.com/7042989434'),null,'FM Korea should no longer be accepted as an archive source');
+assert.match(archiveSource,/AUTO_CANDIDATES_KEY/,'auto-ingest candidate storage should exist');
+assert.match(operatorHtml,/data-archive-auto-sync/,'operator center should expose official-source sync');
+assert.match(operatorContents,/SOOP · YouTube 공식 자료를 동기화/,'operator sync UI should explain official source refresh');
+
+const autoRows=[
+  {id:'diamond',title:'그냥서버 : 다이아',aliases:['그냥서버 다이아'],series:{id:'justserver',title:'그냥서버'},startDate:'2026-04-09',endDate:'2026-04-16',timeline:[],media:[]},
+  {id:'survival',title:'그냥서버 : 적자생존',aliases:['적자생존'],series:{id:'justserver',title:'그냥서버'},startDate:'2026-09-30',endDate:'2026-10-21',timeline:[],media:[]}
+];
+const survivalMatch=autoIngest.matchArchiveItem({title:'7시 그냥서버:적자생존 설명회',date:'2026-09-19'},autoRows);
+assert.equal(survivalMatch?.itemId,'survival','explicit content title should auto-match the correct archive record');
+const diamondMatch=autoIngest.matchArchiveItem({title:'마크 그냥서버 열겠습니다.',date:'2026-04-09'},autoRows);
+assert.equal(diamondMatch?.itemId,'diamond','generic JustServer title should use the content date window');
+const applied=autoIngest.attachOfficialDiscoveries(autoRows,[autoIngest.materialFromVideo({id:'207560243',title:'7시 그냥서버:적자생존 설명회',date:'2026-09-19',thumb:'//videoimg.sooplive.com/a.jpg',link:'https://vod.sooplive.com/player/207560243'},'vod')]);
+assert.equal(applied.rows.find(row=>row.id==='survival')?.media?.length,1,'matched official VOD should be attached automatically');
+assert.equal(applied.candidates.length,0,'high-confidence official match should not remain a review candidate');
