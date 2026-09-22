@@ -238,12 +238,29 @@ try{
   {
     const page=await browser.newPage({viewport:{width:1440,height:900}});
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
+    const requestFailures=[];page.on('requestfailed',request=>requestFailures.push(request.url()+': '+(request.failure()?.errorText||'failed')));
+    const consoleErrors=[];page.on('console',message=>{if(message.type()==='error')consoleErrors.push(message.text())});
     await installOperatorApi(page);
     await page.goto(base+'/operator.html',{waitUntil:'networkidle'});
-    await page.waitForFunction(()=>!document.querySelector('#operator-dashboard')?.hidden);
+    try{
+      await page.waitForFunction(()=>!document.querySelector('#operator-dashboard')?.hidden,null,{timeout:10000});
+    }catch(error){
+      const state=await page.evaluate(()=>({
+        dashboardHidden:document.querySelector('#operator-dashboard')?.hidden,
+        loginHidden:document.querySelector('#operator-login')?.hidden,
+        status:document.querySelector('#operator-login-status')?.textContent||'',
+        operatorLoaded:typeof window!=='undefined'&&Boolean(document.querySelector('#operator-dashboard'))
+      }));
+      throw new Error('operator dashboard did not open: '+JSON.stringify(state)+'; pageErrors='+errors.join(' | ')+'; consoleErrors='+consoleErrors.join(' | ')+'; requestFailures='+requestFailures.join(' | ')+'; '+error.message);
+    }
     await page.locator('[data-operator-tab="contents"]').click();
     await page.locator('[data-operator-panel="contents"]').waitFor({state:'visible'});
-    await page.waitForFunction(()=>document.querySelectorAll('[data-archive-select]').length===1);
+    try{
+      await page.waitForFunction(()=>document.querySelectorAll('[data-archive-select]').length===1,null,{timeout:10000});
+    }catch(error){
+      const state=await page.evaluate(()=>({panelText:document.querySelector('[data-operator-panel="contents"]')?.textContent||'',listHtml:document.querySelector('[data-archive-admin-list]')?.innerHTML||''}));
+      throw new Error('operator archive list did not load: '+JSON.stringify(state)+'; pageErrors='+errors.join(' | ')+'; consoleErrors='+consoleErrors.join(' | ')+'; requestFailures='+requestFailures.join(' | ')+'; '+error.message);
+    }
     assert.match((await page.locator('[data-archive-admin-list]').textContent())||'',/레오펠/,'operator archive list should show records');
 
     await page.locator('[data-archive-select="leopel"]').click();
