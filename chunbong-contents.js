@@ -1,7 +1,7 @@
 (function(global){
 'use strict';
 const CATEGORY_LABELS={minecraft:'마인크래프트',song:'노래대회',broadcast:'방송 기획','class-event':'클래스 · 이벤트',other:'기타'};
-const STATUS_LABELS={recruiting:'모집',ongoing:'진행 중',ended:'종료'};
+const STATUS_LABELS={planned:'예정',recruiting:'모집 중',ongoing:'진행 중',ended:'종료'};
 const SOURCE_KIND_LABELS={official:'공식 자료',article:'기사 · 편집 자료',reference:'교차 확인'};
 const TYPE_LABELS={notice:'공지',post:'게시글',vod:'다시보기',catch:'Catch',clip:'클립',youtube:'YouTube',shorts:'Shorts',article:'기사',result:'결과',image:'이미지',reference:'참고 자료'};
 const API_LIST='/api/content?type=chunbong-contents',API_DETAIL='/api/content?type=chunbong-content&id=';

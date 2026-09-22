@@ -40,3 +40,6 @@ for(const token of ['archive-series','archive-series-nav','archive-series-focus'
 
 for(const token of ['buildSeriesGroups','renderSeriesNavigation','renderSiblingSeriesNav',"p.get('series')","p.set('series'",'sourceKindLabel']) assert.ok(js.includes(token),token);
 for(const token of ['archive-series-home-grid','archive-series-card','archive-series-landing','archive-sibling-series','archive-source-kind']) assert.ok(css.includes(token),token);
+
+for(const token of ['archive-hero-actions','archive-series-skeleton','grid-template-columns:repeat(4','overflow-x:auto']) assert.ok(css.includes(token),token);
+assert.ok(html.includes('대표 시리즈 바로 보기 ↓'),'compact archive hero should link directly to real series content');
