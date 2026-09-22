@@ -254,7 +254,8 @@ async function handler(req,res) {
     const mode=requestUrl.searchParams.get('mode')||'board';
     try{
       if(mode==='board'){
-        const p=new URLSearchParams({per_page:'50',start_date:'2026-04-08',end_date:'2026-04-10',field:'title,contents,user_nick,user_id,hashtags',keyword:'',type:'all',order_by:'reg_date',page:'1'});
+        const byUser=requestUrl.searchParams.get('byUser')==='1';
+        const p=new URLSearchParams({per_page:'50',start_date:requestUrl.searchParams.get('start')||'2026-04-08',end_date:requestUrl.searchParams.get('end')||'2026-04-10',field:byUser?'user_id':'title,contents,user_nick,user_id,hashtags',keyword:byUser?'chunbongtv':'',type:'all',order_by:'reg_date',page:requestUrl.searchParams.get('page')||'1'});
         const url='https://chapi.sooplive.com/api/chunbongtv/board/?'+p.toString();
         const r=await fetch(url,{headers:{'user-agent':'Mozilla/5.0','accept':'application/json,text/plain,*/*','referer':'https://www.sooplive.com/'}});
         const raw=await r.text(); let payload={}; try{payload=JSON.parse(raw)}catch{}
