@@ -18,8 +18,10 @@ function allPeople(item={}){
   return [...new Set(names.map(v=>String(v||'').trim()).filter(Boolean))];
 }
 function itemPeopleCount(item={}){
+  const verified=Number(item.participantCount||0);
   const direct=(item.participants||[]).length;
   const grouped=(item.participantGroups||[]).reduce((sum,row)=>sum+Number(row.count||row.participants?.length||0),0);
+  if(verified>0)return verified;
   if(direct||grouped)return Math.max(direct,grouped);
   return allPeople(item).length;
 }
@@ -27,7 +29,7 @@ function searchableText(item={}){
   const values=[
     item.title,item.summary,item.description,item.role,item.series?.title,item.series?.subtitle,
     ...(item.aliases||[]),...allPeople(item),
-    ...(item.participantGroups||[]).flatMap(g=>[g.title,g.platform,g.note,...(g.participants||[])]),
+    ...(item.participantGroups||[]).flatMap(g=>[g.stage,g.title,g.platform,g.note,...(g.participants||[])]),
     ...(item.seriesSessions||[]).flatMap(s=>[s.title,s.note,...(s.participants||[])]),
     ...(item.timeline||[]).flatMap(r=>[r.title,r.note]),
     ...(item.media||[]).flatMap(r=>[r.title,r.note]),
@@ -308,11 +310,27 @@ function bindMediaFilter(panel){
 function renderPosts(item){const rows=[...(item.timeline||[]),...(item.media||[])].filter(r=>['notice','post','article','reference'].includes(r.type));if(!rows.length)return'<div class="archive-panel"><h2>게시글</h2><p>확인된 공지와 관련 게시글을 준비하고 있습니다.</p></div>';return`<div class="archive-panel"><h2>게시글</h2><div class="archive-source-list">${rows.map(r=>`<a href="${escapeHtml(safeUrl(r.url))}" target="_blank" rel="noreferrer"><span><strong>${escapeHtml(r.title)}</strong><small>${escapeHtml(materialTypeLabel(r.type))} · ${escapeHtml(formatDate(r.date,r.datePrecision))}</small></span><b>↗</b></a>`).join('')}</div></div>`}
 function renderParticipantGroups(item){
   const groups=item.participantGroups||[];if(!groups.length)return'';
-  return `<div class="archive-participant-groups">${groups.map(group=>`<details class="archive-participant-group"><summary><span><b>${escapeHtml(group.title||group.platform||'참가자 그룹')}</b>${group.platform?`<small>${escapeHtml(group.platform)}</small>`:''}</span><strong>${Number(group.count||group.participants?.length||0)}명</strong></summary>${group.note?`<p>${escapeHtml(group.note)}</p>`:''}${(group.participants||[]).length?`<div class="archive-people-chips">${group.participants.map(name=>`<span data-person-row="${escapeHtml(normalize(name))}">${personButton(name)}</span>`).join('')}</div>`:'<p>확인된 명단을 정리하고 있습니다.</p>'}</details>`).join('')}</div>`;
+  const groupMarkup=group=>`<details class="archive-participant-group"><summary><span><b>${escapeHtml(group.title||group.platform||'참가자 그룹')}</b>${group.platform?`<small>${escapeHtml(group.platform)}</small>`:''}</span><strong>${Number(group.count||group.participants?.length||0)}명</strong></summary>${group.note?`<p>${escapeHtml(group.note)}</p>`:''}${(group.participants||[]).length?`<div class="archive-people-chips">${group.participants.map(name=>`<span data-person-row="${escapeHtml(normalize(name))}">${personButton(name)}</span>`).join('')}</div>`:'<p>확인된 명단을 정리하고 있습니다.</p>'}</details>`;
+  const stages=[],stageMap=new Map(),ungrouped=[];
+  for(const group of groups){
+    const stage=String(group.stage||'').trim();
+    if(!stage){ungrouped.push(group);continue}
+    if(!stageMap.has(stage)){const row={title:stage,groups:[]};stageMap.set(stage,row);stages.push(row)}
+    stageMap.get(stage).groups.push(group);
+  }
+  const stagedMarkup=stages.map(stage=>{
+    const count=stage.groups.reduce((sum,row)=>sum+Number(row.count||row.participants?.length||0),0);
+    return `<section class="archive-participant-stage"><div class="archive-participant-stage-heading"><span><small>ENTRY STAGE</small><strong>${escapeHtml(stage.title)}</strong></span><b>${count}명</b></div><div class="archive-participant-stage-groups">${stage.groups.map(groupMarkup).join('')}</div></section>`;
+  }).join('');
+  return `<div class="archive-participant-groups">${stagedMarkup}${ungrouped.map(groupMarkup).join('')}</div>`;
 }
 function renderPeople(item){
   const p=allPeople(item),g=item.participantGroups||[],r=item.results||[],isClass=item.category==='class-event',count=itemPeopleCount(item);
-  return `<div class="archive-panel"><div class="archive-section-heading"><div><small>${isClass?'CLASS RECORD':'PEOPLE & RESULT'}</small><h2>${isClass?'수강생 · 회차 기록':'참가자 · 결과'}</h2></div><span>${count?count+'명 확인':'확인 중'}</span></div>${p.length?`<label class="archive-participant-search"><span>이름 검색</span><input type="search" data-participant-search placeholder="참가자 이름 검색" autocomplete="off"></label><div class="archive-people-chips archive-people-master">${p.map(name=>`<span data-person-row="${escapeHtml(normalize(name))}">${personButton(name)}</span>`).join('')}</div><p class="archive-filter-empty" data-participant-empty hidden>검색 결과가 없습니다.</p>`:g.length?'':`<p>${isClass?'확인된 수강생 명단을 정리하고 있습니다.':'공식 자료에서 확인된 참가자 명단을 정리하고 있습니다.'}</p>`}${renderParticipantGroups(item)}${r.length?`<div class="archive-results-grid">${r.map(x=>`<article><small>${isClass?'SESSION':'RESULT'}</small><strong>${escapeHtml(x.title||x.label||'결과')}</strong><p>${escapeHtml(x.value||x.name||'')}</p></article>`).join('')}</div>`:''}</div>`;
+  const partial=count>p.length&&p.length>0?`<p class="archive-participant-count-note">전체 참가자 <strong>${count}명</strong> · 현재 구조화된 명단 <strong>${p.length}명</strong></p>`:'';
+  const search=p.length?`<label class="archive-participant-search"><span>이름 검색</span><input type="search" data-participant-search placeholder="참가자 이름 검색" autocomplete="off"></label><p class="archive-filter-empty" data-participant-empty hidden>검색 결과가 없습니다.</p>`:'';
+  const master=p.length&&!g.length?`<div class="archive-people-chips archive-people-master">${p.map(name=>`<span data-person-row="${escapeHtml(normalize(name))}">${personButton(name)}</span>`).join('')}</div>`:'';
+  const empty=!p.length&&!g.length?`<p>${isClass?'확인된 수강생 명단을 정리하고 있습니다.':'공식 자료에서 확인된 참가자 명단을 정리하고 있습니다.'}</p>`:'';
+  return `<div class="archive-panel"><div class="archive-section-heading"><div><small>${isClass?'CLASS RECORD':'PEOPLE & RESULT'}</small><h2>${isClass?'수강생 · 회차 기록':'참가자 · 결과'}</h2></div><span>${count?count+'명':'확인 중'}</span></div>${partial}${search}${master}${empty}${renderParticipantGroups(item)}${r.length?`<div class="archive-results-grid">${r.map(x=>`<article><small>${isClass?'SESSION':'RESULT'}</small><strong>${escapeHtml(x.title||x.label||'결과')}</strong><p>${escapeHtml(x.value||x.name||'')}</p></article>`).join('')}</div>`:''}</div>`;
 }
 function bindPeoplePanel(panel){
   const input=panel.querySelector('[data-participant-search]'),rows=[...panel.querySelectorAll('[data-person-row]')],empty=panel.querySelector('[data-participant-empty]');
