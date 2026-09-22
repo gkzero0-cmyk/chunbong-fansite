@@ -817,13 +817,13 @@
         {
           "id": "money-entry-order",
           "type": "reference",
-          "title": "머니게임 1~5차 입주 순서 공지",
+          "title": "머니게임 1차 입주 입장 순서 공지",
           "date": "2026-06-21",
           "datePrecision": "day",
           "url": "",
           "thumbnail": "",
           "sourceId": "source-money-naver-fbvx1u7z",
-          "note": "6월 24일 18:00부터 10분 간격으로 1~5차 입주를 진행하도록 안내한 공지입니다. 서버 안정성을 위해 입장 후 로비에서 야생·마을·목장·미니게임 등으로 이동하도록 안내했습니다.",
+          "note": "1차 입주자 243명을 6월 24일 18:00부터 18:40까지 10분 간격의 5개 입장 순서 그룹으로 나눠 입장하도록 안내한 공지입니다. 서버 안정성을 위해 입장 후 로비에서 야생·마을·목장·미니게임 등으로 이동하도록 안내했습니다.",
           "visibility": "public"
         }
       ],
@@ -1280,7 +1280,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-23T08:19:00+09:00",
+      "updatedAt": "2026-09-23T08:34:00+09:00",
       "series": {
         "id": "justserver",
         "title": "그냥서버",
