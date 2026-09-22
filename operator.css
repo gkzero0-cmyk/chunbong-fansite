@@ -206,3 +206,7 @@ body[data-page="operator"]{background:radial-gradient(circle at 80% 0,color-mix(
 .operator-archive-audit ul{display:grid;gap:7px;margin:10px 0 0;padding:0;list-style:none}
 .operator-archive-audit li{display:grid;gap:2px;padding:8px 9px;border:1px solid #ffffff0d;border-radius:9px;background:#0002}
 .operator-archive-audit li b{font-size:10px}.operator-archive-audit li small,.operator-archive-audit p{margin:0;color:var(--op-muted);font-size:10px;line-height:1.55}
+
+.operator-source-meta-actions{display:grid;gap:4px;align-self:end}
+.operator-source-meta-actions button{min-height:40px;white-space:nowrap}
+.operator-source-meta-actions small{min-height:14px;color:var(--op-meta);font-size:9px;line-height:1.35}
