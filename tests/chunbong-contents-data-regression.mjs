@@ -44,6 +44,16 @@ assert.ok((leopel?.sources||[]).length>=2,'Leopol should be cross-checked with m
 assert.equal(leopel?.role,'주최 · 기획','Leopol role should match directly supported source wording');
 for(const item of seed.items) assert.deepEqual(validateArchiveItem(normalizeArchiveItem(item),{publishing:true}),[]);
 
+
+const diamondBackfill=seed.items.find(item=>item.id==='justserver-diamond');
+assert.ok((diamondBackfill?.results||[]).some(row=>row.title==='전체 참가자'&&/189명/.test(row.value||'')),'그냥서버 1 전체 참가자 189명 기록이 필요합니다');
+assert.ok((diamondBackfill?.results||[]).some(row=>row.title==='관측 기록'&&/183명/.test(row.value||'')),'그냥서버 1 방통실 관측 183명 기록이 필요합니다');
+const diamondPartialGroup=(diamondBackfill?.participantGroups||[]).find(row=>row.id==='diamond-bngts-page-1');
+assert.equal(diamondPartialGroup?.count,48,'그냥서버 1 방통실 1페이지 확인 명단은 48명이어야 합니다');
+assert.equal(diamondPartialGroup?.participants?.length,48,'그냥서버 1 확인 명단 배열도 48명이어야 합니다');
+for(const name of ['BJ공파리파','냥냥두둥','김띵수','돗챠']) assert.ok(diamondPartialGroup?.participants?.includes(name),`그냥서버 1 확인 참가자 누락: ${name}`);
+assert.equal(diamondPartialGroup?.sourceId,'source-diamond-bngts-streamers','부분 참가자 명단은 내부 방통실 출처와 연결되어야 합니다');
+
 console.log('chunbong contents data regression passed');
 
 const archiveApi=require('../lib/chunbong-content-archive-api.js');
