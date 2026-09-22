@@ -131,7 +131,7 @@ assert.ok((leopel?.media||[]).some(row=>/159711687/.test(row.url)),'Leopel shoul
 assert.ok((leopel?.gallery||[]).length>=2,'Leopel detail should have visual archive material');
 assert.ok((justserver?.media||[]).length>=2,'JustServer should include multiple verified SOOP Catch records');
 assert.ok((justserver?.gallery||[]).length>=2,'JustServer detail should have visual archive material');
-const survival=data.items.find(item=>item.id==='justserver-survival');
+const survival=seed.items.find(item=>item.id==='justserver-survival');
 assert.ok(survival,'적자생존 콘텐츠 항목이 필요합니다');
 const moneyVodIds=['199701961','199731549','199911259','200010937','200150005','200191013','200238669','200257689','200295759','200393761','200401503','200477587','200609959','200775197','200812787','200857709','200893769','200917923','200956235','201043833','201146469','201223669','201329381','201384951','201524161','201595413'];
 for(const id of moneyVodIds) assert.ok((justserver?.media||[]).some(row=>row.url===`https://vod.sooplive.com/player/${id}`),`머니게임 VOD 누락: ${id}`);
