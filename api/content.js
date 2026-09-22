@@ -246,10 +246,56 @@ function compactDataPayload(payload, options = {}) {
   };
 }
 
+
+const SOURCE_PROBE_TARGETS={
+  soopPost:'https://www.sooplive.com/station/chunbongtv/post/192179233',
+  soopVod:'https://vod.sooplive.com/player/192233707',
+  notionDiamond:'https://sdmv.notion.site/what',
+  notionSurvival:'https://daisy-grouse-ac0.notion.site/3dad57d6a55c80469f3de9730cb88975',
+  fmkorea1:'https://www.fmkorea.com/7042989434',
+  fmkorea2:'https://www.fmkorea.com/9750851296',
+  bngts:'https://bngts.com/contents/just/streamers'
+};
+function sourceProbeText(html=''){
+  const clean=String(html).replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+  return clean.slice(0,900);
+}
+function sourceProbeTitle(html=''){
+  const og=(String(html).match(/<meta\b[^>]*(?:property|name)=["']og:title["'][^>]*content=["']([^"']*)["'][^>]*>/i)||[])[1];
+  const title=(String(html).match(/<title[^>]*>([\s\S]*?)<\/title>/i)||[])[1];
+  return String(og||title||'').replace(/\s+/g,' ').trim().slice(0,240);
+}
+async function sourceProbe(targetKey){
+  if(process.env.VERCEL_ENV==='production')throw new Error('probe_disabled_in_production');
+  const url=SOURCE_PROBE_TARGETS[targetKey];if(!url)throw new Error('probe_target_not_allowed');
+  const profiles=[
+    ['archive',{'User-Agent':'Mozilla/5.0 (compatible; ChunbongArchive/1.0)','Accept':'text/html,application/xhtml+xml'}],
+    ['browser',{'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36','Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8','Accept-Language':'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7'}]
+  ];
+  const out=[];
+  for(const [profile,headers] of profiles){
+    const started=Date.now();
+    try{
+      const response=await fetch(url,{redirect:'follow',headers});
+      const contentType=String(response.headers.get('content-type')||'');
+      const raw=await response.text();
+      const scripts=[...raw.matchAll(/<script\b[^>]*src=["']([^"']+)["']/gi)].slice(0,12).map(m=>m[1]);
+      out.push({
+        profile,status:response.status,ok:response.ok,finalUrl:response.url,contentType,
+        server:response.headers.get('server')||'',cfRay:response.headers.get('cf-ray')||'',
+        xCache:response.headers.get('x-cache')||'',xVercelCache:response.headers.get('x-vercel-cache')||'',
+        length:raw.length,title:sourceProbeTitle(raw),text:sourceProbeText(raw),scripts,durationMs:Date.now()-started
+      });
+    }catch(error){out.push({profile,error:String(error?.name||'Error')+': '+String(error?.message||error),durationMs:Date.now()-started});}
+  }
+  return{targetKey,url,results:out};
+}
+
 // Vercel entry point for multiplexed content requests.
 async function handler(req,res) {
   const requestUrl=new URL(req.url||'/','https://chunbong.local');
   const type=requestUrl.searchParams.get('type')||'';
+  if(type==='source-probe'&&process.env.VERCEL_ENV!=='production'){const key=requestUrl.searchParams.get('target')||'';try{return res.status(200).json(await sourceProbe(key))}catch(error){return res.status(400).json({error:String(error?.message||error)})}};
   if(type==='chuntris-ranking') return handleChuntrisRanking(req,res);
   if(type==='chunbak-ranking') return handleChunbakRanking(req,res);
   if(type==='chungwagame-ranking') return handleChungwagameRanking(req,res);
