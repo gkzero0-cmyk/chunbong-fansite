@@ -20,10 +20,11 @@ function archiveAudit(item){
   const issues=[];
   const sources=Array.isArray(item.sources)?item.sources:[];
   const participants=Array.isArray(item.participants)?item.participants:[];
+  const participantGroupCount=(Array.isArray(item.participantGroups)?item.participantGroups:[]).reduce((sum,row)=>sum+(Array.isArray(row.participants)?row.participants.length:Number(row.count)||0),0);
   const urls=sources.map(row=>String(row.url||'').toLowerCase());
   const labels=sources.map(row=>String(row.label||'').toLowerCase());
   const hasParticipantReference=urls.some(url=>url.includes('/streamers')||url.includes('fmkorea.com'))||labels.some(label=>label.includes('참가자')||label.includes('참여자'));
-  if(hasParticipantReference&&participants.length===0)issues.push(['참가자 미수집','참가자 명단용 참고 자료가 있지만 참가자 데이터가 0명입니다.']);
+  if(hasParticipantReference&&participants.length===0&&participantGroupCount===0)issues.push(['참가자 미수집','참가자 명단용 참고 자료가 있지만 참가자 데이터가 0명입니다.']);
   const hasNotion=urls.some(url=>url.includes('notion.'));
   if(hasNotion&&!/(규칙|시스템|참가 조건|진행 방식|일정)/.test(String(item.description||'')))issues.push(['Notion 본문 미구조화','Notion 자료가 연결돼 있지만 규칙·시스템·일정 데이터 반영 여부를 확인해야 합니다.']);
   const genericMedia=(item.media||[]).filter(row=>/\b\d{8,}\b/.test(String(row.title||''))||/관련 youtube 영상 \d|다시보기 \d{2}$/i.test(String(row.title||'')));
