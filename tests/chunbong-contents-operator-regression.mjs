@@ -122,5 +122,6 @@ assert.match(autoSource,/vods\/\$\{path\}.*per_page=\$\{SOOP_VIDEO_PAGE_SIZE\}/s
 assert.match(autoSource,/fetchAllChannelItems\('videos'/,'ChunbongTV videos should use full channel pagination');
 assert.match(autoSource,/fetchAllChannelItems\('shorts'/,'ChunbongTV Shorts should use full channel pagination');
 assert.match(autoSource,/user_id.*SOOP_ID/s,'SOOP board discovery should keep broadcaster-authored posts');
-assert.match(autoSource,/scope:\{soop:'full-channel-history',youtube:'full-channel-history'\}/,'auto-sync should report full-history scope');
+assert.match(autoSource,/full-channel-history/,'operator force sync should retain full-history coverage');
+assert.match(autoSource,/recent-channel-pages/,'scheduled sync should use incremental recent-page coverage');
 
