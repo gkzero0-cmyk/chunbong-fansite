@@ -101,30 +101,37 @@ const chuntacle=seed.items.find(item=>item.id==='chuntacle-2026');
 assert.ok(chuntacle?.published,'춘타클 should be included in the public content archive');
 assert.equal(chuntacle?.category,'class-event');
 assert.match(String(chuntacle?.heroImage?.src||''),/^\/assets\/chunbong-contents\/chuntacle-/);
-assert.ok((chuntacle?.timeline||[]).length>=3,'춘타클 should expose multiple class sessions in its timeline');
-assert.ok((chuntacle?.participants||[]).length>=10,'춘타클 should list confirmed students from archived class records');
-assert.ok((chuntacle?.results||[]).length>=2,'춘타클 should summarize confirmed class sessions');
-assert.ok((chuntacle?.gallery||[]).length>=2,'춘타클 should include visual archive material');
+assert.ok((chuntacle?.timeline||[]).length>=5,'춘타클 should expose all five class sessions in its timeline');
+assert.ok((chuntacle?.participants||[]).length>=19,'춘타클 should list students confirmed by the five archived posters');
+assert.ok((chuntacle?.results||[]).length>=5,'춘타클 should summarize all five confirmed class sessions');
+assert.equal((chuntacle?.gallery||[]).length,5,'춘타클 gallery should contain the five actual posters');
 
 const chuntacleSessions=chuntacle?.seriesSessions||[];
 assert.equal(chuntacleSessions.length,5,'춘타클 should expose sessions 1 through 5');
 assert.deepEqual(chuntacleSessions.map(row=>row.number),[1,2,3,4,5],'춘타클 session order should stay chronological');
-assert.deepEqual(chuntacleSessions.map(row=>row.date),['2026-07-11','2026-07-21','2026-08-02','2026-08-11','2026-09-14'],'춘타클 session dates should stay corrected');
+assert.deepEqual(chuntacleSessions.map(row=>row.date),['2026-07-12','2026-07-22','2026-08-02','2026-08-11','2026-09-14'],'춘타클 dates should match the actual attached posters');
+assert.deepEqual(chuntacleSessions.map(row=>row.participantCount),[10,11,10,8,5],'춘타클 participant counts should match the actual attached posters');
+assert.equal(chuntacleSessions.find(row=>row.number===1)?.time,'08:00');
 assert.equal(chuntacleSessions.find(row=>row.number===2)?.time,'08:00');
 assert.equal(chuntacleSessions.find(row=>row.number===3)?.time,'20:00');
 assert.equal(chuntacleSessions.find(row=>row.number===4)?.time,'08:00');
-const chuntacleSession5=chuntacleSessions.find(row=>row.number===5);
-assert.equal(chuntacleSession5?.time,'08:00');
-assert.equal(chuntacleSession5?.participantCount,5);
-for(const name of ['김뽁분','김잇딥','문이유','연주홍','클라비스']) assert.ok((chuntacleSession5?.participants||[]).includes(name),`춘타클 5회 수강생 누락: ${name}`);
-assert.equal(chuntacleSession5?.poster?.status,'verified');
-assert.equal(chuntacleSession5?.poster?.src,'/assets/chunbong-contents/chuntacle-session-5.svg');
+assert.equal(chuntacleSessions.find(row=>row.number===5)?.time,'08:00');
+
+const expectedStudents={
+  1:['김잇딥','네아','마로','소하','슬윤','이투','도람지','문이유','체리몽','흠냥'],
+  2:['모이사','다키','연주홍','문이유','슬윤','흠냥','클라비스','유리','멍보리','투미츠','소하'],
+  3:['흠냥','문이유','김잇딥','클라비스','소하','멍보리','나밍','유리','모이사','도람지'],
+  4:['소하','투미츠','연주홍','네아','김잇딥','클라비스','멍보리','나밍'],
+  5:['김뽁분','김잇딥','문이유','연주홍','클라비스']
+};
+for(const session of chuntacleSessions){
+  assert.deepEqual(session.participants,expectedStudents[session.number],`춘타클 ${session.number}회 수강생은 실제 포스터와 일치해야 합니다`);
+  assert.equal(session.poster?.status,'verified',`춘타클 ${session.number}회 실제 포스터가 검증 상태여야 합니다`);
+  assert.match(session.poster?.src||'',/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/chuntacle\/session-[1-5]\.webp$/,`춘타클 ${session.number}회 실제 포스터 영구 자산 URL이 필요합니다`);
+}
 assert.ok((chuntacle?.timeline||[]).some(row=>row.id==='session-5-final-poster'&&row.date==='2026-09-14'),'춘타클 5회 최종 포스터 기록이 필요합니다');
 assert.ok(!(chuntacle?.timeline||[]).some(row=>row.date==='2026-09-14'&&/4회/.test(row.title||'')),'9월 14일 기록을 4회로 잘못 표기하면 안 됩니다');
-const chuntaclePosterSvg=fs.readFileSync(new URL('../assets/chunbong-contents/chuntacle-session-5.svg',import.meta.url),'utf8');
-assert.match(chuntaclePosterSvg,/data:image\/webp;base64,UklG/,'춘타클 5회 실제 포스터 이미지가 내부 자산에 포함되어야 합니다');
-assert.ok(chuntaclePosterSvg.length>14000,'춘타클 5회 포스터 자산이 비정상적으로 잘리면 안 됩니다');
-assert.equal(fs.existsSync(new URL('../assets/chunbong-contents/chuntacle-session-4.svg',import.meta.url)),false,'9월 14일을 4회로 잘못 표기한 구 자산은 남기면 안 됩니다');
+for(const row of chuntacle?.gallery||[]) assert.match(row.src||'',/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/chuntacle\/session-[1-5]\.webp$/,'춘타클 갤러리는 실제 고해상도 포스터 자산만 사용해야 합니다');
 
 
 assert.ok((leopel?.media||[]).some(row=>/159711687/.test(row.url)),'Leopel should link the verified SOOP presentation VOD');
