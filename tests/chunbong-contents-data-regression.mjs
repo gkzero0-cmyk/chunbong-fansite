@@ -102,6 +102,10 @@ assert.equal(notionGuideSample.length,2,'Notion blocks should become readable gu
 assert.equal(notionGuideSample[0].sourceId,'source-notion-test');
 assert.match(notionGuideSample[0].text,/자동화 금지/);
 assert.equal(archiveApi._internals.isNotionSourceUrl('https://example.notion.site/test'),true);
+const archiveCore=require('../lib/chunbong-content-archive-core');
+assert.equal(archiveCore.blockedArchiveSourceUrl('https://bngts.com/contents/just'),true,'Bangtongsil must be excluded from public sources');
+assert.equal(archiveCore.blockedArchiveSourceUrl('https://namu.wiki/w/test'),true,'namu.moe mirror must be excluded from public sources');
+assert.equal(archiveCore.blockedArchiveSourceUrl('https://namu.wiki/w/test'),false,'namu.wiki should remain a valid source');
 
 assert.equal(archiveApi._internals.shouldForcePublicAutoSync({githubOidc:true,migrationMarker:''}),true,'the first authenticated GitHub archive sync after this migration should run a full rescan');
 assert.equal(archiveApi._internals.shouldForcePublicAutoSync({githubOidc:true,migrationMarker:'done'}),false,'completed migration should return to incremental archive sync');
@@ -362,7 +366,7 @@ assert.equal(mergeVisibility[0].timeline.find(row=>row.id==='internal-row')?.vis
 
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://www.sooplive.com/station/chunbongtv/post/1'),'SOOP source metadata URL should be allowed');
 assert.equal(archiveApi._internals.allowedSourceMetaUrl('https://bngts.com/contents/just'),null,'방통실은 source metadata allowlist에서 제외되어야 합니다');
-assert.equal(archiveApi._internals.allowedSourceMetaUrl('https://namu.moe/w/test'),null,'나무미러는 source metadata allowlist에서 제외되어야 합니다');
+assert.equal(archiveApi._internals.allowedSourceMetaUrl('https://namu.wiki/w/test'),null,'나무미러는 source metadata allowlist에서 제외되어야 합니다');
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://namu.wiki/w/test'),'나무위키는 source metadata allowlist에 포함되어야 합니다');
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://example.notion.site/example'),'public Notion source metadata URL should be allowed');
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d'),'public app.notion.com source metadata URL should be allowed');
