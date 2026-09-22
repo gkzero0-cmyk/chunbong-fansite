@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T17:55:00+09:00",
+  "updatedAt": "2026-09-22T18:58:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -55,7 +55,8 @@
           "url": "https://pick.sooplive.com/daily/view/162209",
           "thumbnail": "/assets/chunbong-contents/leopel-presentation-vod.svg",
           "sourceId": "source-presentation",
-          "note": "SOOP PICK에서 레오펠의 일정과 콘셉트, 핵심 콘텐츠를 소개한 발표회 기록입니다."
+          "note": "SOOP PICK에서 레오펠의 일정과 콘셉트, 핵심 콘텐츠를 소개한 발표회 기록입니다.",
+          "visibility": "public"
         },
         {
           "id": "soop-pick-open",
@@ -66,7 +67,8 @@
           "url": "https://pick.sooplive.com/daily/view/162435",
           "thumbnail": "",
           "sourceId": "source-open",
-          "note": "6월 5일 레오펠 서버 오픈과 초기 서버 모습을 다룬 SOOP PICK 기록입니다."
+          "note": "6월 5일 레오펠 서버 오픈과 초기 서버 모습을 다룬 SOOP PICK 기록입니다.",
+          "visibility": "public"
         },
         {
           "id": "soop-hotterview",
@@ -77,7 +79,8 @@
           "url": "https://pick.sooplive.com/interview/view/168110",
           "thumbnail": "",
           "sourceId": "source-interview",
-          "note": "춘봉이 직접 레오펠의 제작 계기와 플랫폼 통합 서버로 기획한 이유를 설명한 인터뷰입니다."
+          "note": "춘봉이 직접 레오펠의 제작 계기와 플랫폼 통합 서버로 기획한 이유를 설명한 인터뷰입니다.",
+          "visibility": "public"
         },
         {
           "id": "leopel-soop-post-159705141",
@@ -88,7 +91,8 @@
           "url": "https://www.sooplive.com/station/chunbongtv/post/159705141",
           "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
           "sourceId": "source-leopel-post-159705141",
-          "note": "춘봉 SOOP 방송국에 게시된 레오펠 관련 공식 기록입니다. 원문 제목과 게시일은 확인 가능한 범위에서 보강합니다."
+          "note": "춘봉 SOOP 방송국에 게시된 레오펠 관련 공식 기록입니다. 원문 제목과 게시일은 확인 가능한 범위에서 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "leopel-soop-post-161715755",
@@ -99,7 +103,8 @@
           "url": "https://www.sooplive.com/station/chunbongtv/post/161715755",
           "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
           "sourceId": "source-leopel-post-161715755",
-          "note": "춘봉 SOOP 방송국에 게시된 레오펠 관련 공식 기록입니다. 원문 제목과 게시일은 확인 가능한 범위에서 보강합니다."
+          "note": "춘봉 SOOP 방송국에 게시된 레오펠 관련 공식 기록입니다. 원문 제목과 게시일은 확인 가능한 범위에서 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "leopel-soop-post-163281747",
@@ -110,7 +115,8 @@
           "url": "https://www.sooplive.com/station/chunbongtv/post/163281747",
           "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
           "sourceId": "source-leopel-post-163281747",
-          "note": "춘봉 SOOP 방송국에 게시된 레오펠 관련 공식 기록입니다. 원문 제목과 게시일은 확인 가능한 범위에서 보강합니다."
+          "note": "춘봉 SOOP 방송국에 게시된 레오펠 관련 공식 기록입니다. 원문 제목과 게시일은 확인 가능한 범위에서 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "leopel-soop-post-165257051",
@@ -121,7 +127,8 @@
           "url": "https://www.sooplive.com/station/chunbongtv/post/165257051",
           "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
           "sourceId": "source-leopel-post-165257051",
-          "note": "춘봉 SOOP 방송국에 게시된 레오펠 관련 공식 기록입니다. 원문 제목과 게시일은 확인 가능한 범위에서 보강합니다."
+          "note": "춘봉 SOOP 방송국에 게시된 레오펠 관련 공식 기록입니다. 원문 제목과 게시일은 확인 가능한 범위에서 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "leopel-1st-entry",
@@ -132,7 +139,8 @@
           "url": "https://namu.moe/w/%EB%A0%88%EC%98%A4%ED%8E%A0",
           "thumbnail": "",
           "sourceId": "source-reference",
-          "note": "레오펠 외부 교차 자료의 1차 입주자 집계입니다."
+          "note": "레오펠 외부 교차 자료의 1차 입주자 집계입니다.",
+          "visibility": "public"
         },
         {
           "id": "leopel-2nd-entry",
@@ -143,7 +151,8 @@
           "url": "",
           "thumbnail": "",
           "sourceId": "source-reference",
-          "note": "SOOP 127명, 치지직·YouTube 44명으로 정리된 2차 입주 기록입니다."
+          "note": "SOOP 127명, 치지직·YouTube 44명으로 정리된 2차 입주 기록입니다.",
+          "visibility": "public"
         }
       ],
       "media": [
@@ -156,7 +165,8 @@
           "url": "https://vod.sooplive.com/player/159711687",
           "thumbnail": "/assets/chunbong-contents/leopel-presentation-vod.svg",
           "sourceId": "source-presentation-vod",
-          "note": "레오펠의 일정과 콘셉트를 직접 소개한 SOOP 발표회 VOD입니다."
+          "note": "레오펠의 일정과 콘셉트를 직접 소개한 SOOP 발표회 VOD입니다.",
+          "visibility": "public"
         },
         {
           "id": "trailer-pv",
@@ -167,7 +177,8 @@
           "url": "https://vod.sooplive.com/player/159715611",
           "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
           "sourceId": "source-trailer-pv",
-          "note": "SOOP에 공개된 레오펠 서버 트레일러 PV입니다."
+          "note": "SOOP에 공개된 레오펠 서버 트레일러 PV입니다.",
+          "visibility": "public"
         },
         {
           "id": "leopel-vod-165343833",
@@ -178,7 +189,8 @@
           "url": "https://vod.sooplive.com/player/165343833",
           "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
           "sourceId": "source-leopel-vod-165343833",
-          "note": "SOOP에 남아 있는 레오펠 관련 공식 영상 기록입니다. 원문 제목과 방송일은 확인 가능한 범위에서 보강합니다."
+          "note": "SOOP에 남아 있는 레오펠 관련 공식 영상 기록입니다. 원문 제목과 방송일은 확인 가능한 범위에서 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "leopel-vod-167705699",
@@ -189,7 +201,8 @@
           "url": "https://vod.sooplive.com/player/167705699",
           "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
           "sourceId": "source-leopel-vod-167705699",
-          "note": "SOOP에 남아 있는 레오펠 관련 공식 영상 기록입니다. 원문 제목과 방송일은 확인 가능한 범위에서 보강합니다."
+          "note": "SOOP에 남아 있는 레오펠 관련 공식 영상 기록입니다. 원문 제목과 방송일은 확인 가능한 범위에서 보강합니다.",
+          "visibility": "public"
         }
       ],
       "gallery": [
@@ -227,73 +240,85 @@
           "id": "source-presentation-vod",
           "kind": "official",
           "label": "SOOP VOD · 레오펠 서버 발표회",
-          "url": "https://vod.sooplive.com/player/159711687"
+          "url": "https://vod.sooplive.com/player/159711687",
+          "visibility": "public"
         },
         {
           "id": "source-presentation",
           "kind": "article",
           "label": "SOOP PICK · 레오펠 서버 발표회",
-          "url": "https://pick.sooplive.com/daily/view/162209"
+          "url": "https://pick.sooplive.com/daily/view/162209",
+          "visibility": "public"
         },
         {
           "id": "source-open",
           "kind": "article",
           "label": "SOOP PICK · 레오펠 서버 오픈",
-          "url": "https://pick.sooplive.com/daily/view/162435"
+          "url": "https://pick.sooplive.com/daily/view/162435",
+          "visibility": "public"
         },
         {
           "id": "source-interview",
           "kind": "official",
           "label": "SOOP PICK Hotterview · 춘봉 #066",
-          "url": "https://pick.sooplive.com/interview/view/168110"
+          "url": "https://pick.sooplive.com/interview/view/168110",
+          "visibility": "public"
         },
         {
           "id": "source-reference",
           "kind": "reference",
           "label": "나무위키 · 레오펠",
-          "url": "https://namu.wiki/w/%EB%A0%88%EC%98%A4%ED%8E%A0"
+          "url": "https://namu.wiki/w/%EB%A0%88%EC%98%A4%ED%8E%A0",
+          "visibility": "public"
         },
         {
           "id": "source-trailer-pv",
           "kind": "official",
           "label": "SOOP VOD · 레오펠 서버 트레일러 PV · 159715611",
-          "url": "https://vod.sooplive.com/player/159715611"
+          "url": "https://vod.sooplive.com/player/159715611",
+          "visibility": "public"
         },
         {
           "id": "source-leopel-post-159705141",
           "kind": "official",
           "label": "SOOP 방송국 게시글 · 159705141",
-          "url": "https://www.sooplive.com/station/chunbongtv/post/159705141"
+          "url": "https://www.sooplive.com/station/chunbongtv/post/159705141",
+          "visibility": "public"
         },
         {
           "id": "source-leopel-post-161715755",
           "kind": "official",
           "label": "SOOP 방송국 게시글 · 161715755",
-          "url": "https://www.sooplive.com/station/chunbongtv/post/161715755"
+          "url": "https://www.sooplive.com/station/chunbongtv/post/161715755",
+          "visibility": "public"
         },
         {
           "id": "source-leopel-post-163281747",
           "kind": "official",
           "label": "SOOP 방송국 게시글 · 163281747",
-          "url": "https://www.sooplive.com/station/chunbongtv/post/163281747"
+          "url": "https://www.sooplive.com/station/chunbongtv/post/163281747",
+          "visibility": "public"
         },
         {
           "id": "source-leopel-post-165257051",
           "kind": "official",
           "label": "SOOP 방송국 게시글 · 165257051",
-          "url": "https://www.sooplive.com/station/chunbongtv/post/165257051"
+          "url": "https://www.sooplive.com/station/chunbongtv/post/165257051",
+          "visibility": "public"
         },
         {
           "id": "source-leopel-vod-165343833",
           "kind": "official",
           "label": "SOOP VOD · 165343833",
-          "url": "https://vod.sooplive.com/player/165343833"
+          "url": "https://vod.sooplive.com/player/165343833",
+          "visibility": "public"
         },
         {
           "id": "source-leopel-vod-167705699",
           "kind": "official",
           "label": "SOOP VOD · 167705699",
-          "url": "https://vod.sooplive.com/player/167705699"
+          "url": "https://vod.sooplive.com/player/167705699",
+          "visibility": "public"
         }
       ],
       "verification": {
@@ -302,7 +327,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T17:45:00+09:00",
+      "updatedAt": "2026-09-22T18:58:00+09:00",
       "series": {
         "id": "leopel",
         "title": "레오펠",
@@ -347,7 +372,8 @@
           "url": "https://www.sooplive.com/station/chunbongtv/post/197785319",
           "thumbnail": "",
           "sourceId": "source-money-post-197785319",
-          "note": "춘봉 SOOP 방송국에 게시된 머니게임 관련 공식 기록입니다."
+          "note": "춘봉 SOOP 방송국에 게시된 머니게임 관련 공식 기록입니다.",
+          "visibility": "public"
         },
         {
           "id": "money-soop-post-199568663",
@@ -358,7 +384,8 @@
           "url": "https://www.sooplive.com/station/chunbongtv/post/199568663",
           "thumbnail": "",
           "sourceId": "source-money-post-199568663",
-          "note": "춘봉 SOOP 방송국에 게시된 머니게임 관련 공식 기록입니다."
+          "note": "춘봉 SOOP 방송국에 게시된 머니게임 관련 공식 기록입니다.",
+          "visibility": "public"
         },
         {
           "id": "money-soop-post-199830351",
@@ -369,7 +396,8 @@
           "url": "https://www.sooplive.com/station/chunbongtv/post/199830351",
           "thumbnail": "",
           "sourceId": "source-money-post-199830351",
-          "note": "춘봉 SOOP 방송국에 게시된 머니게임 관련 공식 기록입니다."
+          "note": "춘봉 SOOP 방송국에 게시된 머니게임 관련 공식 기록입니다.",
+          "visibility": "public"
         },
         {
           "id": "open-date",
@@ -380,7 +408,8 @@
           "url": "",
           "thumbnail": "",
           "sourceId": "",
-          "note": "팬사이트에 확인된 머니게임 서버 시작일 기록입니다."
+          "note": "팬사이트에 확인된 머니게임 서버 시작일 기록입니다.",
+          "visibility": "public"
         },
         {
           "id": "end-date",
@@ -391,7 +420,8 @@
           "url": "",
           "thumbnail": "",
           "sourceId": "",
-          "note": "팬사이트에 확인된 머니게임 서버 종료일 기록입니다."
+          "note": "팬사이트에 확인된 머니게임 서버 종료일 기록입니다.",
+          "visibility": "public"
         }
       ],
       "media": [
@@ -404,7 +434,8 @@
           "url": "https://vod.sooplive.com/player/199701961",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-199731549",
@@ -415,7 +446,8 @@
           "url": "https://vod.sooplive.com/player/199731549",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-199911259",
@@ -426,7 +458,8 @@
           "url": "https://vod.sooplive.com/player/199911259",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-200010937",
@@ -437,7 +470,8 @@
           "url": "https://vod.sooplive.com/player/200010937",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-200150005",
@@ -448,7 +482,8 @@
           "url": "https://vod.sooplive.com/player/200150005",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-200191013",
@@ -459,7 +494,8 @@
           "url": "https://vod.sooplive.com/player/200191013",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-200238669",
@@ -470,7 +506,8 @@
           "url": "https://vod.sooplive.com/player/200238669",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-200257689",
@@ -481,7 +518,8 @@
           "url": "https://vod.sooplive.com/player/200257689",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-200295759",
@@ -492,7 +530,8 @@
           "url": "https://vod.sooplive.com/player/200295759",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-200393761",
@@ -503,7 +542,8 @@
           "url": "https://vod.sooplive.com/player/200393761",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-200401503",
@@ -514,7 +554,8 @@
           "url": "https://vod.sooplive.com/player/200401503",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-200477587",
@@ -525,7 +566,8 @@
           "url": "https://vod.sooplive.com/player/200477587",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-200609959",
@@ -536,7 +578,8 @@
           "url": "https://vod.sooplive.com/player/200609959",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-200775197",
@@ -547,7 +590,8 @@
           "url": "https://vod.sooplive.com/player/200775197",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-200812787",
@@ -558,7 +602,8 @@
           "url": "https://vod.sooplive.com/player/200812787",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-200857709",
@@ -569,7 +614,8 @@
           "url": "https://vod.sooplive.com/player/200857709",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-200893769",
@@ -580,7 +626,8 @@
           "url": "https://vod.sooplive.com/player/200893769",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-200917923",
@@ -591,7 +638,8 @@
           "url": "https://vod.sooplive.com/player/200917923",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-200956235",
@@ -602,7 +650,8 @@
           "url": "https://vod.sooplive.com/player/200956235",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-201043833",
@@ -613,7 +662,8 @@
           "url": "https://vod.sooplive.com/player/201043833",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-201146469",
@@ -624,7 +674,8 @@
           "url": "https://vod.sooplive.com/player/201146469",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-201223669",
@@ -635,7 +686,8 @@
           "url": "https://vod.sooplive.com/player/201223669",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-201329381",
@@ -646,7 +698,8 @@
           "url": "https://vod.sooplive.com/player/201329381",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-201384951",
@@ -657,7 +710,8 @@
           "url": "https://vod.sooplive.com/player/201384951",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-201524161",
@@ -668,7 +722,8 @@
           "url": "https://vod.sooplive.com/player/201524161",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "money-vod-201595413",
@@ -679,7 +734,8 @@
           "url": "https://vod.sooplive.com/player/201595413",
           "thumbnail": "",
           "sourceId": "",
-          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다."
+          "note": "춘봉 SOOP에 남아 있는 머니게임 관련 다시보기입니다. 원문 제목·방송일은 확인되는 순서대로 보강합니다.",
+          "visibility": "public"
         },
         {
           "id": "soop-catch-red",
@@ -690,7 +746,8 @@
           "url": "https://vod.sooplive.com/player/198012777/catch",
           "thumbnail": "/assets/chunbong-contents/justserver-catch-red.svg",
           "sourceId": "source-soop-catch",
-          "note": "SOOP VOD에 남아 있는 그냥서버 : 머니게임 관련 Catch입니다."
+          "note": "SOOP VOD에 남아 있는 그냥서버 : 머니게임 관련 Catch입니다.",
+          "visibility": "public"
         },
         {
           "id": "soop-catch-pink",
@@ -701,7 +758,8 @@
           "url": "https://vod.sooplive.com/player/198013623/catch",
           "thumbnail": "/assets/chunbong-contents/justserver-catch-pink.svg",
           "sourceId": "source-soop-catch-pink",
-          "note": "SOOP에 남아 있는 그냥서버 : 머니게임 관련 Catch입니다."
+          "note": "SOOP에 남아 있는 그냥서버 : 머니게임 관련 Catch입니다.",
+          "visibility": "public"
         }
       ],
       "gallery": [
@@ -732,55 +790,64 @@
           "id": "source-money-post-197785319",
           "kind": "official",
           "label": "SOOP 방송국 게시글 · 197785319",
-          "url": "https://www.sooplive.com/station/chunbongtv/post/197785319"
+          "url": "https://www.sooplive.com/station/chunbongtv/post/197785319",
+          "visibility": "public"
         },
         {
           "id": "source-money-post-199568663",
           "kind": "official",
           "label": "SOOP 방송국 게시글 · 199568663",
-          "url": "https://www.sooplive.com/station/chunbongtv/post/199568663"
+          "url": "https://www.sooplive.com/station/chunbongtv/post/199568663",
+          "visibility": "public"
         },
         {
           "id": "source-money-post-199830351",
           "kind": "official",
           "label": "SOOP 방송국 게시글 · 199830351",
-          "url": "https://www.sooplive.com/station/chunbongtv/post/199830351"
+          "url": "https://www.sooplive.com/station/chunbongtv/post/199830351",
+          "visibility": "public"
         },
         {
           "id": "source-money-naver",
           "kind": "reference",
           "label": "머니게임 관련 Naver 공유 자료",
-          "url": "https://naver.me/5qLX1yQ1"
+          "url": "https://naver.me/5qLX1yQ1",
+          "visibility": "public"
         },
         {
           "id": "source-money-buly",
           "kind": "reference",
           "label": "머니게임 관련 공유 자료",
-          "url": "https://buly.kr/2ffytJ1"
+          "url": "https://buly.kr/2ffytJ1",
+          "visibility": "public"
         },
         {
           "id": "source-money-bngts",
           "kind": "reference",
           "label": "방통실 · 그냥서버 머니게임 콘텐츠 아카이브",
-          "url": "https://bngts.com/contents/geunyangseobeo-meonigeim"
+          "url": "https://bngts.com/contents/geunyangseobeo-meonigeim",
+          "visibility": "internal"
         },
         {
           "id": "source-money-bngts-streamers",
           "kind": "reference",
           "label": "방통실 · 그냥서버 머니게임 참가 스트리머",
-          "url": "https://bngts.com/contents/geunyangseobeo-meonigeim/streamers"
+          "url": "https://bngts.com/contents/geunyangseobeo-meonigeim/streamers",
+          "visibility": "internal"
         },
         {
           "id": "source-soop-catch-pink",
           "kind": "official",
           "label": "SOOP VOD · 그냥서버 : 머니게임 Catch (핑크 루파)",
-          "url": "https://vod.sooplive.com/player/198013623/catch"
+          "url": "https://vod.sooplive.com/player/198013623/catch",
+          "visibility": "public"
         },
         {
           "id": "source-soop-catch",
           "kind": "official",
           "label": "SOOP VOD · 그냥서버 : 머니게임 Catch",
-          "url": "https://vod.sooplive.com/player/198012777/catch"
+          "url": "https://vod.sooplive.com/player/198012777/catch",
+          "visibility": "public"
         }
       ],
       "verification": {
@@ -789,7 +856,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T11:40:00+09:00",
+      "updatedAt": "2026-09-22T18:58:00+09:00",
       "series": {
         "id": "justserver",
         "title": "그냥서버",
@@ -847,7 +914,8 @@
           "url": "",
           "thumbnail": "",
           "sourceId": "source-survival-notion",
-          "note": "이전 대화에서 제공된 Notion 일정 기준 예정 시작일입니다."
+          "note": "이전 대화에서 제공된 Notion 일정 기준 예정 시작일입니다.",
+          "visibility": "public"
         },
         {
           "id": "survival-soop-post-203683207",
@@ -858,7 +926,8 @@
           "url": "https://www.sooplive.com/station/chunbongtv/post/203683207",
           "thumbnail": "",
           "sourceId": "source-survival-post-203683207",
-          "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다."
+          "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다.",
+          "visibility": "public"
         },
         {
           "id": "survival-soop-post-204093563",
@@ -869,7 +938,8 @@
           "url": "https://www.sooplive.com/station/chunbongtv/post/204093563",
           "thumbnail": "",
           "sourceId": "source-survival-post-204093563",
-          "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다."
+          "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다.",
+          "visibility": "public"
         },
         {
           "id": "survival-soop-post-204274449",
@@ -880,7 +950,8 @@
           "url": "https://www.sooplive.com/station/chunbongtv/post/204274449",
           "thumbnail": "",
           "sourceId": "source-survival-post-204274449",
-          "note": "이 게시글 댓글을 기반으로 실시간 UP 랭킹 페이지가 운영된 모집·신청 원문입니다."
+          "note": "이 게시글 댓글을 기반으로 실시간 UP 랭킹 페이지가 운영된 모집·신청 원문입니다.",
+          "visibility": "public"
         },
         {
           "id": "survival-soop-post-206972857",
@@ -891,7 +962,8 @@
           "url": "https://www.sooplive.com/station/chunbongtv/post/206972857",
           "thumbnail": "",
           "sourceId": "source-survival-post-206972857",
-          "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다."
+          "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다.",
+          "visibility": "public"
         },
         {
           "id": "survival-soop-post-207425471",
@@ -902,7 +974,8 @@
           "url": "https://www.sooplive.com/station/chunbongtv/post/207425471",
           "thumbnail": "",
           "sourceId": "source-survival-post-207425471",
-          "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다."
+          "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다.",
+          "visibility": "public"
         },
         {
           "id": "survival-soop-post-207516943",
@@ -913,7 +986,8 @@
           "url": "https://www.sooplive.com/station/chunbongtv/post/207516943",
           "thumbnail": "",
           "sourceId": "source-survival-post-207516943",
-          "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다."
+          "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다.",
+          "visibility": "public"
         },
         {
           "id": "survival-soop-post-207564735",
@@ -924,7 +998,8 @@
           "url": "https://www.sooplive.com/station/chunbongtv/post/207564735",
           "thumbnail": "",
           "sourceId": "source-survival-post-207564735",
-          "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다."
+          "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다.",
+          "visibility": "public"
         },
         {
           "id": "survival-planned-end",
@@ -935,7 +1010,8 @@
           "url": "",
           "thumbnail": "",
           "sourceId": "source-survival-notion",
-          "note": "이전 대화에서 제공된 Notion 일정 기준 예정 종료일입니다."
+          "note": "이전 대화에서 제공된 Notion 일정 기준 예정 종료일입니다.",
+          "visibility": "public"
         }
       ],
       "media": [
@@ -948,7 +1024,8 @@
           "url": "https://vod.sooplive.com/player/207560243",
           "thumbnail": "/assets/chunbong-contents/justserver-survival-cover.svg",
           "sourceId": "source-survival-presentation-vod",
-          "note": "사용자가 지정한 적자생존 설명회 SOOP 공식 VOD입니다."
+          "note": "사용자가 지정한 적자생존 설명회 SOOP 공식 VOD입니다.",
+          "visibility": "public"
         }
       ],
       "gallery": [
@@ -965,55 +1042,64 @@
           "id": "source-survival-presentation-vod",
           "kind": "official",
           "label": "SOOP VOD · 그냥서버 : 적자생존 설명회",
-          "url": "https://vod.sooplive.com/player/207560243"
+          "url": "https://vod.sooplive.com/player/207560243",
+          "visibility": "public"
         },
         {
           "id": "source-survival-post-203683207",
           "kind": "official",
           "label": "SOOP 방송국 게시글 · 203683207",
-          "url": "https://www.sooplive.com/station/chunbongtv/post/203683207"
+          "url": "https://www.sooplive.com/station/chunbongtv/post/203683207",
+          "visibility": "public"
         },
         {
           "id": "source-survival-post-204093563",
           "kind": "official",
           "label": "SOOP 방송국 게시글 · 204093563",
-          "url": "https://www.sooplive.com/station/chunbongtv/post/204093563"
+          "url": "https://www.sooplive.com/station/chunbongtv/post/204093563",
+          "visibility": "public"
         },
         {
           "id": "source-survival-post-204274449",
           "kind": "official",
           "label": "SOOP 방송국 게시글 · 204274449",
-          "url": "https://www.sooplive.com/station/chunbongtv/post/204274449"
+          "url": "https://www.sooplive.com/station/chunbongtv/post/204274449",
+          "visibility": "public"
         },
         {
           "id": "source-survival-post-206972857",
           "kind": "official",
           "label": "SOOP 방송국 게시글 · 206972857",
-          "url": "https://www.sooplive.com/station/chunbongtv/post/206972857"
+          "url": "https://www.sooplive.com/station/chunbongtv/post/206972857",
+          "visibility": "public"
         },
         {
           "id": "source-survival-post-207425471",
           "kind": "official",
           "label": "SOOP 방송국 게시글 · 207425471",
-          "url": "https://www.sooplive.com/station/chunbongtv/post/207425471"
+          "url": "https://www.sooplive.com/station/chunbongtv/post/207425471",
+          "visibility": "public"
         },
         {
           "id": "source-survival-post-207516943",
           "kind": "official",
           "label": "SOOP 방송국 게시글 · 207516943",
-          "url": "https://www.sooplive.com/station/chunbongtv/post/207516943"
+          "url": "https://www.sooplive.com/station/chunbongtv/post/207516943",
+          "visibility": "public"
         },
         {
           "id": "source-survival-post-207564735",
           "kind": "official",
           "label": "SOOP 방송국 게시글 · 207564735",
-          "url": "https://www.sooplive.com/station/chunbongtv/post/207564735"
+          "url": "https://www.sooplive.com/station/chunbongtv/post/207564735",
+          "visibility": "public"
         },
         {
           "id": "source-survival-notion",
           "kind": "reference",
           "label": "적자생존 관련 공개 Notion 자료",
-          "url": "https://daisy-grouse-ac0.notion.site/3dad57d6a55c80469f3de9730cb88975"
+          "url": "https://daisy-grouse-ac0.notion.site/3dad57d6a55c80469f3de9730cb88975",
+          "visibility": "public"
         }
       ],
       "verification": {
@@ -1022,7 +1108,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T17:45:00+09:00",
+      "updatedAt": "2026-09-22T18:58:00+09:00",
       "series": {
         "id": "justserver",
         "title": "그냥서버",
@@ -1052,8 +1138,8 @@
       "summary": "춘봉이 VRChat에서 스트리머 수강생들과 타로 카드 해석과 리딩을 함께 배우는 회차형 타로 클래스.",
       "description": "춘타클은 춘봉이 진행한 스트리머 대상 타로 클래스 시리즈입니다. 실제 1~5회 포스터와 수강생 기록을 중심으로 회차별 SOOP 다시보기, YouTube 영상, FM코리아 모집·참여자 자료까지 한곳에서 확인할 수 있도록 구성합니다.",
       "heroImage": {
-        "src": "/assets/chunbong-contents/chuntacle-cover.svg",
-        "alt": "춘타클 춘봉 타로 클래스 팬사이트 아카이브 커버",
+        "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042682/chunbong-fansite/chuntacle/session-5.webp",
+        "alt": "춘타클 제5회 별빛 타로 클래스 실제 포스터",
         "sourceId": ""
       },
       "participants": [
@@ -1113,7 +1199,8 @@
           "url": "",
           "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042557/chunbong-fansite/chuntacle/session-1.webp",
           "sourceId": "",
-          "note": "08:00 · VRChat · 김잇딥, 네아, 마로, 소하, 슬윤, 이투, 도람지, 문이유, 체리몽, 흠냥."
+          "note": "08:00 · VRChat · 김잇딥, 네아, 마로, 소하, 슬윤, 이투, 도람지, 문이유, 체리몽, 흠냥.",
+          "visibility": "public"
         },
         {
           "id": "session-2",
@@ -1124,7 +1211,8 @@
           "url": "",
           "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042600/chunbong-fansite/chuntacle/session-2.webp",
           "sourceId": "",
-          "note": "08:00 · VRChat · 모이사, 다키, 연주홍, 문이유, 슬윤, 흠냥, 클라비스, 유리, 멍보리, 투미츠, 소하."
+          "note": "08:00 · VRChat · 모이사, 다키, 연주홍, 문이유, 슬윤, 흠냥, 클라비스, 유리, 멍보리, 투미츠, 소하.",
+          "visibility": "public"
         },
         {
           "id": "session-3-broadcast-record",
@@ -1135,7 +1223,8 @@
           "url": "",
           "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042605/chunbong-fansite/chuntacle/session-3.webp",
           "sourceId": "source-moon-streams",
-          "note": "포스터에는 8시로 표기되어 있으며 방송 이력은 20:00 수업 기록과 일치합니다. 수강생 10명: 흠냥, 문이유, 김잇딥, 클라비스, 소하, 멍보리, 나밍, 유리, 모이사, 도람지."
+          "note": "포스터에는 8시로 표기되어 있으며 방송 이력은 20:00 수업 기록과 일치합니다. 수강생 10명: 흠냥, 문이유, 김잇딥, 클라비스, 소하, 멍보리, 나밍, 유리, 모이사, 도람지.",
+          "visibility": "internal"
         },
         {
           "id": "session-4-broadcast-record",
@@ -1146,7 +1235,8 @@
           "url": "",
           "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042611/chunbong-fansite/chuntacle/session-4.webp",
           "sourceId": "source-moon-streams",
-          "note": "08:00 · VRChat · 소하, 투미츠, 연주홍, 네아, 김잇딥, 클라비스, 멍보리, 나밍."
+          "note": "08:00 · VRChat · 소하, 투미츠, 연주홍, 네아, 김잇딥, 클라비스, 멍보리, 나밍.",
+          "visibility": "internal"
         },
         {
           "id": "session-5-final-poster",
@@ -1157,7 +1247,8 @@
           "url": "",
           "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042682/chunbong-fansite/chuntacle/session-5.webp",
           "sourceId": "",
-          "note": "08:00 · VRChat · 김뽁분, 김잇딥, 문이유, 연주홍, 클라비스."
+          "note": "08:00 · VRChat · 김뽁분, 김잇딥, 문이유, 연주홍, 클라비스.",
+          "visibility": "public"
         }
       ],
       "media": [
@@ -1170,7 +1261,8 @@
           "url": "https://streamscharts.com/channels/moon26/streams?platform=afreecatv",
           "thumbnail": "/assets/chunbong-contents/chuntacle-cover.svg",
           "sourceId": "source-moon-streams",
-          "note": "8월 2일 ‘세번째 수업’, 8월 11일 ‘네번째수업 다시보기’ 방송 제목을 확인할 수 있는 외부 방송 이력입니다."
+          "note": "8월 2일 ‘세번째 수업’, 8월 11일 ‘네번째수업 다시보기’ 방송 제목을 확인할 수 있는 외부 방송 이력입니다.",
+          "visibility": "internal"
         },
         {
           "id": "chuntacle-vod-1",
@@ -1181,7 +1273,8 @@
           "date": "",
           "datePrecision": "unknown",
           "thumbnail": "",
-          "sourceId": "source-chuntacle-vod-1"
+          "sourceId": "source-chuntacle-vod-1",
+          "visibility": "public"
         },
         {
           "id": "chuntacle-vod-2",
@@ -1192,7 +1285,8 @@
           "date": "",
           "datePrecision": "unknown",
           "thumbnail": "",
-          "sourceId": "source-chuntacle-vod-2"
+          "sourceId": "source-chuntacle-vod-2",
+          "visibility": "public"
         },
         {
           "id": "chuntacle-vod-3",
@@ -1203,7 +1297,8 @@
           "date": "",
           "datePrecision": "unknown",
           "thumbnail": "",
-          "sourceId": "source-chuntacle-vod-3"
+          "sourceId": "source-chuntacle-vod-3",
+          "visibility": "public"
         },
         {
           "id": "chuntacle-vod-4",
@@ -1214,7 +1309,8 @@
           "date": "",
           "datePrecision": "unknown",
           "thumbnail": "",
-          "sourceId": "source-chuntacle-vod-4"
+          "sourceId": "source-chuntacle-vod-4",
+          "visibility": "public"
         },
         {
           "id": "chuntacle-youtube-1",
@@ -1225,7 +1321,8 @@
           "date": "",
           "datePrecision": "unknown",
           "thumbnail": "",
-          "sourceId": "source-chuntacle-youtube-1"
+          "sourceId": "source-chuntacle-youtube-1",
+          "visibility": "public"
         },
         {
           "id": "chuntacle-youtube-2",
@@ -1236,7 +1333,8 @@
           "date": "",
           "datePrecision": "unknown",
           "thumbnail": "",
-          "sourceId": "source-chuntacle-youtube-2"
+          "sourceId": "source-chuntacle-youtube-2",
+          "visibility": "public"
         },
         {
           "id": "chuntacle-youtube-3",
@@ -1247,7 +1345,8 @@
           "date": "",
           "datePrecision": "unknown",
           "thumbnail": "",
-          "sourceId": "source-chuntacle-youtube-3"
+          "sourceId": "source-chuntacle-youtube-3",
+          "visibility": "public"
         }
       ],
       "gallery": [
@@ -1292,61 +1391,71 @@
           "id": "source-moon-streams",
           "kind": "reference",
           "label": "Streams Charts · 문이유 2026 방송 이력",
-          "url": "https://streamscharts.com/channels/moon26/streams?platform=afreecatv"
+          "url": "https://streamscharts.com/channels/moon26/streams?platform=afreecatv",
+          "visibility": "internal"
         },
         {
           "id": "source-chunbong-tarot",
           "kind": "reference",
           "label": "나무위키 · 춘봉 / 스트리머 타로상담 목록",
-          "url": "https://m.namu.moe/w/%EC%B6%98%EB%B4%89/%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%A8%B8%20%ED%83%80%EB%A1%9C%EC%83%81%EB%8B%B4%20%EB%AA%A9%EB%A1%9D"
+          "url": "https://m.namu.moe/w/%EC%B6%98%EB%B4%89/%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%A8%B8%20%ED%83%80%EB%A1%9C%EC%83%81%EB%8B%B4%20%EB%AA%A9%EB%A1%9D",
+          "visibility": "public"
         },
         {
           "id": "source-chuntacle-fmkorea",
           "kind": "reference",
           "label": "FM코리아 · 춘타클 모집·참여자·이미지 자료",
-          "url": "https://www.fmkorea.com/10058760229"
+          "url": "https://www.fmkorea.com/10058760229",
+          "visibility": "internal"
         },
         {
           "id": "source-chuntacle-vod-1",
           "kind": "official",
           "label": "SOOP VOD · 춘타클 제1회 SOOP 다시보기",
-          "url": "https://vod.sooplive.com/player/201292605"
+          "url": "https://vod.sooplive.com/player/201292605",
+          "visibility": "public"
         },
         {
           "id": "source-chuntacle-vod-2",
           "kind": "official",
           "label": "SOOP VOD · 춘타클 제2회 SOOP 다시보기",
-          "url": "https://vod.sooplive.com/player/202198589"
+          "url": "https://vod.sooplive.com/player/202198589",
+          "visibility": "public"
         },
         {
           "id": "source-chuntacle-vod-3",
           "kind": "official",
           "label": "SOOP VOD · 춘타클 제3회 SOOP 다시보기",
-          "url": "https://vod.sooplive.com/player/203211299"
+          "url": "https://vod.sooplive.com/player/203211299",
+          "visibility": "public"
         },
         {
           "id": "source-chuntacle-vod-4",
           "kind": "official",
           "label": "SOOP VOD · 춘타클 제4회 SOOP 다시보기",
-          "url": "https://vod.sooplive.com/player/204037695"
+          "url": "https://vod.sooplive.com/player/204037695",
+          "visibility": "public"
         },
         {
           "id": "source-chuntacle-youtube-1",
           "kind": "reference",
           "label": "YouTube · 춘타클 관련 YouTube 영상 1",
-          "url": "https://www.youtube.com/watch?v=b-jlKXqLakU"
+          "url": "https://www.youtube.com/watch?v=b-jlKXqLakU",
+          "visibility": "public"
         },
         {
           "id": "source-chuntacle-youtube-2",
           "kind": "reference",
           "label": "YouTube · 춘타클 관련 YouTube 영상 2",
-          "url": "https://www.youtube.com/watch?v=gJKw13B7ydc"
+          "url": "https://www.youtube.com/watch?v=gJKw13B7ydc",
+          "visibility": "public"
         },
         {
           "id": "source-chuntacle-youtube-3",
           "kind": "reference",
           "label": "YouTube · 춘타클 관련 YouTube 영상 3",
-          "url": "https://www.youtube.com/watch?v=8rnQKGwa1qw&t=4s"
+          "url": "https://www.youtube.com/watch?v=8rnQKGwa1qw&t=4s",
+          "visibility": "public"
         }
       ],
       "verification": {
@@ -1355,7 +1464,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T17:45:00+09:00",
+      "updatedAt": "2026-09-22T18:58:00+09:00",
       "seriesSessions": [
         {
           "id": "session-1",
@@ -1549,7 +1658,8 @@
           "url": "https://www.sooplive.com/station/chunbongtv/post/124321185",
           "thumbnail": "",
           "sourceId": "source-psy1-recruit",
-          "note": "이전 대화에서 제1회 모집글로 지정한 춘봉 SOOP 방송국 공식 게시글입니다."
+          "note": "이전 대화에서 제1회 모집글로 지정한 춘봉 SOOP 방송국 공식 게시글입니다.",
+          "visibility": "public"
         },
         {
           "id": "psy1-siroko",
@@ -1560,7 +1670,8 @@
           "url": "https://www.namu.moe/w/%EC%8B%9C%EB%A1%9C%EC%BD%94(%EC%9D%B8%ED%84%B0%EB%84%B7%20%EB%B0%A9%EC%86%A1%EC%9D%B8)",
           "thumbnail": "",
           "sourceId": "source-psy1-siroko",
-          "note": "시로코 문서에 제1회 싸이감성 노래자랑 참가와 선곡 기록이 명시되어 있습니다."
+          "note": "시로코 문서에 제1회 싸이감성 노래자랑 참가와 선곡 기록이 명시되어 있습니다.",
+          "visibility": "public"
         },
         {
           "id": "psy1-fmkorea",
@@ -1571,7 +1682,8 @@
           "url": "https://www.fmkorea.com/7042989434",
           "thumbnail": "",
           "sourceId": "source-psy1-fmkorea",
-          "note": "사용자가 제1회 참가자 명단 확인용으로 제공한 FM코리아 자료입니다. 현재 자동 수집 경로에서 본문을 안정적으로 읽지 못해 참가자 이름은 원문 확인 후 구조화합니다."
+          "note": "사용자가 제1회 참가자 명단 확인용으로 제공한 FM코리아 자료입니다. 현재 자동 수집 경로에서 본문을 안정적으로 읽지 못해 참가자 이름은 원문 확인 후 구조화합니다.",
+          "visibility": "internal"
         }
       ],
       "media": [
@@ -1584,7 +1696,8 @@
           "url": "https://vod.sooplive.com/player/127480069",
           "thumbnail": "",
           "sourceId": "source-psy1-vod",
-          "note": "이전 대화에서 제1회 VOD로 지정한 SOOP 공식 영상입니다."
+          "note": "이전 대화에서 제1회 VOD로 지정한 SOOP 공식 영상입니다.",
+          "visibility": "public"
         }
       ],
       "gallery": [
@@ -1601,25 +1714,29 @@
           "id": "source-psy1-recruit",
           "kind": "official",
           "label": "SOOP 모집글 · 싸이감성 노래자랑 제1회",
-          "url": "https://www.sooplive.com/station/chunbongtv/post/124321185"
+          "url": "https://www.sooplive.com/station/chunbongtv/post/124321185",
+          "visibility": "public"
         },
         {
           "id": "source-psy1-vod",
           "kind": "official",
           "label": "SOOP VOD · 싸이감성 노래자랑 제1회",
-          "url": "https://vod.sooplive.com/player/127480069"
+          "url": "https://vod.sooplive.com/player/127480069",
+          "visibility": "public"
         },
         {
           "id": "source-psy1-siroko",
           "kind": "reference",
           "label": "나무위키 · 시로코 제1회 참가 기록",
-          "url": "https://www.namu.moe/w/%EC%8B%9C%EB%A1%9C%EC%BD%94(%EC%9D%B8%ED%84%B0%EB%84%B7%20%EB%B0%A9%EC%86%A1%EC%9D%B8)"
+          "url": "https://www.namu.moe/w/%EC%8B%9C%EB%A1%9C%EC%BD%94(%EC%9D%B8%ED%84%B0%EB%84%B7%20%EB%B0%A9%EC%86%A1%EC%9D%B8)",
+          "visibility": "public"
         },
         {
           "id": "source-psy1-fmkorea",
           "kind": "reference",
           "label": "FM코리아 · 싸이감성 노래자랑 제1회 참가자 참고 자료",
-          "url": "https://www.fmkorea.com/7042989434"
+          "url": "https://www.fmkorea.com/7042989434",
+          "visibility": "internal"
         }
       ],
       "verification": {
@@ -1628,7 +1745,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T17:55:00+09:00",
+      "updatedAt": "2026-09-22T18:58:00+09:00",
       "series": {
         "id": "psy-emotion-song-contest",
         "title": "싸이감성 노래자랑",
@@ -1674,7 +1791,8 @@
           "url": "https://www.sooplive.com/station/chunbongtv/post/192031471",
           "thumbnail": "",
           "sourceId": "source-psy2-recruit",
-          "note": "이전 대화에서 제2회 모집글로 지정한 춘봉 SOOP 방송국 공식 게시글입니다."
+          "note": "이전 대화에서 제2회 모집글로 지정한 춘봉 SOOP 방송국 공식 게시글입니다.",
+          "visibility": "public"
         },
         {
           "id": "psy2-fmkorea",
@@ -1685,7 +1803,8 @@
           "url": "https://www.fmkorea.com/9750851296",
           "thumbnail": "",
           "sourceId": "source-psy2-fmkorea",
-          "note": "사용자가 제2회 참가자 및 이미지 확인용으로 제공한 FM코리아 자료입니다. 현재 자동 수집 경로에서 본문을 안정적으로 읽지 못해 참가자 이름은 원문 확인 후 구조화합니다."
+          "note": "사용자가 제2회 참가자 및 이미지 확인용으로 제공한 FM코리아 자료입니다. 현재 자동 수집 경로에서 본문을 안정적으로 읽지 못해 참가자 이름은 원문 확인 후 구조화합니다.",
+          "visibility": "internal"
         }
       ],
       "media": [
@@ -1698,7 +1817,8 @@
           "url": "https://vod.sooplive.com/player/194116989",
           "thumbnail": "",
           "sourceId": "source-psy2-vod",
-          "note": "이전 대화에서 제2회 VOD로 지정한 SOOP 공식 영상입니다."
+          "note": "이전 대화에서 제2회 VOD로 지정한 SOOP 공식 영상입니다.",
+          "visibility": "public"
         }
       ],
       "gallery": [
@@ -1715,19 +1835,22 @@
           "id": "source-psy2-recruit",
           "kind": "official",
           "label": "SOOP 모집글 · 싸이감성 노래자랑 제2회",
-          "url": "https://www.sooplive.com/station/chunbongtv/post/192031471"
+          "url": "https://www.sooplive.com/station/chunbongtv/post/192031471",
+          "visibility": "public"
         },
         {
           "id": "source-psy2-vod",
           "kind": "official",
           "label": "SOOP VOD · 싸이감성 노래자랑 제2회",
-          "url": "https://vod.sooplive.com/player/194116989"
+          "url": "https://vod.sooplive.com/player/194116989",
+          "visibility": "public"
         },
         {
           "id": "source-psy2-fmkorea",
           "kind": "reference",
           "label": "FM코리아 · 싸이감성 노래자랑 제2회 참가자·이미지 참고 자료",
-          "url": "https://www.fmkorea.com/9750851296"
+          "url": "https://www.fmkorea.com/9750851296",
+          "visibility": "internal"
         }
       ],
       "verification": {
@@ -1736,7 +1859,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T17:55:00+09:00",
+      "updatedAt": "2026-09-22T18:58:00+09:00",
       "series": {
         "id": "psy-emotion-song-contest",
         "title": "싸이감성 노래자랑",
@@ -1800,7 +1923,8 @@
           "url": "https://www.sooplive.com/station/chunbongtv/post/192179233",
           "thumbnail": "",
           "sourceId": "source-diamond-recruit",
-          "note": "사용자가 그냥서버 1 모집글로 제공한 춘봉 SOOP 방송국 공식 게시글입니다."
+          "note": "사용자가 그냥서버 1 모집글로 제공한 춘봉 SOOP 방송국 공식 게시글입니다.",
+          "visibility": "public"
         },
         {
           "id": "diamond-open",
@@ -1811,7 +1935,8 @@
           "url": "",
           "thumbnail": "",
           "sourceId": "source-minecraft-server-list",
-          "note": "외부 교차 자료에서 춘봉 개최 및 시작일을 확인했습니다."
+          "note": "외부 교차 자료에서 춘봉 개최 및 시작일을 확인했습니다.",
+          "visibility": "public"
         },
         {
           "id": "diamond-end",
@@ -1822,7 +1947,8 @@
           "url": "",
           "thumbnail": "",
           "sourceId": "source-minecraft-server-list",
-          "note": "외부 교차 자료의 진행 기간 기준 종료일입니다."
+          "note": "외부 교차 자료의 진행 기간 기준 종료일입니다.",
+          "visibility": "public"
         }
       ],
       "media": [
@@ -1835,7 +1961,8 @@
           "url": "https://vod.sooplive.com/player/192233707",
           "thumbnail": "",
           "sourceId": "source-diamond-vod-192233707",
-          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다."
+          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다.",
+          "visibility": "public"
         },
         {
           "id": "diamond-vod-192317079",
@@ -1846,7 +1973,8 @@
           "url": "https://vod.sooplive.com/player/192317079",
           "thumbnail": "",
           "sourceId": "source-diamond-vod-192317079",
-          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다."
+          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다.",
+          "visibility": "public"
         },
         {
           "id": "diamond-vod-192401771",
@@ -1857,7 +1985,8 @@
           "url": "https://vod.sooplive.com/player/192401771",
           "thumbnail": "",
           "sourceId": "source-diamond-vod-192401771",
-          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다."
+          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다.",
+          "visibility": "public"
         },
         {
           "id": "diamond-vod-192510763",
@@ -1868,7 +1997,8 @@
           "url": "https://vod.sooplive.com/player/192510763",
           "thumbnail": "",
           "sourceId": "source-diamond-vod-192510763",
-          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다."
+          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다.",
+          "visibility": "public"
         },
         {
           "id": "diamond-vod-192581897",
@@ -1879,7 +2009,8 @@
           "url": "https://vod.sooplive.com/player/192581897",
           "thumbnail": "",
           "sourceId": "source-diamond-vod-192581897",
-          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다."
+          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다.",
+          "visibility": "public"
         },
         {
           "id": "diamond-vod-192845469",
@@ -1890,7 +2021,8 @@
           "url": "https://vod.sooplive.com/player/192845469",
           "thumbnail": "",
           "sourceId": "source-diamond-vod-192845469",
-          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다."
+          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다.",
+          "visibility": "public"
         },
         {
           "id": "diamond-vod-192962357",
@@ -1901,7 +2033,8 @@
           "url": "https://vod.sooplive.com/player/192962357",
           "thumbnail": "",
           "sourceId": "source-diamond-vod-192962357",
-          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다."
+          "note": "사용자가 그냥서버 1 관련 방송 기록으로 제공한 SOOP 공식 VOD입니다.",
+          "visibility": "public"
         }
       ],
       "gallery": [],
@@ -1910,73 +2043,85 @@
           "id": "source-diamond-recruit",
           "kind": "official",
           "label": "SOOP 모집글 · 그냥서버 : 다이아",
-          "url": "https://www.sooplive.com/station/chunbongtv/post/192179233"
+          "url": "https://www.sooplive.com/station/chunbongtv/post/192179233",
+          "visibility": "public"
         },
         {
           "id": "source-diamond-notion",
           "kind": "reference",
           "label": "공개 Notion · 그냥서버 1 기획 자료",
-          "url": "https://sdmv.notion.site/what"
+          "url": "https://sdmv.notion.site/what",
+          "visibility": "public"
         },
         {
           "id": "source-diamond-bngts",
           "kind": "reference",
           "label": "방통실 · 그냥서버 콘텐츠 아카이브",
-          "url": "https://bngts.com/contents/just"
+          "url": "https://bngts.com/contents/just",
+          "visibility": "internal"
         },
         {
           "id": "source-diamond-bngts-streamers",
           "kind": "reference",
           "label": "방통실 · 그냥서버 참가 스트리머",
-          "url": "https://bngts.com/contents/just/streamers"
+          "url": "https://bngts.com/contents/just/streamers",
+          "visibility": "internal"
         },
         {
           "id": "source-minecraft-server-list",
           "kind": "reference",
           "label": "나무위키 계열 · 마인크래프트 인터넷 방송인 서버 목록",
-          "url": "https://namu.moe/w/%EB%A7%88%EC%9D%B8%ED%81%AC%EB%9E%98%ED%94%84%ED%8A%B8%20%EC%9D%B8%ED%84%B0%EB%84%B7%20%EB%B0%A9%EC%86%A1%EC%9D%B8%20%EC%84%9C%EB%B2%84"
+          "url": "https://namu.moe/w/%EB%A7%88%EC%9D%B8%ED%81%AC%EB%9E%98%ED%94%84%ED%8A%B8%20%EC%9D%B8%ED%84%B0%EB%84%B7%20%EB%B0%A9%EC%86%A1%EC%9D%B8%20%EC%84%9C%EB%B2%84",
+          "visibility": "public"
         },
         {
           "id": "source-diamond-vod-192233707",
           "kind": "official",
           "label": "SOOP VOD · 192233707",
-          "url": "https://vod.sooplive.com/player/192233707"
+          "url": "https://vod.sooplive.com/player/192233707",
+          "visibility": "public"
         },
         {
           "id": "source-diamond-vod-192317079",
           "kind": "official",
           "label": "SOOP VOD · 192317079",
-          "url": "https://vod.sooplive.com/player/192317079"
+          "url": "https://vod.sooplive.com/player/192317079",
+          "visibility": "public"
         },
         {
           "id": "source-diamond-vod-192401771",
           "kind": "official",
           "label": "SOOP VOD · 192401771",
-          "url": "https://vod.sooplive.com/player/192401771"
+          "url": "https://vod.sooplive.com/player/192401771",
+          "visibility": "public"
         },
         {
           "id": "source-diamond-vod-192510763",
           "kind": "official",
           "label": "SOOP VOD · 192510763",
-          "url": "https://vod.sooplive.com/player/192510763"
+          "url": "https://vod.sooplive.com/player/192510763",
+          "visibility": "public"
         },
         {
           "id": "source-diamond-vod-192581897",
           "kind": "official",
           "label": "SOOP VOD · 192581897",
-          "url": "https://vod.sooplive.com/player/192581897"
+          "url": "https://vod.sooplive.com/player/192581897",
+          "visibility": "public"
         },
         {
           "id": "source-diamond-vod-192845469",
           "kind": "official",
           "label": "SOOP VOD · 192845469",
-          "url": "https://vod.sooplive.com/player/192845469"
+          "url": "https://vod.sooplive.com/player/192845469",
+          "visibility": "public"
         },
         {
           "id": "source-diamond-vod-192962357",
           "kind": "official",
           "label": "SOOP VOD · 192962357",
-          "url": "https://vod.sooplive.com/player/192962357"
+          "url": "https://vod.sooplive.com/player/192962357",
+          "visibility": "public"
         }
       ],
       "verification": {
@@ -1985,7 +2130,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T17:45:00+09:00"
+      "updatedAt": "2026-09-22T18:58:00+09:00"
     }
   ],
   "hiddenIds": [
