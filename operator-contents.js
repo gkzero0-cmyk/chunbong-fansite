@@ -15,7 +15,7 @@ function renderList(){
     const issues=archiveAudit(i).length,issueText=issues?'보강 '+issues+'건':'주요 누락 없음';
     return '<button type="button" class="operator-archive-list-item '+(selected?.id===i.id?'active':'')+'" data-archive-select="'+esc(i.id)+'"><span><strong>'+esc(i.title||i.id)+'</strong><small>'+esc(i.id)+' · '+esc(i.category||'기타')+' · '+esc(issueText)+'</small></span><b data-state="'+esc(statusText(i))+'">'+esc(statusText(i))+'</b></button>';
   }).join(''):'<p class="operator-empty">조건에 맞는 콘텐츠가 없습니다.</p>';
-  $('[data-archive-select]',list).forEach(b=>b.addEventListener('click',()=>selectItem(b.dataset.archiveSelect)));
+  
 }
 function field(label,name,value='',type='text',extra=''){return `<label class="operator-archive-field"><span>${label}</span><input type="${type}" name="${name}" value="${esc(value)}" ${extra}></label>`}
 function selectField(label,name,value,options){return `<label class="operator-archive-field"><span>${label}</span><select name="${name}">${options.map(([v,l])=>`<option value="${v}" ${v===value?'selected':''}>${l}</option>`).join('')}</select></label>`}
