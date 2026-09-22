@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T20:31:00+09:00",
+  "updatedAt": "2026-09-22T20:38:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -2171,9 +2171,9 @@
       "category": "song",
       "role": "개최",
       "status": "ended",
-      "startDate": "",
-      "endDate": "",
-      "datePrecision": "unknown",
+      "startDate": "2026-04-28",
+      "endDate": "2026-04-28",
+      "datePrecision": "day",
       "summary": "춘봉이 개최한 싸이감성 노래자랑 제2회 기록으로, 이전 대화에서 지정한 SOOP 모집글·공식 VOD와 FM코리아 보조 자료를 회차별로 분리해 보존합니다.",
       "description": "싸이감성 노래자랑 제2회를 제1회와 별도 기록으로 정리했습니다. SOOP 모집글과 VOD를 공식 우선 출처로 두고, 사용자 제공 FM코리아 자료는 참가자·이미지 확인용 보조 출처로 구분합니다. 원문에서 직접 확인하지 못한 날짜·참가자 정보는 임의로 확정하지 않습니다.",
       "heroImage": {
@@ -2182,7 +2182,12 @@
         "sourceId": ""
       },
       "participants": [],
-      "results": [],
+      "results": [
+        {
+          "title": "개최일",
+          "value": "2026년 4월 28일"
+        }
+      ],
       "timeline": [
         {
           "id": "psy2-recruit-post",
@@ -2207,6 +2212,18 @@
           "sourceId": "source-psy2-fmkorea",
           "note": "사용자가 제2회 참가자 및 이미지 확인용으로 제공한 FM코리아 자료입니다. 현재 자동 수집 경로에서 본문을 안정적으로 읽지 못해 참가자 이름은 원문 확인 후 구조화합니다.",
           "visibility": "internal"
+        },
+        {
+          "id": "psy2-event-day",
+          "type": "result",
+          "title": "싸이감성 노래자랑 제2회 개최",
+          "date": "2026-04-28",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "source-psy2-chunbong-history",
+          "note": "춘봉 활동 이력과 같은 날 심사 방송 기록으로 개최일을 교차 확인했습니다.",
+          "visibility": "public"
         }
       ],
       "media": [
@@ -2214,8 +2231,8 @@
           "id": "psy2-vod",
           "type": "vod",
           "title": "싸이감성 노래자랑 제2회 SOOP VOD",
-          "date": "",
-          "datePrecision": "unknown",
+          "date": "2026-04-28",
+          "datePrecision": "day",
           "url": "https://vod.sooplive.com/player/194116989",
           "thumbnail": "",
           "sourceId": "source-psy2-vod",
@@ -2253,6 +2270,20 @@
           "label": "FM코리아 · 싸이감성 노래자랑 제2회 참가자·이미지 참고 자료",
           "url": "https://www.fmkorea.com/9750851296",
           "visibility": "internal"
+        },
+        {
+          "id": "source-psy2-chunbong-history",
+          "kind": "reference",
+          "label": "나무위키 · 춘봉 활동 이력",
+          "url": "https://www.namu.moe/w/%EC%B6%98%EB%B4%89",
+          "visibility": "public"
+        },
+        {
+          "id": "source-psy2-streams",
+          "kind": "reference",
+          "label": "Streams Charts · 싸이감성 노래자랑 심사 방송 기록",
+          "url": "https://streamscharts.com/channels/lilpa0309/streams/293582583?platform=afreecatv",
+          "visibility": "internal"
         }
       ],
       "verification": {
@@ -2261,7 +2292,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T18:58:00+09:00",
+      "updatedAt": "2026-09-22T20:38:00+09:00",
       "series": {
         "id": "psy-emotion-song-contest",
         "title": "싸이감성 노래자랑",
