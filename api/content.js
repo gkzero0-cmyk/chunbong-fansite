@@ -250,6 +250,26 @@ function compactDataPayload(payload, options = {}) {
 async function handler(req,res) {
   const requestUrl=new URL(req.url||'/','https://chunbong.local');
   const type=requestUrl.searchParams.get('type')||'';
+  if(type==='debug-soop-autodiscovery'&&process.env.VERCEL_ENV!=='production'){
+    const mode=requestUrl.searchParams.get('mode')||'board';
+    try{
+      if(mode==='board'){
+        const p=new URLSearchParams({per_page:'50',start_date:'2026-04-08',end_date:'2026-04-10',field:'title,contents,user_nick,user_id,hashtags',keyword:'',type:'all',order_by:'reg_date',page:'1'});
+        const url='https://chapi.sooplive.com/api/chunbongtv/board/?'+p.toString();
+        const r=await fetch(url,{headers:{'user-agent':'Mozilla/5.0','accept':'application/json,text/plain,*/*','referer':'https://www.sooplive.com/'}});
+        const raw=await r.text(); let payload={}; try{payload=JSON.parse(raw)}catch{}
+        const rows=Array.isArray(payload?.data)?payload.data:Array.isArray(payload?.data?.list)?payload.data.list:Array.isArray(payload?.data?.articles)?payload.data.articles:Array.isArray(payload?.articles)?payload.articles:[];
+        return res.status(200).json({status:r.status,url,count:rows.length,matches:rows.filter(x=>String(x?.title_no||x?.post_no||x?.bbs_no||'')==='192179233'||/그냥 서버 열었습니다|그냥서버/i.test(String(x?.title||x?.title_name||x?.subject||''))).slice(0,20),sample:rows.slice(0,10),keys:Object.keys(payload||{})});
+      }
+      if(mode==='vod'){
+        const url='https://chapi.sooplive.com/api/chunbongtv/vods/review?page=1&per_page=60&orderby=reg_date';
+        const r=await fetch(url,{headers:{'user-agent':'Mozilla/5.0','accept':'application/json,text/plain,*/*','referer':'https://www.sooplive.com/'}});
+        const raw=await r.text(); let payload={}; try{payload=JSON.parse(raw)}catch{}
+        const rows=Array.isArray(payload?.data)?payload.data:Array.isArray(payload?.data?.list)?payload.data.list:Array.isArray(payload?.data?.items)?payload.data.items:Array.isArray(payload?.items)?payload.items:[];
+        return res.status(200).json({status:r.status,url,count:rows.length,sample:rows.slice(0,5),keys:Object.keys(payload||{}),dataKeys:payload?.data&&typeof payload.data==='object'?Object.keys(payload.data):[]});
+      }
+    }catch(error){return res.status(500).json({error:String(error?.message||error)})}
+  }
   if(type==='chuntris-ranking') return handleChuntrisRanking(req,res);
   if(type==='chunbak-ranking') return handleChunbakRanking(req,res);
   if(type==='chungwagame-ranking') return handleChungwagameRanking(req,res);
