@@ -8,10 +8,10 @@ const page=read('page.js');
 const css=read('styles.css');
 
 assert.match(sw,/chunbong-pwa-20260922-v31/,'navigation optimization must advance the service worker cache');
-assert.match(sw,/request\.mode === 'navigate'[\s\S]*staleWhileRevalidate\(request, event, '\/offline\.html'\)/,'documents should render cached navigation immediately and refresh in background');
+assert.match(sw,/request\.mode === 'navigate'[\s\S]*networkFirst\(request, event\)/,'documents should prefer a coherent fresh response and use cache only as an offline fallback');
 assert.match(sw,/event\.preloadResponse/,'cached navigation refresh should reuse navigation preload instead of issuing a duplicate request');
 assert.match(sw,/if \(preload\?\.ok\)[\s\S]*await fetch\(request\)/,'failed preload responses must fall through to fetch so offline fallback remains reachable');
-assert.match(sw,/APP_SHELL_PATHS\.has\(url\.pathname\)[\s\S]*staleWhileRevalidate\(request, event\)[\s\S]*networkFirst\(request, event\)/,'common shell assets should be cache-fast while feature runtimes stay network-first');
+assert.match(sw,/\['script','style'\][\s\S]*networkFirst\(request, event\)/,'shell JS/CSS should prefer network so document and assets cannot drift across deploys');
 assert.match(sw,/url\.pathname\.startsWith\('\/api\/'\)[\s\S]*return/,'API responses must stay outside service worker document caching');
 
 for(const token of ['setupNavigationPrefetch','rel=\'prefetch\'','navigationPrefetch','pointerover','focusin','touchstart']){

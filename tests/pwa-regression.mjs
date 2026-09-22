@@ -42,8 +42,8 @@ assert.match(sw, /chunbong-pwa-20260922-v31/,'broadcast alert fix must advance t
 assert.match(sw, /\/offline\.html/);
 assert.match(sw, /url\.pathname\.startsWith\('\/api\/'\)/);
 assert.match(sw, /networkFirst/);
-assert.match(sw, /request\.destination === 'document'[\s\S]*staleWhileRevalidate\(request, event, '\/offline\.html'\)/, 'repeat document navigation should use stale-while-revalidate with offline fallback');
-assert.match(sw, /APP_SHELL_PATHS\.has\(url\.pathname\)[\s\S]*staleWhileRevalidate\(request, event\)[\s\S]*networkFirst\(request, event\)/, 'common shell JS/CSS should use stale-while-revalidate while feature runtimes stay network-first');
+assert.match(sw, /request\.destination === 'document'[\s\S]*networkFirst\(request, event\)/, 'documents should prefer the latest network response and fall back to cache offline');
+assert.match(sw, /\['script','style'\][\s\S]*networkFirst\(request, event\)/, 'scripts and styles should stay coherent with the latest document by preferring network');
 assert.match(sw, /request\.destination === 'worker'[\s\S]*networkFirst\(request, event\)/, 'workers should remain network-first');
 assert.match(sw, /\['image','font'\]/, 'heavy visual assets should keep stale-while-revalidate');
 assert.match(page, /standalone[\s\S]*registration\.waiting[\s\S]*SKIP_WAITING/, 'installed PWA should activate a waiting update on app launch');

@@ -166,3 +166,12 @@ button.archive-series-poster{cursor:zoom-in}
  .archive-all-records-heading{margin-top:4px}
 }
 @media(prefers-reduced-motion:reduce){.archive-series-skeleton{animation:none}}
+
+
+/* Archive stale-markup compatibility: old cached HTML used .reveal without a matching reveal runtime. */
+.archive-hero-copy.reveal,
+.archive-series-home.reveal,
+.archive-toolbar.reveal{
+  opacity:1!important;
+  transform:none!important;
+}
