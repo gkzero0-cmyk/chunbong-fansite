@@ -215,9 +215,23 @@ button.archive-series-poster{cursor:zoom-in}
 .archive-participant-group[open]>summary{border-bottom:1px solid #292929}
 .archive-participant-group>p{margin:10px 12px 0;color:var(--text-muted,#aaa29b);font-size:10px;line-height:1.55}
 .archive-participant-group>.archive-people-chips{padding:12px}
+.archive-participant-count-note{margin:0 0 12px;padding:10px 12px;border:1px solid color-mix(in srgb,var(--page-accent,#f2a65a) 24%,#2c2c2c);border-radius:12px;background:color-mix(in srgb,var(--page-accent,#f2a65a) 5%,#101010);color:var(--text-muted,#aaa29b);font-size:10px;line-height:1.55}
+.archive-participant-count-note strong{color:var(--text-primary,#fff);font-weight:900}
+.archive-participant-stage{display:grid;gap:8px;padding:10px;border:1px solid #303030;border-radius:16px;background:#0d0d0d}
+.archive-participant-stage-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 3px 4px}
+.archive-participant-stage-heading>span{display:grid;gap:2px}
+.archive-participant-stage-heading small{color:var(--page-accent,#f2a65a);font-size:8px;font-weight:950;letter-spacing:.09em}
+.archive-participant-stage-heading strong{font-size:13px}
+.archive-participant-stage-heading>b{padding:5px 8px;border:1px solid #ffffff17;border-radius:999px;color:var(--text-secondary,#d1cbc5);font-size:9px}
+.archive-participant-stage-groups{display:grid;gap:8px}
+.archive-participant-stage .archive-participant-group{background:#121212}
+[data-theme="light"] .archive-participant-count-note{background:#fff9f4;border-color:#eadfd7}
+[data-theme="light"] .archive-participant-count-note strong{color:#2b211c}
+[data-theme="light"] .archive-participant-stage{background:#fff;border-color:#eadfd7}
+[data-theme="light"] .archive-participant-stage .archive-participant-group{background:#fffaf7}
 [data-theme="light"] .archive-participant-group{background:#fffaf7;border-color:#eadfd7}
 [data-theme="light"] .archive-participant-group[open]>summary{border-bottom-color:#eadfd7}
-@media(max-width:760px){.archive-participant-group>summary{min-height:48px;padding:0 11px}.archive-participant-group>.archive-people-chips{padding:9px}}
+@media(max-width:760px){.archive-participant-stage{padding:8px}.archive-participant-stage-heading{padding:2px}.archive-participant-group>summary{min-height:48px;padding:0 11px}.archive-participant-group>.archive-people-chips{padding:9px}}
 
 
 /* Unified content cards */
