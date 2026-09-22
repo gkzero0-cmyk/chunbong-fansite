@@ -402,10 +402,9 @@ assert.equal(groupMerge[0].participantGroups.length,3,'기존 저장 레코드�
 
 const diamondGroupMerge=archiveApi._internals.mergeArchiveRows(
   [diamondBackfill],
-  [{...diamondBackfill,participantGroups:[{id:'old-partial',title:'부분 명단',platform:'SOOP',count:48,participants:(diamondParticipantGroup?.participants||[]).slice(0,48)}]}]
+  [{...diamondBackfill,participantGroups:[{id:'old-bngts',title:'예전 외부 집계',platform:'SOOP',count:48,participants:['임시'],sourceId:'source-bngts',note:'BNGTS 방통실 기반 예전 집계'}]}]
 );
-assert.equal(diamondGroupMerge[0]?.participantGroups?.[0]?.count,189,'더 완전한 seed 참가자 그룹이 예전 부분 저장 레코드보다 우선해야 합니다');
-assert.equal(diamondGroupMerge[0]?.participantGroups?.[0]?.participants?.length,189,'189명 전체 명단이 저장 레코드 병합 뒤에도 보존되어야 합니다');
+assert.equal((diamondGroupMerge[0]?.participantGroups||[]).some(row=>/bngts/i.test(String(row.sourceId||''))||/방통실|BNGTS/i.test(String(row.note||''))),false,'그냥서버 다이아는 예전 방통실 참가자 집계를 병합해 되살리면 안 됩니다');
 const staleChuntaclePoster=(chuntacle.seriesSessions||[]).find(row=>row.number===5)?.poster?.src||'';
 const chuntacleMerge=archiveApi._internals.mergeArchiveRows(
   [chuntacle],
