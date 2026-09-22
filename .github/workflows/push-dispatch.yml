@@ -23,6 +23,7 @@ jobs:
           AUDIENCE: chunbong-fansite-push
           CONFIG_URL: https://chunbong-fansite.vercel.app/api/content?type=push-config
           PUSH_URL: https://chunbong-fansite.vercel.app/api/content?type=push-dispatch
+          ARCHIVE_SYNC_URL: https://chunbong-fansite.vercel.app/api/content?type=content-archive-auto-sync
         shell: bash
         run: |
           set -euo pipefail
@@ -56,4 +57,6 @@ jobs:
             "
           )"
           curl -fsS --retry 2 --retry-delay 2 --max-time 55             -H "Authorization: Bearer $token"             -H "User-Agent: chunbong-github-actions-push"             "$PUSH_URL"
+          echo
+          curl -fsS --retry 1 --retry-delay 2 --max-time 55             -X POST             -H "Authorization: Bearer $token"             -H "Content-Type: application/json"             -H "User-Agent: chunbong-github-actions-archive-sync"             -d '{}'             "$ARCHIVE_SYNC_URL" || true
           echo

@@ -218,3 +218,24 @@ button.archive-series-poster{cursor:zoom-in}
 [data-theme="light"] .archive-participant-group{background:#fffaf7;border-color:#eadfd7}
 [data-theme="light"] .archive-participant-group[open]>summary{border-bottom-color:#eadfd7}
 @media(max-width:760px){.archive-participant-group>summary{min-height:48px;padding:0 11px}.archive-participant-group>.archive-people-chips{padding:9px}}
+
+
+/* Unified content cards */
+.archive-card{display:grid;grid-template-rows:auto 1fr;height:100%}
+.archive-card-copy{display:grid;grid-template-rows:auto auto 1fr auto;height:100%;box-sizing:border-box}
+.archive-card-copy h2{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-height:2.55em;line-height:1.27}
+.archive-card-copy p{min-height:3.2em}
+.archive-card-meta{align-self:end}
+.archive-series-card{display:grid;grid-template-rows:auto 1fr;height:100%}
+.archive-series-card-visual{height:auto;aspect-ratio:16/9}
+.archive-series-card-visual:not(.is-multi) .archive-series-card-image img{object-fit:cover}
+.archive-series-card-copy{display:grid;grid-template-rows:auto auto auto 1fr auto;height:100%;box-sizing:border-box}
+.archive-series-card-copy h3{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-height:2.35em;line-height:1.18}
+.archive-media-card{display:grid;grid-template-rows:auto 1fr;height:100%}
+.archive-media-copy{grid-template-rows:auto auto auto 1fr auto!important}
+.archive-media-copy strong{display:-webkit-box!important;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-height:2.9em}
+.archive-gallery button{height:100%}
+.archive-gallery figure{display:grid;grid-template-rows:auto 1fr;height:100%}
+.archive-gallery figcaption{min-height:42px}
+@media(min-width:1280px){.archive-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:760px){.archive-card-copy h2,.archive-series-card-copy h3{min-height:0}}

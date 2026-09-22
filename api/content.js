@@ -277,9 +277,11 @@ async function handler(req,res) {
   if(type==='operator-logout-all') return operatorCenter.handleLogoutAll(req,res);
   if(type==='chunbong-contents') return contentArchive.handlePublicList(req,res);
   if(type==='chunbong-content') return contentArchive.handlePublicDetail(req,res);
+  if(type==='content-archive-auto-sync') return contentArchive.handlePublicAutoSync(req,res);
   if(type==='operator-content-archive') return contentArchive.handleOperatorList(req,res);
   if(type==='operator-content-archive-save') return contentArchive.handleOperatorSave(req,res);
   if(type==='operator-content-archive-publish') return contentArchive.handleOperatorPublish(req,res);
+  if(type==='operator-content-auto-sync') return contentArchive.handleOperatorAutoSync(req,res);
   if(type==='operator-content-source-meta') return contentArchive.handleOperatorSourceMeta(req,res);
   if(type==='operator-content-archive-delete') return contentArchive.handleOperatorDelete(req,res);
   if(type==='live'){

@@ -1,5 +1,5 @@
 const API='/api/content?type=';
-let root=null,items=[],selected=null,booted=false;
+let root=null,items=[],selected=null,booted=false,autoSyncMeta=null,autoCandidates=[];
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const slug=v=>String(v||'').toLowerCase().trim().replace(/[^a-z0-9가-힣]+/g,'-').replace(/^-|-$/g,'');
@@ -23,7 +23,7 @@ function archiveAudit(item){
   const participantGroupCount=(Array.isArray(item.participantGroups)?item.participantGroups:[]).reduce((sum,row)=>sum+(Array.isArray(row.participants)?row.participants.length:Number(row.count)||0),0);
   const urls=sources.map(row=>String(row.url||'').toLowerCase());
   const labels=sources.map(row=>String(row.label||'').toLowerCase());
-  const hasParticipantReference=urls.some(url=>url.includes('/streamers')||url.includes('fmkorea.com'))||labels.some(label=>label.includes('참가자')||label.includes('참여자'));
+  const hasParticipantReference=urls.some(url=>url.includes('/streamers'))||labels.some(label=>label.includes('참가자')||label.includes('참여자'));
   if(hasParticipantReference&&participants.length===0&&participantGroupCount===0)issues.push(['참가자 미수집','참가자 명단용 참고 자료가 있지만 참가자 데이터가 0명입니다.']);
   const hasNotion=urls.some(url=>url.includes('notion.'));
   if(hasNotion&&!/(규칙|시스템|참가 조건|진행 방식|일정)/.test(String(item.description||'')))issues.push(['Notion 본문 미구조화','Notion 자료가 연결돼 있지만 규칙·시스템·일정 데이터 반영 여부를 확인해야 합니다.']);
@@ -97,5 +97,25 @@ function addRow(kind){const map={result:['[data-results]',resultRow({},$$('[data
 async function persist(type){const item=collect();setMessage(type.includes('publish')?'공개 검증 중…':'초안 저장 중…');try{const p=await json(type,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({item})});selected=p.item;setMessage(type.includes('publish')?'공개되었습니다.':'초안으로 저장했습니다.','ok');await load();selectItem(selected.id)}catch(e){setMessage(errorLabel[e.message]||`저장하지 못했습니다: ${e.message}`,'bad')}}
 function bindEditor(){const form=$('[data-archive-form]',root);form.addEventListener('input',()=>renderPreview());bindSourceMeta();$$('[data-add-row]',root).forEach(b=>b.addEventListener('click',()=>addRow(b.dataset.addRow)));bindRowControls();$$('[data-resolve-conflict]',root).forEach(b=>b.addEventListener('click',()=>{selected.verification.conflicts.splice(Number(b.dataset.resolveConflict),1);renderEditor(selected)}));$('[data-archive-preview]',root)?.addEventListener('click',renderPreview);$('[data-archive-save]',root)?.addEventListener('click',()=>persist('operator-content-archive-save'));$('[data-archive-publish]',root)?.addEventListener('click',()=>persist('operator-content-archive-publish'));$('[data-archive-delete]',root)?.addEventListener('click',async()=>{if(!selected?.id||!confirm('이 콘텐츠 기록을 삭제할까요?'))return;try{await json('operator-content-archive-delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:selected.id})});selected=null;await load();renderEditor(emptyItem())}catch(e){setMessage(errorLabel[e.message]||'삭제하지 못했습니다.','bad')}})}
 function selectItem(id){const item=items.find(x=>x.id===id);if(item){renderEditor(item);renderList()}}
-async function load(){try{const p=await json('operator-content-archive');items=Array.isArray(p.items)?p.items:[];renderList()}catch(e){setMessage(e.message==='archive_storage_unavailable'?'콘텐츠 저장소를 사용할 수 없습니다.':'콘텐츠 목록을 불러오지 못했습니다.','bad')}}
-export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));renderEditor(emptyItem());await load()}
+function renderAutoSyncState(){
+  const el=$('[data-archive-auto-state]',root);if(!el)return;
+  const when=String(autoSyncMeta?.completedAt||'').slice(0,16).replace('T',' ');
+  const d=autoSyncMeta?.discovered||{};
+  const total=['posts','vods','catches','clips','youtube','shorts'].reduce((sum,key)=>sum+Number(d[key]||0),0);
+  el.innerHTML=autoSyncMeta
+    ? `<strong>공식 자료 자동 수집</strong><span>마지막 동기화 ${esc(when||'확인 중')} · 발견 ${total}건 · 자동 연결 ${Number(autoSyncMeta.attachedCount||0)}건 · 검토 후보 ${autoCandidates.length}건</span><small>우선순위: SOOP 게시글·VOD·Catch·Clip → 춘봉TV YouTube·Shorts</small>`
+    : '<strong>공식 자료 자동 수집</strong><span>아직 동기화 기록이 없습니다.</span><small>SOOP 방송국을 최우선으로 수집합니다.</small>';
+}
+async function runOfficialSync(){
+  const button=$('[data-archive-auto-sync]',root);if(button)button.disabled=true;
+  const el=$('[data-archive-auto-state]',root);if(el)el.textContent='SOOP · YouTube 공식 자료를 동기화하고 있습니다…';
+  try{
+    const p=await json('operator-content-auto-sync',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    await load();
+    if(el&&!p.skipped)el.dataset.state='ok';
+  }catch(e){
+    if(el){el.textContent='공식 자료 동기화에 실패했습니다: '+e.message;el.dataset.state='bad'}
+  }finally{if(button)button.disabled=false}
+}
+async function load(){try{const p=await json('operator-content-archive');items=Array.isArray(p.items)?p.items:[];autoSyncMeta=p.autoSync||null;autoCandidates=Array.isArray(p.candidates)?p.candidates:[];renderList();renderAutoSyncState()}catch(e){setMessage(e.message==='archive_storage_unavailable'?'콘텐츠 저장소를 사용할 수 없습니다.':'콘텐츠 목록을 불러오지 못했습니다.','bad')}}
+export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());renderEditor(emptyItem());await load()}
