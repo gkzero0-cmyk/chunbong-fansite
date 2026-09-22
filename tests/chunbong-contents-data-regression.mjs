@@ -362,7 +362,7 @@ const mergeVisibility=archiveApi._internals.mergeArchiveRows(
   [{...hiddenSourceItem,id:'visibility-merge',sources:hiddenSourceItem.sources.map(row=>({...row,visibility:'public'})),timeline:hiddenSourceItem.timeline.map(row=>({...row,visibility:'public'}))}]
 );
 assert.equal(mergeVisibility[0].sources.some(row=>row.id==='internal-source'),false,'Bangtongsil-backed sources should be removed from merged archive records');
-assert.equal(mergeVisibility[0].timeline.some(row=>row.id==='internal-row'),false,'Bangtongsil-backed timeline rows should be removed from merged archive records');
+assert.equal(mergeVisibility[0].timeline.find(row=>row.id==='internal-row')?.visibility,'internal','internal Bangtongsil timeline provenance may survive storage but must stay hidden publicly');
 
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://www.sooplive.com/station/chunbongtv/post/1'),'SOOP source metadata URL should be allowed');
 assert.equal(archiveApi._internals.allowedSourceMetaUrl('https://bngts.com/contents/just'),null,'방통실은 source metadata allowlist에서 제외되어야 합니다');
