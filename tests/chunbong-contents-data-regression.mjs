@@ -122,10 +122,15 @@ assert.equal(psyContest2?.startDate,'2026-04-28','2회 개최일은 2026-04-28�
 assert.ok((psyContest1?.sources||[]).some(row=>row.url==='https://www.sooplive.com/station/chunbongtv/post/124321185'),'1회 SOOP 모집글이 필요합니다');
 assert.ok((psyContest1?.media||[]).some(row=>row.url==='https://vod.sooplive.com/player/127480069'),'1회 SOOP VOD가 필요합니다');
 assert.ok((psyContest1?.participants||[]).includes('시로코'),'제1회 참가가 교차 확인된 시로코 기록이 필요합니다');
-assert.ok((psyContest1?.sources||[]).some(row=>row.url==='https://www.fmkorea.com/7042989434'&&row.kind==='reference'),'1회 FM코리아 참가자 참고 자료를 유지해야 합니다');
+assert.ok((psyContest1?.sources||[]).some(row=>row.url==='https://www.sooplive.com/station/gkzero/post/207829703'&&row.visibility==='internal'),'1회 참가 순서 보관본은 내부 SOOP 검증 자료로 유지해야 합니다');
+assert.equal((psyContest1?.participantGroups||[]).find(row=>row.id==='psy1-confirmed-order')?.count,36,'1회 보존 원문 경연 순서는 36명이어야 합니다');
+assert.equal(psyContest1?.participants?.length,37,'1회는 공지 순서 36명과 별도 교차확인 시로코 기록을 구분해 보존해야 합니다');
 assert.ok((psyContest2?.sources||[]).some(row=>row.url==='https://www.sooplive.com/station/chunbongtv/post/192031471'),'2회 SOOP 모집글이 필요합니다');
 assert.ok((psyContest2?.media||[]).some(row=>row.url==='https://vod.sooplive.com/player/194116989'),'2회 SOOP VOD가 필요합니다');
-assert.ok((psyContest2?.sources||[]).some(row=>row.url==='https://www.fmkorea.com/9750851296'&&row.kind==='reference'),'2회 FM코리아 자료는 보조 출처로 유지해야 합니다');
+assert.ok((psyContest2?.sources||[]).some(row=>row.url==='https://www.sooplive.com/station/gkzero/post/207830229'&&row.visibility==='internal'),'2회 최종 공지 보관본은 내부 SOOP 검증 자료로 유지해야 합니다');
+assert.equal((psyContest2?.participantGroups||[]).find(row=>row.id==='psy2-confirmed-order')?.count,22,'2회 경연 순서는 22명이어야 합니다');
+assert.ok((psyContest2?.results||[]).some(row=>row.title==='심사위원'&&/춘봉/.test(row.value||'')&&/릴파/.test(row.value||'')),'2회 심사위원 정보가 필요합니다');
+assert.ok((psyContest2?.results||[]).some(row=>row.title==='총상금'&&/100만 원/.test(row.value||'')&&/13,000개/.test(row.value||'')),'2회 상금 계획이 필요합니다');
 assert.match(String(psyContest1?.heroImage?.src||''),/^\/assets\/chunbong-contents\//);
 assert.match(String(psyContest2?.heroImage?.src||''),/^\/assets\/chunbong-contents\//);
 
@@ -192,6 +197,10 @@ for(const url of ['https://naver.me/5qLX1yQ1','https://naver.me/FbVX1U7z','https
 for(const url of ['https://naver.me/5qLX1yQ1','https://naver.me/FbVX1U7z','https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d']) assert.equal((justserver?.sources||[]).find(row=>row.url===url)?.visibility,'internal',`머니게임 내부 자료원은 공개 출처로 노출하면 안 됩니다: ${url}`);
 const moneygamePublic=toPublicArchiveItem(normalizeArchiveItem(justserver));
 assert.equal((moneygamePublic.sources||[]).some(row=>/naver\.me|app\.notion\.com/.test(String(row.url||''))),false,'머니게임 Naver/Notion 내부 자료원은 공개 API에서 제거되어야 합니다');
+assert.deepEqual((justserver?.participantGroups||[]).map(row=>row.count),[50,49,50,49,45],'머니게임 입주 공지의 원문 표기 그룹 개수를 보존해야 합니다');
+assert.equal((justserver?.participantGroups||[]).reduce((sum,row)=>sum+(row.participants||[]).length,0),243,'머니게임 입주 공지에서 분리 가능한 닉네임 표기는 243개여야 합니다');
+assert.ok((justserver?.timeline||[]).some(row=>row.id==='money-entry-order'&&row.date==='2026-06-21'),'머니게임 입주 순서 공지 날짜를 보존해야 합니다');
+assert.ok((justserver?.results||[]).some(row=>row.title==='주요 콘텐츠'&&/채광/.test(row.value||'')&&/갬블/.test(row.value||'')),'머니게임 Notion의 주요 콘텐츠 구조를 반영해야 합니다');
 for(const id of ['203683207','204093563','204274449','206972857','207425471','207516943','207564735']) assert.ok((survival?.timeline||[]).some(row=>row.url===`https://www.sooplive.com/station/chunbongtv/post/${id}`),`적자생존 SOOP 게시글 누락: ${id}`);
 assert.ok((survival?.sources||[]).some(row=>row.url==='https://daisy-grouse-ac0.notion.site/3dad57d6a55c80469f3de9730cb88975'),'적자생존 Notion 자료가 필요합니다');
 
@@ -206,6 +215,11 @@ assert.equal(justserverDiamond?.endDate,'2026-04-16');
 assert.equal(justserverDiamond?.series?.id,'justserver');
 for(const id of ['192233707','192317079','192401771','192510763','192581897','192845469','192962357']) assert.ok((justserverDiamond?.media||[]).some(row=>row.url===`https://vod.sooplive.com/player/${id}`),`그냥서버 1 VOD 누락: ${id}`);
 for(const url of ['https://www.sooplive.com/station/chunbongtv/post/192179233','https://sdmv.notion.site/what','https://bngts.com/contents/just','https://bngts.com/contents/just/streamers']) assert.ok((justserverDiamond?.sources||[]).some(row=>row.url===url),`그냥서버 1 출처 누락: ${url}`);
+const diamondRecruit=(justserverDiamond?.timeline||[]).find(row=>row.id==='diamond-recruit-post');
+assert.equal(diamondRecruit?.title,'그냥 서버 열었습니다..','그냥서버 1 SOOP 원문 제목을 사용해야 합니다');
+assert.equal(diamondRecruit?.date,'2026-04-09','그냥서버 1 모집글 작성일을 반영해야 합니다');
+assert.match(String(diamondRecruit?.thumbnail||''),/stimg\.sooplive\.com\/NORMAL_BBS\/3\/24883333\/276969d66b48e4b72\.png$/,'그냥서버 1 모집 홍보 이미지를 사용해야 합니다');
+assert.ok((justserverDiamond?.results||[]).some(row=>row.title==='초기 모집 정원'&&/50명/.test(row.value||'')),'그냥서버 1 초기 모집 정원 50명을 구분해 기록해야 합니다');
 
 assert.equal(survival?.status,'planned','적자생존은 예정 콘텐츠 상태여야 합니다');
 assert.equal(survival?.startDate,'2026-09-30');
@@ -214,7 +228,7 @@ assert.ok((survival?.timeline||[]).some(row=>row.url==='https://www.sooplive.com
 
 for(const id of ['201292605','202198589','203211299','204037695']) assert.ok((chuntacle?.media||[]).some(row=>row.url===`https://vod.sooplive.com/player/${id}`),`춘타클 VOD 누락: ${id}`);
 for(const url of ['https://www.youtube.com/watch?v=b-jlKXqLakU','https://www.youtube.com/watch?v=gJKw13B7ydc','https://www.youtube.com/watch?v=8rnQKGwa1qw&t=4s']) assert.ok((chuntacle?.media||[]).some(row=>row.url===url),`춘타클 YouTube 누락: ${url}`);
-assert.ok((chuntacle?.sources||[]).some(row=>row.url==='https://www.fmkorea.com/10058760229'),'춘타클 FM코리아 모집·참여자 자료가 필요합니다');
+assert.equal((chuntacle?.sources||[]).some(row=>/fmkorea\.com/i.test(String(row.url||''))),false,'춘타클은 FM코리아 자료를 사용하지 않아야 합니다');
 
 assert.ok((leopel?.results||[]).some(row=>/671명/.test(row.value||'')),'레오펠 최종 참여자 671명 기록이 필요합니다');
 assert.ok((leopel?.results||[]).some(row=>/1차 입주/.test(row.title||'')&&/140명/.test(row.value||'')),'레오펠 1차 입주 140명 기록이 필요합니다');
@@ -249,6 +263,7 @@ assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://app.notion.com/p/2
 assert.equal(archiveApi._internals.allowedSourceMetaUrl('http://127.0.0.1/private'),null,'local/non-HTTPS source metadata URL must be rejected');
 
 for(const item of seed.items){
+  assert.equal((item.sources||[]).some(source=>/fmkorea\.com/i.test(String(source.url||''))),false,`FM코리아 출처는 사용하지 않아야 합니다: ${item.id}`);
   for(const source of item.sources||[]){
     const internal=/bngts\.com|fmkorea\.com|streamscharts\.com/.test(String(source.url||''));
     if(internal)assert.equal(source.visibility,'internal',`internal reference source should not be public: ${source.url}`);
