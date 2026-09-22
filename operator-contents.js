@@ -37,9 +37,12 @@ function archiveAudit(item){
   if(hasNotion&&!/(규칙|시스템|참가 조건|진행 방식|일정)/.test(String(item.description||'')))issues.push(['Notion 본문 미구조화','Notion 자료가 연결돼 있지만 규칙·시스템·일정 데이터 반영 여부를 확인해야 합니다.']);
   const genericMedia=(item.media||[]).filter(row=>/\b\d{8,}\b/.test(String(row.title||''))||/관련 youtube 영상 \d|다시보기 \d{2}$/i.test(String(row.title||'')));
   if(genericMedia.length)issues.push(['미디어 메타데이터 확인',`${genericMedia.length}개 영상의 실제 제목·날짜·썸네일 확인이 남아 있습니다.`]);
+  const syntheticMedia=(item.media||[]).filter(row=>String(row.thumbnail||'').includes('/assets/chunbong-contents/')||/\.svg(?:\?|$)/i.test(String(row.thumbnail||'')));
+  if(syntheticMedia.length)issues.push(['실제 영상 썸네일 확인',`${syntheticMedia.length}개 영상이 자체 제작/임시 썸네일을 사용 중입니다.`]);
+  const hasExternalVisual=(item.gallery||[]).some(row=>/^https:\/\//i.test(String(row.src||'')))||(item.media||[]).some(row=>/^https:\/\//i.test(String(row.thumbnail||'')));
   const hasOfficialPost=urls.some(url=>url.includes('sooplive.com/station/'));
-  const genericHero=!item.heroImage?.src||String(item.heroImage.src).includes('/assets/chunbong-contents/');
-  if(hasOfficialPost&&genericHero)issues.push(['실제 대표 이미지 확인','공식 게시글이 연결돼 있으나 실제 포스터/첨부 이미지 대신 임시 커버를 사용 중입니다.']);
+  const genericHero=!item.heroImage?.src||String(item.heroImage.src).includes('/assets/chunbong-contents/')||/\.svg(?:\?|$)/i.test(String(item.heroImage?.src||''));
+  if((hasOfficialPost||hasExternalVisual)&&genericHero)issues.push(['실제 대표 이미지 확인','실제 포스터·첨부 이미지·영상 썸네일이 있는데 임시 커버를 사용 중입니다.']);
   return issues;
 }
 function auditBlock(item){const issues=archiveAudit(item);return `<section class="operator-archive-audit ${issues.length?'has-issues':'is-complete'}"><div><strong>자료 반영 상태</strong><span>${issues.length?`${issues.length}건 확인 필요`:'주요 누락 없음'}</span></div>${issues.length?`<ul>${issues.map(([title,detail])=>`<li><b>${esc(title)}</b><small>${esc(detail)}</small></li>`).join('')}</ul>`:'<p>등록된 참고자료와 현재 구조화 데이터를 기준으로 주요 누락이 없습니다.</p>'}</section>`}
@@ -212,6 +215,24 @@ function renderSoopHelper(){
   const connect=$('[data-soop-import-connect]',box);if(connect&&!connect.dataset.bound){connect.dataset.bound='1';connect.addEventListener('click',()=>void submitSoopImport('connect'))}
   const draft=$('[data-soop-import-draft]',box);if(draft&&!draft.dataset.bound){draft.dataset.bound='1';draft.addEventListener('click',()=>void submitSoopImport('draft'))}
 }
+async function autoRouteSoopImport(){
+  if(!browserImport)return false;
+  try{
+    const result=await json('operator-content-browser-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'auto',payload:browserImport})});
+    if(!result?.matched){
+      renderSoopHelper();
+      setMessage('애청자 글을 내부 원문으로 보관했습니다. 자동 매칭이 확실하지 않아 연결할 콘텐츠를 확인해 주세요.','ok');
+      return false;
+    }
+    const title=result.item?.title||'춘봉 콘텐츠';
+    browserImport=null;await load();renderSoopHelper();
+    if(result.item?.id)selectItem(result.item.id);
+    setMessage('애청자 글을 자동으로 '+title+'에 연결했습니다.','ok');
+    return true;
+  }catch(error){
+    renderSoopHelper();setMessage('애청자 글 자동 매칭에 실패했습니다. 직접 연결할 수 있습니다: '+error.message,'bad');return false;
+  }
+}
 async function submitSoopImport(action){
   if(!browserImport)return;
   const box=$('[data-soop-import]',root),itemId=$('[data-soop-import-target]',box)?.value||'';
@@ -237,4 +258,4 @@ async function runOfficialSync(){
   }finally{if(button)button.disabled=false}
 }
 async function load(){try{const p=await json('operator-content-archive');items=Array.isArray(p.items)?p.items:[];autoSyncMeta=p.autoSync||null;autoCandidates=Array.isArray(p.candidates)?p.candidates:[];renderList();renderAutoSyncState();renderCandidates();renderSoopHelper()}catch(e){setMessage(e.message==='archive_storage_unavailable'?'콘텐츠 저장소를 사용할 수 없습니다.':'콘텐츠 목록을 불러오지 못했습니다.','bad')}}
-export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;browserImport=readSoopImportHash();$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);$('[data-archive-admin-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-archive-select]');if(button)selectItem(button.dataset.archiveSelect)});$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());renderEditor(emptyItem());await load();renderSoopHelper()}
+export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;browserImport=readSoopImportHash();$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);$('[data-archive-admin-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-archive-select]');if(button)selectItem(button.dataset.archiveSelect)});$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());renderEditor(emptyItem());await load();if(browserImport)await autoRouteSoopImport();else renderSoopHelper()}

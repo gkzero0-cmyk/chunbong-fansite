@@ -53,6 +53,22 @@ assert.match(String(archive._internals.DRAFT_INDEX||''),/content-archive:draft-i
 assert.match(String(archive._internals.HIDDEN_KEY||''),/content-archive:hidden:v1/,'hidden seed tombstone key missing');
 assert.equal(typeof archive._internals.withoutHidden,'function','hidden seed filter helper missing');
 assert.deepEqual(archive._internals.withoutHidden([seedPublished],['leopel']),[],'deleted seed content must stay hidden while storage is available');
+const promotedHero=archive._internals.promoteOfficialHero({
+  ...base,id:'hero-promote',published:true,
+  heroImage:{src:'/assets/chunbong-contents/temp.svg',alt:'임시'},
+  gallery:[{id:'official',src:'https://stimg.sooplive.com/official.png',alt:'공식 포스터',sourceId:'s1'}],
+  sources:[{id:'s1',kind:'official',label:'SOOP 공식글',url:'https://www.sooplive.com/station/chunbongtv/post/1',visibility:'public'}]
+});
+assert.equal(promotedHero.heroImage?.src,'https://stimg.sooplive.com/official.png','실제 공식 이미지가 있으면 자체 제작 SVG 대표 이미지를 자동 교체해야 합니다');
+const protectedHero=archive._internals.promoteOfficialHero({
+  ...base,id:'hero-protected',published:true,
+  heroImage:{src:'/assets/chunbong-contents/temp.svg',alt:'임시'},
+  gallery:[{id:'protected',src:'https://stimg.sooplive.com/protected.png',alt:'보호 이미지',sourceId:'secret'}],
+  media:[{id:'vod',type:'vod',title:'공식 VOD',url:'https://vod.sooplive.com/player/1',thumbnail:'https://videoimg.sooplive.com/public.jpg',visibility:'public'}],
+  sources:[{id:'secret',kind:'official',label:'애청자 글',url:'https://www.sooplive.com/station/chunbongtv/post/2',visibility:'internal'}]
+});
+assert.equal(protectedHero.heroImage?.src,'https://videoimg.sooplive.com/public.jpg','내부 전용 이미지 대신 공개 VOD 이미지를 대표로 사용해야 합니다');
+
 const archiveSource=fs.readFileSync(new URL('../lib/chunbong-content-archive-api.js',import.meta.url),'utf8');
 assert.match(archiveSource,/SADD['\",\s]+HIDDEN_KEY/,'delete must create a seed tombstone');
 assert.match(archiveSource,/SREM['\",\s]+HIDDEN_KEY/,'publish must clear a seed tombstone');
@@ -137,6 +153,11 @@ assert.equal(browserApplied.sources[0]?.visibility,'internal','authenticated sou
 assert.equal(browserApplied.timeline[0]?.visibility,'public','confirmed title/date may become a public factual timeline record');
 assert.equal(browserApplied.timeline[0]?.url,'','protected post URL must not be copied into the public timeline material');
 assert.match(String(archive._internals.BROWSER_IMPORT_PREFIX||''),/browser-import:v1/,'browser import raw storage must be isolated from public archive records');
+assert.match(archiveSource,/\['auto','connect','draft'\]/,'browser import API should support automatic matching');
+assert.match(archiveSource,/autoIngest\.matchArchiveItem/,'protected SOOP browser imports should reuse archive matching rules');
+assert.match(operatorContents,/autoRouteSoopImport/,'operator should automatically route imported protected posts when the match is confident');
+assert.match(operatorContents,/action:'auto'/,'operator browser import should request automatic matching first');
+
 
 
 assert.ok(archive._internals.allowedSourceMetaUrl('https://naver.me/FbVX1U7z'),'Naver short links should be eligible for source metadata extraction');
@@ -165,6 +186,12 @@ assert.equal(diamondMatch?.itemId,'diamond','generic JustServer title should use
 const applied=autoIngest.attachOfficialDiscoveries(autoRows,[autoIngest.materialFromVideo({id:'207560243',title:'7시 그냥서버:적자생존 설명회',date:'2026-09-19',thumb:'//videoimg.sooplive.com/a.jpg',link:'https://vod.sooplive.com/player/207560243'},'vod')]);
 assert.equal(applied.rows.find(row=>row.id==='survival')?.media?.length,1,'matched official VOD should be attached automatically');
 assert.equal(applied.candidates.length,0,'high-confidence official match should not remain a review candidate');
+const protectedMoneyMatch=autoIngest.matchArchiveItem({title:'그냥서버 : 머니게임 공식 공지',date:'2026-06-24'},[
+  {id:'money',title:'그냥서버 : 머니게임',aliases:['머니게임'],series:{id:'justserver',title:'그냥서버'},startDate:'2026-06-24',endDate:'2026-07-15'},
+  {id:'diamond',title:'그냥서버 : 다이아',aliases:['다이아'],series:{id:'justserver',title:'그냥서버'},startDate:'2026-04-09',endDate:'2026-04-16'}
+]);
+assert.equal(protectedMoneyMatch?.itemId,'money','애청자 글도 제목·날짜가 명확하면 해당 춘봉 콘텐츠로 자동 매칭해야 합니다');
+
 assert.equal(typeof autoIngest.fetchPagedSoopVideos,'function','full SOOP video pagination helper missing');
 assert.equal(typeof autoIngest.fetchPagedSoopPosts,'function','full SOOP board pagination helper missing');
 assert.equal(typeof autoIngest.fetchAllYoutubeOfficial,'function','full ChunbongTV history helper missing');
