@@ -44,3 +44,14 @@ assert.match(archiveSource,/SREM['\",\s]+HIDDEN_KEY/,'publish must clear a seed 
 for(const token of ['별칭','결과 · 회차 기록','data-result-row','data-move-row','공개 페이지 열기']) assert.ok(operatorContents.includes(token),token);
 assert.match(operatorContents,/item\.aliases=/,'operator must collect aliases');
 assert.match(operatorContents,/item\.results=/,'operator must collect results');
+
+
+for(const token of ['레코드 유형','부모 시리즈 ID','회차 / 시즌명','회차 순서','대표 콘텐츠']) assert.ok(operatorContents.includes(token),token);
+for(const token of ['item.archiveType=','item.parentId=','item.editionLabel=','item.editionOrder=','item.featured=']) assert.ok(operatorContents.includes(token),token);
+
+const seedEdition={...base,id:'same-edition',archiveType:'edition',parentId:'series-parent',editionLabel:'2회',editionOrder:2,published:true};
+const legacyStored={...base,id:'same-edition',title:'운영자 수정 제목',published:true};
+const migrated=archive._internals.mergeArchiveRows([seedEdition],[legacyStored]).find(row=>row.id==='same-edition');
+assert.equal(migrated.archiveType,'edition','legacy stored override must inherit structural archive type from seed');
+assert.equal(migrated.parentId,'series-parent','legacy stored override must inherit series parent from seed');
+assert.equal(migrated.editionLabel,'2회','legacy stored override must inherit edition label from seed');
