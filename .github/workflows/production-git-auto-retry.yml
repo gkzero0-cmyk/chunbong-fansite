@@ -2,7 +2,7 @@ name: Production Git auto retry
 
 on:
   schedule:
-    # Check hourly. The job's 25-hour rate-limit guard still prevents premature redeploy attempts.
+    # Check hourly. If Vercel rate-limited a recent commit, retry after that 25-hour cooldown even when newer main commits exist.
     - cron: '17 * * * *'
   workflow_dispatch:
 
@@ -99,11 +99,13 @@ jobs:
             echo "needs_retry=false" >> "$GITHUB_OUTPUT"
           elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
             echo "needs_retry=true" >> "$GITHUB_OUTPUT"
-          elif [[ "$AGE_SECONDS" -ge 72000 && "$RATE_LIMIT_AGE_SECONDS" -ge 90000 ]]; then
+          elif [[ -n "$RATE_LIMIT_CREATED_AT" && "$RATE_LIMIT_AGE_SECONDS" -ge 90000 ]]; then
+            echo "needs_retry=true" >> "$GITHUB_OUTPUT"
+          elif [[ -z "$RATE_LIMIT_CREATED_AT" && "$AGE_SECONDS" -ge 72000 ]]; then
             echo "needs_retry=true" >> "$GITHUB_OUTPUT"
           else
             echo "needs_retry=false" >> "$GITHUB_OUTPUT"
-            echo "Production is pending, but the main-age or Vercel 25-hour cooldown guard has not elapsed; skip this scheduled retry."
+            echo "Production is pending, but the Vercel cooldown (or the fallback 20-hour no-status guard) has not elapsed; skip this scheduled retry."
           fi
 
       - name: Trigger a fresh Vercel Git deployment
