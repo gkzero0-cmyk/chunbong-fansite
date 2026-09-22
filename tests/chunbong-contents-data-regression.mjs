@@ -124,6 +124,7 @@ assert.ok(!(chuntacle?.timeline||[]).some(row=>row.date==='2026-09-14'&&/4회/.t
 const chuntaclePosterSvg=fs.readFileSync(new URL('../assets/chunbong-contents/chuntacle-session-5.svg',import.meta.url),'utf8');
 assert.match(chuntaclePosterSvg,/data:image\/webp;base64,UklG/,'춘타클 5회 실제 포스터 이미지가 내부 자산에 포함되어야 합니다');
 assert.ok(chuntaclePosterSvg.length>14000,'춘타클 5회 포스터 자산이 비정상적으로 잘리면 안 됩니다');
+assert.equal(fs.existsSync(new URL('../assets/chunbong-contents/chuntacle-session-4.svg',import.meta.url)),false,'9월 14일을 4회로 잘못 표기한 구 자산은 남기면 안 됩니다');
 
 
 assert.ok((leopel?.media||[]).some(row=>/159711687/.test(row.url)),'Leopel should link the verified SOOP presentation VOD');
