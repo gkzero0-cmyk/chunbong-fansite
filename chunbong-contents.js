@@ -247,10 +247,46 @@ function renderNotionGuide(item){
   const details=rows.length?`<div class="archive-notion-groups">${[...groups.entries()].map(([pageTitle,sections],groupIndex)=>`<details class="archive-notion-group" ${groupIndex===0?'open':''}><summary><span><small>NOTION PAGE</small><strong>${escapeHtml(pageTitle)}</strong></span><b>${sections.length}개 섹션</b></summary><div class="archive-notion-sections">${sections.map(section=>`<article><small>${escapeHtml(section.pageTitle||'Notion')}</small><h3>${escapeHtml(section.title||'본문')}</h3>${section.text?`<p>${notionTextMarkup(section.text)}</p>`:''}</article>`).join('')}</div></details>`).join('')}</div>`:'<p class="archive-notion-wait">연결된 Notion 자료는 다음 자동 동기화에서 세부 섹션이 추가됩니다. 현재 확인된 구조화 기록은 먼저 표시합니다.</p>';
   return `<div class="archive-panel archive-notion-panel"><div class="archive-section-heading"><div><small>NOTION ARCHIVE</small><h2>기획 · 시스템 가이드</h2><p>머니게임을 기준 레이아웃으로 삼아 다이아·적자생존에도 같은 디자인 시스템을 적용합니다.</p></div><span>${rows.length?rows.length+'개'+(synced?' · '+escapeHtml(formatDate(synced,'day')):''):'자동 수집'}</span></div>${renderJustserverKnowledge(item,{compact:false})}${details}</div>`;
 }
+function resultValue(item,title){
+  const row=(item.results||[]).find(row=>String(row.title||row.label||'').trim()===title);
+  return String(row?.value||row?.name||'').trim();
+}
+function splitResultValues(value=''){return String(value||'').split(/\s*[·•]\s*|\s*\/\s*/).map(v=>v.trim()).filter(Boolean)}
+function justserverKnowledgeModel(item){
+  const id=String(item?.id||'');
+  if(!['justserver-moneygame','justserver-diamond','justserver-survival'].includes(id))return null;
+  const model={eyebrow:'JUSTSERVER GUIDE',overview:[],systems:[],flow:[],details:[]};
+  if(id==='justserver-moneygame'){
+    model.title='머니게임 한눈에 보기';model.copy='빚 청산이라는 목표와 경제·생활·후원 시스템을 한 화면에서 파악할 수 있도록 정리했습니다.';
+    model.overview=[['핵심 목표',resultValue(item,'핵심 목표')],['진행 기간',resultValue(item,'서버 기간')],['입주 방식',resultValue(item,'입주 순서')],['주요 콘텐츠',resultValue(item,'주요 콘텐츠')]];
+    model.systems=[...splitResultValues(resultValue(item,'주요 콘텐츠')).map(v=>['CONTENT',v]),...splitResultValues(resultValue(item,'주요 시스템')).map(v=>['SYSTEM',v])];
+    model.flow=['난파 · 사자마을','생활 콘텐츠로 재화 획득','장비·땅·강화 시스템 이용','빚 상환','탈출 · 졸업'];
+    model.details=[['서버 규칙',resultValue(item,'서버 규칙')],['플레이어 API',resultValue(item,'플레이어 API')],['가이드 핵심',resultValue(item,'가이드 핵심')]];
+  }else if(id==='justserver-diamond'){
+    model.title='다이아 한눈에 보기';model.copy='첫 시즌의 힐링형 채광·도감 콘셉트와 모집 조건, 후원 연동 요소를 같은 디자인 체계로 정리했습니다.';
+    model.overview=[['서버 콘셉트',resultValue(item,'서버 컨셉')],['진행 기간',resultValue(item,'진행 기간')],['모집 정원',resultValue(item,'초기 모집 정원')],['모집 방식',resultValue(item,'모집 방식')]];
+    model.systems=[['CORE','다이아'],['CORE','도감'],['MOOD','힐링 티키타카'],...splitResultValues(resultValue(item,'API 예시')).slice(0,6).map(v=>['API',v])];
+    model.flow=['댓글 신청','서버 입주','다이아 채광','도감 진행','후원 API 이벤트'];
+    model.details=[['시리즈 위치',resultValue(item,'시리즈 위치')],['API 예시',resultValue(item,'API 예시')]];
+  }else{
+    model.title='적자생존 한눈에 보기';model.copy='모집부터 설명회, 입주, 오픈 준비까지 현재까지 확인된 운영 흐름을 동일한 아카이브 디자인으로 정리했습니다.';
+    model.overview=[['예정 기간',resultValue(item,'예정 기간')],['현재 단계',resultValue(item,'현재 단계')],['1차 입주자',resultValue(item,'1차 입주자')],['입장 시간',resultValue(item,'1차 입장 시간')]];
+    model.systems=[['PROCESS','모집'],['PROCESS','신청'],['PROCESS','합격자 안내'],['PROCESS','설명회'],['PROCESS','2차 입주 모집'],['PROCESS','오픈 준비']];
+    model.flow=['모집 공지','신청자 확인','합격자 안내','설명회','입주','서버 오픈'];
+    model.details=[['준비 방송 기록',resultValue(item,'준비 방송 기록')],['2차 입주 모집',resultValue(item,'2차 입주 모집')],['UP 랭킹 원문',resultValue(item,'UP 랭킹 원문')]];
+  }
+  model.overview=model.overview.filter(([,v])=>v);model.systems=model.systems.filter(([,v])=>v);model.details=model.details.filter(([,v])=>v);return model;
+}
+function renderJustserverKnowledge(item){
+  const model=justserverKnowledgeModel(item);if(!model)return'';
+  const notionCount=(item.notionSections||[]).length;
+  return `<section class="archive-knowledge"><div class="archive-knowledge-head"><div><small>${escapeHtml(model.eyebrow)}</small><h3>${escapeHtml(model.title)}</h3><p>${escapeHtml(model.copy)}</p></div><span>${notionCount?'Notion '+notionCount+'개 섹션':'공식 자료 기반'}</span></div><div class="archive-knowledge-overview">${model.overview.map(([label,value])=>`<article><small>${escapeHtml(label)}</small><strong>${escapeHtml(value)}</strong></article>`).join('')}</div>${model.systems.length?`<div class="archive-knowledge-block"><div class="archive-subheading"><small>SYSTEM MAP</small><h3>핵심 콘텐츠 · 시스템</h3></div><div class="archive-system-chips">${model.systems.map(([kind,value])=>`<span><small>${escapeHtml(kind)}</small><b>${escapeHtml(value)}</b></span>`).join('')}</div></div>`:''}${model.flow.length?`<div class="archive-knowledge-block"><div class="archive-subheading"><small>PLAY FLOW</small><h3>진행 흐름</h3></div><ol class="archive-flow">${model.flow.map((value,index)=>`<li><span>${String(index+1).padStart(2,'0')}</span><b>${escapeHtml(value)}</b></li>`).join('')}</ol></div>`:''}${model.details.length?`<div class="archive-knowledge-block"><div class="archive-subheading"><small>DETAILS</small><h3>핵심 상세 정보</h3></div><div class="archive-knowledge-details">${model.details.map(([label,value])=>`<article><small>${escapeHtml(label)}</small><p>${escapeHtml(value)}</p></article>`).join('')}</div></div>`:''}</section>`;
+}
+
 function renderOverview(item){
   const people=allPeople(item).slice(0,16);
   const peopleTitle=item.category==='class-event'?'확인된 수강생':'확인된 참가자';
-  return `<div class="archive-panel archive-overview-panel"><div class="archive-section-heading"><div><small>ABOUT THIS CONTENT</small><h2>콘텐츠 소개</h2></div></div><p class="archive-description">${escapeHtml(item.description||item.summary||'공식 자료를 기반으로 내용을 정리하고 있습니다.')}</p><div class="archive-subheading"><small>SUMMARY</small><h3>주요 기록</h3></div>${renderRecordStrip(item)}${renderNotionPreview(item)}${people.length?`<section class="archive-overview-people"><div class="archive-subheading"><small>PEOPLE</small><h3>${escapeHtml(peopleTitle)}</h3></div><div class="archive-people-chips">${people.map(personButton).join('')}</div></section>`:''}${renderOverviewHighlights(item)}</div>`;
+  return `<div class="archive-panel archive-overview-panel"><div class="archive-section-heading"><div><small>ABOUT THIS CONTENT</small><h2>콘텐츠 소개</h2></div></div><p class="archive-description">${escapeHtml(item.description||item.summary||'공식 자료를 기반으로 내용을 정리하고 있습니다.')}</p>${renderJustserverKnowledge(item)}<div class="archive-subheading"><small>SUMMARY</small><h3>주요 기록</h3></div>${renderRecordStrip(item)}${renderNotionPreview(item)}${people.length?`<section class="archive-overview-people"><div class="archive-subheading"><small>PEOPLE</small><h3>${escapeHtml(peopleTitle)}</h3></div><div class="archive-people-chips">${people.map(personButton).join('')}</div></section>`:''}${renderOverviewHighlights(item)}</div>`;
 }
 function renderTimeline(item){const sources=sourceMap(item),rows=[...(item.timeline||[])].sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));if(!rows.length)return'<div class="archive-panel"><h2>타임라인</h2><p>확인된 타임라인 자료를 준비하고 있습니다.</p></div>';return`<div class="archive-panel"><h2>타임라인</h2><div class="archive-timeline">${rows.map(row=>{const source=sources.get(row.sourceId),thumb=row.thumbnail?`<div class="archive-timeline-thumb">${imageMarkup({src:row.thumbnail,alt:row.title},row.title)}</div>`:'<div class="archive-timeline-thumb is-fallback"></div>';return`<article class="archive-timeline-item"><time class="archive-timeline-date">${escapeHtml(formatDate(row.date,row.datePrecision))}</time>${thumb}<div class="archive-timeline-body"><span class="archive-chip">${escapeHtml(materialTypeLabel(row.type))}</span><strong>${escapeHtml(row.title)}</strong>${row.note?`<p>${escapeHtml(row.note)}</p>`:''}${row.url?`<a class="archive-source-link" href="${escapeHtml(safeUrl(row.url))}" target="_blank" rel="noreferrer">${escapeHtml(source?.label||'원문')} 보기 ↗</a>`:''}</div></article>`}).join('')}</div></div>`}
 function mediaCardMarkup(row){return `<a class="archive-media-card" href="${escapeHtml(safeUrl(row.url))}" target="_blank" rel="noreferrer"><div class="archive-media-visual">${row.thumbnail?imageMarkup({src:row.thumbnail,alt:row.title},row.title):`<span class="archive-media-fallback-label">${escapeHtml(materialTypeLabel(row.type))}</span>`}</div><div class="archive-media-copy"><span class="archive-chip">${escapeHtml(materialTypeLabel(row.type))}</span><strong>${escapeHtml(row.title)}</strong><small>${escapeHtml(formatDate(row.date,row.datePrecision))}</small>${row.note?`<p>${escapeHtml(row.note)}</p>`:''}<b>원문 보기 ↗</b></div></a>`}
@@ -283,7 +319,7 @@ function bindPeoplePanel(panel){
   input?.addEventListener('input',()=>{const q=normalize(input.value);let visible=0;rows.forEach(row=>{const show=!q||String(row.dataset.personRow||'').includes(q);row.hidden=!show;if(show)visible++});if(empty)empty.hidden=visible>0});
 }
 function renderGallery(item){const rows=item.gallery||[];if(!rows.length)return'<div class="archive-panel"><h2>자료 이미지</h2><p>포스터와 관련 이미지를 준비하고 있습니다.</p></div>';return`<div class="archive-panel"><div class="archive-section-heading"><div><small>VISUAL ARCHIVE</small><h2>자료 이미지</h2></div><span>${rows.length}장</span></div><div class="archive-gallery">${rows.map((r,i)=>`<button type="button" data-archive-gallery="${i}"><figure><img src="${escapeHtml(safeUrl(r.src||r.url))}" alt="${escapeHtml(r.alt||r.caption||item.title+' 관련 이미지')}" loading="lazy" decoding="async"><figcaption>${escapeHtml(r.caption||'관련 이미지')}</figcaption></figure></button>`).join('')}</div></div>`}
-function sourcePriority(row={}){const url=String(row.url||'');if(/sooplive\.com/i.test(url))return 0;if(/youtube\.com|youtu\.be/i.test(url))return 1;if(row.kind==='official')return 2;return 3}
+function sourcePriority(row={}){const url=String(row.url||'');if(/sooplive\.com/i.test(url))return 0;if(/youtube\.com|youtu\.be/i.test(url))return 1;if(/notion\.(?:site|so)|app\.notion\.com/i.test(url))return 2;if(/namu\.wiki/i.test(url))return 3;if(row.kind==='official')return 4;return 5}
 function renderSources(item){const rows=[...(item.sources||[])].filter(r=>!/bngts\.com/i.test(String(r.url||''))).map(r=>({...r,label:String(r.label||'원문 자료').replace(/나무위키 계열|나무미러/g,'나무위키')})).sort((a,b)=>sourcePriority(a)-sourcePriority(b)||String(a.label||'').localeCompare(String(b.label||''),'ko'));return`<div class="archive-panel"><div class="archive-section-heading"><div><small>SOURCE ARCHIVE</small><h2>출처</h2></div><span>${rows.length}개</span></div><p class="archive-source-guide">춘봉 SOOP 방송국을 최우선으로, 춘봉TV YouTube·공개 Notion·나무위키 등 확인 가능한 원문 자료를 표시합니다. 방통실과 내부 검증용 자료는 공개 출처에 사용하지 않습니다.</p><div class="archive-source-list">${rows.map(r=>`<a href="${escapeHtml(safeUrl(r.url))}" target="_blank" rel="noreferrer"><span><strong>${escapeHtml(r.label||'원문 자료')}</strong><small class="archive-source-kind is-${escapeHtml(r.kind||'reference')}">${escapeHtml(sourceKindLabel(r.kind))}</small></span><b>↗</b></a>`).join('')}</div></div>`}
 
 function seriesSessions(item){return [...(item.seriesSessions||[])].filter(row=>row&&Number(row.number)>0).sort((a,b)=>Number(a.number)-Number(b.number))}
