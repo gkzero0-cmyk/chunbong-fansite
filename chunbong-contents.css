@@ -123,3 +123,71 @@ button.archive-series-poster{cursor:zoom-in}
 @media(max-width:900px){.archive-series-home-grid{grid-template-columns:1fr}.archive-series-landing-main{grid-template-columns:1fr}.archive-series-landing-main>.archive-series-card-visual{min-height:220px}.archive-sibling-series{grid-template-columns:1fr}}
 @media(max-width:760px){.archive-series-home{margin-bottom:26px;padding:15px;border-radius:20px}.archive-series-home-head{align-items:flex-start}.archive-series-home-head h2{font-size:25px}.archive-series-home-head>span{padding-top:4px}.archive-series-card-visual{height:170px}.archive-series-card-copy{padding:15px}.archive-series-card-copy h3{font-size:21px}.archive-series-landing-main{padding:13px;border-radius:20px}.archive-series-landing-main>.archive-series-card-visual{min-height:190px}.archive-series-landing-copy{padding:4px}.archive-series-landing-copy h2{font-size:34px}.archive-all-records-heading{margin-top:6px}.archive-sibling-series-nav{grid-template-columns:1fr}.archive-series-child-links{display:grid;grid-template-columns:1fr}.archive-series-child-links button{text-align:left}}
 @media(prefers-reduced-motion:reduce){.archive-series-card{transition:none!important}.archive-series-card:hover{transform:none}}
+
+
+/* Archive density + data-first pass */
+.archive-hero{padding:42px 0 28px}
+.archive-hero-inner{display:block;max-width:1180px}
+.archive-hero-copy{max-width:880px}
+.archive-hero-copy h1{margin:9px 0 12px;font-size:clamp(40px,4.7vw,72px);line-height:.98}
+.archive-hero-copy>p:last-of-type{max-width:820px;font-size:15px;line-height:1.7}
+.archive-hero-badges{margin-top:16px}
+.archive-hero-visual{display:none!important}
+.archive-browser{padding-top:22px}
+.archive-series-home{margin-bottom:28px;padding:18px}
+.archive-series-home-head{margin-bottom:14px}
+.archive-series-home-head h2{font-size:25px}
+.archive-series-home-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.archive-series-card{border-radius:17px}
+.archive-series-card-visual{height:128px}
+.archive-series-card-copy{padding:13px 14px 14px}
+.archive-series-card-copy h3{margin:8px 0 2px;font-size:19px}
+.archive-series-card-copy>strong{font-size:10px}
+.archive-series-card-copy p{min-height:3em;margin:8px 0 10px;font-size:10px;line-height:1.5}
+.archive-series-card-copy>b{display:inline-block;margin-top:8px}
+.archive-series-card-seasons{display:grid;gap:4px;margin:9px 0 6px;padding-top:8px;border-top:1px solid #292929}
+.archive-series-card-seasons>span{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.archive-series-card-seasons b{overflow:hidden;color:var(--text-secondary,#d1cbc5);font-size:9px;font-weight:850;text-overflow:ellipsis;white-space:nowrap}
+.archive-series-card-seasons i{flex:0 0 auto;padding:2px 5px;border-radius:999px;background:#ffffff0d;color:var(--text-muted,#aaa29b);font-size:8px;font-style:normal;font-weight:900}
+.archive-series-card-seasons i[data-status="upcoming"]{background:#f2a65a18;color:#f6bc83}
+.archive-series-card-seasons i[data-status="recruiting"]{background:#83c5ff17;color:#9dd1ff}
+.archive-series-card-seasons i[data-status="ongoing"]{background:#8ee49a17;color:#a7ebb0}
+.archive-series-skeleton{overflow:hidden;min-height:260px;border:1px solid #262626;border-radius:17px;background:#101010}
+.archive-series-skeleton span{display:block;height:128px;background:linear-gradient(100deg,#151515 20%,#202020 40%,#151515 60%);background-size:220% 100%;animation:archiveSkeleton 1.4s ease-in-out infinite}
+.archive-series-skeleton i,.archive-series-skeleton b{display:block;height:12px;margin:16px 14px 0;border-radius:999px;background:#1f1f1f}
+.archive-series-skeleton i{width:44%}.archive-series-skeleton b{width:70%;margin-top:10px}
+@keyframes archiveSkeleton{to{background-position:-220% 0}}
+.archive-series-child-links button{display:grid;gap:2px;text-align:left}
+.archive-series-child-links button span{font-weight:900}
+.archive-series-child-links button small{color:var(--text-muted,#aaa29b);font-size:8px;font-weight:750}
+.archive-media-filters{display:flex;flex-wrap:wrap;gap:7px;margin:-3px 0 16px}
+.archive-media-filters button{min-height:34px;padding:0 10px;border:1px solid #303030;border-radius:999px;background:#111;color:var(--text-muted,#aaa29b);font-size:9px;font-weight:900;cursor:pointer}
+.archive-media-filters button[aria-pressed="true"]{border-color:color-mix(in srgb,var(--page-accent,#f2a65a) 50%,#333);background:color-mix(in srgb,var(--page-accent,#f2a65a) 9%,#111);color:var(--text-primary,#fff)}
+.archive-media-filters small{margin-left:4px;color:inherit}
+.archive-media-card[hidden]{display:none!important}
+.archive-people-summary{padding:14px;border:1px solid #292929;border-radius:14px;background:#111;color:var(--text-secondary,#d1cbc5);font-size:12px;line-height:1.65}
+.archive-people-summary strong{color:var(--text-primary,#fff)}
+.archive-source-kind.is-platform{border-color:#ff5f5f33;color:#ff9999!important}
+.archive-source-kind.is-relation{border-color:#c197ff33;color:#d1b5ff!important}
+[data-theme="light"] .archive-series-card-seasons{border-color:#eee2d8}
+[data-theme="light"] .archive-series-skeleton{border-color:#e8ddd5;background:#fff}
+[data-theme="light"] .archive-series-skeleton span{background:linear-gradient(100deg,#f6eee8 20%,#fff 40%,#f6eee8 60%);background-size:220% 100%}
+[data-theme="light"] .archive-series-skeleton i,[data-theme="light"] .archive-series-skeleton b{background:#eee5df}
+[data-theme="light"] .archive-media-filters button,[data-theme="light"] .archive-people-summary{border-color:#e8ddd5;background:#fffaf7;color:#6d625a}
+@media(max-width:1100px){.archive-series-home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.archive-series-card-visual{height:145px}}
+@media(max-width:760px){
+  .archive-hero{padding:28px 0 20px}
+  .archive-hero-copy h1{font-size:42px}
+  .archive-hero-copy>p:last-of-type{font-size:13px;line-height:1.65}
+  .archive-hero-badges{margin-top:12px}
+  .archive-browser{padding-top:14px}
+  .archive-series-home{margin:0 calc(var(--page-shell-gutter,20px) * -1) 22px;padding:15px 0 15px 20px;border-left:0;border-right:0;border-radius:0}
+  .archive-series-home-head{padding-right:20px}
+  .archive-series-home-grid{display:grid;grid-auto-flow:column;grid-auto-columns:min(78vw,290px);grid-template-columns:none;gap:9px;overflow-x:auto;padding-right:20px;scroll-snap-type:x mandatory;overscroll-behavior-inline:contain;scrollbar-width:none}
+  .archive-series-home-grid::-webkit-scrollbar{display:none}
+  .archive-series-card,.archive-series-skeleton{scroll-snap-align:start}
+  .archive-series-card-visual{height:132px}
+  .archive-series-skeleton{min-height:258px}
+  .archive-all-records-heading{margin-top:0}
+}
+@media(prefers-reduced-motion:reduce){.archive-series-skeleton span{animation:none}}
