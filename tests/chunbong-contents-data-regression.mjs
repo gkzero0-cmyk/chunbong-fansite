@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import {createRequire} from 'node:module';
 
 const require=createRequire(import.meta.url);
-const {normalizeArchiveItem,validateArchiveItem,formatArchiveDate}=require('../lib/chunbong-content-archive-core.js');
+const {normalizeArchiveItem,validateArchiveItem,formatArchiveDate,toPublicArchiveItem}=require('../lib/chunbong-content-archive-core.js');
 
 const monthOnly=normalizeArchiveItem({
   id:'sample',title:'샘플',category:'minecraft',role:'주최',status:'ended',
