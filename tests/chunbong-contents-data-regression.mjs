@@ -237,3 +237,21 @@ for(const item of seed.items){
     if(internal)assert.equal(source.visibility,'internal',`internal reference source should not be public: ${source.url}`);
   }
 }
+
+const leopel=seed.items.find(item=>item.id==='leopel');
+assert.equal(leopel?.participantGroups?.length,3,'레오펠은 1차/2차 플랫폼별 참가자 그룹을 제공해야 합니다');
+assert.deepEqual((leopel?.participantGroups||[]).map(group=>group.count),[140,127,44],'레오펠 참가자 그룹 인원수가 교차 자료와 일치해야 합니다');
+assert.equal((leopel?.participantGroups||[]).reduce((sum,group)=>sum+(group.participants||[]).length,0),311,'레오펠 1·2차 확인 명단은 총 311명이어야 합니다');
+assert.match(String(leopel?.heroImage?.src||''),/res\.cloudinary\.com\/lyppgyei\/.*\/leopel\/logo\.webp$/,'레오펠 대표 이미지는 실제 보존 로고를 사용해야 합니다');
+
+const survival=seed.items.find(item=>item.id==='justserver-survival');
+for(const id of ['survival-prep-applicants','survival-prep-before-open','survival-prep-qa','survival-prep-briefing']){
+  assert.ok((survival?.timeline||[]).some(row=>row.id===id),`적자생존 준비 방송 타임라인 누락: ${id}`);
+}
+assert.ok((survival?.sources||[]).some(row=>row.id==='source-survival-streams'&&row.visibility==='internal'),'적자생존 Streams Charts 근거는 내부 검증용이어야 합니다');
+
+const groupMerge=archiveApi._internals.mergeArchiveRows(
+  [{...leopel,id:'group-merge'}],
+  [{...leopel,id:'group-merge',participantGroups:[]}]
+);
+assert.equal(groupMerge[0].participantGroups.length,3,'기존 저장 레코드가 비어 있어도 seed 참가자 그룹을 보존해야 합니다');
