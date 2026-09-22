@@ -116,6 +116,13 @@ try{
     await installApi(page);
     await page.goto(base+'/chunbong-contents.html',{waitUntil:'networkidle'});
 
+    const criticalOpacity=await page.evaluate(()=>({
+      hero:Number(getComputedStyle(document.querySelector('.archive-hero-copy')).opacity),
+      series:Number(getComputedStyle(document.querySelector('[data-archive-series-home]')).opacity),
+      toolbar:Number(getComputedStyle(document.querySelector('.archive-toolbar')).opacity)
+    }));
+    assert.ok(criticalOpacity.hero>.5&&criticalOpacity.series>.5&&criticalOpacity.toolbar>.5,'critical archive sections must not stay transparent');
+
     assert.equal(await page.locator('.archive-card').count(),5,'desktop should render archive cards');
     assert.match((await page.locator('[data-archive-count]').textContent())||'',/전체 5개/);
     assert.equal(await page.locator('.archive-series-card').count(),3,'series home should group five records into three series');
