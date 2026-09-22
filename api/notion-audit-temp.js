@@ -1,4 +1,4 @@
-'use strict';
+'use strict';\n// temporary production audit, remove after verification
 const archive=require('../lib/chunbong-content-archive-api.js');
 const URLS=[
   'https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d',
