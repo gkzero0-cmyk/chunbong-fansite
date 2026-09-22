@@ -162,7 +162,7 @@ assert.ok((leopel?.media||[]).some(row=>/159711687/.test(row.url)),'Leopel shoul
 assert.ok((leopel?.gallery||[]).length>=2,'Leopel detail should have visual archive material');
 assert.ok((justserver?.media||[]).length>=2,'JustServer should include multiple verified SOOP Catch records');
 assert.ok((justserver?.gallery||[]).length>=2,'JustServer detail should have visual archive material');
-const survival=seed.items.find(item=>item.id==='justserver-survival');
+const survivalEnriched=seed.items.find(item=>item.id==='justserver-survival');
 assert.ok(survival,'적자생존 콘텐츠 항목이 필요합니다');
 assert.equal(justserver?.series?.id,'justserver','머니게임은 그냥서버 시리즈에 속해야 합니다');
 assert.equal(survival?.series?.id,'justserver','적자생존은 그냥서버 시리즈에 속해야 합니다');
@@ -176,8 +176,8 @@ const moneyVodIds=['199701961','199731549','199911259','200010937','200150005','
 for(const id of moneyVodIds) assert.ok((justserver?.media||[]).some(row=>row.url===`https://vod.sooplive.com/player/${id}`),`머니게임 VOD 누락: ${id}`);
 for(const id of ['197785319','199568663','199830351']) assert.ok((justserver?.timeline||[]).some(row=>row.url===`https://www.sooplive.com/station/chunbongtv/post/${id}`),`머니게임 SOOP 게시글 누락: ${id}`);
 for(const url of ['https://naver.me/5qLX1yQ1','https://buly.kr/2ffytJ1','https://bngts.com/contents/geunyangseobeo-meonigeim','https://bngts.com/contents/geunyangseobeo-meonigeim/streamers']) assert.ok((justserver?.sources||[]).some(row=>row.url===url),`머니게임 참고 자료 누락: ${url}`);
-for(const id of ['203683207','204093563','204274449','206972857','207425471','207516943','207564735']) assert.ok((survival?.timeline||[]).some(row=>row.url===`https://www.sooplive.com/station/chunbongtv/post/${id}`),`적자생존 SOOP 게시글 누락: ${id}`);
-assert.ok((survival?.sources||[]).some(row=>row.url==='https://daisy-grouse-ac0.notion.site/3dad57d6a55c80469f3de9730cb88975'),'적자생존 Notion 자료가 필요합니다');
+for(const id of ['203683207','204093563','204274449','206972857','207425471','207516943','207564735']) assert.ok((survivalEnriched?.timeline||[]).some(row=>row.url===`https://www.sooplive.com/station/chunbongtv/post/${id}`),`적자생존 SOOP 게시글 누락: ${id}`);
+assert.ok((survivalEnriched?.sources||[]).some(row=>row.url==='https://daisy-grouse-ac0.notion.site/3dad57d6a55c80469f3de9730cb88975'),'적자생존 Notion 자료가 필요합니다');
 
 assert.ok((psyContest1?.participants||[]).includes('시로코'),'제1회는 시로코 참가 교차 기록을 유지해야 합니다');
 assert.ok((psyContest1?.gallery||[]).length>=1,'제1회 아카이브 커버가 필요합니다');
@@ -194,7 +194,7 @@ for(const url of ['https://www.sooplive.com/station/chunbongtv/post/192179233','
 assert.equal(survival?.status,'planned','적자생존은 예정 콘텐츠 상태여야 합니다');
 assert.equal(survival?.startDate,'2026-09-30');
 assert.equal(survival?.endDate,'2026-10-21');
-assert.ok((survival?.timeline||[]).some(row=>row.url==='https://www.sooplive.com/station/chunbongtv/post/204274449'&&/UP 랭킹/.test(row.title||'')),'적자생존 신청/UP 랭킹 원문 역할이 표시되어야 합니다');
+assert.ok((survivalEnriched?.timeline||[]).some(row=>row.url==='https://www.sooplive.com/station/chunbongtv/post/204274449'&&/UP 랭킹/.test(row.title||'')),'적자생존 신청/UP 랭킹 원문 역할이 표시되어야 합니다');
 
 for(const id of ['201292605','202198589','203211299','204037695']) assert.ok((chuntacle?.media||[]).some(row=>row.url===`https://vod.sooplive.com/player/${id}`),`춘타클 VOD 누락: ${id}`);
 for(const url of ['https://www.youtube.com/watch?v=b-jlKXqLakU','https://www.youtube.com/watch?v=gJKw13B7ydc','https://www.youtube.com/watch?v=8rnQKGwa1qw&t=4s']) assert.ok((chuntacle?.media||[]).some(row=>row.url===url),`춘타클 YouTube 누락: ${url}`);
@@ -246,9 +246,9 @@ assert.match(String(leopelGroupsItem?.heroImage?.src||''),/res\.cloudinary\.com\
 
 const survival=seed.items.find(item=>item.id==='justserver-survival');
 for(const id of ['survival-prep-applicants','survival-prep-before-open','survival-prep-qa','survival-prep-briefing']){
-  assert.ok((survival?.timeline||[]).some(row=>row.id===id),`적자생존 준비 방송 타임라인 누락: ${id}`);
+  assert.ok((survivalEnriched?.timeline||[]).some(row=>row.id===id),`적자생존 준비 방송 타임라인 누락: ${id}`);
 }
-assert.ok((survival?.sources||[]).some(row=>row.id==='source-survival-streams'&&row.visibility==='internal'),'적자생존 Streams Charts 근거는 내부 검증용이어야 합니다');
+assert.ok((survivalEnriched?.sources||[]).some(row=>row.id==='source-survival-streams'&&row.visibility==='internal'),'적자생존 Streams Charts 근거는 내부 검증용이어야 합니다');
 
 const groupMerge=archiveApi._internals.mergeArchiveRows(
   [{...leopelGroupsItem,id:'group-merge'}],
