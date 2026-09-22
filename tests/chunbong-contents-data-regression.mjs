@@ -147,7 +147,8 @@ assert.match(String(psyContest2?.heroImage?.src||''),/^https:\/\/stimg\.sooplive
 const chuntacle=seed.items.find(item=>item.id==='chuntacle-2026');
 assert.ok(chuntacle?.published,'춘타클 should be included in the public content archive');
 assert.equal(chuntacle?.category,'class-event');
-assert.match(String(chuntacle?.heroImage?.src||''),/^(?:\/assets\/chunbong-contents\/chuntacle-|https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/.*\/chunbong-fansite\/chuntacle\/session-5\.webp$)/,'춘타클 대표 이미지는 실제 제5회 포스터 또는 로컬 대체 자산이어야 합니다');
+assert.match(String(chuntacle?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/chuntacle\/series-cover-16x9\.webp$/,'춘타클 대표 이미지는 공식 로고 기반 16:9 영구 자산이어야 합니다');
+assert.equal(chuntacle?.series?.cover?.src,chuntacle?.heroImage?.src,'춘타클 시리즈 카드와 상세 대표 이미지는 같은 공식 16:9 자산을 사용해야 합니다');
 assert.ok((chuntacle?.timeline||[]).length>=5,'춘타클 should expose all five class sessions in its timeline');
 assert.ok((chuntacle?.participants||[]).length>=19,'춘타클 should list students confirmed by the five archived posters');
 assert.ok((chuntacle?.results||[]).length>=5,'춘타클 should summarize all five confirmed class sessions');
@@ -351,13 +352,22 @@ const diamondGroupMerge=archiveApi._internals.mergeArchiveRows(
 );
 assert.equal(diamondGroupMerge[0]?.participantGroups?.[0]?.count,189,'더 완전한 seed 참가자 그룹이 예전 부분 저장 레코드보다 우선해야 합니다');
 assert.equal(diamondGroupMerge[0]?.participantGroups?.[0]?.participants?.length,189,'189명 전체 명단이 저장 레코드 병합 뒤에도 보존되어야 합니다');
+const staleChuntaclePoster=(chuntacle.seriesSessions||[]).find(row=>row.number===5)?.poster?.src||'';
 const chuntacleMerge=archiveApi._internals.mergeArchiveRows(
   [chuntacle],
-  [{...chuntacle,timeline:(chuntacle.timeline||[]).slice(0,3),gallery:(chuntacle.gallery||[]).slice(0,3),seriesSessions:(chuntacle.seriesSessions||[]).slice(0,4)}]
+  [{...chuntacle,
+    heroImage:{src:staleChuntaclePoster,alt:'예전 제5회 포스터'},
+    series:{...chuntacle.series,cover:{src:staleChuntaclePoster,alt:'예전 제5회 포스터'}},
+    timeline:(chuntacle.timeline||[]).slice(0,3),
+    gallery:(chuntacle.gallery||[]).slice(0,3),
+    seriesSessions:(chuntacle.seriesSessions||[]).slice(0,4)
+  }]
 );
 assert.ok(chuntacleMerge[0].timeline.length>=5,'최신 seed 춘타클 타임라인이 오래된 저장본에 의해 누락되면 안 됩니다');
 assert.equal(chuntacleMerge[0].gallery.length,5,'최신 seed 춘타클 포스터 5장이 오래된 저장본에 의해 누락되면 안 됩니다');
 assert.equal(chuntacleMerge[0].seriesSessions.length,5,'최신 seed 춘타클 5회 구조가 오래된 저장본보다 우선해야 합니다');
+assert.equal(chuntacleMerge[0].heroImage?.src,chuntacle.heroImage?.src,'오래된 저장 hero가 최신 공식 로고 기반 16:9 대표 이미지를 덮어쓰면 안 됩니다');
+assert.equal(chuntacleMerge[0].series?.cover?.src,chuntacle.series?.cover?.src,'오래된 저장 series cover가 최신 공식 16:9 시리즈 커버를 덮어쓰면 안 됩니다');
 
 
 const psy2Confirmed=seed.items.find(item=>item.id==='psy-emotion-song-contest-2');

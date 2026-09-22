@@ -71,7 +71,11 @@ assert.ok(contentApi.includes("operator-content-source-meta"),'source metadata o
 for(const token of ['archive-participant-groups','archive-participant-group']) assert.ok(css.includes(token),token);
 for(const token of ['renderParticipantGroups','participantGroups']) assert.ok(js.includes(token),token);
 
-assert.match(css,/archive-series-card-visual:not\(\.is-multi\).*object-fit:cover/s,'single series cards should use cover for consistent image framing');
+for(const token of ['archive-normalized-media','object-fit:contain','aspect-ratio:16/9']) assert.ok(css.includes(token),token);
+for(const token of ['normalizedImageMarkup','hydrateNormalizedMedia','const seriesTitle=item.series?.title']) assert.ok(js.includes(token),token);
+assert.match(css,/\.archive-normalized-media>img\{[\s\S]*?object-fit:contain!important/,'normalized archive media should preserve the complete source image');
+assert.match(css,/\.archive-detail-media,\.archive-series-poster\{min-height:0\}/,'detail and session media should use the shared 16:9 frame');
+assert.ok(!js.includes('<h2>춘타클 회차 기록</h2>'),'series archive heading must be generic instead of hard-coded to Chuntacle');
 assert.match(css,/\.archive-tabs\{position:sticky/,'detail tabs should stay accessible while scrolling');
 
 for(const token of ['data-archive-history','CONTENT HISTORY']) assert.ok(html.includes(token)||js.includes(token),token);

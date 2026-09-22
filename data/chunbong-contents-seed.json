@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-23T01:55:00+09:00",
+  "updatedAt": "2026-09-23T03:46:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -3199,8 +3199,8 @@
       "summary": "춘봉이 VRChat에서 스트리머 수강생들과 타로 카드 해석과 리딩을 함께 배우는 회차형 타로 클래스.",
       "description": "춘타클은 춘봉이 진행한 스트리머 대상 타로 클래스 시리즈입니다. 실제 1~5회 포스터와 수강생 기록을 중심으로 회차별 SOOP 다시보기, YouTube 영상, FM코리아 모집·참여자 자료까지 한곳에서 확인할 수 있도록 구성합니다.",
       "heroImage": {
-        "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042682/chunbong-fansite/chuntacle/session-5.webp",
-        "alt": "춘타클 제5회 별빛 타로 클래스 실제 포스터",
+        "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790102784/chunbong-fansite/chuntacle/series-cover-16x9.webp",
+        "alt": "춘타클 · 춘봉 타로 클래스 공식 로고 기반 16:9 대표 이미지",
         "sourceId": ""
       },
       "participants": [
@@ -3518,7 +3518,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T18:58:00+09:00",
+      "updatedAt": "2026-09-23T03:46:00+09:00",
       "seriesSessions": [
         {
           "id": "session-1",
@@ -3667,8 +3667,8 @@
         "description": "실제 포스터를 기준으로 제1회부터 제5회까지 날짜·수강생·회차 기록을 이어서 봅니다.",
         "order": 20,
         "cover": {
-          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790042682/chunbong-fansite/chuntacle/session-5.webp",
-          "alt": "춘타클 춘봉 타로 클래스 대표 포스터"
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790102784/chunbong-fansite/chuntacle/series-cover-16x9.webp",
+          "alt": "춘타클 공식 로고 기반 16:9 대표 이미지"
         }
       },
       "participantGroups": []
