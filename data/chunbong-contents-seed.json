@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T11:05:00+09:00",
+  "updatedAt": "2026-09-22T11:25:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -16,7 +16,7 @@
       "endDate": "2025-07-06",
       "datePrecision": "day",
       "summary": "춘봉이 기획·운영한 SOOP·치지직·YouTube 플랫폼 통합 대규모 스트리머 마인크래프트 서버.",
-      "description": "2025년 6월 5일부터 7월 6일까지 진행된 플랫폼 통합 마인크래프트 서버입니다. 경쟁보다 협동과 힐링에 초점을 두고, 기억을 잃은 채 이세계에서 자신을 찾아가는 모험과 RP를 중심으로 각 스트리머가 자신만의 이야기를 만들어가는 방향으로 기획되었습니다.",
+      "description": "2025년 6월 5일부터 7월 6일까지 진행된 플랫폼 통합 마인크래프트 서버입니다. 기존 SOOP PICK 발표회·오픈 기록과 함께 춘봉 방송국 공식 게시글, SOOP VOD, 트레일러, 나무위키 기록을 한곳에서 교차 확인할 수 있도록 확장했습니다. 원문에서 직접 확인되지 않은 게시글 제목·날짜는 임의로 확정하지 않습니다.",
       "heroImage": {
         "src": "/assets/chunbong-contents/leopel-cover.svg",
         "alt": "레오펠: 사자의 노래 팬사이트 아카이브 커버",
@@ -57,6 +57,50 @@
           "thumbnail": "",
           "sourceId": "source-interview",
           "note": "춘봉이 직접 레오펠의 제작 계기와 플랫폼 통합 서버로 기획한 이유를 설명한 인터뷰입니다."
+        },
+        {
+          "id": "leopel-soop-post-159705141",
+          "type": "post",
+          "title": "레오펠 공식 게시글 · 159705141",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/159705141",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
+          "sourceId": "source-leopel-post-159705141",
+          "note": "춘봉 SOOP 방송국에 게시된 레오펠 관련 공식 기록입니다. 원문 제목과 게시일은 확인 가능한 범위에서 보강합니다."
+        },
+        {
+          "id": "leopel-soop-post-161715755",
+          "type": "post",
+          "title": "레오펠 공식 게시글 · 161715755",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/161715755",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
+          "sourceId": "source-leopel-post-161715755",
+          "note": "춘봉 SOOP 방송국에 게시된 레오펠 관련 공식 기록입니다. 원문 제목과 게시일은 확인 가능한 범위에서 보강합니다."
+        },
+        {
+          "id": "leopel-soop-post-163281747",
+          "type": "post",
+          "title": "레오펠 공식 게시글 · 163281747",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/163281747",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
+          "sourceId": "source-leopel-post-163281747",
+          "note": "춘봉 SOOP 방송국에 게시된 레오펠 관련 공식 기록입니다. 원문 제목과 게시일은 확인 가능한 범위에서 보강합니다."
+        },
+        {
+          "id": "leopel-soop-post-165257051",
+          "type": "post",
+          "title": "레오펠 공식 게시글 · 165257051",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/165257051",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
+          "sourceId": "source-leopel-post-165257051",
+          "note": "춘봉 SOOP 방송국에 게시된 레오펠 관련 공식 기록입니다. 원문 제목과 게시일은 확인 가능한 범위에서 보강합니다."
         }
       ],
       "media": [
@@ -78,12 +122,41 @@
           "date": "2025-05-12",
           "datePrecision": "day",
           "url": "https://vod.sooplive.com/player/159715611",
-          "thumbnail": "/assets/chunbong-contents/leopel-trailer-pv.svg",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
           "sourceId": "source-trailer-pv",
           "note": "SOOP에 공개된 레오펠 서버 트레일러 PV입니다."
+        },
+        {
+          "id": "leopel-vod-165343833",
+          "type": "vod",
+          "title": "레오펠 SOOP VOD · 165343833",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/165343833",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
+          "sourceId": "source-leopel-vod-165343833",
+          "note": "SOOP에 남아 있는 레오펠 관련 공식 영상 기록입니다. 원문 제목과 방송일은 확인 가능한 범위에서 보강합니다."
+        },
+        {
+          "id": "leopel-vod-167705699",
+          "type": "vod",
+          "title": "레오펠 SOOP VOD · 167705699",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/167705699",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
+          "sourceId": "source-leopel-vod-167705699",
+          "note": "SOOP에 남아 있는 레오펠 관련 공식 영상 기록입니다. 원문 제목과 방송일은 확인 가능한 범위에서 보강합니다."
         }
       ],
       "gallery": [
+        {
+          "id": "leopel-official-logo",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790043451/chunbong-fansite/leopel/logo.webp",
+          "alt": "레오펠 사자의 노래 로고",
+          "caption": "사용자 제공 레오펠 대표 로고",
+          "sourceId": ""
+        },
         {
           "id": "leopel-cover",
           "src": "/assets/chunbong-contents/leopel-cover.svg",
@@ -135,22 +208,58 @@
           "id": "source-reference",
           "kind": "reference",
           "label": "나무위키 · 레오펠",
-          "url": "https://www.namu.moe/w/%EB%A0%88%EC%98%A4%ED%8E%A0"
+          "url": "https://namu.wiki/w/%EB%A0%88%EC%98%A4%ED%8E%A0"
         },
         {
           "id": "source-trailer-pv",
           "kind": "official",
-          "label": "SOOP VOD · 레오펠 서버 트레일러 PV",
+          "label": "SOOP VOD · 레오펠 서버 트레일러 PV · 159715611",
           "url": "https://vod.sooplive.com/player/159715611"
+        },
+        {
+          "id": "source-leopel-post-159705141",
+          "kind": "official",
+          "label": "SOOP 방송국 게시글 · 159705141",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/159705141"
+        },
+        {
+          "id": "source-leopel-post-161715755",
+          "kind": "official",
+          "label": "SOOP 방송국 게시글 · 161715755",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/161715755"
+        },
+        {
+          "id": "source-leopel-post-163281747",
+          "kind": "official",
+          "label": "SOOP 방송국 게시글 · 163281747",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/163281747"
+        },
+        {
+          "id": "source-leopel-post-165257051",
+          "kind": "official",
+          "label": "SOOP 방송국 게시글 · 165257051",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/165257051"
+        },
+        {
+          "id": "source-leopel-vod-165343833",
+          "kind": "official",
+          "label": "SOOP VOD · 165343833",
+          "url": "https://vod.sooplive.com/player/165343833"
+        },
+        {
+          "id": "source-leopel-vod-167705699",
+          "kind": "official",
+          "label": "SOOP VOD · 167705699",
+          "url": "https://vod.sooplive.com/player/167705699"
         }
       ],
       "verification": {
         "state": "cross_checked",
-        "verifiedAt": "2026-09-22T04:15:00+09:00",
+        "verifiedAt": "2026-09-22T11:25:00+09:00",
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T07:05:00+09:00"
+      "updatedAt": "2026-09-22T11:25:00+09:00"
     },
     {
       "id": "justserver-moneygame",
@@ -642,7 +751,7 @@
       "endDate": "2026",
       "datePrecision": "year",
       "summary": "춘봉의 그냥서버 시리즈 ‘적자생존’ 기록을 SOOP 공식 게시글과 공개 자료를 중심으로 모아보는 아카이브.",
-      "description": "그냥서버 : 적자생존의 모집·안내·진행 관련 SOOP 방송국 게시글과 공개 Notion 자료를 한 흐름으로 연결한 기록입니다. 현재는 사용자가 지정한 원문 링크를 우선 보존하며, 게시글별 정확한 제목·날짜·참가자 정보는 원문 확인이 가능한 범위부터 순차적으로 보강합니다.",
+      "description": "그냥서버 : 적자생존의 모집·안내·진행 관련 SOOP 방송국 게시글, 공개 Notion 자료와 함께 설명회 SOOP VOD를 연결한 기록입니다. 현재는 사용자가 지정한 공식 원문 링크를 우선 보존하며, 게시글별 정확한 제목·날짜·참가자 정보는 원문 확인이 가능한 범위부터 순차적으로 보강합니다.",
       "heroImage": {
         "src": "/assets/chunbong-contents/justserver-survival-cover.svg",
         "alt": "그냥서버 적자생존 팬사이트 아카이브 커버",
@@ -729,7 +838,19 @@
           "note": "춘봉 SOOP 방송국에 게시된 적자생존 관련 공식 기록입니다."
         }
       ],
-      "media": [],
+      "media": [
+        {
+          "id": "survival-presentation-vod-207560243",
+          "type": "vod",
+          "title": "그냥서버 : 적자생존 설명회",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/207560243",
+          "thumbnail": "/assets/chunbong-contents/justserver-survival-cover.svg",
+          "sourceId": "source-survival-presentation-vod",
+          "note": "사용자가 지정한 적자생존 설명회 SOOP 공식 VOD입니다."
+        }
+      ],
       "gallery": [
         {
           "id": "survival-cover",
@@ -740,6 +861,12 @@
         }
       ],
       "sources": [
+        {
+          "id": "source-survival-presentation-vod",
+          "kind": "official",
+          "label": "SOOP VOD · 그냥서버 : 적자생존 설명회",
+          "url": "https://vod.sooplive.com/player/207560243"
+        },
         {
           "id": "source-survival-post-203683207",
           "kind": "official",
@@ -791,11 +918,11 @@
       ],
       "verification": {
         "state": "official",
-        "verifiedAt": "2026-09-22T09:50:00+09:00",
+        "verifiedAt": "2026-09-22T11:25:00+09:00",
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-22T09:50:00+09:00"
+      "updatedAt": "2026-09-22T11:25:00+09:00"
     },
     {
       "id": "psy-emotion-song-contest-2026",
