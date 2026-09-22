@@ -34,7 +34,9 @@ jobs:
             'https://vod.sooplive.com/player/159715611',
             'https://vod.sooplive.com/player/165343833',
             'https://vod.sooplive.com/player/167705699',
-            'https://vod.sooplive.com/player/207560243'
+            'https://vod.sooplive.com/player/207560243',
+            'https://vod.sooplive.com/player/198012777/catch',
+            'https://vod.sooplive.com/player/198013623/catch'
           ];
           (async()=>{
             for(const url of urls){
@@ -45,5 +47,12 @@ jobs:
                 console.log('ARCHIVE_PROBE '+JSON.stringify({url,error:String(error?.message||error)}));
               }
             }
+            try{
+              const raw=await fetch('https://api-channel.sooplive.com/v1.1/channel/chunbongtv/post/207425471',{headers:{'user-agent':'Mozilla/5.0','accept':'application/json,text/plain,*/*','referer':'https://www.sooplive.com/'}});
+              const payload=await raw.json();
+              const data=payload?.data||payload;
+              const pick={keys:Object.keys(data||{}),title:data?.title||data?.subject||'',content:data?.content||data?.contents||data?.body||'',photos:data?.photos||data?.images||data?.photo||null};
+              console.log('ARCHIVE_RAW '+JSON.stringify(pick));
+            }catch(error){console.log('ARCHIVE_RAW '+JSON.stringify({error:String(error?.message||error)}))}
           })().catch(error=>{console.error(error);process.exitCode=1});
           NODE
