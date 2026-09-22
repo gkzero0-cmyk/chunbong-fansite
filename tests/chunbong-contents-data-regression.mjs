@@ -259,7 +259,7 @@ assert.equal((survivalPublic.timeline||[]).some(row=>/207564735/.test(String(row
 assert.ok((survivalPublic.timeline||[]).some(row=>/207564927/.test(String(row.url||''))),'공개 2차 입주 모집글은 팬사이트에 표시해야 합니다');
 assert.ok((survival?.sources||[]).some(row=>row.url==='https://daisy-grouse-ac0.notion.site/3dad57d6a55c80469f3de9730cb88975'),'적자생존 Notion 자료가 필요합니다');
 
-assert.ok((psyContest1?.participants||[]).includes('시로코'),'제1회는 시로코 참가 교차 기록을 유지해야 합니다');
+assert.ok((psyContest1?.results||[]).some(row=>/시네_/.test(String(row.value||''))&&/시로코/.test(String(row.value||''))),'제1회 시네_와 시로코 동일인 교차 기록을 유지해야 합니다');
 assert.ok((psyContest1?.gallery||[]).length>=1,'제1회 아카이브 커버가 필요합니다');
 assert.ok((psyContest2?.gallery||[]).length>=1,'제2회 아카이브 커버가 필요합니다');
 
