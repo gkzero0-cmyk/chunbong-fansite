@@ -208,3 +208,7 @@ body[data-page="operator"]{background:radial-gradient(circle at 80% 0,color-mix(
 .operator-archive-audit.has-issues header b{background:#ffb02017;color:var(--op-warn)}
 .operator-archive-audit ul{display:grid;gap:5px;margin:9px 0 0;padding-left:18px;color:var(--op-muted);font-size:10px;line-height:1.55}
 .operator-archive-audit p{margin:8px 0 0;color:var(--op-muted);font-size:10px}
+
+.operator-archive-repeater-row[data-source-row]{grid-template-columns:minmax(90px,.65fr) minmax(150px,1.2fr) minmax(105px,.65fr) minmax(150px,1fr) minmax(220px,1.6fr) auto}
+@media(max-width:1180px){.operator-archive-repeater-row[data-source-row]{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.operator-archive-repeater-row[data-source-row]{grid-template-columns:1fr}}
