@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-22T11:40:00+09:00",
+  "updatedAt": "2026-09-22T11:50:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -958,126 +958,6 @@
       }
     },
     {
-      "id": "psy-emotion-song-contest-2026",
-      "title": "싸이감성 노래자랑 (2026)",
-      "aliases": [
-        "싸이감성 노래자랑",
-        "싸이감성"
-      ],
-      "category": "song",
-      "role": "개최",
-      "status": "ended",
-      "startDate": "2026-04-28",
-      "endDate": "2026-04-28",
-      "datePrecision": "day",
-      "summary": "춘봉이 2026년 4월 28일 개최한 노래 경연 콘텐츠로, 개최 기록과 당시 심사 방송 기록을 교차 확인했습니다.",
-      "description": "2026년 4월 28일 진행된 춘봉 주최 노래 경연 콘텐츠입니다. 같은 이름의 과거 기록과 혼동하지 않도록 2026년 개최분을 별도 항목으로 정리했으며, 현재는 개최일과 주최 사실처럼 교차 확인 가능한 정보만 공개합니다. 참가자·수상 결과는 원문 근거가 더 확보되기 전까지 확정 표기하지 않습니다.",
-      "heroImage": {
-        "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
-        "alt": "싸이감성 노래자랑 2026 팬사이트 아카이브 커버",
-        "sourceId": ""
-      },
-      "participants": [
-        "시로코"
-      ],
-      "results": [
-        {
-          "title": "확인된 참가 기록 · 시로코",
-          "value": "서인영의 ‘신데렐라’로 참가 · 입상하지 못함"
-        }
-      ],
-      "timeline": [
-        {
-          "id": "contest-date",
-          "type": "reference",
-          "title": "싸이감성 노래자랑 개최 기록",
-          "date": "2026-04-28",
-          "datePrecision": "day",
-          "url": "https://www.namu.moe/w/%EC%B6%98%EB%B4%89",
-          "thumbnail": "",
-          "sourceId": "source-chunbong-record",
-          "note": "춘봉 활동 이력에서 2026년 4월 28일 개최 기록을 확인할 수 있습니다."
-        },
-        {
-          "id": "judge-stream",
-          "type": "reference",
-          "title": "당일 심사 방송 기록",
-          "date": "2026-04-28",
-          "datePrecision": "day",
-          "url": "https://streamscharts.com/channels/lilpa0309/streams/293582583?platform=afreecatv",
-          "thumbnail": "/assets/chunbong-contents/psy-song-judge-stream.svg",
-          "sourceId": "source-judge-stream",
-          "note": "당일 '싸이감성 노래자랑 심사합니다'라는 방송 제목과 방송 시간이 기록되어 있습니다."
-        },
-        {
-          "id": "participant-siroko",
-          "type": "reference",
-          "title": "시로코 참가 기록",
-          "date": "2026-04-28",
-          "datePrecision": "day",
-          "url": "https://www.namu.moe/w/%EC%8B%9C%EB%A1%9C%EC%BD%94(%EC%9D%B8%ED%84%B0%EB%84%B7%20%EB%B0%A9%EC%86%A1%EC%9D%B8)",
-          "thumbnail": "",
-          "sourceId": "source-siroko",
-          "note": "시로코가 제1회 싸이감성 노래자랑에 ‘신데렐라’로 참가한 기록입니다."
-        }
-      ],
-      "media": [],
-      "gallery": [
-        {
-          "id": "psy-cover",
-          "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
-          "alt": "싸이감성 노래자랑 2026 팬사이트 아카이브 커버",
-          "caption": "싸이감성 노래자랑 2026 아카이브 커버",
-          "sourceId": ""
-        },
-        {
-          "id": "psy-judge-stream",
-          "src": "/assets/chunbong-contents/psy-song-judge-stream.svg",
-          "alt": "싸이감성 노래자랑 심사 방송 아카이브 이미지",
-          "caption": "2026년 4월 28일 심사 방송 기록",
-          "sourceId": "source-judge-stream"
-        }
-      ],
-      "sources": [
-        {
-          "id": "source-chunbong-record",
-          "kind": "reference",
-          "label": "나무위키 · 춘봉 활동 이력",
-          "url": "https://www.namu.moe/w/%EC%B6%98%EB%B4%89"
-        },
-        {
-          "id": "source-judge-stream",
-          "kind": "reference",
-          "label": "Streams Charts · 2026-04-28 심사 방송 기록",
-          "url": "https://streamscharts.com/channels/lilpa0309/streams/293582583?platform=afreecatv"
-        },
-        {
-          "id": "source-siroko",
-          "kind": "reference",
-          "label": "나무위키 · 시로코 참가 기록",
-          "url": "https://www.namu.moe/w/%EC%8B%9C%EB%A1%9C%EC%BD%94(%EC%9D%B8%ED%84%B0%EB%84%B7%20%EB%B0%A9%EC%86%A1%EC%9D%B8)"
-        }
-      ],
-      "verification": {
-        "state": "cross_checked",
-        "verifiedAt": "2026-09-22T06:00:00+09:00",
-        "conflicts": []
-      },
-      "published": true,
-      "updatedAt": "2026-09-22T11:40:00+09:00",
-      "series": {
-        "id": "psy-emotion-song-contest",
-        "title": "싸이감성 노래자랑",
-        "subtitle": "노래 경연 시리즈",
-        "description": "춘봉이 개최한 노래 경연 콘텐츠의 개최·심사·참가 기록을 실제 자료 중심으로 모아봅니다.",
-        "order": 30,
-        "cover": {
-          "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
-          "alt": "싸이감성 노래자랑 대표 이미지"
-        }
-      }
-    },
-    {
       "id": "chuntacle-2026",
       "title": "춘타클 · 춘봉 타로 클래스",
       "aliases": [
@@ -1425,6 +1305,232 @@
           "alt": "춘타클 춘봉 타로 클래스 대표 포스터"
         }
       }
+    },
+    {
+      "id": "psy-emotion-song-contest-1",
+      "title": "싸이감성 노래자랑 제1회",
+      "aliases": [
+        "싸이감성 노래자랑 1회",
+        "제1회 싸이감성 노래자랑",
+        "싸이감성"
+      ],
+      "category": "song",
+      "role": "개최",
+      "status": "ended",
+      "startDate": "",
+      "endDate": "",
+      "datePrecision": "unknown",
+      "summary": "춘봉이 개최한 싸이감성 노래자랑 제1회 기록으로, 이전 대화에서 지정한 SOOP 모집글과 공식 VOD를 우선 출처로 보존합니다.",
+      "description": "싸이감성 노래자랑 제1회를 제2회와 섞지 않고 별도 기록으로 정리했습니다. SOOP 모집글과 VOD를 공식 우선 자료로 사용하고, 참가자 정보는 회차가 명시된 교차 자료에서 확인되는 항목만 추가합니다.",
+      "heroImage": {
+        "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
+        "alt": "싸이감성 노래자랑 2026 팬사이트 아카이브 커버",
+        "sourceId": ""
+      },
+      "participants": [
+        "시로코"
+      ],
+      "results": [
+        {
+          "title": "확인된 참가 기록 · 시로코",
+          "value": "서인영의 ‘신데렐라’로 참가 · 입상하지 못함"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "psy1-recruit-post",
+          "type": "post",
+          "title": "싸이감성 노래자랑 제1회 모집글",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/124321185",
+          "thumbnail": "",
+          "sourceId": "source-psy1-recruit",
+          "note": "이전 대화에서 제1회 모집글로 지정한 춘봉 SOOP 방송국 공식 게시글입니다."
+        },
+        {
+          "id": "psy1-siroko",
+          "type": "reference",
+          "title": "시로코 제1회 참가 기록",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://www.namu.moe/w/%EC%8B%9C%EB%A1%9C%EC%BD%94(%EC%9D%B8%ED%84%B0%EB%84%B7%20%EB%B0%A9%EC%86%A1%EC%9D%B8)",
+          "thumbnail": "",
+          "sourceId": "source-psy1-siroko",
+          "note": "시로코 문서에 제1회 싸이감성 노래자랑 참가와 선곡 기록이 명시되어 있습니다."
+        }
+      ],
+      "media": [
+        {
+          "id": "psy1-vod",
+          "type": "vod",
+          "title": "싸이감성 노래자랑 제1회 SOOP VOD",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/127480069",
+          "thumbnail": "",
+          "sourceId": "source-psy1-vod",
+          "note": "이전 대화에서 제1회 VOD로 지정한 SOOP 공식 영상입니다."
+        }
+      ],
+      "gallery": [
+        {
+          "id": "psy1-cover",
+          "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
+          "alt": "싸이감성 노래자랑 제1회 아카이브 커버",
+          "caption": "싸이감성 노래자랑 제1회 기록 커버",
+          "sourceId": ""
+        }
+      ],
+      "sources": [
+        {
+          "id": "source-psy1-recruit",
+          "kind": "official",
+          "label": "SOOP 모집글 · 싸이감성 노래자랑 제1회",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/124321185"
+        },
+        {
+          "id": "source-psy1-vod",
+          "kind": "official",
+          "label": "SOOP VOD · 싸이감성 노래자랑 제1회",
+          "url": "https://vod.sooplive.com/player/127480069"
+        },
+        {
+          "id": "source-psy1-siroko",
+          "kind": "reference",
+          "label": "나무위키 · 시로코 제1회 참가 기록",
+          "url": "https://www.namu.moe/w/%EC%8B%9C%EB%A1%9C%EC%BD%94(%EC%9D%B8%ED%84%B0%EB%84%B7%20%EB%B0%A9%EC%86%A1%EC%9D%B8)"
+        }
+      ],
+      "verification": {
+        "state": "cross_checked",
+        "verifiedAt": "2026-09-22T11:50:00+09:00",
+        "conflicts": []
+      },
+      "published": true,
+      "updatedAt": "2026-09-22T11:50:00+09:00",
+      "series": {
+        "id": "psy-emotion-song-contest",
+        "title": "싸이감성 노래자랑",
+        "subtitle": "노래 경연 시리즈",
+        "description": "춘봉이 개최한 싸이감성 노래자랑을 제1회·제2회로 분리해 모집 공지, 공식 VOD, 참가 기록을 회차별로 섞이지 않게 정리합니다.",
+        "order": 30,
+        "cover": {
+          "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
+          "alt": "싸이감성 노래자랑 대표 이미지"
+        }
+      }
+    },
+    {
+      "id": "psy-emotion-song-contest-2",
+      "title": "싸이감성 노래자랑 제2회",
+      "aliases": [
+        "싸이감성 노래자랑 2회",
+        "제2회 싸이감성 노래자랑",
+        "싸이감성"
+      ],
+      "category": "song",
+      "role": "개최",
+      "status": "ended",
+      "startDate": "",
+      "endDate": "",
+      "datePrecision": "unknown",
+      "summary": "춘봉이 개최한 싸이감성 노래자랑 제2회 기록으로, 이전 대화에서 지정한 SOOP 모집글·공식 VOD와 FM코리아 보조 자료를 회차별로 분리해 보존합니다.",
+      "description": "싸이감성 노래자랑 제2회를 제1회와 별도 기록으로 정리했습니다. SOOP 모집글과 VOD를 공식 우선 출처로 두고, FM코리아 자료는 이미지·참가자 확인을 위한 보조 출처로 구분합니다. 현재 원문에서 직접 확인하지 못한 날짜·참가자 정보는 임의로 확정하지 않습니다.",
+      "heroImage": {
+        "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
+        "alt": "싸이감성 노래자랑 2026 팬사이트 아카이브 커버",
+        "sourceId": ""
+      },
+      "participants": [],
+      "results": [],
+      "timeline": [
+        {
+          "id": "psy2-recruit-post",
+          "type": "post",
+          "title": "싸이감성 노래자랑 제2회 모집글",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/192031471",
+          "thumbnail": "",
+          "sourceId": "source-psy2-recruit",
+          "note": "이전 대화에서 제2회 모집글로 지정한 춘봉 SOOP 방송국 공식 게시글입니다."
+        },
+        {
+          "id": "psy2-fmkorea",
+          "type": "reference",
+          "title": "싸이감성 노래자랑 제2회 보조 자료",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://www.fmkorea.com/9750851296",
+          "thumbnail": "",
+          "sourceId": "source-psy2-fmkorea",
+          "note": "이전 대화에서 제2회 이미지·참가자 확인용 보조 자료로 지정한 FM코리아 게시물입니다."
+        }
+      ],
+      "media": [
+        {
+          "id": "psy2-vod",
+          "type": "vod",
+          "title": "싸이감성 노래자랑 제2회 SOOP VOD",
+          "date": "",
+          "datePrecision": "unknown",
+          "url": "https://vod.sooplive.com/player/194116989",
+          "thumbnail": "",
+          "sourceId": "source-psy2-vod",
+          "note": "이전 대화에서 제2회 VOD로 지정한 SOOP 공식 영상입니다."
+        }
+      ],
+      "gallery": [
+        {
+          "id": "psy2-cover",
+          "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
+          "alt": "싸이감성 노래자랑 제2회 아카이브 커버",
+          "caption": "싸이감성 노래자랑 제2회 기록 커버",
+          "sourceId": ""
+        }
+      ],
+      "sources": [
+        {
+          "id": "source-psy2-recruit",
+          "kind": "official",
+          "label": "SOOP 모집글 · 싸이감성 노래자랑 제2회",
+          "url": "https://www.sooplive.com/station/chunbongtv/post/192031471"
+        },
+        {
+          "id": "source-psy2-vod",
+          "kind": "official",
+          "label": "SOOP VOD · 싸이감성 노래자랑 제2회",
+          "url": "https://vod.sooplive.com/player/194116989"
+        },
+        {
+          "id": "source-psy2-fmkorea",
+          "kind": "reference",
+          "label": "FM코리아 · 싸이감성 노래자랑 제2회 보조 자료",
+          "url": "https://www.fmkorea.com/9750851296"
+        }
+      ],
+      "verification": {
+        "state": "official",
+        "verifiedAt": "2026-09-22T11:50:00+09:00",
+        "conflicts": []
+      },
+      "published": true,
+      "updatedAt": "2026-09-22T11:50:00+09:00",
+      "series": {
+        "id": "psy-emotion-song-contest",
+        "title": "싸이감성 노래자랑",
+        "subtitle": "노래 경연 시리즈",
+        "description": "춘봉이 개최한 싸이감성 노래자랑을 제1회·제2회로 분리해 모집 공지, 공식 VOD, 참가 기록을 회차별로 섞이지 않게 정리합니다.",
+        "order": 30,
+        "cover": {
+          "src": "/assets/chunbong-contents/psy-emotion-song-contest-cover.svg",
+          "alt": "싸이감성 노래자랑 대표 이미지"
+        }
+      }
     }
+  ],
+  "hiddenIds": [
+    "psy-emotion-song-contest-2026"
   ]
 }
