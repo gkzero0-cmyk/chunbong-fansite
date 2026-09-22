@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import {createRequire} from 'node:module';
 
 const require=createRequire(import.meta.url);
-const {normalizeArchiveItem,validateArchiveItem,formatArchiveDate}=require('../lib/chunbong-content-archive-core.js');
+const {normalizeArchiveItem,validateArchiveItem,formatArchiveDate,toPublicArchiveItem}=require('../lib/chunbong-content-archive-core.js');
 
 const monthOnly=normalizeArchiveItem({
   id:'sample',title:'샘플',category:'minecraft',role:'주최',status:'ended',
@@ -56,6 +56,28 @@ assert.ok(!('verification' in rows[0]));
 const mergedSeries=archiveApi._internals.mergeArchiveRows([{...monthOnly,id:'series-merge',series:{id:'justserver',title:'그냥서버'}}],[{...monthOnly,id:'series-merge'}]);
 assert.equal(mergedSeries[0]?.series?.id,'justserver','stored rows without series metadata should inherit curated seed series metadata');
 assert.ok(archiveApi._internals.curatedHiddenIds().includes('psy-emotion-song-contest-2026'),'curated hidden ids should include legacy psy record');
+
+const internalSourceSample=normalizeArchiveItem({
+  ...monthOnly,id:'internal-source-sample',
+  participants:[],
+  participantGroups:[{id:'g1',label:'참가자 그룹',stage:'1차',platform:'SOOP',participants:['가나다'],count:1,sourceId:'hidden-source'}],
+  timeline:[{id:'hidden-reference',type:'reference',title:'내부 참고',date:'2026-06',datePrecision:'month',url:'https://www.fmkorea.com/1',sourceId:'hidden-source'}],
+  media:[{id:'hidden-media',type:'reference',title:'내부 방송 이력',date:'2026-06',datePrecision:'month',url:'https://streamscharts.com/example',sourceId:'hidden-source'}],
+  gallery:[{id:'hidden-image',src:'https://images.example.com/poster.webp',caption:'확인 이미지',sourceId:'hidden-source'}],
+  sources:[
+    {id:'s1',kind:'official',label:'공식',url:'https://www.sooplive.com/station/chunbongtv'},
+    {id:'hidden-source',kind:'reference',label:'내부 참고',url:'https://www.fmkorea.com/1',visibility:'internal'}
+  ]
+});
+assert.deepEqual(validateArchiveItem(internalSourceSample,{publishing:true}),[],'participant group provenance should be a valid source reference');
+const publicInternalSample=toPublicArchiveItem(internalSourceSample);
+assert.equal(publicInternalSample.sources.length,1,'internal provenance sources must be removed from the public API');
+assert.ok(!JSON.stringify(publicInternalSample).includes('fmkorea.com'),'FM코리아 URL must not leak through the public API');
+assert.ok(!JSON.stringify(publicInternalSample).includes('streamscharts.com'),'Streams Charts URL must not leak through the public API');
+assert.equal(publicInternalSample.timeline.length,0,'pure internal reference timeline rows should not render publicly');
+assert.equal(publicInternalSample.media.length,0,'pure internal reference media rows should not render publicly');
+assert.equal(publicInternalSample.gallery[0]?.src,'https://images.example.com/poster.webp','verified images can remain public after provenance is hidden');
+assert.ok(!('sourceId' in (publicInternalSample.participantGroups[0]||{})),'participant provenance IDs should stay internal');
 
 
 const impossibleDate=normalizeArchiveItem({...monthOnly,id:'impossible-date',startDate:'2026-02-31',datePrecision:'day'});
@@ -201,5 +223,20 @@ for(const url of ['https://www.youtube.com/watch?v=b-jlKXqLakU','https://www.you
 assert.ok((chuntacle?.sources||[]).some(row=>row.url==='https://www.fmkorea.com/10058760229'),'춘타클 FM코리아 모집·참여자 자료가 필요합니다');
 
 assert.ok((leopel?.results||[]).some(row=>/671명/.test(row.value||'')),'레오펠 최종 참여자 671명 기록이 필요합니다');
-assert.ok((leopel?.results||[]).some(row=>/1차 입주/.test(row.title||'')&&/140명/.test(row.value||'')),'레오펠 1차 입주 140명 기록이 필요합니다');
+assert.ok((leopel?.results||[]).some(row=>/1차 입주/.test(row.title||'')&&/225명/.test(row.value||'')),'레오펠 1차 입주 225명 기록이 필요합니다');
 assert.ok((leopel?.results||[]).some(row=>/2차 입주/.test(row.title||'')&&/171명/.test(row.value||'')),'레오펠 2차 입주 171명 기록이 필요합니다');
+
+const leopelParticipantGroups=leopel?.participantGroups||[];
+assert.deepEqual(leopelParticipantGroups.map(row=>row.count),[140,68,17,127,44,104,60],'레오펠 참가자 그룹 인원은 1~3차·플랫폼별 집계와 일치해야 합니다');
+assert.equal(leopelParticipantGroups.reduce((sum,row)=>sum+Number(row.count||0),0),560,'레오펠 초기 1~3차 입주자 그룹 합계는 560명이어야 합니다');
+assert.equal(new Set(leopelParticipantGroups.flatMap(row=>row.participants||[])).size,560,'레오펠 초기 입주자 560명은 중복 없이 구조화되어야 합니다');
+assert.ok(leopelParticipantGroups.some(row=>(row.participants||[]).includes('춘봉')),'레오펠 입주자 데이터에 춘봉이 포함되어야 합니다');
+const publicLeopel=toPublicArchiveItem(leopel);
+for(const domain of ['bngts.com','fmkorea.com','streamscharts.com']) assert.ok(!JSON.stringify(publicLeopel).includes(domain),domain+' must remain internal-only in the public archive payload');
+for(const item of seed.items){
+  const publicItem=toPublicArchiveItem(item);
+  for(const source of item.sources||[]){
+    if(/bngts\.com|fmkorea\.com|streamscharts\.com/i.test(source.url||'')) assert.equal(source.visibility,'internal',item.id+' hidden reference source must be marked internal');
+  }
+  for(const domain of ['bngts.com','fmkorea.com','streamscharts.com']) assert.ok(!JSON.stringify(publicItem).includes(domain),item.id+' public payload leaked '+domain);
+}
