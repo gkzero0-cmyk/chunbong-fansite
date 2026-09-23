@@ -302,3 +302,25 @@ body[data-page="operator"]{background:radial-gradient(circle at 80% 0,color-mix(
   .operator-feature-title{align-items:flex-start;flex-wrap:wrap}
   .operator-environment-group{padding:11px}
 }
+
+
+/* Operator Center 1.4 — period comparison + real-user Web Vitals */
+.operator-row-compare{display:inline-flex!important;align-items:center;width:max-content;max-width:100%;min-height:20px;padding:2px 7px;border-radius:999px;font-size:9px!important;font-weight:900;line-height:1.3;background:color-mix(in srgb,var(--op-border) 42%,transparent);color:var(--op-meta)!important}
+.operator-row-compare.is-up{background:#ff7a2814;color:#ffab7d!important}
+.operator-row-compare.is-down{background:#5fa8ff14;color:#9bc9ff!important}
+.operator-row-compare.is-new{background:#a879ff14;color:#c7a9ff!important}
+.operator-row-compare.is-flat{color:var(--op-meta)!important}
+.operator-vitals-summary{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:0}
+.operator-vitals-summary .operator-health-card{position:relative;overflow:hidden}
+.operator-vitals-summary .operator-health-card:after{content:"";position:absolute;inset:auto 0 0;height:3px;background:color-mix(in srgb,var(--op-border) 70%,transparent)}
+.operator-vitals-summary .operator-health-card:has(strong.is-ok):after{background:var(--op-good)}
+.operator-vitals-summary .operator-health-card:has(strong.is-warn):after{background:var(--op-warn)}
+.operator-vitals-summary .operator-health-card:has(strong.is-bad):after{background:var(--op-bad)}
+.operator-vitals-summary strong{font-size:22px}
+.operator-vitals-summary strong.is-ok{color:var(--op-good)}
+.operator-vitals-summary strong.is-warn{color:var(--op-warn)}
+.operator-vitals-summary strong.is-bad{color:var(--op-bad)}
+@media(max-width:760px){
+  .operator-vitals-summary{grid-template-columns:1fr}
+  .operator-row-compare{white-space:normal}
+}
