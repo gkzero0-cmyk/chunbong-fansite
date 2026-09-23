@@ -31,7 +31,7 @@ assert.doesNotMatch(svg,/stroke-width="18"/,'legacy thick outer gold frame must 
 assert.doesNotMatch(svg,/stroke-width="11"/,'legacy thick artwork gold frame must stay removed');
 
 assert.match(html,/href="tarot-composite\.css\?v=3"/,'updated frame CSS must be cache-busted');
-assert.match(html,/src="tarot\.js\?v=5"/,'updated selection runtime must be cache-busted');
+assert.match(html,/src="tarot\.js\?v=6"/,'updated selection runtime must be cache-busted');
 assert.match(html,/src="tarot-composite\.js\?v=2"/,'updated result frame runtime must be cache-busted');
 
 console.log('tarot selection visibility and daily-fortune frame regression passed');
