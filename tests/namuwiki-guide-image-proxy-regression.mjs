@@ -13,6 +13,11 @@ assert.match(proxy,/^\/api\/content\?type=namuwiki-guide-image&src=/,'NamuWiki f
 assert.match(decodeURIComponent(proxy),/https:\/\/file\.namu\.moe\/file\//);
 assert.equal(archive._internals.namuGuideImageProxyUrl({src:'https://example.com/image.png'}),'','untrusted hosts must not be proxied');
 
+const curated=archive._internals.curatedNamuGuideAsset({filename:'레오펠_로고.png',provider:'namuwiki'});
+assert.match(curated?.src||'',/^https:\/\/res\.cloudinary\.com\//,'known NamuWiki logo should use a verified permanent asset');
+assert.equal(curated?.assetState,'permanent');
+assert.equal(archive._internals.curatedNamuGuideAsset({filename:'레오펠 전체 지도.png'}),null,'unknown/unverified NamuWiki assets must not be substituted with unrelated images');
+
 const normalized=core.normalizeArchiveItem({
   id:'namu-proxy-test',title:'Namu proxy',category:'other',status:'ended',datePrecision:'unknown',published:false,
   referenceSections:[{id:'r1',provider:'namuwiki',title:'Map',images:[{src:proxy,provider:'namuwiki',assetState:'proxy',caption:'레오펠 전체 지도.png'}]}]
