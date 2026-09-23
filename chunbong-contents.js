@@ -355,7 +355,26 @@ function leopelKnowledgeModel(item){
       ['멀티 엔딩','신비의 동상 복원과 플레이어들의 선택에 따라 결말이 달라지는 구조로 기획됐습니다.']
     ],
     systems:['신비의 동상','스토리 모험','중력의 탑','보스 던전','히든 무기','장비 강화','별풍선 · 치즈 연동','레오쿠키','레오코인','부동산 · 거주지'],
+    locations:[
+      ['튜토리얼 신전','모험가가 세계관에 진입하는 초반 거점. 태초의 여신 미라테 NPC가 등장하는 튜토리얼 지역으로 기록되어 있습니다.'],
+      ['모험 구역','스토리 진행에 따라 확장되는 탐험 지역. 6월 16일 모험 2구역, 7월 3일 모험 3·4구역 오픈 기록이 남아 있습니다.'],
+      ['거주지 서버','일반 야생과 분리된 주거 공간. 거주지 구매 NPC를 통해 지정 청크의 분양권을 구매하는 구조입니다.'],
+      ['중력의 탑','도전형 주요 콘텐츠 중 하나로, 서버 일정과 기록에서 별도 핵심 콘텐츠로 확인됩니다.']
+    ],
+    majorContent:[
+      ['신비의 동상','서버 전체 공동 목표와 엔딩을 연결하는 중심 장치. 일정에 따라 업데이트가 진행되고 7월 2일 복원 기록이 있습니다.'],
+      ['숨겨진 이야기','천상의 하프·망자의 검·불사조의 활·빙결의 창·바람의 글레이브 등 스토리형 히든 무기와 이야기가 순차 공개됐습니다.'],
+      ['던전 · 도전','중력의 탑, 보스 던전 하드 모드, 현자의 시험, 무투제 등 전투·도전형 콘텐츠가 일정에 맞춰 열렸습니다.'],
+      ['경제 · 생활','레오쿠키·레오코인 상점, 골드 상점, 거주지와 부동산 등 생활·경제 요소가 스토리 진행과 함께 운영됐습니다.']
+    ],
     flow:['이세계 소환','튜토리얼 · 세계관 적응','생활 · 경제 활동','스토리 모험 · 던전','신비의 동상 복원','마지막 콘서트 · 이야기의 끝'],
+    records:[
+      ['06.18','중력의 탑 최초 클리어 기록'],
+      ['07.02','신비의 동상 복원'],
+      ['07.03','모험 3·4구역 오픈'],
+      ['07.04','레오펠 마지막 콘서트'],
+      ['07.06','이야기의 끝 · 서버 종료']
+    ],
     chapters:[
       ['06.10','천상의 하프'],
       ['06.15','망자의 검'],
@@ -383,13 +402,16 @@ function renderLeopelKnowledge(item,{compact=false}={}){
     ${gallery.length?`<div class="archive-leopel-media-strip">${gallery.map((row,index)=>`<button type="button" data-leopel-gallery="${index}"><span class="archive-normalized-media" style="--archive-media-image:url('&quot;${escapeHtml(safeUrl(row.src))}&quot;')"><img src="${escapeHtml(safeUrl(row.src))}" alt="${escapeHtml(row.alt||row.caption||'레오펠 자료 이미지')}" loading="lazy"></span><small>${escapeHtml(row.caption||row.alt||'레오펠 자료 이미지')}</small></button>`).join('')}</div>`:''}
     <div class="archive-knowledge-block"><div class="archive-subheading"><small>WORLD & STORY</small><h3>세계관 · 공동 목표</h3></div><div class="archive-knowledge-grid">${model.story.map(([title,text])=>`<article class="archive-knowledge-card"><small>STORY</small><strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p></article>`).join('')}</div></div>
     <div class="archive-knowledge-block"><div class="archive-subheading"><small>CORE SYSTEM</small><h3>핵심 시스템</h3></div><div class="archive-system-chip-grid">${model.systems.map((token,i)=>`<span><b>${String(i+1).padStart(2,'0')}</b>${escapeHtml(token)}</span>`).join('')}</div></div>
-    ${!compact?`<div class="archive-knowledge-block"><div class="archive-subheading"><small>ADVENTURE FLOW</small><h3>플레이 흐름</h3></div><div class="archive-flow">${model.flow.map((step,i)=>`<span><b>${i+1}</b><em>${escapeHtml(step)}</em></span>`).join('')}</div></div>
+    ${!compact?`<div class="archive-knowledge-block"><div class="archive-subheading"><small>LOCATIONS</small><h3>주요 지역</h3></div><div class="archive-knowledge-grid">${model.locations.map(([title,text])=>`<article class="archive-knowledge-card"><small>LOCATION</small><strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p></article>`).join('')}</div></div>
+    <div class="archive-knowledge-block"><div class="archive-subheading"><small>MAJOR CONTENT</small><h3>주요 콘텐츠</h3></div><div class="archive-knowledge-grid">${model.majorContent.map(([title,text])=>`<article class="archive-knowledge-card"><small>CONTENT</small><strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p></article>`).join('')}</div></div>
+    <div class="archive-knowledge-block"><div class="archive-subheading"><small>ADVENTURE / PLAY FLOW</small><h3>플레이 흐름</h3></div><div class="archive-flow">${model.flow.map((step,i)=>`<span><b>${i+1}</b><em>${escapeHtml(step)}</em></span>`).join('')}</div></div>
     <div class="archive-knowledge-block"><div class="archive-subheading"><small>STORY CHAPTERS</small><h3>주요 스토리 공개 기록</h3></div><div class="archive-leopel-chapters">${model.chapters.map(([date,title])=>`<article><small>${escapeHtml(date)}</small><strong>${escapeHtml(title)}</strong></article>`).join('')}</div></div>
+    <div class="archive-knowledge-block"><div class="archive-subheading"><small>SERVER RECORDS</small><h3>주요 기록</h3></div><div class="archive-leopel-chapters">${model.records.map(([date,title])=>`<article><small>${escapeHtml(date)}</small><strong>${escapeHtml(title)}</strong></article>`).join('')}</div></div>
     <div class="archive-knowledge-block"><div class="archive-subheading"><small>IDENTITY</small><h3>이름 · 제작 취지 · 방향</h3></div><div class="archive-knowledge-grid">${model.identity.map(([title,text])=>`<article class="archive-knowledge-card"><small>LEOPEL</small><strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p></article>`).join('')}</div></div>
     <p class="archive-guide-source-note">공개 표기 출처: 나무위키 · SOOP 공식 자료</p>`:''}
   </section>`;
 }
-function renderArchiveGuide(item){return isLeopel(item)?`<div class="archive-panel archive-notion-panel"><div class="archive-section-heading"><div><small>LEOPEL ARCHIVE</small><h2>세계관 · 시스템 가이드</h2><p>긴 원문을 그대로 옮기지 않고 핵심 정보와 기존 공식 기록을 결합해 아카이브형 가이드로 재구성했습니다.</p></div><span>나무위키 + SOOP</span></div>${renderLeopelKnowledge(item,{compact:false})}</div>`:renderNotionGuide(item)}
+function renderArchiveGuide(item){return isLeopel(item)?`<div class="archive-panel archive-notion-panel"><div class="archive-section-heading"><div><small>LEOPEL ARCHIVE</small><h2>서버 한눈에 보기 · 지식형 가이드</h2><p>정량 기록은 검증된 기존 데이터를 유지하고, 나무위키의 세계관·지역·시스템·콘텐츠 구조와 이미지를 상세 가이드로 결합합니다.</p></div><span>나무위키 + SOOP</span></div>${renderLeopelKnowledge(item,{compact:false})}${renderDocumentSections(item)}</div>`:renderNotionGuide(item)}
 function renderOverview(item){
   const people=allPeople(item).slice(0,16);
   const peopleTitle=item.category==='class-event'?'확인된 수강생':'확인된 참가자';
