@@ -1,9 +1,27 @@
 {
   "version": 1,
-  "session": null,
+  "session": {
+    "active": true,
+    "sessionId": "2026-09-23T09:42:56.000Z",
+    "startedAt": "2026-09-23T09:42:56.000Z",
+    "title": "마병대4 천사 행정관 춘봉입니다~ 안녕하세요 허허허",
+    "samples": [
+      {
+        "capturedAt": "2026-09-23T09:45:58.931Z",
+        "live": true,
+        "startedAt": "2026-09-23T09:42:56.000Z",
+        "title": "마병대4 천사 행정관 춘봉입니다~ 안녕하세요 허허허",
+        "viewerCount": 17,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30722,
+        "fanclubCount": 7681
+      }
+    ]
+  },
   "lastProfile": {
-    "capturedAt": "2026-09-23T09:34:20.549Z",
-    "followerCount": 30723,
+    "capturedAt": "2026-09-23T09:45:58.931Z",
+    "followerCount": 30722,
     "fanclubCount": 7681
   }
 }
