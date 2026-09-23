@@ -8,8 +8,8 @@ const css = read('daily-fortune.css');
 const sw = read('service-worker.js');
 
 assert.doesNotThrow(() => new Function(js), 'daily fortune runtime must remain valid JavaScript');
-assert.match(home, /href="daily-fortune\.css\?v=5"/, 'home daily fortune CSS missing');
-assert.match(home, /src="daily-fortune\.js\?v=5"/, 'home daily fortune runtime missing');
+assert.match(home, /href="daily-fortune\\.css\\?v=6"/, 'home daily fortune CSS missing');
+assert.match(home, /src="daily-fortune\\.js\\?v=6"/, 'home daily fortune runtime missing');
 assert.match(js, /timeZone: SEOUL_TZ/, 'daily fortune must use the Seoul timezone');
 assert.match(js, /const STORAGE_KEY = 'chunbong-daily-fortune-v1'/, 'daily fortune storage key missing');
 assert.match(js, /parsed\?\.date !== today/, 'stored result must expire on the next KST date');
@@ -38,9 +38,9 @@ assert.match(css, /\.daily-fortune-front\{[\s\S]*#08152f/, 'daily fortune front 
 assert.match(css, /\.daily-fortune-front-frame::before,\.daily-fortune-front-frame::after/, 'daily fortune front must include matching celestial star medallions');
 assert.match(css, /\.daily-fortune-front-title\{[\s\S]*#102344/, 'daily fortune title plate must use the matching navy-and-gold theme');
 assert.match(css, /@keyframes dailyFortuneBackSpin/, 'high-speed card-back spin animation missing');
-assert.match(css, /dailyFortuneBackSpin\{[\s\S]*rotateY\(6120deg\)/, 'standing spin must complete seventeen vertical turns with a visible deceleration');
+assert.match(css, /@keyframes dailyFortuneUltraSpin\{[\s\S]*rotateY\(20160deg\)/, 'fortune draw must complete roughly fifty-six vertical turns before stopping');
 assert.doesNotMatch(css, /dailyFortuneBackSpin\{[^}]*rotateZ\(/, 'draw spin must not look like a flat card rotating on the table');
-assert.match(js, /const SPIN_MS = 2600/, 'standing spin must allow time for the final turns to remain visible');
+assert.match(js, /const SPIN_MS = 3000/, 'fortune draw must sustain a full three-second ultra-fast spin');
 assert.match(css, /\.daily-fortune-stage\.is-spinning \.daily-fortune-card-inner/, 'spin state styling missing');
 assert.match(css, /\.daily-fortune-card\.is-revealed \.daily-fortune-card-inner\{transform:rotateY\(180deg\) rotateZ\(1turn\)\}/, 'card flip animation missing');
 assert.match(css, /\.daily-fortune-stage\.is-prism-active \.daily-fortune-card/, 'pointer tilt state missing');
@@ -53,21 +53,26 @@ assert.match(css, /@keyframes dailyFortuneHoloRipple/, 'hologram ripple animatio
 assert.match(css, /2026-09-21 Luxury Tarot Foil/, 'refined luxury foil override missing');
 assert.match(css, /@keyframes dailyFortuneLuxuryRipple/, 'subtle luxury ripple animation missing');
 assert.match(js, /rippleDistance > 0\.26/, 'pointer travel must require meaningful movement before another visual ripple');
-assert.match(js, /playTone\(ctx, 220/, 'hover entry sound must use a restrained glass resonance');
-assert.match(css, /scale\(1\.032\)/, 'hover lift must be visually noticeable');
+assert.match(js, /playGlassCluster\(ctx, start, 945/, 'hover entry sound must use the refined glass-halo resonance');
+assert.match(css, /scale\(1\.028\)!important/, 'hover lift must remain noticeable without overpowering the crystal material');
 assert.match(css, /mix-blend-mode:screen!important/, 'inner artwork prism must use a controlled screen blend for visible feedback');
-assert.match(css, /opacity:\.82!important/, 'inner prism film must be clearly visible without washing out the artwork');
+assert.match(css, /opacity:\.92!important/, 'crystal hologram film must be clearly visible without washing out the artwork');
 assert.doesNotMatch(css, /#fff 0 2%/, 'white pointer hotspot must stay removed');
 assert.match(js, /const revealed = cardButton\.classList\.contains\('is-revealed'\)/, 'hover effect must react before and after reveal');
 assert.match(css, /dailyFortuneParticle/, 'fortune reveal particles missing');
 assert.match(css, /@media\(prefers-reduced-motion:reduce\)/, 'reduced-motion fallback missing');
-assert.match(sw, /chunbong-pwa-20260922-v31/, 'daily fortune service worker revision missing');
+assert.match(sw, /chunbong-pwa-20260923-v32/, 'daily fortune service worker revision missing');
 assert.match(sw, /'\/daily-fortune\.css'/);
 assert.match(sw, /'\/daily-fortune\.js'/);
+
+assert.match(js,/\}, 2600\);/,'fortune deceleration cue must begin in the final 400ms');
+assert.match(js,/function playWindChime/,'fortune reveal must include the selected clear wind-chime cue');
+assert.match(css,/2026-09-23 Crystal Hologram v3/,'crystal hologram override missing');
+assert.match(css,/@keyframes dailyFortuneSpinSpindle/,'ultra-fast spin must render a luminous spindle trail');
 
 console.log('home daily fortune regression passed');
 
 assert.match(js,/lastHoverSoundAt >= 5000|now - lastHoverSoundAt >= 5000/,'fortune hover sound must have a long entry cooldown');
 assert.doesNotMatch(js,/holo\.appendChild\(ripple\);\s*playMagicRippleSound/,'pointer-generated ripples must stay silent');
-assert.match(css,/width:58px!important/,'fortune ripple must be large enough to notice');
-assert.match(css,/daily-fortune-holo-ripple::before/,'fortune ripple must render a second prism ring');
+assert.match(css,/width:118px!important/,'fortune crystal bloom must be large enough to read as a material response');
+assert.match(css,/daily-fortune-holo-ripple::before/,'fortune crystal bloom must render an inner faceted prism');
