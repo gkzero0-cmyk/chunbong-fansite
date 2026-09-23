@@ -27,8 +27,8 @@ assert.match(prebuilt,/steps\.token\.outputs\.can_deploy == 'true'/,'prebuilt de
 assert.match(prebuilt,/::warning::VERCEL_TOKEN repository secret is not configured/,'missing Vercel token should produce a visible warning instead of a failed recovery run');
 
 assert.match(sync,/GITHUB_EVENT_NAME.*schedule/s,'scheduled sync checks should be non-failing warnings while pending');
-assert.match(sw,/chunbong-pwa-20260922-v31/,'PWA cache version must include the latest mobile app shell and alert assets');
+assert.match(sw,/chunbong-pwa-20260923-v32/,'PWA cache version must include the latest mobile app shell and alert assets');
 assert.match(sw,/site-improvements\.js/,'PWA shell must cache shared improvement runtime');
-assert.match(sw,/site-improvements\.css/,'PWA shell must cache shared improvement styles');
+assert.doesNotMatch(sw,/['"]\/site-improvements\.css['"]/,'shared improvement styles should runtime-cache instead of bloating initial PWA install');
 
 console.log('production auto retry + recovery guard + PWA cache regression passed');
