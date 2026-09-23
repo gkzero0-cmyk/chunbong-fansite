@@ -58,11 +58,11 @@ jobs:
           console.log('validated archive preview markers and participant data');
           NODE
 
-      - name: Promote validated preview to production
+      - name: Point production alias at validated preview
         shell: bash
         run: |
           set -euo pipefail
-          npx --yes vercel@latest promote "$PREVIEW_URL" --yes --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
+          npx --yes vercel@latest alias set "$PREVIEW_URL" "chunbong-fansite.vercel.app" --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
 
       - name: Verify production archive readability and data
         shell: bash
