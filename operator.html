@@ -121,6 +121,16 @@
         <article class="operator-health-card"><span>이미지 · 썸네일</span><strong id="archive-health-visual">-</strong><small id="archive-health-visual-meta">검사 대기 중</small></article>
         <article class="operator-health-card"><span>자동수집 검토</span><strong id="archive-health-candidates">-</strong><small id="archive-health-sync-meta">동기화 상태 확인 중</small></article>
       </div>
+      <article class="operator-card operator-image-audit-card" data-archive-image-audit-card>
+        <header>
+          <div><h2>이미지 상태 검사</h2><small>대표 이미지 · 갤러리 · 영상 썸네일을 실제로 불러와 깨짐·지연·대용량·대표 이미지 해상도를 확인합니다.</small></div>
+          <button type="button" data-archive-image-audit>검사 시작</button>
+        </header>
+        <div class="operator-image-audit-summary" data-archive-image-audit-state>
+          <strong>검사 대기</strong><span>자동으로 실행하지 않아 일반 사용자 트래픽과 운영자 페이지 성능에 영향을 주지 않습니다.</span>
+        </div>
+        <div class="operator-image-audit-results" data-archive-image-audit-results><p class="operator-empty">검사를 시작하면 확인이 필요한 이미지만 표시합니다.</p></div>
+      </article>
       <div class="operator-archive-layout">
         <aside class="operator-card operator-archive-list-card">
           <header><div><h2>콘텐츠 아카이브</h2><small>SOOP 최우선 · YouTube 자동 수집</small></div><div class="operator-archive-head-actions"><button type="button" data-archive-auto-sync>공식 자료 동기화</button><button type="button" data-archive-new>새 콘텐츠</button></div></header>
