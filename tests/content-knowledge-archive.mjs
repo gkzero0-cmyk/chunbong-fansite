@@ -19,4 +19,8 @@ assert.match(client,/data-knowledge-image-src/);
 const api=fs.readFileSync(new URL('../lib/chunbong-content-archive-api.js',import.meta.url),'utf8');
 assert.match(api,/function extractNamuStructured/);
 assert.match(api,/refreshReferenceGuides/);
+assert.match(api,/persistNotionGuideMedia/);
+assert.match(api,/CLOUDINARY_URL/);
+const archiveApi=require('../lib/chunbong-content-archive-api');
+assert.equal(archiveApi._internals.cloudinaryArchiveKey({sourceUrl:'https://example.com/image.png?sig=one'}),archiveApi._internals.cloudinaryArchiveKey({sourceUrl:'https://example.com/image.png?sig=two'}),'signed URL changes should not duplicate Notion assets');
 console.log('content knowledge archive checks passed');
