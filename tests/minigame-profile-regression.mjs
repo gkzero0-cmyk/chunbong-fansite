@@ -40,7 +40,7 @@ assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/,'desktop re
 assert.match(css,/\.minigame-profile-extra/,'unified profile extra stat styles missing');
 assert.match(css,/\.minigame-achievement-strip/,'achievement badge strip styles missing');
 assert.match(css,/@media\(max-width:640px\)/,'record profile must have a mobile layout');
-assert.match(sw,/chunbong-pwa-20260922-v31/,'PWA cache must include the latest minigame profile and alert assets');
+assert.match(sw,/chunbong-pwa-20260923-v32/,'PWA cache must include the latest minigame profile and alert assets');
 assert.ok(!sw.includes("'/minigame-profile.js'"),'minigame profile runtime should runtime-cache after first minigame visit');
 assert.ok(!sw.includes("'/minigame-profile.css'"),'minigame profile styles should runtime-cache after first minigame visit');
 

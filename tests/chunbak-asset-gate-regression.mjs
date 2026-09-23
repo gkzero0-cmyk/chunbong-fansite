@@ -12,6 +12,7 @@ assert.ok(js.includes('requestIdleCallback'), 'remaining stages should prefer id
 assert.ok(js.includes('if (!frameId && playing)'), 'render loop should stay suspended before active play');
 assert.ok(js.includes('if (playing) frameId = requestAnimationFrame(tick)'), 'render loop should continue only during active play');
 assert.ok(js.includes('ensureStageImage'), 'a merged stage must be able to request its image on demand');
+assert.match(js,/meta\.fallbackImage/,'Chunbak CDN delivery must retain a local image fallback');
 assert.ok(js.includes('restartButton.disabled = false'), 'restart must be enabled after the initial asset gate succeeds');
 assert.ok(js.includes('restartButton.disabled = true'), 'restart must remain disabled when the initial asset gate fails');
 

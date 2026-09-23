@@ -32,7 +32,7 @@ assert.match(workflow, /git rev-parse HEAD/, 'production sync workflow must comp
 assert.match(recoveryWorkflow, /vercel@latest build --prod/, 'recovery must build locally');
 assert.match(recoveryWorkflow, /deploy --prebuilt --prod/, 'recovery must upload prebuilt output');
 assert.match(recoveryWorkflow, /DEPLOY_COMMIT_SHA=\$GITHUB_SHA/, 'recovery must stamp the deployed commit');
-assert.match(serviceWorker, /home-overview\.css/);
-assert.match(serviceWorker, /home-overview\.js/);
+assert.doesNotMatch(serviceWorker, /'\/home-overview\.css'/, 'home overview CSS should runtime-cache after the home page requests it');
+assert.doesNotMatch(serviceWorker, /'\/home-overview\.js'/, 'home overview runtime should not block initial PWA install');
 
 console.log('site polish round 2 regression passed');

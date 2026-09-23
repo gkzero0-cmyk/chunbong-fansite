@@ -4,9 +4,27 @@
   const RADII = [0,22,27,33,40,48,57,67,78,90,103,118];
   const MERGE_SCORES = Object.freeze({2:20,3:40,4:80,5:140,6:220,7:340,8:520,9:760,10:1080,11:1500});
   const SPAWN_WEIGHTS = Object.freeze([0.35,0.27,0.18,0.12,0.08]);
+  const STAGE_IMAGES = Object.freeze([
+      "https://res.cloudinary.com/lyppgyei/image/upload/f_auto,q_auto:good,c_limit,w_512/v1790168611/chunbong-fansite/minigames/chunbak/stage-1.webp",
+      "https://res.cloudinary.com/lyppgyei/image/upload/f_auto,q_auto:good,c_limit,w_512/v1790168618/chunbong-fansite/minigames/chunbak/stage-2.webp",
+      "https://res.cloudinary.com/lyppgyei/image/upload/f_auto,q_auto:good,c_limit,w_512/v1790168623/chunbong-fansite/minigames/chunbak/stage-3.webp",
+      "https://res.cloudinary.com/lyppgyei/image/upload/f_auto,q_auto:good,c_limit,w_512/v1790168629/chunbong-fansite/minigames/chunbak/stage-4.webp",
+      "https://res.cloudinary.com/lyppgyei/image/upload/f_auto,q_auto:good,c_limit,w_512/v1790168635/chunbong-fansite/minigames/chunbak/stage-5.webp",
+      "https://res.cloudinary.com/lyppgyei/image/upload/f_auto,q_auto:good,c_limit,w_512/v1790168641/chunbong-fansite/minigames/chunbak/stage-6.webp",
+      "https://res.cloudinary.com/lyppgyei/image/upload/f_auto,q_auto:good,c_limit,w_512/v1790168647/chunbong-fansite/minigames/chunbak/stage-7.webp",
+      "https://res.cloudinary.com/lyppgyei/image/upload/f_auto,q_auto:good,c_limit,w_512/v1790168652/chunbong-fansite/minigames/chunbak/stage-8.webp",
+      "https://res.cloudinary.com/lyppgyei/image/upload/f_auto,q_auto:good,c_limit,w_512/v1790168660/chunbong-fansite/minigames/chunbak/stage-9.webp",
+      "https://res.cloudinary.com/lyppgyei/image/upload/f_auto,q_auto:good,c_limit,w_512/v1790168665/chunbong-fansite/minigames/chunbak/stage-10.webp",
+      "https://res.cloudinary.com/lyppgyei/image/upload/f_auto,q_auto:good,c_limit,w_512/v1790168671/chunbong-fansite/minigames/chunbak/stage-11.webp"
+  ]);
   const STAGES = Object.freeze(Array.from({length:MAX_STAGE}, (_, index) => {
     const id = index + 1;
-    return Object.freeze({ id, radius:RADII[id], image:`assets/chunbak/${id}.webp` });
+    return Object.freeze({
+      id,
+      radius:RADII[id],
+      image:STAGE_IMAGES[index],
+      fallbackImage:`assets/chunbak/${id}.webp`
+    });
   }));
 
   function pickSpawnStage(random = Math.random) {

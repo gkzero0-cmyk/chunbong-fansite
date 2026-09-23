@@ -1,5 +1,5 @@
 /* CHUNBONG_PWA v1 */
-const CACHE_NAME = 'chunbong-pwa-20260922-v31';
+const CACHE_NAME = 'chunbong-pwa-20260923-v32';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -14,23 +14,10 @@ const APP_SHELL = [
   '/mobile-site.js',
   '/page.js?v=2',
   '/site-shell.js',
-  '/chunbong-contents.html',
-  '/chunbong-contents.css',
-  '/chunbong-contents.js',
   '/site-meta.js',
   '/site-health.js',
   '/site-improvements.js',
-  '/activity-center.css',
-  '/activity-center.js',
   '/content.js',
-  '/personal-hub.css',
-  '/personal-hub.js',
-  '/daily-fortune.css',
-  '/daily-fortune.js',
-  '/home-overview.css',
-  '/home-overview.js',
-  '/home-refresh.css',
-  '/home-smart-status.js',
   '/manifest.webmanifest',
   '/assets/app-icon.svg',
   '/assets/app-icon-192.png',
