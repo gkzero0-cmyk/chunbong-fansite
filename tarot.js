@@ -692,8 +692,9 @@ if (typeof document !== 'undefined') {
     host.classList.remove('is-foil-rippling');
     void host.offsetWidth;
     host.classList.add('is-foil-rippling');
+    const silentDeckBack = host.matches?.('.tarot-card-back[data-tarot-foil]');
     const now = performance.now();
-    if (now - lastTarotHoverSoundAt > 1800) {
+    if (!silentDeckBack && now - lastTarotHoverSoundAt > 1800) {
       lastTarotHoverSoundAt = now;
       const controller = globalThis.__CHUNBONG_TAROT_SFX_CONTROLLER__;
       controller?.unlock?.();
