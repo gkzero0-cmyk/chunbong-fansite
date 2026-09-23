@@ -408,7 +408,7 @@ async function submitSoopImport(action){
   }catch(error){setMessage('SOOP 브라우저 수집 자료를 저장하지 못했습니다: '+error.message,'bad')}
   finally{buttons.forEach(button=>button.disabled=false)}
 }
-async function runOfficialSync(){
+export async function runOfficialSync(){
   const button=$('[data-archive-auto-sync]',root);if(button)button.disabled=true;
   const el=$('[data-archive-auto-state]',root);if(el)el.textContent='SOOP · YouTube 공식 자료를 동기화하고 있습니다…';
   try{
