@@ -23,7 +23,7 @@ assert.match(apiSource,/function notionGuideImageProxyUrl/,'stable Notion guide 
 assert.match(apiSource,/source_meta_namuwiki_browser_required/,'canonical NamuWiki browser-required state missing');
 assert.match(apiSource,/function normalizeNamuBrowserImportPayload/,'canonical NamuWiki browser import normalizer missing');
 assert.match(apiSource,/function applyNamuBrowserImportToItem/,'canonical NamuWiki browser import merger missing');
-assert.match(apiSource,/hostname!==['\"]i\\.namu\\.wiki['\"]/,'NamuWiki browser import must only accept the official image CDN');
+assert.match(apiSource,/hostname!==['\"]i\.namu\.wiki['\"]/,'NamuWiki browser import must only accept the official image CDN');
 assert.match(apiSource,/async function handleNotionGuideImage/,'Notion guide image proxy handler missing');
 assert.match(apiSource,/assetState:'proxy'/,'Notion images must fall back to stable proxy state when Cloudinary is unavailable');
 
