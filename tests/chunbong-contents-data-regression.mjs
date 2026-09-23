@@ -187,6 +187,9 @@ assert.ok((publicLeopel.sources||[]).some(row=>/namu\.wiki/i.test(row.url||'')),
 assert.equal(archiveApi._internals.shouldForcePublicAutoSync({githubOidc:true,migrationMarker:''}),true,'the first authenticated GitHub archive sync after this migration should run a full rescan');
 assert.equal(archiveApi._internals.shouldForcePublicAutoSync({githubOidc:true,migrationMarker:'done'}),false,'completed migration should return to incremental archive sync');
 assert.equal(archiveApi._internals.shouldForcePublicAutoSync({githubOidc:false,migrationMarker:''}),false,'same-site/browser sync must never trigger the expensive migration full scan');
+assert.equal(archiveApi._internals.explicitSameOrigin({headers:{host:'chunbong-fansite.vercel.app',origin:'https://chunbong-fansite.vercel.app'}}),true,'browser auto-sync must require an explicit same-origin Origin header');
+assert.equal(archiveApi._internals.explicitSameOrigin({headers:{host:'chunbong-fansite.vercel.app'}}),false,'Origin-less GitHub curl requests must not be mistaken for same-site browser requests');
+assert.equal(archiveApi._internals.explicitSameOrigin({headers:{host:'chunbong-fansite.vercel.app',origin:'https://example.com'}}),false,'cross-origin requests must not pass the archive sync same-site check');
 assert.match(archiveApi._internals.AUTO_FULL_MIGRATION_KEY,/moneygame-participant-count/,'moneygame participant-count migration should have an explicit versioned key');
 const moneygameSnapshot={id:'justserver-moneygame',participantCount:243,participantGroups:[{id:'entry',stage:'1차 입주',title:'입장 순서 1',count:50}]};
 assert.equal(archiveApi._internals.applyBngtsParticipantSnapshot(moneygameSnapshot,{id:'source-money-bngts-streamers'},{participantCount:659,participants:['춘봉','참가자A']}),true,'머니게임 방통실 스냅샷은 참가자 수를 갱신해야 합니다');
