@@ -103,5 +103,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 window.addEventListener('pagehide',()=>{reportWebVitals();void flush({beacon:true})});
 setInterval(()=>{if(document.visibilityState==='visible'){activeTick();void flush()}},15000);
 setTimeout(flush,1200);
-window.ChunbongAnalytics={track:(type,target='')=>add({type,target})};
+const pending=Array.isArray(window.__ChunbongAnalyticsQueue)?window.__ChunbongAnalyticsQueue.splice(0):[];
+for(const event of pending){if(event&&typeof event==='object'&&event.type)add(event)}
+window.ChunbongAnalytics={track:(type,target='',extra={})=>add({type,target,...(extra&&typeof extra==='object'?extra:{})})};
 })();
