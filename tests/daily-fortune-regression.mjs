@@ -8,8 +8,8 @@ const css = read('daily-fortune.css');
 const sw = read('service-worker.js');
 
 assert.doesNotThrow(() => new Function(js), 'daily fortune runtime must remain valid JavaScript');
-assert.match(home, /href="daily-fortune\\.css\\?v=6"/, 'home daily fortune CSS missing');
-assert.match(home, /src="daily-fortune\\.js\\?v=6"/, 'home daily fortune runtime missing');
+assert.match(home, /href="daily-fortune\.css\?v=6"/, 'home daily fortune CSS missing');
+assert.match(home, /src="daily-fortune\.js\?v=6"/, 'home daily fortune runtime missing');
 assert.match(js, /timeZone: SEOUL_TZ/, 'daily fortune must use the Seoul timezone');
 assert.match(js, /const STORAGE_KEY = 'chunbong-daily-fortune-v1'/, 'daily fortune storage key missing');
 assert.match(js, /parsed\?\.date !== today/, 'stored result must expire on the next KST date');
