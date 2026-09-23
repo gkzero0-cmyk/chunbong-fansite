@@ -411,13 +411,13 @@
         drawing = false;
         setCardInteractionLocked(false);
         dialog.classList.remove('has-result','is-bursting','is-spinning','is-revealing');
-        stage.classList.remove('is-spinning','is-interactive');
+        stage.classList.remove('is-spinning','is-decelerating','is-interactive');
         cardButton.classList.remove('is-revealed');
         result.hidden = true;
         cardButton.setAttribute('aria-label','오늘의 타로 카드 한 장 뽑기');
         return;
       }
-      stage.classList.remove('is-spinning');
+      stage.classList.remove('is-spinning','is-decelerating');
       dialog.classList.remove('is-spinning');
       dialog.classList.add('has-result');
       cardButton.classList.add('is-revealed');
@@ -436,7 +436,7 @@
 
       if (!targetState) {
         dialog.classList.remove('has-result','is-bursting','is-spinning','is-revealing');
-        stage.classList.remove('is-spinning','is-interactive');
+        stage.classList.remove('is-spinning','is-decelerating','is-interactive');
         cardButton.classList.remove('is-revealed');
         result.hidden = true;
         setCardInteractionLocked(false);
@@ -450,7 +450,7 @@
       if (!animate || reducedMotion()) {
         if (pendingState) commitPendingState();
         dialog.classList.remove('is-spinning','is-revealing');
-        stage.classList.remove('is-spinning');
+        stage.classList.remove('is-spinning','is-decelerating');
         cardButton.classList.add('is-revealed');
         result.hidden = false;
         dialog.classList.add('has-result');
@@ -465,7 +465,7 @@
       result.hidden = true;
       dialog.classList.remove('has-result','is-bursting','is-revealing');
       cardButton.classList.remove('is-revealed');
-      stage.classList.remove('is-interactive');
+      stage.classList.remove('is-interactive','is-decelerating');
       stage.classList.add('is-spinning');
       dialog.classList.add('is-spinning');
       playSpinSound(audioCtx);
@@ -473,6 +473,7 @@
 
       setTimeout(() => {
         if (run !== animationRun) return;
+        stage.classList.add('is-decelerating');
         playStopSound(audioCtx);
         spawnBurst('stop');
         dialog.classList.add('is-revealing');
@@ -481,7 +482,7 @@
       setTimeout(() => {
         if (run !== animationRun) return;
         commitPendingState();
-        stage.classList.remove('is-spinning');
+        stage.classList.remove('is-spinning','is-decelerating');
         dialog.classList.remove('is-spinning');
         dialog.classList.add('is-bursting','is-revealing');
         requestAnimationFrame(() => cardButton.classList.add('is-revealed'));
@@ -527,12 +528,12 @@
       showLauncher();
     };
 
-    cardButton.addEventListener('click', () => {
-      if (drawing) return;
-      if (state) {
-        renderState(false);
-        return;
-      }
+    const startDraw = () => {
+      if (drawing || state) return false;
+      // Repair stale native button state immediately before the interaction.
+      // Pointer activation below calls this before a browser-generated click, so
+      // even an old disabled DOM state cannot swallow the draw action.
+      cardButton.disabled = false;
       drawing = true;
       const card = randomInt(CARDS.length);
       pendingState = { date: kstDate(), card, drawnAt: new Date().toISOString() };
@@ -541,13 +542,33 @@
         renderState(true, audioCtx);
         clearDrawFailsafe();
         drawFailsafeTimer = setTimeout(forceCompleteDraw, RESULT_MS + 1200);
+        return true;
       } catch (_) {
         pendingState = null;
         drawing = false;
         setCardInteractionLocked(false);
         try { audioCtx?.close?.(); } catch (_) {}
         renderState(false);
+        return false;
       }
+    };
+
+    cardButton.addEventListener('click', event => {
+      // Keyboard / assistive-technology activation fallback.
+      // Pointer activation is handled on the stage at pointerup so it does not
+      // depend on native button click delivery.
+      if (event.detail === 0) startDraw();
+    });
+
+    stage.addEventListener('pointerdown', () => {
+      // The stage still receives pointer input in the stale-state case observed
+      // in production, so clear any persisted native disabled flag before release.
+      cardButton.disabled = false;
+    });
+
+    stage.addEventListener('pointerup', event => {
+      if (event.button != null && event.button !== 0) return;
+      startDraw();
     });
 
     const pointerPosition = event => {
@@ -560,12 +581,14 @@
     };
 
     stage.addEventListener('pointerenter', event => {
-      if (drawing || reducedMotion() || event.pointerType === 'touch') return;
+      cardButton.disabled = false;
+      if (drawing || event.pointerType === 'touch') return;
       const point = pointerPosition(event);
       if (!point) return;
       stage.style.setProperty('--glow-x', (point.px * 100).toFixed(1) + '%');
       stage.style.setProperty('--glow-y', (point.py * 100).toFixed(1) + '%');
       stage.classList.add('is-prism-active');
+      if (reducedMotion()) return;
       const now = performance.now();
       if (now - lastHoverSoundAt >= 5000) {
         lastHoverSoundAt = now;
@@ -574,18 +597,19 @@
     });
 
     stage.addEventListener('pointermove', event => {
-      if (drawing || reducedMotion() || event.pointerType === 'touch') return;
+      if (drawing || event.pointerType === 'touch') return;
       const point = pointerPosition(event);
       if (!point) return;
       const { px, py } = point;
+      stage.style.setProperty('--glow-x', (px * 100).toFixed(1) + '%');
+      stage.style.setProperty('--glow-y', (py * 100).toFixed(1) + '%');
+      stage.classList.add('is-prism-active');
+      if (reducedMotion()) return;
       const revealed = cardButton.classList.contains('is-revealed');
       const tiltX = revealed ? 8 : 6.5;
       const tiltY = revealed ? 10 : 8.5;
       stage.style.setProperty('--tilt-x', ((0.5 - py) * tiltX).toFixed(2) + 'deg');
       stage.style.setProperty('--tilt-y', ((px - 0.5) * tiltY).toFixed(2) + 'deg');
-      stage.style.setProperty('--glow-x', (px * 100).toFixed(1) + '%');
-      stage.style.setProperty('--glow-y', (py * 100).toFixed(1) + '%');
-      stage.classList.add('is-prism-active');
     });
     stage.addEventListener('pointerleave', resetPrism);
 
@@ -646,7 +670,7 @@
     }
   }
 
-  window.CHUNBONG_DAILY_FORTUNE = { STORAGE_KEY, kstDate, artworkUrl, readState, writeState, cards: CARDS.map(row => row[0]), nativeDisableSafe: true };
+  window.CHUNBONG_DAILY_FORTUNE = { STORAGE_KEY, kstDate, artworkUrl, readState, writeState, cards: CARDS.map(row => row[0]), nativeDisableSafe: true, pointerActivationSafe: true };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();

@@ -85,20 +85,31 @@ jobs:
           assert.equal(boundary.before, '2026-09-19', 'KST date must remain the same before midnight');
           assert.equal(boundary.after, '2026-09-20', 'KST date must roll over exactly at midnight');
 
-          // Simulate the stale native-disabled state left by the previous implementation.
+          // Reproduce the production symptom exactly: modal is open, hover works,
+          // but an old native disabled flag would otherwise swallow the card click.
           await page.locator('[data-daily-fortune-card]').evaluate(el => {
             el.disabled = true;
             el.setAttribute('aria-disabled','true');
           });
-          await page.locator('[data-daily-fortune-close]').click();
-          await page.waitForFunction(() => document.querySelector('#daily-fortune-dialog')?.open === false);
-          await page.locator('[data-daily-fortune-launcher]').click();
-          await page.waitForFunction(() => document.querySelector('#daily-fortune-dialog')?.open === true);
-          assert.equal(await page.locator('[data-daily-fortune-card]').evaluate(el => el.disabled), false, 'reopening must repair a stale native-disabled card');
-          assert.equal(await page.locator('[data-daily-fortune-card]').getAttribute('aria-disabled'), 'false', 'fresh draw must restore the logical lock to false');
+          const initialStageBox = await page.locator('[data-daily-fortune-stage]').boundingBox();
+          assert.ok(initialStageBox, 'initial fortune stage bounding box missing');
+          await page.mouse.move(initialStageBox.x + initialStageBox.width * 0.5, initialStageBox.y + initialStageBox.height * 0.5);
+          await page.waitForFunction(() => document.querySelector('[data-daily-fortune-card]')?.disabled === false);
+          assert.equal(await page.locator('[data-daily-fortune-card]').evaluate(el => el.disabled), false, 'hovering the stage must immediately repair a stale native-disabled card');
 
-          await page.locator('[data-daily-fortune-card]').click();
+          // Click the visual stage rather than relying on native button click delivery.
+          await page.mouse.click(initialStageBox.x + initialStageBox.width * 0.5, initialStageBox.y + initialStageBox.height * 0.5);
           await page.waitForFunction(() => document.querySelector('[data-daily-fortune-stage]')?.classList.contains('is-spinning'));
+          const spinStyle = await page.locator('.daily-fortune-card-inner').evaluate(el => ({
+            name:getComputedStyle(el).animationName,
+            duration:getComputedStyle(el).animationDuration,
+            iterations:getComputedStyle(el).animationIterationCount,
+            opacity:Number(getComputedStyle(el).opacity)
+          }));
+          assert.equal(spinStyle.name,'dailyFortuneHyperSpin','fast phase must use the dedicated hyper-spin animation');
+          assert.equal(spinStyle.duration,'0.05s','fast phase must run one turn every 50ms');
+          assert.equal(spinStyle.iterations,'infinite','fast phase must repeat continuously until deceleration');
+          assert.ok(spinStyle.opacity<=0.1,'fast phase must make the card nearly disappear');
           const storageKey = await page.evaluate(() => window.CHUNBONG_DAILY_FORTUNE.STORAGE_KEY);
           assert.equal(await page.evaluate(key => localStorage.getItem(key), storageKey), null, 'daily result must not be persisted before the reveal succeeds');
           await page.waitForTimeout(1900);
@@ -107,6 +118,13 @@ jobs:
           assert.equal(await page.locator('[data-daily-fortune-card]').evaluate(el => el.disabled), false, 'draw must remain natively clickable so interrupted states can recover');
           assert.equal(await page.locator('[data-daily-fortune-card]').getAttribute('aria-disabled'), 'true', 'draw must use a logical lock while the card is spinning');
           assert.equal(await page.evaluate(key => localStorage.getItem(key), storageKey), null, 'a mid-spin interruption must not consume today\'s draw');
+          await page.waitForFunction(() => document.querySelector('[data-daily-fortune-stage]')?.classList.contains('is-decelerating'), null, { timeout: 1800 });
+          const decelStyle = await page.locator('.daily-fortune-card-inner').evaluate(el => ({
+            name:getComputedStyle(el).animationName,
+            duration:getComputedStyle(el).animationDuration
+          }));
+          assert.equal(decelStyle.name,'dailyFortuneHyperDecelerate','last 400ms must switch to the visible deceleration animation');
+          assert.equal(decelStyle.duration,'0.4s','deceleration must last four tenths of a second');
           await page.waitForFunction(() => {
             const key = window.CHUNBONG_DAILY_FORTUNE?.STORAGE_KEY;
             const raw = key ? localStorage.getItem(key) : '';
@@ -149,7 +167,7 @@ jobs:
             blend:getComputedStyle(el).mixBlendMode,
             background:getComputedStyle(el).backgroundImage
           }));
-          assert.ok(holo.opacity>=0.82&&holo.opacity<=0.90,'crystal material should be clearly visible without becoming a white wash');
+          assert.ok(holo.opacity>=0.95&&holo.opacity<=1,'crystal material should be unmistakably visible without becoming opaque artwork');
           assert.equal(holo.blend,'screen','crystal material must stay luminous over the artwork');
           assert.match(holo.background,/conic-gradient|radial-gradient/,'pointer hover must render a crystal-prism material');
           await page.mouse.move(20,20);
