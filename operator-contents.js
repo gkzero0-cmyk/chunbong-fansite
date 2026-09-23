@@ -367,11 +367,15 @@ function namuPendingSources(){
       const url=String(source?.url||'');
       if(!/^https:\/\/(?:www\.)?namu\.wiki\/w\//i.test(url))continue;
       const linked=sections.filter(row=>String(row?.sourceId||'')===String(source?.id||''));
-      const imageSources=new Set(linked.flatMap(row=>[
-        ...(row.images||[]).map(image=>image?.src),
-        ...(row.content||[]).filter(block=>block?.type==='image').map(block=>block?.image?.src)
-      ]).filter(Boolean));
-      if(imageSources.size)continue;
+      const images=linked.flatMap(row=>[
+        ...(row.images||[]),
+        ...(row.content||[]).filter(block=>block?.type==='image').map(block=>block?.image).filter(Boolean)
+      ]);
+      const collected=images.some(image=>{
+        const src=String(image?.src||''),assetId=String(image?.assetId||'');
+        return /^https:\/\/i\.namu\.wiki\//i.test(src)||(/res\.cloudinary\.com/i.test(src)&&!/^curated:/i.test(assetId));
+      });
+      if(collected)continue;
       pending.push({itemId:item.id,itemTitle:item.title||item.id,sourceId:source.id||'',label:source.label||'나무위키',url});
     }
   }
