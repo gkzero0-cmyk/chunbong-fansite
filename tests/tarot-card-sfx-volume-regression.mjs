@@ -110,10 +110,10 @@ revealSound.setEnabled(true);
 revealSound.setVolume(1);
 revealSound.play('reveal');
 const revealContext = contexts.at(-1);
-assert.ok(Math.max(...revealContext.gainStarts) >= 0.18, '100% reveal SFX should have a strong card-spread peak');
-assert.ok(revealContext.bufferSourceCount >= 8, 'reveal SFX should layer a long spread with individual card passes');
+assert.ok(Math.max(...revealContext.gainStarts) >= 0.05, '100% reveal SFX should retain a soft physical card breath under the glass reveal');
+assert.ok(revealContext.bufferSourceCount >= 5, 'reveal SFX should keep only a restrained layer of card passes beneath the crystal cue');
 
-for (const token of ['cardShuffle', 'cardSlap', 'cardSpread']) {
+for (const token of ['cardShuffle', 'cardSlap', 'cardSpread', 'glassCluster']) {
   assert.ok(js.includes(token), `enhanced Tarot SFX should include ${token}`);
 }
 assert.ok(js.includes("classList.add('is-revealing')"), 'result reveal should enable the enhanced reveal state');
