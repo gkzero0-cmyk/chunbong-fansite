@@ -31,8 +31,8 @@ assert.match(api,/CLOUDINARY_URL/);
 const archiveApi=require('../lib/chunbong-content-archive-api');
 assert.equal(archiveApi._internals.cloudinaryArchiveKey({sourceUrl:'https://example.com/image.png?sig=one'}),archiveApi._internals.cloudinaryArchiveKey({sourceUrl:'https://example.com/image.png?sig=two'}),'signed URL changes should not duplicate Notion assets');
 assert.notEqual(
-  archiveApi._internals.cloudinaryArchiveKey({originUrl:'https://file.namu.moe/file/one',sourceUrl:'https://namu.wiki/w/test'}),
-  archiveApi._internals.cloudinaryArchiveKey({originUrl:'https://file.namu.moe/file/two',sourceUrl:'https://namu.wiki/w/test'}),
+  archiveApi._internals.cloudinaryArchiveKey({originUrl:'https://i.namu.wiki/i/official-one.webp',sourceUrl:'https://namu.wiki/w/test'}),
+  archiveApi._internals.cloudinaryArchiveKey({originUrl:'https://i.namu.wiki/i/official-two.webp',sourceUrl:'https://namu.wiki/w/test'}),
   'reference images from one NamuWiki page must receive distinct permanent asset keys'
 );
 const namu=archiveApi._internals.extractNamuStructured('<h2>주요 지역</h2><p>레오펠 광장</p><img src="/images/plaza.webp" alt="레오펠 광장">','https://namu.wiki/w/%EB%A0%88%EC%98%A4%ED%8E%A0');
@@ -41,9 +41,7 @@ assert.match(namu.sections[0].text,/레오펠 광장/);
 assert.equal(namu.sections[0].images[0].alt,'레오펠 광장');
 const namuSource='https://namu.wiki/w/%EB%A0%88%EC%98%A4%ED%8E%A0?from=LEOPEL';
 const namuTransport=archiveApi._internals.namuReadTransportUrl(namuSource);
-assert.equal(namuTransport?.hostname,'d.namu.moe','NamuWiki 403 fallback may use the read transport internally');
-assert.equal(namuTransport?.pathname,'/w/%EB%A0%88%EC%98%A4%ED%8E%A0','fallback transport must preserve the original NamuWiki document path');
-assert.equal(namuTransport?.search,'?from=LEOPEL','fallback transport must preserve query parameters');
+assert.equal(namuTransport,null,'NamuWiki mirror transport must remain disabled; blocked pages require direct browser collection');
 const namuFallbackMeta=archiveApi._internals.fetchNamuMeta(new URL(namuSource),'<title>레오펠</title><h2>주요 지역</h2><p>광장 안내</p>');
 assert.equal(namuFallbackMeta.url,namuSource,'fallback-parsed metadata must keep the public source URL on namu.wiki');
 assert.ok(!/namu\.moe/i.test(namuFallbackMeta.url),'read transport must never leak into the public source URL');
