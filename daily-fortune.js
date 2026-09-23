@@ -269,7 +269,9 @@
     const DECEL_START_MS = 2600;
     const RESULT_MS = 3650;
     let state = readState();
+    let pendingState = null;
     let drawing = false;
+    let drawFailsafeTimer = 0;
     let autoOpenTimer = 0;
     let animationRun = 0;
     let hoverAudioCtx = null;
@@ -356,29 +358,75 @@
       }, kind === 'stop' ? 850 : 1450);
     };
 
-    const fillResult = () => {
-      if (!state) return;
-      const [name, keywords, caution, message] = CARDS[state.card];
+    const activeDrawState = () => pendingState || state;
+
+    const fillResult = (targetState = activeDrawState()) => {
+      if (!targetState) return false;
+      const row = CARDS[targetState.card];
+      if (!row) return false;
+      const [name, keywords, caution, message] = row;
       const image = document.querySelector('[data-daily-fortune-image]');
-      image.src = artworkUrl(state.card);
-      image.alt = `메이저 아르카나 ${state.card}번 ${name}`;
-      document.querySelector('[data-daily-fortune-mark]').textContent = ROMAN[state.card];
-      document.querySelector('[data-daily-fortune-en]').textContent = EN[state.card];
-      document.querySelector('[data-daily-fortune-name]').textContent = name;
-      document.querySelector('[data-daily-fortune-result-title]').textContent = `${name} · 오늘의 운세`;
-      document.querySelector('[data-daily-fortune-keywords]').textContent = keywords;
-      document.querySelector('[data-daily-fortune-message]').textContent = message;
-      document.querySelector('[data-daily-fortune-caution]').textContent = caution;
-      cardButton.disabled = true;
+      if (image) {
+        image.src = artworkUrl(targetState.card);
+        image.alt = `메이저 아르카나 ${targetState.card}번 ${name}`;
+      }
+      document.querySelector('[data-daily-fortune-mark]')?.replaceChildren(document.createTextNode(ROMAN[targetState.card] || ''));
+      document.querySelector('[data-daily-fortune-en]')?.replaceChildren(document.createTextNode(EN[targetState.card] || ''));
+      document.querySelector('[data-daily-fortune-name]')?.replaceChildren(document.createTextNode(name || ''));
+      document.querySelector('[data-daily-fortune-result-title]')?.replaceChildren(document.createTextNode(`${name} · 오늘의 운세`));
+      document.querySelector('[data-daily-fortune-keywords]')?.replaceChildren(document.createTextNode(keywords || ''));
+      document.querySelector('[data-daily-fortune-message]')?.replaceChildren(document.createTextNode(message || ''));
+      document.querySelector('[data-daily-fortune-caution]')?.replaceChildren(document.createTextNode(caution || ''));
       cardButton.setAttribute('aria-label', `오늘의 카드 ${name}`);
+      return true;
+    };
+
+    const commitPendingState = () => {
+      if (!pendingState) return state;
+      state = writeState(pendingState.card);
+      pendingState = null;
+      return state;
+    };
+
+    const clearDrawFailsafe = () => {
+      if (!drawFailsafeTimer) return;
+      clearTimeout(drawFailsafeTimer);
+      drawFailsafeTimer = 0;
+    };
+
+    const forceCompleteDraw = () => {
+      if (!drawing) return;
+      animationRun += 1;
+      commitPendingState();
+      if (!state || !fillResult(state)) {
+        pendingState = null;
+        drawing = false;
+        cardButton.disabled = false;
+        dialog.classList.remove('has-result','is-bursting','is-spinning','is-revealing');
+        stage.classList.remove('is-spinning','is-interactive');
+        cardButton.classList.remove('is-revealed');
+        result.hidden = true;
+        cardButton.setAttribute('aria-label','오늘의 타로 카드 한 장 뽑기');
+        return;
+      }
+      stage.classList.remove('is-spinning');
+      dialog.classList.remove('is-spinning');
+      dialog.classList.add('has-result');
+      cardButton.classList.add('is-revealed');
+      cardButton.disabled = true;
+      result.hidden = false;
+      stage.classList.add('is-interactive');
+      drawing = false;
+      clearDrawFailsafe();
     };
 
     const renderState = (animate = false, audioCtx = null) => {
       animationRun += 1;
       const run = animationRun;
       resetPrism();
+      const targetState = activeDrawState();
 
-      if (!state) {
+      if (!targetState) {
         dialog.classList.remove('has-result','is-bursting','is-spinning','is-revealing');
         stage.classList.remove('is-spinning','is-interactive');
         cardButton.classList.remove('is-revealed');
@@ -388,9 +436,11 @@
         return;
       }
 
-      fillResult();
+      if (!fillResult(targetState)) throw new Error('daily_fortune_result_render_failed');
+      cardButton.disabled = true;
 
       if (!animate || reducedMotion()) {
+        if (pendingState) commitPendingState();
         dialog.classList.remove('is-spinning','is-revealing');
         stage.classList.remove('is-spinning');
         cardButton.classList.add('is-revealed');
@@ -399,6 +449,7 @@
         stage.classList.add('is-interactive');
         if (animate && audioCtx) playRevealSound(audioCtx);
         if (animate) drawing = false;
+        clearDrawFailsafe();
         if (audioCtx) setTimeout(() => { try { audioCtx.close?.(); } catch (_) {} }, 1200);
         return;
       }
@@ -421,6 +472,7 @@
 
       setTimeout(() => {
         if (run !== animationRun) return;
+        commitPendingState();
         stage.classList.remove('is-spinning');
         dialog.classList.remove('is-spinning');
         dialog.classList.add('is-bursting','is-revealing');
@@ -432,10 +484,12 @@
 
       setTimeout(() => {
         if (run !== animationRun) return;
+        if (pendingState) commitPendingState();
         result.hidden = false;
         dialog.classList.add('has-result');
         stage.classList.add('is-interactive');
         drawing = false;
+        clearDrawFailsafe();
       }, RESULT_MS);
 
       setTimeout(() => {
@@ -457,12 +511,26 @@
     };
 
     cardButton.addEventListener('click', () => {
-      if (state || drawing) return;
+      if (drawing) return;
+      if (state) {
+        renderState(false);
+        return;
+      }
       drawing = true;
       const card = randomInt(CARDS.length);
-      state = writeState(card);
+      pendingState = { date: kstDate(), card, drawnAt: new Date().toISOString() };
       const audioCtx = createFortuneAudio();
-      renderState(true, audioCtx);
+      try {
+        renderState(true, audioCtx);
+        clearDrawFailsafe();
+        drawFailsafeTimer = setTimeout(forceCompleteDraw, RESULT_MS + 1200);
+      } catch (_) {
+        pendingState = null;
+        drawing = false;
+        cardButton.disabled = false;
+        try { audioCtx?.close?.(); } catch (_) {}
+        renderState(false);
+      }
     });
 
     const pointerPosition = event => {

@@ -87,10 +87,13 @@ jobs:
 
           await page.locator('[data-daily-fortune-card]').click();
           await page.waitForFunction(() => document.querySelector('[data-daily-fortune-stage]')?.classList.contains('is-spinning'));
+          const storageKey = await page.evaluate(() => window.CHUNBONG_DAILY_FORTUNE.STORAGE_KEY);
+          assert.equal(await page.evaluate(key => localStorage.getItem(key), storageKey), null, 'daily result must not be persisted before the reveal succeeds');
           await page.waitForTimeout(1900);
-          assert.equal(await page.locator('[data-daily-fortune-stage]').evaluate(el=>el.classList.contains('is-spinning')),true,'extended spin should still be visibly decelerating near two seconds');
+          assert.equal(await page.locator('[data-daily-fortune-stage]').evaluate(el=>el.classList.contains('is-spinning')),true,'extended spin should still be visibly spinning near two seconds');
           assert.equal(await page.locator('[data-daily-fortune-result]').isHidden(), true, 'result must remain hidden during the high-speed back spin');
           assert.equal(await page.locator('[data-daily-fortune-card]').isDisabled(), true, 'draw must lock immediately while the card is spinning');
+          assert.equal(await page.evaluate(key => localStorage.getItem(key), storageKey), null, 'a mid-spin interruption must not consume today\'s draw');
           await page.waitForFunction(() => {
             const key = window.CHUNBONG_DAILY_FORTUNE?.STORAGE_KEY;
             const raw = key ? localStorage.getItem(key) : '';
