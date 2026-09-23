@@ -248,30 +248,5 @@
     if (document.visibilityState === 'visible') void checkChangelogUnread();
   });
 })();
-(() => {
-  const header = document.querySelector('.site-header');
-  if (!header) return;
-  header.querySelectorAll('.header-live[href*="sooplive.com"]').forEach(node => node.remove());
-
-  const loadActivityCenter = () => {
-    if (!document.querySelector('link[data-activity-center-styles]')) {
-      const stylesheet = document.createElement('link');
-      stylesheet.rel = 'stylesheet';
-      stylesheet.href = 'activity-center.css';
-      stylesheet.dataset.activityCenterStyles = 'true';
-      document.head.appendChild(stylesheet);
-    }
-
-    if (!document.querySelector('script[data-activity-center-runtime]')) {
-      const script = document.createElement('script');
-      script.src = 'activity-center.js';
-      script.defer = true;
-      script.dataset.activityCenterRuntime = 'true';
-      document.body.appendChild(script);
-    }
-  };
-
-  if ('requestIdleCallback' in window) requestIdleCallback(loadActivityCenter,{timeout:1800});
-  else setTimeout(loadActivityCenter,650);
-})();
+(()=>{const h=document.querySelector('.site-header');if(!h)return;h.querySelectorAll('.header-live[href*="sooplive.com"]').forEach(n=>n.remove());const load=()=>{if(!document.querySelector('link[data-activity-center-styles]')){const n=document.createElement('link');n.rel='stylesheet';n.href='activity-center.css';n.dataset.activityCenterStyles='true';document.head.appendChild(n)}if(!document.querySelector('script[data-activity-center-runtime]')){const n=document.createElement('script');n.src='activity-center.js';n.defer=true;n.dataset.activityCenterRuntime='true';document.body.appendChild(n)}};'requestIdleCallback'in window?requestIdleCallback(load,{timeout:1800}):setTimeout(load,650)})();;
 
