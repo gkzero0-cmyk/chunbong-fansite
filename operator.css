@@ -377,3 +377,23 @@ body[data-page="operator"]{background:radial-gradient(circle at 80% 0,color-mix(
 .operator-image-audit-ok>span{display:grid;place-items:center;width:26px;height:26px;border-radius:9px;background:color-mix(in srgb,var(--op-good) 13%,transparent);color:var(--op-good);font-weight:950}
 .operator-image-audit-ok strong{display:block;font-size:11px}.operator-image-audit-ok small{display:block;margin-top:2px;color:var(--op-muted);font-size:9px}
 @media(max-width:760px){.operator-image-audit-card>header{display:grid}.operator-image-audit-card>header button{width:100%}.operator-image-audit-summary{display:grid;gap:4px}.operator-image-audit-row{grid-template-columns:44px minmax(0,1fr)}.operator-image-audit-thumb{width:44px;height:34px}.operator-image-audit-row>b{grid-column:2}}
+
+
+/* Operator Center 1.8 — recent changes + changelog health */
+.operator-commit-history{display:grid;gap:7px;margin-top:14px}
+.operator-commit-row{display:grid;grid-template-columns:58px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 11px;border:1px solid color-mix(in srgb,var(--op-border) 72%,transparent);border-radius:11px;background:var(--op-card-2);color:var(--op-text);text-decoration:none}
+.operator-commit-row:hover{border-color:color-mix(in srgb,var(--op-accent) 46%,var(--op-border));background:color-mix(in srgb,var(--op-accent) 5%,var(--op-card-2))}
+.operator-commit-sha{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:9px;color:#ffad7a}
+.operator-commit-row>div{min-width:0;display:grid;gap:3px}.operator-commit-row strong{font-size:11px;line-height:1.45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.operator-commit-row small{color:var(--op-meta);font-size:9px;line-height:1.4}.operator-commit-row>i{font-style:normal;color:var(--op-meta);font-size:11px}
+.operator-commit-row>b{padding:4px 7px;border-radius:999px;background:color-mix(in srgb,var(--op-good) 12%,transparent);color:var(--op-good);font-size:8px;white-space:nowrap}
+.operator-commit-row.is-production{border-color:color-mix(in srgb,var(--op-good) 34%,var(--op-border))}
+.operator-changelog-health{display:grid;gap:4px;margin-top:14px;padding:12px;border:1px solid var(--op-border);border-radius:11px;background:var(--op-card-2)}
+.operator-changelog-health strong{font-size:11px}.operator-changelog-health span{color:var(--op-muted);font-size:10px;line-height:1.55}
+.operator-changelog-health.is-ok{border-color:color-mix(in srgb,var(--op-good) 36%,var(--op-border))}.operator-changelog-health.is-ok strong{color:var(--op-good)}
+.operator-changelog-health.is-bad{border-color:color-mix(in srgb,var(--op-bad) 40%,var(--op-border))}.operator-changelog-health.is-bad strong{color:var(--op-bad)}
+.operator-changelog-meta{margin-top:8px}
+@media(max-width:760px){
+  .operator-commit-row{grid-template-columns:52px minmax(0,1fr)}
+  .operator-commit-row>b,.operator-commit-row>i{grid-column:2;justify-self:start}
+  .operator-commit-row strong{white-space:normal}
+}
