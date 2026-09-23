@@ -5,6 +5,8 @@ import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
 const {normalizeArchiveItem,validateArchiveItem,formatArchiveDate,toPublicArchiveItem}=require('../lib/chunbong-content-archive-core.js');
 const autoIngest=require('../lib/chunbong-content-auto-ingest.js');
+const archiveMedia=require('../lib/content-archive-media.js');
+assert.deepEqual(archiveMedia.cloudinaryConfig({CLOUDINARY_URL:'cloudinary://key:secret@demo'}),{cloudName:'demo',apiKey:'key',apiSecret:'secret'},'Cloudinary URL 설정을 자동 이미지 영구화 파이프라인에서 읽어야 합니다');
 
 const monthOnly=normalizeArchiveItem({
   id:'sample',title:'샘플',category:'minecraft',role:'주최',status:'ended',
@@ -89,6 +91,32 @@ const leopelNemopix=(leopel?.sources||[]).find(row=>row.id==='source-nemopix-leo
 assert.ok(leopelNemopix&&/nemopix\.xyz\/content\/leopel/i.test(leopelNemopix.url||''),'Nemopix 레오펠 지통실을 내부 교차확인 자료로 유지해야 합니다');
 assert.equal(leopelNemopix.visibility,'internal','Nemopix는 교차확인에는 사용하지만 공개 출처로 표시하면 안 됩니다');
 assert.ok((leopel?.sources||[]).some(row=>row.id==='source-reference'&&/namu\.wiki\/w\//i.test(row.url||'')),'레오펠 공개 참고 출처는 나무위키를 유지해야 합니다');
+const leopelPublic=toPublicArchiveItem(leopel);
+assert.ok(!(leopelPublic.sources||[]).some(row=>/nemopix\.xyz|namu\.moe|bngts\.com/i.test(row.url||'')),'내부 검증·미러 URL은 공개 아카이브 출처에서 제거되어야 합니다');
+assert.ok((leopel?.gallery||[]).filter(row=>/^https:\/\/res\.cloudinary\.com\//i.test(row.src||'')).length>=5,'레오펠 대표·SOOP 자료 이미지는 Cloudinary 영구 자산을 사용해야 합니다');
+assert.ok((leopel?.media||[]).every(row=>!row.thumbnail||/^https:\/\/res\.cloudinary\.com\//i.test(row.thumbnail)),'레오펠 미디어 썸네일은 외부 SOOP 핫링크를 사용하지 않아야 합니다');
+
+const orderedGuide=normalizeArchiveItem({
+  ...monthOnly,id:'ordered-guide-test',
+  notionSections:[{
+    id:'n1',sourceId:'s1',pageTitle:'Guide',title:'본문',provider:'notion',
+    images:[{src:'https://example.com/a.png',filename:'guide_image_01.png',originId:'block-image-1',sourceUrl:'https://example.notion.site/guide'}],
+    content:[
+      {type:'text',text:'첫 설명'},
+      {type:'image',image:{src:'https://example.com/a.png',filename:'guide_image_01.png',originId:'block-image-1',sourceUrl:'https://example.notion.site/guide'}},
+      {type:'text',text:'추가 설명'}
+    ]
+  }],
+  referenceSections:[{
+    id:'r1',sourceId:'s1',pageTitle:'나무위키',title:'시스템',provider:'namuwiki',
+    images:[{src:'https://example.com/b.png',originId:'wiki-image-1',sourceUrl:'https://namu.wiki/w/test'}],
+    content:[{type:'text',text:'시스템 설명'}]
+  }]
+});
+assert.equal(orderedGuide.notionSections[0]?.content?.[1]?.type,'image','Notion 이미지가 본문 순서 안에서 유지되어야 합니다');
+assert.equal(orderedGuide.notionSections[0]?.content?.[1]?.image?.originId,'block-image-1','Notion 이미지 블록 ID를 유지해 영구 자산 중복 업로드를 막아야 합니다');
+assert.equal(orderedGuide.referenceSections[0]?.provider,'namuwiki','나무위키 구조화 섹션을 공통 지식 가이드 스키마로 유지해야 합니다');
+
 assert.ok((leopel?.results||[]).some(row=>row.title==='셧다운'&&/06:00.*17:00/.test(row.value||'')),'레오펠 셧다운 정보를 가이드 데이터에 유지해야 합니다');
 assert.ok((leopel?.results||[]).some(row=>row.title==='공동 목표'&&/신비의 동상/.test(row.value||'')),'레오펠 세계관 공동 목표를 구조화해야 합니다');
 for(const item of seed.items) assert.deepEqual(validateArchiveItem(normalizeArchiveItem(item),{publishing:true}),[]);
