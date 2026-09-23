@@ -135,62 +135,76 @@
   function playMagicRippleSound(ctx) {
     if (!ctx) return;
     const start = ctx.currentTime;
-    // A single soft glass resonance on card entry. Pointer movement stays silent.
-    playTone(ctx, 220, start, 0.76, 0.008, 'sine', 246.94);
-    playTone(ctx, 659.25, start + 0.055, 0.62, 0.0045, 'triangle', 698.46);
-    playTone(ctx, 987.77, start + 0.14, 0.46, 0.0025, 'sine', 1046.5);
+    // Refined glass-halo hover: inharmonic crystal partials with a soft attack.
+    // It plays only on pointer entry so the card never chatters while the pointer moves.
+    const partials = [
+      [945, 0.60, 0.0100, 0.000, 'sine'],
+      [1313, 0.64, 0.0066, 0.012, 'sine'],
+      [1777, 0.68, 0.0042, 0.020, 'triangle'],
+      [2400, 0.58, 0.0024, 0.032, 'sine'],
+      [2940, 0.48, 0.0014, 0.046, 'sine']
+    ];
+    partials.forEach(([frequency, duration, volume, offset, type]) => {
+      playTone(ctx, frequency, start + offset, duration, volume, type);
+    });
   }
 
   function playSpinSound(ctx) {
     if (!ctx) return;
     const start = ctx.currentTime;
-    const masterVolume = fortuneSoundPreferences().volume;
+    const prefs = fortuneSoundPreferences();
+    if (!prefs.enabled || prefs.volume <= 0) return;
     try {
-      const osc = ctx.createOscillator();
+      const length = Math.max(1, Math.floor(ctx.sampleRate * 3.02));
+      const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let index = 0; index < data.length; index += 1) {
+        const p = index / Math.max(1, data.length - 1);
+        const fadeIn = Math.min(1, p / 0.05);
+        const fadeOut = p < 0.86 ? 1 : Math.max(0, (1 - p) / 0.14);
+        data[index] = (Math.random() * 2 - 1) * 0.10 * fadeIn * fadeOut;
+      }
+      const source = ctx.createBufferSource();
+      const band = ctx.createBiquadFilter();
       const gain = ctx.createGain();
-      const filter = ctx.createBiquadFilter();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(120, start);
-      osc.frequency.exponentialRampToValueAtTime(1240, start + 0.92);
-      osc.frequency.exponentialRampToValueAtTime(185, start + 2.52);
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(760, start);
-      filter.frequency.exponentialRampToValueAtTime(3900, start + 0.96);
-      filter.frequency.exponentialRampToValueAtTime(560, start + 2.52);
+      band.type = 'bandpass';
+      band.Q.value = 0.55;
+      band.frequency.setValueAtTime(1350, start);
+      band.frequency.exponentialRampToValueAtTime(2850, start + 0.38);
+      band.frequency.setValueAtTime(2850, start + 2.55);
+      band.frequency.exponentialRampToValueAtTime(720, start + 3.0);
       gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, 0.022 * masterVolume), start + 0.08);
-      gain.gain.setValueAtTime(Math.max(0.0002, 0.022 * masterVolume), start + 1.48);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + 2.58);
-      osc.connect(filter).connect(gain).connect(ctx.destination);
-      osc.start(start);
-      osc.stop(start + 2.62);
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, 0.010 * prefs.volume), start + 0.10);
+      gain.gain.setValueAtTime(Math.max(0.0002, 0.010 * prefs.volume), start + 2.50);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 3.0);
+      source.connect(band).connect(gain).connect(ctx.destination);
+      source.start(start);
+      source.stop(start + 3.02);
     } catch (_) {}
-
-    let tickAt = 0.035;
-    for (let index = 0; index < 34; index += 1) {
-      const progress = index / 33;
-      const interval = 0.032 + progress * progress * 0.090;
-      playTone(ctx, 980 - progress * 360, start + tickAt, 0.032 + progress * 0.018, 0.012, 'triangle');
-      tickAt += interval;
-    }
   }
 
   function playStopSound(ctx) {
     if (!ctx) return;
     const start = ctx.currentTime;
-    playTone(ctx, 160, start, 0.28, 0.065, 'sine', 72);
-    playTone(ctx, 520, start + 0.03, 0.18, 0.035, 'triangle', 260);
-    playTone(ctx, 1040, start + 0.08, 0.13, 0.022, 'sine', 720);
+    playTone(ctx, 420, start, 0.30, 0.0040, 'sine', 360);
+    playTone(ctx, 820, start + 0.04, 0.24, 0.0022, 'sine', 690);
   }
 
   function playRevealSound(ctx) {
     if (!ctx) return;
     const start = ctx.currentTime;
-    const tones = [392, 523.25, 659.25, 783.99, 1046.5, 1318.5];
-    tones.forEach((frequency, index) => {
-      playTone(ctx, frequency, start + index * 0.052, 0.5 + index * 0.025, index < 2 ? 0.034 : 0.026, index < 2 ? 'sine' : 'triangle');
+    // A single clear wind-chime strike, followed by a restrained crystal tail.
+    // Inharmonic spacing keeps it glassy rather than piano-like.
+    const chime = [
+      [1178, 1.55, 0.0180, 0.000, 'sine'],
+      [1664, 1.48, 0.0115, 0.018, 'sine'],
+      [2268, 1.34, 0.0072, 0.042, 'triangle'],
+      [3080, 1.08, 0.0038, 0.070, 'sine']
+    ];
+    chime.forEach(([frequency, duration, volume, offset, type]) => {
+      playTone(ctx, frequency, start + offset, duration, volume, type);
     });
-    playTone(ctx, 1568, start + 0.24, 0.72, 0.018, 'sine', 2093);
+    playTone(ctx, 590, start + 0.12, 1.30, 0.0040, 'sine', 520);
   }
 
   function createMarkup() {
@@ -251,8 +265,9 @@
     const result = document.querySelector('[data-daily-fortune-result]');
     if (!dialog || !cardButton || !stage || !holo || !fx || !closeButton || !launcher || !result) return;
 
-    const SPIN_MS = 2600;
-    const RESULT_MS = 3150;
+    const SPIN_MS = 3000;
+    const DECEL_START_MS = 2600;
+    const RESULT_MS = 3650;
     let state = readState();
     let drawing = false;
     let autoOpenTimer = 0;
@@ -402,7 +417,7 @@
         playStopSound(audioCtx);
         spawnBurst('stop');
         dialog.classList.add('is-revealing');
-      }, 1880);
+      }, DECEL_START_MS);
 
       setTimeout(() => {
         if (run !== animationRun) return;
@@ -427,7 +442,7 @@
         if (run !== animationRun) return;
         dialog.classList.remove('is-bursting','is-revealing');
         try { audioCtx?.close?.(); } catch (_) {}
-      }, 4050);
+      }, 4550);
     };
 
     const openDialog = () => {
@@ -466,7 +481,6 @@
       stage.style.setProperty('--glow-x', (point.px * 100).toFixed(1) + '%');
       stage.style.setProperty('--glow-y', (point.py * 100).toFixed(1) + '%');
       stage.classList.add('is-prism-active');
-      spawnHoloRipple(point.px, point.py);
       const now = performance.now();
       if (now - lastHoverSoundAt >= 5000) {
         lastHoverSoundAt = now;
@@ -487,8 +501,6 @@
       stage.style.setProperty('--glow-x', (px * 100).toFixed(1) + '%');
       stage.style.setProperty('--glow-y', (py * 100).toFixed(1) + '%');
       stage.classList.add('is-prism-active');
-      const rippleDistance = lastRippleX < 0 ? 1 : Math.hypot(px - lastRippleX, py - lastRippleY);
-      if (rippleDistance > 0.26) spawnHoloRipple(px, py);
     });
     stage.addEventListener('pointerleave', resetPrism);
 
