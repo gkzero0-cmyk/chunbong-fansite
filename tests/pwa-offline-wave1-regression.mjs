@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 
 const sw = await readFile(new URL('../service-worker.js', import.meta.url), 'utf8');
 const appShell = sw.match(/const APP_SHELL = \[([\s\S]*?)\n\]/)?.[1] || '';
-assert.ok(sw.includes("chunbong-pwa-20260922-v31"), 'PWA cache version must advance after broadcast alert changes');
+assert.ok(sw.includes("chunbong-pwa-20260923-v32"), 'PWA cache version must advance after broadcast alert changes');
 for (const asset of [
   '/content-filter.css','/content-filter.js','/schedule.html','/schedule-enhancements.css',
   '/live-fixes.js','/tarot.html','/tarot.css','/tarot.js','/tarot-quality.css','/tarot-composite.css','/tarot-data.js','/tarot-composite.js','/tarot-sfx-v2.js',
