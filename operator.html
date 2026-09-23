@@ -158,6 +158,11 @@
         <article class="operator-health-card"><span>가장 느린 페이지</span><strong id="performance-slowest">-</strong><small id="performance-slowest-meta">측정 대기 중</small></article>
         <article class="operator-health-card"><span>체감 상태</span><strong id="performance-state">확인 중</strong><small id="performance-state-meta">배포 후 실제 사용자 데이터를 기준으로 판단합니다.</small></article>
       </div>
+      <div class="operator-system-summary operator-vitals-summary" aria-label="실사용 Core Web Vitals">
+        <article class="operator-health-card"><span>LCP · 주요 콘텐츠 표시</span><strong id="performance-lcp">-</strong><small id="performance-lcp-meta">측정 대기 중</small></article>
+        <article class="operator-health-card"><span>INP · 상호작용 반응</span><strong id="performance-inp">-</strong><small id="performance-inp-meta">측정 대기 중</small></article>
+        <article class="operator-health-card"><span>CLS · 화면 흔들림</span><strong id="performance-cls">-</strong><small id="performance-cls-meta">측정 대기 중</small></article>
+      </div>
       <div class="operator-grid-2">
         <article class="operator-card">
           <header><div><h2>페이지 표시 속도</h2><small>느린 페이지부터 · 평균값</small></div></header>
@@ -166,11 +171,12 @@
         <article class="operator-card operator-performance-guide">
           <header><h2>읽는 방법</h2><span>실사용 브라우저 기준</span></header>
           <div class="operator-guide-grid">
-            <div><b>빠름</b><strong>0~500ms</strong><small>메뉴 이동이 즉시 느껴지는 구간</small></div>
-            <div><b>보통</b><strong>501~1,000ms</strong><small>네트워크에 따라 짧은 지연이 느껴질 수 있음</small></div>
-            <div><b>느림</b><strong>1,001ms 이상</strong><small>공통 스크립트·API·페이지 자산 점검 권장</small></div>
+            <div><b>DOM 표시</b><strong>≤ 500ms</strong><small>메뉴 이동이 즉시 느껴지는 구간</small></div>
+            <div><b>LCP</b><strong>≤ 2.5초</strong><small>주요 콘텐츠가 사용자에게 빠르게 보이는 권장 구간</small></div>
+            <div><b>INP</b><strong>≤ 200ms</strong><small>클릭·터치 뒤 화면 반응이 빠른 권장 구간</small></div>
+            <div><b>CLS</b><strong>≤ 0.10</strong><small>레이아웃이 거의 흔들리지 않는 권장 구간</small></div>
           </div>
-          <p>개인 식별 정보 없이 페이지 경로와 표시 완료 시간만 집계합니다. 표본이 적을 때는 단일 기기나 네트워크 영향이 크게 보일 수 있습니다.</p>
+          <p>개인 식별 정보 없이 페이지 경로와 브라우저 성능 값만 집계합니다. LCP·INP·CLS는 지원 브라우저의 실제 이용 표본 기준이며, 표본이 적을 때는 단일 기기나 네트워크 영향이 크게 보일 수 있습니다.</p>
         </article>
       </div>
     </section>
