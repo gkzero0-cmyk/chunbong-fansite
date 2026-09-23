@@ -211,7 +211,7 @@
         const urls=Array.isArray(data.urls)?data.urls.slice(0,16):[];urls.forEach((url,index)=>setTimeout(()=>openBackground(url,AUTO_HASH,index===0),index*950));return;
       }
       if(data.type==='open-soop-board'&&data.url){openBackground(data.url,DISCOVER_HASH,true);return}
-      if(data.type==='open-fmk-board'&&data.url){openBackground(data.url,DISCOVER_HASH,true)}
+      if(data.type==='open-fmk-board'&&data.url){openBackground(data.url,'',true)}
     });
     try{GM_addValueChangeListener(QUEUE_KEY,()=>{emitState();flush()})}catch{}
     emitState();setTimeout(flush,500);setInterval(flush,1800);
