@@ -30,7 +30,7 @@ const home=read('index.html');
 const sw=read('service-worker.js');
 assert.match(shell,/items:\['contents','history','data'\]/);
 assert.match(home,/href="chunbong-contents\.html"/);
-for(const asset of ['/chunbong-contents.html','/chunbong-contents.css','/chunbong-contents.js']) assert.ok(sw.includes(asset),asset);
+for(const asset of ['/chunbong-contents.html','/chunbong-contents.css','/chunbong-contents.js']) assert.ok(!sw.includes(asset),'heavy archive asset should runtime-cache after first visit: '+asset);
 
 
 for(const token of ['archive-overview-highlight-grid','archive-people-chips','archive-record-strip','archive-media-visual']) assert.ok(css.includes(token),token);
