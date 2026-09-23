@@ -3,7 +3,7 @@
 const API='/api/content?type=';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const login=$('#operator-login'),dashboard=$('#operator-dashboard'),status=$('#operator-login-status'),logout=$('#operator-logout');
-let session=null,currentDays=7,currentAnalytics=null,currentSystem=null,feedbackItems=[],selectedFeedback=null;
+let session=null,currentDays=7,currentAnalytics=null,currentSystem=null,currentArchiveHealth=null,feedbackItems=[],selectedFeedback=null;
 const fmt=n=>new Intl.NumberFormat('ko-KR').format(Number(n)||0);
 const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const shortSha=value=>String(value||'').slice(0,10)||'-';
@@ -172,6 +172,13 @@ function renderOperatorAttention(){
     const row=vitals[metric]||{},samples=Number(row.samples)||0,poor=Number(row.poorPct)||0;
     if(samples>=5&&poor>=25)rows.push({level:poor>=50?'bad':'warn',title:label+' 체감 성능 확인',detail:'나쁨 구간 표본 '+poor+'% · '+fmt(samples)+'회',tab:'performance'});
   }
+  const archive=currentArchiveHealth||{};
+  if(archive.syncFailed)rows.push({level:'bad',title:'콘텐츠 자동수집 실패',detail:archive.syncError||'최근 공식 자료 동기화를 확인해 주세요.',tab:'contents'});
+  if(Number(archive.issueItemCount)>0){
+    const names=(archive.topIssues||[]).slice(0,3).map(row=>row.title).filter(Boolean);
+    rows.push({level:'warn',title:'콘텐츠 자료 보강 '+fmt(archive.issueItemCount)+'개',detail:'보강 항목 '+fmt(archive.totalIssues)+'건 · 이미지/썸네일 '+fmt(archive.visualIssueItemCount)+'개'+(names.length?' · '+names.join(', '):''),tab:'contents'});
+  }
+  if(Number(archive.candidateCount)>0)rows.push({level:'info',title:'자동수집 검토 후보 '+fmt(archive.candidateCount)+'건',detail:'새로 발견된 자료를 기존 콘텐츠에 연결하거나 초안으로 만들 수 있습니다.',tab:'contents'});
   const badEndpoints=endpoints.filter(row=>!row.ok);if(badEndpoints.length)rows.push({level:'bad',title:'API 응답 확인 필요',detail:badEndpoints.map(row=>row.label||row.path||'API').join(' · '),tab:'system'});
   const slow=endpoints.filter(row=>row.ok&&Number(row.ms)>=1500);if(slow.length)rows.push({level:'warn',title:'느린 API 감지',detail:slow.map(row=>(row.label||row.path||'API')+' '+fmt(row.ms)+'ms').join(' · '),tab:'system'});
   if(currentSystem&&(!services.analytics||!services.feedback||!services.push))rows.push({level:'warn',title:'서비스 설정 확인',detail:[!services.analytics&&'실사용 분석',!services.feedback&&'피드백 저장',!services.push&&'Push'].filter(Boolean).join(' · '),tab:'system'});
@@ -299,11 +306,21 @@ async function setupFirebaseEmail(){
  const form=$('#operator-email-form');form.addEventListener('submit',async e=>{e.preventDefault();const email=$('#operator-email').value.trim().toLowerCase();status.textContent='인증 메일 요청 중…';try{await json(API+'operator-email-start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});localStorage.setItem('chunbong:operator:email',email);status.textContent='등록된 운영자 계정이라면 인증 메일이 발송됩니다. 메일함을 확인해 주세요.'}catch(err){status.textContent=err.message==='email_auth_not_configured'?'이메일 인증 설정이 아직 완료되지 않았습니다.':'인증 요청을 처리하지 못했습니다.'}})
  if(new URLSearchParams(location.search).get('email')==='complete'){try{const config=await json(API+'operator-auth-config');if(!config.providers.email||!config.firebase)return;const email=localStorage.getItem('chunbong:operator:email')||prompt('인증 메일을 받은 주소를 입력하세요')||'';if(!email)return;const {initializeApp}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js');const {getAuth,isSignInWithEmailLink,signInWithEmailLink}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js');const app=initializeApp(config.firebase,'operator-email-complete');const auth=getAuth(app);if(!isSignInWithEmailLink(auth,location.href))throw new Error('invalid_link');const credential=await signInWithEmailLink(auth,email,location.href);const idToken=await credential.user.getIdToken();await json(API+'operator-email-complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken})});localStorage.removeItem('chunbong:operator:email');history.replaceState(null,'','/operator.html');await boot()}catch{status.textContent='이메일 인증 링크를 확인하지 못했습니다.'}}
 }
-let operatorContentsPromise=null;
+let operatorContentsModulePromise=null,operatorContentsPromise=null;
+function operatorContentsModule(){
+  if(!operatorContentsModulePromise)operatorContentsModulePromise=import('./operator-contents.js');
+  return operatorContentsModulePromise;
+}
 function loadOperatorContents(){
   if(operatorContentsPromise)return operatorContentsPromise;
-  operatorContentsPromise=import('./operator-contents.js').then(module=>module.bootOperatorContents());
+  operatorContentsPromise=operatorContentsModule().then(module=>module.bootOperatorContents());
   return operatorContentsPromise;
+}
+async function loadArchiveHealth(){
+  const module=await operatorContentsModule();
+  currentArchiveHealth=await module.fetchOperatorContentHealth();
+  renderOperatorAttention();
+  return currentArchiveHealth;
 }
 async function activateOperatorTab(tab){
   const target=String(tab||'overview');
@@ -317,10 +334,11 @@ async function activateOperatorTab(tab){
 async function boot(){
   try{
     await refreshSession();showDashboard();
-    await Promise.allSettled([loadAnalytics(),loadFeedback(),loadSystemStatus()]);
+    await Promise.allSettled([loadAnalytics(),loadFeedback(),loadSystemStatus(),loadArchiveHealth()]);
     renderOperatorAttention();
   }catch{showLogin()}
 }
+document.addEventListener('chunbong:operator-archive-health',event=>{currentArchiveHealth=event.detail||null;renderOperatorAttention()});
 $('#operator-github-login')?.addEventListener('click',event=>{if(event.currentTarget.getAttribute('aria-disabled')==='true')event.preventDefault()});
 document.querySelectorAll('[data-days]').forEach(btn=>btn.addEventListener('click',async()=>{document.querySelectorAll('[data-days]').forEach(x=>{const active=x===btn;x.classList.toggle('active',active);x.setAttribute('aria-pressed',String(active))});currentDays=btn.dataset.days==='all'?'all':(Number(btn.dataset.days)||7);await loadAnalytics()}));
 $$('[data-operator-tab]').forEach((btn,index)=>{btn.tabIndex=index===0?0:-1;btn.addEventListener('click',()=>void activateOperatorTab(btn.dataset.operatorTab));btn.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const tabs=$$('[data-operator-tab]');let next=event.key==='Home'?0:event.key==='End'?tabs.length-1:Math.max(0,tabs.indexOf(btn)+(event.key==='ArrowRight'?1:-1));if(event.key==='ArrowLeft'&&tabs.indexOf(btn)===0)next=tabs.length-1;if(event.key==='ArrowRight'&&tabs.indexOf(btn)===tabs.length-1)next=0;tabs[next]?.focus();void activateOperatorTab(tabs[next]?.dataset.operatorTab)})});
