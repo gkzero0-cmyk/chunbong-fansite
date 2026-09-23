@@ -397,3 +397,28 @@ body[data-page="operator"]{background:radial-gradient(circle at 80% 0,color-mix(
   .operator-commit-row>b,.operator-commit-row>i{grid-column:2;justify-self:start}
   .operator-commit-row strong{white-space:normal}
 }
+
+
+/* Operator Center 1.9 — feedback triage + deployment gap */
+.operator-quick-actions{grid-template-columns:repeat(7,minmax(0,1fr))}
+.operator-feedback-summary{margin-bottom:14px}
+.operator-feedback-summary strong.is-ok{color:var(--op-good)}
+.operator-feedback-summary strong.is-warn{color:var(--op-warn)}
+.operator-feedback-summary strong.is-bad{color:var(--op-bad)}
+.operator-feedback-similar{margin-top:14px;padding-top:14px;border-top:1px solid var(--op-border)}
+.operator-feedback-similar .operator-section-title-row{margin-bottom:8px}
+.operator-feedback-similar .operator-section-title-row h3{margin:0;font-size:12px}
+.operator-feedback-similar .operator-section-title-row span{color:var(--op-meta);font-size:9px}
+.operator-feedback-similar-list{display:grid;gap:7px}
+.operator-feedback-similar-list>button{appearance:none;display:grid;gap:4px;width:100%;padding:10px 11px;border:1px solid color-mix(in srgb,var(--op-border) 74%,transparent);border-radius:10px;background:var(--op-card-2);color:var(--op-text);font:inherit;text-align:left;cursor:pointer}
+.operator-feedback-similar-list>button:hover{border-color:color-mix(in srgb,var(--op-accent) 45%,var(--op-border));background:color-mix(in srgb,var(--op-accent) 5%,var(--op-card-2))}
+.operator-feedback-similar-list>button>span{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.operator-feedback-similar-list>button>span b{font-size:9px;color:#ffb184}.operator-feedback-similar-list>button>span i{font-style:normal;font-size:9px;color:var(--op-warn)}
+.operator-feedback-similar-list>button>strong{font-size:11px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.operator-feedback-similar-list>button>small{font-size:9px;color:var(--op-meta)}
+.operator-commit-row.is-pending{border-color:color-mix(in srgb,var(--op-warn) 36%,var(--op-border))}
+.operator-commit-row>b.is-pending{background:color-mix(in srgb,var(--op-warn) 13%,transparent);color:var(--op-warn)}
+#system-pending-commits{font-weight:900}
+@media(max-width:1180px){.operator-quick-actions{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:760px){.operator-feedback-summary{grid-template-columns:1fr 1fr}.operator-quick-actions{grid-template-columns:1fr 1fr}}
+@media(max-width:460px){.operator-feedback-summary{grid-template-columns:1fr}.operator-quick-actions{grid-template-columns:1fr}}
