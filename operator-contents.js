@@ -1,5 +1,5 @@
 const API='/api/content?type=';
-let root=null,items=[],selected=null,booted=false,autoSyncMeta=null,autoCandidates=[],browserImport=null,namuBrowserImport=null;
+let root=null,items=[],selected=null,booted=false,autoSyncMeta=null,autoCandidates=[],browserImport=null,namuBrowserImport=null,collectorState={connected:false,queueCount:0,seenCount:0,version:''},collectorImportChain=Promise.resolve();
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const slug=v=>String(v||'').toLowerCase().trim().replace(/[^a-z0-9가-힣]+/g,'-').replace(/^-|-$/g,'');
@@ -316,6 +316,80 @@ function base64ToUtf8(value=''){
   for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
   return new TextDecoder().decode(bytes);
 }
+
+const COLLECTOR_CHANNEL='chunbong-content-collector';
+function renderUnifiedCollectorStatus(){
+  const box=$('[data-unified-collector-status]',root);if(!box)return;
+  if(!collectorState.connected){
+    box.dataset.state='idle';
+    box.innerHTML='<strong>자동 수집기 연결 대기</strong><span>아래 설치 링크로 1회 설치하면 나무위키·SOOP 수집을 같은 큐로 처리합니다.</span>';
+    return;
+  }
+  box.dataset.state=collectorState.queueCount?'busy':'ok';
+  box.innerHTML='<strong>자동 수집기 연결됨'+(collectorState.version?' · v'+esc(collectorState.version):'')+'</strong><span>전송 대기 '+Number(collectorState.queueCount||0)+'건 · 브라우저에서 확인한 자료 '+Number(collectorState.seenCount||0)+'건</span>';
+}
+function collectorPost(type,data={}){
+  window.postMessage({channel:COLLECTOR_CHANNEL,type,...data},location.origin);
+}
+async function handleUnifiedCollectorImport(message={}){
+  const id=String(message.id||''),payload=message.payload||{};
+  if(!id||!payload?.source)return;
+  try{
+    if(payload.source==='namuwiki-browser'){
+      namuBrowserImport=payload;
+      const result=await json('operator-content-browser-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'auto',payload})});
+      if(result?.matched){
+        const title=result.item?.title||'춘봉 콘텐츠';namuBrowserImport=null;await load();if(result.item?.id)selectItem(result.item.id);
+        setMessage('자동 수집기가 '+title+'에 나무위키 원문 '+Number(result.sectionCount||0)+'개 구역 · 이미지 '+Number(result.imageCount||0)+'장을 반영했습니다.','ok');
+      }else{
+        renderNamuHelper();setMessage('자동 수집한 나무위키 문서의 연결 대상을 찾지 못했습니다. 아래에서 콘텐츠를 직접 선택할 수 있습니다.','bad');
+      }
+      collectorPost('ack',{id,ok:true});
+      return;
+    }
+    if(payload.source==='soop-authenticated-browser'){
+      browserImport=payload;
+      const result=await json('operator-content-browser-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'auto',payload})});
+      if(result?.matched){
+        const title=result.item?.title||'춘봉 콘텐츠';browserImport=null;await load();if(result.item?.id)selectItem(result.item.id);
+        setMessage('SOOP 로그인 글을 내부 자료로 보관하고 '+title+'에 자동 연결했습니다. 외부 공개는 하지 않습니다.','ok');
+      }else{
+        renderSoopHelper();setMessage('SOOP 로그인 글을 내부 원문으로 보관했습니다. 자동 매칭이 확실하지 않아 검토 목록에 남겼습니다.','ok');
+      }
+      collectorPost('ack',{id,ok:true});
+      return;
+    }
+    collectorPost('ack',{id,ok:false,error:'unsupported_source'});
+  }catch(error){
+    collectorPost('ack',{id,ok:false,error:String(error?.message||'collector_import_failed')});
+    setMessage('자동 수집 자료를 저장하지 못했습니다: '+String(error?.message||error),'bad');
+  }
+}
+function bindUnifiedCollector(){
+  if(!root||root.dataset.collectorBound==='1')return;root.dataset.collectorBound='1';
+  window.addEventListener('message',event=>{
+    if(event.source!==window||event.origin!==location.origin)return;
+    const data=event.data||{};if(data.channel!==COLLECTOR_CHANNEL)return;
+    if(data.type==='state'){
+      collectorState={connected:true,queueCount:Number(data.queueCount||0),seenCount:Number(data.seenCount||0),version:String(data.version||'')};
+      renderUnifiedCollectorStatus();return;
+    }
+    if(data.type==='import'){
+      collectorImportChain=collectorImportChain.then(()=>handleUnifiedCollectorImport(data)).catch(error=>setMessage('자동 수집 처리 중 오류: '+error.message,'bad'));
+    }
+  });
+  $('[data-collector-run-namu]',root)?.addEventListener('click',()=>{
+    const rows=namuPendingSources();if(!rows.length){setMessage('현재 이미지 수집이 필요한 나무위키 원문이 없습니다.','ok');return}
+    collectorPost('open-urls',{kind:'namuwiki',urls:rows.map(row=>row.url)});
+    setMessage('나무위키 수집 대기 '+rows.length+'개를 브라우저 자동 수집 큐로 보냈습니다.','ok');
+  });
+  $('[data-collector-open-soop]',root)?.addEventListener('click',()=>{
+    collectorPost('open-soop-board',{url:'https://www.sooplive.com/station/chunbongtv/post'});
+    setMessage('SOOP 춘봉 방송국 게시판을 열어 새 글을 확인합니다. 로그인된 브라우저 세션만 사용합니다.','ok');
+  });
+  collectorPost('ping');renderUnifiedCollectorStatus();
+}
+
 function namuCollectorBookmarklet(){
   const target=location.origin+'/operator.html?tab=contents';
   const script=`(async()=>{try{
@@ -545,4 +619,4 @@ export async function runOfficialSync(){
   }finally{if(button)button.disabled=false}
 }
 async function load(){try{const p=await json('operator-content-archive');items=Array.isArray(p.items)?p.items:[];autoSyncMeta=p.autoSync||null;autoCandidates=Array.isArray(p.candidates)?p.candidates:[];renderList();renderAutoSyncState();renderCandidates();renderSoopHelper();renderNamuHelper();publishArchiveHealth(archiveHealthSnapshot(items,autoCandidates,autoSyncMeta))}catch(e){setMessage(e.message==='archive_storage_unavailable'?'콘텐츠 저장소를 사용할 수 없습니다.':'콘텐츠 목록을 불러오지 못했습니다.','bad')}}
-export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;browserImport=readSoopImportHash();namuBrowserImport=readNamuImportHash();$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);$('[data-archive-admin-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-archive-select]');if(button)selectItem(button.dataset.archiveSelect)});$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());$('[data-archive-image-audit]',root)?.addEventListener('click',()=>void runImageAudit());renderEditor(emptyItem());await load();if(namuBrowserImport)await submitNamuImport();else if(browserImport)await autoRouteSoopImport();else{renderSoopHelper();renderNamuHelper()}}
+export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;browserImport=readSoopImportHash();namuBrowserImport=readNamuImportHash();bindUnifiedCollector();$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);$('[data-archive-admin-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-archive-select]');if(button)selectItem(button.dataset.archiveSelect)});$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());$('[data-archive-image-audit]',root)?.addEventListener('click',()=>void runImageAudit());renderEditor(emptyItem());await load();if(namuBrowserImport)await submitNamuImport();else if(browserImport)await autoRouteSoopImport();else{renderSoopHelper();renderNamuHelper();renderUnifiedCollectorStatus()}}
