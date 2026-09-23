@@ -3,7 +3,7 @@
 const API='/api/content?type=';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const login=$('#operator-login'),dashboard=$('#operator-dashboard'),status=$('#operator-login-status'),logout=$('#operator-logout');
-let session=null,currentDays=7,currentAnalytics=null,currentSystem=null,currentArchiveHealth=null,feedbackItems=[],selectedFeedback=null;
+let session=null,currentDays=7,currentAnalytics=null,currentSystem=null,currentArchiveHealth=null,currentImageHealth=null,feedbackItems=[],selectedFeedback=null;
 const fmt=n=>new Intl.NumberFormat('ko-KR').format(Number(n)||0);
 const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const shortSha=value=>String(value||'').slice(0,10)||'-';
@@ -194,6 +194,11 @@ function renderOperatorAttention(){
     rows.push({level:'warn',title:'콘텐츠 자료 보강 '+fmt(archive.issueItemCount)+'개',detail:'보강 항목 '+fmt(archive.totalIssues)+'건 · 이미지/썸네일 '+fmt(archive.visualIssueItemCount)+'개'+(names.length?' · '+names.join(', '):''),tab:'contents'});
   }
   if(Number(archive.candidateCount)>0)rows.push({level:'info',title:'자동수집 검토 후보 '+fmt(archive.candidateCount)+'건',detail:'새로 발견된 자료를 기존 콘텐츠에 연결하거나 초안으로 만들 수 있습니다.',tab:'contents'});
+  const imageHealth=currentImageHealth||{};
+  if(imageHealth.failed)rows.push({level:'bad',title:'이미지 상태 검사 실패',detail:imageHealth.error||'콘텐츠 이미지 검사를 다시 실행해 주세요.',tab:'contents'});
+  else if(Number(imageHealth.failedCount)>0)rows.push({level:'bad',title:'깨진 콘텐츠 이미지 '+fmt(imageHealth.failedCount)+'개',detail:'대표 이미지·갤러리·영상 썸네일 실제 로딩에 실패한 항목이 있습니다.',tab:'contents'});
+  if(Number(imageHealth.large)>0||Number(imageHealth.slow)>0)rows.push({level:'warn',title:'이미지 최적화 확인',detail:'대용량 '+fmt(imageHealth.large)+'개 · 느린 표시 '+fmt(imageHealth.slow)+'개',tab:'contents'});
+  if(Number(imageHealth.lowResolution)>0)rows.push({level:'warn',title:'대표 이미지 해상도 확인',detail:'권장 해상도보다 작은 대표 이미지 '+fmt(imageHealth.lowResolution)+'개',tab:'contents'});
   const search=currentAnalytics?.search||{},zeroTotal=Number(search.zeroTotal)||0;
   if(zeroTotal>0){
     const terms=(search.zeroQueries||[]).slice(0,3).map(row=>'“'+row.key+'”').join(', ');
@@ -361,6 +366,7 @@ async function boot(){
   }catch{showLogin()}
 }
 document.addEventListener('chunbong:operator-archive-health',event=>{currentArchiveHealth=event.detail||null;renderOperatorAttention()});
+document.addEventListener('chunbong:operator-image-health',event=>{currentImageHealth=event.detail||null;renderOperatorAttention()});
 $('#operator-github-login')?.addEventListener('click',event=>{if(event.currentTarget.getAttribute('aria-disabled')==='true')event.preventDefault()});
 document.querySelectorAll('[data-days]').forEach(btn=>btn.addEventListener('click',async()=>{document.querySelectorAll('[data-days]').forEach(x=>{const active=x===btn;x.classList.toggle('active',active);x.setAttribute('aria-pressed',String(active))});currentDays=btn.dataset.days==='all'?'all':(Number(btn.dataset.days)||7);await loadAnalytics()}));
 $$('[data-operator-tab]').forEach((btn,index)=>{btn.tabIndex=index===0?0:-1;btn.addEventListener('click',()=>void activateOperatorTab(btn.dataset.operatorTab));btn.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const tabs=$$('[data-operator-tab]');let next=event.key==='Home'?0:event.key==='End'?tabs.length-1:Math.max(0,tabs.indexOf(btn)+(event.key==='ArrowRight'?1:-1));if(event.key==='ArrowLeft'&&tabs.indexOf(btn)===0)next=tabs.length-1;if(event.key==='ArrowRight'&&tabs.indexOf(btn)===tabs.length-1)next=0;tabs[next]?.focus();void activateOperatorTab(tabs[next]?.dataset.operatorTab)})});
