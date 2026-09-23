@@ -72,9 +72,10 @@ async function runHandler(type, fetchImpl) {
   assert.equal(body.items.length, 1, 'fanart should load from the current Cafe SPA APIs');
   assert.equal(body.items[0].title, '팬아트 테스트');
   assert.equal(body.items[0].author, '팬작가');
-  assert.equal(body.items[0].thumb, 'https://example.com/fanart.jpg');
+  assert.equal(body.items[0].thumb, '', 'fanart list should not block on article detail image enrichment');
+  assert.equal(body.items[0].needsDetailImage, true, 'fanart list should mark missing thumbnails for lazy client hydration');
   assert.ok(calls.some(url => url.includes('cafe-boardlist-api')), 'fanart should use the new board-list API');
-  assert.ok(calls.some(url => url.includes('cafe-articleapi')), 'fanart should inspect article content for images');
+  assert.ok(!calls.some(url => url.includes('cafe-articleapi')), 'fanart list should not inspect article content synchronously');
 }
 
 // HOT CLIP: Catch and user clips must stay in separate groups and preserve their source type.
