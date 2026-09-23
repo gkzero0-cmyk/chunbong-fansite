@@ -36,10 +36,11 @@ for(const asset of ['/chunbong-contents.html','/chunbong-contents.css','/chunbon
 for(const token of ['archive-overview-highlight-grid','archive-people-chips','archive-record-strip','archive-media-visual']) assert.ok(css.includes(token),token);
 for(const token of ['주요 기록','기록 하이라이트','영상 · 방송','자료 이미지']) assert.ok(js.includes(token),token);
 for(const token of ['renderNotionGuide','renderNotionPreview','data-archive-tab="guide"','Notion 가이드']) assert.ok(js.includes(token),token);
-for(const token of ['renderLeopelKnowledge','LEOPEL WORLD GUIDE','WORLD & STORY','STORY CHAPTERS','archive-leopel-chapters','archive-leopel-media-strip']) assert.ok(js.includes(token)||css.includes(token),token);
-for(const token of ['notionImagesMarkup','archive-guide-images','data-guide-image-src']) assert.ok(js.includes(token)||css.includes(token),token);
+for(const token of ['renderLeopelKnowledge','LEOPEL WORLD GUIDE','WORLD & STORY','LOCATIONS','MAJOR CONTENT','SERVER RECORDS','STORY CHAPTERS','archive-leopel-chapters','archive-leopel-media-strip']) assert.ok(js.includes(token)||css.includes(token),token);
+for(const token of ['notionImagesMarkup','documentGuideRows','guideContentMarkup','archive-document-guide','archive-guide-images','data-guide-image-src','data-guide-image-source','archive-guide-image-fallback']) assert.ok(js.includes(token)||css.includes(token),token);
 for(const token of ['renderJustserverKnowledge','guideBuckets','archive-fact-grid','archive-system-chip-grid','archive-flow']) assert.ok(js.includes(token)||css.includes(token),token);
-assert.ok(js.includes('방통실과 내부 검증용 자료는 공개 출처에 사용하지 않습니다.'),'public source policy copy missing');
+assert.ok(js.includes('내부 교차검증 자료는 공개 출처와 화면 문구에 노출하지 않습니다.'),'public source policy copy missing');
+assert.match(js,/nemopix\\.xyz/,'Nemopix must be explicitly filtered from the public source UI');
 for(const token of ['archive-notion-preview-grid','archive-notion-group','archive-notion-sections']) assert.ok(css.includes(token),token);
 assert.match(js,/renderOverviewHighlights/);
 assert.match(js,/renderRecordStrip/);
@@ -71,6 +72,7 @@ const operatorContents=read('operator-contents.js');
 const operatorCss=read('operator.css');
 const contentApi=read('api/content.js');
 for(const token of ['자료 반영 상태','참가자 미수집','Notion 본문 미구조화','실제 대표 이미지 확인','data-source-fetch-meta','내부 검증용 · 숨김']) assert.ok(operatorContents.includes(token),token);
+for(const token of ['refreshReferenceGuides','isNamuWikiSourceUrl','namuWikiStructuredSections','permanentizeGuideRows']) assert.ok(contentApi.includes(token),token);
 for(const token of ['operator-archive-audit','operator-source-meta-actions']) assert.ok(operatorCss.includes(token),token);
 assert.ok(contentApi.includes("operator-content-source-meta"),'source metadata operator API route missing');
 
