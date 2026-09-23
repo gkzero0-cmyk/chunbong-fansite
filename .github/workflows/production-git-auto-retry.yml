@@ -2,7 +2,7 @@ name: Production Git auto retry
 
 on:
   schedule:
-    # Check hourly. If Vercel rate-limited a recent commit, retry after that 25-hour cooldown even when newer main commits exist.
+    # Check hourly. If Vercel rate-limited a recent commit, retry after the documented 24-hour cooldown even when newer main commits exist.
     - cron: '17 * * * *'
   workflow_dispatch:
 
@@ -60,7 +60,7 @@ jobs:
           const commits = await commitsResponse.json();
 
           const nowMs = Date.now();
-          const scanWindowMs = (90000 + 7200) * 1000;
+          const scanWindowMs = (86400 + 7200) * 1000;
 
           for (const commit of commits) {
             const commitTime = Date.parse(commit?.commit?.committer?.date || commit?.commit?.author?.date || '');
@@ -99,7 +99,7 @@ jobs:
             echo "needs_retry=false" >> "$GITHUB_OUTPUT"
           elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
             echo "needs_retry=true" >> "$GITHUB_OUTPUT"
-          elif [[ -n "$RATE_LIMIT_CREATED_AT" && "$RATE_LIMIT_AGE_SECONDS" -ge 90000 ]]; then
+          elif [[ -n "$RATE_LIMIT_CREATED_AT" && "$RATE_LIMIT_AGE_SECONDS" -ge 86400 ]]; then
             echo "needs_retry=true" >> "$GITHUB_OUTPUT"
           elif [[ -z "$RATE_LIMIT_CREATED_AT" && "$AGE_SECONDS" -ge 72000 ]]; then
             echo "needs_retry=true" >> "$GITHUB_OUTPUT"
