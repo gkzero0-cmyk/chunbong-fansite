@@ -15,6 +15,28 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Temporary SOOP VOD metadata lookup
+        run: |
+          set -euo pipefail
+          curl -fsS 'https://api.m.afreecatv.com/station/video/a/view' \
+            -H 'Referer: https://vod.sooplive.com/player/125250373' \
+            -H 'User-Agent: Mozilla/5.0' \
+            --data 'nTitleNo=125250373&nApiLevel=10&nPlaylistIdx=0' \
+            -o /tmp/vod.json
+          python3 - <<'PY'
+          import json
+          with open('/tmp/vod.json','r',encoding='utf-8') as f:
+              payload=json.load(f)
+          data=payload.get('data') or {}
+          print('SOOP_META_TITLE='+str(data.get('title') or ''))
+          print('SOOP_META_THUMB='+str(data.get('thumb') or ''))
+          print('SOOP_META_WRITER='+str(data.get('writer_nick') or ''))
+          files=data.get('files') or []
+          if files:
+              first=files[0] or {}
+              print('SOOP_META_FILE_START='+str(first.get('file_start') or ''))
+              print('SOOP_META_FILE_INFO_KEY='+str(first.get('file_info_key') or ''))
+          PY
       - name: Check JavaScript syntax
         run: |
           node --check service-worker.js
