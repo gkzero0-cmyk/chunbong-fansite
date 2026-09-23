@@ -666,7 +666,7 @@
   border-radius:50%;
   pointer-events:none;
   opacity:0;
-  transform:translate(-50%,-50%) scale(calc(.82 * var(--flare-scale))) rotate(var(--prism-angle));
+  transform:translate(-50%,-50%) scale(var(--flare-scale)) rotate(var(--prism-angle));
   background:
     repeating-radial-gradient(circle,
       transparent 0 9%,
@@ -702,7 +702,7 @@
   inset:-24%;
   border-radius:50%;
   background:
-    conic-gradient(from calc(var(--prism-angle) * -1),
+    conic-gradient(from var(--prism-angle),
       transparent 0 4%,
       rgba(255,255,255,.28) 4.3% 4.8%,
       transparent 5.1% 19%,
