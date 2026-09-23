@@ -1,12 +1,18 @@
 const API='/api/content?type=';
-let root=null,items=[],selected=null,booted=false,autoSyncMeta=null,autoCandidates=[],browserImports=[],browserImport=null,namuBrowserImport=null,collectorState={connected:false,queueCount:0,seenCount:0,version:'',soopHistoryCount:0,soopBackfill:{}},collectorImportChain=Promise.resolve();
+let root=null,items=[],selected=null,booted=false,autoSyncMeta=null,autoCandidates=[],browserImports=[],liveIds=new Set(),editorDirty=false,browserImport=null,namuBrowserImport=null,collectorState={connected:false,queueCount:0,seenCount:0,version:'',soopHistoryCount:0,soopBackfill:{}},collectorImportChain=Promise.resolve();
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const slug=v=>String(v||'').toLowerCase().trim().replace(/[^a-z0-9가-힣]+/g,'-').replace(/^-|-$/g,'');
 const emptyItem=()=>({id:'',title:'',aliases:[],category:'minecraft',role:'주최',status:'ended',startDate:'',endDate:'',datePrecision:'unknown',summary:'',description:'',heroImage:{src:'',alt:'',sourceId:''},participants:[],results:[],timeline:[],media:[],gallery:[],sources:[],verification:{state:'needs_review',verifiedAt:'',conflicts:[]},published:false});
 const errorLabel={published_source_required:'공개하려면 공식 또는 확인 가능한 출처가 1개 이상 필요합니다.',published_source_url_required:'공개 출처에는 원문 URL이 필요합니다.',unresolved_conflict:'확인되지 않은 정보 충돌이 남아 있어 공개할 수 없습니다.',duplicate_material_url:'같은 원문 URL이 두 번 등록되어 있습니다.',duplicate_source_id:'같은 출처 ID가 두 번 등록되어 있습니다.',unknown_source_id:'자료가 존재하지 않는 출처 ID를 참조하고 있습니다.',invalid_start_date:'시작 날짜 형식 또는 실제 날짜를 확인해 주세요.',invalid_end_date:'종료 날짜 형식 또는 실제 날짜를 확인해 주세요.',end_before_start:'종료일은 시작일보다 빠를 수 없습니다.',invalid_material_date:'타임라인·영상 자료의 날짜 형식 또는 실제 날짜를 확인해 주세요.',id_required:'콘텐츠 ID가 필요합니다.',title_required:'콘텐츠 제목이 필요합니다.'};
 async function json(type,options={}){const r=await fetch(API+type,{headers:{accept:'application/json',...(options.headers||{})},...options});let p={};try{p=await r.json()}catch{}if(!r.ok)throw new Error(p.error||'request_failed');return p}
-function statusText(item){if(item.published)return'공개';if(item.verification?.state==='needs_review'||item.verification?.conflicts?.length)return'확인 필요';return'초안'}
+function isLiveItem(item){return Boolean(item?.id&&liveIds.has(String(item.id)))}
+function statusText(item){
+  if(isLiveItem(item)&&!item?.published)return'공개 중 · 수정본';
+  if(item?.published||isLiveItem(item))return'공개';
+  if(item?.verification?.state==='needs_review'||item?.verification?.conflicts?.length)return'확인 필요';
+  return'초안';
+}
 function setMessage(text,type=''){const el=$('[data-archive-admin-message]',root);if(!el)return;el.textContent=text||'';el.dataset.state=type}
 function renderList(){
   const list=$('[data-archive-admin-list]',root),q=String($('[data-archive-admin-search]',root)?.value||'').toLowerCase(),quality=$('[data-archive-admin-quality]',root)?.value||'all';
@@ -59,7 +65,19 @@ export function archiveAudit(item){
   if((hasOfficialPost||hasExternalVisual)&&genericHero)issues.push(['실제 대표 이미지 확인','실제 포스터·첨부 이미지·영상 썸네일이 있는데 임시 커버를 사용 중입니다.']);
   return issues;
 }
-function auditBlock(item){const issues=archiveAudit(item);return `<section class="operator-archive-audit ${issues.length?'has-issues':'is-complete'}"><div><strong>자료 반영 상태</strong><span>${issues.length?`${issues.length}건 확인 필요`:'주요 누락 없음'}</span></div>${issues.length?`<ul>${issues.map(([title,detail])=>`<li><b>${esc(title)}</b><small>${esc(detail)}</small></li>`).join('')}</ul>`:'<p>등록된 참고자료와 현재 구조화 데이터를 기준으로 주요 누락이 없습니다.</p>'}</section>`}
+function auditIssueTarget(title=''){
+  const value=String(title||'');
+  if(/참가자|수강생/.test(value))return'basic';
+  if(/대표 이미지/.test(value))return'hero';
+  if(/썸네일|미디어|영상/.test(value))return'media';
+  if(/게시글|타임라인/.test(value))return'timeline';
+  if(/출처/.test(value))return'sources';
+  return'basic';
+}
+function auditBlock(item){
+  const issues=archiveAudit(item);
+  return `<section class="operator-archive-audit ${issues.length?'has-issues':'is-complete'}"><div><strong>자료 반영 상태</strong><span>${issues.length?`${issues.length}건 확인 필요`:'주요 누락 없음'}</span></div>${issues.length?`<ul>${issues.map(([title,detail])=>`<li><span><b>${esc(title)}</b><small>${esc(detail)}</small></span><button type="button" data-audit-jump="${auditIssueTarget(title)}">수정 위치로 이동</button></li>`).join('')}</ul>`:'<p>등록된 참고자료와 현재 구조화 데이터를 기준으로 주요 누락이 없습니다.</p>'}</section>`;
+}
 function archiveHealthSnapshot(itemRows=[],candidates=[],sync=null){
   const rows=(Array.isArray(itemRows)?itemRows:[]).map(item=>{
     const issues=archiveAudit(item),visualIssues=issues.filter(([title])=>/(이미지|썸네일)/.test(String(title||'')));
@@ -189,6 +207,56 @@ async function runImageAudit(){
     publishImageAudit({checkedAt:new Date().toISOString(),total:all.length,scanned:0,skipped:all.length,failed:true,failedCount:0,large:0,slow:0,lowResolution:0,issueImages:0,issues:[],error:String(error?.message||error)});
   }finally{if(button)button.disabled=false}
 }
+
+function publicContentUrl(id=''){return 'chunbong-contents.html?id='+encodeURIComponent(id)}
+function editorLiveState(item=selected,dirty=editorDirty){
+  if(!item?.id)return{state:'new',title:'새 콘텐츠 작성 중',detail:'임시 저장 후 팬사이트에 반영할 수 있습니다.'};
+  const live=isLiveItem(item);
+  if(dirty&&live)return{state:'pending',title:'수정 중 · 팬사이트에는 이전 공개본이 표시 중',detail:'변경사항은 “팬사이트에 반영”을 눌러야 실제 사이트에 적용됩니다.'};
+  if(dirty)return{state:'pending',title:'수정 중 · 아직 팬사이트 미반영',detail:'먼저 임시 저장하거나 바로 팬사이트에 반영할 수 있습니다.'};
+  if(live&&item.published)return{state:'live',title:'팬사이트 반영 완료',detail:'현재 편집 내용과 공개 페이지가 같은 상태입니다.'};
+  if(live)return{state:'draft-live',title:'팬사이트 공개 중 · 임시 수정본 있음',detail:'팬사이트에는 이전 공개본이 유지됩니다. 수정본을 반영하려면 “팬사이트에 반영”을 누르세요.'};
+  return{state:'draft',title:'임시 저장 상태 · 팬사이트 미공개',detail:'“팬사이트에 반영”을 눌러야 방문자에게 보입니다.'};
+}
+function renderEditorLiveState(){
+  const box=$('[data-editor-live-state]',root);if(!box)return;
+  const state=editorLiveState();box.dataset.state=state.state;
+  box.innerHTML='<div><strong>'+esc(state.title)+'</strong><span>'+esc(state.detail)+'</span></div>'+(selected?.id&&isLiveItem(selected)?'<a href="'+publicContentUrl(selected.id)+'" target="_blank" rel="noreferrer">팬사이트에서 확인 ↗</a>':'');
+}
+function jumpEditorSection(section='basic'){
+  const target=$('[data-editor-section="'+section+'"]',root);if(!target)return;
+  if(target.tagName==='DETAILS')target.open=true;
+  target.scrollIntoView({behavior:'smooth',block:'start'});
+  const focus=target.querySelector('input,textarea,select,button');setTimeout(()=>focus?.focus({preventScroll:true}),250);
+}
+function renderArchiveWorkflow(){
+  const status=$('[data-archive-workflow-status]',root);if(!status)return;
+  const issueItems=items.filter(item=>archiveAudit(item).length).length;
+  const attention=browserImports.filter(row=>['unlinked','internal'].includes(row.state)).length;
+  const selectedText=selected?.id?(selected.title||selected.id):'아직 선택 안 됨';
+  const liveText=selected?.id?(isLiveItem(selected)?'팬사이트 공개 중':'팬사이트 미공개'):'콘텐츠 선택 필요';
+  status.innerHTML='<span><b>확인 필요</b>'+issueItems+'개 콘텐츠</span><span><b>수집 자료</b>'+attention+'건 확인</span><span><b>현재 편집</b>'+esc(selectedText)+'</span><span><b>공개 상태</b>'+esc(liveText)+'</span>';
+}
+function focusArchiveArea(action=''){
+  if(action==='all'||action==='issues'){
+    const quality=$('[data-archive-admin-quality]',root);if(quality){quality.value=action==='issues'?'issues':'all';renderList()}
+    $('[data-archive-admin-list]',root)?.scrollIntoView({behavior:'smooth',block:'start'});return;
+  }
+  if(action==='collector'){$('[data-collector-inbox]',root)?.scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(action==='visual'){$('[data-archive-image-audit-card]',root)?.scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(action==='candidates'){const box=$('[data-archive-candidates]',root);if(box){box.open=true;box.scrollIntoView({behavior:'smooth',block:'start'})}return}
+  if(action==='editor'){$('[data-archive-admin-editor]',root)?.scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(action==='public'&&selected?.id&&isLiveItem(selected)){window.open(publicContentUrl(selected.id),'_blank','noopener');return}
+}
+async function verifyPublicReflection(item={}){
+  if(!item?.id)return false;
+  try{
+    const response=await fetch('/api/content?type=chunbong-content&id='+encodeURIComponent(item.id)+'&v='+Date.now(),{cache:'no-store'});
+    const payload=await response.json();
+    return response.ok&&payload?.item?.id===item.id&&String(payload?.item?.updatedAt||'')===String(item.updatedAt||'');
+  }catch{return false}
+}
+
 function conflictBlock(item){const rows=item.verification?.conflicts||[];return `<div class="operator-archive-conflicts ${rows.length?'has-conflict':''}"><div><strong>정보 충돌</strong><span>${rows.length?`${rows.length}건 확인 필요`:'미해결 충돌 없음'}</span></div>${rows.length?`<ul>${rows.map((c,i)=>`<li><span>${esc(c.field||'필드')} · ${esc(c.note||c.reason||'출처 간 값 확인 필요')}</span><button type="button" data-resolve-conflict="${i}">해소</button></li>`).join('')}</ul>`:''}</div>`}
 function renderEditor(item){selected=structuredClone(item||emptyItem());const editor=$('[data-archive-admin-editor]',root);editor.innerHTML=`<form data-archive-form><div class="operator-archive-editor-head"><div><small>CONTENT RECORD</small><h2>${esc(selected.title||'새 콘텐츠')}</h2></div><span class="operator-archive-state" data-state="${esc(statusText(selected))}">${esc(statusText(selected))}</span></div><div class="operator-archive-form-grid">${field('콘텐츠 ID','id',selected.id)}${field('제목','title',selected.title)}${selectField('카테고리','category',selected.category,[['minecraft','마인크래프트'],['song','노래대회'],['broadcast','방송 기획'],['class-event','클래스 · 이벤트'],['other','기타']])}${field('춘봉 역할','role',selected.role)}${selectField('상태','status',selected.status,[['planned','예정'],['recruiting','모집'],['ongoing','진행 중'],['ended','종료']])}${selectField('날짜 정확도','datePrecision',selected.datePrecision,[['day','일'],['month','월'],['year','연도'],['unknown','확인 중']])}${field('시작 날짜','startDate',selected.startDate)}${field('종료 날짜','endDate',selected.endDate)}${field('참가자 / 수강생','participants',(selected.participants||[]).join(', '))}${field('별칭','aliases',(selected.aliases||[]).join(', '))}${selectField('검증 상태','verificationState',selected.verification?.state||'needs_review',[['official','공식 자료 확인'],['cross_checked','교차 확인'],['needs_review','확인 필요']])}</div><label class="operator-archive-field operator-archive-wide"><span>한 줄 소개</span><textarea name="summary" rows="2">${esc(selected.summary)}</textarea></label><label class="operator-archive-field operator-archive-wide"><span>상세 소개</span><textarea name="description" rows="5">${esc(selected.description)}</textarea></label><fieldset><legend>대표 이미지</legend><div class="operator-archive-form-grid">${field('이미지 URL / /assets 경로','heroSrc',selected.heroImage?.src||'')}${field('대체 텍스트','heroAlt',selected.heroImage?.alt||'')}${field('출처 ID','heroSourceId',selected.heroImage?.sourceId||'')}</div></fieldset>${conflictBlock(selected)}${auditBlock(selected)}<fieldset><legend>결과 · 회차 기록 <button type="button" data-add-row="result">+ 추가</button></legend><div class="operator-archive-repeater" data-results>${(selected.results||[]).map(resultRow).join('')}</div></fieldset><fieldset><legend>출처 <button type="button" data-add-row="source">+ 추가</button></legend><div class="operator-archive-repeater" data-sources>${(selected.sources||[]).map(sourceRow).join('')}</div></fieldset><fieldset><legend>타임라인 <button type="button" data-add-row="timeline">+ 추가</button></legend><div class="operator-archive-repeater" data-timeline>${(selected.timeline||[]).map((r,i)=>materialRow(r,'timeline',i)).join('')}</div></fieldset><fieldset><legend>영상 <button type="button" data-add-row="media">+ 추가</button></legend><div class="operator-archive-repeater" data-media>${(selected.media||[]).map((r,i)=>materialRow(r,'media',i)).join('')}</div></fieldset><fieldset><legend>이미지 갤러리 <button type="button" data-add-row="gallery">+ 추가</button></legend><div class="operator-archive-repeater" data-gallery>${(selected.gallery||[]).map(galleryRow).join('')}</div></fieldset><section class="operator-archive-preview" data-archive-admin-preview><small>미리보기</small><div></div></section><p class="operator-archive-message" data-archive-admin-message aria-live="polite"></p><div class="operator-archive-actions">${selected.id?`<a class="operator-archive-open-public" href="chunbong-contents.html?id=${encodeURIComponent(selected.id)}" target="_blank" rel="noreferrer">공개 페이지 열기 ↗</a>`:''}<button type="button" data-archive-preview>미리보기 갱신</button><button type="button" data-archive-save>초안 저장</button><button type="button" class="primary" data-archive-publish>공개하기</button><button type="button" class="danger" data-archive-delete ${selected.id?'':'disabled'}>삭제</button></div></form>`;bindEditor();renderPreview()}
 function values(selector,prefix){return $$(selector,root).map(row=>{const g=name=>row.querySelector(`[name="${prefix}-${name}"]`)?.value?.trim()||'';return{id:g('id'),type:g('type'),title:g('title'),date:g('date'),datePrecision:g('precision')||'unknown',url:g('url'),thumbnail:g('thumbnail'),sourceId:g('source'),note:g('note'),visibility:g('visibility')==='internal'?'internal':'public'}}).filter(r=>r.title||r.url)}
