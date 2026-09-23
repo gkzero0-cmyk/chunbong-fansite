@@ -161,6 +161,29 @@
               </div>
             </div>
           </details>
+          <details class="operator-soop-helper operator-namu-helper" data-namu-helper>
+            <summary><span>나무위키 직접 수집 도우미</span><b>namu.wiki 원문만 사용</b></summary>
+            <div class="operator-soop-helper-body">
+              <p>서버에서 나무위키 접근이 차단된 경우 미러 사이트로 우회하지 않습니다. 브라우저에서 직접 연 <strong>namu.wiki</strong> 문서의 본문과 실제 <strong>i.namu.wiki</strong> 이미지만 읽어 춘봉 콘텐츠에 연결합니다. 로그인 정보·쿠키는 읽거나 전송하지 않습니다.</p>
+              <div class="operator-soop-helper-actions">
+                <a href="#" data-namu-bookmarklet draggable="true">나무위키 문서 수집</a>
+                <button type="button" data-namu-bookmarklet-copy>북마크 코드 복사</button>
+              </div>
+              <ol>
+                <li><b>나무위키 문서 수집</b> 링크를 브라우저 북마크바로 끌어놓습니다.</li>
+                <li><b>https://namu.wiki/</b>에서 연결할 문서를 연 뒤 그 북마크를 누릅니다.</li>
+                <li>문서 URL이 기존 출처와 같으면 자동 연결되고, 필요하면 콘텐츠를 직접 선택할 수 있습니다.</li>
+              </ol>
+              <div class="operator-soop-import" data-namu-import hidden>
+                <header><div><small data-namu-import-meta>namu.wiki 직접 수집</small><strong data-namu-import-title>수집 결과</strong></div><button type="button" data-namu-import-dismiss>닫기</button></header>
+                <p data-namu-import-summary></p>
+                <label><span>연결할 콘텐츠</span><select data-namu-import-target><option value="">자동 연결</option></select></label>
+                <div class="operator-soop-import-buttons">
+                  <button type="button" data-namu-import-connect>나무위키 원문 반영</button>
+                </div>
+              </div>
+            </div>
+          </details>
           <details class="operator-archive-candidates" data-archive-candidates>
             <summary><span>자동수집 검토 후보</span><b data-archive-candidate-count>0건</b></summary>
             <div data-archive-candidate-list><p class="operator-empty">검토 후보가 없습니다.</p></div>
