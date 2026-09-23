@@ -101,6 +101,85 @@ export async function fetchOperatorContentHealth(){
   const payload=await json('operator-content-archive');
   return archiveHealthSnapshot(Array.isArray(payload.items)?payload.items:[],Array.isArray(payload.candidates)?payload.candidates:[],payload.autoSync||null);
 }
+const IMAGE_AUDIT_LIMIT=80,IMAGE_AUDIT_LARGE_BYTES=1536*1024,IMAGE_AUDIT_SLOW_MS=2500;
+function collectArchiveImages(itemRows=items){
+  const map=new Map();
+  const add=(item,kind,src)=>{
+    const raw=String(src||'').trim();if(!raw||/^(?:data:|blob:|javascript:)/i.test(raw))return;
+    let href='';try{href=new URL(raw,location.origin).href}catch{return}
+    const existing=map.get(href)||{url:href,uses:[]};
+    existing.uses.push({itemId:item.id||'',title:item.title||item.id||'이름 없음',kind});
+    map.set(href,existing);
+  };
+  for(const item of Array.isArray(itemRows)?itemRows:[]){
+    add(item,'대표 이미지',item.heroImage?.src);
+    for(const row of Array.isArray(item.gallery)?item.gallery:[])add(item,'갤러리',row.src||row.url);
+    for(const row of Array.isArray(item.media)?item.media:[])add(item,'영상 썸네일',row.thumbnail);
+  }
+  return [...map.values()];
+}
+function imageLoad(url,timeoutMs=8000){
+  return new Promise(resolve=>{
+    const image=new Image(),started=performance.now();let done=false;
+    const finish=(ok,reason='')=>{if(done)return;done=true;clearTimeout(timer);resolve({ok,reason,width:Number(image.naturalWidth)||0,height:Number(image.naturalHeight)||0,ms:Math.max(0,Math.round(performance.now()-started))})};
+    const timer=setTimeout(()=>finish(false,'시간 초과'),timeoutMs);
+    image.onload=()=>finish(true);image.onerror=()=>finish(false,'불러오기 실패');image.decoding='async';image.src=url;
+  });
+}
+async function probeArchiveImage(target){
+  const loaded=await imageLoad(target.url);
+  let size=0,type='',headOk=null;
+  try{
+    const parsed=new URL(target.url);
+    if(parsed.origin===location.origin){
+      const response=await fetch(parsed.href,{method:'HEAD',cache:'no-store'});
+      headOk=response.ok;type=response.headers.get('content-type')||'';size=Number(response.headers.get('content-length'))||0;
+    }
+  }catch{}
+  const isVector=/\.svg(?:\?|$)/i.test(target.url)||/svg/i.test(type);
+  const hero=target.uses.some(use=>use.kind==='대표 이미지');
+  const lowResolution=Boolean(loaded.ok&&hero&&!isVector&&loaded.width&&loaded.height&&(loaded.width<800||loaded.height<450));
+  const large=Boolean(size>=IMAGE_AUDIT_LARGE_BYTES),slow=Boolean(loaded.ok&&loaded.ms>=IMAGE_AUDIT_SLOW_MS);
+  const reasons=[];
+  if(!loaded.ok||headOk===false)reasons.push(!loaded.ok?loaded.reason:'로컬 파일 응답 오류');
+  if(large)reasons.push('대용량 '+Math.round(size/1024)+'KB');
+  if(slow)reasons.push('느린 표시 '+loaded.ms+'ms');
+  if(lowResolution)reasons.push('대표 이미지 해상도 '+loaded.width+'×'+loaded.height);
+  return{...target,...loaded,size,type,large,slow,lowResolution,issue:reasons.length>0,reasons};
+}
+async function mapImageAudit(rows,limit=6){
+  const out=new Array(rows.length);let cursor=0;
+  const worker=async()=>{while(true){const index=cursor++;if(index>=rows.length)return;out[index]=await probeArchiveImage(rows[index])}};
+  await Promise.all(Array.from({length:Math.min(limit,rows.length)},worker));return out;
+}
+function imageAuditUseLabel(row){
+  const first=row.uses?.[0];if(!first)return'이미지';
+  return first.title+' · '+first.kind+(row.uses.length>1?' 외 '+(row.uses.length-1)+'곳':'');
+}
+function renderImageAudit(health){
+  const state=$('[data-archive-image-audit-state]',root),results=$('[data-archive-image-audit-results]',root);if(!state||!results)return;
+  const problems=Number(health.issueImages)||0;
+  state.dataset.state=health.failed?'bad':problems?'warn':'ok';
+  state.innerHTML='<strong>'+(health.failed?'검사 실패':problems?'확인 필요 '+problems+'개':'검사 완료 · 정상')+'</strong><span>검사 '+health.scanned+'/'+health.total+'개 · 깨짐 '+health.failedCount+' · 대용량 '+health.large+' · 지연 '+health.slow+' · 대표 이미지 해상도 '+health.lowResolution+(health.skipped?' · 미검사 '+health.skipped:'')+'</span>';
+  const rows=Array.isArray(health.issues)?health.issues:[];
+  results.innerHTML=rows.length?rows.map(row=>'<article class="operator-image-audit-row" data-state="'+(row.ok?'warn':'bad')+'"><span class="operator-image-audit-thumb">'+(row.ok?'<img src="'+esc(row.url)+'" alt="">':'!')+'</span><div><strong>'+esc(imageAuditUseLabel(row))+'</strong><small>'+esc(row.reasons.join(' · '))+'</small><code>'+esc(row.url.length>120?row.url.slice(0,117)+'…':row.url)+'</code></div><b>'+(row.width&&row.height?row.width+'×'+row.height:'확인 필요')+'</b></article>').join(''):'<div class="operator-image-audit-ok"><span>✓</span><div><strong>검사한 이미지에서 문제를 찾지 못했습니다.</strong><small>실제 로딩, 로컬 파일 크기, 대표 이미지 해상도를 확인했습니다.</small></div></div>';
+}
+function publishImageAudit(health){
+  renderImageAudit(health);
+  document.dispatchEvent(new CustomEvent('chunbong:operator-image-health',{detail:health}));
+}
+async function runImageAudit(){
+  const button=$('[data-archive-image-audit]',root),state=$('[data-archive-image-audit-state]',root);if(button)button.disabled=true;
+  const all=collectArchiveImages(items),targets=all.slice(0,IMAGE_AUDIT_LIMIT);
+  if(state){state.dataset.state='';state.innerHTML='<strong>검사 중…</strong><span>'+targets.length+'개 이미지를 실제로 불러오고 있습니다.</span>'}
+  try{
+    const rows=await mapImageAudit(targets),issues=rows.filter(row=>row.issue);
+    const health={checkedAt:new Date().toISOString(),total:all.length,scanned:rows.length,skipped:Math.max(0,all.length-rows.length),failed:false,failedCount:rows.filter(row=>!row.ok).length,large:rows.filter(row=>row.large).length,slow:rows.filter(row=>row.slow).length,lowResolution:rows.filter(row=>row.lowResolution).length,issueImages:issues.length,issues:issues.sort((a,b)=>(Number(a.ok)-Number(b.ok))||b.size-a.size||b.ms-a.ms).slice(0,30)};
+    publishImageAudit(health);
+  }catch(error){
+    publishImageAudit({checkedAt:new Date().toISOString(),total:all.length,scanned:0,skipped:all.length,failed:true,failedCount:0,large:0,slow:0,lowResolution:0,issueImages:0,issues:[],error:String(error?.message||error)});
+  }finally{if(button)button.disabled=false}
+}
 function conflictBlock(item){const rows=item.verification?.conflicts||[];return `<div class="operator-archive-conflicts ${rows.length?'has-conflict':''}"><div><strong>정보 충돌</strong><span>${rows.length?`${rows.length}건 확인 필요`:'미해결 충돌 없음'}</span></div>${rows.length?`<ul>${rows.map((c,i)=>`<li><span>${esc(c.field||'필드')} · ${esc(c.note||c.reason||'출처 간 값 확인 필요')}</span><button type="button" data-resolve-conflict="${i}">해소</button></li>`).join('')}</ul>`:''}</div>`}
 function renderEditor(item){selected=structuredClone(item||emptyItem());const editor=$('[data-archive-admin-editor]',root);editor.innerHTML=`<form data-archive-form><div class="operator-archive-editor-head"><div><small>CONTENT RECORD</small><h2>${esc(selected.title||'새 콘텐츠')}</h2></div><span class="operator-archive-state" data-state="${esc(statusText(selected))}">${esc(statusText(selected))}</span></div><div class="operator-archive-form-grid">${field('콘텐츠 ID','id',selected.id)}${field('제목','title',selected.title)}${selectField('카테고리','category',selected.category,[['minecraft','마인크래프트'],['song','노래대회'],['broadcast','방송 기획'],['class-event','클래스 · 이벤트'],['other','기타']])}${field('춘봉 역할','role',selected.role)}${selectField('상태','status',selected.status,[['planned','예정'],['recruiting','모집'],['ongoing','진행 중'],['ended','종료']])}${selectField('날짜 정확도','datePrecision',selected.datePrecision,[['day','일'],['month','월'],['year','연도'],['unknown','확인 중']])}${field('시작 날짜','startDate',selected.startDate)}${field('종료 날짜','endDate',selected.endDate)}${field('참가자 / 수강생','participants',(selected.participants||[]).join(', '))}${field('별칭','aliases',(selected.aliases||[]).join(', '))}${selectField('검증 상태','verificationState',selected.verification?.state||'needs_review',[['official','공식 자료 확인'],['cross_checked','교차 확인'],['needs_review','확인 필요']])}</div><label class="operator-archive-field operator-archive-wide"><span>한 줄 소개</span><textarea name="summary" rows="2">${esc(selected.summary)}</textarea></label><label class="operator-archive-field operator-archive-wide"><span>상세 소개</span><textarea name="description" rows="5">${esc(selected.description)}</textarea></label><fieldset><legend>대표 이미지</legend><div class="operator-archive-form-grid">${field('이미지 URL / /assets 경로','heroSrc',selected.heroImage?.src||'')}${field('대체 텍스트','heroAlt',selected.heroImage?.alt||'')}${field('출처 ID','heroSourceId',selected.heroImage?.sourceId||'')}</div></fieldset>${conflictBlock(selected)}${auditBlock(selected)}<fieldset><legend>결과 · 회차 기록 <button type="button" data-add-row="result">+ 추가</button></legend><div class="operator-archive-repeater" data-results>${(selected.results||[]).map(resultRow).join('')}</div></fieldset><fieldset><legend>출처 <button type="button" data-add-row="source">+ 추가</button></legend><div class="operator-archive-repeater" data-sources>${(selected.sources||[]).map(sourceRow).join('')}</div></fieldset><fieldset><legend>타임라인 <button type="button" data-add-row="timeline">+ 추가</button></legend><div class="operator-archive-repeater" data-timeline>${(selected.timeline||[]).map((r,i)=>materialRow(r,'timeline',i)).join('')}</div></fieldset><fieldset><legend>영상 <button type="button" data-add-row="media">+ 추가</button></legend><div class="operator-archive-repeater" data-media>${(selected.media||[]).map((r,i)=>materialRow(r,'media',i)).join('')}</div></fieldset><fieldset><legend>이미지 갤러리 <button type="button" data-add-row="gallery">+ 추가</button></legend><div class="operator-archive-repeater" data-gallery>${(selected.gallery||[]).map(galleryRow).join('')}</div></fieldset><section class="operator-archive-preview" data-archive-admin-preview><small>미리보기</small><div></div></section><p class="operator-archive-message" data-archive-admin-message aria-live="polite"></p><div class="operator-archive-actions">${selected.id?`<a class="operator-archive-open-public" href="chunbong-contents.html?id=${encodeURIComponent(selected.id)}" target="_blank" rel="noreferrer">공개 페이지 열기 ↗</a>`:''}<button type="button" data-archive-preview>미리보기 갱신</button><button type="button" data-archive-save>초안 저장</button><button type="button" class="primary" data-archive-publish>공개하기</button><button type="button" class="danger" data-archive-delete ${selected.id?'':'disabled'}>삭제</button></div></form>`;bindEditor();renderPreview()}
 function values(selector,prefix){return $$(selector,root).map(row=>{const g=name=>row.querySelector(`[name="${prefix}-${name}"]`)?.value?.trim()||'';return{id:g('id'),type:g('type'),title:g('title'),date:g('date'),datePrecision:g('precision')||'unknown',url:g('url'),thumbnail:g('thumbnail'),sourceId:g('source'),note:g('note'),visibility:g('visibility')==='internal'?'internal':'public'}}).filter(r=>r.title||r.url)}
@@ -341,4 +420,4 @@ async function runOfficialSync(){
   }finally{if(button)button.disabled=false}
 }
 async function load(){try{const p=await json('operator-content-archive');items=Array.isArray(p.items)?p.items:[];autoSyncMeta=p.autoSync||null;autoCandidates=Array.isArray(p.candidates)?p.candidates:[];renderList();renderAutoSyncState();renderCandidates();renderSoopHelper();publishArchiveHealth(archiveHealthSnapshot(items,autoCandidates,autoSyncMeta))}catch(e){setMessage(e.message==='archive_storage_unavailable'?'콘텐츠 저장소를 사용할 수 없습니다.':'콘텐츠 목록을 불러오지 못했습니다.','bad')}}
-export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;browserImport=readSoopImportHash();$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);$('[data-archive-admin-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-archive-select]');if(button)selectItem(button.dataset.archiveSelect)});$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());renderEditor(emptyItem());await load();if(browserImport)await autoRouteSoopImport();else renderSoopHelper()}
+export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;browserImport=readSoopImportHash();$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);$('[data-archive-admin-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-archive-select]');if(button)selectItem(button.dataset.archiveSelect)});$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());$('[data-archive-image-audit]',root)?.addEventListener('click',()=>void runImageAudit());renderEditor(emptyItem());await load();if(browserImport)await autoRouteSoopImport();else renderSoopHelper()}
