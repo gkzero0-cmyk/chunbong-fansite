@@ -318,22 +318,26 @@ function base64ToUtf8(value=''){
 }
 function namuCollectorBookmarklet(){
   const target=location.origin+'/operator.html?tab=contents';
-  const script=`(()=>{try{
+  const script=`(async()=>{try{
     const okHost=location.hostname==='namu.wiki'||location.hostname==='www.namu.wiki';
     if(!okHost||!location.pathname.startsWith('/w/')){alert('namu.wiki 문서에서 실행해 주세요.');return}
     const root=document.querySelector('article')||document.querySelector('main')||document.body;
     const clean=value=>(value||'').replace(/\\s+/g,' ').trim();
     const generic=/상세 내용|관련 문서|상위 문서|편집|접기|펼치기|아이콘|favicon|external link/i;
+    const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));const startY=window.scrollY;
+    const pageHeight=()=>Math.max(document.body?.scrollHeight||0,document.documentElement?.scrollHeight||0);
+    for(let step=0,y=0;step<72&&y<pageHeight();step++,y+=Math.max(640,Math.floor((innerHeight||800)*.82))){window.scrollTo(0,y);await wait(55)}
+    window.scrollTo(0,startY);await wait(120);
+    const officialImage=node=>{const values=[node.currentSrc,node.src,node.getAttribute?.('src'),node.getAttribute?.('data-src'),node.getAttribute?.('data-original'),node.getAttribute?.('data-lazy-src')];for(const attr of ['srcset','data-srcset']){const raw=node.getAttribute?.(attr)||'';for(const part of raw.split(',')){const candidate=part.trim().split(/\\s+/)[0];if(candidate)values.push(candidate)}}for(const value of values){if(!value)continue;let parsed=null;try{parsed=new URL(value,location.href)}catch{}if(parsed?.protocol==='https:'&&parsed.hostname==='i.namu.wiki')return parsed.href}return''};
     const sections=[];let current={title:'본문',text:[],images:[]};
     const push=()=>{const text=current.text.join('\\n').slice(0,6000);if(text||current.images.length)sections.push({title:current.title||'본문',text,images:current.images.slice(0,18)});current={title:'본문',text:[],images:[]}};
-    const nodes=[...root.querySelectorAll('h1,h2,h3,h4,p,li,blockquote,figcaption,img')].slice(0,2400);
+    const nodes=[...root.querySelectorAll('h1,h2,h3,h4,p,li,blockquote,figcaption,img,source')].slice(0,3200);
     for(const node of nodes){
       if(/^H[1-4]$/.test(node.tagName)){push();current={title:clean(node.innerText||node.textContent)||'본문',text:[],images:[]};continue}
-      if(node.tagName==='IMG'){
-        const src=node.currentSrc||node.src||'',alt=clean(node.alt||node.title||'').replace(/^파일:/,'');
-        let parsed=null;try{parsed=new URL(src,location.href)}catch{}
-        if(!parsed||parsed.protocol!=='https:'||parsed.hostname!=='i.namu.wiki'||generic.test(alt))continue;
-        if(!current.images.some(image=>image.src===parsed.href))current.images.push({src:parsed.href,alt,caption:alt});
+      if(node.tagName==='IMG'||node.tagName==='SOURCE'){
+        const src=officialImage(node),pictureImg=node.closest?.('picture')?.querySelector?.('img'),alt=clean(node.alt||node.title||pictureImg?.alt||pictureImg?.title||'').replace(/^파일:/,'');
+        if(!src||generic.test(alt))continue;
+        if(!current.images.some(image=>image.src===src))current.images.push({src,alt,caption:alt});
         continue;
       }
       const value=clean(node.innerText||node.textContent);if(!value||value.length>1800)continue;
