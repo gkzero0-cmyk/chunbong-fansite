@@ -39,6 +39,27 @@ assert.equal(payload.sections.length,1);
 assert.equal(payload.sections[0].images.length,1,'only i.namu.wiki image URLs should survive browser import');
 assert.equal(payload.sections[0].images[0].src,'https://i.namu.wiki/i/example-token.webp');
 
+const sanitized=archive._internals.sanitizeStoredNamuGuideRows([{
+  id:'legacy',title:'기존 자료',text:'본문은 유지',
+  images:[
+    {src:'https://file.namu.moe/file/broken',alt:'깨진 미러'},
+    {src:'https://i.namu.wiki/i/official.webp',alt:'정식 이미지'},
+    {src:'https://res.cloudinary.com/example/image/upload/archived.webp',alt:'영구 보관'}
+  ],
+  content:[
+    {type:'text',text:'본문은 유지'},
+    {type:'image',image:{src:'https://d.namu.moe/file/broken2'}},
+    {type:'image',image:{src:'https://i.namu.wiki/i/official-2.webp'}}
+  ]
+}]);
+assert.equal(sanitized.length,1);
+assert.deepEqual(sanitized[0].images.map(image=>image.src),[
+  'https://i.namu.wiki/i/official.webp',
+  'https://res.cloudinary.com/example/image/upload/archived.webp'
+],'legacy mirror images must be purged while canonical/permanent images survive');
+assert.equal(sanitized[0].content.filter(block=>block.type==='image').length,1);
+assert.equal(sanitized[0].content.find(block=>block.type==='image').image.src,'https://i.namu.wiki/i/official-2.webp');
+
 const item=core.normalizeArchiveItem({
   id:'namu-canonical-test',title:'Canonical',category:'other',status:'ended',datePrecision:'unknown',published:false,
   sources:[{id:'source-namu',kind:'reference',label:'나무위키',url:'https://namu.wiki/w/%EB%A0%88%EC%98%A4%ED%8E%A0',visibility:'public'}],
