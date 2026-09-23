@@ -38,19 +38,21 @@ function shortTime(seconds){const n=Math.max(0,Number(seconds)||0);return n>=60?
 const PAGE_LABELS={
   '/':'홈','/index.html':'홈','/schedule.html':'방송 일정','/notice.html':'공지','/vod.html':'다시보기','/clips.html':'핫클립',
   '/fanart.html':'팬아트','/youtube.html':'유튜브','/tarot.html':'춘봉 타로','/minigames.html':'미니게임','/history.html':'방송 이력',
-  '/data.html':'춘봉 데이터','/changelog.html':'업데이트 일지','/myhub.html':'MY','/chuntris.html':'춘트리스','/chunbak.html':'춘박게임',
+  '/chunbong-contents.html':'춘봉 콘텐츠','/data.html':'춘봉 데이터','/changelog.html':'업데이트 일지','/myhub.html':'MY','/chuntris.html':'춘트리스','/chunbak.html':'춘박게임',
   '/chungwagame.html':'춘과게임','/chuncortile.html':'춘컬타일'
 };
 const MENU_LABELS={
   home:'홈',schedule:'방송 일정',notice:'공지',vod:'다시보기',clips:'핫클립',fanart:'팬아트',youtube:'유튜브',tarot:'춘봉 타로',
-  minigames:'미니게임',history:'방송 이력',data:'춘봉 데이터',changelog:'업데이트 일지',myhub:'MY',more:'더보기',
-  '팬존':'팬존','영상':'영상','일정':'방송 일정','더보기':'더보기','춘과게임SUM 10':'춘과게임'
+  minigames:'미니게임',contents:'춘봉 콘텐츠',history:'방송 이력',data:'춘봉 데이터',changelog:'업데이트 일지',myhub:'MY',more:'더보기',
+  '팬존':'팬존','영상':'영상','일정':'방송 일정','더보기':'더보기','춘과게임SUM 10':'춘과게임','춘박게임MERGE':'춘박게임'
 };
 function friendlyKey(key=''){
   const map={'device:mobile':'모바일','device:tablet':'태블릿','device:desktop':'PC','device:other':'기타 기기','pwa:yes':'설치 앱(PWA)','pwa:no':'브라우저','theme:light':'라이트 모드','theme:dark':'다크 모드'};
   const raw=String(key||'');
   if(PAGE_LABELS[raw])return PAGE_LABELS[raw];
   if(MENU_LABELS[raw])return MENU_LABELS[raw];
+  if(/^contents$/i.test(raw))return '춘봉 콘텐츠';
+  if(/춘박게임\s*merge/i.test(raw))return '춘박게임';
   if(map[raw])return map[raw];
   const game=raw.match(/^game_(?:start|finish):(.+)$/);
   if(game){const names={chuntris:'춘트리스',chunbak:'춘박게임',chungwagame:'춘과게임',chuncortile:'춘컬타일'};return '미니게임 · '+(names[game[1]]||game[1])}
@@ -63,13 +65,46 @@ function periodTitle(){
 }
 function compareLabel(){return currentDays==='all'?'전체 기간':currentDays===1?'어제 대비':`이전 ${currentDays}일 대비`}
 function renderRows(el,rows=[]){el.innerHTML=rows.length?rows.map((row,i)=>`<li><em>${i+1}</em><strong title="${escapeHtml(row.key)}">${escapeHtml(friendlyKey(row.key))}</strong><b>${fmt(row.value)}${Number.isFinite(row.averageActiveSeconds)?' · '+shortTime(row.averageActiveSeconds):''}</b></li>`).join(''):'<li><em>–</em><strong>아직 데이터가 없습니다.</strong><b>0</b></li>'}
-function renderPageRows(rows=[]){
-  const el=$('#operator-pages'),max=Math.max(1,...rows.map(row=>Number(row.value)||0));
-  el.innerHTML=rows.length?rows.map((row,i)=>`<li class="operator-rank-rich"><em>${i+1}</em><div><strong title="${escapeHtml(row.key)}">${escapeHtml(friendlyKey(row.key))}</strong><span>조회 ${fmt(row.value)}회 · 평균 활동 ${shortTime(row.averageActiveSeconds||0)}</span><i><b style="width:${Math.max(4,(Number(row.value)||0)/max*100)}%"></b></i></div><b>${Math.round((Number(row.value)||0)/max*100)}%</b></li>`).join(''):'<li><em>–</em><strong>아직 페이지 이용 데이터가 없습니다.</strong><b>0</b></li>';
+function sharePercent(value,total){return total>0?Math.max(0,Number(value)||0)/total*100:0}
+function shareLabel(value,total){const pct=sharePercent(value,total);return pct>0&&pct<1?pct.toFixed(1)+'%':Math.round(pct)+'%'}
+function renderPageRows(rows=[],total=0){
+  const el=$('#operator-pages'),denominator=Math.max(Number(total)||0,rows.reduce((sum,row)=>sum+(Number(row.value)||0),0),1);
+  el.innerHTML=rows.length?rows.map((row,i)=>{const pct=sharePercent(row.value,denominator);return `<li class="operator-rank-rich"><em>${i+1}</em><div><strong title="${escapeHtml(row.key)}">${escapeHtml(friendlyKey(row.key))}</strong><span>조회 ${fmt(row.value)}회 · 평균 활동 ${shortTime(row.averageActiveSeconds||0)} · 전체의 ${shareLabel(row.value,denominator)}</span><i aria-hidden="true"><b style="width:${Math.max(2,pct)}%"></b></i></div><b title="전체 페이지뷰 중 비중">${shareLabel(row.value,denominator)}</b></li>`}).join(''):'<li><em>–</em><strong>아직 페이지 이용 데이터가 없습니다.</strong><b>0</b></li>';
 }
-function renderMenuRows(rows=[]){
-  const el=$('#operator-menus'),max=Math.max(1,...rows.map(row=>Number(row.value)||0));
-  el.innerHTML=rows.length?rows.map((row,i)=>`<li class="operator-rank-rich"><em>${i+1}</em><div><strong title="${escapeHtml(row.key)}">${escapeHtml(friendlyKey(row.key))}</strong><span>메뉴 클릭 ${fmt(row.value)}회</span><i><b style="width:${Math.max(4,(Number(row.value)||0)/max*100)}%"></b></i></div><b>${Math.round((Number(row.value)||0)/max*100)}%</b></li>`).join(''):'<li><em>–</em><strong>아직 메뉴 이용 데이터가 없습니다.</strong><b>0</b></li>';
+function renderMenuRows(rows=[],total=0){
+  const el=$('#operator-menus'),denominator=Math.max(Number(total)||0,rows.reduce((sum,row)=>sum+(Number(row.value)||0),0),1);
+  el.innerHTML=rows.length?rows.map((row,i)=>{const pct=sharePercent(row.value,denominator);return `<li class="operator-rank-rich"><em>${i+1}</em><div><strong title="${escapeHtml(row.key)}">${escapeHtml(friendlyKey(row.key))}</strong><span>메뉴 클릭 ${fmt(row.value)}회 · 전체 메뉴 클릭의 ${shareLabel(row.value,denominator)}</span><i aria-hidden="true"><b style="width:${Math.max(2,pct)}%"></b></i></div><b title="전체 메뉴 클릭 중 비중">${shareLabel(row.value,denominator)}</b></li>`}).join(''):'<li><em>–</em><strong>아직 메뉴 이용 데이터가 없습니다.</strong><b>0</b></li>';
+}
+function featureMeta(key=''){
+  const raw=String(key||''),game=raw.match(/^game_(start|finish):(.+)$/);
+  const gameNames={chuntris:'춘트리스',chunbak:'춘박게임',chungwagame:'춘과게임',chuncortile:'춘컬타일'};
+  if(game)return{category:'미니게임',label:gameNames[game[2]]||game[2],action:game[1]==='start'?'게임 시작':'게임 종료'};
+  if(raw==='tarot_start')return{category:'타로',label:'춘봉 타로',action:'리딩 시작'};
+  if(raw==='tarot_result')return{category:'타로',label:'춘봉 타로',action:'결과 확인'};
+  if(raw==='feedback_open')return{category:'피드백',label:'피드백',action:'작성창 열기'};
+  if(raw==='feedback_submit')return{category:'피드백',label:'피드백',action:'제출 완료'};
+  if(raw==='schedule_open')return{category:'일정',label:'방송 일정',action:'상세 열기'};
+  if(raw.startsWith('data_tab_open'))return{category:'데이터',label:'춘봉 데이터',action:raw.includes(':')?raw.split(':').slice(1).join(':')+' 탭 열기':'탭 열기'};
+  return{category:'기타',label:friendlyKey(raw),action:'이용'};
+}
+function renderFeatureRows(rows=[],total=0){
+  const el=$('#operator-features'),denominator=Math.max(Number(total)||0,rows.reduce((sum,row)=>sum+(Number(row.value)||0),0),1);
+  el.innerHTML=rows.length?rows.map((row,i)=>{const meta=featureMeta(row.key),pct=sharePercent(row.value,denominator);return `<li class="operator-rank-rich operator-feature-row"><em>${i+1}</em><div><div class="operator-feature-title"><strong title="${escapeHtml(row.key)}">${escapeHtml(meta.label)}</strong><span data-category="${escapeHtml(meta.category)}">${escapeHtml(meta.action)}</span></div><small>${escapeHtml(meta.category)} · 이용 ${fmt(row.value)}회 · 전체 기능 이용의 ${shareLabel(row.value,denominator)}</small><i aria-hidden="true"><b style="width:${Math.max(2,pct)}%"></b></i></div><b>${fmt(row.value)}회</b></li>`}).join(''):'<li><em>–</em><strong>아직 기능 이용 데이터가 없습니다.</strong><b>0</b></li>';
+}
+function renderEnvironmentRows(rows=[]){
+  const el=$('#operator-devices');
+  const groups=[
+    {prefix:'device:',title:'기기',labels:{mobile:'모바일',tablet:'태블릿',desktop:'PC',other:'기타 기기'}},
+    {prefix:'pwa:',title:'실행 방식',labels:{yes:'설치 앱(PWA)',no:'브라우저'}},
+    {prefix:'theme:',title:'테마',labels:{light:'라이트 모드',dark:'다크 모드'}}
+  ];
+  const map=Object.fromEntries((rows||[]).map(row=>[String(row.key),Number(row.value)||0]));
+  el.innerHTML=groups.map(group=>{
+    const values=Object.entries(map).filter(([key])=>key.startsWith(group.prefix)).map(([key,value])=>({key:key.slice(group.prefix.length),value})).sort((a,b)=>b.value-a.value);
+    const total=values.reduce((sum,row)=>sum+row.value,0);
+    const body=values.length?values.map(row=>{const pct=sharePercent(row.value,total);return `<div class="operator-environment-row"><span>${escapeHtml(group.labels[row.key]||row.key)}</span><div><i aria-hidden="true"><b style="width:${Math.max(2,pct)}%"></b></i><small>${fmt(row.value)}회 · ${shareLabel(row.value,total)}</small></div></div>`}).join(''):'<p class="operator-empty">데이터 없음</p>';
+    return `<section class="operator-environment-group"><header><strong>${group.title}</strong><small>${total?fmt(total)+'회 기준':'측정 대기'}</small></header>${body}</section>`;
+  }).join('');
 }
 function renderDaily(rows=[]){
   const el=$('#operator-daily'),max=Math.max(1,...rows.map(x=>Math.max(Number(x.pageviews)||0,Number(x.visitors)||0)));
@@ -109,6 +144,7 @@ function renderOperatorAttention(){
   if(dep.synced===false)rows.push({level:'warn',title:'Production 동기화 필요',detail:'배포본 '+shortSha(dep.sha)+' · main '+shortSha(dep.mainSha),tab:'system'});
   if(dep.rateLimited)rows.push({level:'warn',title:'Vercel 배포 제한',detail:dep.retryAfter?'안전 재시도 기준 '+new Date(dep.retryAfter).toLocaleString('ko-KR'):'새 배포가 제한되어 있습니다.',tab:'system'});
   const perfAverage=Number(currentAnalytics?.performance?.averageMs)||0;if(perfAverage>1000)rows.push({level:'warn',title:'페이지 표시 속도 확인',detail:'선택 기간 평균 '+fmt(perfAverage)+'ms',tab:'performance'});
+  const slowestPage=currentAnalytics?.performance?.pages?.[0];if(Number(slowestPage?.averageMs)>=1500)rows.push({level:'warn',title:'느린 페이지 감지',detail:friendlyKey(slowestPage.key)+' · 평균 '+fmt(slowestPage.averageMs)+'ms · 표본 '+fmt(slowestPage.samples)+'회',tab:'performance'});
   const badEndpoints=endpoints.filter(row=>!row.ok);if(badEndpoints.length)rows.push({level:'bad',title:'API 응답 확인 필요',detail:badEndpoints.map(row=>row.label||row.path||'API').join(' · '),tab:'system'});
   const slow=endpoints.filter(row=>row.ok&&Number(row.ms)>=1500);if(slow.length)rows.push({level:'warn',title:'느린 API 감지',detail:slow.map(row=>(row.label||row.path||'API')+' '+fmt(row.ms)+'ms').join(' · '),tab:'system'});
   if(currentSystem&&(!services.analytics||!services.feedback||!services.push))rows.push({level:'warn',title:'서비스 설정 확인',detail:[!services.analytics&&'실사용 분석',!services.feedback&&'피드백 저장',!services.push&&'Push'].filter(Boolean).join(' · '),tab:'system'});
@@ -140,7 +176,7 @@ async function loadAnalytics(){
   $('#metric-average-daily').textContent=fmt(data.averageDailyVisitors);$('#metric-pageviews').textContent=fmt(data.pageviews);$('#metric-duration').textContent=shortTime(data.averageActiveSeconds);
   $('#metric-new').textContent=fmt(data.newVisitors);$('#metric-returning').textContent=fmt(data.returningVisits);
   renderDelta('#metric-visitors-delta',data.comparison?.visitorsPct);renderDelta('#metric-sessions-delta',data.comparison?.sessionsPct);renderDelta('#metric-pageviews-delta',data.comparison?.pageviewsPct);renderDelta('#metric-duration-delta',data.comparison?.averageActiveSecondsPct);
-  renderPeriodSummary(data);renderPageRows(data.topPages||[]);renderMenuRows(data.topMenus||[]);renderRows($('#operator-features'),data.topFeatures);renderRows($('#operator-devices'),data.devices);
+  renderPeriodSummary(data);renderPageRows(data.topPages||[],data.pageviews);renderMenuRows(data.topMenus||[],data.menuTotal);renderFeatureRows(data.topFeatures||[],data.featureTotal);renderEnvironmentRows(data.devices||[]);
   renderDaily(data.daily||[]);renderHourly(data.hourly||[]);renderFunnel(data.funnel||{});renderPerformance(data.performance||{});
   $('#operator-collection-note').textContent=data.collectionStartedAt?'실사용 분석 수집 시작: '+new Date(data.collectionStartedAt).toLocaleString('ko-KR'):'분석 데이터가 아직 수집되지 않았습니다.';
   const unread=Number(data.feedbackCounts?.new)||0,badge=$('#operator-feedback-badge');badge.textContent=unread;badge.hidden=!unread;renderOperatorAttention();
