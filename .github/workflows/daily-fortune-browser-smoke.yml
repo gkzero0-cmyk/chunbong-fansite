@@ -126,14 +126,14 @@ jobs:
           assert.equal(await page.locator('[data-daily-fortune-holo]').count(),1,'hologram surface must exist');
           await page.waitForFunction(() => document.querySelectorAll('.daily-fortune-holo-ripple').length > 0);
           assert.equal(await page.locator('.daily-fortune-holo-spark').count(),0,'luxury hover should not emit noisy spark particles');
-          await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('.daily-fortune-holo-film')).opacity) >= 0.78);
+          await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('.daily-fortune-holo-film')).opacity) >= 0.88);
           const holoOpacity=await page.locator('.daily-fortune-holo-film').evaluate(el=>getComputedStyle(el).opacity);
-          assert.ok(Number(holoOpacity)>=0.78&&Number(holoOpacity)<=0.86,'inner prism should be clearly visible without becoming a white wash');
+          assert.ok(Number(holoOpacity)>=0.88&&Number(holoOpacity)<=0.96,'crystal hologram material should be clearly visible without becoming a white wash');
           const rippleStyle=await page.locator('.daily-fortune-holo-ripple').first().evaluate(el=>({
             width:parseFloat(getComputedStyle(el).width),
             blend:getComputedStyle(el).mixBlendMode
           }));
-          assert.ok(rippleStyle.width>=56,'fortune prism ripple must be large enough to notice');
+          assert.ok(rippleStyle.width>=110,'fortune crystal bloom must be large enough to read as a material transformation');
           assert.equal(rippleStyle.blend,'screen','fortune prism ripple must stay luminous over the artwork');
           await page.mouse.move(20,20);
 
