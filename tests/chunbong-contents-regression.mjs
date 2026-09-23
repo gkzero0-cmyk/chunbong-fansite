@@ -36,6 +36,8 @@ for(const asset of ['/chunbong-contents.html','/chunbong-contents.css','/chunbon
 for(const token of ['archive-overview-highlight-grid','archive-people-chips','archive-record-strip','archive-media-visual']) assert.ok(css.includes(token),token);
 for(const token of ['주요 기록','기록 하이라이트','영상 · 방송','자료 이미지']) assert.ok(js.includes(token),token);
 for(const token of ['renderNotionGuide','renderNotionPreview','data-archive-tab="guide"','Notion 가이드']) assert.ok(js.includes(token),token);
+for(const token of ['renderLeopelKnowledge','LEOPEL WORLD GUIDE','WORLD & STORY','STORY CHAPTERS','archive-leopel-chapters','archive-leopel-media-strip']) assert.ok(js.includes(token)||css.includes(token),token);
+for(const token of ['notionImagesMarkup','archive-guide-images','data-guide-image-src']) assert.ok(js.includes(token)||css.includes(token),token);
 for(const token of ['renderJustserverKnowledge','guideBuckets','archive-fact-grid','archive-system-chip-grid','archive-flow']) assert.ok(js.includes(token)||css.includes(token),token);
 assert.ok(js.includes('방통실과 내부 검증용 자료는 공개 출처에 사용하지 않습니다.'),'public source policy copy missing');
 for(const token of ['archive-notion-preview-grid','archive-notion-group','archive-notion-sections']) assert.ok(css.includes(token),token);

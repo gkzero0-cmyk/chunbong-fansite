@@ -55,6 +55,34 @@
         {
           "title": "진행 기간",
           "value": "2025년 6월 5일 ~ 7월 6일 · 32일"
+        },
+        {
+          "title": "셧다운",
+          "value": "06:00 ~ 17:00 · 11시간"
+        },
+        {
+          "title": "장르",
+          "value": "RP · 어드벤처 · 서바이벌"
+        },
+        {
+          "title": "스폰서",
+          "value": "인텔 · 피씨디렉트 · 바삭팝콘"
+        },
+        {
+          "title": "세계관",
+          "value": "기억을 잃고 다른 차원 레오펠에 소환된 모험가들이 자신과 과거를 찾아가는 이야기"
+        },
+        {
+          "title": "공동 목표",
+          "value": "파괴된 신비의 동상을 복구해 레오펠을 구하고 원래 세계로 돌아가기"
+        },
+        {
+          "title": "엔딩",
+          "value": "모두의 선택과 이야기 연결에 따라 달라지는 두 가지 엔딩"
+        },
+        {
+          "title": "핵심 콘텐츠",
+          "value": "신비의 동상 · 스토리 모험 · 중력의 탑 · 보스 던전 · 히든 무기 · 장비 강화 · 부동산"
         }
       ],
       "timeline": [
@@ -164,6 +192,114 @@
           "thumbnail": "",
           "sourceId": "source-reference",
           "note": "SOOP 127명, 치지직·YouTube 44명으로 정리된 2차 입주 기록입니다.",
+          "visibility": "public"
+        },
+        {
+          "id": "leopel-story-harp",
+          "type": "reference",
+          "title": "레오펠 첫번째 이야기 · 천상의 하프",
+          "date": "2025-06-10",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "source-reference",
+          "note": "나무위키 레오펠 서버 일정에 기록된 주요 스토리·콘텐츠 공개 일정입니다.",
+          "visibility": "public"
+        },
+        {
+          "id": "leopel-story-dead-sword",
+          "type": "reference",
+          "title": "레오펠 두번째 숨겨진 이야기 · 망자의 검",
+          "date": "2025-06-15",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "source-reference",
+          "note": "나무위키 레오펠 서버 일정에 기록된 주요 스토리·콘텐츠 공개 일정입니다.",
+          "visibility": "public"
+        },
+        {
+          "id": "leopel-story-phoenix-bow",
+          "type": "reference",
+          "title": "레오펠 세번째 숨겨진 이야기 · 불사조의 활",
+          "date": "2025-06-18",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "source-reference",
+          "note": "나무위키 레오펠 서버 일정에 기록된 주요 스토리·콘텐츠 공개 일정입니다.",
+          "visibility": "public"
+        },
+        {
+          "id": "leopel-story-archmage-staff",
+          "type": "reference",
+          "title": "레오펠 현자의 시험 · 대현자의 지팡이",
+          "date": "2025-06-20",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "source-reference",
+          "note": "나무위키 레오펠 서버 일정에 기록된 주요 스토리·콘텐츠 공개 일정입니다.",
+          "visibility": "public"
+        },
+        {
+          "id": "leopel-story-frozen-spear",
+          "type": "reference",
+          "title": "레오펠 네번째 숨겨진 이야기 · 빙결의 창",
+          "date": "2025-06-24",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "source-reference",
+          "note": "나무위키 레오펠 서버 일정에 기록된 주요 스토리·콘텐츠 공개 일정입니다.",
+          "visibility": "public"
+        },
+        {
+          "id": "leopel-story-dragoon-spear",
+          "type": "reference",
+          "title": "레오펠 무투제 · 용기사의 창",
+          "date": "2025-06-25",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "source-reference",
+          "note": "나무위키 레오펠 서버 일정에 기록된 주요 스토리·콘텐츠 공개 일정입니다.",
+          "visibility": "public"
+        },
+        {
+          "id": "leopel-story-wind-glaive",
+          "type": "reference",
+          "title": "레오펠 다섯번째 숨겨진 이야기 · 바람의 글레이브",
+          "date": "2025-06-28",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "source-reference",
+          "note": "나무위키 레오펠 서버 일정에 기록된 주요 스토리·콘텐츠 공개 일정입니다.",
+          "visibility": "public"
+        },
+        {
+          "id": "leopel-story-statue-restored",
+          "type": "reference",
+          "title": "신비의 동상 복원",
+          "date": "2025-07-02",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "source-reference",
+          "note": "나무위키 레오펠 서버 일정에 기록된 주요 스토리·콘텐츠 공개 일정입니다.",
+          "visibility": "public"
+        },
+        {
+          "id": "leopel-story-last-concert",
+          "type": "reference",
+          "title": "레오펠 마지막 콘서트",
+          "date": "2025-07-04",
+          "datePrecision": "day",
+          "url": "",
+          "thumbnail": "",
+          "sourceId": "source-reference",
+          "note": "나무위키 레오펠 서버 일정에 기록된 주요 스토리·콘텐츠 공개 일정입니다.",
           "visibility": "public"
         }
       ],
@@ -344,7 +480,7 @@
           "kind": "reference",
           "label": "Nemopix · 레오펠 지통실",
           "url": "https://www.nemopix.xyz/content/leopel",
-          "visibility": "public"
+          "visibility": "internal"
         }
       ],
       "verification": {
@@ -353,7 +489,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-23T09:22:00+09:00",
+      "updatedAt": "2026-09-23T17:55:00+09:00",
       "series": {
         "id": "leopel",
         "title": "레오펠",
