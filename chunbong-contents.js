@@ -168,12 +168,21 @@ function notionImageMarkup(image={}){
   const src=safeUrl(image.src||'');
   if(!src)return'';
   const alt=image.alt||image.caption||image.filename||'Notion 이미지';
-  return `<button type="button" class="archive-guide-image" data-guide-image-src="${escapeHtml(src)}" data-guide-image-alt="${escapeHtml(alt)}" data-guide-image-caption="${escapeHtml(image.caption||alt)}"><span class="archive-normalized-media" style="--archive-media-image:url('&quot;${escapeHtml(src)}&quot;')"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy" referrerpolicy="no-referrer"></span>${image.caption?`<small>${escapeHtml(image.caption)}</small>`:''}</button>`;
+  return `<button type="button" class="archive-guide-image" data-guide-image-src="${escapeHtml(src)}" data-guide-image-alt="${escapeHtml(alt)}" data-guide-image-caption="${escapeHtml(image.caption||alt)}" data-guide-image-fallback="${escapeHtml(image.filename||alt)}"><span class="archive-normalized-media" style="--archive-media-image:url('&quot;${escapeHtml(src)}&quot;')"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy" referrerpolicy="no-referrer"></span>${image.caption?`<small>${escapeHtml(image.caption)}</small>`:''}</button>`;
 }
 function notionImagesMarkup(section={}){
   const images=(section.images||[]).filter(row=>safeUrl(row?.src));
   if(!images.length)return'';
   return `<div class="archive-guide-images ${images.length===1?'is-single':''}">${images.map(notionImageMarkup).join('')}</div>`;
+}
+function notionSectionBodyMarkup(section={}){
+  const blocks=Array.isArray(section.content)?section.content.filter(Boolean):[];
+  if(!blocks.length)return `${section.text?`<p>${notionTextMarkup(section.text)}</p>`:''}${notionImagesMarkup(section)}`;
+  return '<div class="archive-notion-content">'+blocks.map(block=>{
+    if(block.type==='image'&&block.image)return notionImageMarkup(block.image);
+    if(block.type==='text'&&block.text)return `<p>${notionTextMarkup(block.text)}</p>`;
+    return'';
+  }).join('')+'</div>';
 }
 function resultRows(item){return (item.results||[]).filter(row=>row&&(row.title||row.label||row.value||row.name))}
 function resultValue(item,patterns=[]){
@@ -269,7 +278,7 @@ function renderNotionGuide(item){
   const groups=new Map();
   for(const row of rows){const key=row.pageTitle||'Notion 가이드';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(row)}
   const synced=item.notionSyncedAt?String(item.notionSyncedAt).slice(0,10):'';
-  const details=rows.length?`<div class="archive-notion-groups">${[...groups.entries()].map(([pageTitle,sections],groupIndex)=>`<details class="archive-notion-group" ${groupIndex===0?'open':''}><summary><span><small>NOTION PAGE</small><strong>${escapeHtml(pageTitle)}</strong></span><b>${sections.length}개 섹션</b></summary><div class="archive-notion-sections">${sections.map(section=>`<article><small>${escapeHtml(section.pageTitle||'Notion')}</small><h3>${escapeHtml(section.title||'본문')}</h3>${section.text?`<p>${notionTextMarkup(section.text)}</p>`:''}${notionImagesMarkup(section)}</article>`).join('')}</div></details>`).join('')}</div>`:'<p class="archive-notion-wait">연결된 Notion 자료는 다음 자동 동기화에서 세부 섹션이 추가됩니다. 현재 확인된 구조화 기록은 먼저 표시합니다.</p>';
+  const details=rows.length?`<div class="archive-notion-groups">${[...groups.entries()].map(([pageTitle,sections],groupIndex)=>`<details class="archive-notion-group" ${groupIndex===0?'open':''}><summary><span><small>NOTION PAGE</small><strong>${escapeHtml(pageTitle)}</strong></span><b>${sections.length}개 섹션</b></summary><div class="archive-notion-sections">${sections.map(section=>`<article><small>${escapeHtml(section.pageTitle||'Notion')}</small><h3>${escapeHtml(section.title||'본문')}</h3>${notionSectionBodyMarkup(section)}</article>`).join('')}</div></details>`).join('')}</div>`:'<p class="archive-notion-wait">연결된 Notion 자료는 다음 자동 동기화에서 세부 섹션이 추가됩니다. 현재 확인된 구조화 기록은 먼저 표시합니다.</p>';
   return `<div class="archive-panel archive-notion-panel"><div class="archive-section-heading"><div><small>NOTION ARCHIVE</small><h2>기획 · 시스템 가이드</h2><p>머니게임을 기준 레이아웃으로 삼아 다이아·적자생존에도 같은 디자인 시스템을 적용합니다.</p></div><span>${rows.length?rows.length+'개'+(synced?' · '+escapeHtml(formatDate(synced,'day')):''):'자동 수집'}</span></div>${renderJustserverKnowledge(item,{compact:false})}${details}</div>`;
 }
 function resultValue(item,title){
@@ -472,7 +481,13 @@ function bindSeriesArchive(item){
   if(posterButton&&selected?.poster?.src)posterButton.addEventListener('click',()=>openLightbox(selected.poster.src,selected.poster.alt||selected.title,'',selected.title));
 }
 function bindGuideImages(root=els.detail){
-  root.querySelectorAll('[data-guide-image-src]').forEach(button=>button.addEventListener('click',()=>openLightbox(button.dataset.guideImageSrc||'',button.dataset.guideImageAlt||'가이드 이미지','',button.dataset.guideImageCaption||'')));
+  root.querySelectorAll('[data-guide-image-src]').forEach(button=>{
+    const img=button.querySelector('img');
+    if(img&&!img.dataset.guideFallbackBound){img.dataset.guideFallbackBound='1';img.addEventListener('error',()=>{
+      const media=button.querySelector('.archive-normalized-media');if(media){media.classList.add('is-fallback');media.innerHTML='<span class="archive-guide-image-fallback">'+escapeHtml(button.dataset.guideImageFallback||button.dataset.guideImageAlt||'이미지를 불러오지 못했습니다.')+'</span>'}
+    },{once:true})}
+    button.addEventListener('click',()=>{if(button.querySelector('img'))openLightbox(button.dataset.guideImageSrc||'',button.dataset.guideImageAlt||'가이드 이미지','',button.dataset.guideImageCaption||'')});
+  });
 }
 function bindLeopelGallery(root,item){
   const rows=(item?.gallery||[]).filter(row=>row.src).slice(0,4);
