@@ -9,7 +9,7 @@ const sw = read('service-worker.js');
 
 assert.doesNotThrow(() => new Function(js), 'daily fortune runtime must remain valid JavaScript');
 assert.match(home, /href="daily-fortune\.css\?v=6"/, 'home daily fortune CSS missing');
-assert.match(home, /src="daily-fortune\.js\?v=7"/, 'home daily fortune runtime missing');
+assert.match(home, /src="daily-fortune\.js\?v=8"/, 'home daily fortune runtime missing');
 assert.match(js, /timeZone: SEOUL_TZ/, 'daily fortune must use the Seoul timezone');
 assert.match(js, /const STORAGE_KEY = 'chunbong-daily-fortune-v1'/, 'daily fortune storage key missing');
 assert.match(js, /parsed\?\.date !== today/, 'stored result must expire on the next KST date');
@@ -74,5 +74,11 @@ assert.match(js,/const DECEL_START_MS = 2600/,'final 400ms must be reserved for 
 assert.match(js,/let pendingState = null/,'daily fortune draw must keep an uncommitted pending card while spinning');
 assert.match(js,/const commitPendingState = \(\) =>/,'daily fortune draw must commit only when reveal succeeds');
 assert.match(js,/drawFailsafeTimer = setTimeout\(forceCompleteDraw, RESULT_MS \+ 1200\)/,'daily fortune draw must include a stuck-animation failsafe');
+assert.match(js,/const setCardInteractionLocked = locked =>/,'daily fortune must use a logical draw lock instead of native disabled');
+assert.match(js,/cardButton\.disabled = false/,'daily fortune button must remain natively clickable for recovery');
+assert.doesNotMatch(js,/cardButton\.disabled = true/,'daily fortune must never use native disabled for draw locking');
+assert.match(js,/cardButton\.setAttribute\('aria-disabled', locked \? 'true' : 'false'\)/,'daily fortune logical lock must remain accessible');
+assert.match(js,/window\.addEventListener\('pageshow',[\s\S]*event\.persisted/,'BFCache restores must repair the daily fortune UI');
+assert.match(js,/const recoverIdleState = \(\) =>/,'opening the fortune dialog must reconcile stale browser state');
 assert.match(js,/if \(state\) \{\s*renderState\(false\);\s*return;\s*\}/,'a saved same-day result must recover to the revealed state instead of ignoring clicks');
 assert.match(js,/A single clear wind-chime strike/,'result reveal must use the refined wind-chime direction');
