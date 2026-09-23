@@ -169,6 +169,19 @@ function guideImageLabel(value=''){
   if(guideFilenameOnly(raw)){raw=raw.split(/[\\/]/).pop().replace(/\?.*$/,'').replace(/\.(?:png|jpe?g|webp|gif|svg|avif)$/i,'').trim();if(/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(raw))raw='';else raw=raw.replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim()}
   return raw;
 }
+function guideDisplayText(value='',provider=''){
+  let raw=String(value||'');
+  raw=raw.replace(/(?:^|[\s([{])(?:[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}|[0-9]{4}-[0-9]{2}-[0-9]{2}[_ .-][0-9.:-]{4,}|[A-Za-z0-9가-힣][A-Za-z0-9가-힣 _().-]{0,150})\.(?:png|jpe?g|webp|gif|svg|avif)(?=$|[\s)\]},.;:])/gi,' ');
+  if(provider==='namuwiki')raw=raw
+    .replace(/\[\[파일:[^\]]*\]\]/gi,' ')
+    .replace(/\{\{\{#!(?:wiki|folding|html|if)\b[^\n}]*/gi,' ')
+    .replace(/\{\{\{|\}\}\}/g,' ')
+    .replace(/<[^>\n]{1,260}>/g,' ')
+    .replace(/\|\|+/g,'\n')
+    .replace(/#!(?:if|wiki|folding|html)\b/gi,' ')
+    .replace(/\[(\d+)\]/g,' ');
+  return raw.split(/\r?\n/).map(line=>line.trim()).filter(line=>line&&!guideFilenameOnly(line)).join('\n').replace(/[ \t]{2,}/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+}
 function guideRowHasBody(row={}){return Boolean(String(row.text||'').trim()||(row.images||[]).length||(row.content||[]).some(block=>block?.type==='image'||String(block?.text||'').trim()))}
 function notionGuideRows(item){return (item.notionSections||[]).filter(row=>row&&guideRowHasBody(row))}
 function referenceGuideRows(item){return (item.referenceSections||[]).filter(row=>row&&guideRowHasBody(row))}
@@ -179,7 +192,7 @@ function guideProviderLabel(provider=''){
   if(provider==='soop')return'SOOP 공식';
   return'자료';
 }
-function notionTextMarkup(value=''){return escapeHtml(String(value||'').split(/\r?\n/).map(line=>line.trim()).filter(line=>line&&!guideFilenameOnly(line)).join('\n')).replace(/\n/g,'<br>')}
+function notionTextMarkup(value='',provider=''){return escapeHtml(guideDisplayText(value,provider)).replace(/\n/g,'<br>')}
 function notionImageMarkup(image={}){
   const src=safeUrl(image.src||'');if(!src)return'';
   const alt=guideImageLabel(image.alt||image.caption||image.filename)||'자료 이미지';
@@ -195,14 +208,14 @@ function notionImagesMarkup(section={}){
 }
 function notionSectionBodyMarkup(section={}){
   const blocks=Array.isArray(section.content)?section.content.filter(Boolean):[];
-  if(!blocks.length)return `${section.text?`<p class="archive-guide-text">${notionTextMarkup(section.text)}</p>`:''}${notionImagesMarkup(section)}`;
+  if(!blocks.length)return `${section.text?`<p class="archive-guide-text">${notionTextMarkup(section.text,section.provider||'')}</p>`:''}${notionImagesMarkup(section)}`;
   let html='',pending=[];
   const flush=()=>{if(!pending.length)return;html+=`<div class="archive-guide-images ${pending.length===1?'is-single':pending.length>=3?'is-triple':''}">${pending.map(notionImageMarkup).join('')}</div>`;pending=[]};
   for(const block of blocks){
     if(block?.type==='image'&&block.image){pending.push(block.image);if(pending.length===3)flush();continue}
     flush();
     const value=String(block?.text||'').trim();
-    if(value)html+=`<p class="archive-guide-text">${notionTextMarkup(value)}</p>`;
+    if(value)html+=`<p class="archive-guide-text">${notionTextMarkup(value,section.provider||'')}</p>`;
   }
   flush();return `<div class="archive-notion-content">${html}</div>`;
 }
@@ -228,7 +241,7 @@ function resultCardClass(row={}){
   return title.length>=18||value.length>=52?' is-wide':'';
 }
 function guideSourceRows(item){
-  const documents=documentGuideRows(item).map(row=>({title:row.title||row.pageTitle||'가이드',text:row.text||'',pageTitle:row.pageTitle||guideProviderLabel(row.provider),kind:row.provider||'document'}));
+  const documents=documentGuideRows(item).map(row=>({title:row.title||row.pageTitle||'가이드',text:guideDisplayText(row.text||'',row.provider||''),pageTitle:row.pageTitle||guideProviderLabel(row.provider),kind:row.provider||'document'}));
   const records=resultRows(item).map(row=>({title:row.title||row.label||'기록',text:String(row.value||row.name||''),pageTitle:'구조화 기록',kind:'record'}));
   const seen=new Set(),rows=[];
   for(const row of [...documents,...records]){
