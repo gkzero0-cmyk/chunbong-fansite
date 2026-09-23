@@ -95,11 +95,10 @@
     if (!articleId) return;
     loading.hidden = false;
     try {
-      const response = await fetch(`/api/content?type=fanart-detail&id=${encodeURIComponent(articleId)}`, {
-        headers: { accept: 'application/json' }
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const payload = await response.json();
+      const detailUrl=`/api/content?type=fanart-detail&id=${encodeURIComponent(articleId)}`;
+      const payload=window.ChunbongCache
+        ? await window.ChunbongCache.fetchJson('fanart-detail:'+articleId,detailUrl,{ttl:30*60*1000})
+        : await (async()=>{const response=await fetch(detailUrl,{headers:{accept:'application/json'}});if(!response.ok)throw new Error(`HTTP ${response.status}`);return response.json()})();
       if (token !== requestId) return;
       const detailImages = Array.isArray(payload?.item?.images) ? payload.item.images.filter(Boolean) : [];
       if (detailImages.length) {
