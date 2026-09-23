@@ -109,27 +109,36 @@ function createEnhancedTarotSoundController(storage = globalThis.localStorage, A
     tone(1174.66, 0.42, 0.008, 0.11, 'sine');
   };
 
+  const glassCluster = (baseFrequency, duration = 0.72, gain = 0.012, offset = 0) => {
+    const ratios = [1, 1.39, 1.88, 2.54, 3.11];
+    const levels = [1, 0.62, 0.38, 0.21, 0.12];
+    ratios.forEach((ratio, index) => {
+      tone(baseFrequency * ratio, Math.max(0.28, duration - index * 0.045), gain * levels[index], offset + index * 0.008, 'sine');
+    });
+  };
+
   const hoverAura = () => {
-    // Crystal-prism entry: airy and restrained, never repeated on pointer movement.
-    tone(164.8, 0.70, 0.016, 0, 'sine');
-    tone(329.6, 0.78, 0.011, 0.045, 'triangle');
-    tone(493.9, 0.86, 0.007, 0.12, 'sine');
-    tone(987.8, 0.34, 0.0035, 0.17, 'sine');
+    // Refined glass-halo entry: clear, delicate and intentionally non-piano-like.
+    glassCluster(945, 0.62, 0.012, 0);
   };
 
   const cardSpread = () => {
-    noiseBurst({ duration: 0.56, gain: 0.30, frequency: 1250, q: 0.65, startFrequency: 520, endFrequency: 3400 });
-    for (let index = 0; index < 9; index += 1) {
+    // Keep a faint physical card breath, then let the glass-halo family carry the reveal.
+    for (let index = 0; index < 5; index += 1) {
       noiseBurst({
-        duration: 0.048 + (index % 2) * 0.012,
-        gain: 0.105 + (index % 3) * 0.018,
-        frequency: 1250 + index * 185,
-        q: 0.82,
-        offset: 0.055 + index * 0.052
+        duration: 0.05 + index * 0.006,
+        gain: 0.052 - index * 0.005,
+        frequency: 900 + index * 170,
+        q: 0.58,
+        offset: 0.025 + index * 0.055
       });
     }
-    noiseBurst({ duration: 0.075, gain: 0.21, frequency: 620, q: 0.42, type: 'lowpass', offset: 0.49 });
-    tone(142, 0.09, 0.11, 0.505, 'triangle');
+    glassCluster(870, 1.10, 0.0105, 0.05);
+    glassCluster(1010, 0.92, 0.0055, 0.34);
+    tone(1568, 1.05, 0.014, 0.0, 'sine');
+    tone(2183, 1.12, 0.0085, 0.012, 'sine');
+    tone(2878, 1.18, 0.0055, 0.024, 'sine');
+    tone(3656, 1.24, 0.0032, 0.036, 'sine');
   };
 
   return {
