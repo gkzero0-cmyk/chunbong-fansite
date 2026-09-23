@@ -170,6 +170,16 @@ jobs:
           assert.ok(holo.opacity>=0.95&&holo.opacity<=1,'crystal material should be unmistakably visible without becoming opaque artwork');
           assert.equal(holo.blend,'screen','crystal material must stay luminous over the artwork');
           assert.match(holo.background,/conic-gradient|radial-gradient/,'pointer hover must render a crystal-prism material');
+          assert.equal(await page.locator('.daily-fortune-holo-lens').count(),1,'reference crystal effect must include one pointer-follow diffraction lens');
+          assert.equal(await page.locator('.daily-fortune-holo-crystals i').count(),6,'reference crystal effect must include six shard highlights');
+          const lens = await page.locator('.daily-fortune-holo-lens').evaluate(el=>({
+            opacity:Number(getComputedStyle(el).opacity),
+            blend:getComputedStyle(el).mixBlendMode,
+            background:getComputedStyle(el).backgroundImage
+          }));
+          assert.ok(lens.opacity>=0.9,'diffraction lens must be clearly visible on hover');
+          assert.equal(lens.blend,'screen','diffraction lens must use luminous screen blending');
+          assert.match(lens.background,/repeating-radial-gradient|conic-gradient/,'diffraction lens must contain spectral rings');
           await page.mouse.move(20,20);
 
           await page.locator('[data-daily-fortune-close]').click();
