@@ -58,6 +58,7 @@
       <button id="operator-tab-overview" class="active" type="button" role="tab" aria-selected="true" aria-controls="operator-panel-overview" data-operator-tab="overview">개요</button>
       <button id="operator-tab-contents" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-contents" data-operator-tab="contents">콘텐츠 아카이브</button>
       <button id="operator-tab-performance" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-performance" data-operator-tab="performance">성능</button>
+      <button id="operator-tab-search" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-search" data-operator-tab="search">검색 분석</button>
       <button id="operator-tab-feedback" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-feedback" data-operator-tab="feedback">피드백 <i id="operator-feedback-badge" hidden>0</i></button>
       <button id="operator-tab-system" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-system" data-operator-tab="system">시스템 상태</button>
       <button id="operator-tab-security" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-security" data-operator-tab="security">보안</button>
@@ -69,6 +70,14 @@
         <header><div><small>OPERATIONS AT A GLANCE</small><h2 id="operator-attention-title">지금 확인할 것</h2></div><span id="operator-attention-state">확인 중</span></header>
         <div id="operator-attention-list" class="operator-attention-list"><p class="operator-empty">운영 상태를 확인하고 있습니다.</p></div>
       </section>
+      <nav class="operator-quick-actions" aria-label="운영자 빠른 작업">
+        <button type="button" data-operator-quick-tab="contents"><span>콘텐츠 상태</span><small>누락 · 자동수집 확인</small></button>
+        <button type="button" data-operator-quick-tab="performance"><span>성능 점검</span><small>LCP · INP · CLS</small></button>
+        <button type="button" data-operator-quick-tab="search"><span>검색 분석</span><small>검색어 · 0건 결과</small></button>
+        <button type="button" data-operator-quick-tab="system"><span>시스템 상태</span><small>배포 · API · 저장소</small></button>
+        <a href="changelog.html" target="_blank" rel="noopener"><span>업데이트 일지</span><small>공개 기록 확인 ↗</small></a>
+        <a href="index.html" target="_blank" rel="noopener"><span>팬사이트 열기</span><small>Production 화면 ↗</small></a>
+      </nav>
       <section class="operator-period-summary" aria-labelledby="operator-period-summary-title">
         <header><div><small>PERIOD INSIGHT</small><h2 id="operator-period-summary-title">최근 7일 요약</h2></div><span id="operator-period-compare-label">이전 7일 대비</span></header>
         <p id="operator-period-summary-text">이용 흐름을 계산하고 있습니다.</p>
@@ -183,6 +192,34 @@
             <div><b>CLS</b><strong>≤ 0.10</strong><small>레이아웃이 거의 흔들리지 않는 권장 구간</small></div>
           </div>
           <p>개인 식별 정보 없이 페이지 경로와 브라우저 성능 값만 집계합니다. LCP·INP·CLS는 지원 브라우저의 실제 이용 표본 기준이며, 표본이 적을 때는 단일 기기나 네트워크 영향이 크게 보일 수 있습니다.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="operator-panel-search" role="tabpanel" aria-labelledby="operator-tab-search" data-operator-panel="search" hidden>
+      <div class="operator-system-summary operator-search-summary">
+        <article class="operator-health-card"><span>검색 실행</span><strong id="search-total">-</strong><small>두 글자 이상 검색어 기준</small></article>
+        <article class="operator-health-card"><span>결과 없음</span><strong id="search-zero-total">-</strong><small id="search-zero-meta">검색 데이터 대기 중</small></article>
+        <article class="operator-health-card"><span>결과 클릭</span><strong id="search-click-total">-</strong><small>검색 결과에서 콘텐츠 이동</small></article>
+        <article class="operator-health-card"><span>검색 → 클릭</span><strong id="search-click-rate">-</strong><small>검색 실행 대비 클릭 비율</small></article>
+      </div>
+      <div class="operator-grid-2 operator-search-grid">
+        <article class="operator-card">
+          <header><div><h2>많이 찾는 검색어</h2><small>선택 기간의 익명 집계 · 결과 없음 횟수 함께 표시</small></div></header>
+          <ol id="operator-search-queries" class="operator-rank-list operator-search-list"></ol>
+        </article>
+        <article class="operator-card">
+          <header><div><h2>검색 결과 0건</h2><small>콘텐츠 보강이나 검색 별칭 추가를 검토할 검색어</small></div></header>
+          <ol id="operator-search-zero" class="operator-rank-list operator-search-list"></ol>
+        </article>
+        <article class="operator-card operator-search-click-card">
+          <header><div><h2>검색 후 선택한 콘텐츠</h2><small>검색어 → 실제로 연 결과 · 상위 항목</small></div></header>
+          <div id="operator-search-clicks" class="operator-search-click-list"></div>
+        </article>
+        <article class="operator-card operator-search-privacy">
+          <header><h2>집계 기준</h2><span>Privacy by design</span></header>
+          <p>검색어는 방문자 ID와 연결하지 않고 횟수만 합산합니다. 이메일·URL·긴 숫자열처럼 개인 정보일 가능성이 높은 입력은 검색 분석에서 제외합니다.</p>
+          <div class="operator-usage-note"><strong>운영 활용</strong><span>검색 결과가 없는 단어는 콘텐츠 별칭·검색 키워드 보강 후보로, 많이 검색하고 클릭하는 항목은 자주 찾는 콘텐츠 판단 자료로 사용합니다.</span></div>
         </article>
       </div>
     </section>
