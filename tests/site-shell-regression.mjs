@@ -47,7 +47,7 @@ assert.match(shell,/personalPriorityPages/,'personal hub runtime should be prior
 assert.match(shell,/runIdle\(loadPersonal\)/,'passive pages should defer personal hub runtime');
 assert.match(shell,/runIdle\(\(\)=>loadScript\('site-meta\.js'\)\)/,'site metadata enhancement should defer to browser idle time');
 assert.match(shell,/runIdle\(\(\)=>loadScript\('site-improvements\.js'\)\)/,'site improvements should defer to browser idle time');
-assert.match(shell,/requestIdleCallback\(loadActivityCenter/,'activity center should not compete with first paint');
+assert.match(shell,/requestIdleCallback\(load,\{timeout:1800\}\)/,'activity center should not compete with first paint');
 
 assert.ok(shell.length < 12500,'shared shell unexpectedly large');
 assert.ok(content.length < 6500,'content data bundle unexpectedly large');
