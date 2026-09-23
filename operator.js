@@ -199,6 +199,7 @@ function renderOperatorAttention(){
   else if(Number(imageHealth.failedCount)>0)rows.push({level:'bad',title:'깨진 콘텐츠 이미지 '+fmt(imageHealth.failedCount)+'개',detail:'대표 이미지·갤러리·영상 썸네일 실제 로딩에 실패한 항목이 있습니다.',tab:'contents'});
   if(Number(imageHealth.large)>0||Number(imageHealth.slow)>0)rows.push({level:'warn',title:'이미지 최적화 확인',detail:'대용량 '+fmt(imageHealth.large)+'개 · 느린 표시 '+fmt(imageHealth.slow)+'개',tab:'contents'});
   if(Number(imageHealth.lowResolution)>0)rows.push({level:'warn',title:'대표 이미지 해상도 확인',detail:'권장 해상도보다 작은 대표 이미지 '+fmt(imageHealth.lowResolution)+'개',tab:'contents'});
+  if(currentSystem?.changelog?.ok===false)rows.push({level:'warn',title:'업데이트 일지 자동 기록 확인',detail:'GitHub main 변경사항을 읽는 자동 기록 API가 응답하지 않습니다.',tab:'system'});
   const search=currentAnalytics?.search||{},zeroTotal=Number(search.zeroTotal)||0;
   if(zeroTotal>0){
     const terms=(search.zeroQueries||[]).slice(0,3).map(row=>'“'+row.key+'”').join(', ');
@@ -295,6 +296,28 @@ function renderHealthHistory(rows=[]){
   const el=$('#operator-health-history');if(!el)return;
   el.innerHTML=rows.length?rows.map(row=>`<article class="operator-event-row is-${escapeHtml(row.level||'ok')}"><span></span><div><strong>${row.level==='ok'?'정상 상태':row.level==='bad'?'장애 신호':'주의 상태'}</strong><p>${escapeHtml((row.issues||[]).join(' · ')||'이상 신호가 해소되었습니다.')}</p><small>${new Date(row.at).toLocaleString('ko-KR')}</small></div></article>`).join(''):'<p class="operator-empty">아직 상태 변경 이력이 없습니다.</p>';
 }
+function renderCommitHistory(rows=[],deploymentSha=''){
+  const el=$('#operator-commit-history');if(!el)return;
+  const normalized=Array.isArray(rows)?rows:[];
+  el.innerHTML=normalized.length?normalized.map(row=>{
+    const production=deploymentSha&&String(row.sha||'')===String(deploymentSha);
+    const when=row.date?new Date(row.date).toLocaleString('ko-KR'):'날짜 확인 중';
+    const author=row.author||'작성자 확인 중';
+    const href=row.url||('https://github.com/gkzero0-cmyk/chunbong-fansite/commit/'+encodeURIComponent(row.sha||''));
+    return `<a class="operator-commit-row ${production?'is-production':''}" href="${escapeHtml(href)}" target="_blank" rel="noopener"><span class="operator-commit-sha">${escapeHtml(row.shortSha||shortSha(row.sha))}</span><div><strong>${escapeHtml(row.message||'변경사항')}</strong><small>${escapeHtml(author)} · ${escapeHtml(when)}</small></div>${production?'<b>Production</b>':'<i aria-hidden="true">↗</i>'}</a>`;
+  }).join(''):'<p class="operator-empty">최근 GitHub 변경 이력을 확인하지 못했습니다.</p>';
+}
+function renderChangelogHealth(changelog={}){
+  const box=$('#operator-changelog-health'),title=$('#system-changelog-title'),date=$('#system-changelog-date'),sha=$('#system-changelog-sha');if(!box)return;
+  const latest=changelog?.latest||null;
+  box.className='operator-changelog-health '+(changelog?.ok?'is-ok':'is-bad');
+  box.innerHTML=changelog?.ok
+    ?'<strong>자동 기록 정상</strong><span>GitHub main의 사용자용 변경사항을 업데이트 일지에 자동으로 합치는 경로가 응답하고 있습니다.</span>'
+    :'<strong>확인 필요</strong><span>업데이트 일지 자동 기록 API가 정상 응답하지 않았습니다.</span>';
+  if(title)title.textContent=latest?.title||'-';
+  if(date)date.textContent=latest?.date||'-';
+  if(sha)sha.textContent=latest?.shortSha||shortSha(latest?.sha);
+}
 async function loadSystemStatus(){
   const data=await json(API+'operator-system-status');currentSystem=data;
   const dep=data.deployment||{},storage=data.storage||{},services=data.services||{},traffic=data.traffic||{};
@@ -311,6 +334,7 @@ async function loadSystemStatus(){
   $('#operator-service-health').innerHTML=serviceRows.map(([label,ok])=>`<div><span>${label}</span>${healthLabel(Boolean(ok))}</div>`).join('');
   const endpoints=Array.isArray(data.endpoints)?data.endpoints:[];
   $('#operator-endpoint-health').innerHTML=endpoints.length?endpoints.map(row=>`<div><span>${escapeHtml(row.label||row.path||'API')} <small>${fmt(row.ms)}ms</small></span><span class="operator-endpoint-result ${row.ok?'ok':'bad'}">${row.ok?'HTTP '+fmt(row.status):row.status?'HTTP '+fmt(row.status):'응답 실패'}</span></div>`).join(''):'<p class="operator-empty">API 상태를 확인하지 못했습니다.</p>';
+  renderCommitHistory(data.repository?.recentCommits||[],dep.sha);renderChangelogHealth(data.changelog||{});
   renderHealthHistory(data.health?.history||[]);renderOperatorAttention();
 }
 const securityActionLabel={
