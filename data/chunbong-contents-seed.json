@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-23T19:36:00+09:00",
+  "updatedAt": "2026-09-23T20:15:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -323,7 +323,7 @@
           "date": "2025-05-12",
           "datePrecision": "day",
           "url": "https://vod.sooplive.com/player/159715611",
-          "thumbnail": "https://iflv14.sooplive.com/save/afreeca/station/2025/0510/22/thumb/1746884019766962_R_7.jpg",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790161555/chunbong-fansite/leopel/trailer-pv.jpg",
           "sourceId": "source-trailer-pv",
           "note": "SOOP에 공개된 레오펠 서버 트레일러 PV입니다.",
           "visibility": "public"
@@ -335,7 +335,7 @@
           "date": "",
           "datePrecision": "unknown",
           "url": "https://vod.sooplive.com/player/165343833",
-          "thumbnail": "https://videoimg.sooplive.com/php/SnapshotLoad.php?rowKey=20250708_evod2_2320429_r",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790161559/chunbong-fansite/leopel/story-vod-165343833.jpg",
           "sourceId": "source-leopel-vod-165343833",
           "note": "SOOP에 남아 있는 레오펠 관련 공식 영상 기록입니다. 원문 제목과 방송일은 확인 가능한 범위에서 보강합니다.",
           "visibility": "public"
@@ -347,7 +347,7 @@
           "date": "",
           "datePrecision": "unknown",
           "url": "https://vod.sooplive.com/player/167705699",
-          "thumbnail": "https://videoimg.sooplive.com/php/SnapshotLoad.php?rowKey=20250802_evod2_2363037_r",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790161565/chunbong-fansite/leopel/pv-behind-167705699.jpg",
           "sourceId": "source-leopel-vod-167705699",
           "note": "SOOP에 남아 있는 레오펠 관련 공식 영상 기록입니다. 원문 제목과 방송일은 확인 가능한 범위에서 보강합니다.",
           "visibility": "public"
@@ -370,21 +370,21 @@
         },
         {
           "id": "leopel-vod-thumb-159715611",
-          "src": "https://iflv14.sooplive.com/save/afreeca/station/2025/0510/22/thumb/1746884019766962_R_7.jpg",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790161555/chunbong-fansite/leopel/trailer-pv.jpg",
           "alt": "레오펠 서버 트레일러 PV",
           "caption": "SOOP VOD · 레오펠 서버 트레일러 PV",
           "sourceId": ""
         },
         {
           "id": "leopel-vod-thumb-165343833",
-          "src": "https://videoimg.sooplive.com/php/SnapshotLoad.php?rowKey=20250708_evod2_2320429_r",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790161559/chunbong-fansite/leopel/story-vod-165343833.jpg",
           "alt": "촌장이 풀어주는 레오펠 스토리",
           "caption": "SOOP VOD · 촌장이 풀어주는 레오펠 스토리",
           "sourceId": ""
         },
         {
           "id": "leopel-vod-thumb-167705699",
-          "src": "https://videoimg.sooplive.com/php/SnapshotLoad.php?rowKey=20250802_evod2_2363037_r",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790161565/chunbong-fansite/leopel/pv-behind-167705699.jpg",
           "alt": "레오펠 PV 영상 비하인드",
           "caption": "SOOP VOD · 레오펠 PV 영상 비하인드",
           "sourceId": ""
@@ -489,7 +489,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-23T19:36:00+09:00",
+      "updatedAt": "2026-09-23T20:15:00+09:00",
       "series": {
         "id": "leopel",
         "title": "레오펠",
@@ -1252,6 +1252,41 @@
           "images": []
         },
         {
+          "id": "leopel-economy",
+          "kind": "economy",
+          "eyebrow": "ECONOMY & SUPPORT",
+          "title": "경제 · 후원 연동",
+          "description": "생활 재화와 후원 이벤트가 서버의 성장·상점·장난 콘텐츠에 연결되는 구조였습니다.",
+          "sourceId": "source-reference",
+          "cards": [
+            {
+              "eyebrow": "SUPPORT",
+              "title": "별풍선 · 치즈 연동",
+              "text": "후원 금액 구간에 따라 레오쿠키·랜덤 상자·장난치기·서버 전체 보상 등의 이벤트가 연동됐습니다."
+            },
+            {
+              "eyebrow": "CURRENCY",
+              "title": "레오쿠키 · 레오코인",
+              "text": "서버 전용 상점과 보상에 사용되는 별도 재화로 운영 일정에 맞춰 상점이 순차적으로 열렸습니다."
+            },
+            {
+              "eyebrow": "HOUSING",
+              "title": "부동산 · 거주지",
+              "text": "거주지 서버에서 분양권을 구입해 지정 청크를 소유하고 건축·입주 형태로 활용할 수 있었습니다."
+            }
+          ],
+          "chips": [
+            "골드 상점",
+            "레오쿠키 상점",
+            "레오코인 상점",
+            "로또 상점",
+            "펫 · 탈것",
+            "강화 · 하락방지"
+          ],
+          "flow": [],
+          "images": []
+        },
+        {
           "id": "leopel-play-flow",
           "kind": "flow",
           "eyebrow": "ADVENTURE / PLAY FLOW",
@@ -1286,6 +1321,39 @@
               "text": "서버의 이야기와 선택이 최종 결말로 이어집니다."
             }
           ],
+          "images": []
+        },
+        {
+          "id": "leopel-locations",
+          "kind": "locations",
+          "eyebrow": "LOCATIONS",
+          "title": "주요 지역 · 공간",
+          "description": "세계관 진행·생활·거주·도전 콘텐츠와 직접 연결되는 레오펠의 대표 공간을 기능 중심으로 정리했습니다.",
+          "sourceId": "source-reference",
+          "cards": [
+            {
+              "eyebrow": "START",
+              "title": "튜토리얼 · 초반 거점",
+              "text": "모험가가 레오펠의 세계관과 기본 플레이 구조에 진입하는 출발 구간입니다."
+            },
+            {
+              "eyebrow": "ADVENTURE",
+              "title": "모험 구역",
+              "text": "스토리 진행에 맞춰 확장되는 탐험 지역으로, 6월 16일 모험 2구역, 7월 3일 모험 3·4구역 오픈 기록이 남아 있습니다."
+            },
+            {
+              "eyebrow": "HOME",
+              "title": "거주지 서버",
+              "text": "일반 야생과 분리된 주거 공간입니다. 거주지 구매 NPC를 통해 지정 청크의 분양권을 구매하는 구조로 운영됐습니다."
+            },
+            {
+              "eyebrow": "CHALLENGE",
+              "title": "중력의 탑",
+              "text": "모험 2구역 오픈과 함께 공개된 대표 도전형 콘텐츠 중 하나입니다."
+            }
+          ],
+          "chips": [],
+          "flow": [],
           "images": []
         },
         {
@@ -1375,7 +1443,7 @@
           "images": []
         }
       ],
-      "knowledgeSyncedAt": "2026-09-23T19:36:00+09:00"
+      "knowledgeSyncedAt": "2026-09-23T20:15:00+09:00"
     },
     {
       "id": "justserver-moneygame",

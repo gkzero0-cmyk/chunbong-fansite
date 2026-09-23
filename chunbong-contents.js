@@ -35,6 +35,7 @@ function searchableText(item={}){
     ...(item.media||[]).flatMap(r=>[r.title,r.note]),
     ...(item.results||[]).flatMap(r=>[r.title,r.label,r.value,r.name]),
     ...(item.notionSections||[]).flatMap(r=>[r.pageTitle,r.title,r.text]),
+    ...(item.referenceSections||[]).flatMap(r=>[r.pageTitle,r.title,r.text,...(r.images||[]).flatMap(image=>[image.alt,image.caption,image.filename])]),
     ...(item.knowledgeSections||[]).flatMap(r=>[r.eyebrow,r.title,r.description,...(r.chips||[]),...(r.cards||[]).flatMap(card=>[card.eyebrow,card.title,card.text,card.value,...(card.items||[])]),...(r.flow||[]).flatMap(step=>[step.title,step.text])])
   ];
   return normalize(values.filter(Boolean).join(' '));
@@ -145,7 +146,7 @@ function renderRecordStrip(item){
     ['타임라인',(item.timeline||[]).length+'건'],
     ['영상 · 방송',(item.media||[]).length+'건'],
     ['자료 이미지',(item.gallery||[]).length+'장'],
-    ['Notion 가이드',(item.notionSections||[]).length?item.notionSections.length+'개':'없음'],
+    ['지식 가이드',((item.notionSections||[]).length+(item.referenceSections||[]).length+(item.knowledgeSections||[]).length)?((item.notionSections||[]).length+(item.referenceSections||[]).length+(item.knowledgeSections||[]).length)+'개':'없음'],
     [peopleLabel,itemPeopleCount(item)?itemPeopleCount(item)+'명':'확인 중'],
     ['최종 확인',verified?formatDate(verified,'day'):'확인 중']
   ];
@@ -162,27 +163,41 @@ function renderOverviewHighlights(item){
   }).join('')}</div></section>`;
 }
 function personButton(name){return `<button type="button" class="archive-person-chip" data-archive-person="${escapeHtml(name)}">${escapeHtml(name)}</button>`}
-function notionGuideRows(item){return (item.notionSections||[]).filter(row=>row&&(row.title||row.text||(row.images||[]).length))}
+function notionGuideRows(item){return (item.notionSections||[]).filter(row=>row&&(row.title||row.text||(row.images||[]).length||(row.content||[]).length))}
+function referenceGuideRows(item){return (item.referenceSections||[]).filter(row=>row&&(row.title||row.text||(row.images||[]).length||(row.content||[]).length))}
+function documentGuideRows(item){return [...notionGuideRows(item),...referenceGuideRows(item)]}
+function guideProviderLabel(provider=''){
+  if(provider==='notion')return'Notion';
+  if(provider==='namuwiki')return'나무위키';
+  if(provider==='soop')return'SOOP 공식';
+  return'자료';
+}
 function notionTextMarkup(value=''){return escapeHtml(String(value||'')).replace(/\n/g,'<br>')}
 function notionImageMarkup(image={}){
-  const src=safeUrl(image.src||'');
-  if(!src)return'';
-  const alt=image.alt||image.caption||image.filename||'Notion 이미지';
-  return `<button type="button" class="archive-guide-image" data-guide-image-src="${escapeHtml(src)}" data-guide-image-alt="${escapeHtml(alt)}" data-guide-image-caption="${escapeHtml(image.caption||alt)}" data-guide-image-fallback="${escapeHtml(image.filename||alt)}"><span class="archive-normalized-media" style="--archive-media-image:url('&quot;${escapeHtml(src)}&quot;')"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy" referrerpolicy="no-referrer"></span>${image.caption?`<small>${escapeHtml(image.caption)}</small>`:''}</button>`;
+  const src=safeUrl(image.src||'');if(!src)return'';
+  const alt=image.alt||image.caption||image.filename||'자료 이미지';
+  const sourceUrl=safeUrl(image.sourceUrl||'');
+  const sourceLabel=guideProviderLabel(image.provider||'');
+  const fallback=image.filename||alt||'이미지를 불러오지 못했습니다.';
+  return `<button type="button" class="archive-guide-image" data-guide-image-src="${escapeHtml(src)}" data-guide-image-alt="${escapeHtml(alt)}" data-guide-image-caption="${escapeHtml(image.caption||alt)}" data-guide-image-fallback="${escapeHtml(fallback)}" data-guide-image-source="${escapeHtml(sourceUrl)}" data-guide-image-source-label="${escapeHtml(sourceLabel)}"><span class="archive-normalized-media" style="--archive-media-image:url('&quot;${escapeHtml(src)}&quot;')"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy" referrerpolicy="no-referrer"></span>${image.caption?`<small>${escapeHtml(image.caption)}</small>`:''}</button>`;
 }
 function notionImagesMarkup(section={}){
   const images=(section.images||[]).filter(row=>safeUrl(row?.src));
   if(!images.length)return'';
-  return `<div class="archive-guide-images ${images.length===1?'is-single':''}">${images.map(notionImageMarkup).join('')}</div>`;
+  return `<div class="archive-guide-images ${images.length===1?'is-single':images.length>=3?'is-triple':''}">${images.map(notionImageMarkup).join('')}</div>`;
 }
 function notionSectionBodyMarkup(section={}){
   const blocks=Array.isArray(section.content)?section.content.filter(Boolean):[];
-  if(!blocks.length)return `${section.text?`<p>${notionTextMarkup(section.text)}</p>`:''}${notionImagesMarkup(section)}`;
-  return '<div class="archive-notion-content">'+blocks.map(block=>{
-    if(block.type==='image'&&block.image)return notionImageMarkup(block.image);
-    if(block.type==='text'&&block.text)return `<p>${notionTextMarkup(block.text)}</p>`;
-    return'';
-  }).join('')+'</div>';
+  if(!blocks.length)return `${section.text?`<p class="archive-guide-text">${notionTextMarkup(section.text)}</p>`:''}${notionImagesMarkup(section)}`;
+  let html='',pending=[];
+  const flush=()=>{if(!pending.length)return;html+=`<div class="archive-guide-images ${pending.length===1?'is-single':pending.length>=3?'is-triple':''}">${pending.map(notionImageMarkup).join('')}</div>`;pending=[]};
+  for(const block of blocks){
+    if(block?.type==='image'&&block.image){pending.push(block.image);if(pending.length===3)flush();continue}
+    flush();
+    const value=String(block?.text||'').trim();
+    if(value)html+=`<p class="archive-guide-text">${notionTextMarkup(value)}</p>`;
+  }
+  flush();return `<div class="archive-notion-content">${html}</div>`;
 }
 function resultRows(item){return (item.results||[]).filter(row=>row&&(row.title||row.label||row.value||row.name))}
 function resultValue(item,patterns=[]){
@@ -206,10 +221,10 @@ function resultCardClass(row={}){
   return title.length>=18||value.length>=52?' is-wide':'';
 }
 function guideSourceRows(item){
-  const notion=notionGuideRows(item).map(row=>({title:row.title||row.pageTitle||'가이드',text:row.text||'',pageTitle:row.pageTitle||'Notion',kind:'notion'}));
+  const documents=documentGuideRows(item).map(row=>({title:row.title||row.pageTitle||'가이드',text:row.text||'',pageTitle:row.pageTitle||guideProviderLabel(row.provider),kind:row.provider||'document'}));
   const records=resultRows(item).map(row=>({title:row.title||row.label||'기록',text:String(row.value||row.name||''),pageTitle:'구조화 기록',kind:'record'}));
   const seen=new Set(),rows=[];
-  for(const row of [...notion,...records]){
+  for(const row of [...documents,...records]){
     const key=(row.title+'\n'+row.text).replace(/\s+/g,' ').toLowerCase();if(!key||seen.has(key))continue;seen.add(key);rows.push(row);
   }
   return rows;
@@ -268,18 +283,28 @@ function renderJustserverKnowledge(item,{compact=false}={}){
   </section>`;
 }
 function renderNotionPreview(item){
-  const rows=notionGuideRows(item).slice(0,6);
+  const allRows=documentGuideRows(item),rows=allRows.slice(0,6);
   if(!rows.length&&isJustserver(item))return renderJustserverKnowledge(item,{compact:true});
   if(!rows.length)return'';
-  return `<section class="archive-notion-preview"><div class="archive-section-heading"><div><small>NOTION GUIDE</small><h3>기획 · 시스템 가이드</h3><p>연결된 공개 Notion의 본문을 자동 수집해 핵심 섹션을 정리합니다.</p></div><span>${notionGuideRows(item).length}개</span></div>${renderJustserverKnowledge(item,{compact:true})}<div class="archive-notion-preview-grid">${rows.map(row=>`<article><small>${escapeHtml(row.pageTitle||'Notion')}</small><strong>${escapeHtml(row.title||'가이드')}</strong>${row.text?`<p>${escapeHtml(String(row.text||'').replace(/\s+/g,' ').slice(0,180))}${String(row.text||'').length>180?'…':''}</p>`:''}${notionImagesMarkup(row)}</article>`).join('')}</div></section>`;
+  return `<section class="archive-notion-preview"><div class="archive-section-heading"><div><small>KNOWLEDGE GUIDE</small><h3>이미지 포함 상세 가이드</h3><p>Notion과 나무위키 원문의 본문·이미지를 문서 흐름에 맞춰 정리합니다.</p></div><span>${allRows.length}개</span></div>${renderJustserverKnowledge(item,{compact:true})}<div class="archive-notion-preview-grid">${rows.map(row=>`<article><small>${escapeHtml(guideProviderLabel(row.provider))} · ${escapeHtml(row.pageTitle||'가이드')}</small><strong>${escapeHtml(row.title||'가이드')}</strong>${row.text?`<p>${escapeHtml(String(row.text||'').replace(/\s+/g,' ').slice(0,180))}${String(row.text||'').length>180?'…':''}</p>`:''}${notionImagesMarkup(row)}</article>`).join('')}</div></section>`;
+}
+function renderDocumentSections(item){
+  const rows=documentGuideRows(item);if(!rows.length)return'';
+  const groups=new Map();
+  for(const row of rows){
+    const provider=row.provider||'document';
+    const pageTitle=row.pageTitle||guideProviderLabel(provider);
+    const key=provider+'::'+pageTitle;
+    if(!groups.has(key))groups.set(key,{provider,pageTitle,sections:[]});
+    groups.get(key).sections.push(row);
+  }
+  return `<section class="archive-document-guide"><div class="archive-subheading"><small>DOCUMENT KNOWLEDGE</small><h3>원문 기반 상세 가이드</h3><p>원문의 문단과 이미지 연결 관계를 유지하고, 이미지는 공통 확대 보기에서 캡션과 원문 출처를 함께 확인할 수 있습니다.</p></div><div class="archive-notion-groups">${[...groups.values()].map((group,groupIndex)=>`<details class="archive-notion-group" ${groupIndex===0?'open':''}><summary><span><small>${escapeHtml(guideProviderLabel(group.provider))}</small><strong>${escapeHtml(group.pageTitle)}</strong></span><b>${group.sections.length}개 섹션</b></summary><div class="archive-notion-sections">${group.sections.map(section=>`<article data-guide-provider="${escapeHtml(section.provider||group.provider)}"><small>${escapeHtml(guideProviderLabel(section.provider||group.provider))}</small><h3>${escapeHtml(section.title||'본문')}</h3>${notionSectionBodyMarkup(section)}</article>`).join('')}</div></details>`).join('')}</div></section>`;
 }
 function renderNotionGuide(item){
-  const rows=notionGuideRows(item);
-  const groups=new Map();
-  for(const row of rows){const key=row.pageTitle||'Notion 가이드';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(row)}
-  const synced=item.notionSyncedAt?String(item.notionSyncedAt).slice(0,10):'';
-  const details=rows.length?`<div class="archive-notion-groups">${[...groups.entries()].map(([pageTitle,sections],groupIndex)=>`<details class="archive-notion-group" ${groupIndex===0?'open':''}><summary><span><small>NOTION PAGE</small><strong>${escapeHtml(pageTitle)}</strong></span><b>${sections.length}개 섹션</b></summary><div class="archive-notion-sections">${sections.map(section=>`<article><small>${escapeHtml(section.pageTitle||'Notion')}</small><h3>${escapeHtml(section.title||'본문')}</h3>${notionSectionBodyMarkup(section)}</article>`).join('')}</div></details>`).join('')}</div>`:'<p class="archive-notion-wait">연결된 Notion 자료는 다음 자동 동기화에서 세부 섹션이 추가됩니다. 현재 확인된 구조화 기록은 먼저 표시합니다.</p>';
-  return `<div class="archive-panel archive-notion-panel"><div class="archive-section-heading"><div><small>NOTION ARCHIVE</small><h2>기획 · 시스템 가이드</h2><p>머니게임을 기준 레이아웃으로 삼아 다이아·적자생존에도 같은 디자인 시스템을 적용합니다.</p></div><span>${rows.length?rows.length+'개'+(synced?' · '+escapeHtml(formatDate(synced,'day')):''):'자동 수집'}</span></div>${renderJustserverKnowledge(item,{compact:false})}${details}</div>`;
+  const notionCount=notionGuideRows(item).length,referenceCount=referenceGuideRows(item).length,total=notionCount+referenceCount;
+  const synced=item.notionSyncedAt||item.referenceSyncedAt?String(item.notionSyncedAt||item.referenceSyncedAt).slice(0,10):'';
+  const empty=!total?'<p class="archive-notion-wait">연결된 원문 자료는 다음 자동 동기화에서 세부 섹션이 추가됩니다. 검증된 구조화 기록은 그대로 유지됩니다.</p>':'';
+  return `<div class="archive-document-wrapper"><div class="archive-section-heading"><div><small>SOURCE DOCUMENTS</small><h3>원문 자료 가이드</h3><p>Notion과 나무위키를 같은 이미지 포함 문서 렌더러로 표시합니다.</p></div><span>${total?total+'개'+(synced?' · '+escapeHtml(formatDate(synced,'day')):''):'자동 수집'}</span></div>${renderDocumentSections(item)}${empty}</div>`;
 }
 function resultValue(item,title){
   const row=(item.results||[]).find(row=>String(row.title||row.label||'').trim()===title);
@@ -388,8 +413,8 @@ function renderKnowledgeArchive(item,{compact=false}={}){
 function bindKnowledgeImages(root=els.detail){root.querySelectorAll('[data-knowledge-image-src]').forEach(button=>button.addEventListener('click',()=>openLightbox(button.dataset.knowledgeImageSrc||'',button.dataset.knowledgeImageAlt||'자료 이미지',button.dataset.knowledgeImageSource||'',button.dataset.knowledgeImageCaption||'')))}
 function renderArchiveGuide(item){
   const knowledge=renderKnowledgeArchive(item,{compact:false});
-  if(knowledge)return `<div class="archive-panel archive-notion-panel"><div class="archive-section-heading"><div><small>KNOWLEDGE ARCHIVE</small><h2>${escapeHtml(isLeopel(item)?'레오펠 세계관 · 시스템 가이드':'콘텐츠 지식형 가이드')}</h2><p>정량 기록과 읽을거리를 같은 구조 안에서 연결해 보여줍니다.</p></div><span>${knowledgeSections(item).length}개 섹션</span></div>${knowledge}${(item.notionSections||[]).length?renderNotionGuide(item):''}</div>`;
-  return renderNotionGuide(item);
+  if(knowledge)return `<div class="archive-panel archive-notion-panel"><div class="archive-section-heading"><div><small>KNOWLEDGE ARCHIVE</small><h2>${escapeHtml(isLeopel(item)?'레오펠 세계관 · 시스템 가이드':'콘텐츠 지식형 가이드')}</h2><p>정량 기록과 읽을거리를 같은 구조 안에서 연결해 보여줍니다.</p></div><span>${knowledgeSections(item).length}개 섹션</span></div>${knowledge}${documentGuideRows(item).length?renderNotionGuide(item):''}</div>`;
+  return `<div class="archive-panel archive-notion-panel">${renderNotionGuide(item)}</div>`;
 }
 function renderOverview(item){
   const people=allPeople(item).slice(0,16);
@@ -483,10 +508,17 @@ function bindSeriesArchive(item){
 function bindGuideImages(root=els.detail){
   root.querySelectorAll('[data-guide-image-src]').forEach(button=>{
     const img=button.querySelector('img');
-    if(img&&!img.dataset.guideFallbackBound){img.dataset.guideFallbackBound='1';img.addEventListener('error',()=>{
-      const media=button.querySelector('.archive-normalized-media');if(media){media.classList.add('is-fallback');media.innerHTML='<span class="archive-guide-image-fallback">'+escapeHtml(button.dataset.guideImageFallback||button.dataset.guideImageAlt||'이미지를 불러오지 못했습니다.')+'</span>'}
-    },{once:true})}
-    button.addEventListener('click',()=>{if(button.querySelector('img'))openLightbox(button.dataset.guideImageSrc||'',button.dataset.guideImageAlt||'가이드 이미지','',button.dataset.guideImageCaption||'')});
+    if(img&&!img.dataset.guideFallbackBound){
+      img.dataset.guideFallbackBound='1';
+      img.addEventListener('error',()=>{
+        const media=button.querySelector('.archive-normalized-media');
+        if(media){media.classList.add('is-fallback');media.innerHTML='<span class="archive-guide-image-fallback">'+escapeHtml(button.dataset.guideImageFallback||button.dataset.guideImageAlt||'이미지를 불러오지 못했습니다.')+'</span>'}
+      },{once:true});
+    }
+    button.addEventListener('click',()=>{
+      if(!button.querySelector('img'))return;
+      openLightbox(button.dataset.guideImageSrc||'',button.dataset.guideImageAlt||'가이드 이미지',button.dataset.guideImageSource||'',button.dataset.guideImageCaption||'');
+    });
   });
 }
 function bindLeopelGallery(root,item){
@@ -524,7 +556,7 @@ function renderDetail(item){
   const titleClass=detailTitleClass(item);
   const isClass=item.category==='class-event',peopleLabel=isClass?'수강생':'참가자',peopleTab=isClass?'수강생 · 회차':'참가자 · 결과',seriesBack=queryState().series&&item.series?.title?item.series.title+' 시리즈':'콘텐츠 목록',peopleCount=itemPeopleCount(item);
   const recordState=item.verifiedAt&&((item.timeline||[]).length+(item.media||[]).length+(item.gallery||[]).length)>=3?'공식 자료 확인':'기록 보강 중';
-  els.detail.innerHTML=`<button type="button" class="archive-reset" data-archive-back>← ${escapeHtml(seriesBack)}</button>${renderSiblingSeriesNav(item)}<div class="archive-detail-hero">${hero}<div class="archive-detail-copy${titleClass?' '+titleClass:''}"><p class="kicker">${escapeHtml(categoryLabel(item.category))}</p><h1>${escapeHtml(item.title)}</h1><p>${escapeHtml(item.summary||'공식 자료를 기반으로 콘텐츠 기록을 정리했습니다.')}</p><div class="archive-detail-meta"><span class="archive-chip">${escapeHtml(statusLabel(item.status))}</span><span class="archive-chip">${escapeHtml(item.role||'주최')}</span><span class="archive-chip">${escapeHtml(formatRange(item))}</span><span class="archive-chip is-record-state">${escapeHtml(recordState)}</span></div></div></div>${renderSeriesArchive(item)}<div class="archive-summary-grid"><div><small>진행 기간</small><strong>${escapeHtml(formatRange(item))}</strong></div><div><small>${peopleLabel}</small><strong>${peopleCount?peopleCount+'명':'확인 중'}</strong></div><div><small>타임라인</small><strong>${(item.timeline||[]).length}건</strong></div><div><small>영상 · 방송</small><strong>${(item.media||[]).length}개</strong></div><div><small>자료 이미지</small><strong>${(item.gallery||[]).length}장</strong></div><div><small>출처</small><strong>${item.sourceCount||item.sources?.length||0}개</strong></div></div><div class="archive-tabs" role="tablist" aria-label="콘텐츠 기록 섹션"><button type="button" role="tab" data-archive-tab="overview" aria-selected="true">소개</button>${((item.notionSections||[]).length||(item.knowledgeSections||[]).length||isJustserver(item)||isLeopel(item))?'<button type="button" role="tab" data-archive-tab="guide" aria-selected="false">가이드</button>':''}<button type="button" role="tab" data-archive-tab="timeline" aria-selected="false">기록</button><button type="button" role="tab" data-archive-tab="media" aria-selected="false">영상</button><button type="button" role="tab" data-archive-tab="posts" aria-selected="false">게시글</button><button type="button" role="tab" data-archive-tab="people" aria-selected="false">${peopleTab}</button><button type="button" role="tab" data-archive-tab="gallery" aria-selected="false">이미지</button><button type="button" role="tab" data-archive-tab="sources" aria-selected="false">자료</button></div><div data-archive-panel>${renderOverview(item)}</div>${renderRelated(item)}`;
+  els.detail.innerHTML=`<button type="button" class="archive-reset" data-archive-back>← ${escapeHtml(seriesBack)}</button>${renderSiblingSeriesNav(item)}<div class="archive-detail-hero">${hero}<div class="archive-detail-copy${titleClass?' '+titleClass:''}"><p class="kicker">${escapeHtml(categoryLabel(item.category))}</p><h1>${escapeHtml(item.title)}</h1><p>${escapeHtml(item.summary||'공식 자료를 기반으로 콘텐츠 기록을 정리했습니다.')}</p><div class="archive-detail-meta"><span class="archive-chip">${escapeHtml(statusLabel(item.status))}</span><span class="archive-chip">${escapeHtml(item.role||'주최')}</span><span class="archive-chip">${escapeHtml(formatRange(item))}</span><span class="archive-chip is-record-state">${escapeHtml(recordState)}</span></div></div></div>${renderSeriesArchive(item)}<div class="archive-summary-grid"><div><small>진행 기간</small><strong>${escapeHtml(formatRange(item))}</strong></div><div><small>${peopleLabel}</small><strong>${peopleCount?peopleCount+'명':'확인 중'}</strong></div><div><small>타임라인</small><strong>${(item.timeline||[]).length}건</strong></div><div><small>영상 · 방송</small><strong>${(item.media||[]).length}개</strong></div><div><small>자료 이미지</small><strong>${(item.gallery||[]).length}장</strong></div><div><small>출처</small><strong>${item.sourceCount||item.sources?.length||0}개</strong></div></div><div class="archive-tabs" role="tablist" aria-label="콘텐츠 기록 섹션"><button type="button" role="tab" data-archive-tab="overview" aria-selected="true">소개</button>${((item.notionSections||[]).length||(item.referenceSections||[]).length||(item.knowledgeSections||[]).length||isJustserver(item)||isLeopel(item))?'<button type="button" role="tab" data-archive-tab="guide" aria-selected="false">가이드</button>':''}<button type="button" role="tab" data-archive-tab="timeline" aria-selected="false">기록</button><button type="button" role="tab" data-archive-tab="media" aria-selected="false">영상</button><button type="button" role="tab" data-archive-tab="posts" aria-selected="false">게시글</button><button type="button" role="tab" data-archive-tab="people" aria-selected="false">${peopleTab}</button><button type="button" role="tab" data-archive-tab="gallery" aria-selected="false">이미지</button><button type="button" role="tab" data-archive-tab="sources" aria-selected="false">자료</button></div><div data-archive-panel>${renderOverview(item)}</div>${renderRelated(item)}`;
   els.detail.querySelector('[data-archive-back]')?.addEventListener('click',()=>{writeState({...queryState(),id:'',session:''},{push:true});void renderRoute()});
   els.detail.querySelectorAll('[data-archive-tab]').forEach(b=>b.addEventListener('click',()=>activateTab(b.dataset.archiveTab,item)));
   els.detail.querySelectorAll('[data-archive-sibling]').forEach(b=>b.addEventListener('click',()=>{writeState({...queryState(),series:itemSeriesId(item),id:b.dataset.archiveSibling||'',session:''},{push:true});void renderRoute()}));
