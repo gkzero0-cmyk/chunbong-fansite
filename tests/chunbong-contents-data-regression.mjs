@@ -85,7 +85,12 @@ const leopelGap=(leopel?.participantGroups||[]).find(row=>row.id==='leopel-uncla
 assert.equal(leopelGap?.count,111,'레오펠 최종 집계와 구조화 명단의 차이 111명을 별도 표시해야 합니다');
 assert.equal((leopelGap?.participants||[]).length,0,'근거 없는 닉네임을 레오펠 미분류 111명에 임의로 채우면 안 됩니다');
 assert.ok((leopel?.results||[]).some(row=>row.title==='추가 · 미분류'&&/111명/.test(row.value||'')),'레오펠 결과 요약에 미분류 111명 설명이 있어야 합니다');
-assert.ok((leopel?.sources||[]).some(row=>row.id==='source-nemopix-leopel'&&/nemopix\.xyz\/content\/leopel/i.test(row.url||'')),'Nemopix 레오펠 지통실을 교차확인 출처로 유지해야 합니다');
+const leopelNemopix=(leopel?.sources||[]).find(row=>row.id==='source-nemopix-leopel');
+assert.ok(leopelNemopix&&/nemopix\.xyz\/content\/leopel/i.test(leopelNemopix.url||''),'Nemopix 레오펠 지통실을 내부 교차확인 자료로 유지해야 합니다');
+assert.equal(leopelNemopix.visibility,'internal','Nemopix는 교차확인에는 사용하지만 공개 출처로 표시하면 안 됩니다');
+assert.ok((leopel?.sources||[]).some(row=>row.id==='source-reference'&&/namu\.wiki\/w\//i.test(row.url||'')),'레오펠 공개 참고 출처는 나무위키를 유지해야 합니다');
+assert.ok((leopel?.results||[]).some(row=>row.title==='셧다운'&&/06:00.*17:00/.test(row.value||'')),'레오펠 셧다운 정보를 가이드 데이터에 유지해야 합니다');
+assert.ok((leopel?.results||[]).some(row=>row.title==='공동 목표'&&/신비의 동상/.test(row.value||'')),'레오펠 세계관 공동 목표를 구조화해야 합니다');
 for(const item of seed.items) assert.deepEqual(validateArchiveItem(normalizeArchiveItem(item),{publishing:true}),[]);
 
 const psy1=seed.items.find(item=>item.id==='psy-emotion-song-contest-1');
@@ -161,16 +166,23 @@ assert.ok((mergedLeopel.results||[]).some(row=>row.title==='3차 입주'&&/164�
 
 const notionGuideSample=archiveApi._internals.notionGuideRows({
   title:'테스트 Notion',pageId:'page-root',
-  sections:[{id:'page-root',title:'테스트 Notion',depth:0,blocks:[{title:'서버 규칙',text:'자동화 금지\n비방 생산활동 금지'},{title:'주요 시스템',text:'채광\n요리\n낚시'}]}]
+  sections:[{id:'page-root',title:'테스트 Notion',depth:0,blocks:[{title:'서버 규칙',text:'자동화 금지\n비방 생산활동 금지',images:[{src:'https://example.com/rules.png',caption:'서버 규칙 안내',filename:'rules.png'}]},{title:'주요 시스템',text:'채광\n요리\n낚시'}]}]
 },{id:'source-notion-test',url:'https://example.notion.site/test'});
 assert.equal(notionGuideSample.length,2,'Notion blocks should become readable guide sections');
 assert.equal(notionGuideSample[0].sourceId,'source-notion-test');
 assert.match(notionGuideSample[0].text,/자동화 금지/);
+assert.equal(notionGuideSample[0].images?.[0]?.src,'https://example.com/rules.png','Notion image blocks must survive guide extraction');
+const normalizedNotion=normalizeArchiveItem({...monthOnly,id:'notion-image-test',notionSections:[{id:'n1',title:'이미지 안내',text:'설명',images:[{src:'https://example.com/guide.png',caption:'실제 안내 이미지',filename:'guide.png'}]}]});
+assert.equal(normalizedNotion.notionSections[0]?.images?.[0]?.filename,'guide.png','Notion image metadata must survive archive normalization');
 assert.equal(archiveApi._internals.isNotionSourceUrl('https://example.notion.site/test'),true);
 const archiveCore=require('../lib/chunbong-content-archive-core');
 assert.equal(archiveCore.blockedArchiveSourceUrl('https://bngts.com/contents/just'),true,'Bangtongsil must be excluded from public sources');
 assert.equal(archiveCore.blockedArchiveSourceUrl('https://namu.moe/w/test'),true,'namu.moe mirror must be excluded from public sources');
 assert.equal(archiveCore.blockedArchiveSourceUrl('https://namu.wiki/w/test'),false,'namu.wiki should remain a valid source');
+assert.equal(archiveCore.blockedArchiveSourceUrl('https://www.nemopix.xyz/content/leopel'),true,'Nemopix may be used internally but must be excluded from public sources');
+const publicLeopel=toPublicArchiveItem(normalizeArchiveItem(leopel));
+assert.equal((publicLeopel.sources||[]).some(row=>/nemopix\.xyz/i.test(row.url||'')),false,'Nemopix must not appear in the public Leopel source list');
+assert.ok((publicLeopel.sources||[]).some(row=>/namu\.wiki/i.test(row.url||'')),'NamuWiki must remain visible as the public reference source');
 
 assert.equal(archiveApi._internals.shouldForcePublicAutoSync({githubOidc:true,migrationMarker:''}),true,'the first authenticated GitHub archive sync after this migration should run a full rescan');
 assert.equal(archiveApi._internals.shouldForcePublicAutoSync({githubOidc:true,migrationMarker:'done'}),false,'completed migration should return to incremental archive sync');
