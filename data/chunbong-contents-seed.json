@@ -3831,15 +3831,15 @@
       "category": "song",
       "role": "개최",
       "status": "ended",
-      "startDate": "",
-      "endDate": "",
-      "datePrecision": "unknown",
-      "summary": "춘봉이 개최한 싸이감성 노래자랑 제1회 기록으로, SOOP 모집글·공식 VOD와 보존된 원문 참가 순서를 기준으로 정리합니다.",
-      "description": "싸이감성 노래자랑 제1회 기록입니다. SOOP에 보존된 원문에서 참가자 36명과 핀볼 경연 순서를 확인했습니다. 원문 순서의 ‘시네_’와 별도 참가 기록의 ‘시로코’는 동일 인물로 확인되어 중복 인원으로 계산하지 않습니다. 시로코는 서인영 ‘신데렐라’로 참가한 기록이 확인됩니다. 정확한 행사 시작 일시는 현재 자료에서 확인되지 않아 추정하지 않습니다.",
+      "startDate": "2024-05-19",
+      "endDate": "2024-05-19",
+      "datePrecision": "day",
+      "summary": "춘봉이 2024년 5월 19일 개최한 싸이감성 노래자랑 제1회 기록으로, SOOP 모집글·당일 다시보기·공식 편집 VOD와 보존된 원문 참가 순서를 기준으로 정리합니다.",
+      "description": "싸이감성 노래자랑 제1회는 2024년 5월 19일 진행됐습니다. SOOP 당일 다시보기와 보존된 원문에서 참가자 36명과 핀볼 경연 순서를 확인했습니다. 원문 순서의 ‘시네_’와 별도 참가 기록의 ‘시로코’는 동일 인물로 확인되어 중복 인원으로 계산하지 않습니다. 시로코는 서인영 ‘신데렐라’로 참가한 기록이 확인됩니다.",
       "heroImage": {
-        "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109567/chunbong-fansite/psy/series-selected-source.jpg",
-        "alt": "싸이감성 노래자랑 제1회 실제 SOOP VOD 기반 16:9 대표 이미지",
-        "sourceId": "source-psy1-vod"
+        "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790133599/chunbong-fansite/psy/session-1-vod-125250373-thumb.jpg",
+        "alt": "2024년 5월 19일 싸이감성 노래자랑 제1회 SOOP 다시보기 썸네일",
+        "sourceId": "source-psy1-event-vod"
       },
       "participants": [
         "이무지_",
@@ -3881,6 +3881,10 @@
       ],
       "results": [
         {
+          "title": "개최일",
+          "value": "2024년 5월 19일"
+        },
+        {
           "title": "확인된 참가자",
           "value": "36명 · 원문 ‘시네_’와 ‘시로코’는 동일 인물로 통합"
         },
@@ -3921,9 +3925,33 @@
           "sourceId": "source-psy1-siroko",
           "note": "시로코 문서에 제1회 싸이감성 노래자랑 참가와 선곡 기록이 명시되어 있습니다.",
           "visibility": "public"
+        },
+        {
+          "id": "psy1-event-day",
+          "type": "vod",
+          "title": "싸이감성 노래자랑 제1회 개최 · 당일 다시보기",
+          "date": "2024-05-19",
+          "datePrecision": "day",
+          "url": "https://vod.sooplive.com/player/125250373",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790133599/chunbong-fansite/psy/session-1-vod-125250373-thumb.jpg",
+          "sourceId": "source-psy1-event-vod",
+          "note": "SOOP VOD 125250373 메타데이터에서 제목 ‘싸이감성 노래자랑’, 방송 파일 시작일 2024-05-19, 방송자 ‘춘봉_’를 확인했습니다.",
+          "visibility": "public"
         }
       ],
       "media": [
+        {
+          "id": "psy1-event-vod",
+          "type": "vod",
+          "title": "싸이감성 노래자랑 · 2024년 5월 19일 다시보기",
+          "date": "2024-05-19",
+          "datePrecision": "day",
+          "url": "https://vod.sooplive.com/player/125250373",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790133599/chunbong-fansite/psy/session-1-vod-125250373-thumb.jpg",
+          "sourceId": "source-psy1-event-vod",
+          "note": "제1회 개최 당일 SOOP 다시보기. VOD 메타데이터 제목은 ‘싸이감성 노래자랑’입니다.",
+          "visibility": "public"
+        },
         {
           "id": "psy1-vod",
           "type": "vod",
@@ -3938,6 +3966,13 @@
         }
       ],
       "gallery": [
+        {
+          "id": "psy1-event-vod-thumb",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790133599/chunbong-fansite/psy/session-1-vod-125250373-thumb.jpg",
+          "alt": "싸이감성 노래자랑 제1회 2024년 5월 19일 SOOP 다시보기 썸네일",
+          "caption": "제1회 개최 당일 SOOP 다시보기 · 대표 이미지",
+          "sourceId": "source-psy1-event-vod"
+        },
         {
           "id": "psy1-official-poster",
           "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790112850/chunbong-fansite/psy/session-1-official-poster.webp",
@@ -3954,6 +3989,13 @@
         }
       ],
       "sources": [
+        {
+          "id": "source-psy1-event-vod",
+          "kind": "official",
+          "label": "SOOP 다시보기 · 싸이감성 노래자랑 · 2024-05-19",
+          "url": "https://vod.sooplive.com/player/125250373",
+          "visibility": "public"
+        },
         {
           "id": "source-psy1-recruit",
           "kind": "official",
@@ -3989,7 +4031,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-23T06:35:00+09:00",
+      "updatedAt": "2026-09-23T12:20:00+09:00",
       "series": {
         "id": "psy-emotion-song-contest",
         "title": "싸이감성 노래자랑",
