@@ -8,7 +8,7 @@ const css = read('daily-fortune.css');
 const sw = read('service-worker.js');
 
 assert.doesNotThrow(() => new Function(js), 'daily fortune runtime must remain valid JavaScript');
-assert.match(home, /href="daily-fortune\.css\?v=6"/, 'home daily fortune CSS missing');
+assert.match(home, /href="daily-fortune\.css\?v=7"/, 'home daily fortune CSS missing');
 assert.match(home, /src="daily-fortune\.js\?v=9"/, 'home daily fortune runtime missing');
 assert.match(js, /timeZone: SEOUL_TZ/, 'daily fortune must use the Seoul timezone');
 assert.match(js, /const STORAGE_KEY = 'chunbong-daily-fortune-v1'/, 'daily fortune storage key missing');
@@ -38,7 +38,9 @@ assert.match(css, /\.daily-fortune-front\{[\s\S]*#08152f/, 'daily fortune front 
 assert.match(css, /\.daily-fortune-front-frame::before,\.daily-fortune-front-frame::after/, 'daily fortune front must include matching celestial star medallions');
 assert.match(css, /\.daily-fortune-front-title\{[\s\S]*#102344/, 'daily fortune title plate must use the matching navy-and-gold theme');
 assert.match(css, /@keyframes dailyFortuneBackSpin/, 'high-speed card-back spin animation missing');
-assert.match(css, /dailyFortuneUltraSpinner\{[\s\S]*rotateY\(20160deg\)/, 'ultra-fast spin must complete fifty-six vertical turns before stopping');
+assert.match(css, /dailyFortuneHyperSpin\{[\s\S]*rotateY\(360deg\)/, 'hyper-spin must complete a full vertical turn every cycle');
+assert.match(css, /animation:dailyFortuneHyperSpin \.05s linear infinite!important/, 'hyper-spin must run at twenty rotations per second during the fast phase');
+assert.match(css, /dailyFortuneHyperDecelerate\{[\s\S]*rotateY\(1440deg\)/, 'final 400ms must visibly decelerate through four additional turns');
 assert.doesNotMatch(css, /dailyFortuneBackSpin\{[^}]*rotateZ\(/, 'draw spin must not look like a flat card rotating on the table');
 assert.match(js, /const SPIN_MS = 3000/, 'ultra-fast spin must run for three seconds');
 assert.match(css, /\.daily-fortune-stage\.is-spinning \.daily-fortune-card-inner/, 'spin state styling missing');
@@ -56,7 +58,7 @@ assert.doesNotMatch(js, /rippleDistance > 0\.26/, 'pointer movement must not spa
 assert.match(js, /\[945, 0\.60, 0\.0100/, 'hover entry sound must use the refined glass-halo resonance');
 assert.match(css, /scale\(1\.032\)/, 'hover lift must be visually noticeable');
 assert.match(css, /mix-blend-mode:screen!important/, 'inner artwork prism must use a controlled screen blend for visible feedback');
-assert.match(css, /opacity:\.82!important/, 'inner prism film must be clearly visible without washing out the artwork');
+assert.match(css, /opacity:\.98!important/, 'crystal prism film must remain clearly visible over the artwork');
 assert.doesNotMatch(css, /#fff 0 2%/, 'white pointer hotspot must stay removed');
 assert.match(js, /const revealed = cardButton\.classList\.contains\('is-revealed'\)/, 'hover effect must react before and after reveal');
 assert.match(css, /dailyFortuneParticle/, 'fortune reveal particles missing');
@@ -69,8 +71,11 @@ console.log('home daily fortune regression passed');
 
 assert.match(js,/lastHoverSoundAt >= 5000|now - lastHoverSoundAt >= 5000/,'fortune hover sound must have a long entry cooldown');
 assert.doesNotMatch(js,/spawnHoloRipple\(point\.px, point\.py\)/,'pointer entry and movement must not spawn circular ripples');
-assert.match(css,/opacity:\.08;filter:blur\(2\.1px\)/,'high-speed phase must make the card nearly disappear');
+assert.match(css,/opacity:\.07!important;[\s\S]*blur\(2\.2px\)/,'high-speed phase must make the card nearly disappear');
 assert.match(js,/const DECEL_START_MS = 2600/,'final 400ms must be reserved for deceleration');
+assert.match(js,/stage\.classList\.add\('is-decelerating'\)/,'runtime must switch from hyper-spin into the final deceleration phase');
+assert.match(css,/\.daily-fortune-stage:hover \.daily-fortune-holo-film/,'CSS hover fallback must show the crystal film even before JS class activation');
+assert.match(css,/filter:saturate\(1\.55\) contrast\(1\.10\) brightness\(1\.08\)!important/,'crystal film must use a clearly visible premium prism treatment');
 assert.match(js,/let pendingState = null/,'daily fortune draw must keep an uncommitted pending card while spinning');
 assert.match(js,/const commitPendingState = \(\) =>/,'daily fortune draw must commit only when reveal succeeds');
 assert.match(js,/drawFailsafeTimer = setTimeout\(forceCompleteDraw, RESULT_MS \+ 1200\)/,'daily fortune draw must include a stuck-animation failsafe');
@@ -84,5 +89,5 @@ assert.match(js,/stage\.addEventListener\('pointerdown',[\s\S]*cardButton\.disab
 assert.match(js,/stage\.addEventListener\('pointerup',[\s\S]*startDraw\(\)/,'stage pointerup must start the draw without depending on button click delivery');
 assert.match(js,/cardButton\.addEventListener\('click',[\s\S]*event\.detail === 0/,'button click must remain as keyboard and assistive-tech fallback');
 assert.match(js,/pointerActivationSafe: true/,'runtime diagnostics must expose the pointer activation safety fix');
-assert.match(js,/if \(state\) \{\s*renderState\(false\);\s*return;\s*\}/,'a saved same-day result must recover to the revealed state instead of ignoring clicks');
+assert.match(js,/const recoverIdleState = \(\) => \{[\s\S]*state = readState\(\);[\s\S]*renderState\(false\)/,'a saved same-day result must recover from storage whenever the dialog reopens');
 assert.match(js,/A single clear wind-chime strike/,'result reveal must use the refined wind-chime direction');
