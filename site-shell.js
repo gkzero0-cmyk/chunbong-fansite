@@ -1,6 +1,7 @@
 (() => {
   'use strict';
   const memory=new Map();
+  const inflight=new Map();
   const CACHE_PREFIX= 'chunbong-cache-v2:';
   const shouldPersist=key=>
     String(key).startsWith('content:') ||
@@ -58,10 +59,16 @@
       if (!force) {
         const cached = this.get(key, ttl);
         if (cached) return cached;
+        if (key && inflight.has(key)) return inflight.get(key);
       }
-      const response = await fetch(url, { headers });
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      return write(key, await response.json());
+      const task = (async () => {
+        const response = await fetch(url, { headers });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return write(key, await response.json());
+      })();
+      if (key) inflight.set(key, task);
+      try { return await task; }
+      finally { if (key && inflight.get(key) === task) inflight.delete(key); }
     }
   };
 
