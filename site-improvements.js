@@ -177,6 +177,31 @@
     let contentRows=[];
     let contentLoading=false;
     let contentReady=false;
+    let renderedRows=[];
+    let renderedMatchCount=0;
+    let searchAnalyticsTimer=0;
+    let lastTrackedSearch='';
+    const sendSearchAnalytics=(type,target,extra={})=>{
+      const payload={type,target,...extra};
+      if(window.ChunbongAnalytics?.track)window.ChunbongAnalytics.track(type,target,extra);
+      else (window.__ChunbongAnalyticsQueue||(window.__ChunbongAnalyticsQueue=[])).push(payload);
+    };
+    const scheduleSearchAnalytics=()=>{
+      clearTimeout(searchAnalyticsTimer);
+      const q=normalize(input.value);
+      if(q.length<2||!contentReady)return;
+      searchAnalyticsTimer=setTimeout(()=>{
+        const key=q+'|'+renderedMatchCount;
+        if(key===lastTrackedSearch)return;
+        lastTrackedSearch=key;
+        sendSearchAnalytics('search_query',q,{resultCount:renderedMatchCount});
+      },650);
+    };
+    const trackSearchResult=row=>{
+      const q=normalize(input.value);
+      if(q.length<2||!row)return;
+      sendSearchAnalytics('search_result_click',q,{resultKind:String(row.kind||'').slice(0,40),resultLabel:String(row.label||'').slice(0,80)});
+    };
 
     const score=(row,q)=>{
       if(!q)return row.kind==='메뉴'?1:-1;
@@ -192,8 +217,11 @@
     const render=()=>{
       const q=normalize(input.value);
       const source=q?[...ROUTES,...contentRows]:ROUTES;
-      const rows=source.map(row=>({row,rank:score(row,q)})).filter(entry=>entry.rank>=0)
-        .sort((a,b)=>b.rank-a.rank).slice(0,12).map(entry=>entry.row);
+      const matches=source.map(row=>({row,rank:score(row,q)})).filter(entry=>entry.rank>=0)
+        .sort((a,b)=>b.rank-a.rank);
+      renderedMatchCount=matches.length;
+      const rows=matches.slice(0,12).map(entry=>entry.row);
+      renderedRows=rows;
       active=Math.min(active,Math.max(0,rows.length-1));
       if(!rows.length&&q&&contentLoading){
         results.innerHTML='<div class="site-search-empty">사이트 콘텐츠를 검색하는 중…</div>';
@@ -203,11 +231,12 @@
       results.innerHTML=rows.length ? rows.map((row,i)=>{
         const id='site-search-option-'+i;
         const kind=categoryKind(row.kind,row.href);
-        return `<a id="${id}" role="option" aria-selected="${i===active}" class="category-accent ${i===active?'is-active':''}" data-kind="${escapeHtml(kind)}" href="${escapeHtml(row.href)}"><span class="site-search-result-copy"><strong>${escapeHtml(row.label)}</strong><small>${escapeHtml(row.kind+(row.meta?' · '+row.meta:''))}</small></span><span class="site-search-go" aria-hidden="true">→</span></a>`;
+        return `<a id="${id}" role="option" aria-selected="${i===active}" class="category-accent ${i===active?'is-active':''}" data-kind="${escapeHtml(kind)}" data-search-index="${i}" href="${escapeHtml(row.href)}"><span class="site-search-result-copy"><strong>${escapeHtml(row.label)}</strong><small>${escapeHtml(row.kind+(row.meta?' · '+row.meta:''))}</small></span><span class="site-search-go" aria-hidden="true">→</span></a>`;
       }).join('') : '<div class="site-search-empty">'+(q?'일치하는 콘텐츠가 없습니다.':'검색어를 입력해 주세요.')+'</div>';
       const selected=results.querySelector('a.is-active');
       if(selected)input.setAttribute('aria-activedescendant',selected.id);
       else input.removeAttribute('aria-activedescendant');
+      scheduleSearchAnalytics();
     };
 
     const loadContent=async()=>{
@@ -233,12 +262,16 @@
     trigger.addEventListener('click',open);
     dialog.querySelector('[data-site-search-close]').addEventListener('click',close);
     dialog.addEventListener('click',e=>{if(e.target===dialog)close()});
+    results.addEventListener('click',event=>{
+      const link=event.target.closest('a[data-search-index]');if(!link)return;
+      trackSearchResult(renderedRows[Number(link.dataset.searchIndex)||0]);
+    });
     input.addEventListener('input',()=>{active=0;render();if(normalize(input.value).length>=2)void loadContent();});
     input.addEventListener('keydown',e=>{
       const links=[...results.querySelectorAll('a')];
       if(e.key==='ArrowDown'){e.preventDefault();active=Math.min(active+1,Math.max(0,links.length-1));render();}
       if(e.key==='ArrowUp'){e.preventDefault();active=Math.max(0,active-1);render();}
-      if(e.key==='Enter'&&links[active]){e.preventDefault();location.href=links[active].href;}
+      if(e.key==='Enter'&&links[active]){e.preventDefault();trackSearchResult(renderedRows[active]);location.href=links[active].href;}
       if(e.key==='Escape')close();
     });
     document.addEventListener('keydown',e=>{
