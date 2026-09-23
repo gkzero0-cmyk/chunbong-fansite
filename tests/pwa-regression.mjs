@@ -38,7 +38,7 @@ assert.match(page, /새 버전 준비 완료/);
 assert.match(css, /\.pwa-install-chip/);
 assert.match(css, /\.pwa-update-toast/);
 assert.match(sw, /CHUNBONG_PWA/);
-assert.match(sw, /chunbong-pwa-20260923-v32/,'broadcast alert fix must advance the PWA cache');
+assert.match(sw, /chunbong-pwa-20260922-v31/,'broadcast alert fix must advance the PWA cache');
 assert.match(sw, /\/offline\.html/);
 assert.match(sw, /url\.pathname\.startsWith\('\/api\/'\)/);
 assert.match(sw, /networkFirst/);
