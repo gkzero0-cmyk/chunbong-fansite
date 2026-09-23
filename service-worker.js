@@ -76,6 +76,25 @@ async function networkFirst(request, event) {
   }
 }
 
+async function boundedNetworkFirst(request, event, timeoutMs = 450) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(request);
+  const network = (async () => {
+    try {
+      const response = await fetch(request);
+      if (response?.ok) await cache.put(request, response.clone());
+      return response;
+    } catch {
+      return null;
+    }
+  })();
+  if (!cached) return await network || Response.error();
+  const timeout = new Promise(resolve => setTimeout(() => resolve(cached), timeoutMs));
+  const first = await Promise.race([network.then(response => response || cached), timeout]);
+  event?.waitUntil(network);
+  return first || cached;
+}
+
 async function staleWhileRevalidate(request, event, fallback = '') {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
@@ -109,7 +128,7 @@ self.addEventListener('fetch', event => {
   }
 
   if (['script','style'].includes(request.destination)) {
-    event.respondWith(networkFirst(request, event));
+    event.respondWith(boundedNetworkFirst(request, event, 450));
     return;
   }
 
