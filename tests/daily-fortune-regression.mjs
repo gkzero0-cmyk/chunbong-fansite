@@ -63,9 +63,9 @@ assert.doesNotMatch(css, /#fff 0 2%/, 'white pointer hotspot must stay removed')
 assert.match(js, /const revealed = cardButton\.classList\.contains\('is-revealed'\)/, 'hover effect must react before and after reveal');
 assert.match(css, /dailyFortuneParticle/, 'fortune reveal particles missing');
 assert.match(css, /@media\(prefers-reduced-motion:reduce\)/, 'reduced-motion fallback missing');
-assert.match(sw, /chunbong-pwa-20260922-v31/, 'daily fortune service worker revision missing');
-assert.match(sw, /'\/daily-fortune\.css'/);
-assert.match(sw, /'\/daily-fortune\.js'/);
+assert.match(sw, /chunbong-pwa-20260923-v32/, 'daily fortune service worker revision missing');
+assert.doesNotMatch(sw, /'\/daily-fortune\.css'/,'daily fortune CSS should runtime-cache after home requests it');
+assert.doesNotMatch(sw, /'\/daily-fortune\.js'/,'daily fortune JS should runtime-cache after home requests it');
 
 console.log('home daily fortune regression passed');
 
