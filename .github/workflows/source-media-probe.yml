@@ -38,8 +38,13 @@ jobs:
               const b=row.value||{};
               if(b.type==='page'&&row.id!==pageId&&!seen.has(row.id))queue.push(row.id);
               if(['image','file'].includes(String(b.type||''))){
-                const sample={pageId,id:row.id,type:b.type,file_ids:b.file_ids,properties:b.properties,format:b.format,signed:signed?.[row.id]};
-                found.push(sample);console.log('MEDIA '+JSON.stringify(sample).slice(0,3200));
+                const source=Array.isArray(b.properties?.source)?String(b.properties.source?.[0]?.[0]||''):String(b.format?.display_source||'');
+                const sample={pageId,id:row.id,type:b.type,file_ids:b.file_ids,parent_id:b.parent_id,parent_table:b.parent_table,space_id:b.space_id,source,properties:b.properties,format:b.format,signed:signed?.[row.id]};
+                found.push(sample);console.log('MEDIA '+JSON.stringify(sample).slice(0,3600));
+                if(source&&source.startsWith('attachment:')&&found.length<=3){
+                  const sign=await fetch('https://www.notion.so/api/v3/getSignedFileUrls',{method:'POST',headers,body:JSON.stringify({urls:[{url:source,permissionRecord:{id:row.id,table:b.parent_table||'block',spaceId:b.space_id||''}}]})});
+                  console.log('SIGN status='+sign.status+' '+(await sign.text()).slice(0,1800));
+                }
               }
             }
           }
