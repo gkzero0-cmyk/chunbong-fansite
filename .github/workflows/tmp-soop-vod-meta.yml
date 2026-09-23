@@ -1,0 +1,40 @@
+name: Temporary SOOP VOD metadata lookup
+
+on:
+  push:
+    branches:
+      - fix/psy1-date-vod-thumbnail
+    paths:
+      - '.github/workflows/tmp-soop-vod-meta.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  lookup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch VOD metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS 'https://api.m.afreecatv.com/station/video/a/view' \
+            -H 'Referer: https://vod.sooplive.com/player/125250373' \
+            -H 'User-Agent: Mozilla/5.0' \
+            --data 'nTitleNo=125250373&nApiLevel=10&nPlaylistIdx=0' \
+            -o /tmp/vod.json
+          python3 - <<'PY'
+          import json
+          with open('/tmp/vod.json','r',encoding='utf-8') as f:
+              payload=json.load(f)
+          data=payload.get('data') or {}
+          print('TITLE='+str(data.get('title') or ''))
+          print('THUMB='+str(data.get('thumb') or ''))
+          print('WRITER='+str(data.get('writer_nick') or ''))
+          files=data.get('files') or []
+          if files:
+              first=files[0] or {}
+              print('FILE_START='+str(first.get('file_start') or ''))
+              print('FILE_INFO_KEY='+str(first.get('file_info_key') or ''))
+          print('DATA_KEYS='+','.join(sorted(map(str,data.keys()))))
+          PY
