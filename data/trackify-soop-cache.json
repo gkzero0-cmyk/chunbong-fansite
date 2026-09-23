@@ -1,55 +1,55 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-22T06:27:38.950Z",
+  "capturedAt": "2026-09-23T06:28:39.006Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 30598,
-    "fanclubCount": 7677,
-    "subscriberCount": 49,
+    "followerCount": 30649,
+    "fanclubCount": 7681,
+    "subscriberCount": 48,
     "supporterCount": 24,
     "averageViewers": 58,
     "maxViewers": 173,
     "airtimeMinutes": 10692,
     "viewershipHours": 10269,
-    "cumulativeUpCount": 80612,
-    "totalAirtimeMinutes": 625247,
+    "cumulativeUpCount": 80658,
+    "totalAirtimeMinutes": 625902,
     "monthlyStarCount": 86726,
     "starsPerHour": 487,
     "monthlySupporterCount": 206,
     "monthlyChatCount": 44132,
     "monthlyMuteCount": 6,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-09-21T18:14:26",
+    "latestBroadcastDate": "2026-09-22T05:39:38",
     "categories": [
       {
         "name": "버추얼",
         "minutes": 9681,
         "streamCount": 25,
-        "sharePercent": 47.9
+        "sharePercent": 50.1
       },
       {
         "name": "마인크래프트",
         "minutes": 4844,
         "streamCount": 8,
-        "sharePercent": 24
+        "sharePercent": 25.1
       },
       {
         "name": "오버워치",
-        "minutes": 4678,
-        "streamCount": 9,
-        "sharePercent": 23.1
+        "minutes": 3936,
+        "streamCount": 8,
+        "sharePercent": 20.4
       },
       {
         "name": "PUBG: 배틀그라운드",
         "minutes": 634,
         "streamCount": 4,
-        "sharePercent": 3.1
+        "sharePercent": 3.3
       },
       {
         "name": "아르마 3",
-        "minutes": 376,
-        "streamCount": 2,
-        "sharePercent": 1.9
+        "minutes": 228,
+        "streamCount": 1,
+        "sharePercent": 1.2
       }
     ]
   },
