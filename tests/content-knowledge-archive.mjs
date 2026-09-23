@@ -48,6 +48,10 @@ const namuFallbackMeta=archiveApi._internals.fetchNamuMeta(new URL(namuSource),'
 assert.equal(namuFallbackMeta.url,namuSource,'fallback-parsed metadata must keep the public source URL on namu.wiki');
 assert.ok(!/namu\.moe/i.test(namuFallbackMeta.url),'read transport must never leak into the public source URL');
 assert.match(api,/persistArchiveGuideImage\(media,itemId,'reference'\)/,'reference images should be persisted in a separate permanent asset namespace');
+assert.match(api,/async function archiveGuideUploadFile/,'reference assets should support server-side byte fetching');
+assert.match(api,/parsed\.hostname==='file\.namu\.moe'/,'NamuWiki image hosts should be fetched by the archive server before Cloudinary upload');
+assert.match(api,/Referer:'https:\/\/namu\.wiki\/'/,'NamuWiki image fetches should use the public document as referer');
+assert.match(api,/new File\(\[bytes\]/,'Cloudinary should receive fetched image bytes instead of only the remote NamuWiki URL');
 assert.equal(core.blockedArchiveSourceUrl('https://d.namu.moe/w/%EB%A0%88%EC%98%A4%ED%8E%A0'),true,'Namu mirror transport must remain blocked from public source lists');
 const normalizedNotion=core.normalizeArchiveItem({...item,notionSections:[{id:'n1',title:'순서 테스트',content:[{type:'text',text:'앞 문단'},{type:'image',image:{src:'https://example.com/a.png',filename:'guide.png'}},{type:'text',text:'뒤 문단'}]}]});
 assert.deepEqual(normalizedNotion.notionSections[0].content.map(block=>block.type),['text','image','text']);
