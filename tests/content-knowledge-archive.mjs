@@ -33,6 +33,15 @@ const namu=archiveApi._internals.extractNamuStructured('<h2>주요 지역</h2><p
 assert.equal(namu.sections[0].title,'주요 지역');
 assert.match(namu.sections[0].text,/레오펠 광장/);
 assert.equal(namu.sections[0].images[0].alt,'레오펠 광장');
+const namuSource='https://namu.wiki/w/%EB%A0%88%EC%98%A4%ED%8E%A0?from=LEOPEL';
+const namuTransport=archiveApi._internals.namuReadTransportUrl(namuSource);
+assert.equal(namuTransport?.hostname,'d.namu.moe','NamuWiki 403 fallback may use the read transport internally');
+assert.equal(namuTransport?.pathname,'/w/%EB%A0%88%EC%98%A4%ED%8E%A0','fallback transport must preserve the original NamuWiki document path');
+assert.equal(namuTransport?.search,'?from=LEOPEL','fallback transport must preserve query parameters');
+const namuFallbackMeta=archiveApi._internals.fetchNamuMeta(new URL(namuSource),'<title>레오펠</title><h2>주요 지역</h2><p>광장 안내</p>');
+assert.equal(namuFallbackMeta.url,namuSource,'fallback-parsed metadata must keep the public source URL on namu.wiki');
+assert.ok(!/namu\.moe/i.test(namuFallbackMeta.url),'read transport must never leak into the public source URL');
+assert.equal(core.blockedArchiveSourceUrl('https://d.namu.moe/w/%EB%A0%88%EC%98%A4%ED%8E%A0'),true,'Namu mirror transport must remain blocked from public source lists');
 const normalizedNotion=core.normalizeArchiveItem({...item,notionSections:[{id:'n1',title:'순서 테스트',content:[{type:'text',text:'앞 문단'},{type:'image',image:{src:'https://example.com/a.png',filename:'guide.png'}},{type:'text',text:'뒤 문단'}]}]});
 assert.deepEqual(normalizedNotion.notionSections[0].content.map(block=>block.type),['text','image','text']);
 const normalizedReference=core.normalizeArchiveItem({...item,referenceSections:[{id:'r1',sourceId:'source-reference',pageTitle:'나무위키 · 레오펠',title:'주요 지역',provider:'namuwiki',text:'지역 설명',images:[{src:'https://example.com/leopel-map.png',alt:'레오펠 전체 지도',sourceUrl:'https://namu.wiki/w/%EB%A0%88%EC%98%A4%ED%8E%A0',provider:'namuwiki'}],content:[{type:'text',text:'지역 설명'},{type:'image',image:{src:'https://example.com/leopel-map.png',alt:'레오펠 전체 지도',sourceUrl:'https://namu.wiki/w/%EB%A0%88%EC%98%A4%ED%8E%A0',provider:'namuwiki'}}]}]});
