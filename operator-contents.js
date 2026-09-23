@@ -1,5 +1,5 @@
 const API='/api/content?type=';
-let root=null,items=[],selected=null,booted=false,autoSyncMeta=null,autoCandidates=[],browserImport=null;
+let root=null,items=[],selected=null,booted=false,autoSyncMeta=null,autoCandidates=[],browserImport=null,namuBrowserImport=null;
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const slug=v=>String(v||'').toLowerCase().trim().replace(/[^a-z0-9가-힣]+/g,'-').replace(/^-|-$/g,'');
@@ -115,6 +115,15 @@ function collectArchiveImages(itemRows=items){
     add(item,'대표 이미지',item.heroImage?.src);
     for(const row of Array.isArray(item.gallery)?item.gallery:[])add(item,'갤러리',row.src||row.url);
     for(const row of Array.isArray(item.media)?item.media:[])add(item,'영상 썸네일',row.thumbnail);
+    for(const section of Array.isArray(item.notionSections)?item.notionSections:[]){
+      for(const image of Array.isArray(section.images)?section.images:[])add(item,'Notion 원문',image?.src);
+      for(const block of Array.isArray(section.content)?section.content:[])if(block?.type==='image')add(item,'Notion 원문',block.image?.src);
+    }
+    for(const section of Array.isArray(item.referenceSections)?item.referenceSections:[]){
+      for(const image of Array.isArray(section.images)?section.images:[])add(item,'나무위키 원문',image?.src);
+      for(const block of Array.isArray(section.content)?section.content:[])if(block?.type==='image')add(item,'나무위키 원문',block.image?.src);
+    }
+    for(const section of Array.isArray(item.knowledgeSections)?item.knowledgeSections:[])for(const image of Array.isArray(section.images)?section.images:[])add(item,'지식 가이드',image?.src);
   }
   return [...map.values()];
 }
@@ -307,6 +316,75 @@ function base64ToUtf8(value=''){
   for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
   return new TextDecoder().decode(bytes);
 }
+function namuCollectorBookmarklet(){
+  const target=location.origin+'/operator.html?tab=contents';
+  const script=`(()=>{try{
+    const okHost=location.hostname==='namu.wiki'||location.hostname==='www.namu.wiki';
+    if(!okHost||!location.pathname.startsWith('/w/')){alert('namu.wiki 문서에서 실행해 주세요.');return}
+    const root=document.querySelector('article')||document.querySelector('main')||document.body;
+    const clean=value=>(value||'').replace(/\\s+/g,' ').trim();
+    const generic=/상세 내용|관련 문서|상위 문서|편집|접기|펼치기|아이콘|favicon|external link/i;
+    const sections=[];let current={title:'본문',text:[],images:[]};
+    const push=()=>{const text=current.text.join('\\n').slice(0,6000);if(text||current.images.length)sections.push({title:current.title||'본문',text,images:current.images.slice(0,18)});current={title:'본문',text:[],images:[]}};
+    const nodes=[...root.querySelectorAll('h1,h2,h3,h4,p,li,blockquote,figcaption,img')].slice(0,2400);
+    for(const node of nodes){
+      if(/^H[1-4]$/.test(node.tagName)){push();current={title:clean(node.innerText||node.textContent)||'본문',text:[],images:[]};continue}
+      if(node.tagName==='IMG'){
+        const src=node.currentSrc||node.src||'',alt=clean(node.alt||node.title||'').replace(/^파일:/,'');
+        let parsed=null;try{parsed=new URL(src,location.href)}catch{}
+        if(!parsed||parsed.protocol!=='https:'||parsed.hostname!=='i.namu.wiki'||generic.test(alt))continue;
+        if(!current.images.some(image=>image.src===parsed.href))current.images.push({src:parsed.href,alt,caption:alt});
+        continue;
+      }
+      const value=clean(node.innerText||node.textContent);if(!value||value.length>1800)continue;
+      if(!current.text.includes(value))current.text.push(value);
+    }
+    push();
+    const payload={version:1,source:'namuwiki-browser',url:location.origin+location.pathname,title:clean(document.querySelector('h1')?.innerText||document.title.replace(/\\s*-\\s*나무위키.*$/,'')),sections:sections.slice(0,64),capturedAt:new Date().toISOString()};
+    const bytes=new TextEncoder().encode(JSON.stringify(payload));let binary='';for(const byte of bytes)binary+=String.fromCharCode(byte);
+    const encoded=btoa(binary);window.open(${JSON.stringify(target)}+'#namu-import='+encodeURIComponent(encoded),'_blank','noopener');
+  }catch(error){alert('나무위키 문서 수집에 실패했습니다: '+(error?.message||error))}})()`;
+  return 'javascript:'+script.replace(/\s+/g,' ');
+}
+function readNamuImportHash(){
+  const match=location.hash.match(/^#namu-import=(.+)$/);if(!match)return null;
+  try{
+    const payload=JSON.parse(base64ToUtf8(decodeURIComponent(match[1])));
+    history.replaceState(null,'',location.pathname+location.search);
+    if(payload?.source!=='namuwiki-browser'||!/^https:\/\/(?:www\.)?namu\.wiki\/w\//i.test(String(payload.url||'')))return null;
+    return payload;
+  }catch{history.replaceState(null,'',location.pathname+location.search);return null}
+}
+function renderNamuHelper(){
+  const link=$('[data-namu-bookmarklet]',root),copy=$('[data-namu-bookmarklet-copy]',root),href=namuCollectorBookmarklet();
+  if(link)link.href=href;
+  if(copy&&!copy.dataset.bound){copy.dataset.bound='1';copy.addEventListener('click',async()=>{
+    try{await navigator.clipboard.writeText(href);copy.textContent='복사됨';setTimeout(()=>copy.textContent='북마크 코드 복사',1400)}
+    catch{prompt('아래 코드를 북마크 URL에 붙여넣으세요.',href)}
+  })}
+  const box=$('[data-namu-import]',root);if(!box)return;
+  if(!namuBrowserImport){box.hidden=true;return}
+  box.hidden=false;
+  const sections=Array.isArray(namuBrowserImport.sections)?namuBrowserImport.sections:[],images=sections.flatMap(row=>row.images||[]);
+  $('[data-namu-import-title]',box).textContent=namuBrowserImport.title||'나무위키 문서';
+  $('[data-namu-import-meta]',box).textContent='namu.wiki 직접 수집 · '+sections.length+'개 구역 · 이미지 '+images.length+'장';
+  $('[data-namu-import-summary]',box).textContent=namuBrowserImport.url||'';
+  const target=$('[data-namu-import-target]',box);
+  if(target)target.innerHTML='<option value="">자동 연결</option>'+items.map(item=>'<option value="'+esc(item.id)+'">'+esc(item.title)+'</option>').join('');
+  const dismiss=$('[data-namu-import-dismiss]',box);if(dismiss&&!dismiss.dataset.bound){dismiss.dataset.bound='1';dismiss.addEventListener('click',()=>{namuBrowserImport=null;renderNamuHelper()})}
+  const connect=$('[data-namu-import-connect]',box);if(connect&&!connect.dataset.bound){connect.dataset.bound='1';connect.addEventListener('click',()=>void submitNamuImport())}
+}
+async function submitNamuImport(){
+  if(!namuBrowserImport)return;
+  const box=$('[data-namu-import]',root),itemId=$('[data-namu-import-target]',box)?.value||'',button=$('[data-namu-import-connect]',box);if(button)button.disabled=true;
+  try{
+    const result=await json('operator-content-browser-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:itemId?'connect':'auto',itemId,payload:namuBrowserImport})});
+    if(!result?.matched){setMessage('이 나무위키 주소와 연결된 콘텐츠를 자동으로 찾지 못했습니다. 콘텐츠를 직접 선택해 주세요.','bad');return}
+    const title=result.item?.title||'춘봉 콘텐츠';namuBrowserImport=null;await load();renderNamuHelper();if(result.item?.id)selectItem(result.item.id);
+    setMessage(title+'에 namu.wiki 원문 '+Number(result.sectionCount||0)+'개 구역 · 이미지 '+Number(result.imageCount||0)+'장을 반영했습니다.','ok');
+  }catch(error){setMessage('나무위키 직접 수집 자료를 저장하지 못했습니다: '+error.message,'bad')}
+  finally{if(button)button.disabled=false}
+}
 function soopCollectorBookmarklet(){
   const target=location.origin+'/operator.html?tab=contents';
   const script=`(()=>{try{
@@ -419,5 +497,5 @@ export async function runOfficialSync(){
     if(el){el.textContent='공식 자료 동기화에 실패했습니다: '+e.message;el.dataset.state='bad'}
   }finally{if(button)button.disabled=false}
 }
-async function load(){try{const p=await json('operator-content-archive');items=Array.isArray(p.items)?p.items:[];autoSyncMeta=p.autoSync||null;autoCandidates=Array.isArray(p.candidates)?p.candidates:[];renderList();renderAutoSyncState();renderCandidates();renderSoopHelper();publishArchiveHealth(archiveHealthSnapshot(items,autoCandidates,autoSyncMeta))}catch(e){setMessage(e.message==='archive_storage_unavailable'?'콘텐츠 저장소를 사용할 수 없습니다.':'콘텐츠 목록을 불러오지 못했습니다.','bad')}}
-export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;browserImport=readSoopImportHash();$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);$('[data-archive-admin-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-archive-select]');if(button)selectItem(button.dataset.archiveSelect)});$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());$('[data-archive-image-audit]',root)?.addEventListener('click',()=>void runImageAudit());renderEditor(emptyItem());await load();if(browserImport)await autoRouteSoopImport();else renderSoopHelper()}
+async function load(){try{const p=await json('operator-content-archive');items=Array.isArray(p.items)?p.items:[];autoSyncMeta=p.autoSync||null;autoCandidates=Array.isArray(p.candidates)?p.candidates:[];renderList();renderAutoSyncState();renderCandidates();renderSoopHelper();renderNamuHelper();publishArchiveHealth(archiveHealthSnapshot(items,autoCandidates,autoSyncMeta))}catch(e){setMessage(e.message==='archive_storage_unavailable'?'콘텐츠 저장소를 사용할 수 없습니다.':'콘텐츠 목록을 불러오지 못했습니다.','bad')}}
+export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;browserImport=readSoopImportHash();namuBrowserImport=readNamuImportHash();$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);$('[data-archive-admin-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-archive-select]');if(button)selectItem(button.dataset.archiveSelect)});$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());$('[data-archive-image-audit]',root)?.addEventListener('click',()=>void runImageAudit());renderEditor(emptyItem());await load();if(namuBrowserImport)await submitNamuImport();else if(browserImport)await autoRouteSoopImport();else{renderSoopHelper();renderNamuHelper()}}
