@@ -9,20 +9,26 @@ const fetchYoutube = require('../lib/content-api/youtube');
 const fetchSchedule = require('../lib/content-api/schedule');
 const fetchActivity = require('../lib/activity');
 const fetchCatchDetail = require('../lib/content-api/catch-detail');
-const fetchChunbongData = require('../lib/chunbong-data');
-const handleChuntrisRanking = require('../lib/chuntris-ranking-api');
-const handleChunbakRanking = require('../lib/chunbak-ranking-api');
-const handleChungwagameRanking = require('../lib/chungwagame-ranking-api');
-const handleChuncortileRanking = require('../lib/chuncortile-ranking-api');
-const handleMinigameMultiplayer = require('../lib/minigame-multiplayer-api');
-const handleChangelogHistory = require('../lib/changelog-history-api');
-const pushNotifications = require('../lib/push-notifications-api');
-const operatorCenter=require('../lib/operator-center-api');
-const contentArchive=require('../lib/chunbong-content-archive-api');
-const youtubeEngagementCache = require('../data/youtube-engagement-cache.json');
-const soopMetricHistory = require('../data/soop-follower-history.json');
-const { buildEngagementRankings } = require('../lib/youtube-engagement');
-const fetchSoopLive = fetchChunbongData.fetchSoopLive;
+const lazyRequire = modulePath => {
+  let value;
+  return () => {
+    if (value === undefined) value = require(modulePath);
+    return value;
+  };
+};
+const getChunbongData = lazyRequire('../lib/chunbong-data');
+const getChuntrisRanking = lazyRequire('../lib/chuntris-ranking-api');
+const getChunbakRanking = lazyRequire('../lib/chunbak-ranking-api');
+const getChungwagameRanking = lazyRequire('../lib/chungwagame-ranking-api');
+const getChuncortileRanking = lazyRequire('../lib/chuncortile-ranking-api');
+const getMinigameMultiplayer = lazyRequire('../lib/minigame-multiplayer-api');
+const getChangelogHistory = lazyRequire('../lib/changelog-history-api');
+const getPushNotifications = lazyRequire('../lib/push-notifications-api');
+const getOperatorCenter = lazyRequire('../lib/operator-center-api');
+const getContentArchive = lazyRequire('../lib/chunbong-content-archive-api');
+const getYoutubeEngagementCache = lazyRequire('../data/youtube-engagement-cache.json');
+const getSoopMetricHistory = lazyRequire('../data/soop-follower-history.json');
+const getYoutubeEngagement = lazyRequire('../lib/youtube-engagement');
 
 function compactCategory(row = {}) {
   return {
@@ -109,7 +115,7 @@ function finiteNumber(value) {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
-function fanclubHistoryState(history = soopMetricHistory) {
+function fanclubHistoryState(history = getSoopMetricHistory()) {
   const rows = (Array.isArray(history) ? history : Array.isArray(history?.points) ? history.points : [])
     .map(point => ({ date: String(point?.date || '').slice(0, 10), fanclubCount: finiteNumber(point?.fanclubCount) }))
     .filter(point => /^20\d{2}-\d{2}-\d{2}$/.test(point.date) && point.fanclubCount !== null)
@@ -134,7 +140,7 @@ function latestFanclubBefore(rows = [], date = '') {
   return previous;
 }
 
-function enrichSoopFanclub(soop = {}, history = soopMetricHistory, now = new Date()) {
+function enrichSoopFanclub(soop = {}, history = getSoopMetricHistory(), now = new Date()) {
   if (!soop || typeof soop !== 'object') return soop;
   const state = fanclubHistoryState(history);
   if (!state.rows.length) return soop;
@@ -186,13 +192,13 @@ function enrichSoopFanclub(soop = {}, history = soopMetricHistory, now = new Dat
   };
 }
 
-function engagementSummary(cache = youtubeEngagementCache, now = new Date()) {
+function engagementSummary(cache = getYoutubeEngagementCache(), now = new Date()) {
   const items = Array.isArray(cache?.items) ? cache.items : [];
   return {
     capturedAt: cache?.capturedAt || '',
     source: cache?.source || '',
     itemCount: Number.isFinite(cache?.itemCount) ? cache.itemCount : items.length,
-    rankings: buildEngagementRankings(items, now)
+    rankings: getYoutubeEngagement().buildEngagementRankings(items, now)
   };
 }
 
@@ -201,8 +207,8 @@ function compactDataPayload(payload, options = {}) {
   const soop = payload.soop;
   const history = soop?.externalHistory;
   const currentFallback = history?.currentFallback;
-  const cache = options.youtubeEngagementCache || youtubeEngagementCache;
-  const metricHistory = options.soopMetricHistory || soopMetricHistory;
+  const cache = options.youtubeEngagementCache || getYoutubeEngagementCache();
+  const metricHistory = options.soopMetricHistory || getSoopMetricHistory();
   const now = options.now instanceof Date ? options.now : new Date(payload.capturedAt || Date.now());
 
   let compacted = payload;
@@ -250,46 +256,46 @@ function compactDataPayload(payload, options = {}) {
 async function handler(req,res) {
   const requestUrl=new URL(req.url||'/','https://chunbong.local');
   const type=requestUrl.searchParams.get('type')||'';
-  if(type==='chuntris-ranking') return handleChuntrisRanking(req,res);
-  if(type==='chunbak-ranking') return handleChunbakRanking(req,res);
-  if(type==='chungwagame-ranking') return handleChungwagameRanking(req,res);
-  if(type==='chuncortile-ranking') return handleChuncortileRanking(req,res);
-  if(type==='minigame-multiplayer') return handleMinigameMultiplayer(req,res);
-  if(type==='changelog-history') return handleChangelogHistory(req,res);
-  if(type==='push-config') return pushNotifications.handleConfig(req,res);
-  if(type==='push-subscription') return pushNotifications.handleSubscription(req,res);
-  if(type==='push-dispatch') return pushNotifications.handleDispatch(req,res);
-  if(type==='site-analytics-event') return operatorCenter.handleAnalyticsEvent(req,res);
-  if(type==='feedback-submit') return operatorCenter.handleFeedbackSubmit(req,res);
-  if(type==='operator-auth-config') return operatorCenter.handleAuthConfig(req,res);
-  if(type==='operator-session') return operatorCenter.handleSession(req,res);
-  if(type==='operator-github-start') return operatorCenter.handleGithubStart(req,res);
-  if(type==='operator-github-callback') return operatorCenter.handleGithubCallback(req,res);
-  if(type==='operator-email-start') return operatorCenter.handleEmailStart(req,res);
-  if(type==='operator-email-complete') return operatorCenter.handleEmailComplete(req,res);
-  if(type==='operator-analytics') return operatorCenter.handleOperatorAnalytics(req,res);
-  if(type==='operator-feedback') return operatorCenter.handleOperatorFeedback(req,res);
-  if(type==='operator-feedback-update') return operatorCenter.handleOperatorFeedbackUpdate(req,res);
-  if(type==='operator-system-status') return operatorCenter.handleOperatorSystemStatus(req,res);
-  if(type==='operator-security-log') return operatorCenter.handleOperatorSecurityLog(req,res);
-  if(type==='operator-session-revoke') return operatorCenter.handleOperatorSessionRevoke(req,res);
-  if(type==='operator-logout') return operatorCenter.handleLogout(req,res);
-  if(type==='operator-logout-all') return operatorCenter.handleLogoutAll(req,res);
-  if(type==='chunbong-contents') return contentArchive.handlePublicList(req,res);
-  if(type==='chunbong-content') return contentArchive.handlePublicDetail(req,res);
-  if(type==='content-archive-auto-sync') return contentArchive.handlePublicAutoSync(req,res);
-  if(type==='operator-content-archive') return contentArchive.handleOperatorList(req,res);
-  if(type==='operator-content-archive-save') return contentArchive.handleOperatorSave(req,res);
-  if(type==='operator-content-archive-publish') return contentArchive.handleOperatorPublish(req,res);
-  if(type==='operator-content-auto-sync') return contentArchive.handleOperatorAutoSync(req,res);
-  if(type==='operator-content-auto-candidate') return contentArchive.handleOperatorCandidate(req,res);
-  if(type==='operator-content-browser-import') return contentArchive.handleOperatorBrowserImport(req,res);
-  if(type==='operator-content-source-meta') return contentArchive.handleOperatorSourceMeta(req,res);
-  if(type==='operator-content-archive-delete') return contentArchive.handleOperatorDelete(req,res);
+  if(type==='chuntris-ranking') return getChuntrisRanking()(req,res);
+  if(type==='chunbak-ranking') return getChunbakRanking()(req,res);
+  if(type==='chungwagame-ranking') return getChungwagameRanking()(req,res);
+  if(type==='chuncortile-ranking') return getChuncortileRanking()(req,res);
+  if(type==='minigame-multiplayer') return getMinigameMultiplayer()(req,res);
+  if(type==='changelog-history') return getChangelogHistory()(req,res);
+  if(type==='push-config') return getPushNotifications().handleConfig(req,res);
+  if(type==='push-subscription') return getPushNotifications().handleSubscription(req,res);
+  if(type==='push-dispatch') return getPushNotifications().handleDispatch(req,res);
+  if(type==='site-analytics-event') return getOperatorCenter().handleAnalyticsEvent(req,res);
+  if(type==='feedback-submit') return getOperatorCenter().handleFeedbackSubmit(req,res);
+  if(type==='operator-auth-config') return getOperatorCenter().handleAuthConfig(req,res);
+  if(type==='operator-session') return getOperatorCenter().handleSession(req,res);
+  if(type==='operator-github-start') return getOperatorCenter().handleGithubStart(req,res);
+  if(type==='operator-github-callback') return getOperatorCenter().handleGithubCallback(req,res);
+  if(type==='operator-email-start') return getOperatorCenter().handleEmailStart(req,res);
+  if(type==='operator-email-complete') return getOperatorCenter().handleEmailComplete(req,res);
+  if(type==='operator-analytics') return getOperatorCenter().handleOperatorAnalytics(req,res);
+  if(type==='operator-feedback') return getOperatorCenter().handleOperatorFeedback(req,res);
+  if(type==='operator-feedback-update') return getOperatorCenter().handleOperatorFeedbackUpdate(req,res);
+  if(type==='operator-system-status') return getOperatorCenter().handleOperatorSystemStatus(req,res);
+  if(type==='operator-security-log') return getOperatorCenter().handleOperatorSecurityLog(req,res);
+  if(type==='operator-session-revoke') return getOperatorCenter().handleOperatorSessionRevoke(req,res);
+  if(type==='operator-logout') return getOperatorCenter().handleLogout(req,res);
+  if(type==='operator-logout-all') return getOperatorCenter().handleLogoutAll(req,res);
+  if(type==='chunbong-contents') return getContentArchive().handlePublicList(req,res);
+  if(type==='chunbong-content') return getContentArchive().handlePublicDetail(req,res);
+  if(type==='content-archive-auto-sync') return getContentArchive().handlePublicAutoSync(req,res);
+  if(type==='operator-content-archive') return getContentArchive().handleOperatorList(req,res);
+  if(type==='operator-content-archive-save') return getContentArchive().handleOperatorSave(req,res);
+  if(type==='operator-content-archive-publish') return getContentArchive().handleOperatorPublish(req,res);
+  if(type==='operator-content-auto-sync') return getContentArchive().handleOperatorAutoSync(req,res);
+  if(type==='operator-content-auto-candidate') return getContentArchive().handleOperatorCandidate(req,res);
+  if(type==='operator-content-browser-import') return getContentArchive().handleOperatorBrowserImport(req,res);
+  if(type==='operator-content-source-meta') return getContentArchive().handleOperatorSourceMeta(req,res);
+  if(type==='operator-content-archive-delete') return getContentArchive().handleOperatorDelete(req,res);
   if(type==='live'){
     res.setHeader('Cache-Control','s-maxage=30, stale-while-revalidate=30');
     try{
-      const state=await fetchSoopLive();
+      const state=await getChunbongData().fetchSoopLive();
       return res.status(200).json({
         live:state.live===true?true:state.live===false?false:null,
         authoritative:Boolean(state.authoritative),
@@ -325,7 +331,7 @@ async function handler(req,res) {
     if(type==='schedule'){const items=await fetchSchedule();return res.status(200).json({items,source:type,fallback:!items.length});}
     if(type==='catch-detail'){const id=String(requestUrl.searchParams.get('id')||'');const item=await fetchCatchDetail(id);return res.status(200).json({item,source:type,fallback:!item?.stream});}
     if(type==='activity'){const payload=await fetchActivity();return res.status(200).json({...payload,source:type,fallback:!payload.items.length});}
-    if(type==='data'){const payload=compactDataPayload(await fetchChunbongData());return res.status(200).json(payload);}
+    if(type==='data'){const payload=compactDataPayload(await getChunbongData()());return res.status(200).json(payload);}
     return res.status(400).json({error:'unknown content type'});
   } catch(error){return res.status(200).json({items:[],source:type,fallback:true,reason:error.message});}
 }
