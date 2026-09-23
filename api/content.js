@@ -305,7 +305,15 @@ async function handler(req,res) {
     }
   }
   const forceDataRefresh=type==='data'&&requestUrl.searchParams.get('refresh')==='1';
-  res.setHeader('Cache-Control',forceDataRefresh?'no-store, max-age=0':'s-maxage=180, stale-while-revalidate=600');
+  if(type==='fanart'){
+    res.setHeader('Cache-Control','public, max-age=60, stale-while-revalidate=300');
+    res.setHeader('Vercel-CDN-Cache-Control','public, max-age=600, stale-while-revalidate=3600');
+  }else if(type==='fanart-detail'){
+    res.setHeader('Cache-Control','public, max-age=600, stale-while-revalidate=3600');
+    res.setHeader('Vercel-CDN-Cache-Control','public, max-age=21600, stale-while-revalidate=86400');
+  }else{
+    res.setHeader('Cache-Control',forceDataRefresh?'no-store, max-age=0':'s-maxage=180, stale-while-revalidate=600');
+  }
   try {
     if(type==='vod'){const items=await fetchVod();return res.status(200).json({items,source:type,fallback:!items.length});}
     if(type==='notice'){const items=await fetchNotice();return res.status(200).json({items,source:type,fallback:!items.length});}
