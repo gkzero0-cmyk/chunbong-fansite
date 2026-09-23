@@ -356,3 +356,24 @@ body[data-page="operator"]{background:radial-gradient(circle at 80% 0,color-mix(
 @media(max-width:1050px){.operator-quick-actions{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:760px){.operator-quick-actions{grid-template-columns:1fr 1fr}.operator-quick-actions button,.operator-quick-actions a{min-height:58px}.operator-search-click-row{grid-template-columns:auto minmax(0,1fr)}.operator-search-click-row>b{grid-column:2}}
 @media(max-width:420px){.operator-quick-actions{grid-template-columns:1fr}}
+
+
+/* Operator Center 1.7 — on-demand image health audit */
+.operator-image-audit-card{margin-bottom:14px}.operator-image-audit-card>header{align-items:flex-start}.operator-image-audit-card>header>div{min-width:0}
+.operator-image-audit-card>header button{flex:0 0 auto}
+.operator-image-audit-summary{display:flex;align-items:center;gap:10px;margin-top:14px;padding:11px 12px;border:1px solid var(--op-border);border-radius:11px;background:var(--op-card-2)}
+.operator-image-audit-summary strong{font-size:11px;white-space:nowrap}.operator-image-audit-summary span{color:var(--op-muted);font-size:10px;line-height:1.5}
+.operator-image-audit-summary[data-state="ok"]{border-color:color-mix(in srgb,var(--op-good) 38%,var(--op-border))}.operator-image-audit-summary[data-state="ok"] strong{color:var(--op-good)}
+.operator-image-audit-summary[data-state="warn"]{border-color:color-mix(in srgb,var(--op-warn) 38%,var(--op-border))}.operator-image-audit-summary[data-state="warn"] strong{color:var(--op-warn)}
+.operator-image-audit-summary[data-state="bad"]{border-color:color-mix(in srgb,var(--op-bad) 42%,var(--op-border))}.operator-image-audit-summary[data-state="bad"] strong{color:var(--op-bad)}
+.operator-image-audit-results{display:grid;gap:8px;margin-top:10px}
+.operator-image-audit-row{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px;border:1px solid color-mix(in srgb,var(--op-border) 72%,transparent);border-radius:11px;background:var(--op-card-2)}
+.operator-image-audit-row[data-state="bad"]{border-color:color-mix(in srgb,var(--op-bad) 36%,var(--op-border))}
+.operator-image-audit-thumb{display:grid;place-items:center;width:52px;height:38px;border-radius:8px;overflow:hidden;background:color-mix(in srgb,var(--op-border) 55%,transparent);color:var(--op-bad);font-weight:950}
+.operator-image-audit-thumb img{width:100%;height:100%;object-fit:cover}
+.operator-image-audit-row>div{min-width:0;display:grid;gap:3px}.operator-image-audit-row strong{font-size:11px}.operator-image-audit-row small{color:var(--op-warn);font-size:9px;line-height:1.4}.operator-image-audit-row code{display:block;color:var(--op-meta);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.operator-image-audit-row>b{color:var(--op-secondary);font-size:9px;white-space:nowrap}
+.operator-image-audit-ok{display:grid;grid-template-columns:28px 1fr;align-items:center;gap:10px;padding:12px;border:1px solid color-mix(in srgb,var(--op-good) 35%,var(--op-border));border-radius:11px;background:color-mix(in srgb,var(--op-good) 5%,var(--op-card-2))}
+.operator-image-audit-ok>span{display:grid;place-items:center;width:26px;height:26px;border-radius:9px;background:color-mix(in srgb,var(--op-good) 13%,transparent);color:var(--op-good);font-weight:950}
+.operator-image-audit-ok strong{display:block;font-size:11px}.operator-image-audit-ok small{display:block;margin-top:2px;color:var(--op-muted);font-size:9px}
+@media(max-width:760px){.operator-image-audit-card>header{display:grid}.operator-image-audit-card>header button{width:100%}.operator-image-audit-summary{display:grid;gap:4px}.operator-image-audit-row{grid-template-columns:44px minmax(0,1fr)}.operator-image-audit-thumb{width:44px;height:34px}.operator-image-audit-row>b{grid-column:2}}
