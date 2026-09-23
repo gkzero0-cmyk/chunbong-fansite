@@ -1,0 +1,42 @@
+name: Temporary Leopel Namu image lookup
+
+on:
+  push:
+    branches:
+      - feat/leopel-knowledge-and-notion-images
+    paths:
+      - '.github/workflows/tmp-leopel-namu-images.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  lookup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch image map
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re, html, urllib.request
+          url='https://www.namu.moe/w/%EB%A0%88%EC%98%A4%ED%8E%A0'
+          req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
+          raw=urllib.request.urlopen(req,timeout=20).read().decode('utf-8','ignore')
+          wanted=['레오펠_로고.png','레오펠 춘봉.png','unblurimageai_레오펠 서버 모집.png','레오펠 어원.png','레오펠 비석.png','레오펠 거주지.png','한남더헬 아파트.png','레오펠_신비의동상.png','레오펠 전체 지도.png']
+          tags=re.findall(r'<img\b[^>]*>',raw,re.I)
+          for name in wanted:
+              found=[]
+              for tag in tags:
+                  altm=re.search(r'alt=["\']([^"\']*)',tag,re.I)
+                  titlem=re.search(r'title=["\']([^"\']*)',tag,re.I)
+                  text=html.unescape((altm.group(1) if altm else '')+' '+(titlem.group(1) if titlem else ''))
+                  if name.replace('_',' ') in text.replace('_',' ') or name in text:
+                      srcm=re.search(r'(?:src|data-src)=["\']([^"\']+)',tag,re.I)
+                      if srcm: found.append(html.unescape(srcm.group(1)))
+              print('NAMU_IMAGE',name,'=>',found[:3])
+          # Also print any image src whose nearby tag mentions 레오펠.
+          for tag in tags:
+              if '레오펠' in html.unescape(tag):
+                  print('NAMU_TAG',html.unescape(tag)[:1200])
+          PY
