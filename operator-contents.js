@@ -1,5 +1,5 @@
 const API='/api/content?type=';
-let root=null,items=[],selected=null,booted=false,autoSyncMeta=null,autoCandidates=[],browserImport=null,namuBrowserImport=null,collectorState={connected:false,queueCount:0,seenCount:0,version:'',soopHistoryCount:0,soopBackfill:{}},collectorImportChain=Promise.resolve();
+let root=null,items=[],selected=null,booted=false,autoSyncMeta=null,autoCandidates=[],browserImports=[],browserImport=null,namuBrowserImport=null,collectorState={connected:false,queueCount:0,seenCount:0,version:'',soopHistoryCount:0,soopBackfill:{}},collectorImportChain=Promise.resolve();
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const slug=v=>String(v||'').toLowerCase().trim().replace(/[^a-z0-9가-힣]+/g,'-').replace(/^-|-$/g,'');
@@ -318,6 +318,75 @@ function base64ToUtf8(value=''){
 }
 
 const COLLECTOR_CHANNEL='chunbong-content-collector';
+
+function collectorInboxStateLabel(state=''){return({unlinked:'미연결',internal:'내부',public:'공개',ignored:'무시'}[state]||state||'확인 필요')}
+function collectorInboxPlatformLabel(row={}){return row.platform==='fmkorea'?'FM코리아':'SOOP'}
+function setCollectorInboxMessage(text='',state=''){const el=$('[data-collector-inbox-message]',root);if(!el)return;el.textContent=text||'';el.dataset.state=state||''}
+function renderCollectorInbox(){
+  const list=$('[data-collector-inbox-list]',root),total=$('[data-collector-inbox-total]',root),pending=$('[data-collector-inbox-pending]',root),internal=$('[data-collector-inbox-internal]',root),published=$('[data-collector-inbox-public]',root);
+  if(total)total.textContent=browserImports.length+'건';
+  if(pending)pending.textContent=browserImports.filter(row=>row.state==='unlinked').length+'건';
+  if(internal)internal.textContent=browserImports.filter(row=>row.state==='internal').length+'건';
+  if(published)published.textContent=browserImports.filter(row=>row.state==='public').length+'건';
+  if(!list)return;
+  const q=String($('[data-collector-inbox-search]',root)?.value||'').toLowerCase().trim(),state=$('[data-collector-inbox-state]',root)?.value||'attention',source=$('[data-collector-inbox-source]',root)?.value||'all';
+  const rows=browserImports.filter(row=>{
+    if(source!=='all'&&row.platform!==source)return false;
+    if(state==='attention'&&!['unlinked','internal'].includes(row.state))return false;
+    if(state!=='all'&&state!=='attention'&&row.state!==state)return false;
+    if(q&&![row.title,row.linkedItemTitle,row.author,row.board,row.url].join(' ').toLowerCase().includes(q))return false;
+    return true;
+  });
+  const options=items.map(item=>'<option value="'+esc(item.id)+'">'+esc(item.title)+'</option>').join('');
+  list.innerHTML=rows.length?rows.map(row=>{
+    const publicBadge=row.publicEligible?'<span class="operator-collector-access is-public">일반 공개 확인</span>':'<span class="operator-collector-access is-limited">로그인 제한</span>';
+    const thumb=row.thumbnail?'<img src="'+esc(row.thumbnail)+'" alt="">':'<span>'+esc(row.platform==='fmkorea'?'FM':'SO')+'</span>';
+    const linked=row.linkedItemId?'<b>'+esc(row.linkedItemTitle||row.linkedItemId)+'</b>':'<b>연결된 콘텐츠 없음</b>';
+    const meta=[row.date||'',row.author||'',row.board||'',row.imageCount?('이미지 '+row.imageCount+'장'):''].filter(Boolean).join(' · ');
+    const disabledPublic=row.publicEligible?'':' disabled title="SOOP에서 비로그인 일반 공개로 확인된 뒤에 공개할 수 있습니다."';
+    const ignored=row.state==='ignored';
+    return '<article class="operator-collector-inbox-row" data-collector-record="'+esc(row.recordId)+'" data-state="'+esc(row.state)+'">'+
+      '<div class="operator-collector-inbox-thumb">'+thumb+'</div>'+
+      '<div class="operator-collector-inbox-main"><div class="operator-collector-inbox-badges"><span class="operator-collector-platform">'+esc(collectorInboxPlatformLabel(row))+'</span><span class="operator-collector-state is-'+esc(row.state)+'">'+esc(collectorInboxStateLabel(row.state))+'</span>'+publicBadge+'</div>'+
+      '<strong>'+esc(row.title||'제목 없음')+'</strong><small>'+esc(meta||'날짜 정보 없음')+'</small><p>'+esc(row.excerpt||'본문 미리보기가 없습니다.')+'</p><div class="operator-collector-linked"><span>현재 연결</span>'+linked+'</div></div>'+
+      '<div class="operator-collector-inbox-manage"><label><span>연결할 춘봉 콘텐츠</span><select data-collector-target><option value="">선택</option>'+options+'</select></label>'+
+      '<div class="operator-collector-inbox-actions">'+
+      (ignored?'<button type="button" data-collector-manage="restore">다시 관리</button>':
+        '<button type="button" data-collector-manage="connect">'+(row.linkedItemId?'연결 변경':'콘텐츠 연결')+'</button>'+
+        '<button type="button" data-collector-manage="public"'+disabledPublic+'>공개로 전환</button>'+
+        '<button type="button" data-collector-manage="internal">내부로 전환</button>'+
+        '<button type="button" data-collector-manage="ignore">목록에서 무시</button>')+
+      '<a href="'+esc(row.url)+'" target="_blank" rel="noopener noreferrer">원문 열기 ↗</a></div>'+
+      (!row.publicEligible&&row.platform==='soop'?'<small class="operator-collector-policy">애청자·로그인 제한 글은 내부 자료로만 연결됩니다. SOOP에서 일반 공개로 바뀌면 공개 전환이 활성화됩니다.</small>':'')+
+      '</div></article>';
+  }).join(''):'<div class="operator-collector-inbox-empty"><strong>조건에 맞는 수집 자료가 없습니다.</strong><span>필터를 바꾸거나 자동 수집을 실행해 주세요.</span></div>';
+  rows.forEach(row=>{
+    const card=list.querySelector('[data-collector-record="'+CSS.escape(row.recordId)+'"]'),select=$('[data-collector-target]',card);
+    if(select&&row.linkedItemId)select.value=row.linkedItemId;
+  });
+}
+async function manageCollectorInbox(button){
+  const card=button.closest('[data-collector-record]'),recordId=card?.dataset.collectorRecord||'',action=button.dataset.collectorManage||'',itemId=$('[data-collector-target]',card)?.value||'';
+  if(!recordId||!action)return;
+  if(['connect','public','internal'].includes(action)&&!itemId){setCollectorInboxMessage('먼저 연결할 춘봉 콘텐츠를 선택해 주세요.','bad');return}
+  button.disabled=true;setCollectorInboxMessage('수집 자료 상태를 변경하고 있습니다.','busy');
+  try{
+    const result=await json('operator-content-browser-import-manage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId,action,itemId})});
+    await load();if(result.item?.id)selectItem(result.item.id);
+    const label={connect:'콘텐츠 연결',public:'공개 전환',internal:'내부 전환',ignore:'무시 처리',restore:'관리 복원'}[action]||'변경';
+    setCollectorInboxMessage(label+'이 완료됐습니다.','ok');
+  }catch(error){
+    const message=error.message==='browser_import_not_publicly_accessible'?'이 자료는 현재 SOOP에서 일반 공개로 확인되지 않아 팬사이트 공개로 전환할 수 없습니다.':error.message==='content_target_required'?'연결할 춘봉 콘텐츠를 선택해 주세요.':'수집 자료 상태를 변경하지 못했습니다: '+error.message;
+    setCollectorInboxMessage(message,'bad');
+  }finally{button.disabled=false}
+}
+function bindCollectorInbox(){
+  $('[data-collector-inbox-search]',root)?.addEventListener('input',renderCollectorInbox);
+  $('[data-collector-inbox-state]',root)?.addEventListener('change',renderCollectorInbox);
+  $('[data-collector-inbox-source]',root)?.addEventListener('change',renderCollectorInbox);
+  $('[data-collector-inbox-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-collector-manage]');if(button)void manageCollectorInbox(button)});
+}
+
 function renderUnifiedCollectorStatus(){
   const box=$('[data-unified-collector-status]',root);if(!box)return;
   if(!collectorState.connected){
@@ -354,9 +423,9 @@ async function handleUnifiedCollectorImport(message={}){
       const result=await json('operator-content-browser-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'auto',payload})});
       if(result?.matched){
         const title=result.item?.title||'춘봉 콘텐츠';browserImport=null;await load();if(result.item?.id)selectItem(result.item.id);
-        setMessage('SOOP 로그인 글을 내부 자료로 보관하고 '+title+'에 자동 연결했습니다. 외부 공개는 하지 않습니다.','ok');
+        setMessage('SOOP 글을 '+title+'에 자동 연결했습니다. 수집 자료함에서 공개/내부 상태를 바로 확인할 수 있습니다.','ok');
       }else{
-        renderSoopHelper();setMessage('SOOP 로그인 글을 내부 원문으로 보관했습니다. 자동 매칭이 확실하지 않아 검토 목록에 남겼습니다.','ok');
+        renderSoopHelper();setMessage('SOOP 글을 수집 자료함에 보관했습니다. 자동 매칭이 확실하지 않아 미연결 상태로 남겼습니다.','ok');
       }
       collectorPost('ack',{id,ok:true});
       return;
@@ -639,5 +708,5 @@ export async function runOfficialSync(){
     if(el){el.textContent='공식 자료 동기화에 실패했습니다: '+e.message;el.dataset.state='bad'}
   }finally{if(button)button.disabled=false}
 }
-async function load(){try{const p=await json('operator-content-archive');items=Array.isArray(p.items)?p.items:[];autoSyncMeta=p.autoSync||null;autoCandidates=Array.isArray(p.candidates)?p.candidates:[];renderList();renderAutoSyncState();renderCandidates();renderSoopHelper();renderNamuHelper();publishArchiveHealth(archiveHealthSnapshot(items,autoCandidates,autoSyncMeta))}catch(e){setMessage(e.message==='archive_storage_unavailable'?'콘텐츠 저장소를 사용할 수 없습니다.':'콘텐츠 목록을 불러오지 못했습니다.','bad')}}
-export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;browserImport=readSoopImportHash();namuBrowserImport=readNamuImportHash();bindUnifiedCollector();$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);$('[data-archive-admin-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-archive-select]');if(button)selectItem(button.dataset.archiveSelect)});$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());$('[data-archive-image-audit]',root)?.addEventListener('click',()=>void runImageAudit());renderEditor(emptyItem());await load();if(namuBrowserImport)await submitNamuImport();else if(browserImport)await autoRouteSoopImport();else{renderSoopHelper();renderNamuHelper();renderUnifiedCollectorStatus()}}
+async function load(){try{const p=await json('operator-content-archive');items=Array.isArray(p.items)?p.items:[];autoSyncMeta=p.autoSync||null;autoCandidates=Array.isArray(p.candidates)?p.candidates:[];browserImports=Array.isArray(p.browserImports)?p.browserImports:[];renderList();renderAutoSyncState();renderCandidates();renderCollectorInbox();renderSoopHelper();renderNamuHelper();publishArchiveHealth(archiveHealthSnapshot(items,autoCandidates,autoSyncMeta))}catch(e){setMessage(e.message==='archive_storage_unavailable'?'콘텐츠 저장소를 사용할 수 없습니다.':'콘텐츠 목록을 불러오지 못했습니다.','bad')}}
+export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;browserImport=readSoopImportHash();namuBrowserImport=readNamuImportHash();bindUnifiedCollector();bindCollectorInbox();$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);$('[data-archive-admin-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-archive-select]');if(button)selectItem(button.dataset.archiveSelect)});$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());$('[data-archive-image-audit]',root)?.addEventListener('click',()=>void runImageAudit());renderEditor(emptyItem());await load();if(namuBrowserImport)await submitNamuImport();else if(browserImport)await autoRouteSoopImport();else{renderSoopHelper();renderNamuHelper();renderUnifiedCollectorStatus()}}
