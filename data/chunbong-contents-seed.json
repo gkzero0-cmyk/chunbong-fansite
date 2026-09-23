@@ -311,7 +311,7 @@
           "date": "2025-05-12",
           "datePrecision": "day",
           "url": "https://vod.sooplive.com/player/159711687",
-          "thumbnail": "https://videoimg.sooplive.com/php/SnapshotLoad.php?rowKey=20250510_618CF2D5_283824326_1_r",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790156956/presentation-vod-thumb.jpg",
           "sourceId": "source-presentation-vod",
           "note": "레오펠의 일정과 콘셉트를 직접 소개한 SOOP 발표회 VOD입니다.",
           "visibility": "public"
@@ -323,7 +323,7 @@
           "date": "2025-05-12",
           "datePrecision": "day",
           "url": "https://vod.sooplive.com/player/159715611",
-          "thumbnail": "https://iflv14.sooplive.com/save/afreeca/station/2025/0510/22/thumb/1746884019766962_R_7.jpg",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790156960/trailer-pv-thumb.jpg",
           "sourceId": "source-trailer-pv",
           "note": "SOOP에 공개된 레오펠 서버 트레일러 PV입니다.",
           "visibility": "public"
@@ -335,7 +335,7 @@
           "date": "",
           "datePrecision": "unknown",
           "url": "https://vod.sooplive.com/player/165343833",
-          "thumbnail": "https://videoimg.sooplive.com/php/SnapshotLoad.php?rowKey=20250708_evod2_2320429_r",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790156964/story-vod-165343833-thumb.jpg",
           "sourceId": "source-leopel-vod-165343833",
           "note": "SOOP에 남아 있는 레오펠 관련 공식 영상 기록입니다. 원문 제목과 방송일은 확인 가능한 범위에서 보강합니다.",
           "visibility": "public"
@@ -347,7 +347,7 @@
           "date": "",
           "datePrecision": "unknown",
           "url": "https://vod.sooplive.com/player/167705699",
-          "thumbnail": "https://videoimg.sooplive.com/php/SnapshotLoad.php?rowKey=20250802_evod2_2363037_r",
+          "thumbnail": "https://res.cloudinary.com/lyppgyei/image/upload/v1790156971/behind-vod-167705699-thumb.jpg",
           "sourceId": "source-leopel-vod-167705699",
           "note": "SOOP에 남아 있는 레오펠 관련 공식 영상 기록입니다. 원문 제목과 방송일은 확인 가능한 범위에서 보강합니다.",
           "visibility": "public"
@@ -363,31 +363,31 @@
         },
         {
           "id": "leopel-vod-thumb-159711687",
-          "src": "https://videoimg.sooplive.com/php/SnapshotLoad.php?rowKey=20250510_618CF2D5_283824326_1_r",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790156956/presentation-vod-thumb.jpg",
           "alt": "레오펠 - 플랫폼 통합 마인크래프트 서버 발표회",
           "caption": "SOOP VOD · 레오펠 - 플랫폼 통합 마인크래프트 서버 발표회",
-          "sourceId": ""
+          "sourceId": "source-presentation-vod"
         },
         {
           "id": "leopel-vod-thumb-159715611",
-          "src": "https://iflv14.sooplive.com/save/afreeca/station/2025/0510/22/thumb/1746884019766962_R_7.jpg",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790156960/trailer-pv-thumb.jpg",
           "alt": "레오펠 서버 트레일러 PV",
           "caption": "SOOP VOD · 레오펠 서버 트레일러 PV",
-          "sourceId": ""
+          "sourceId": "source-trailer-pv"
         },
         {
           "id": "leopel-vod-thumb-165343833",
-          "src": "https://videoimg.sooplive.com/php/SnapshotLoad.php?rowKey=20250708_evod2_2320429_r",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790156964/story-vod-165343833-thumb.jpg",
           "alt": "촌장이 풀어주는 레오펠 스토리",
           "caption": "SOOP VOD · 촌장이 풀어주는 레오펠 스토리",
-          "sourceId": ""
+          "sourceId": "source-leopel-vod-165343833"
         },
         {
           "id": "leopel-vod-thumb-167705699",
-          "src": "https://videoimg.sooplive.com/php/SnapshotLoad.php?rowKey=20250802_evod2_2363037_r",
+          "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790156971/behind-vod-167705699-thumb.jpg",
           "alt": "레오펠 PV 영상 비하인드",
           "caption": "SOOP VOD · 레오펠 PV 영상 비하인드",
-          "sourceId": ""
+          "sourceId": "source-leopel-vod-167705699"
         }
       ],
       "sources": [
