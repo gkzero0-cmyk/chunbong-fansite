@@ -132,65 +132,89 @@
     } catch (_) {}
   }
 
+  function playGlassCluster(ctx, start, baseFrequency, duration = 0.72, volume = 0.012) {
+    if (!ctx) return;
+    const ratios = [1, 1.39, 1.88, 2.54, 3.11];
+    const levels = [1, 0.62, 0.38, 0.21, 0.12];
+    ratios.forEach((ratio, index) => {
+      playTone(
+        ctx,
+        baseFrequency * ratio,
+        start + index * 0.008,
+        Math.max(0.28, duration - index * 0.045),
+        volume * levels[index],
+        'sine'
+      );
+    });
+  }
+
   function playMagicRippleSound(ctx) {
     if (!ctx) return;
     const start = ctx.currentTime;
-    // A single soft glass resonance on card entry. Pointer movement stays silent.
-    playTone(ctx, 220, start, 0.76, 0.008, 'sine', 246.94);
-    playTone(ctx, 659.25, start + 0.055, 0.62, 0.0045, 'triangle', 698.46);
-    playTone(ctx, 987.77, start + 0.14, 0.46, 0.0025, 'sine', 1046.5);
+    // Refined glass-halo hover: inharmonic crystal partials, no piano-like chord.
+    playGlassCluster(ctx, start, 945, 0.62, 0.012);
   }
 
   function playSpinSound(ctx) {
     if (!ctx) return;
-    const start = ctx.currentTime;
-    const masterVolume = fortuneSoundPreferences().volume;
+    const prefs = fortuneSoundPreferences();
+    if (!prefs.enabled || prefs.volume <= 0) return;
     try {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+      const duration = 3.0;
+      const length = Math.max(1, Math.floor(ctx.sampleRate * duration));
+      const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let index = 0; index < length; index += 1) {
+        const progress = index / length;
+        const fadeIn = Math.min(1, progress / 0.06);
+        const fadeOut = progress < 0.86 ? 1 : Math.max(0, (1 - progress) / 0.14);
+        data[index] = (Math.random() * 2 - 1) * fadeIn * fadeOut;
+      }
+      const source = ctx.createBufferSource();
       const filter = ctx.createBiquadFilter();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(120, start);
-      osc.frequency.exponentialRampToValueAtTime(1240, start + 0.92);
-      osc.frequency.exponentialRampToValueAtTime(185, start + 2.52);
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(760, start);
-      filter.frequency.exponentialRampToValueAtTime(3900, start + 0.96);
-      filter.frequency.exponentialRampToValueAtTime(560, start + 2.52);
+      const gain = ctx.createGain();
+      const start = ctx.currentTime;
+      source.buffer = buffer;
+      filter.type = 'bandpass';
+      filter.Q.value = 0.42;
+      filter.frequency.setValueAtTime(720, start);
+      filter.frequency.exponentialRampToValueAtTime(1650, start + 0.45);
+      filter.frequency.setValueAtTime(1650, start + 2.55);
+      filter.frequency.exponentialRampToValueAtTime(620, start + 2.98);
+      const peak = Math.max(0.00015, 0.0038 * prefs.volume);
       gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, 0.022 * masterVolume), start + 0.08);
-      gain.gain.setValueAtTime(Math.max(0.0002, 0.022 * masterVolume), start + 1.48);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + 2.58);
-      osc.connect(filter).connect(gain).connect(ctx.destination);
-      osc.start(start);
-      osc.stop(start + 2.62);
+      gain.gain.exponentialRampToValueAtTime(peak, start + 0.12);
+      gain.gain.setValueAtTime(peak, start + 2.52);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 2.99);
+      source.connect(filter).connect(gain).connect(ctx.destination);
+      source.start(start);
+      source.stop(start + duration);
     } catch (_) {}
-
-    let tickAt = 0.035;
-    for (let index = 0; index < 34; index += 1) {
-      const progress = index / 33;
-      const interval = 0.032 + progress * progress * 0.090;
-      playTone(ctx, 980 - progress * 360, start + tickAt, 0.032 + progress * 0.018, 0.012, 'triangle');
-      tickAt += interval;
-    }
   }
 
   function playStopSound(ctx) {
     if (!ctx) return;
+    // A nearly subliminal glass cue marks the beginning of the final deceleration.
     const start = ctx.currentTime;
-    playTone(ctx, 160, start, 0.28, 0.065, 'sine', 72);
-    playTone(ctx, 520, start + 0.03, 0.18, 0.035, 'triangle', 260);
-    playTone(ctx, 1040, start + 0.08, 0.13, 0.022, 'sine', 720);
+    playGlassCluster(ctx, start, 620, 0.42, 0.0038);
+  }
+
+  function playWindChime(ctx, start) {
+    if (!ctx) return;
+    const frequencies = [1568, 2183, 2878, 3656];
+    const levels = [0.014, 0.0088, 0.0058, 0.0034];
+    frequencies.forEach((frequency, index) => {
+      playTone(ctx, frequency, start + index * 0.012, 1.05 + index * 0.10, levels[index], 'sine');
+    });
   }
 
   function playRevealSound(ctx) {
     if (!ctx) return;
     const start = ctx.currentTime;
-    const tones = [392, 523.25, 659.25, 783.99, 1046.5, 1318.5];
-    tones.forEach((frequency, index) => {
-      playTone(ctx, frequency, start + index * 0.052, 0.5 + index * 0.025, index < 2 ? 0.034 : 0.026, index < 2 ? 'sine' : 'triangle');
-    });
-    playTone(ctx, 1568, start + 0.24, 0.72, 0.018, 'sine', 2093);
+    // One clear wind-chime strike, followed by the same glass-halo family as hover.
+    playWindChime(ctx, start);
+    playGlassCluster(ctx, start + 0.05, 870, 1.18, 0.0095);
+    playGlassCluster(ctx, start + 0.34, 1010, 0.98, 0.0052);
   }
 
   function createMarkup() {
@@ -251,8 +275,8 @@
     const result = document.querySelector('[data-daily-fortune-result]');
     if (!dialog || !cardButton || !stage || !holo || !fx || !closeButton || !launcher || !result) return;
 
-    const SPIN_MS = 2600;
-    const RESULT_MS = 3150;
+    const SPIN_MS = 3000;
+    const RESULT_MS = 3650;
     let state = readState();
     let drawing = false;
     let autoOpenTimer = 0;
@@ -402,7 +426,7 @@
         playStopSound(audioCtx);
         spawnBurst('stop');
         dialog.classList.add('is-revealing');
-      }, 1880);
+      }, 2600);
 
       setTimeout(() => {
         if (run !== animationRun) return;
@@ -427,7 +451,7 @@
         if (run !== animationRun) return;
         dialog.classList.remove('is-bursting','is-revealing');
         try { audioCtx?.close?.(); } catch (_) {}
-      }, 4050);
+      }, 4800);
     };
 
     const openDialog = () => {
