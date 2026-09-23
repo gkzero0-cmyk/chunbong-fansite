@@ -394,3 +394,173 @@
   28%{opacity:.88}
   100%{opacity:0;transform:scale(7.4)}
 }
+
+
+/* 2026-09-23 Crystal Hologram v3 + three-second ultra spin */
+.daily-fortune-holo-film{
+  inset:-9%!important;
+  opacity:0!important;
+  transform:scale(1.025)!important;
+  background:
+    radial-gradient(ellipse 38% 34% at var(--glow-x) var(--glow-y),
+      rgba(255,250,226,.54) 0 3%,
+      rgba(226,245,255,.30) 7%,
+      rgba(119,221,239,.22) 14%,
+      rgba(153,113,235,.22) 22%,
+      rgba(243,143,210,.14) 29%,
+      transparent 46%),
+    conic-gradient(from 34deg at var(--glow-x) var(--glow-y),
+      transparent 0 8%,
+      rgba(114,224,239,.18) 12%,
+      rgba(155,118,237,.23) 20%,
+      rgba(248,171,219,.17) 29%,
+      rgba(250,223,132,.23) 39%,
+      rgba(117,216,242,.17) 49%,
+      transparent 61% 100%),
+    repeating-linear-gradient(118deg,
+      transparent 0 8%,
+      rgba(201,244,255,.07) 10%,
+      rgba(170,128,238,.10) 13%,
+      rgba(255,205,229,.07) 16%,
+      rgba(253,230,149,.09) 19%,
+      transparent 23% 35%)!important;
+  background-size:100% 100%,135% 135%,170% 170%!important;
+  background-position:center,var(--glow-x) var(--glow-y),var(--glow-x) var(--glow-y)!important;
+  -webkit-mask-image:radial-gradient(ellipse 54% 48% at var(--glow-x) var(--glow-y),#000 0 34%,rgba(0,0,0,.92) 52%,rgba(0,0,0,.38) 72%,transparent 88%)!important;
+  mask-image:radial-gradient(ellipse 54% 48% at var(--glow-x) var(--glow-y),#000 0 34%,rgba(0,0,0,.92) 52%,rgba(0,0,0,.38) 72%,transparent 88%)!important;
+  mix-blend-mode:screen!important;
+  filter:saturate(1.38) contrast(1.08)!important;
+  transition:opacity .16s ease,transform .2s ease!important;
+}
+.daily-fortune-stage.is-prism-active .daily-fortune-holo-film{
+  opacity:.92!important;
+  transform:scale(1)!important;
+}
+.daily-fortune-stage.is-prism-active .daily-fortune-card{
+  transform:perspective(1500px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y)) scale(1.028)!important;
+  filter:drop-shadow(0 36px 56px #000e) drop-shadow(0 0 15px rgba(167,131,238,.34)) drop-shadow(0 0 26px rgba(104,210,235,.20)) saturate(1.045) brightness(1.025)!important;
+  box-shadow:0 0 0 1px rgba(241,222,163,.44),0 0 20px rgba(146,114,230,.18),0 0 36px rgba(87,193,226,.12)!important;
+}
+.daily-fortune-stage.is-prism-active .daily-fortune-card:before{
+  opacity:.35!important;
+}
+.daily-fortune-stage.is-prism-active .daily-fortune-card:after{
+  opacity:.82!important;
+  background:
+    radial-gradient(ellipse 30% 26% at var(--glow-x) var(--glow-y),
+      rgba(255,255,245,.44) 0 4%,
+      rgba(190,238,250,.24) 10%,
+      rgba(150,113,235,.19) 19%,
+      transparent 38%),
+    linear-gradient(122deg,
+      transparent 21%,
+      rgba(100,208,234,.10) 32%,
+      rgba(141,110,231,.19) 42%,
+      rgba(241,139,205,.12) 50%,
+      rgba(248,215,126,.20) 58%,
+      transparent 72%)!important;
+  mix-blend-mode:screen!important;
+}
+.daily-fortune-holo-ripple{
+  width:118px!important;
+  height:118px!important;
+  margin:-59px 0 0 -59px!important;
+  border:0!important;
+  border-radius:42%!important;
+  background:
+    radial-gradient(circle,
+      rgba(255,252,229,.34) 0 5%,
+      rgba(165,232,247,.18) 13%,
+      rgba(146,112,235,.18) 24%,
+      rgba(244,149,211,.12) 35%,
+      transparent 58%),
+    conic-gradient(from 12deg,
+      transparent 0 9%,
+      rgba(123,226,241,.27) 14%,
+      rgba(164,119,239,.28) 24%,
+      rgba(247,157,216,.22) 34%,
+      rgba(251,225,139,.28) 45%,
+      rgba(126,218,239,.22) 56%,
+      transparent 68% 100%)!important;
+  box-shadow:none!important;
+  mix-blend-mode:screen!important;
+  filter:saturate(1.32) blur(.15px)!important;
+  animation:dailyFortuneCrystalBloom .86s cubic-bezier(.12,.64,.16,1) forwards!important;
+}
+.daily-fortune-holo-ripple::before{
+  content:""!important;
+  position:absolute!important;
+  inset:12%!important;
+  border:0!important;
+  border-radius:34%!important;
+  background:linear-gradient(132deg,
+    transparent 20%,
+    rgba(225,249,255,.32) 35%,
+    rgba(166,127,238,.20) 47%,
+    rgba(251,220,146,.26) 58%,
+    transparent 75%)!important;
+  clip-path:polygon(50% 0,63% 33%,100% 50%,65% 64%,50% 100%,36% 65%,0 50%,34% 36%)!important;
+  box-shadow:none!important;
+}
+.daily-fortune-holo-ripple::after{
+  content:""!important;
+  position:absolute!important;
+  inset:28%!important;
+  border:0!important;
+  border-radius:50%!important;
+  background:radial-gradient(circle,rgba(255,255,244,.42),rgba(127,214,239,.16) 36%,transparent 70%)!important;
+  box-shadow:none!important;
+}
+@keyframes dailyFortuneCrystalBloom{
+  0%{opacity:.92;transform:scale(.28) rotate(-8deg)}
+  34%{opacity:.72;transform:scale(.92) rotate(2deg)}
+  100%{opacity:0;transform:scale(2.15) rotate(8deg)}
+}
+
+.daily-fortune-stage.is-spinning .daily-fortune-card-inner{
+  animation:dailyFortuneUltraSpin 3s linear both!important;
+  will-change:transform,opacity,filter;
+}
+.daily-fortune-stage.is-spinning .daily-fortune-card{
+  transition:none!important;
+  filter:drop-shadow(0 0 16px rgba(154,125,236,.25)) drop-shadow(0 0 28px rgba(101,207,235,.16))!important;
+}
+.daily-fortune-stage.is-spinning::after{
+  content:"";
+  position:absolute;
+  z-index:7;
+  left:50%;
+  top:50%;
+  width:4px;
+  height:94%;
+  border-radius:999px;
+  transform:translate(-50%,-50%);
+  background:linear-gradient(180deg,transparent,rgba(220,249,255,.72) 14%,rgba(170,132,238,.72) 48%,rgba(116,216,240,.68) 78%,transparent);
+  box-shadow:0 0 10px rgba(216,247,255,.52),0 0 28px rgba(145,112,235,.38),0 0 48px rgba(97,205,234,.22);
+  opacity:0;
+  pointer-events:none;
+  animation:dailyFortuneSpinSpindle 3s linear both;
+}
+@keyframes dailyFortuneUltraSpin{
+  0%{opacity:1;filter:blur(0);transform:rotateX(0) rotateY(0deg) scale(1)}
+  2.5%{opacity:.28;filter:blur(2px);transform:rotateX(.2deg) rotateY(720deg) scaleX(.32)}
+  6%{opacity:.10;filter:blur(5.5px);transform:rotateX(-.15deg) rotateY(1440deg) scaleX(.13)}
+  40%{opacity:.075;filter:blur(7px);transform:rotateX(.12deg) rotateY(8640deg) scaleX(.08)}
+  70%{opacity:.075;filter:blur(7px);transform:rotateX(-.1deg) rotateY(15120deg) scaleX(.08)}
+  86.666%{opacity:.09;filter:blur(6px);transform:rotateX(.08deg) rotateY(18720deg) scaleX(.10)}
+  92%{opacity:.24;filter:blur(4px);transform:rotateX(-.05deg) rotateY(19620deg) scaleX(.22)}
+  96%{opacity:.50;filter:blur(2px);transform:rotateX(.03deg) rotateY(19980deg) scaleX(.48)}
+  98.5%{opacity:.82;filter:blur(.8px);transform:rotateX(0) rotateY(20124deg) scaleX(.82)}
+  100%{opacity:1;filter:blur(0);transform:rotateX(0) rotateY(20160deg) scale(1)}
+}
+@keyframes dailyFortuneSpinSpindle{
+  0%{opacity:0;transform:translate(-50%,-50%) scaleY(.84)}
+  5%{opacity:.86}
+  82%{opacity:.84;transform:translate(-50%,-50%) scaleY(1)}
+  92%{opacity:.34}
+  100%{opacity:0;transform:translate(-50%,-50%) scaleY(.94)}
+}
+@media(prefers-reduced-motion:reduce){
+  .daily-fortune-stage.is-spinning .daily-fortune-card-inner{animation:none!important;opacity:1!important;filter:none!important;transform:none!important}
+  .daily-fortune-stage.is-spinning::after{display:none!important}
+}
