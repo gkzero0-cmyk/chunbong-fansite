@@ -15,6 +15,39 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Temporary NamuWiki Leopel extract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import urllib.request, re, html
+          url='https://namu.wiki/w/%EB%A0%88%EC%98%A4%ED%8E%A0'
+          req=urllib.request.Request(url,headers={
+            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/153.0.0.0 Safari/537.36',
+            'Accept-Language':'ko-KR,ko;q=0.9,en;q=0.8'
+          })
+          raw=urllib.request.urlopen(req,timeout=30).read().decode('utf-8','replace')
+          print('NAMU_HTML_LEN='+str(len(raw)))
+          urls=[]
+          for pat in [r'<img[^>]+(?:src|data-src)=["\\\']([^"\\\']+)["\\\']',r'<source[^>]+srcset=["\\\']([^"\\\']+)["\\\']',r'https?://[^"\\\'<>\\s]+\\.(?:png|jpe?g|webp|gif)(?:\\?[^"\\\'<>\\s]*)?']:
+            for m in re.finditer(pat,raw,re.I):
+              val=html.unescape(m.group(1) if m.lastindex else m.group(0))
+              if val.startswith('//'): val='https:'+val
+              if val.startswith('/'): val='https://namu.wiki'+val
+              if val not in urls: urls.append(val)
+          print('NAMU_IMAGE_COUNT='+str(len(urls)))
+          for i,u in enumerate(urls[:50],1): print(f'NAMU_IMG_{i}={u}')
+          cleaned=re.sub(r'<script[\\s\\S]*?</script>|<style[\\s\\S]*?</style>',' ',raw,flags=re.I)
+          headings=[]
+          for m in re.finditer(r'<h[1-6][^>]*>([\\s\\S]*?)</h[1-6]>',cleaned,re.I):
+            txt=html.unescape(re.sub(r'<[^>]+>',' ',m.group(1)))
+            txt=re.sub(r'\\s+',' ',txt).strip()
+            if txt and txt not in headings: headings.append(txt)
+          print('NAMU_HEADINGS='+ ' || '.join(headings[:80]))
+          text=html.unescape(re.sub(r'<[^>]+>',' ',cleaned))
+          text=re.sub(r'\\s+',' ',text)
+          print('NAMU_TEXT_SAMPLE='+text[:12000])
+          PY
       - name: Check JavaScript syntax
         run: |
           node --check service-worker.js
