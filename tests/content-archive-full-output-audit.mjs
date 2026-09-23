@@ -7,11 +7,11 @@ const core=require('../lib/chunbong-content-archive-core');
 const seed=require('../data/chunbong-contents-seed.json');
 const apiSource=fs.readFileSync(new URL('../lib/chunbong-content-archive-api.js',import.meta.url),'utf8');
 
-assert.match(apiSource,/guide-media-migration:v4-upload-path-diagnostics/,'guide-media migration marker must be versioned for the full archive refresh');
-assert.match(apiSource,/method==='GET'&&requestUrl\.searchParams\.get\('migration'\)==='guide-media-v4'/,'one-time guide-media migration trigger missing');
+assert.match(apiSource,/guide-media-migration:v5-notion-stable-proxy/,'guide-media migration marker must be versioned for the full archive refresh');
+assert.match(apiSource,/method==='GET'&&requestUrl\.searchParams\.get\('migration'\)==='guide-media-v5'/,'one-time guide-media migration trigger missing');
 assert.match(apiSource,/await refreshGuideDocumentsOnly\(\)/,'migration must refresh source documents without a full channel history scan');
-assert.match(apiSource,/guide_media_migration_v4_complete/,'completed guide migration must be idempotent');
-assert.match(apiSource,/AUTO_LOCK_KEY\+':guide-media-v4'/,'guide migration must use an execution lock');
+assert.match(apiSource,/guide_media_migration_v5_complete/,'completed guide migration must be idempotent');
+assert.match(apiSource,/AUTO_LOCK_KEY\+':guide-media-v5'/,'guide migration must use an execution lock');
 assert.match(apiSource,/function notionRecordMapDiagnostics/,'Notion record-map diagnostics missing');
 assert.match(apiSource,/mediaDiagnostics/,'Notion source diagnostics must be returned to migration output');
 assert.match(apiSource,/permanentImageCount/,'migration output must report permanent image counts');
@@ -19,6 +19,9 @@ assert.match(apiSource,/remoteImageCount/,'migration output must report remainin
 assert.match(apiSource,/function probeGuideSource/,'source media fetch probe missing');
 assert.match(apiSource,/cloudinaryConfigured/,'migration output must report Cloudinary configuration state');
 assert.match(apiSource,/sourceProbe/,'source media fetch diagnostics must be included');
+assert.match(apiSource,/function notionGuideImageProxyUrl/,'stable Notion guide image proxy URL helper missing');
+assert.match(apiSource,/async function handleNotionGuideImage/,'Notion guide image proxy handler missing');
+assert.match(apiSource,/assetState:'proxy'/,'Notion images must fall back to stable proxy state when Cloudinary is unavailable');
 
 const badMarkup=/(?:\|\|<|<nopad>|<rowcolor=|<colbgcolor=|<tablewidth=|#!if|#!wiki|\{\{\{|\[\[파일:)/i;
 const filenameOnly=/^(?:[^\n]{0,200}\.(?:png|jpe?g|webp|gif|svg|avif))$/i;
