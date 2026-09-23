@@ -66,7 +66,7 @@
   };
 
   const d=document,loadStyle=(h,k)=>{if(d.querySelector('link['+k+']'))return;const n=d.createElement('link');n.rel='stylesheet';n.href=h;n.setAttribute(k,'true');d.head.appendChild(n)},loadScript=s=>{if(d.querySelector('script[src="'+s+'"]'))return;const n=d.createElement('script');n.src=s;n.defer=1;d.head.appendChild(n)},runIdle=f=>'requestIdleCallback'in window?requestIdleCallback(f,{timeout:1800}):setTimeout(f,650);
-  loadScript('site-health.js');loadScript('site-improvements.js');
+  loadScript('site-health.js');runIdle(()=>loadScript('site-improvements.js'));
   const personalPriorityPages='|home|myhub|tarot|',loadPersonal=()=>{loadStyle('personal-hub.css','data-personal-hub-styles');loadScript('personal-hub.js')},page=d.body.dataset.page||'';
   personalPriorityPages.includes('|'+page+'|')?loadPersonal():runIdle(loadPersonal);runIdle(()=>loadScript('site-meta.js'));
 })();
@@ -253,20 +253,25 @@
   if (!header) return;
   header.querySelectorAll('.header-live[href*="sooplive.com"]').forEach(node => node.remove());
 
-  if (!document.querySelector('link[data-activity-center-styles]')) {
-    const stylesheet = document.createElement('link');
-    stylesheet.rel = 'stylesheet';
-    stylesheet.href = 'activity-center.css';
-    stylesheet.dataset.activityCenterStyles = 'true';
-    document.head.appendChild(stylesheet);
-  }
+  const loadActivityCenter = () => {
+    if (!document.querySelector('link[data-activity-center-styles]')) {
+      const stylesheet = document.createElement('link');
+      stylesheet.rel = 'stylesheet';
+      stylesheet.href = 'activity-center.css';
+      stylesheet.dataset.activityCenterStyles = 'true';
+      document.head.appendChild(stylesheet);
+    }
 
-  if (!document.querySelector('script[data-activity-center-runtime]')) {
-    const script = document.createElement('script');
-    script.src = 'activity-center.js';
-    script.defer = true;
-    script.dataset.activityCenterRuntime = 'true';
-    document.body.appendChild(script);
-  }
+    if (!document.querySelector('script[data-activity-center-runtime]')) {
+      const script = document.createElement('script');
+      script.src = 'activity-center.js';
+      script.defer = true;
+      script.dataset.activityCenterRuntime = 'true';
+      document.body.appendChild(script);
+    }
+  };
+
+  if ('requestIdleCallback' in window) requestIdleCallback(loadActivityCenter,{timeout:1800});
+  else setTimeout(loadActivityCenter,650);
 })();
 
