@@ -62,6 +62,7 @@ jobs:
           const nowMs = Date.now();
           const scanWindowMs = (86400 + 7200) * 1000;
 
+          let oldestRateLimitCreatedAt = '';
           for (const commit of commits) {
             const commitTime = Date.parse(commit?.commit?.committer?.date || commit?.commit?.author?.date || '');
             if (Number.isFinite(commitTime) && nowMs - commitTime > scanWindowMs) break;
@@ -75,11 +76,9 @@ jobs:
               status.context === 'Vercel' &&
               /rate limited/i.test(String(status.description || ''))
             );
-            if (rateLimited?.created_at) {
-              process.stdout.write(rateLimited.created_at);
-              break;
-            }
+            if (rateLimited?.created_at) oldestRateLimitCreatedAt = rateLimited.created_at;
           }
+          if (oldestRateLimitCreatedAt) process.stdout.write(oldestRateLimitCreatedAt);
           NODE
           )"
 
@@ -92,7 +91,7 @@ jobs:
           echo "expected=$EXPECTED"
           echo "actual=${ACTUAL:-missing}"
           echo "main_age_seconds=$AGE_SECONDS"
-          echo "last_rate_limit_at=${RATE_LIMIT_CREATED_AT:-none}"
+          echo "cooldown_anchor_rate_limit_at=${RATE_LIMIT_CREATED_AT:-none}"
           echo "rate_limit_age_seconds=$RATE_LIMIT_AGE_SECONDS"
 
           if [[ "$ACTUAL" == "$EXPECTED" ]]; then

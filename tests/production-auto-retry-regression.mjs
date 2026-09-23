@@ -14,8 +14,9 @@ assert.match(retry,/git commit --allow-empty/,'Git retry must retrigger Git inte
 assert.match(retry,/api\/version/,'Git retry must compare production version before committing');
 assert.doesNotMatch(retry,/VERCEL_TOKEN/,'Git-based retry must not require a Vercel token');
 assert.match(retry,/AGE_SECONDS.*72000/s,'scheduled retry must wait at least 20 hours after the latest main commit');
-assert.match(retry,/RATE_LIMIT_AGE_SECONDS.*86400/s,'scheduled retry must wait the documented 24 hours after the latest Vercel rate-limit status');
+assert.match(retry,/RATE_LIMIT_AGE_SECONDS.*86400/s,'scheduled retry must wait the documented 24 hours after the earliest observed Vercel rate-limit status');
 assert.match(retry,/rate limited/i,'Git retry must inspect recent Vercel rate-limit status text');
+assert.match(retry,/oldestRateLimitCreatedAt/,'Git retry must anchor cooldown to the earliest observed rate-limit status, not the newest main commit');
 assert.match(retry,/commits\?sha=main&per_page=100/,'Git retry must scan enough recent main commits to survive high commit volume');
 assert.match(retry,/scanWindowMs = \(86400 \+ 7200\) \* 1000/,'Git retry must stop scanning after the cooldown window plus deployment-delay margin');
 assert.match(retry,/GITHUB_EVENT_NAME.*workflow_dispatch/s,'manual retry must bypass the age and cooldown guards');
