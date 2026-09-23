@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/push-dispatch.yml'
 
 permissions:
   contents: read
@@ -58,5 +62,5 @@ jobs:
           )"
           curl -fsS --retry 2 --retry-delay 2 --max-time 55             -H "Authorization: Bearer $token"             -H "User-Agent: chunbong-github-actions-push"             "$PUSH_URL"
           echo
-          curl -fsS --retry 2 --retry-delay 2 --max-time 55             -X POST             -H "Authorization: Bearer $token"             -H "Content-Type: application/json"             -H "User-Agent: chunbong-github-actions-archive-sync"             -d '{}'             "$ARCHIVE_SYNC_URL"
+          curl -fsS --retry 2 --retry-delay 2 --max-time 55             -X POST             -H "Authorization: Bearer $token"             -H "Origin: https://github.com"             -H "Content-Type: application/json"             -H "User-Agent: chunbong-github-actions-archive-sync"             -d '{}'             "$ARCHIVE_SYNC_URL"
           echo
