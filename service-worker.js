@@ -1,5 +1,5 @@
 /* CHUNBONG_PWA v1 */
-const CACHE_NAME = 'chunbong-pwa-20260922-v31';
+const CACHE_NAME = 'chunbong-pwa-20260923-v32';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -9,24 +9,11 @@ const APP_SHELL = [
   '/theme-init.js',
   '/site-design-system.css',
   '/site-quality.css',
-  '/site-improvements.css',
   '/mobile-site.css',
   '/mobile-site.js',
   '/page.js?v=2',
   '/site-shell.js',
-  '/chunbong-contents.html',
-  '/chunbong-contents.css',
-  '/chunbong-contents.js',
-  '/site-meta.js',
-  '/site-health.js',
-  '/site-improvements.js',
-  '/activity-center.css',
-  '/activity-center.js',
   '/content.js',
-  '/personal-hub.css',
-  '/personal-hub.js',
-  '/daily-fortune.css',
-  '/daily-fortune.js',
   '/home-overview.css',
   '/home-overview.js',
   '/home-refresh.css',
@@ -34,7 +21,6 @@ const APP_SHELL = [
   '/manifest.webmanifest',
   '/assets/app-icon.svg',
   '/assets/app-icon-192.png',
-  '/assets/app-icon-512.png',
   '/assets/apple-touch-icon.png',
   '/assets/chunbong-main.webp'
 ]
@@ -109,7 +95,7 @@ self.addEventListener('fetch', event => {
   }
 
   if (['script','style'].includes(request.destination)) {
-    event.respondWith(networkFirst(request, event));
+    event.respondWith(staleWhileRevalidate(request, event));
     return;
   }
 
