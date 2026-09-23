@@ -45,6 +45,17 @@ assert.doesNotMatch(publicItem.referenceSections[0].text,/\|\||<table|<nopad>/i)
 assert.equal(publicItem.referenceSections[0].images[0].caption,'레오펠 어원');
 assert.equal(publicItem.referenceSections[0].images[0].filename,'');
 
+
+const seed=require('../data/chunbong-contents-seed.json');
+for(const raw of seed.items.filter(item=>item.published===true)){
+  const item=core.toPublicArchiveItem(raw);
+  const docs=[...(item.notionSections||[]),...(item.referenceSections||[])];
+  const publicText=docs.flatMap(section=>[section.text,...(section.content||[]).filter(block=>block?.type==='text').map(block=>block.text)]).filter(Boolean).join('\n');
+  assert.doesNotMatch(publicText,/(?:\|\|<|<nopad>|<rowcolor=|<colbgcolor=|<tablewidth=|#!if|#!wiki|\{\{\{)/i,`${item.id}: source markup leaked into public guide text`);
+  assert.equal(docs.some(section=>!String(section.text||'').trim()&&!(section.images||[]).length&&!(section.content||[]).length),false,`${item.id}: empty guide section should not render`);
+  assert.equal((item.sources||[]).some(source=>/bngts\.com|namu\.moe|nemopix\.xyz/i.test(String(source.url||''))),false,`${item.id}: internal or blocked source leaked publicly`);
+}
+
 const client=fs.readFileSync(new URL('../chunbong-contents.js',import.meta.url),'utf8');
 assert.match(client,/function guideRowHasBody/,'client should hide title-only empty guide sections');
 assert.match(client,/data-guide-image-fallback="이미지를 불러오지 못했습니다\."/,'broken images should show a neutral message, not a raw filename');
