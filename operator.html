@@ -303,6 +303,21 @@
           <header><h2>핵심 API 응답</h2><span>실제 서버 요청 · 최대 3.5초</span></header>
           <div id="operator-endpoint-health" class="operator-service-health operator-endpoint-health"></div>
         </article>
+        <article class="operator-card operator-commit-history-card">
+          <header><div><h2>최근 변경 이력</h2><small>GitHub main · 누가 언제 무엇을 변경했는지</small></div><a href="https://github.com/gkzero0-cmyk/chunbong-fansite/commits/main" target="_blank" rel="noopener">GitHub 열기 ↗</a></header>
+          <div id="operator-commit-history" class="operator-commit-history"><p class="operator-empty">최근 변경사항을 불러오고 있습니다.</p></div>
+        </article>
+        <article class="operator-card operator-changelog-health-card">
+          <header><div><h2>업데이트 일지 상태</h2><small>GitHub main에서 사용자용 변경사항 자동 기록</small></div><a href="changelog.html" target="_blank" rel="noopener">일지 열기 ↗</a></header>
+          <div class="operator-changelog-health" id="operator-changelog-health">
+            <strong>확인 중</strong><span>최근 공개 업데이트를 확인하고 있습니다.</span>
+          </div>
+          <dl class="operator-system-meta operator-changelog-meta">
+            <div><dt>최근 공개 업데이트</dt><dd id="system-changelog-title">-</dd></div>
+            <div><dt>기록 날짜</dt><dd id="system-changelog-date">-</dd></div>
+            <div><dt>기준 SHA</dt><dd id="system-changelog-sha">-</dd></div>
+          </dl>
+        </article>
         <article class="operator-card operator-health-history-card">
           <header><h2>운영 상태 변경 이력</h2><span>상태가 바뀐 시점만 기록</span></header>
           <div id="operator-health-history" class="operator-event-list"><p class="operator-empty">상태 이력을 불러오고 있습니다.</p></div>
