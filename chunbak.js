@@ -353,11 +353,12 @@
     for (const meta of Core.STAGES) {
       const figure = document.createElement('figure');
       const img = document.createElement('img');
-      img.src = meta.image;
       img.alt = '';
       img.loading = 'lazy';
       img.decoding = 'async';
       img.fetchPriority = 'low';
+      img.dataset.stageImage=String(meta.id);
+      if(images.has(meta.id))img.src=meta.image;
       const caption = document.createElement('figcaption');
       caption.textContent = `${meta.id}단계`;
       figure.append(img, caption);
@@ -684,6 +685,8 @@
       img.onload = () => {
         images.set(meta.id, img);
         setStageCollisionScale(meta.id,measureVisibleCollisionScale(img));
+        const legendImage=stageLegend?.querySelector?.('img[data-stage-image="'+meta.id+'"]');
+        if(legendImage&&!legendImage.src)legendImage.src=meta.image;
         imageLoads.delete(meta.id);
         resolve(img);
       };
@@ -704,19 +707,27 @@
   }
 
   function warmRemainingImages() {
-    const warm = () => {
-      void Promise.allSettled(Core.STAGES.slice(5).map(meta => loadStageImage(meta)));
+    const warm = async () => {
+      const preferred=[1,2,3,4,5,6,7,8,9,10,11]
+        .map(id=>Core.STAGES[id-1])
+        .filter(meta=>meta&&!images.has(meta.id)&&!imageLoads.has(meta.id));
+      for(const meta of preferred){
+        await loadStageImage(meta).catch(()=>null);
+        await new Promise(resolve=>setTimeout(resolve,90));
+      }
     };
     if ('requestIdleCallback' in window) {
-      window.requestIdleCallback(warm, { timeout: 1800 });
+      window.requestIdleCallback(()=>{void warm();}, { timeout: 2200 });
     } else {
-      setTimeout(warm, 350);
+      setTimeout(()=>{void warm();}, 500);
     }
   }
 
   async function preloadImages() {
     try {
-      await Promise.all(Core.STAGES.slice(0, 5).map(meta => loadStageImage(meta)));
+      const initialStages=[currentStage,nextStage]
+        .filter((value,index,array)=>value&&array.indexOf(value)===index);
+      await Promise.all(initialStages.map(stage=>ensureStageImage(stage)));
       startButton.disabled = false;
       if (restartButton) restartButton.disabled = false;
       buildLegend();
