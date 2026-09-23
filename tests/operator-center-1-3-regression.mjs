@@ -27,8 +27,10 @@ assert.match(js,/느린 페이지 감지/,'slow single-page warning missing');
 
 assert.match(api,/const menuTotal=Object\.values\(menus\)/,'menu total aggregation missing');
 assert.match(api,/const featureTotal=Object\.values\(features\)/,'feature total aggregation missing');
-assert.match(api,/topMenus:topRows\(menus,10\),menuTotal/,'menu total response missing');
-assert.match(api,/topFeatures:topRows\(features,14\),featureTotal/,'feature total response missing');
+assert.match(api,/topMenus:(?:compareRows\()?topRows\(menus,10\)/,'menu ranking response missing');
+assert.match(api,/menuTotal/,'menu total response missing');
+assert.match(api,/topFeatures:(?:compareRows\()?topRows\(features,14\)/,'feature ranking response missing');
+assert.match(api,/featureTotal/,'feature total response missing');
 
 assert.match(css,/Operator Center 1\.3/,'operator center 1.3 style block missing');
 assert.match(css,/operator-feature-title/,'feature action visual hierarchy missing');
