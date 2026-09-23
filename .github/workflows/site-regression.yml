@@ -15,6 +15,36 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Temporary NamuWiki Leopel scrape
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import urllib.request,re,html
+          url='https://namu.wiki/w/%EB%A0%88%EC%98%A4%ED%8E%A0'
+          req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0','Accept-Language':'ko-KR,ko;q=0.9'})
+          try:
+              data=urllib.request.urlopen(req,timeout=20).read().decode('utf-8','ignore')
+          except Exception as e:
+              print('NAMU_ERROR='+repr(e)); raise
+          print('NAMU_LEN='+str(len(data)))
+          for m in re.finditer(r'<h([1-6])[^>]*>(.*?)</h\\1>',data,re.I|re.S):
+              txt=re.sub(r'<[^>]+>',' ',m.group(2))
+              txt=html.unescape(re.sub(r'\\s+',' ',txt)).strip()
+              if txt: print('NAMU_HEAD='+txt[:220])
+          imgs=[]
+          for m in re.finditer(r'<img[^>]+(?:src|data-src)=["\\']([^"\\']+)["\\'][^>]*>',data,re.I):
+              src=html.unescape(m.group(1))
+              if src.startswith('//'): src='https:'+src
+              if src.startswith('http') and src not in imgs: imgs.append(src)
+          for src in imgs[:80]: print('NAMU_IMG='+src)
+          # useful text snippets around likely system/world terms
+          plain=html.unescape(re.sub(r'<[^>]+>',' ',data))
+          plain=re.sub(r'\\s+',' ',plain)
+          for term in ['세계관','시스템','콘텐츠','지역','스토리','마을','직업','던전','화폐','길드','국가','퀘스트']:
+              i=plain.find(term)
+              if i>=0: print('NAMU_TEXT_'+term+'='+plain[max(0,i-300):i+1000])
+          PY
       - name: Check JavaScript syntax
         run: |
           node --check service-worker.js
