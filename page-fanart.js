@@ -29,6 +29,61 @@
         <span class="fanart-copy"><strong>${esc(item.title || item.caption || '춘봉 팬아트')}</strong><small>${esc(item.author || 'CHUNBONG FAN ART')}${item.date ? ` · ${esc(item.date)}` : ''}</small></span>
       </button>`).join('');
 
+
+    const detailUrl = id => \`/api/content?type=fanart-detail&id=\${encodeURIComponent(id)}\`;
+    const detailPayload = async id => {
+      const key = 'fanart-detail:' + id;
+      if (window.ChunbongCache) return window.ChunbongCache.fetchJson(key, detailUrl(id), { ttl:30*60*1000 });
+      const response = await fetch(detailUrl(id), { headers:{ accept:'application/json' } });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return response.json();
+    };
+    const queue = [];
+    let activeThumbLoads = 0;
+    const drainThumbQueue = () => {
+      while (activeThumbLoads < 2 && queue.length) {
+        const button = queue.shift();
+        if (!button || button.dataset.fanartThumbLoading === '1' || button.querySelector('[data-fanart-thumb] img')) continue;
+        const id = String(button.dataset.fanartId || '');
+        if (!id) continue;
+        button.dataset.fanartThumbLoading = '1';
+        activeThumbLoads += 1;
+        detailPayload(id).then(payload => {
+          const src = Array.isArray(payload?.item?.images) ? payload.item.images.find(Boolean) : '';
+          const wrap = button.querySelector('[data-fanart-thumb]');
+          if (!src || !wrap || wrap.querySelector('img')) return;
+          const img = document.createElement('img');
+          img.src = proxiedImage(src);
+          img.alt = button.querySelector('strong')?.textContent || '춘봉 팬아트';
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          wrap.replaceChildren(img);
+        }).catch(()=>{}).finally(() => {
+          activeThumbLoads -= 1;
+          delete button.dataset.fanartThumbLoading;
+          drainThumbQueue();
+        });
+      }
+    };
+    const enqueueThumb = button => {
+      if (!button || button.querySelector('[data-fanart-thumb] img') || queue.includes(button)) return;
+      queue.push(button);
+      drainThumbQueue();
+    };
+    const cardsMissingThumb = $('[data-fanart-index]', grid).filter(button => !button.querySelector('[data-fanart-thumb] img'));
+    if ('IntersectionObserver' in window) {
+      const thumbObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          thumbObserver.unobserve(entry.target);
+          enqueueThumb(entry.target);
+        });
+      }, { rootMargin:'320px 0px', threshold:0.01 });
+      cardsMissingThumb.forEach(button => thumbObserver.observe(button));
+    } else {
+      cardsMissingThumb.slice(0,4).forEach(enqueueThumb);
+    }
+
     const modalImage = $('#fanart-modal-image');
     const modalTitle = $('#fanart-modal-title');
     const modalAuthor = $('#fanart-modal-author');
