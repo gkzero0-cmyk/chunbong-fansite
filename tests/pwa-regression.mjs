@@ -43,7 +43,7 @@ assert.match(sw, /\/offline\.html/);
 assert.match(sw, /url\.pathname\.startsWith\('\/api\/'\)/);
 assert.match(sw, /networkFirst/);
 assert.match(sw, /request\.destination === 'document'[\s\S]*networkFirst\(request, event\)/, 'documents should prefer the latest network response and fall back to cache offline');
-assert.match(sw, /\['script','style'\][\s\S]*networkFirst\(request, event\)/, 'scripts and styles should stay coherent with the latest document by preferring network');
+assert.match(sw, /\['script','style'\][\s\S]*boundedNetworkFirst\(request, event, 450\)/, 'scripts and styles should prefer fresh network briefly, then use cached assets when revalidation is slow');
 assert.match(sw, /request\.destination === 'worker'[\s\S]*networkFirst\(request, event\)/, 'workers should remain network-first');
 assert.match(sw, /\['image','font'\]/, 'heavy visual assets should keep stale-while-revalidate');
 assert.match(page, /standalone[\s\S]*registration\.waiting[\s\S]*SKIP_WAITING/, 'installed PWA should activate a waiting update on app launch');
