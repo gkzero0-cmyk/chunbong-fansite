@@ -506,3 +506,102 @@
   .daily-fortune-stage.is-spinning .daily-fortune-card-inner{animation:none!important;opacity:1!important;filter:none!important}
   .daily-fortune-stage.is-spinning::before,.daily-fortune-stage.is-spinning::after{display:none!important}
 }
+
+
+/* 2026-09-23 · crystal hover visibility + true hyper-spin cadence */
+.daily-fortune-stage.is-spinning:not(.is-decelerating) .daily-fortune-card-inner{
+  animation:dailyFortuneHyperSpin .05s linear infinite!important;
+  opacity:.07!important;
+  filter:blur(2.2px) brightness(1.22)!important;
+  will-change:transform,opacity,filter
+}
+@keyframes dailyFortuneHyperSpin{
+  0%{transform:rotateY(0deg) scaleX(.075)}
+  25%{transform:rotateY(90deg) scaleX(.018)}
+  50%{transform:rotateY(180deg) scaleX(.075)}
+  75%{transform:rotateY(270deg) scaleX(.018)}
+  100%{transform:rotateY(360deg) scaleX(.075)}
+}
+.daily-fortune-stage.is-spinning.is-decelerating .daily-fortune-card-inner{
+  animation:dailyFortuneHyperDecelerate .4s cubic-bezier(.08,.72,.10,1) both!important;
+  will-change:transform,opacity,filter
+}
+@keyframes dailyFortuneHyperDecelerate{
+  0%{transform:rotateY(0deg) scaleX(.05);opacity:.08;filter:blur(2px) brightness(1.18)}
+  42%{transform:rotateY(1080deg) scaleX(.16);opacity:.22;filter:blur(1.35px) brightness(1.14)}
+  72%{transform:rotateY(1350deg) scaleX(.42);opacity:.52;filter:blur(.65px) brightness(1.08)}
+  90%{transform:rotateY(1418deg) scaleX(.78);opacity:.82;filter:blur(.18px) brightness(1.04)}
+  100%{transform:rotateY(1440deg) scaleX(1);opacity:1;filter:blur(0) brightness(1)}
+}
+
+/* Stronger premium crystal film: visible on hover even if JS class delivery is delayed. */
+.daily-fortune-stage:hover .daily-fortune-holo-film,
+.daily-fortune-stage.is-prism-active .daily-fortune-holo-film{
+  display:block!important;
+  opacity:.98!important;
+  background:
+    radial-gradient(ellipse 24% 20% at var(--glow-x) var(--glow-y),
+      rgba(255,255,255,.82) 0 4%,
+      rgba(194,246,255,.48) 9%,
+      rgba(112,214,255,.28) 17%,
+      rgba(168,123,255,.22) 28%,
+      transparent 50%),
+    conic-gradient(from 205deg at var(--glow-x) var(--glow-y),
+      transparent 0deg,
+      rgba(102,232,255,.34) 38deg,
+      rgba(132,156,255,.33) 72deg,
+      rgba(195,119,255,.36) 110deg,
+      rgba(255,137,211,.30) 148deg,
+      rgba(255,220,120,.34) 190deg,
+      rgba(134,241,213,.28) 232deg,
+      rgba(110,207,255,.30) 270deg,
+      transparent 330deg),
+    repeating-linear-gradient(126deg,
+      transparent 0 8%,
+      rgba(207,249,255,.14) 10%,
+      rgba(145,138,255,.17) 13%,
+      rgba(255,158,224,.13) 16%,
+      rgba(255,226,135,.15) 19%,
+      transparent 22% 32%)!important;
+  background-size:100% 100%,120% 120%,170% 170%!important;
+  background-position:center,var(--glow-x) var(--glow-y),var(--glow-x) var(--glow-y)!important;
+  mix-blend-mode:screen!important;
+  filter:saturate(1.55) contrast(1.10) brightness(1.08)!important;
+  -webkit-mask-image:radial-gradient(ellipse 68% 58% at var(--glow-x) var(--glow-y),#000 0 30%,rgba(0,0,0,.92) 53%,rgba(0,0,0,.44) 72%,transparent 92%)!important;
+  mask-image:radial-gradient(ellipse 68% 58% at var(--glow-x) var(--glow-y),#000 0 30%,rgba(0,0,0,.92) 53%,rgba(0,0,0,.44) 72%,transparent 92%)!important;
+}
+.daily-fortune-stage:hover .daily-fortune-card,
+.daily-fortune-stage.is-prism-active .daily-fortune-card{
+  box-shadow:
+    0 0 0 1px rgba(232,248,255,.42),
+    0 0 20px rgba(112,216,255,.24),
+    0 0 38px rgba(164,111,246,.20),
+    0 0 58px rgba(255,193,105,.10)!important
+}
+.daily-fortune-stage:hover .daily-fortune-card:after,
+.daily-fortune-stage.is-prism-active .daily-fortune-card:after{
+  opacity:.88!important;
+  background:
+    radial-gradient(ellipse 28% 22% at var(--glow-x) var(--glow-y),
+      rgba(255,255,255,.52),
+      rgba(132,227,255,.22) 28%,
+      rgba(172,122,255,.13) 48%,
+      transparent 72%),
+    linear-gradient(122deg,
+      transparent 19%,
+      rgba(101,225,255,.14) 34%,
+      rgba(168,127,255,.20) 45%,
+      rgba(255,151,219,.15) 53%,
+      rgba(255,224,132,.16) 61%,
+      transparent 76%)!important;
+  mix-blend-mode:screen!important
+}
+@media(prefers-reduced-motion:reduce){
+  .daily-fortune-stage:hover .daily-fortune-holo-film,
+  .daily-fortune-stage.is-prism-active .daily-fortune-holo-film{
+    display:block!important;
+    opacity:.92!important;
+    transition:none!important;
+    animation:none!important
+  }
+}
