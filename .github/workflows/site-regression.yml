@@ -19,37 +19,23 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl -L --compressed -fsS 'https://namu.wiki/w/%EB%A0%88%EC%98%A4%ED%8E%A0' \
-            -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/153.0.0.0 Safari/537.36' \
-            -H 'Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8' \
-            -o /tmp/leopel.html
+          curl -L --compressed -fsS 'https://r.jina.ai/https://namu.wiki/w/%EB%A0%88%EC%98%A4%ED%8E%A0' \
+            -H 'User-Agent: Mozilla/5.0' \
+            -o /tmp/leopel.txt
           python3 - <<'PY'
-          import re, html
-          raw=open('/tmp/leopel.html','r',encoding='utf-8',errors='ignore').read()
-          print('NAMU_BYTES='+str(len(raw)))
-          clean=re.sub(r'<script[\s\S]*?</script>|<style[\s\S]*?</style>',' ',raw,flags=re.I)
-          clean=re.sub(r'<br\s*/?>','\n',clean,flags=re.I)
-          clean=re.sub(r'</(?:p|div|li|tr|h[1-6])>','\n',clean,flags=re.I)
-          clean=re.sub(r'<[^>]+>',' ',clean)
-          clean=html.unescape(clean)
-          clean=re.sub(r'[ \t\r\f\v]+',' ',clean)
-          clean=re.sub(r'\n\s*\n+','\n',clean)
-          lines=[x.strip() for x in clean.splitlines() if x.strip()]
+          import re
+          raw=open('/tmp/leopel.txt','r',encoding='utf-8',errors='ignore').read()
+          print('NAMU_PROXY_BYTES='+str(len(raw)))
           print('NAMU_TEXT_BEGIN')
-          for line in lines[:500]:
-              if len(line)>2:
-                  print(line[:500])
+          for line in raw.splitlines()[:1200]:
+              line=line.strip()
+              if line:
+                  print(line[:1200])
           print('NAMU_TEXT_END')
-          imgs=[]
-          for m in re.finditer(r'<img\b[^>]*>',raw,re.I):
-              tag=m.group(0)
-              src=(re.search(r'(?:src|data-src)=["\']([^"\']+)["\']',tag,re.I) or [None,''])[1]
-              alt=(re.search(r'alt=["\']([^"\']*)["\']',tag,re.I) or [None,''])[1]
-              if src and src not in [x[0] for x in imgs]:
-                  imgs.append((src,html.unescape(alt)))
           print('NAMU_IMAGES_BEGIN')
-          for src,alt in imgs[:120]:
-              print('IMG\t'+src[:900]+'\tALT\t'+alt[:300])
+          for url in dict.fromkeys(re.findall(r'https?://[^)\s]+',raw)):
+              if any(x in url.lower() for x in ['image','img','namu','static','arca','cdn']):
+                  print('IMG\t'+url[:1200])
           print('NAMU_IMAGES_END')
           PY
       - name: Check JavaScript syntax
