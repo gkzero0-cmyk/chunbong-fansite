@@ -12,12 +12,12 @@ const workflows=[
 
 for(const path of workflows){
   const source=fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
-  for(const prefix of ['internal-','internal/','ci-','docs-','feat/','fix/','chore/','ci/','refactor/','test/','hotfix/']){
+  for(const prefix of ['internal-','internal/','ci-','docs-','feat/','feature/','perf/','fix/','chore/','ci/','refactor/','test/','hotfix/']){
     assert.ok(source.includes("!startsWith(github.head_ref, '"+prefix+"')"),path+' must skip Vercel-disabled '+prefix+' branches');
   }
   assert.ok(source.includes("github.head_ref != 'data/soop-telemetry'"),path+' must skip data/soop-telemetry');
 }
-for(const key of ['data/soop-telemetry','internal-*','internal/*','ci-*','docs-*','feat/*','fix/*','chore/*','ci/*','refactor/*','test/*','hotfix/*']){
+for(const key of ['data/soop-telemetry','internal-*','internal/*','ci-*','docs-*','feat/*','feature/*','perf/*','fix/*','chore/*','ci/*','refactor/*','test/*','hotfix/*']){
   assert.equal(disabled[key],false,'vercel disabled branch policy changed: '+key);
 }
 console.log('Vercel preview workflow guard regression passed');
