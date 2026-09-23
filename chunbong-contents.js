@@ -166,7 +166,7 @@ function personButton(name){return `<button type="button" class="archive-person-
 function guideFilenameOnly(value=''){return /^[^\n]+\.(?:png|jpe?g|webp|gif|svg|avif)(?:\?.*)?$/i.test(String(value||'').trim())}
 function guideImageLabel(value=''){
   let raw=String(value||'').trim();
-  if(guideFilenameOnly(raw)){raw=raw.split(/[\\/]/).pop().replace(/\?.*$/,'').replace(/\.(?:png|jpe?g|webp|gif|svg|avif)$/i,'').replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim();if(/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(raw))raw=''}
+  if(guideFilenameOnly(raw)){raw=raw.split(/[\\/]/).pop().replace(/\?.*$/,'').replace(/\.(?:png|jpe?g|webp|gif|svg|avif)$/i,'').trim();if(/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(raw))raw='';else raw=raw.replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim()}
   return raw;
 }
 function guideRowHasBody(row={}){return Boolean(String(row.text||'').trim()||(row.images||[]).length||(row.content||[]).some(block=>block?.type==='image'||String(block?.text||'').trim()))}
