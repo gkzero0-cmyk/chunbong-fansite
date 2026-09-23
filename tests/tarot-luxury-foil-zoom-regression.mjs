@@ -8,7 +8,7 @@ const css=read('tarot-luxury-foil.css');
 const sfx=read('tarot-sfx-v2.js');
 
 assert.match(html,/href="tarot-luxury-foil\.css\?v=3"/,'luxury tarot foil stylesheet must load');
-assert.match(html,/src="tarot\.js\?v=5"/,'updated tarot runtime must be cache-busted');
+assert.match(html,/src="tarot\.js\?v=6"/,'updated tarot runtime must be cache-busted');
 assert.match(html,/src="tarot-sfx-v2\.js\?v=4"/,'updated tarot hover SFX runtime must be cache-busted');
 
 assert.match(js,/data-tarot-foil/,'result and zoom cards must expose foil hosts');
@@ -17,6 +17,8 @@ assert.match(js,/installTarotFoilEvents\(byId\('tarot-deck'\)\)/,'deck selection
 assert.match(js,/function tarotFoilPointer\(/,'tarot foil pointer tracking missing');
 assert.match(js,/function triggerTarotFoilEntry\(/,'tarot foil entry effect missing');
 assert.match(js,/__CHUNBONG_TAROT_SFX_CONTROLLER__/,'tarot foil must use shared sound preferences/controller');
+assert.match(js,/const silentDeckBack = host\.matches\?\.\('\.tarot-card-back\[data-tarot-foil\]'\)/,'deck card backs must be explicitly silent on hover');
+assert.match(js,/if \(!silentDeckBack && now - lastTarotHoverSoundAt > 1800\)/,'hover sound must remain available only outside the deck-card selection backs');
 assert.match(js,/function fitTarotZoom\(/,'large-view viewport fitter missing');
 assert.match(js,/window\.visualViewport\?\.height/,'zoom fitter must use the visual viewport');
 assert.match(js,/widthByHeight = availableHeight \* \(898 \/ 1488\)/,'zoom card width must derive from the real tarot card aspect ratio');
