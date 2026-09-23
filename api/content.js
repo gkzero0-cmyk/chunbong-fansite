@@ -9,26 +9,22 @@ const fetchYoutube = require('../lib/content-api/youtube');
 const fetchSchedule = require('../lib/content-api/schedule');
 const fetchActivity = require('../lib/activity');
 const fetchCatchDetail = require('../lib/content-api/catch-detail');
-const lazyRequire = modulePath => {
-  let value;
-  return () => {
-    if (value === undefined) value = require(modulePath);
-    return value;
-  };
-};
-const getChunbongData = lazyRequire('../lib/chunbong-data');
-const getChuntrisRanking = lazyRequire('../lib/chuntris-ranking-api');
-const getChunbakRanking = lazyRequire('../lib/chunbak-ranking-api');
-const getChungwagameRanking = lazyRequire('../lib/chungwagame-ranking-api');
-const getChuncortileRanking = lazyRequire('../lib/chuncortile-ranking-api');
-const getMinigameMultiplayer = lazyRequire('../lib/minigame-multiplayer-api');
-const getChangelogHistory = lazyRequire('../lib/changelog-history-api');
-const getPushNotifications = lazyRequire('../lib/push-notifications-api');
-const getOperatorCenter = lazyRequire('../lib/operator-center-api');
-const getContentArchive = lazyRequire('../lib/chunbong-content-archive-api');
-const getYoutubeEngagementCache = lazyRequire('../data/youtube-engagement-cache.json');
-const getSoopMetricHistory = lazyRequire('../data/soop-follower-history.json');
-const getYoutubeEngagement = lazyRequire('../lib/youtube-engagement');
+let chunbongDataModule, chuntrisRankingModule, chunbakRankingModule, chungwagameRankingModule, chuncortileRankingModule;
+let minigameMultiplayerModule, changelogHistoryModule, pushNotificationsModule, operatorCenterModule, contentArchiveModule;
+let youtubeEngagementCacheModule, soopMetricHistoryModule, youtubeEngagementModule;
+const getChunbongData = () => chunbongDataModule ||= require('../lib/chunbong-data');
+const getChuntrisRanking = () => chuntrisRankingModule ||= require('../lib/chuntris-ranking-api');
+const getChunbakRanking = () => chunbakRankingModule ||= require('../lib/chunbak-ranking-api');
+const getChungwagameRanking = () => chungwagameRankingModule ||= require('../lib/chungwagame-ranking-api');
+const getChuncortileRanking = () => chuncortileRankingModule ||= require('../lib/chuncortile-ranking-api');
+const getMinigameMultiplayer = () => minigameMultiplayerModule ||= require('../lib/minigame-multiplayer-api');
+const getChangelogHistory = () => changelogHistoryModule ||= require('../lib/changelog-history-api');
+const getPushNotifications = () => pushNotificationsModule ||= require('../lib/push-notifications-api');
+const getOperatorCenter = () => operatorCenterModule ||= require('../lib/operator-center-api');
+const getContentArchive = () => contentArchiveModule ||= require('../lib/chunbong-content-archive-api');
+const getYoutubeEngagementCache = () => youtubeEngagementCacheModule ||= require('../data/youtube-engagement-cache.json');
+const getSoopMetricHistory = () => soopMetricHistoryModule ||= require('../data/soop-follower-history.json');
+const getYoutubeEngagement = () => youtubeEngagementModule ||= require('../lib/youtube-engagement');
 
 function compactCategory(row = {}) {
   return {
