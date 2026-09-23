@@ -1,12 +1,15 @@
 // ==UserScript==
 // @name         춘봉 콘텐츠 자동 수집기
 // @namespace    https://chunbong-fansite.vercel.app/
-// @version      1.0.0
-// @description  춘봉 팬사이트용 나무위키·SOOP 로그인 브라우저 자료 자동 수집기
+// @version      1.1.0
+// @description  춘봉 팬사이트용 나무위키·SOOP·FM코리아 브라우저 자료 자동 수집기
 // @match        https://namu.wiki/w/*
 // @match        https://www.namu.wiki/w/*
 // @match        https://sooplive.com/station/chunbongtv/*
 // @match        https://www.sooplive.com/station/chunbongtv/*
+// @match        https://fmkorea.com/*
+// @match        https://www.fmkorea.com/*
+// @match        https://m.fmkorea.com/*
 // @match        https://chunbong-fansite.vercel.app/operator.html*
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -21,7 +24,7 @@
 
 (function(){
   'use strict';
-  const VERSION='1.0.0';
+  const VERSION='1.1.0';
   const CHANNEL='chunbong-content-collector';
   const QUEUE_KEY='cb-content-collector-queue-v1';
   const SEEN_KEY='cb-content-collector-seen-v1';
@@ -33,7 +36,17 @@
   const write=(key,value)=>{try{GM_setValue(key,value)}catch{}};
   const queueRows=()=>{const rows=read(QUEUE_KEY,[]);return Array.isArray(rows)?rows:[]};
   const seenMap=()=>{const rows=read(SEEN_KEY,{});return rows&&typeof rows==='object'&&!Array.isArray(rows)?rows:{}};
-  const canonical=value=>{try{const url=new URL(value,location.href);url.hash='';if(url.hostname==='www.namu.wiki')url.hostname='namu.wiki';return url.toString()}catch{return String(value||'')}};
+  const canonical=value=>{try{
+    const url=new URL(value,location.href);url.hash='';
+    if(url.hostname==='www.namu.wiki')url.hostname='namu.wiki';
+    if(['fmkorea.com','www.fmkorea.com','m.fmkorea.com'].includes(url.hostname)){
+      const direct=(url.pathname.match(/^\/(?:best\/)?(\d+)\/?$/)||[])[1]||'';
+      const postId=direct||url.searchParams.get('document_srl')||'';
+      if(/^\d+$/.test(postId))return 'https://www.fmkorea.com/'+postId;
+      url.hostname='www.fmkorea.com';
+    }
+    return url.toString();
+  }catch{return String(value||'')}};
   function markSeen(url){
     const seen=seenMap();seen[canonical(url)]=Date.now();
     const entries=Object.entries(seen).sort((a,b)=>Number(b[1]||0)-Number(a[1]||0)).slice(0,500);
@@ -112,6 +125,73 @@
     urls.forEach((url,index)=>setTimeout(()=>openBackground(url,AUTO_HASH,false),index*900));
     return urls.length;
   }
+
+  function fmkPostId(raw=location.href){
+    try{
+      const url=new URL(raw,location.href);
+      if(!['fmkorea.com','www.fmkorea.com','m.fmkorea.com'].includes(url.hostname))return'';
+      const direct=(url.pathname.match(/^\/(?:best\/)?(\d+)\/?$/)||[])[1]||'';
+      const query=url.searchParams.get('document_srl')||'';
+      return /^\d+$/.test(direct)?direct:(/^\d+$/.test(query)?query:'');
+    }catch{return''}
+  }
+  async function verifyFmkPublic(postId){
+    if(!postId)return false;
+    try{
+      const response=await fetch(location.href,{credentials:'omit',cache:'no-store',redirect:'follow'});
+      if(!response.ok)return false;
+      const html=(await response.text()).slice(0,500000);
+      if(/로그인이\s*필요|접근\s*권한|열람\s*권한|권한이\s*없|삭제된\s*게시물|존재하지\s*않는\s*게시물/i.test(html))return false;
+      return html.includes(String(postId))&&(/xe_content|document_srl|rd_body|article/i.test(html));
+    }catch{return false}
+  }
+  function fmkMeta(selector){return document.querySelector(selector)?.getAttribute('content')||''}
+  async function waitForFmkBody(){
+    for(let i=0;i<16;i++){const text=clean(document.body?.innerText||'');if(text.length>180)return text;await sleep(300)}
+    return clean(document.body?.innerText||'');
+  }
+  async function captureFmkPost(force=false){
+    const postId=fmkPostId();if(!postId)return false;
+    if(!force&&recentlySeen(location.href,30))return false;
+    const publicOk=await verifyFmkPublic(postId);if(!publicOk)return false;
+    const pageText=await waitForFmkBody();
+    const title=clean(fmkMeta('meta[property="og:title"]')||document.querySelector('h1')?.textContent||document.querySelector('.title')?.textContent||document.title)
+      .replace(/\s*[-|｜]\s*(?:에펨코리아|FMKOREA).*$/i,'').replace(/^포텐\s+/,'').trim();
+    const author=clean(fmkMeta('meta[name="author"]')||document.querySelector('.member_plate')?.textContent||document.querySelector('[class*="author"]')?.textContent||'').slice(0,80);
+    const dateRaw=fmkMeta('meta[property="article:published_time"]')||document.querySelector('time[datetime]')?.getAttribute('datetime')||
+      clean(document.querySelector('.date')?.textContent||document.querySelector('[class*="date"]')?.textContent||'')||
+      (pageText.match(/20\d{2}[.\/-]\d{1,2}[.\/-]\d{1,2}/)||[])[0]||'';
+    const selectors=['.xe_content','.rd_body','.document_content','.document-body','article','main','[class*="document"]','[class*="article-content"]'];
+    const nodes=selectors.flatMap(selector=>[...document.querySelectorAll(selector)]);
+    const candidates=[...new Set(nodes)].map(el=>({el,text:(el.innerText||'').trim()})).filter(row=>row.text.length>60).sort((a,b)=>b.text.length-a.text.length);
+    const chosen=candidates[0]?.el||document.querySelector('article')||document.querySelector('main')||document.body;
+    const body=((chosen?.innerText||pageText).trim()).slice(0,50000);if(body.length<30)return false;
+    const imageSet=new Set();
+    for(const img of [...(chosen?.querySelectorAll?.('img')||[])].slice(0,120)){
+      const values=[img.currentSrc,img.src,img.getAttribute?.('data-original'),img.getAttribute?.('data-src')];
+      for(const raw of values){
+        if(!raw)continue;
+        try{
+          const parsed=new URL(raw,location.href);
+          if(parsed.protocol!=='https:')continue;
+          if(/(?:logo|favicon|emoji|icon|avatar|profile)/i.test(parsed.pathname))continue;
+          imageSet.add(parsed.toString());
+        }catch{}
+      }
+    }
+    const board=clean(document.querySelector('.board_name')?.textContent||document.querySelector('[class*="board-title"]')?.textContent||'').slice(0,100);
+    return enqueue({version:1,source:'fmkorea-public-browser',postId,url:'https://www.fmkorea.com/'+postId,title,author,board,date:dateRaw,body,images:[...imageSet].slice(0,20),access:'anonymous-verified',capturedAt:new Date().toISOString()});
+  }
+  const FMK_KEYWORDS=['춘봉','춘타클','레오펠','그냥서버','머니게임','적자생존','싸이감성','춘봉상사'];
+  function discoverFmkPosts(){
+    const seen=seenMap(),urls=[...document.querySelectorAll('a[href]')].map(a=>({href:a.href,text:clean(a.textContent)}))
+      .filter(row=>row.text&&FMK_KEYWORDS.some(keyword=>row.text.includes(keyword)))
+      .map(row=>{const id=fmkPostId(row.href);return id?canonical(row.href):''})
+      .filter(Boolean).filter((url,index,all)=>all.indexOf(url)===index).filter(url=>!seen[url]).slice(0,10);
+    urls.forEach((url,index)=>setTimeout(()=>openBackground(url,AUTO_HASH,false),index*950));
+    return urls.length;
+  }
+
   function operatorBridge(){
     let inflight='';
     const emitState=()=>window.postMessage({channel:CHANNEL,type:'state',version:VERSION,queueCount:queueRows().length,seenCount:Object.keys(seenMap()).length},location.origin);
@@ -130,7 +210,8 @@
       if(data.type==='open-urls'){
         const urls=Array.isArray(data.urls)?data.urls.slice(0,16):[];urls.forEach((url,index)=>setTimeout(()=>openBackground(url,AUTO_HASH,index===0),index*950));return;
       }
-      if(data.type==='open-soop-board'&&data.url){openBackground(data.url,DISCOVER_HASH,true)}
+      if(data.type==='open-soop-board'&&data.url){openBackground(data.url,DISCOVER_HASH,true);return}
+      if(data.type==='open-fmk-board'&&data.url){openBackground(data.url,DISCOVER_HASH,true)}
     });
     try{GM_addValueChangeListener(QUEUE_KEY,()=>{emitState();flush()})}catch{}
     emitState();setTimeout(flush,500);setInterval(flush,1800);
@@ -150,6 +231,18 @@
         return;
       }
       setTimeout(discoverSoopPosts,1400);setTimeout(discoverSoopPosts,3800);
+      if(location.hash.includes(DISCOVER_HASH))setTimeout(()=>window.close(),8500);
+      return;
+    }
+    if(['fmkorea.com','www.fmkorea.com','m.fmkorea.com'].includes(location.hostname)){
+      try{GM_registerMenuCommand('현재 FM코리아 공개글 수집',()=>void captureFmkPost(true))}catch{}
+      const postId=fmkPostId();
+      if(postId){
+        await captureFmkPost(location.hash.includes(AUTO_HASH));
+        if(location.hash.includes(AUTO_HASH))setTimeout(()=>window.close(),900);
+        return;
+      }
+      setTimeout(discoverFmkPosts,1400);setTimeout(discoverFmkPosts,3800);
       if(location.hash.includes(DISCOVER_HASH))setTimeout(()=>window.close(),8500);
     }
   }
