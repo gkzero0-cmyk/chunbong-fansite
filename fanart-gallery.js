@@ -95,13 +95,19 @@
     if (!articleId) return;
     loading.hidden = false;
     try {
-      const response = await fetch(`/api/content?type=fanart-detail&id=${encodeURIComponent(articleId)}`, {
-        headers: { accept: 'application/json' }
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const payload = await response.json();
+      const shared=window.ChunbongFanartDetailCache?.get?.(articleId);
+      let detailImages=[];
+      if(shared){
+        detailImages=await shared;
+      }else{
+        const response = await fetch(`/api/content?type=fanart-detail&id=${encodeURIComponent(articleId)}`, {
+          headers: { accept: 'application/json' }
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.json();
+        detailImages=Array.isArray(payload?.item?.images) ? payload.item.images.filter(Boolean) : [];
+      }
       if (token !== requestId) return;
-      const detailImages = Array.isArray(payload?.item?.images) ? payload.item.images.filter(Boolean) : [];
       if (detailImages.length) {
         images = [...new Set(detailImages)];
         index = 0;
