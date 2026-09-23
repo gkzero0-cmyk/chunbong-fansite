@@ -26,9 +26,15 @@ const api=fs.readFileSync(new URL('../lib/chunbong-content-archive-api.js',impor
 assert.match(api,/function extractNamuStructured/);
 assert.match(api,/refreshReferenceGuides/);
 assert.match(api,/persistNotionGuideMedia/);
+assert.match(api,/persistReferenceGuideMedia/);
 assert.match(api,/CLOUDINARY_URL/);
 const archiveApi=require('../lib/chunbong-content-archive-api');
 assert.equal(archiveApi._internals.cloudinaryArchiveKey({sourceUrl:'https://example.com/image.png?sig=one'}),archiveApi._internals.cloudinaryArchiveKey({sourceUrl:'https://example.com/image.png?sig=two'}),'signed URL changes should not duplicate Notion assets');
+assert.notEqual(
+  archiveApi._internals.cloudinaryArchiveKey({originUrl:'https://file.namu.moe/file/one',sourceUrl:'https://namu.wiki/w/test'}),
+  archiveApi._internals.cloudinaryArchiveKey({originUrl:'https://file.namu.moe/file/two',sourceUrl:'https://namu.wiki/w/test'}),
+  'reference images from one NamuWiki page must receive distinct permanent asset keys'
+);
 const namu=archiveApi._internals.extractNamuStructured('<h2>주요 지역</h2><p>레오펠 광장</p><img src="/images/plaza.webp" alt="레오펠 광장">','https://namu.wiki/w/%EB%A0%88%EC%98%A4%ED%8E%A0');
 assert.equal(namu.sections[0].title,'주요 지역');
 assert.match(namu.sections[0].text,/레오펠 광장/);
@@ -41,6 +47,7 @@ assert.equal(namuTransport?.search,'?from=LEOPEL','fallback transport must prese
 const namuFallbackMeta=archiveApi._internals.fetchNamuMeta(new URL(namuSource),'<title>레오펠</title><h2>주요 지역</h2><p>광장 안내</p>');
 assert.equal(namuFallbackMeta.url,namuSource,'fallback-parsed metadata must keep the public source URL on namu.wiki');
 assert.ok(!/namu\.moe/i.test(namuFallbackMeta.url),'read transport must never leak into the public source URL');
+assert.match(api,/persistArchiveGuideImage\(media,itemId,'reference'\)/,'reference images should be persisted in a separate permanent asset namespace');
 assert.equal(core.blockedArchiveSourceUrl('https://d.namu.moe/w/%EB%A0%88%EC%98%A4%ED%8E%A0'),true,'Namu mirror transport must remain blocked from public source lists');
 const normalizedNotion=core.normalizeArchiveItem({...item,notionSections:[{id:'n1',title:'순서 테스트',content:[{type:'text',text:'앞 문단'},{type:'image',image:{src:'https://example.com/a.png',filename:'guide.png'}},{type:'text',text:'뒤 문단'}]}]});
 assert.deepEqual(normalizedNotion.notionSections[0].content.map(block=>block.type),['text','image','text']);
