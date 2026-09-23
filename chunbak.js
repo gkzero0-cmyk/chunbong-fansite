@@ -140,6 +140,8 @@
     pausedAt = performance.now();
     gameState = 'paused';
     playing = false;
+    stopLoop();
+    render();
     root.dataset.gameStatus = 'paused';
     root.dataset.pauseReason = reason;
     return true;
@@ -157,6 +159,7 @@
     lastFrameAt = performance.now();
     gameState = 'playing';
     playing = true;
+    startLoop();
     root.dataset.gameStatus = 'playing';
     delete root.dataset.pauseReason;
     return true;
@@ -460,6 +463,7 @@
   function setGameOver() {
     if (!playing) return;
     playing = false;
+    stopLoop();
     pausedAt = null;
     resumeAfterUtility = false;
     setView('gameover');
@@ -529,13 +533,24 @@
     drawPreview();
   }
 
+  function stopLoop() {
+    if(frameId){cancelAnimationFrame(frameId);frameId=null;}
+  }
+
+  function startLoop() {
+    if(frameId||!playing)return;
+    lastFrameAt=performance.now();
+    frameId=requestAnimationFrame(tick);
+  }
+
   function tick(nowMs) {
+    frameId=null;
     const delta = Math.min(32, Math.max(8, nowMs - lastFrameAt));
     lastFrameAt = nowMs;
     if (playing) Matter.Engine.update(engine, delta);
     evaluateDanger(nowMs);
     render();
-    frameId = requestAnimationFrame(tick);
+    if(playing)frameId=requestAnimationFrame(tick);
   }
 
   function initWorld() {
@@ -573,6 +588,7 @@
     playing = autoStart;
     setView(autoStart ? 'playing' : 'start');
     updateHud();
+    if(autoStart)startLoop();else{stopLoop();render();}
   }
 
   function startGameWithSound() {
@@ -744,8 +760,9 @@
   syncAudioControls();
   resetGame({ autoStart: false });
   preloadImages();
-  void loadRanking();
-  if (!frameId) frameId = requestAnimationFrame(tick);
+  const warmRanking=()=>{void loadRanking();};
+  if('requestIdleCallback' in window)window.requestIdleCallback(warmRanking,{timeout:1600});
+  else setTimeout(warmRanking,450);
 
   globalThis.ChunbakGame = Object.freeze({
     createPiece,
