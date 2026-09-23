@@ -14,6 +14,22 @@ assert.match(cleaned,/레오펠은 사자의 노래입니다/,'readable NamuWiki
 assert.equal(core.humanizeGuideImageLabel('레오펠_전체-지도.png'),'레오펠 전체 지도');
 assert.equal(core.humanizeGuideImageLabel('bb332c05-ca5c-4a8b-89a3-5161734707bf.jpg'),'');
 
+const attachmentBlock={id:'attachment-block',type:'image',parent_table:'block',space_id:'space-id',properties:{source:[['attachment:file-id:guide.png']],title:[['guide.png']]},format:{display_source:'attachment:file-id:guide.png'}};
+assert.equal(archiveApi._internals.notionAttachmentSource(attachmentBlock),'attachment:file-id:guide.png');
+const signedRecordMap={block:{'attachment-block':{value:attachmentBlock}}};
+const previousFetch=globalThis.fetch;
+globalThis.fetch=async (url,options)=>{
+  assert.match(String(url),/\/api\/v3\/getSignedFileUrls$/);
+  const body=JSON.parse(String(options?.body||'{}'));
+  assert.equal(body.urls?.[0]?.permissionRecord?.id,'attachment-block');
+  assert.equal(body.urls?.[0]?.permissionRecord?.table,'block');
+  assert.equal(body.urls?.[0]?.permissionRecord?.spaceId,'space-id');
+  return{ok:true,json:async()=>({signedUrls:['https://file.notion.so/f/f/space-id/file-id/guide.png?signature=test']})};
+};
+await archiveApi._internals.populateNotionSignedUrls(signedRecordMap);
+globalThis.fetch=previousFetch;
+assert.match(signedRecordMap.signed_urls?.['attachment-block']||'',/^https:\/\/file\.notion\.so\//);
+
 const recordMap={
   block:{
     root:{value:{id:'root',type:'page',properties:{title:[['Root']]},content:['image-block']}},
