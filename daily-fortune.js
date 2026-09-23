@@ -527,12 +527,12 @@
       showLauncher();
     };
 
-    cardButton.addEventListener('click', () => {
-      if (drawing) return;
-      if (state) {
-        renderState(false);
-        return;
-      }
+    const startDraw = () => {
+      if (drawing || state) return false;
+      // Repair stale native button state immediately before the interaction.
+      // Pointer activation below calls this before a browser-generated click, so
+      // even an old disabled DOM state cannot swallow the draw action.
+      cardButton.disabled = false;
       drawing = true;
       const card = randomInt(CARDS.length);
       pendingState = { date: kstDate(), card, drawnAt: new Date().toISOString() };
@@ -541,13 +541,33 @@
         renderState(true, audioCtx);
         clearDrawFailsafe();
         drawFailsafeTimer = setTimeout(forceCompleteDraw, RESULT_MS + 1200);
+        return true;
       } catch (_) {
         pendingState = null;
         drawing = false;
         setCardInteractionLocked(false);
         try { audioCtx?.close?.(); } catch (_) {}
         renderState(false);
+        return false;
       }
+    };
+
+    cardButton.addEventListener('click', event => {
+      // Keyboard / assistive-technology activation fallback.
+      // Pointer activation is handled on the stage at pointerup so it does not
+      // depend on native button click delivery.
+      if (event.detail === 0) startDraw();
+    });
+
+    stage.addEventListener('pointerdown', () => {
+      // The stage still receives pointer input in the stale-state case observed
+      // in production, so clear any persisted native disabled flag before release.
+      cardButton.disabled = false;
+    });
+
+    stage.addEventListener('pointerup', event => {
+      if (event.button != null && event.button !== 0) return;
+      startDraw();
     });
 
     const pointerPosition = event => {
@@ -560,6 +580,7 @@
     };
 
     stage.addEventListener('pointerenter', event => {
+      cardButton.disabled = false;
       if (drawing || reducedMotion() || event.pointerType === 'touch') return;
       const point = pointerPosition(event);
       if (!point) return;
@@ -646,7 +667,7 @@
     }
   }
 
-  window.CHUNBONG_DAILY_FORTUNE = { STORAGE_KEY, kstDate, artworkUrl, readState, writeState, cards: CARDS.map(row => row[0]), nativeDisableSafe: true };
+  window.CHUNBONG_DAILY_FORTUNE = { STORAGE_KEY, kstDate, artworkUrl, readState, writeState, cards: CARDS.map(row => row[0]), nativeDisableSafe: true, pointerActivationSafe: true };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();
