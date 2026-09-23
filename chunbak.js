@@ -345,6 +345,12 @@
     img.alt = `${nextStage}단계`;
     img.decoding = 'async';
     img.fetchPriority = 'high';
+    img.onerror = () => {
+      if (meta.fallbackImage && img.dataset.fallback !== '1') {
+        img.dataset.fallback = '1';
+        img.src = meta.fallbackImage;
+      }
+    };
     void ensureStageImage(nextStage);
     nextNode.appendChild(img);
   }
@@ -353,7 +359,7 @@
     const img = stageLegend?.querySelector(`[data-stage-image="${stage}"]`);
     const meta = Core.STAGES[Number(stage) - 1];
     if (!img || !meta || !images.has(Number(stage))) return;
-    if (!img.getAttribute('src')) img.src = meta.image;
+    if (!img.getAttribute('src')) img.src = images.get(Number(stage))?.src || meta.image;
     img.hidden = false;
   }
 
@@ -367,7 +373,7 @@
       img.loading = 'lazy';
       img.decoding = 'async';
       img.fetchPriority = 'low';
-      if (images.has(meta.id)) img.src = meta.image;
+      if (images.has(meta.id)) img.src = images.get(meta.id)?.src || meta.image;
       else img.hidden = true;
       const caption = document.createElement('figcaption');
       caption.textContent = `${meta.id}단계`;
