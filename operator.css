@@ -324,3 +324,18 @@ body[data-page="operator"]{background:radial-gradient(circle at 80% 0,color-mix(
   .operator-vitals-summary{grid-template-columns:1fr}
   .operator-row-compare{white-space:normal}
 }
+
+
+/* Operator Center 1.5 — content archive health */
+.operator-archive-summary{margin-bottom:14px}
+.operator-archive-summary .operator-health-card{min-width:0}
+.operator-archive-summary strong.is-ok{color:var(--op-good)}
+.operator-archive-summary strong.is-warn{color:var(--op-warn)}
+.operator-archive-summary strong.is-bad{color:var(--op-bad)}
+.operator-archive-summary small{white-space:normal;line-height:1.4}
+@media(max-width:760px){
+  .operator-archive-summary{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+  .operator-archive-summary{grid-template-columns:1fr}
+}
