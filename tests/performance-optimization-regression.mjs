@@ -22,7 +22,7 @@ assert.match(fanartPage, /IntersectionObserver/, 'fanart details should load onl
 assert.match(fanartPage, /fanart-detail:/, 'fanart detail results should use the shared client cache');
 assert.match(fanartGallery, /ChunbongCache\.fetchJson\('fanart-detail:'/, 'fanart modal should reuse cached detail data');
 assert.match(contentApi, /Vercel-CDN-Cache-Control','public, max-age=600/, 'fanart list should have an explicit Vercel CDN policy');
-assert.match(contentApi, /const lazyRequire = modulePath =>/, 'heavy API route dependencies should load lazily');
+assert.match(contentApi, /const getChunbongData = \(\) => chunbongDataModule \|\|= require\('\.\.\/lib\/chunbong-data'\)/, 'heavy API route dependencies should load lazily with statically traceable requires');
 assert.equal(contentApi.includes("const fetchChunbongData = require('../lib/chunbong-data')"), false, 'fanart requests must not eagerly load the data dashboard stack');
 assert.equal(contentApi.includes("const contentArchive=require('../lib/chunbong-content-archive-api')"), false, 'fanart requests must not eagerly load the archive stack');
 assert.match(contentApi, /max-age=21600, stale-while-revalidate=86400/, 'fanart detail should receive a long-lived CDN cache');
