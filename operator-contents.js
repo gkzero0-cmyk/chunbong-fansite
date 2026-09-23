@@ -322,7 +322,7 @@ function renderUnifiedCollectorStatus(){
   const box=$('[data-unified-collector-status]',root);if(!box)return;
   if(!collectorState.connected){
     box.dataset.state='idle';
-    box.innerHTML='<strong>자동 수집기 연결 대기</strong><span>아래 설치 링크로 1회 설치하면 나무위키·SOOP 수집을 같은 큐로 처리합니다.</span>';
+    box.innerHTML='<strong>자동 수집기 연결 대기</strong><span>아래 설치 링크로 1회 설치하면 나무위키·SOOP·FM코리아 수집을 같은 큐로 처리합니다.</span>';
     return;
   }
   box.dataset.state=collectorState.queueCount?'busy':'ok';
@@ -359,6 +359,17 @@ async function handleUnifiedCollectorImport(message={}){
       collectorPost('ack',{id,ok:true});
       return;
     }
+    if(payload.source==='fmkorea-public-browser'){
+      const result=await json('operator-content-browser-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'auto',payload})});
+      if(result?.matched){
+        const title=result.item?.title||'춘봉 콘텐츠';await load();if(result.item?.id)selectItem(result.item.id);
+        setMessage('FM코리아 공개글을 '+title+'에 공개 참고자료로 자동 연결했습니다'+(result.duplicate?' (이미 수집된 글)':'')+'.','ok');
+      }else{
+        setMessage('FM코리아 공개글을 수집해 보관했지만 연결할 춘봉 콘텐츠를 확실하게 찾지 못했습니다. 원문은 중복 없이 저장되어 있습니다.','ok');
+      }
+      collectorPost('ack',{id,ok:true});
+      return;
+    }
     collectorPost('ack',{id,ok:false,error:'unsupported_source'});
   }catch(error){
     collectorPost('ack',{id,ok:false,error:String(error?.message||'collector_import_failed')});
@@ -386,6 +397,10 @@ function bindUnifiedCollector(){
   $('[data-collector-open-soop]',root)?.addEventListener('click',()=>{
     collectorPost('open-soop-board',{url:'https://www.sooplive.com/station/chunbongtv/post'});
     setMessage('SOOP 춘봉 방송국 게시판을 열어 새 글을 확인합니다. 로그인된 브라우저 세션만 사용합니다.','ok');
+  });
+  $('[data-collector-open-fmk]',root)?.addEventListener('click',()=>{
+    collectorPost('open-fmk-board',{url:'https://www.fmkorea.com/'});
+    setMessage('FM코리아를 열었습니다. 춘봉·콘텐츠 관련 제목을 자동 감지하며, 직접 연 공개 게시글도 자동 수집합니다.','ok');
   });
   collectorPost('ping');renderUnifiedCollectorStatus();
 }
