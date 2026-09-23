@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-23T07:45:00+09:00",
+  "updatedAt": "2026-09-23T19:36:00+09:00",
   "items": [
     {
       "id": "leopel",
@@ -489,7 +489,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-23T17:55:00+09:00",
+      "updatedAt": "2026-09-23T19:36:00+09:00",
       "series": {
         "id": "leopel",
         "title": "레오펠",
@@ -1150,7 +1150,232 @@
           "note": "최종 참여자 671명과 공개된 1~3차 입주 명단 560명의 차이 111명입니다. 현재 확인된 공개 자료만으로는 이 111명의 개별 닉네임·플랫폼·입주 차수를 확정할 수 없어 별도 미분류로 표시합니다."
         }
       ],
-      "participantCount": 671
+      "participantCount": 671,
+      "knowledgeSections": [
+        {
+          "id": "leopel-overview",
+          "kind": "overview",
+          "eyebrow": "LEOPEL ARCHIVE",
+          "title": "레오펠 한눈에 보기",
+          "description": "SOOP 공식 기록과 나무위키 공개 문서를 교차해 서버의 핵심 구조를 빠르게 파악할 수 있도록 정리했습니다.",
+          "sourceId": "source-reference",
+          "cards": [
+            {
+              "eyebrow": "PERIOD",
+              "title": "진행 기간",
+              "value": "2025.06.05 ~ 07.06 · 32일"
+            },
+            {
+              "eyebrow": "PLATFORM",
+              "title": "플랫폼",
+              "value": "SOOP · 치지직 · YouTube"
+            },
+            {
+              "eyebrow": "GENRE",
+              "title": "장르",
+              "value": "RP · 어드벤처 · 서바이벌"
+            },
+            {
+              "eyebrow": "PEOPLE",
+              "title": "최종 참여자",
+              "value": "671명"
+            }
+          ],
+          "chips": [
+            "셧다운 06:00~17:00",
+            "인텔",
+            "피씨디렉트",
+            "바삭팝콘"
+          ],
+          "flow": [],
+          "images": []
+        },
+        {
+          "id": "leopel-world-story",
+          "kind": "story",
+          "eyebrow": "WORLD & STORY",
+          "title": "세계관 · 공동 목표",
+          "description": "기억을 잃고 다른 차원 레오펠에 소환된 모험가들이 자신의 과거를 찾아가며, 파괴된 신비의 동상을 복구해 세계를 구하고 원래 세계로 돌아가는 것이 중심 축입니다.",
+          "sourceId": "source-reference",
+          "cards": [
+            {
+              "eyebrow": "STORY",
+              "title": "기억을 잃은 모험가",
+              "text": "플레이어는 지구와 다른 차원 레오펠에 소환되어 잃어버린 기억과 자신을 찾는 여정을 시작합니다."
+            },
+            {
+              "eyebrow": "GOAL",
+              "title": "신비의 동상 복원",
+              "text": "파괴된 신비의 동상을 복구하는 것이 서버 전체가 공유하는 장기 목표로 제시됩니다."
+            },
+            {
+              "eyebrow": "ENDING",
+              "title": "선택이 연결되는 결말",
+              "text": "개별 플레이와 공동 스토리의 선택이 최종 이야기와 두 가지 엔딩 구조에 연결됩니다."
+            }
+          ],
+          "chips": [],
+          "flow": [],
+          "images": [
+            {
+              "id": "leopel-world-cover",
+              "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109600/chunbong-fansite/leopel/presentation-source.jpg",
+              "alt": "레오펠 서버 발표회 대표 이미지",
+              "caption": "레오펠 서버 발표회",
+              "sourceUrl": "https://vod.sooplive.com/player/159711687",
+              "sourceId": "source-presentation-vod",
+              "layout": "wide"
+            }
+          ]
+        },
+        {
+          "id": "leopel-core-system",
+          "kind": "systems",
+          "eyebrow": "CORE SYSTEM",
+          "title": "핵심 콘텐츠 · 시스템",
+          "description": "세계관 진행과 생활·경제·성장 요소가 함께 돌아가도록 구성된 서버의 대표 시스템입니다.",
+          "sourceId": "source-reference",
+          "cards": [],
+          "chips": [
+            "신비의 동상",
+            "스토리 모험",
+            "중력의 탑",
+            "보스 던전",
+            "히든 무기",
+            "장비 강화",
+            "별풍선 · 치즈 연동",
+            "레오쿠키",
+            "레오코인",
+            "부동산 · 거주지"
+          ],
+          "flow": [],
+          "images": []
+        },
+        {
+          "id": "leopel-play-flow",
+          "kind": "flow",
+          "eyebrow": "ADVENTURE / PLAY FLOW",
+          "title": "플레이 흐름",
+          "description": "초기 적응부터 생활·경제, 스토리 모험, 공동 목표 복원과 마지막 이야기까지 이어지는 흐름입니다.",
+          "sourceId": "source-reference",
+          "cards": [],
+          "chips": [],
+          "flow": [
+            {
+              "title": "이세계 소환",
+              "text": "레오펠에 도착해 세계관과 역할을 받아들입니다."
+            },
+            {
+              "title": "튜토리얼 · 적응",
+              "text": "기본 생활과 서버 구조를 익힙니다."
+            },
+            {
+              "title": "생활 · 경제 활동",
+              "text": "재화와 거주, 성장 요소를 쌓습니다."
+            },
+            {
+              "title": "스토리 모험 · 던전",
+              "text": "중력의 탑·보스·히든 무기 등 모험 콘텐츠를 진행합니다."
+            },
+            {
+              "title": "신비의 동상 복원",
+              "text": "참가자 전체가 공유하는 공동 목표를 완성합니다."
+            },
+            {
+              "title": "마지막 콘서트 · 엔딩",
+              "text": "서버의 이야기와 선택이 최종 결말로 이어집니다."
+            }
+          ],
+          "images": []
+        },
+        {
+          "id": "leopel-major-content",
+          "kind": "content",
+          "eyebrow": "MAJOR CONTENT",
+          "title": "주요 스토리 기록",
+          "description": "서버 기간 동안 공개된 대표적인 스토리·히든 무기·공동 이벤트 기록입니다.",
+          "sourceId": "source-reference",
+          "cards": [
+            {
+              "eyebrow": "06.10",
+              "title": "천상의 하프"
+            },
+            {
+              "eyebrow": "06.15",
+              "title": "망자의 검"
+            },
+            {
+              "eyebrow": "06.18",
+              "title": "불사조의 활"
+            },
+            {
+              "eyebrow": "06.20",
+              "title": "대현자의 지팡이"
+            },
+            {
+              "eyebrow": "06.24",
+              "title": "빙결의 창"
+            },
+            {
+              "eyebrow": "06.25",
+              "title": "용기사의 창"
+            },
+            {
+              "eyebrow": "06.28",
+              "title": "바람의 글레이브"
+            },
+            {
+              "eyebrow": "07.02",
+              "title": "신비의 동상 복원"
+            },
+            {
+              "eyebrow": "07.04",
+              "title": "레오펠 마지막 콘서트"
+            }
+          ],
+          "chips": [],
+          "flow": [],
+          "images": []
+        },
+        {
+          "id": "leopel-entry-structure",
+          "kind": "records",
+          "eyebrow": "SERVER RECORDS",
+          "title": "입주 구조 · 정량 기록",
+          "description": "공개 입주 발표 자료 560명과 최종 집계 671명을 분리해 보존합니다. 차이 111명은 입주 차수·플랫폼을 확정할 근거가 부족해 추가·미분류로 표시합니다.",
+          "sourceId": "source-reference",
+          "cards": [
+            {
+              "eyebrow": "1ST",
+              "title": "1차 입주",
+              "value": "225명",
+              "text": "SOOP 140명 + 치지직·YouTube 68명 + 번외 17명"
+            },
+            {
+              "eyebrow": "2ND",
+              "title": "2차 입주",
+              "value": "171명",
+              "text": "SOOP 127명 + 치지직·YouTube 44명"
+            },
+            {
+              "eyebrow": "3RD",
+              "title": "3차 입주",
+              "value": "164명",
+              "text": "SOOP 104명 + 치지직·YouTube 60명"
+            },
+            {
+              "eyebrow": "TOTAL",
+              "title": "최종 참여자",
+              "value": "671명",
+              "text": "공개 명단 560명 + 추가·미분류 111명"
+            }
+          ],
+          "chips": [],
+          "flow": [],
+          "images": []
+        }
+      ],
+      "knowledgeSyncedAt": "2026-09-23T19:36:00+09:00"
     },
     {
       "id": "justserver-moneygame",
