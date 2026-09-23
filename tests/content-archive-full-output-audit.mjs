@@ -7,11 +7,11 @@ const core=require('../lib/chunbong-content-archive-core');
 const seed=require('../data/chunbong-contents-seed.json');
 const apiSource=fs.readFileSync(new URL('../lib/chunbong-content-archive-api.js',import.meta.url),'utf8');
 
-assert.match(apiSource,/guide-media-migration:v6-notion-namuwiki-stable-proxy/,'guide-media migration marker must be versioned for the full archive refresh');
-assert.match(apiSource,/method==='GET'&&requestUrl\.searchParams\.get\('migration'\)==='guide-media-v6'/,'one-time guide-media migration trigger missing');
+assert.match(apiSource,/guide-media-migration:v7-no-broken-namuwiki-assets/,'guide-media migration marker must be versioned for the full archive refresh');
+assert.match(apiSource,/method==='GET'&&requestUrl\.searchParams\.get\('migration'\)==='guide-media-v7'/,'one-time guide-media migration trigger missing');
 assert.match(apiSource,/await refreshGuideDocumentsOnly\(\)/,'migration must refresh source documents without a full channel history scan');
-assert.match(apiSource,/guide_media_migration_v6_complete/,'completed guide migration must be idempotent');
-assert.match(apiSource,/AUTO_LOCK_KEY\+':guide-media-v6'/,'guide migration must use an execution lock');
+assert.match(apiSource,/guide_media_migration_v7_complete/,'completed guide migration must be idempotent');
+assert.match(apiSource,/AUTO_LOCK_KEY\+':guide-media-v7'/,'guide migration must use an execution lock');
 assert.match(apiSource,/function notionRecordMapDiagnostics/,'Notion record-map diagnostics missing');
 assert.match(apiSource,/mediaDiagnostics/,'Notion source diagnostics must be returned to migration output');
 assert.match(apiSource,/permanentImageCount/,'migration output must report permanent image counts');
@@ -22,6 +22,8 @@ assert.match(apiSource,/sourceProbe/,'source media fetch diagnostics must be inc
 assert.match(apiSource,/function notionGuideImageProxyUrl/,'stable Notion guide image proxy URL helper missing');
 assert.match(apiSource,/function namuGuideImageProxyUrl/,'stable NamuWiki guide image proxy URL helper missing');
 assert.match(apiSource,/async function handleNamuGuideImage/,'NamuWiki guide image proxy handler missing');
+assert.match(apiSource,/function curatedNamuGuideAsset/,'verified NamuWiki guide asset fallback missing');
+assert.match(apiSource,/async function sourceImageAvailable/,'NamuWiki upstream availability guard missing');
 assert.match(apiSource,/async function handleNotionGuideImage/,'Notion guide image proxy handler missing');
 assert.match(apiSource,/assetState:'proxy'/,'Notion images must fall back to stable proxy state when Cloudinary is unavailable');
 
