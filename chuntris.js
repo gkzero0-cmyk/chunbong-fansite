@@ -510,10 +510,10 @@
   root.addEventListener('resize',()=>{invalidateCanvasMetrics();render();});root.addEventListener('orientationchange',()=>setTimeout(()=>{invalidateCanvasMetrics();render();},80));
   mobileViewport?.addEventListener?.('change',()=>{invalidateCanvasMetrics();lastFrameRenderAt=0;render();});
 
-  function frame(timestamp=0){const playing=game.getSnapshot().status==='playing';if(playing)game.advance(Date.now());if(playing){if(!isMobileViewport()||timestamp-lastFrameRenderAt>=MOBILE_FRAME_MS){lastFrameRenderAt=timestamp;render();}}rafId=root.requestAnimationFrame(frame);}
-  function ensureLoop(){if(!rafId)rafId=root.requestAnimationFrame(frame);}
+  function frame(timestamp=0){rafId=0;const playing=game.getSnapshot().status==='playing';if(!playing)return;game.advance(Date.now());if(!isMobileViewport()||timestamp-lastFrameRenderAt>=MOBILE_FRAME_MS){lastFrameRenderAt=timestamp;render();}rafId=root.requestAnimationFrame(frame);}
+  function ensureLoop(){if(!rafId&&game.getSnapshot().status==='playing')rafId=root.requestAnimationFrame(frame);}
 
   if(els.nickname)els.nickname.value=storageGet(NICKNAME_KEY,'');
   root.ChuntrisApp={start,startMultiplayer,pause,setMode,setDifficulty,render,loadRanking,getNickname:()=>els.nickname?.value||'',getGame:()=>game,getUiState:()=>uiState,setViewState,openUtilityModal,closeUtilityModal,openPauseMenu,continueGame,returnToStartForNewGame,showHardDropEffect,showClearEffect};
-  setReaction('idle');setViewState('start-mode');render();ensureLoop();void loadRanking(mode,difficulty);
+  setReaction('idle');setViewState('start-mode');render();void loadRanking(mode,difficulty);
 })(typeof globalThis!=='undefined'?globalThis:window);

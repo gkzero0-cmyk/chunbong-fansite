@@ -21,13 +21,69 @@
       setupReveal();
       return;
     }
+
     grid.innerHTML = items.map((item, index) => `
-      <button class="fanart-card reveal" type="button" data-fanart-index="${index}">
-        <span class="fanart-image">
-          ${item.thumb ? `<img src="${esc(proxiedImage(item.thumb))}" alt="${esc(item.title || '춘봉 팬아트')}" loading="lazy">` : `<span class="fan-placeholder">${esc(item.symbol || '✦')}</span>`}
+      <button class="fanart-card reveal" type="button" data-fanart-index="${index}" data-fanart-id="${esc(item.id || '')}">
+        <span class="fanart-image" data-fanart-thumb>
+          ${item.thumb ? `<img src="${esc(proxiedImage(item.thumb))}" alt="${esc(item.title || '춘봉 팬아트')}" loading="lazy" decoding="async">` : `<span class="fan-placeholder">${esc(item.symbol || '✦')}</span>`}
         </span>
         <span class="fanart-copy"><strong>${esc(item.title || item.caption || '춘봉 팬아트')}</strong><small>${esc(item.author || 'CHUNBONG FAN ART')}${item.date ? ` · ${esc(item.date)}` : ''}</small></span>
       </button>`).join('');
+
+    const detailUrl = id => `/api/content?type=fanart-detail&id=${encodeURIComponent(id)}`;
+    const detailPayload = async id => {
+      const key = 'fanart-detail:' + id;
+      if (window.ChunbongCache) return window.ChunbongCache.fetchJson(key, detailUrl(id), { ttl:30*60*1000 });
+      const response = await fetch(detailUrl(id), { headers:{ accept:'application/json' } });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return response.json();
+    };
+
+    const queue = [];
+    let activeThumbLoads = 0;
+    const drainThumbQueue = () => {
+      while (activeThumbLoads < 2 && queue.length) {
+        const button = queue.shift();
+        if (!button || button.dataset.fanartThumbLoading === '1' || button.querySelector('[data-fanart-thumb] img')) continue;
+        const id = String(button.dataset.fanartId || '');
+        if (!id) continue;
+        button.dataset.fanartThumbLoading = '1';
+        activeThumbLoads += 1;
+        detailPayload(id).then(detail => {
+          const src = Array.isArray(detail?.item?.images) ? detail.item.images.find(Boolean) : '';
+          const wrap = button.querySelector('[data-fanart-thumb]');
+          if (!src || !wrap || wrap.querySelector('img')) return;
+          const img = document.createElement('img');
+          img.src = proxiedImage(src);
+          img.alt = button.querySelector('strong')?.textContent || '춘봉 팬아트';
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          wrap.replaceChildren(img);
+        }).catch(()=>{}).finally(() => {
+          activeThumbLoads -= 1;
+          delete button.dataset.fanartThumbLoading;
+          drainThumbQueue();
+        });
+      }
+    };
+    const enqueueThumb = button => {
+      if (!button || button.querySelector('[data-fanart-thumb] img') || queue.includes(button)) return;
+      queue.push(button);
+      drainThumbQueue();
+    };
+    const cardsMissingThumb = $$('[data-fanart-index]', grid).filter(button => !button.querySelector('[data-fanart-thumb] img'));
+    if ('IntersectionObserver' in window) {
+      const thumbObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          thumbObserver.unobserve(entry.target);
+          enqueueThumb(entry.target);
+        });
+      }, { rootMargin:'320px 0px', threshold:0.01 });
+      cardsMissingThumb.forEach(button => thumbObserver.observe(button));
+    } else {
+      cardsMissingThumb.slice(0,4).forEach(enqueueThumb);
+    }
 
     const modalImage = $('#fanart-modal-image');
     const modalTitle = $('#fanart-modal-title');
@@ -39,8 +95,13 @@
         modalTitle.textContent = item.title || item.caption || '춘봉 팬아트';
         modalAuthor.textContent = item.author ? `by ${item.author}` : 'CHUNBONG FAN ART';
         modalLink.href = item.link || data.sources?.fanart || '#';
+        const hydrated = button.querySelector('[data-fanart-thumb] img')?.getAttribute('src') || '';
         if (item.thumb) {
           modalImage.src = proxiedImage(item.fullImage || item.thumb);
+          modalImage.alt = item.title || '춘봉 팬아트';
+          modalImage.hidden = false;
+        } else if (hydrated) {
+          modalImage.src = hydrated;
           modalImage.alt = item.title || '춘봉 팬아트';
           modalImage.hidden = false;
         } else {

@@ -8,6 +8,8 @@ const detailUrl = new URL('../lib/fanart-detail.js', import.meta.url);
 const publicDetailUrl = new URL('../lib/content-api/fanart-detail.js', import.meta.url);
 const galleryUrl = new URL('../fanart-gallery.js', import.meta.url);
 const contentApiUrl = new URL('../api/content.js', import.meta.url);
+const fanartListUrl = new URL('../lib/content-api/fanart.js', import.meta.url);
+const fanartPageUrl = new URL('../page-fanart.js', import.meta.url);
 
 assert.equal(fs.existsSync(detailUrl), true, 'fanart detail implementation must live outside the public api directory');
 assert.equal(fs.existsSync(publicDetailUrl), false, 'fanart detail must not consume an extra top-level Vercel Function');
@@ -32,9 +34,22 @@ assert.match(gallery, /fanart-gallery-prev/, 'gallery must provide a previous-im
 assert.match(gallery, /fanart-gallery-next/, 'gallery must provide a next-image control');
 assert.match(gallery, /ArrowLeft/, 'gallery must support left-arrow keyboard navigation');
 assert.match(gallery, /ArrowRight/, 'gallery must support right-arrow keyboard navigation');
+assert.match(gallery, /ChunbongCache\.fetchJson\('fanart-detail:'\+articleId/, 'gallery should reuse cached detail payloads');
+
+const fanartList = fs.readFileSync(fanartListUrl, 'utf8');
+assert.doesNotMatch(fanartList, /Promise\.all\(raw\.slice\(0,12\)[\s\S]*map\(enrich\)/, 'fanart list must not block on per-article detail enrichment');
+assert.match(fanartList, /LIST_CACHE_TTL_MS=5\*60\*1000/, 'fanart list should keep a warm runtime cache');
+
+const fanartPage = fs.readFileSync(fanartPageUrl, 'utf8');
+assert.doesNotThrow(() => new Function(fanartPage), 'fanart page runtime must remain valid JavaScript');
+assert.match(fanartPage, /IntersectionObserver/, 'fanart thumbnails should lazy hydrate near the viewport');
+assert.match(fanartPage, /activeThumbLoads < 2/, 'fanart thumbnail hydration should limit request concurrency');
+assert.match(fanartPage, /data-fanart-id=/, 'fanart cards should carry article ids for lazy detail hydration');
 
 const contentApi = fs.readFileSync(contentApiUrl, 'utf8');
 assert.match(contentApi, /type==='fanart-detail'/, 'content API must route fanart detail requests');
+assert.match(contentApi, /Vercel-CDN-Cache-Control','public, max-age=600/, 'fanart list should have an explicit Vercel CDN cache');
+assert.match(contentApi, /Vercel-CDN-Cache-Control','public, max-age=3600/, 'fanart detail should have a longer Vercel CDN cache');
 
 const content = fs.readFileSync(new URL('../content.js', import.meta.url), 'utf8');
 assert.match(content, /fanart-gallery\.js/, 'fanart page must load the gallery runtime');

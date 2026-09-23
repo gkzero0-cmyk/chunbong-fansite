@@ -159,6 +159,7 @@
     playing = true;
     root.dataset.gameStatus = 'playing';
     delete root.dataset.pauseReason;
+    ensureFrameLoop();
     return true;
   }
 
@@ -348,16 +349,26 @@
     nextNode.appendChild(img);
   }
 
+  function syncLegendImage(stage) {
+    const img = stageLegend?.querySelector(`[data-stage-image="${stage}"]`);
+    const meta = Core.STAGES[Number(stage) - 1];
+    if (!img || !meta || !images.has(Number(stage))) return;
+    if (!img.getAttribute('src')) img.src = meta.image;
+    img.hidden = false;
+  }
+
   function buildLegend() {
     const fragment = document.createDocumentFragment();
     for (const meta of Core.STAGES) {
       const figure = document.createElement('figure');
       const img = document.createElement('img');
-      img.src = meta.image;
+      img.dataset.stageImage = String(meta.id);
       img.alt = '';
       img.loading = 'lazy';
       img.decoding = 'async';
       img.fetchPriority = 'low';
+      if (images.has(meta.id)) img.src = meta.image;
+      else img.hidden = true;
       const caption = document.createElement('figcaption');
       caption.textContent = `${meta.id}단계`;
       figure.append(img, caption);
@@ -528,13 +539,22 @@
     drawPreview();
   }
 
+  function ensureFrameLoop() {
+    if (!frameId && playing) frameId = requestAnimationFrame(tick);
+  }
+
   function tick(nowMs) {
+    frameId = null;
+    if (!playing) {
+      render();
+      return;
+    }
     const delta = Math.min(32, Math.max(8, nowMs - lastFrameAt));
     lastFrameAt = nowMs;
-    if (playing) Matter.Engine.update(engine, delta);
+    Matter.Engine.update(engine, delta);
     evaluateDanger(nowMs);
     render();
-    frameId = requestAnimationFrame(tick);
+    if (playing) frameId = requestAnimationFrame(tick);
   }
 
   function initWorld() {
@@ -572,6 +592,8 @@
     playing = autoStart;
     setView(autoStart ? 'playing' : 'start');
     updateHud();
+    render();
+    if (autoStart) ensureFrameLoop();
   }
 
   function startGameWithSound() {
@@ -684,6 +706,7 @@
       img.onload = () => {
         images.set(meta.id, img);
         setStageCollisionScale(meta.id,measureVisibleCollisionScale(img));
+        syncLegendImage(meta.id);
         imageLoads.delete(meta.id);
         resolve(img);
       };
@@ -703,20 +726,26 @@
     return loadStageImage(meta).catch(() => null);
   }
 
+  function scheduleIdle(task, timeout = 1800) {
+    if ('requestIdleCallback' in window) window.requestIdleCallback(task, { timeout });
+    else setTimeout(task, Math.min(500, timeout));
+  }
+
   function warmRemainingImages() {
-    const warm = () => {
-      void Promise.allSettled(Core.STAGES.slice(5).map(meta => loadStageImage(meta)));
+    const pending = Core.STAGES.filter(meta => !images.has(meta.id));
+    const warmBatch = async () => {
+      const batch = pending.splice(0, 2);
+      if (!batch.length) return;
+      await Promise.allSettled(batch.map(meta => loadStageImage(meta)));
+      if (pending.length) scheduleIdle(warmBatch, 2200);
     };
-    if ('requestIdleCallback' in window) {
-      window.requestIdleCallback(warm, { timeout: 1800 });
-    } else {
-      setTimeout(warm, 350);
-    }
+    scheduleIdle(warmBatch, 1600);
   }
 
   async function preloadImages() {
     try {
-      await Promise.all(Core.STAGES.slice(0, 5).map(meta => loadStageImage(meta)));
+      const requiredStages = [...new Set([1, 2, currentStage, nextStage])];
+      await Promise.all(requiredStages.map(stage => loadStageImage(Core.STAGES[stage - 1])));
       startButton.disabled = false;
       if (restartButton) restartButton.disabled = false;
       buildLegend();
@@ -733,8 +762,7 @@
   syncAudioControls();
   resetGame({ autoStart: false });
   preloadImages();
-  void loadRanking();
-  if (!frameId) frameId = requestAnimationFrame(tick);
+  scheduleIdle(()=>void loadRanking(), 1200);
 
   globalThis.ChunbakGame = Object.freeze({
     createPiece,

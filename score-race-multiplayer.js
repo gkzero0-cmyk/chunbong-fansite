@@ -209,15 +209,16 @@
     }
   }
   async function refresh(){
-    if(!client.code)return;
+    if(!client.code||refreshInFlight)return;
+    refreshInFlight=true;
     try{
       const data=await client.refresh();render(data.room);handleRoom(data.room);
     }catch(error){
       if(error.status===404||error.status===403){client.clear();saveSession();render(null);stopTimers();}
       message(errorMessage(error),true);
-    }
+    }finally{refreshInFlight=false;}
   }
-  function startPolling(){if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(refresh,700);void refresh();}
+  function startPolling(){if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(refresh,1000);void refresh();}
   async function finishLocal(){
     if(localFinished)return;
     localFinished=true;
@@ -233,16 +234,19 @@
   function startProgress(room){
     if(progressTimer)clearInterval(progressTimer);
     const sync=async()=>{
+      if(progressInFlight)return;
       const snap=config.snapshot();
       const remaining=Math.max(0,raceEndAt-serverNow());
       updateClock();
       if(snap.terminal||remaining<=0){await finishLocal();return;}
+      progressInFlight=true;
       try{
         const data=await client.progress({score:snap.score,lines:snap.secondary,timeMs:Math.max(0,120000-remaining),status:'playing'});
         render(data.room);handleRoom(data.room);
       }catch(error){message(errorMessage(error),true);}
+      finally{progressInFlight=false;}
     };
-    progressTimer=setInterval(sync,650);void sync();
+    progressTimer=setInterval(sync,1000);void sync();
   }
   function handleRoom(room){
     if(!room)return;
