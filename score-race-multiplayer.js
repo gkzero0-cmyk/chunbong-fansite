@@ -217,7 +217,7 @@
       message(errorMessage(error),true);
     }
   }
-  function startPolling(){if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(refresh,700);void refresh();}
+  function startPolling(){if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(refresh,1200);void refresh();}
   async function finishLocal(){
     if(localFinished)return;
     localFinished=true;
@@ -242,7 +242,7 @@
         render(data.room);handleRoom(data.room);
       }catch(error){message(errorMessage(error),true);}
     };
-    progressTimer=setInterval(sync,650);void sync();
+    progressTimer=setInterval(sync,1000);void sync();
   }
   function handleRoom(room){
     if(!room)return;
