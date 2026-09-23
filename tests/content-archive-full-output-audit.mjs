@@ -7,11 +7,11 @@ const core=require('../lib/chunbong-content-archive-core');
 const seed=require('../data/chunbong-contents-seed.json');
 const apiSource=fs.readFileSync(new URL('../lib/chunbong-content-archive-api.js',import.meta.url),'utf8');
 
-assert.match(apiSource,/guide-media-migration:v9-canonical-namuwiki-browser/,'guide-media migration marker must be versioned for the full archive refresh');
-assert.match(apiSource,/method==='GET'&&requestUrl\.searchParams\.get\('migration'\)==='guide-media-v9'/,'one-time guide-media migration trigger missing');
+assert.match(apiSource,/guide-media-migration:v10-canonical-namuwiki-purge-mirrors/,'guide-media migration marker must be versioned for the full archive refresh');
+assert.match(apiSource,/method==='GET'&&requestUrl\.searchParams\.get\('migration'\)==='guide-media-v10'/,'one-time guide-media migration trigger missing');
 assert.match(apiSource,/await refreshGuideDocumentsOnly\(\)/,'migration must refresh source documents without a full channel history scan');
-assert.match(apiSource,/guide_media_migration_v9_complete/,'completed guide migration must be idempotent');
-assert.match(apiSource,/AUTO_LOCK_KEY\+':guide-media-v9'/,'guide migration must use an execution lock');
+assert.match(apiSource,/guide_media_migration_v10_complete/,'completed guide migration must be idempotent');
+assert.match(apiSource,/AUTO_LOCK_KEY\+':guide-media-v10'/,'guide migration must use an execution lock');
 assert.match(apiSource,/function notionRecordMapDiagnostics/,'Notion record-map diagnostics missing');
 assert.match(apiSource,/mediaDiagnostics/,'Notion source diagnostics must be returned to migration output');
 assert.match(apiSource,/permanentImageCount/,'migration output must report permanent image counts');
@@ -23,6 +23,7 @@ assert.match(apiSource,/function notionGuideImageProxyUrl/,'stable Notion guide 
 assert.match(apiSource,/source_meta_namuwiki_browser_required/,'canonical NamuWiki browser-required state missing');
 assert.match(apiSource,/function normalizeNamuBrowserImportPayload/,'canonical NamuWiki browser import normalizer missing');
 assert.match(apiSource,/function applyNamuBrowserImportToItem/,'canonical NamuWiki browser import merger missing');
+assert.match(apiSource,/function sanitizeStoredNamuGuideRows/,'legacy Namu image purge helper missing');
 assert.match(apiSource,/hostname!==['\"]i\.namu\.wiki['\"]/,'NamuWiki browser import must only accept the official image CDN');
 assert.match(apiSource,/async function handleNotionGuideImage/,'Notion guide image proxy handler missing');
 assert.match(apiSource,/assetState:'proxy'/,'Notion images must fall back to stable proxy state when Cloudinary is unavailable');
