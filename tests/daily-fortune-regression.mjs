@@ -9,7 +9,7 @@ const sw = read('service-worker.js');
 
 assert.doesNotThrow(() => new Function(js), 'daily fortune runtime must remain valid JavaScript');
 assert.match(home, /href="daily-fortune\.css\?v=6"/, 'home daily fortune CSS missing');
-assert.match(home, /src="daily-fortune\.js\?v=8"/, 'home daily fortune runtime missing');
+assert.match(home, /src="daily-fortune\.js\?v=9"/, 'home daily fortune runtime missing');
 assert.match(js, /timeZone: SEOUL_TZ/, 'daily fortune must use the Seoul timezone');
 assert.match(js, /const STORAGE_KEY = 'chunbong-daily-fortune-v1'/, 'daily fortune storage key missing');
 assert.match(js, /parsed\?\.date !== today/, 'stored result must expire on the next KST date');
@@ -80,5 +80,9 @@ assert.doesNotMatch(js,/cardButton\.disabled = true/,'daily fortune must never u
 assert.match(js,/cardButton\.setAttribute\('aria-disabled', locked \? 'true' : 'false'\)/,'daily fortune logical lock must remain accessible');
 assert.match(js,/window\.addEventListener\('pageshow',[\s\S]*event\.persisted/,'BFCache restores must repair the daily fortune UI');
 assert.match(js,/const recoverIdleState = \(\) =>/,'opening the fortune dialog must reconcile stale browser state');
+assert.match(js,/stage\.addEventListener\('pointerdown',[\s\S]*cardButton\.disabled = false/,'stage pointerdown must repair a stale native disabled flag before release');
+assert.match(js,/stage\.addEventListener\('pointerup',[\s\S]*startDraw\(\)/,'stage pointerup must start the draw without depending on button click delivery');
+assert.match(js,/cardButton\.addEventListener\('click',[\s\S]*event\.detail === 0/,'button click must remain as keyboard and assistive-tech fallback');
+assert.match(js,/pointerActivationSafe: true/,'runtime diagnostics must expose the pointer activation safety fix');
 assert.match(js,/if \(state\) \{\s*renderState\(false\);\s*return;\s*\}/,'a saved same-day result must recover to the revealed state instead of ignoring clicks');
 assert.match(js,/A single clear wind-chime strike/,'result reveal must use the refined wind-chime direction');
