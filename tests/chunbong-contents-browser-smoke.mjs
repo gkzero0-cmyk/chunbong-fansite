@@ -44,7 +44,15 @@ const items=[
     series:{id:'justserver',title:'그냥서버',subtitle:'마인크래프트 서버 시리즈',description:'그냥서버 시즌 기록',order:10,cover:{src:'/assets/chunbong-contents/justserver-moneygame-cover.svg',alt:'그냥서버'}},
     startDate:'2026',endDate:'2026',datePrecision:'year',summary:'적자생존 기록',description:'적자생존 소개',
     heroImage:{src:'/assets/chunbong-contents/justserver-survival-cover.svg',alt:'적자생존'},participants:[],sourceCount:1,timeline:[],media:[],gallery:[],
+    results:[{title:'서버 규칙',value:'비방 플레이와 생산 활동, 자동화, 장비 사용, 입장 순서 등 길이가 긴 규칙 설명은 결과 카드 한 칸에 억지로 압축하지 않고 전체 폭으로 표시합니다.'}],
     sources:[{id:'js1',kind:'official',label:'SOOP 공식',url:'https://www.sooplive.com/station/chunbongtv'}]
+  },
+  {
+    id:'justserver-diamond',title:'그냥서버 : 다이아',aliases:['다이아'],category:'minecraft',role:'주최',status:'ended',
+    series:{id:'justserver',title:'그냥서버',subtitle:'마인크래프트 서버 시리즈',description:'그냥서버 시즌 기록',order:10,cover:{src:'/assets/chunbong-contents/justserver-moneygame-cover.svg',alt:'그냥서버'}},
+    startDate:'2026-04-09',endDate:'2026-04-16',datePrecision:'day',summary:'다이아 기록',description:'다이아 소개',
+    heroImage:{src:'/assets/chunbong-contents/justserver-diamond-cover.svg',alt:'다이아'},participants:[],sourceCount:1,timeline:[],media:[],gallery:[],
+    sources:[{id:'jd1',kind:'official',label:'SOOP 공식',url:'https://www.sooplive.com/station/chunbongtv'}]
   }
 ];
 ;
@@ -123,17 +131,29 @@ try{
     }));
     assert.ok(criticalOpacity.hero>.5&&criticalOpacity.series>.5&&criticalOpacity.toolbar>.5,'critical archive sections must not stay transparent');
 
-    assert.equal(await page.locator('.archive-card').count(),5,'desktop should render archive cards');
-    assert.match((await page.locator('[data-archive-count]').textContent())||'',/전체 5개/);
-    assert.equal(await page.locator('.archive-series-card').count(),3,'series home should group five records into three series');
+    assert.equal(await page.locator('.archive-card').count(),6,'desktop should render archive cards');
+    assert.match((await page.locator('[data-archive-count]').textContent())||'',/전체 6개/);
+    assert.equal(await page.locator('.archive-series-card').count(),3,'series home should group six records into three series');
+    const seriesBoxes=await page.locator('.archive-series-card').evaluateAll(nodes=>nodes.map(node=>{const r=node.getBoundingClientRect();return{x:Math.round(r.x),y:Math.round(r.y),width:Math.round(r.width)}}));
+    assert.equal(new Set(seriesBoxes.map(row=>row.y)).size,1,'desktop series cards should stay on one row when three series are present');
+    assert.ok(Math.max(...seriesBoxes.map(row=>row.width))-Math.min(...seriesBoxes.map(row=>row.width))<=2,'desktop series cards should use equal widths');
+    const cardTitleHeights=await page.locator('.archive-card-copy h2').evaluateAll(nodes=>nodes.map(node=>Math.round(node.getBoundingClientRect().height)));
+    assert.ok(Math.max(...cardTitleHeights)-Math.min(...cardTitleHeights)<=1,'archive list card titles should reserve the same two-line height');
     await page.locator('[data-archive-series-open="justserver"]').click();
     await page.waitForURL(/series=justserver/);
-    assert.equal(await page.locator('.archive-card').count(),2,'그냥서버 시리즈에는 머니게임과 적자생존 두 시즌만 보여야 합니다');
-    assert.equal(await page.locator('.archive-series-child-links [data-archive-open]').count(),2,'그냥서버 시리즈 랜딩에 두 시즌 바로가기가 있어야 합니다');
+    assert.equal(await page.locator('.archive-card').count(),3,'그냥서버 시리즈에는 다이아·머니게임·적자생존 세 시즌이 보여야 합니다');
+    assert.equal(await page.locator('.archive-series-child-links [data-archive-open]').count(),3,'그냥서버 시리즈 랜딩에 세 시즌 바로가기가 있어야 합니다');
     await page.locator('.archive-series-child-links [data-archive-open="justserver-survival"]').click();
     await page.waitForURL(/id=justserver-survival/);
     await page.locator('.archive-sibling-series-nav').waitFor({state:'visible'});
-    assert.equal(await page.locator('.archive-sibling-series-nav [data-archive-sibling]').count(),2,'그냥서버 상세에서 시즌 간 전환이 가능해야 합니다');
+    assert.equal(await page.locator('.archive-sibling-series-nav [data-archive-sibling]').count(),3,'그냥서버 상세에서 세 시즌 간 전환이 가능해야 합니다');
+    const siblingBoxes=await page.locator('.archive-sibling-series-nav [data-archive-sibling]').evaluateAll(nodes=>nodes.map(node=>{const r=node.getBoundingClientRect();return{x:Math.round(r.x),y:Math.round(r.y),width:Math.round(r.width)}}));
+    assert.equal(new Set(siblingBoxes.map(row=>row.y)).size,1,'그냥서버 세 시즌 전환 버튼은 데스크톱에서 한 줄이어야 합니다');
+    assert.ok(Math.max(...siblingBoxes.map(row=>row.width))-Math.min(...siblingBoxes.map(row=>row.width))<=2,'그냥서버 세 시즌 전환 버튼은 동일 폭이어야 합니다');
+    const summaryColumns=await page.locator('.archive-summary-grid').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length);
+    assert.equal(summaryColumns,3,'상세 상단 6개 요약 카드는 데스크톱에서 3x2로 정렬되어야 합니다');
+    const recordColumns=await page.locator('.archive-record-strip').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length);
+    assert.equal(recordColumns,3,'소개 기록 6개 카드도 데스크톱에서 3x2로 정렬되어야 합니다');
     const justserverTitle=await page.locator('.archive-detail-copy.is-justserver h1').evaluate(el=>{
       const style=getComputedStyle(el),lineHeight=parseFloat(style.lineHeight)||parseFloat(style.fontSize);
       return {whiteSpace:style.whiteSpace,scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,height:el.getBoundingClientRect().height,lineHeight,fontSize:parseFloat(style.fontSize)};
@@ -142,6 +162,8 @@ try{
     assert.ok(justserverTitle.scrollWidth<=justserverTitle.clientWidth+1,'가장 긴 적자생존 제목도 상세 카드 너비 안에 들어와야 합니다');
     assert.ok(justserverTitle.height<=justserverTitle.lineHeight*1.25,'그냥서버 상세 제목이 두 줄 높이로 늘어나면 안 됩니다');
     assert.ok(justserverTitle.fontSize<=46.5,'그냥서버 시즌 제목은 세 시즌이 공유하는 통일 크기를 사용해야 합니다');
+    await page.locator('[data-archive-tab="people"]').click();
+    assert.equal(await page.locator('.archive-result-card.is-wide').count(),1,'길이가 긴 결과 설명은 전체 폭 카드로 표시되어야 합니다');
     await page.locator('[data-archive-back]').click();
     await page.waitForFunction(()=>!document.querySelector('[data-archive-browser]')?.hidden);
     await page.locator('[data-archive-series-back]').click();
@@ -152,7 +174,7 @@ try{
     assert.match((await page.locator('.archive-card h2').textContent())||'',/레오펠/);
 
     await page.locator('[data-archive-reset]').first().click();
-    assert.equal(await page.locator('.archive-card').count(),5,'reset should restore results');
+    assert.equal(await page.locator('.archive-card').count(),6,'reset should restore results');
     await page.locator('[data-archive-category]').selectOption('song');
     assert.equal(await page.locator('.archive-card').count(),2,'song category should show both 싸이감성 editions');
     assert.equal(await page.locator('.archive-card h2').count(),2,'싸이감성 1·2회가 각각 카드로 보여야 합니다');
@@ -168,6 +190,9 @@ try{
     await page.waitForURL(/id=psy-emotion-song-contest-2/);
     await page.locator('.archive-sibling-series-nav').waitFor({state:'visible'});
     assert.equal(await page.locator('.archive-sibling-series-nav [data-archive-sibling]').count(),2,'싸이감성 상세에서 1회와 2회를 바로 전환할 수 있어야 합니다');
+    const longDetailTitle=await page.locator('.archive-detail-copy.is-title-long h1').evaluate(el=>({scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,whiteSpace:getComputedStyle(el).whiteSpace}));
+    assert.equal(longDetailTitle.whiteSpace,'nowrap','긴 일반 상세 제목도 데스크톱에서는 한 줄 규격을 사용해야 합니다');
+    assert.ok(longDetailTitle.scrollWidth<=longDetailTitle.clientWidth+1,'싸이감성 상세 제목이 카드 밖으로 넘치면 안 됩니다');
     await page.locator('[data-archive-back]').click();
     await page.waitForFunction(()=>!document.querySelector('[data-archive-browser]')?.hidden);
     await page.locator('[data-archive-series-back]').click();
@@ -206,7 +231,7 @@ try{
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
     await installApi(page);
     await page.goto(base+'/chunbong-contents.html',{waitUntil:'networkidle'});
-    assert.equal(await page.locator('.archive-card').count(),5,'mobile should render archive cards');
+    assert.equal(await page.locator('.archive-card').count(),6,'mobile should render archive cards');
     await assertNoHorizontalOverflow(page,'mobile list');
 
     const boxes=await page.locator('.archive-card').evaluateAll(nodes=>nodes.map(node=>{
