@@ -14,7 +14,9 @@
       "test/*": false,
       "hotfix/*": false,
       "main": true,
-      "internal/*": false
+      "internal/*": false,
+      "feature/*": false,
+      "perf/*": false
     }
   },
   "headers": [
