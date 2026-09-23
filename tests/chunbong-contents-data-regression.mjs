@@ -6,7 +6,14 @@ const require=createRequire(import.meta.url);
 const {normalizeArchiveItem,validateArchiveItem,formatArchiveDate,toPublicArchiveItem}=require('../lib/chunbong-content-archive-core.js');
 const autoIngest=require('../lib/chunbong-content-auto-ingest.js');
 const archiveMedia=require('../lib/content-archive-media.js');
+const archiveApi=require('../lib/chunbong-content-archive-api.js');
 assert.deepEqual(archiveMedia.cloudinaryConfig({CLOUDINARY_URL:'cloudinary://key:secret@demo'}),{cloudName:'demo',apiKey:'key',apiSecret:'secret'},'Cloudinary URL 설정을 자동 이미지 영구화 파이프라인에서 읽어야 합니다');
+const namuSample=`<h2>세계관</h2><p>레오펠 세계관 설명</p><img src="https://example.com/leopel-map.png" alt="레오펠 전체 지도.png"><h2>핵심 시스템</h2><p>신비의 동상과 모험 시스템</p><img src="https://example.com/icon.png" alt="일반 아이콘.png">`;
+const parsedNamu=archiveApi._internals.namuWikiStructuredSections(namuSample,'https://namu.wiki/w/%EB%A0%88%EC%98%A4%ED%8E%A0');
+assert.equal(parsedNamu[0]?.title,'세계관','나무위키 heading을 지식형 가이드 section으로 유지해야 합니다');
+assert.equal(parsedNamu[0]?.images?.length,1,'레오펠 설명에 필요한 문맥 이미지만 섹션에 연결해야 합니다');
+assert.equal(parsedNamu[0]?.images?.[0]?.filename,'레오펠 전체 지도.png','나무위키 이미지 파일명과 문맥을 보존해야 합니다');
+assert.equal(parsedNamu[1]?.images?.length,0,'무관한 UI/아이콘 이미지는 지식형 가이드에서 제외해야 합니다');
 
 const monthOnly=normalizeArchiveItem({
   id:'sample',title:'샘플',category:'minecraft',role:'주최',status:'ended',
