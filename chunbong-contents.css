@@ -603,3 +603,15 @@ button.archive-series-poster{cursor:zoom-in}
 .archive-guide-image-fallback{display:grid;place-items:center;min-height:120px;padding:18px;color:var(--text-muted,#aaa29b);font-size:10px;line-height:1.55;text-align:center}
 .archive-guide-image .archive-normalized-media.is-fallback{background:linear-gradient(145deg,#171513,#101010)}
 [data-theme="light"] .archive-guide-image .archive-normalized-media.is-fallback{background:#fff8f3}
+
+/* 2026-09-23 · unified Notion / NamuWiki document guide */
+.archive-document-wrapper{display:grid;gap:15px;margin-top:22px;padding-top:20px;border-top:1px solid #272727}
+.archive-document-guide{display:grid;gap:12px}.archive-document-guide>.archive-subheading{margin-top:0}.archive-document-guide>.archive-subheading p{max-width:820px;margin:7px 0 0;color:var(--text-muted,#aaa29b);font-size:10px;line-height:1.65}
+.archive-guide-text{margin:0;color:var(--text-secondary,#d1cbc5);font-size:12px;line-height:1.8;white-space:normal}
+.archive-guide-images.is-triple{grid-template-columns:repeat(3,minmax(0,1fr))}
+.archive-guide-image{position:relative}
+.archive-guide-image-fallback{display:grid;place-items:center;width:100%;min-height:120px;padding:18px;color:var(--text-muted,#aaa29b);font-size:10px;line-height:1.55;text-align:center;background:#131313}
+.archive-notion-content{display:grid;gap:11px;margin-top:9px}.archive-notion-content>.archive-guide-images{margin-top:0}.archive-notion-content>.archive-guide-text{margin:0}
+[data-theme="light"] .archive-guide-image-fallback{background:#fff8f3}
+@media(max-width:900px){.archive-guide-images.is-triple{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.archive-guide-images.is-triple{grid-template-columns:1fr}}
