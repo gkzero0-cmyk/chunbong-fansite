@@ -358,6 +358,14 @@
       }, kind === 'stop' ? 850 : 1450);
     };
 
+    const setCardInteractionLocked = locked => {
+      // Never rely on native disabled for the draw lifecycle. A disabled button can
+      // survive interrupted/BFCache states and then cannot emit the click needed to recover.
+      cardButton.disabled = false;
+      cardButton.setAttribute('aria-disabled', locked ? 'true' : 'false');
+      cardButton.dataset.drawLocked = locked ? '1' : '0';
+    };
+
     const activeDrawState = () => pendingState || state;
 
     const fillResult = (targetState = activeDrawState()) => {
@@ -401,7 +409,7 @@
       if (!state || !fillResult(state)) {
         pendingState = null;
         drawing = false;
-        cardButton.disabled = false;
+        setCardInteractionLocked(false);
         dialog.classList.remove('has-result','is-bursting','is-spinning','is-revealing');
         stage.classList.remove('is-spinning','is-interactive');
         cardButton.classList.remove('is-revealed');
@@ -413,7 +421,7 @@
       dialog.classList.remove('is-spinning');
       dialog.classList.add('has-result');
       cardButton.classList.add('is-revealed');
-      cardButton.disabled = true;
+      setCardInteractionLocked(true);
       result.hidden = false;
       stage.classList.add('is-interactive');
       drawing = false;
@@ -431,13 +439,13 @@
         stage.classList.remove('is-spinning','is-interactive');
         cardButton.classList.remove('is-revealed');
         result.hidden = true;
-        cardButton.disabled = false;
+        setCardInteractionLocked(false);
         cardButton.setAttribute('aria-label','오늘의 타로 카드 한 장 뽑기');
         return;
       }
 
       if (!fillResult(targetState)) throw new Error('daily_fortune_result_render_failed');
-      cardButton.disabled = true;
+      setCardInteractionLocked(true);
 
       if (!animate || reducedMotion()) {
         if (pendingState) commitPendingState();
@@ -488,6 +496,7 @@
         result.hidden = false;
         dialog.classList.add('has-result');
         stage.classList.add('is-interactive');
+        setCardInteractionLocked(true);
         drawing = false;
         clearDrawFailsafe();
       }, RESULT_MS);
@@ -499,9 +508,17 @@
       }, 4550);
     };
 
+    const recoverIdleState = () => {
+      if (drawing) return;
+      clearDrawFailsafe();
+      pendingState = null;
+      state = readState();
+      renderState(false);
+    };
+
     const openDialog = () => {
       hideLauncher();
-      if (!drawing) renderState(false);
+      recoverIdleState();
       if (!dialog.open) dialog.showModal();
     };
 
@@ -527,7 +544,7 @@
       } catch (_) {
         pendingState = null;
         drawing = false;
-        cardButton.disabled = false;
+        setCardInteractionLocked(false);
         try { audioCtx?.close?.(); } catch (_) {}
         renderState(false);
       }
@@ -590,6 +607,17 @@
       if (event.target === dialog) closeDialog();
     });
 
+    window.addEventListener('pageshow', event => {
+      if (!event.persisted) return;
+      clearDrawFailsafe();
+      animationRun += 1;
+      drawing = false;
+      pendingState = null;
+      state = readState();
+      renderState(false);
+      if (!dialog.open) showLauncher();
+    });
+
     if (state) {
       showLauncher();
     } else {
@@ -618,7 +646,7 @@
     }
   }
 
-  window.CHUNBONG_DAILY_FORTUNE = { STORAGE_KEY, kstDate, artworkUrl, readState, writeState, cards: CARDS.map(row => row[0]) };
+  window.CHUNBONG_DAILY_FORTUNE = { STORAGE_KEY, kstDate, artworkUrl, readState, writeState, cards: CARDS.map(row => row[0]), nativeDisableSafe: true };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();
