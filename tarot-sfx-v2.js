@@ -110,11 +110,13 @@ function createEnhancedTarotSoundController(storage = globalThis.localStorage, A
   };
 
   const hoverAura = () => {
-    // Crystal-prism entry: airy and restrained, never repeated on pointer movement.
-    tone(164.8, 0.70, 0.016, 0, 'sine');
-    tone(329.6, 0.78, 0.011, 0.045, 'triangle');
-    tone(493.9, 0.86, 0.007, 0.12, 'sine');
-    tone(987.8, 0.34, 0.0035, 0.17, 'sine');
+    // Refined glass-halo entry: clear, delicate and intentionally non-piano-like.
+    // Inharmonic partials create a thin crystal resonance without a melodic chord.
+    tone(945, 0.60, 0.0100, 0.000, 'sine');
+    tone(1313, 0.64, 0.0066, 0.012, 'sine');
+    tone(1777, 0.68, 0.0042, 0.020, 'triangle');
+    tone(2400, 0.58, 0.0024, 0.032, 'sine');
+    tone(2940, 0.48, 0.0014, 0.046, 'sine');
   };
 
   const cardSpread = () => {
