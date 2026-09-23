@@ -217,10 +217,10 @@ function resultCardClass(row={}){
   return title.length>=18||value.length>=52?' is-wide':'';
 }
 function guideSourceRows(item){
-  const notion=notionGuideRows(item).map(row=>({title:row.title||row.pageTitle||'가이드',text:row.text||'',pageTitle:row.pageTitle||'Notion',kind:'notion'}));
+  const documents=documentGuideRows(item).map(row=>({title:row.title||row.pageTitle||'가이드',text:row.text||'',pageTitle:row.pageTitle||guideProviderLabel(row.provider),kind:row.provider||'document'}));
   const records=resultRows(item).map(row=>({title:row.title||row.label||'기록',text:String(row.value||row.name||''),pageTitle:'구조화 기록',kind:'record'}));
   const seen=new Set(),rows=[];
-  for(const row of [...notion,...records]){
+  for(const row of [...documents,...records]){
     const key=(row.title+'\n'+row.text).replace(/\s+/g,' ').toLowerCase();if(!key||seen.has(key))continue;seen.add(key);rows.push(row);
   }
   return rows;
@@ -279,18 +279,27 @@ function renderJustserverKnowledge(item,{compact=false}={}){
   </section>`;
 }
 function renderNotionPreview(item){
-  const rows=notionGuideRows(item).slice(0,6);
+  const allRows=documentGuideRows(item),rows=allRows.slice(0,6);
   if(!rows.length&&isJustserver(item))return renderJustserverKnowledge(item,{compact:true});
   if(!rows.length)return'';
-  return `<section class="archive-notion-preview"><div class="archive-section-heading"><div><small>NOTION GUIDE</small><h3>기획 · 시스템 가이드</h3><p>연결된 공개 Notion의 본문을 자동 수집해 핵심 섹션을 정리합니다.</p></div><span>${notionGuideRows(item).length}개</span></div>${renderJustserverKnowledge(item,{compact:true})}<div class="archive-notion-preview-grid">${rows.map(row=>`<article><small>${escapeHtml(row.pageTitle||'Notion')}</small><strong>${escapeHtml(row.title||'가이드')}</strong>${row.text?`<p>${escapeHtml(String(row.text||'').replace(/\s+/g,' ').slice(0,180))}${String(row.text||'').length>180?'…':''}</p>`:''}${notionImagesMarkup(row)}</article>`).join('')}</div></section>`;
+  return `<section class="archive-notion-preview"><div class="archive-section-heading"><div><small>KNOWLEDGE GUIDE</small><h3>기획 · 시스템 가이드</h3><p>연결된 원문 문서의 텍스트와 이미지를 같은 구조 안에서 자동 정리합니다.</p></div><span>${allRows.length}개</span></div>${renderJustserverKnowledge(item,{compact:true})}<div class="archive-notion-preview-grid">${rows.map(row=>`<article><small>${escapeHtml(guideProviderLabel(row.provider))} · ${escapeHtml(row.pageTitle||'가이드')}</small><strong>${escapeHtml(row.title||'가이드')}</strong>${row.text?`<p>${escapeHtml(String(row.text||'').replace(/\s+/g,' ').slice(0,180))}${String(row.text||'').length>180?'…':''}</p>`:''}${notionImagesMarkup(row)}</article>`).join('')}</div></section>`;
+}
+function renderDocumentSections(item){
+  const rows=documentGuideRows(item);if(!rows.length)return'';
+  const groups=new Map();
+  for(const row of rows){
+    const key=(row.provider||'document')+'::'+(row.pageTitle||guideProviderLabel(row.provider));
+    if(!groups.has(key))groups.set(key,{provider:row.provider||'document',pageTitle:row.pageTitle||guideProviderLabel(row.provider),sections:[]});
+    groups.get(key).sections.push(row);
+  }
+  return `<section class="archive-document-guide"><div class="archive-subheading"><small>DOCUMENT KNOWLEDGE</small><h3>이미지 포함 상세 가이드</h3><p>원문 섹션과 이미지의 연결 관계를 유지하고, 큰 이미지는 넓게·연속 스크린샷은 갤러리로 표시합니다.</p></div><div class="archive-notion-groups">${[...groups.values()].map((group,groupIndex)=>`<details class="archive-notion-group" ${groupIndex===0?'open':''}><summary><span><small>${escapeHtml(guideProviderLabel(group.provider))}</small><strong>${escapeHtml(group.pageTitle)}</strong></span><b>${group.sections.length}개 섹션</b></summary><div class="archive-notion-sections">${group.sections.map(section=>`<article data-guide-provider="${escapeHtml(section.provider||group.provider)}"><small>${escapeHtml(guideProviderLabel(section.provider||group.provider))}</small><h3>${escapeHtml(section.title||'본문')}</h3>${guideContentMarkup(section)}</article>`).join('')}</div></details>`).join('')}</div></section>`;
 }
 function renderNotionGuide(item){
-  const rows=notionGuideRows(item);
-  const groups=new Map();
-  for(const row of rows){const key=row.pageTitle||'Notion 가이드';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(row)}
-  const synced=item.notionSyncedAt?String(item.notionSyncedAt).slice(0,10):'';
-  const details=rows.length?`<div class="archive-notion-groups">${[...groups.entries()].map(([pageTitle,sections],groupIndex)=>`<details class="archive-notion-group" ${groupIndex===0?'open':''}><summary><span><small>NOTION PAGE</small><strong>${escapeHtml(pageTitle)}</strong></span><b>${sections.length}개 섹션</b></summary><div class="archive-notion-sections">${sections.map(section=>`<article><small>${escapeHtml(section.pageTitle||'Notion')}</small><h3>${escapeHtml(section.title||'본문')}</h3>${section.text?`<p>${notionTextMarkup(section.text)}</p>`:''}${notionImagesMarkup(section)}</article>`).join('')}</div></details>`).join('')}</div>`:'<p class="archive-notion-wait">연결된 Notion 자료는 다음 자동 동기화에서 세부 섹션이 추가됩니다. 현재 확인된 구조화 기록은 먼저 표시합니다.</p>';
-  return `<div class="archive-panel archive-notion-panel"><div class="archive-section-heading"><div><small>NOTION ARCHIVE</small><h2>기획 · 시스템 가이드</h2><p>머니게임을 기준 레이아웃으로 삼아 다이아·적자생존에도 같은 디자인 시스템을 적용합니다.</p></div><span>${rows.length?rows.length+'개'+(synced?' · '+escapeHtml(formatDate(synced,'day')):''):'자동 수집'}</span></div>${renderJustserverKnowledge(item,{compact:false})}${details}</div>`;
+  const notionCount=notionGuideRows(item).length,referenceCount=referenceGuideRows(item).length;
+  const synced=item.notionSyncedAt||item.referenceSyncedAt?String(item.notionSyncedAt||item.referenceSyncedAt).slice(0,10):'';
+  const total=notionCount+referenceCount;
+  const empty=!total?'<p class="archive-notion-wait">연결된 원문 자료는 다음 자동 동기화에서 세부 섹션이 추가됩니다. 검증된 구조화 기록은 그대로 유지됩니다.</p>':'';
+  return `<div class="archive-panel archive-notion-panel"><div class="archive-section-heading"><div><small>KNOWLEDGE ARCHIVE</small><h2>기획 · 시스템 가이드</h2><p>Notion과 외부 원문을 같은 이미지 포함 지식형 가이드 체계로 표시합니다.</p></div><span>${total?total+'개'+(synced?' · '+escapeHtml(formatDate(synced,'day')):''):'자동 수집'}</span></div>${renderJustserverKnowledge(item,{compact:false})}${renderDocumentSections(item)}${empty}</div>`;
 }
 function resultValue(item,title){
   const row=(item.results||[]).find(row=>String(row.title||row.label||'').trim()===title);
