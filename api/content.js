@@ -196,6 +196,26 @@ function engagementSummary(cache = youtubeEngagementCache, now = new Date()) {
   };
 }
 
+function setPublicContentCache(res,type,{force=false}={}){
+  if(force){
+    res.setHeader('Cache-Control','no-store, max-age=0');
+    res.setHeader('CDN-Cache-Control','no-store');
+    return;
+  }
+  const policy={
+    fanart:{browser:60,edge:300,stale:3600},
+    'fanart-detail':{browser:300,edge:3600,stale:86400},
+    notice:{browser:60,edge:180,stale:600},
+    vod:{browser:60,edge:180,stale:600},
+    clips:{browser:60,edge:180,stale:600},
+    youtube:{browser:60,edge:180,stale:600},
+    schedule:{browser:60,edge:180,stale:600}
+  }[type]||{browser:30,edge:180,stale:600};
+  res.setHeader('Cache-Control',`public, max-age=${policy.browser}, stale-while-revalidate=${policy.stale}`);
+  res.setHeader('CDN-Cache-Control',`public, s-maxage=${policy.edge}, stale-while-revalidate=${policy.stale}`);
+  res.setHeader('Vercel-CDN-Cache-Control',`public, s-maxage=${policy.edge}, stale-while-revalidate=${policy.stale}`);
+}
+
 function compactDataPayload(payload, options = {}) {
   if (!payload || typeof payload !== 'object') return payload;
   const soop = payload.soop;
@@ -305,7 +325,7 @@ async function handler(req,res) {
     }
   }
   const forceDataRefresh=type==='data'&&requestUrl.searchParams.get('refresh')==='1';
-  res.setHeader('Cache-Control',forceDataRefresh?'no-store, max-age=0':'s-maxage=180, stale-while-revalidate=600');
+  setPublicContentCache(res,type,{force:forceDataRefresh});
   try {
     if(type==='vod'){const items=await fetchVod();return res.status(200).json({items,source:type,fallback:!items.length});}
     if(type==='notice'){const items=await fetchNotice();return res.status(200).json({items,source:type,fallback:!items.length});}
