@@ -122,6 +122,32 @@
         <article class="operator-health-card"><span>이미지 · 썸네일</span><strong id="archive-health-visual">-</strong><small id="archive-health-visual-meta">검사 대기 중</small></article>
         <article class="operator-health-card"><span>자동수집 검토</span><strong id="archive-health-candidates">-</strong><small id="archive-health-sync-meta">동기화 상태 확인 중</small></article>
       </div>
+      <article class="operator-card operator-collector-inbox-card" data-collector-inbox>
+        <header>
+          <div><h2>자동 수집 자료함</h2><small>SOOP · FM코리아에서 수집된 자료를 한곳에서 확인하고 콘텐츠 연결·공개 범위를 관리합니다.</small></div>
+          <div class="operator-collector-inbox-counts" aria-label="수집 자료 상태 요약">
+            <span>전체 <b data-collector-inbox-total>0건</b></span>
+            <span>미연결 <b data-collector-inbox-pending>0건</b></span>
+            <span>내부 <b data-collector-inbox-internal>0건</b></span>
+            <span>공개 <b data-collector-inbox-public>0건</b></span>
+          </div>
+        </header>
+        <div class="operator-collector-inbox-guide">
+          <strong>관리 흐름</strong>
+          <span><b>미연결</b> 자료는 콘텐츠를 선택해 연결하고, <b>일반 공개 확인</b> 자료만 공개로 전환할 수 있습니다. 애청자·로그인 제한 SOOP 글은 내부 자료로 유지됩니다.</span>
+        </div>
+        <div class="operator-collector-inbox-tools">
+          <input type="search" data-collector-inbox-search placeholder="제목 · 작성자 · 연결 콘텐츠 검색" aria-label="수집 자료 검색">
+          <select data-collector-inbox-state aria-label="수집 자료 상태">
+            <option value="attention">확인 필요 먼저</option><option value="all">전체 상태</option><option value="unlinked">미연결</option><option value="internal">내부</option><option value="public">공개</option><option value="ignored">무시</option>
+          </select>
+          <select data-collector-inbox-source aria-label="수집 출처">
+            <option value="all">모든 출처</option><option value="soop">SOOP</option><option value="fmkorea">FM코리아</option>
+          </select>
+        </div>
+        <div class="operator-collector-inbox-message" data-collector-inbox-message></div>
+        <div class="operator-collector-inbox-list" data-collector-inbox-list><p class="operator-empty">수집 자료를 불러오고 있습니다.</p></div>
+      </article>
       <article class="operator-card operator-image-audit-card" data-archive-image-audit-card>
         <header>
           <div><h2>이미지 상태 검사</h2><small>대표 이미지 · 갤러리 · 영상 썸네일을 실제로 불러와 깨짐·지연·대용량·대표 이미지 해상도를 확인합니다.</small></div>
