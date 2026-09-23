@@ -5,6 +5,7 @@
   const shouldPersist=key=>
     String(key).startsWith('content:') ||
     String(key).startsWith('notice-detail:') ||
+    String(key).startsWith('fanart-detail:') ||
     String(key) === 'changelog-summary';
 
   const read = key => {
@@ -65,8 +66,10 @@
   };
 
   const d=document,loadStyle=(h,k)=>{if(d.querySelector('link['+k+']'))return;const n=d.createElement('link');n.rel='stylesheet';n.href=h;n.setAttribute(k,'true');d.head.appendChild(n)},loadScript=s=>{if(d.querySelector('script[src="'+s+'"]'))return;const n=d.createElement('script');n.src=s;n.defer=1;d.head.appendChild(n)},runIdle=f=>'requestIdleCallback'in window?requestIdleCallback(f,{timeout:1800}):setTimeout(f,650);
-  loadScript('site-health.js');loadScript('site-improvements.js');
-  const personalPriorityPages='|home|myhub|vod|clips|youtube|fanart|tarot|minigames|chuntris|chunbak|chungwagame|chuncortile|',loadPersonal=()=>{loadStyle('personal-hub.css','data-personal-hub-styles');loadScript('personal-hub.js')},page=d.body.dataset.page||'';
+  const page=d.body.dataset.page||'',heavyPage='|fanart|minigames|chuntris|chunbak|chungwagame|chuncortile|'.includes('|'+page+'|');
+  const loadEnhancements=()=>{loadScript('site-health.js');loadScript('site-improvements.js')};
+  heavyPage?runIdle(loadEnhancements):loadEnhancements();
+  const personalPriorityPages='|home|myhub|tarot|',loadPersonal=()=>{loadStyle('personal-hub.css','data-personal-hub-styles');loadScript('personal-hub.js')};
   personalPriorityPages.includes('|'+page+'|')?loadPersonal():runIdle(loadPersonal);runIdle(()=>loadScript('site-meta.js'));
 })();
 (()=>{let n=document.getElementById('main-nav');if(!n)return;for(let[k,h,t,b]of[['contents','chunbong-contents.html','춘봉 콘텐츠','history'],['history','history.html','방송 이력','data']])if(!n.querySelector(`[data-nav=${k}]`)){let p=n.querySelector(`[data-nav=${b}]`);(p||n).insertAdjacentHTML(p?'beforebegin':'beforeend',`<a data-nav="${k}" href="${h}">${t}</a>`)}})();
