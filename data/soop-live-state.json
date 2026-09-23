@@ -170,12 +170,23 @@
         "categoryName": "Virtual",
         "followerCount": 30750,
         "fanclubCount": 7681
+      },
+      {
+        "capturedAt": "2026-09-23T12:39:07.206Z",
+        "live": true,
+        "startedAt": "2026-09-23T09:42:56.000Z",
+        "title": "마병대4 악마 행정관 입니다.",
+        "viewerCount": 107,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30751,
+        "fanclubCount": 7681
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-23T12:23:45.973Z",
-    "followerCount": 30750,
+    "capturedAt": "2026-09-23T12:39:07.206Z",
+    "followerCount": 30751,
     "fanclubCount": 7681
   }
 }
