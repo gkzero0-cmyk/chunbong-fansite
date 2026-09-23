@@ -134,6 +134,14 @@ try{
     await page.waitForURL(/id=justserver-survival/);
     await page.locator('.archive-sibling-series-nav').waitFor({state:'visible'});
     assert.equal(await page.locator('.archive-sibling-series-nav [data-archive-sibling]').count(),2,'그냥서버 상세에서 시즌 간 전환이 가능해야 합니다');
+    const justserverTitle=await page.locator('.archive-detail-copy.is-justserver h1').evaluate(el=>{
+      const style=getComputedStyle(el),lineHeight=parseFloat(style.lineHeight)||parseFloat(style.fontSize);
+      return {whiteSpace:style.whiteSpace,scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,height:el.getBoundingClientRect().height,lineHeight,fontSize:parseFloat(style.fontSize)};
+    });
+    assert.equal(justserverTitle.whiteSpace,'nowrap','그냥서버 시즌 상세 제목은 한 줄로 고정되어야 합니다');
+    assert.ok(justserverTitle.scrollWidth<=justserverTitle.clientWidth+1,'가장 긴 적자생존 제목도 상세 카드 너비 안에 들어와야 합니다');
+    assert.ok(justserverTitle.height<=justserverTitle.lineHeight*1.25,'그냥서버 상세 제목이 두 줄 높이로 늘어나면 안 됩니다');
+    assert.ok(justserverTitle.fontSize<=46.5,'그냥서버 시즌 제목은 세 시즌이 공유하는 통일 크기를 사용해야 합니다');
     await page.locator('[data-archive-back]').click();
     await page.waitForFunction(()=>!document.querySelector('[data-archive-browser]')?.hidden);
     await page.locator('[data-archive-series-back]').click();
