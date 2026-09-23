@@ -88,6 +88,19 @@ assert.ok((leopel?.results||[]).some(row=>row.title==='추가 · 미분류'&&/11
 assert.ok((leopel?.sources||[]).some(row=>row.id==='source-nemopix-leopel'&&/nemopix\.xyz\/content\/leopel/i.test(row.url||'')),'Nemopix 레오펠 지통실을 교차확인 출처로 유지해야 합니다');
 for(const item of seed.items) assert.deepEqual(validateArchiveItem(normalizeArchiveItem(item),{publishing:true}),[]);
 
+const psy1=seed.items.find(item=>item.id==='psy-emotion-song-contest-1');
+assert.equal(psy1?.startDate,'2024-05-19','싸이감성 노래자랑 제1회 개최일은 2024-05-19로 유지해야 합니다');
+assert.equal(psy1?.endDate,'2024-05-19','싸이감성 노래자랑 제1회 종료일도 같은 날로 기록해야 합니다');
+assert.equal(psy1?.datePrecision,'day','싸이감성 노래자랑 제1회 날짜는 일 단위 확정값이어야 합니다');
+assert.match(String(psy1?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v1790133599\/chunbong-fansite\/psy\/session-1-vod-125250373-thumb\.jpg$/,'제1회 대표 이미지는 사용자가 지정한 SOOP VOD 125250373 썸네일이어야 합니다');
+assert.equal(psy1?.heroImage?.sourceId,'source-psy1-event-vod','제1회 대표 이미지는 당일 SOOP 다시보기 출처에 연결되어야 합니다');
+const psy1EventVod=(psy1?.media||[]).find(row=>row.id==='psy1-event-vod');
+assert.equal(psy1EventVod?.url,'https://vod.sooplive.com/player/125250373','제1회 당일 다시보기 VOD 125250373을 참고 자료로 유지해야 합니다');
+assert.equal(psy1EventVod?.date,'2024-05-19','제1회 당일 다시보기 날짜는 2024-05-19여야 합니다');
+assert.equal(psy1EventVod?.thumbnail,psy1?.heroImage?.src,'제1회 당일 다시보기 썸네일과 대표 이미지는 동일 자산을 사용해야 합니다');
+assert.ok((psy1?.sources||[]).some(row=>row.id==='source-psy1-event-vod'&&row.url==='https://vod.sooplive.com/player/125250373'),'제1회 당일 SOOP 다시보기 출처가 공개 출처에 포함되어야 합니다');
+assert.ok((psy1?.results||[]).some(row=>row.title==='개최일'&&row.value==='2024년 5월 19일'),'제1회 결과 요약에 개최일이 표시되어야 합니다');
+
 
 const moneygame=seed.items.find(item=>item.id==='justserver-moneygame');
 assert.equal(moneygame?.participantCount,658,'머니게임 참가자는 섭주 춘봉을 제외한 658명이어야 합니다');
@@ -228,7 +241,9 @@ assert.equal(psyContest1?.series?.id,'psy-emotion-song-contest');
 assert.equal(psyContest2?.series?.id,'psy-emotion-song-contest');
 assert.match(String(psyContest1?.series?.cover?.src||''),/psy\/series-selected-source\.jpg$/,'싸이감성 시리즈 대표 이미지는 사용자가 지정한 제1회 실제 VOD 이미지를 사용해야 합니다');
 assert.equal(psyContest2?.series?.cover?.src,psyContest1?.series?.cover?.src,'싸이감성 제1·2회는 같은 실제 자료 기반 시리즈 커버를 사용해야 합니다');
-assert.equal(psyContest1?.datePrecision,'unknown','1회 날짜는 원문 확인 전 임의 확정하지 않습니다');
+assert.equal(psyContest1?.datePrecision,'day','1회 날짜는 사용자 제공 개최일과 SOOP 당일 VOD 메타데이터 기준으로 일 단위 확정값이어야 합니다');
+assert.equal(psyContest1?.startDate,'2024-05-19','1회 개최일은 2024-05-19이어야 합니다');
+assert.ok((psyContest1?.media||[]).some(row=>row.url==='https://vod.sooplive.com/player/125250373'&&row.date==='2024-05-19'),'1회 개최 당일 SOOP 다시보기 125250373이 필요합니다');
 assert.equal(psyContest2?.datePrecision,'day','2회 날짜는 교차 확인된 개최일 기준으로 일 단위여야 합니다');
 assert.equal(psyContest2?.startDate,'2026-04-28','2회 개최일은 2026-04-28이어야 합니다');
 assert.ok((psyContest1?.sources||[]).some(row=>row.url==='https://www.sooplive.com/station/chunbongtv/post/124321185'),'1회 SOOP 모집글이 필요합니다');
