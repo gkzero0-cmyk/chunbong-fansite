@@ -140,6 +140,7 @@
     pausedAt = performance.now();
     gameState = 'paused';
     playing = false;
+    stopLoop();
     root.dataset.gameStatus = 'paused';
     root.dataset.pauseReason = reason;
     return true;
@@ -158,6 +159,7 @@
     gameState = 'playing';
     playing = true;
     root.dataset.gameStatus = 'playing';
+    ensureLoop();
     delete root.dataset.pauseReason;
     return true;
   }
@@ -462,6 +464,7 @@
     pausedAt = null;
     resumeAfterUtility = false;
     setView('gameover');
+    stopLoop();
     Audio.play('gameover');
     try { localStorage.setItem(BEST_KEY, String(best)); } catch (_) {}
     overlay.hidden = false;
@@ -528,13 +531,27 @@
     drawPreview();
   }
 
+  function stopLoop() {
+    if (!frameId) return;
+    cancelAnimationFrame(frameId);
+    frameId = null;
+  }
+
+  function ensureLoop() {
+    if (frameId || !playing) return;
+    lastFrameAt = performance.now();
+    frameId = requestAnimationFrame(tick);
+  }
+
   function tick(nowMs) {
+    frameId = null;
+    if (!playing) return;
     const delta = Math.min(32, Math.max(8, nowMs - lastFrameAt));
     lastFrameAt = nowMs;
-    if (playing) Matter.Engine.update(engine, delta);
+    Matter.Engine.update(engine, delta);
     evaluateDanger(nowMs);
     render();
-    frameId = requestAnimationFrame(tick);
+    if (playing) frameId = requestAnimationFrame(tick);
   }
 
   function initWorld() {
@@ -572,6 +589,8 @@
     playing = autoStart;
     setView(autoStart ? 'playing' : 'start');
     updateHud();
+    if (playing) ensureLoop();
+    else stopLoop();
   }
 
   function startGameWithSound() {
@@ -703,24 +722,35 @@
     return loadStageImage(meta).catch(() => null);
   }
 
-  function warmRemainingImages() {
-    const warm = () => {
-      void Promise.allSettled(Core.STAGES.slice(5).map(meta => loadStageImage(meta)));
-    };
+  function scheduleIdle(task, timeout=1600, fallback=450) {
     if ('requestIdleCallback' in window) {
-      window.requestIdleCallback(warm, { timeout: 1800 });
+      window.requestIdleCallback(task, { timeout });
     } else {
-      setTimeout(warm, 350);
+      setTimeout(task, fallback);
     }
+  }
+
+  function warmSpawnImages() {
+    scheduleIdle(() => {
+      void Promise.allSettled(Core.STAGES.slice(0, 5).map(meta => loadStageImage(meta)));
+    }, 1200, 260);
+  }
+
+  function warmRemainingImages() {
+    scheduleIdle(() => {
+      void Promise.allSettled(Core.STAGES.slice(5).map(meta => loadStageImage(meta)));
+    }, 3200, 1200);
   }
 
   async function preloadImages() {
     try {
-      await Promise.all(Core.STAGES.slice(0, 5).map(meta => loadStageImage(meta)));
+      const initialStages = [...new Set([currentStage, nextStage])].map(stage => Core.STAGES[stage - 1]).filter(Boolean);
+      await Promise.all(initialStages.map(meta => loadStageImage(meta)));
       startButton.disabled = false;
       if (restartButton) restartButton.disabled = false;
-      buildLegend();
       renderNext();
+      scheduleIdle(buildLegend, 1000, 220);
+      warmSpawnImages();
       warmRemainingImages();
     } catch (_) {
       startButton.disabled = true;
@@ -733,8 +763,7 @@
   syncAudioControls();
   resetGame({ autoStart: false });
   preloadImages();
-  void loadRanking();
-  if (!frameId) frameId = requestAnimationFrame(tick);
+  scheduleIdle(() => { void loadRanking(); }, 1400, 500);
 
   globalThis.ChunbakGame = Object.freeze({
     createPiece,
