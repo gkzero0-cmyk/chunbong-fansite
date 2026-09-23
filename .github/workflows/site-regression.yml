@@ -33,7 +33,7 @@ jobs:
               txt=html.unescape(re.sub(r'\\s+',' ',txt)).strip()
               if txt: print('NAMU_HEAD='+txt[:220])
           imgs=[]
-          for m in re.finditer(r'<img[^>]+(?:src|data-src)=["\\']([^"\\']+)["\\'][^>]*>',data,re.I):
+          for m in re.finditer(r"""<img[^>]+(?:src|data-src)=["']([^"']+)["'][^>]*>""",data,re.I):
               src=html.unescape(m.group(1))
               if src.startswith('//'): src='https:'+src
               if src.startswith('http') and src not in imgs: imgs.append(src)
