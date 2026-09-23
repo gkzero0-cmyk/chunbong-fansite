@@ -147,8 +147,9 @@ try{
     await page.waitForURL(/id=justserver-survival/);
     await page.locator('.archive-sibling-series-nav').waitFor({state:'visible'});
     assert.equal(await page.locator('.archive-sibling-series-nav [data-archive-sibling]').count(),3,'그냥서버 상세에서 세 시즌 간 전환이 가능해야 합니다');
-    const siblingGrid=await page.locator('.archive-sibling-series-nav').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length);
-    assert.equal(siblingGrid,3,'그냥서버 세 시즌 전환 버튼은 데스크톱에서 한 줄 3열이어야 합니다');
+    const siblingBoxes=await page.locator('.archive-sibling-series-nav [data-archive-sibling]').evaluateAll(nodes=>nodes.map(node=>{const r=node.getBoundingClientRect();return{x:Math.round(r.x),y:Math.round(r.y),width:Math.round(r.width)}}));
+    assert.equal(new Set(siblingBoxes.map(row=>row.y)).size,1,'그냥서버 세 시즌 전환 버튼은 데스크톱에서 한 줄이어야 합니다');
+    assert.ok(Math.max(...siblingBoxes.map(row=>row.width))-Math.min(...siblingBoxes.map(row=>row.width))<=2,'그냥서버 세 시즌 전환 버튼은 동일 폭이어야 합니다');
     const summaryColumns=await page.locator('.archive-summary-grid').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length);
     assert.equal(summaryColumns,3,'상세 상단 6개 요약 카드는 데스크톱에서 3x2로 정렬되어야 합니다');
     const recordColumns=await page.locator('.archive-record-strip').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length);
