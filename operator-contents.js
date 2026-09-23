@@ -359,8 +359,47 @@ function readNamuImportHash(){
     return payload;
   }catch{history.replaceState(null,'',location.pathname+location.search);return null}
 }
+function namuPendingSources(){
+  const pending=[];
+  for(const item of items){
+    const sections=Array.isArray(item.referenceSections)?item.referenceSections:[];
+    for(const source of item.sources||[]){
+      const url=String(source?.url||'');
+      if(!/^https:\/\/(?:www\.)?namu\.wiki\/w\//i.test(url))continue;
+      const linked=sections.filter(row=>String(row?.sourceId||'')===String(source?.id||''));
+      const imageSources=new Set(linked.flatMap(row=>[
+        ...(row.images||[]).map(image=>image?.src),
+        ...(row.content||[]).filter(block=>block?.type==='image').map(block=>block?.image?.src)
+      ]).filter(Boolean));
+      if(imageSources.size)continue;
+      pending.push({itemId:item.id,itemTitle:item.title||item.id,sourceId:source.id||'',label:source.label||'나무위키',url});
+    }
+  }
+  return pending;
+}
+function renderNamuPending(){
+  const helper=$('[data-namu-helper]',root);if(!helper)return;
+  let panel=$('[data-namu-pending]',helper);
+  if(!panel){
+    panel=document.createElement('div');
+    panel.dataset.namuPending='';
+    panel.className='operator-soop-import';
+    const list=helper.querySelector('ol'),body=helper.querySelector('.operator-soop-helper-body');
+    if(list)list.insertAdjacentElement('afterend',panel);else body?.append(panel);
+  }
+  const pending=namuPendingSources();
+  panel.hidden=false;
+  if(!pending.length){
+    panel.innerHTML='<header><div><small>원문 이미지 수집 현황</small><strong>수집 대기 없음</strong></div></header><p>현재 연결된 나무위키 출처는 모두 이미지까지 수집됐습니다.</p>';
+    return;
+  }
+  panel.innerHTML='<header><div><small>원문 이미지 수집 현황</small><strong>수집 대기 '+pending.length+'개</strong></div></header>'+
+    '<p>아래 원문을 열고 북마크바의 <b>나무위키 문서 수집</b>을 누르면 해당 콘텐츠에 자동 연결됩니다.</p>'+
+    '<div class="operator-soop-helper-actions">'+pending.map(row=>'<a href="'+esc(row.url)+'" target="_blank" rel="noopener noreferrer">'+esc(row.itemTitle)+' · 원문 열기</a>').join('')+'</div>';
+}
 function renderNamuHelper(){
   const link=$('[data-namu-bookmarklet]',root),copy=$('[data-namu-bookmarklet-copy]',root),href=namuCollectorBookmarklet();
+  renderNamuPending();
   if(link)link.href=href;
   if(copy&&!copy.dataset.bound){copy.dataset.bound='1';copy.addEventListener('click',async()=>{
     try{await navigator.clipboard.writeText(href);copy.textContent='복사됨';setTimeout(()=>copy.textContent='북마크 코드 복사',1400)}
