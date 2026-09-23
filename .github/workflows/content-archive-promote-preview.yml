@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      PREVIEW_URL: https://chunbong-fansite-cepskxyyt-gkzero0-9465.vercel.app
+      PREVIEW_URL: https://chunbong-fansite-hjyy55de9-gkzero0-9465.vercel.app
       PROD_URL: https://chunbong-fansite.vercel.app
       VERCEL_SCOPE: gkzero0-9465
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -35,39 +35,60 @@ jobs:
           set -euo pipefail
           npx --yes vercel@latest inspect "$PREVIEW_URL" --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
 
-      - name: Point production alias at validated preview
+      - name: Verify archive readability preview markers
         shell: bash
         run: |
           set -euo pipefail
-          npx --yes vercel@latest alias set "$PREVIEW_URL" "chunbong-fansite.vercel.app" --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
+          stamp=$(date +%s)
+          curl -fsSL -H 'cache-control: no-cache' "$PREVIEW_URL/chunbong-contents.js?_promote_source=$stamp" -o /tmp/archive.js
+          curl -fsSL -H 'cache-control: no-cache' "$PREVIEW_URL/chunbong-contents.css?_promote_source=$stamp" -o /tmp/archive.css
+          curl -fsSL -H 'cache-control: no-cache' "$PREVIEW_URL/api/content?type=chunbong-content&id=leopel&_promote_source=$stamp" -o /tmp/leopel.json
+          curl -fsSL -H 'cache-control: no-cache' "$PREVIEW_URL/api/content?type=chunbong-content&id=justserver-moneygame&_promote_source=$stamp" -o /tmp/moneygame.json
+          grep -Fq 'detailTitleClass' /tmp/archive.js
+          grep -Fq 'archive readability normalization' /tmp/archive.css
+          grep -Fq 'archive-result-card' /tmp/archive.js
+          node - <<'NODE'
+          const fs=require('fs');
+          const leopel=JSON.parse(fs.readFileSync('/tmp/leopel.json','utf8')).item;
+          const money=JSON.parse(fs.readFileSync('/tmp/moneygame.json','utf8')).item;
+          if(!leopel||leopel.participantCount!==671)throw new Error('Leopel participant total mismatch');
+          if((leopel.participantGroups||[]).length!==8)throw new Error('Leopel participant group structure mismatch');
+          if(!money||money.participantCount!==658)throw new Error('Moneygame participant total mismatch');
+          if((money.participantGroups||[]).length!==5)throw new Error('Moneygame first-entry groups mismatch');
+          console.log('validated archive preview markers and participant data');
+          NODE
 
-      - name: Verify production content archive
+      - name: Promote validated preview to production
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes vercel@latest promote "$PREVIEW_URL" --yes --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
+
+      - name: Verify production archive readability and data
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 30); do
             stamp=$(date +%s)
-            if curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/chunbong-contents.js?_promote_check=$stamp" -o /tmp/archive.js && \
-               curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/chunbong-contents.css?_promote_check=$stamp" -o /tmp/archive.css && \
-               curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/api/content?type=chunbong-contents&_promote_check=$stamp" -o /tmp/archive.json; then
-              if grep -Fq 'normalizedImageMarkup' /tmp/archive.js && \
-                 grep -Fq 'unified 16:9 archive media' /tmp/archive.css && \
-                 grep -Fq 'series-cover-16x9.webp' /tmp/archive.json && \
-                 grep -Fq 'session-5.webp' /tmp/archive.json; then
+            if curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/chunbong-contents.js?_promote_check=$stamp" -o /tmp/prod-archive.js && \
+               curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/chunbong-contents.css?_promote_check=$stamp" -o /tmp/prod-archive.css && \
+               curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/api/content?type=chunbong-content&id=leopel&_promote_check=$stamp" -o /tmp/prod-leopel.json && \
+               curl -fsSL -H 'cache-control: no-cache' "$PROD_URL/api/content?type=chunbong-content&id=justserver-moneygame&_promote_check=$stamp" -o /tmp/prod-moneygame.json; then
+              if grep -Fq 'detailTitleClass' /tmp/prod-archive.js && \
+                 grep -Fq 'archive readability normalization' /tmp/prod-archive.css && \
+                 grep -Fq 'archive-result-card' /tmp/prod-archive.js; then
                 node - <<'NODE'
           const fs=require('fs');
-          const payload=JSON.parse(fs.readFileSync('/tmp/archive.json','utf8'));
-          const item=(payload.items||[]).find(row=>row.id==='chuntacle-2026');
-          if(!item)throw new Error('Chuntacle item missing');
-          if(!String(item.heroImage?.src||'').includes('series-cover-16x9.webp'))throw new Error('Chuntacle 16:9 series cover missing');
-          if(!String(item.series?.cover?.src||'').includes('series-cover-16x9.webp'))throw new Error('Chuntacle series cover mismatch');
-          if((item.seriesSessions||[]).length!==5)throw new Error('Chuntacle session count changed');
-          console.log('production content archive promotion verified');
+          const leopel=JSON.parse(fs.readFileSync('/tmp/prod-leopel.json','utf8')).item;
+          const money=JSON.parse(fs.readFileSync('/tmp/prod-moneygame.json','utf8')).item;
+          if(!leopel||leopel.participantCount!==671||(leopel.participantGroups||[]).length!==8)process.exit(2);
+          if(!money||money.participantCount!==658||(money.participantGroups||[]).length!==5)process.exit(3);
+          console.log('production archive readability promotion verified');
           NODE
                 exit 0
               fi
             fi
             sleep 5
           done
-          echo 'Production did not receive the validated content archive preview in time.' >&2
+          echo 'Production did not receive the validated archive preview in time.' >&2
           exit 1
