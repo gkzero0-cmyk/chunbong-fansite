@@ -72,6 +72,7 @@
       </section>
       <nav class="operator-quick-actions" aria-label="운영자 빠른 작업">
         <button type="button" data-operator-quick-tab="contents"><span>콘텐츠 상태</span><small>누락 · 자동수집 확인</small></button>
+        <button type="button" data-operator-content-sync><span>공식 자료 동기화</span><small>SOOP · YouTube 지금 확인</small></button>
         <button type="button" data-operator-quick-tab="performance"><span>성능 점검</span><small>LCP · INP · CLS</small></button>
         <button type="button" data-operator-quick-tab="search"><span>검색 분석</span><small>검색어 · 0건 결과</small></button>
         <button type="button" data-operator-quick-tab="system"><span>시스템 상태</span><small>배포 · API · 저장소</small></button>
@@ -235,6 +236,12 @@
     </section>
 
     <section id="operator-panel-feedback" role="tabpanel" aria-labelledby="operator-tab-feedback" data-operator-panel="feedback" hidden>
+      <div class="operator-system-summary operator-feedback-summary" aria-label="피드백 처리 현황">
+        <article class="operator-health-card"><span>새 피드백</span><strong id="feedback-summary-new">-</strong><small>아직 확인하지 않은 의견</small></article>
+        <article class="operator-health-card"><span>처리 중</span><strong id="feedback-summary-active">-</strong><small>확인 중 · 반영 예정</small></article>
+        <article class="operator-health-card"><span>높은 우선순위</span><strong id="feedback-summary-high">-</strong><small>완료·보관 제외</small></article>
+        <article class="operator-health-card"><span>반복 이슈</span><strong id="feedback-summary-duplicates">-</strong><small id="feedback-summary-duplicates-meta">유사 제보 분석 대기</small></article>
+      </div>
       <div class="operator-feedback-layout">
         <aside class="operator-card operator-feedback-list-card">
           <header><h2>사용자 피드백</h2><button id="operator-feedback-refresh" type="button">새로고침</button></header>
@@ -253,6 +260,10 @@
             <div class="operator-feedback-detail-head"><div><span id="feedback-category"></span><h2 id="feedback-id"></h2></div><div class="operator-feedback-detail-controls"><select id="feedback-priority" aria-label="피드백 우선순위"><option value="high">높음</option><option value="normal">보통</option><option value="low">낮음</option></select><select id="feedback-status"><option value="new">새로 들어옴</option><option value="reviewing">확인 중</option><option value="planned">반영 예정</option><option value="done">완료</option><option value="archived">보관</option></select></div></div>
             <p id="feedback-message" class="operator-feedback-message"></p>
             <dl id="feedback-meta" class="operator-feedback-meta"></dl>
+            <section class="operator-feedback-similar">
+              <div class="operator-section-title-row"><h3>유사 피드백</h3><span id="feedback-similar-count">0건</span></div>
+              <div id="feedback-similar-list" class="operator-feedback-similar-list"><p class="operator-empty">비슷한 제보가 없습니다.</p></div>
+            </section>
             <div class="operator-feedback-memo">
               <label for="feedback-tags">태그 <small>쉼표로 구분 · 최대 8개</small></label>
               <input id="feedback-tags" type="text" placeholder="예: 타로, 모바일, UI">
@@ -285,6 +296,7 @@
           <dl class="operator-system-meta">
             <div><dt>Production SHA</dt><dd id="system-sha">-</dd></div>
             <div><dt>GitHub main SHA</dt><dd id="system-main-sha">-</dd></div>
+            <div><dt>Production 미반영 변경</dt><dd id="system-pending-commits">-</dd></div>
             <div><dt>배포 URL</dt><dd id="system-url">-</dd></div>
             <div><dt>Vercel 상태</dt><dd id="system-vercel-status">-</dd></div>
             <div><dt>자동 재시도</dt><dd id="system-retry-at">-</dd></div>
