@@ -1,5 +1,5 @@
 const API='/api/content?type=';
-let root=null,items=[],selected=null,booted=false,autoSyncMeta=null,autoCandidates=[],browserImport=null,namuBrowserImport=null,collectorState={connected:false,queueCount:0,seenCount:0,version:''},collectorImportChain=Promise.resolve();
+let root=null,items=[],selected=null,booted=false,autoSyncMeta=null,autoCandidates=[],browserImport=null,namuBrowserImport=null,collectorState={connected:false,queueCount:0,seenCount:0,version:'',soopHistoryCount:0,soopBackfill:{}},collectorImportChain=Promise.resolve();
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const slug=v=>String(v||'').toLowerCase().trim().replace(/[^a-z0-9가-힣]+/g,'-').replace(/^-|-$/g,'');
@@ -326,7 +326,9 @@ function renderUnifiedCollectorStatus(){
     return;
   }
   box.dataset.state=collectorState.queueCount?'busy':'ok';
-  box.innerHTML='<strong>자동 수집기 연결됨'+(collectorState.version?' · v'+esc(collectorState.version):'')+'</strong><span>전송 대기 '+Number(collectorState.queueCount||0)+'건 · 브라우저에서 확인한 자료 '+Number(collectorState.seenCount||0)+'건</span>';
+  const backfill=collectorState.soopBackfill||{},status=String(backfill.status||''),statusText={running:'진행 중',paused:'일시 중단',complete:'완료'}[status]||status;
+  const progress=status?' · SOOP 전체수집 '+statusText+' '+Number(backfill.pagesScanned||0)+'페이지 / '+Number(backfill.handled||0)+'건 처리':'';
+  box.innerHTML='<strong>자동 수집기 연결됨'+(collectorState.version?' · v'+esc(collectorState.version):'')+'</strong><span>전송 대기 '+Number(collectorState.queueCount||0)+'건 · 브라우저에서 확인한 자료 '+Number(collectorState.seenCount||0)+'건 · SOOP 기록 '+Number(collectorState.soopHistoryCount||0)+'건'+progress+'</span>';
 }
 function collectorPost(type,data={}){
   window.postMessage({channel:COLLECTOR_CHANNEL,type,...data},location.origin);
@@ -382,7 +384,7 @@ function bindUnifiedCollector(){
     if(event.source!==window||event.origin!==location.origin)return;
     const data=event.data||{};if(data.channel!==COLLECTOR_CHANNEL)return;
     if(data.type==='state'){
-      collectorState={connected:true,queueCount:Number(data.queueCount||0),seenCount:Number(data.seenCount||0),version:String(data.version||'')};
+      collectorState={connected:true,queueCount:Number(data.queueCount||0),seenCount:Number(data.seenCount||0),version:String(data.version||''),soopHistoryCount:Number(data.soopHistoryCount||0),soopBackfill:data.soopBackfill||{}};
       renderUnifiedCollectorStatus();return;
     }
     if(data.type==='import'){
@@ -394,9 +396,13 @@ function bindUnifiedCollector(){
     collectorPost('open-urls',{kind:'namuwiki',urls:rows.map(row=>row.url)});
     setMessage('나무위키 수집 대기 '+rows.length+'개를 브라우저 자동 수집 큐로 보냈습니다.','ok');
   });
+  $('[data-collector-backfill-soop]',root)?.addEventListener('click',()=>{
+    collectorPost('start-soop-backfill',{url:'https://www.sooplive.com/station/chunbongtv/post'});
+    setMessage('SOOP 전체 기록 수집을 시작했습니다. 과거 게시판을 순회하고, 중단되면 다음 실행에서 이어서 진행합니다.','ok');
+  });
   $('[data-collector-open-soop]',root)?.addEventListener('click',()=>{
     collectorPost('open-soop-board',{url:'https://www.sooplive.com/station/chunbongtv/post'});
-    setMessage('SOOP 춘봉 방송국 게시판을 열어 새 글을 확인합니다. 로그인된 브라우저 세션만 사용합니다.','ok');
+    setMessage('SOOP 최근 게시글을 확인합니다. 전체 기록 수집 완료 뒤에는 신규 글만 증분 수집합니다.','ok');
   });
   $('[data-collector-open-fmk]',root)?.addEventListener('click',()=>{
     collectorPost('open-fmk-board',{url:'https://www.fmkorea.com/'});
