@@ -15,6 +15,36 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Temporary NamuWiki Leopel inspection
+        shell: bash
+        run: |
+          set -euo pipefail
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/153.0.0.0 Safari/537.36'
+          for URL in \
+            'https://namu.wiki/w/%EB%A0%88%EC%98%A4%ED%8E%A0' \
+            'https://namu.wiki/raw/%EB%A0%88%EC%98%A4%ED%8E%A0'; do
+            echo "FETCH=$URL"
+            code=$(curl -L --compressed -A "$UA" -H 'Accept-Language: ko-KR,ko;q=0.9' -sS -o /tmp/namu.out -w '%{http_code}' "$URL" || true)
+            echo "STATUS=$code BYTES=$(wc -c </tmp/namu.out)"
+            python3 - <<'PY'
+          import re, html
+          raw=open('/tmp/namu.out','r',encoding='utf-8',errors='ignore').read()
+          print('HEAD=',re.sub(r'\s+',' ',raw[:500]))
+          urls=[]
+          for m in re.finditer(r'https?://[^"\'<> ]+',raw):
+              u=html.unescape(m.group(0))
+              if any(x in u.lower() for x in ['image','namu','arca.live','wstatic','i.namu']):
+                  urls.append(u)
+          print('IMAGE_URLS_SAMPLE=')
+          for u in list(dict.fromkeys(urls))[:40]: print(u[:500])
+          for pat in [r'<h[1-6][^>]*>(.*?)</h[1-6]>', r'data-v-[^>]*>([^<]{2,80})<']:
+              vals=[]
+              for m in re.finditer(pat,raw,re.S|re.I):
+                  t=re.sub('<[^>]+>',' ',m.group(1)); t=html.unescape(re.sub(r'\s+',' ',t)).strip()
+                  if t and t not in vals: vals.append(t)
+              print('TEXT_SAMPLE=',vals[:80])
+          PY
+          done
       - name: Check JavaScript syntax
         run: |
           node --check service-worker.js
