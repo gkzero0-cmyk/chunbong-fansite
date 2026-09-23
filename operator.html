@@ -106,6 +106,12 @@
     </section>
 
     <section id="operator-panel-contents" role="tabpanel" aria-labelledby="operator-tab-contents" data-operator-panel="contents" hidden>
+      <div class="operator-system-summary operator-archive-summary" aria-label="콘텐츠 아카이브 상태">
+        <article class="operator-health-card"><span>전체 콘텐츠</span><strong id="archive-health-total">-</strong><small>등록된 콘텐츠 기록</small></article>
+        <article class="operator-health-card"><span>자료 보강 필요</span><strong id="archive-health-issues">-</strong><small id="archive-health-issues-meta">검사 대기 중</small></article>
+        <article class="operator-health-card"><span>이미지 · 썸네일</span><strong id="archive-health-visual">-</strong><small id="archive-health-visual-meta">검사 대기 중</small></article>
+        <article class="operator-health-card"><span>자동수집 검토</span><strong id="archive-health-candidates">-</strong><small id="archive-health-sync-meta">동기화 상태 확인 중</small></article>
+      </div>
       <div class="operator-archive-layout">
         <aside class="operator-card operator-archive-list-card">
           <header><div><h2>콘텐츠 아카이브</h2><small>SOOP 최우선 · YouTube 자동 수집</small></div><div class="operator-archive-head-actions"><button type="button" data-archive-auto-sync>공식 자료 동기화</button><button type="button" data-archive-new>새 콘텐츠</button></div></header>
