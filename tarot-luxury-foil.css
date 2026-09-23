@@ -240,3 +240,153 @@
 @media(prefers-reduced-motion:reduce){
   .tarot-card-foil::after,.tarot-card-back[data-tarot-foil]::before{display:none!important}
 }
+
+
+/* 2026-09-23 · reference crystal refraction for result / zoom tarot */
+.tarot-card-foil{
+  --foil-angle:0deg;
+  --foil-flare:1;
+  overflow:visible!important
+}
+.tarot-card-foil::before{
+  display:block!important;
+  content:"";
+  position:absolute!important;
+  z-index:6!important;
+  left:var(--foil-x)!important;
+  top:var(--foil-y)!important;
+  width:64%!important;
+  height:auto!important;
+  aspect-ratio:1!important;
+  border:0!important;
+  border-radius:50%!important;
+  pointer-events:none!important;
+  opacity:0!important;
+  transform:translate(-50%,-50%) scale(calc(.82 * var(--foil-flare))) rotate(var(--foil-angle))!important;
+  background:
+    repeating-radial-gradient(circle,
+      transparent 0 9%,
+      rgba(230,253,255,.15) 10% 10.8%,
+      transparent 12% 18%,
+      rgba(126,226,255,.22) 19% 20%,
+      transparent 21% 29%,
+      rgba(184,132,255,.21) 30% 31%,
+      transparent 32% 40%,
+      rgba(255,139,220,.17) 41% 42%,
+      transparent 43% 51%,
+      rgba(255,225,130,.21) 52% 53%,
+      transparent 54% 100%),
+    conic-gradient(from 8deg,
+      rgba(99,238,255,.08),
+      rgba(126,159,255,.18),
+      rgba(203,124,255,.20),
+      rgba(255,139,215,.18),
+      rgba(255,224,122,.20),
+      rgba(128,244,207,.15),
+      rgba(99,238,255,.08))!important;
+  box-shadow:
+    0 0 10px rgba(255,255,255,.40),
+    0 0 28px rgba(117,225,255,.26),
+    0 0 48px rgba(173,118,255,.20)!important;
+  mix-blend-mode:screen!important;
+  filter:saturate(1.65)!important;
+  transition:opacity .12s ease,transform .12s ease!important;
+  animation:none!important
+}
+.tarot-card-foil::after{
+  inset:0!important;
+  border-radius:inherit!important;
+  opacity:0!important;
+  background:
+    radial-gradient(ellipse 17% 14% at var(--foil-x) var(--foil-y),
+      rgba(255,255,255,.96) 0 3%,
+      rgba(220,252,255,.72) 6%,
+      rgba(118,227,255,.36) 13%,
+      rgba(174,130,255,.25) 23%,
+      transparent 43%),
+    repeating-conic-gradient(from calc(var(--foil-angle) - 18deg) at var(--foil-x) var(--foil-y),
+      transparent 0deg 7deg,
+      rgba(133,241,255,.23) 9deg 13deg,
+      rgba(173,130,255,.29) 16deg 20deg,
+      rgba(255,137,220,.21) 23deg 27deg,
+      rgba(255,224,130,.24) 30deg 35deg,
+      transparent 38deg 49deg),
+    linear-gradient(calc(118deg + var(--foil-angle)),
+      transparent 18%,
+      rgba(96,229,255,.12) 30%,
+      rgba(151,128,255,.18) 40%,
+      rgba(245,134,224,.14) 50%,
+      rgba(255,223,132,.18) 60%,
+      rgba(125,235,217,.13) 70%,
+      transparent 82%)!important;
+  background-size:100% 100%,145% 145%,205% 205%!important;
+  background-position:center,var(--foil-x) var(--foil-y),var(--foil-x) var(--foil-y)!important;
+  mix-blend-mode:screen!important;
+  filter:saturate(1.65) contrast(1.10) brightness(1.06)!important;
+  -webkit-mask-image:radial-gradient(ellipse 70% 62% at var(--foil-x) var(--foil-y),#000 0 25%,rgba(0,0,0,.94) 45%,rgba(0,0,0,.50) 68%,transparent 90%)!important;
+  mask-image:radial-gradient(ellipse 70% 62% at var(--foil-x) var(--foil-y),#000 0 25%,rgba(0,0,0,.94) 45%,rgba(0,0,0,.50) 68%,transparent 90%)!important;
+  transition:opacity .12s ease!important
+}
+.tarot-card-foil.is-foil-active::before{opacity:.92!important}
+.tarot-card-foil.is-foil-active::after{opacity:.96!important}
+.tarot-card-foil.is-foil-active{
+  filter:saturate(1.07) contrast(1.025) brightness(1.02)!important;
+  box-shadow:
+    0 24px 64px rgba(0,0,0,.78),
+    0 0 0 1px rgba(235,250,255,.40),
+    0 0 20px rgba(113,220,255,.24),
+    0 0 38px rgba(167,115,246,.20),
+    0 0 56px rgba(255,194,104,.10)!important
+}
+.tarot-card-foil.is-foil-active .tarot-card-art{
+  filter:saturate(1.08) brightness(1.035) contrast(1.015)!important
+}
+
+/* 78-card selection backs keep the same material language, but quieter and silent. */
+.tarot-card-back[data-tarot-foil]{
+  --foil-angle:0deg;
+  --foil-flare:1
+}
+.tarot-card-back[data-tarot-foil]::before{
+  display:block!important;
+  inset:0!important;
+  border-radius:inherit!important;
+  opacity:0!important;
+  background:
+    radial-gradient(ellipse 20% 17% at var(--foil-x) var(--foil-y),
+      rgba(255,255,255,.62) 0 3%,
+      rgba(151,232,255,.30) 12%,
+      rgba(177,132,255,.18) 23%,
+      transparent 44%),
+    conic-gradient(from var(--foil-angle) at var(--foil-x) var(--foil-y),
+      transparent 0deg,
+      rgba(108,232,255,.18) 46deg,
+      rgba(169,130,255,.22) 92deg,
+      rgba(255,145,220,.15) 138deg,
+      rgba(255,225,134,.20) 184deg,
+      rgba(120,230,213,.16) 232deg,
+      transparent 306deg)!important;
+  background-size:100% 100%,125% 125%!important;
+  background-position:center,var(--foil-x) var(--foil-y)!important;
+  mix-blend-mode:screen!important;
+  -webkit-mask-image:radial-gradient(ellipse 62% 54% at var(--foil-x) var(--foil-y),#000 0 28%,rgba(0,0,0,.75) 58%,transparent 86%)!important;
+  mask-image:radial-gradient(ellipse 62% 54% at var(--foil-x) var(--foil-y),#000 0 28%,rgba(0,0,0,.75) 58%,transparent 86%)!important;
+  filter:saturate(1.35) brightness(1.04)!important;
+  transition:opacity .14s ease!important
+}
+.tarot-card-back[data-tarot-foil].is-foil-active:not(.selected)::before{opacity:.62!important}
+.tarot-card-back[data-tarot-foil].is-foil-active:not(.selected){
+  box-shadow:
+    0 17px 40px rgba(0,0,0,.72),
+    0 0 0 1px rgba(227,247,255,.30),
+    0 0 20px rgba(107,211,250,.17),
+    0 0 32px rgba(157,112,232,.13)!important
+}
+@media(prefers-reduced-motion:reduce){
+  .tarot-card-foil::before,
+  .tarot-card-foil::after,
+  .tarot-card-back[data-tarot-foil]::before{
+    animation:none!important;
+    transition:none!important
+  }
+}
