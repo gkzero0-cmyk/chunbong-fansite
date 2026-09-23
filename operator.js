@@ -114,6 +114,21 @@ function renderEnvironmentRows(rows=[]){
     return `<section class="operator-environment-group"><header><strong>${group.title}</strong><small>${total?fmt(total)+'회 기준':'측정 대기'}</small></header>${body}</section>`;
   }).join('');
 }
+function renderSearchInsights(search={}){
+  const total=Number(search.total)||0,zero=Number(search.zeroTotal)||0,clicks=Number(search.clickTotal)||0,rate=Number(search.clickThroughPct)||0;
+  $('#search-total').textContent=fmt(total)+'회';
+  $('#search-zero-total').textContent=fmt(zero)+'회';
+  $('#search-zero-total').className=zero?'is-warn':'is-ok';
+  $('#search-zero-meta').textContent=total?(zero?('전체 검색의 '+Math.round(zero/total*100)+'%'):'결과 없음 검색이 없습니다.'):'검색 데이터 대기 중';
+  $('#search-click-total').textContent=fmt(clicks)+'회';
+  $('#search-click-rate').textContent=total?rate+'%':'-';
+  const queries=Array.isArray(search.topQueries)?search.topQueries:[],queryEl=$('#operator-search-queries');
+  queryEl.innerHTML=queries.length?queries.map((row,i)=>`<li class="operator-rank-rich operator-search-row"><em>${i+1}</em><div><strong>${escapeHtml(row.key)}</strong><span>검색 ${fmt(row.value)}회${Number(row.zeroCount)?' · 결과 없음 '+fmt(row.zeroCount)+'회':''}</span><i aria-hidden="true"><b style="width:${Math.max(3,sharePercent(row.value,total))}%"></b></i></div><b>${shareLabel(row.value,total)}</b></li>`).join(''):'<li><em>–</em><strong>아직 검색 데이터가 없습니다.</strong><b>0</b></li>';
+  const zeroRows=Array.isArray(search.zeroQueries)?search.zeroQueries:[],zeroEl=$('#operator-search-zero'),zeroMax=Math.max(1,...zeroRows.map(row=>Number(row.value)||0));
+  zeroEl.innerHTML=zeroRows.length?zeroRows.map((row,i)=>`<li class="operator-rank-rich operator-search-row is-zero"><em>${i+1}</em><div><strong>${escapeHtml(row.key)}</strong><span>결과 없음 ${fmt(row.value)}회 · 콘텐츠/별칭 보강 후보</span><i aria-hidden="true"><b style="width:${Math.max(4,(Number(row.value)||0)/zeroMax*100)}%"></b></i></div><b>${fmt(row.value)}회</b></li>`).join(''):'<li><em>✓</em><strong>선택 기간에는 결과 없음 검색이 없습니다.</strong><b>0</b></li>';
+  const clickRows=Array.isArray(search.topClicks)?search.topClicks:[],clickEl=$('#operator-search-clicks');
+  clickEl.innerHTML=clickRows.length?clickRows.map(row=>`<article class="operator-search-click-row"><span>${escapeHtml(row.kind||'결과')}</span><div><small>“${escapeHtml(row.query)}” 검색 후</small><strong>${escapeHtml(row.label||'콘텐츠')}</strong></div><b>${fmt(row.value)}회</b></article>`).join(''):'<p class="operator-empty">아직 검색 결과 클릭 데이터가 없습니다.</p>';
+}
 function renderDaily(rows=[]){
   const el=$('#operator-daily'),max=Math.max(1,...rows.map(x=>Math.max(Number(x.pageviews)||0,Number(x.visitors)||0)));
   el.innerHTML=rows.length?rows.map(x=>`<div class="operator-day"><div class="operator-day-values"><b>${fmt(x.pageviews)}</b><span>${fmt(x.visitors)}</span></div><div class="operator-day-bars" title="${x.date} · 페이지뷰 ${fmt(x.pageviews)}회 · 방문자 ${fmt(x.visitors)}명"><i style="height:${x.pageviews?Math.max(4,x.pageviews/max*100):0}%"></i><i style="height:${x.visitors?Math.max(4,x.visitors/max*100):0}%"></i></div><small>${x.date.slice(5)}</small></div>`).join(''):'<p class="operator-empty">아직 기간별 데이터가 없습니다.</p>';
@@ -179,6 +194,11 @@ function renderOperatorAttention(){
     rows.push({level:'warn',title:'콘텐츠 자료 보강 '+fmt(archive.issueItemCount)+'개',detail:'보강 항목 '+fmt(archive.totalIssues)+'건 · 이미지/썸네일 '+fmt(archive.visualIssueItemCount)+'개'+(names.length?' · '+names.join(', '):''),tab:'contents'});
   }
   if(Number(archive.candidateCount)>0)rows.push({level:'info',title:'자동수집 검토 후보 '+fmt(archive.candidateCount)+'건',detail:'새로 발견된 자료를 기존 콘텐츠에 연결하거나 초안으로 만들 수 있습니다.',tab:'contents'});
+  const search=currentAnalytics?.search||{},zeroTotal=Number(search.zeroTotal)||0;
+  if(zeroTotal>0){
+    const terms=(search.zeroQueries||[]).slice(0,3).map(row=>'“'+row.key+'”').join(', ');
+    rows.push({level:'info',title:'검색 결과 없음 '+fmt(zeroTotal)+'회',detail:(terms?terms+' · ':'')+'콘텐츠명·별칭·검색 키워드 보강을 검토하세요.',tab:'search'});
+  }
   const badEndpoints=endpoints.filter(row=>!row.ok);if(badEndpoints.length)rows.push({level:'bad',title:'API 응답 확인 필요',detail:badEndpoints.map(row=>row.label||row.path||'API').join(' · '),tab:'system'});
   const slow=endpoints.filter(row=>row.ok&&Number(row.ms)>=1500);if(slow.length)rows.push({level:'warn',title:'느린 API 감지',detail:slow.map(row=>(row.label||row.path||'API')+' '+fmt(row.ms)+'ms').join(' · '),tab:'system'});
   if(currentSystem&&(!services.analytics||!services.feedback||!services.push))rows.push({level:'warn',title:'서비스 설정 확인',detail:[!services.analytics&&'실사용 분석',!services.feedback&&'피드백 저장',!services.push&&'Push'].filter(Boolean).join(' · '),tab:'system'});
@@ -211,7 +231,7 @@ async function loadAnalytics(){
   $('#metric-new').textContent=fmt(data.newVisitors);$('#metric-returning').textContent=fmt(data.returningVisits);
   renderDelta('#metric-visitors-delta',data.comparison?.visitorsPct);renderDelta('#metric-sessions-delta',data.comparison?.sessionsPct);renderDelta('#metric-pageviews-delta',data.comparison?.pageviewsPct);renderDelta('#metric-duration-delta',data.comparison?.averageActiveSecondsPct);
   renderPeriodSummary(data);renderPageRows(data.topPages||[],data.pageviews);renderMenuRows(data.topMenus||[],data.menuTotal);renderFeatureRows(data.topFeatures||[],data.featureTotal);renderEnvironmentRows(data.devices||[]);
-  renderDaily(data.daily||[]);renderHourly(data.hourly||[]);renderFunnel(data.funnel||{});renderPerformance(data.performance||{});
+  renderDaily(data.daily||[]);renderHourly(data.hourly||[]);renderFunnel(data.funnel||{});renderPerformance(data.performance||{});renderSearchInsights(data.search||{});
   $('#operator-collection-note').textContent=data.collectionStartedAt?'실사용 분석 수집 시작: '+new Date(data.collectionStartedAt).toLocaleString('ko-KR'):'분석 데이터가 아직 수집되지 않았습니다.';
   const unread=Number(data.feedbackCounts?.new)||0,badge=$('#operator-feedback-badge');badge.textContent=unread;badge.hidden=!unread;renderOperatorAttention();
 }
@@ -327,7 +347,7 @@ async function activateOperatorTab(tab){
   $$('[data-operator-tab]').forEach(button=>{const active=button.dataset.operatorTab===target;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1});
   $$('[data-operator-panel]').forEach(panel=>panel.hidden=panel.dataset.operatorPanel!==target);
   if(target==='contents')await loadOperatorContents();
-  if(target==='performance'&&!currentAnalytics)await loadAnalytics();
+  if((target==='performance'||target==='search')&&!currentAnalytics)await loadAnalytics();
   if(target==='system'&&!currentSystem)await loadSystemStatus();
   if(target==='security')await Promise.allSettled([refreshSession(),loadSecurityLog()]);
 }
@@ -341,7 +361,8 @@ async function boot(){
 document.addEventListener('chunbong:operator-archive-health',event=>{currentArchiveHealth=event.detail||null;renderOperatorAttention()});
 $('#operator-github-login')?.addEventListener('click',event=>{if(event.currentTarget.getAttribute('aria-disabled')==='true')event.preventDefault()});
 document.querySelectorAll('[data-days]').forEach(btn=>btn.addEventListener('click',async()=>{document.querySelectorAll('[data-days]').forEach(x=>{const active=x===btn;x.classList.toggle('active',active);x.setAttribute('aria-pressed',String(active))});currentDays=btn.dataset.days==='all'?'all':(Number(btn.dataset.days)||7);await loadAnalytics()}));
-$$('[data-operator-tab]').forEach((btn,index)=>{btn.tabIndex=index===0?0:-1;btn.addEventListener('click',()=>void activateOperatorTab(btn.dataset.operatorTab));btn.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const tabs=$$('[data-operator-tab]');let next=event.key==='Home'?0:event.key==='End'?tabs.length-1:Math.max(0,tabs.indexOf(btn)+(event.key==='ArrowRight'?1:-1));if(event.key==='ArrowLeft'&&tabs.indexOf(btn)===0)next=tabs.length-1;if(event.key==='ArrowRight'&&tabs.indexOf(btn)===tabs.length-1)next=0;tabs[next]?.focus();void activateOperatorTab(tabs[next]?.dataset.operatorTab)})});
+$('[data-operator-tab]').forEach((btn,index)=>{btn.tabIndex=index===0?0:-1;btn.addEventListener('click',()=>void activateOperatorTab(btn.dataset.operatorTab));btn.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const tabs=$('[data-operator-tab]');let next=event.key==='Home'?0:event.key==='End'?tabs.length-1:Math.max(0,tabs.indexOf(btn)+(event.key==='ArrowRight'?1:-1));if(event.key==='ArrowLeft'&&tabs.indexOf(btn)===0)next=tabs.length-1;if(event.key==='ArrowRight'&&tabs.indexOf(btn)===tabs.length-1)next=0;tabs[next]?.focus();void activateOperatorTab(tabs[next]?.dataset.operatorTab)})});
+$('[data-operator-quick-tab]').forEach(button=>button.addEventListener('click',()=>void activateOperatorTab(button.dataset.operatorQuickTab)));
 $('#operator-export-json')?.addEventListener('click',exportAnalyticsJson);$('#operator-export-csv')?.addEventListener('click',exportAnalyticsCsv);
 $('#operator-feedback-refresh')?.addEventListener('click',loadFeedback);
 ['#operator-feedback-search','#operator-feedback-status-filter','#operator-feedback-category-filter','#operator-feedback-priority-filter','#operator-feedback-sort'].forEach(selector=>$(selector)?.addEventListener(selector.includes('search')?'input':'change',renderFeedbackList));
