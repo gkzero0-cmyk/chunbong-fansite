@@ -200,6 +200,12 @@
     const trackSearchResult=row=>{
       const q=normalize(input.value);
       if(q.length<2||!row)return;
+      const key=q+'|'+renderedMatchCount;
+      if(contentReady&&key!==lastTrackedSearch){
+        clearTimeout(searchAnalyticsTimer);
+        lastTrackedSearch=key;
+        sendSearchAnalytics('search_query',q,{resultCount:renderedMatchCount});
+      }
       sendSearchAnalytics('search_result_click',q,{resultKind:String(row.kind||'').slice(0,40),resultLabel:String(row.label||'').slice(0,80)});
     };
 
