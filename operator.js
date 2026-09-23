@@ -209,6 +209,8 @@ function renderOperatorAttention(){
   const slow=endpoints.filter(row=>row.ok&&Number(row.ms)>=1500);if(slow.length)rows.push({level:'warn',title:'느린 API 감지',detail:slow.map(row=>(row.label||row.path||'API')+' '+fmt(row.ms)+'ms').join(' · '),tab:'system'});
   if(currentSystem&&(!services.analytics||!services.feedback||!services.push))rows.push({level:'warn',title:'서비스 설정 확인',detail:[!services.analytics&&'실사용 분석',!services.feedback&&'피드백 저장',!services.push&&'Push'].filter(Boolean).join(' · '),tab:'system'});
   const unread=feedbackItems.filter(item=>item.status==='new').length||Number(currentAnalytics?.feedbackCounts?.new)||0;if(unread)rows.push({level:'info',title:'새 피드백 '+fmt(unread)+'건',detail:'확인하지 않은 사용자 의견이 있습니다.',tab:'feedback'});
+  const highPriority=feedbackItems.filter(item=>item.priority==='high'&&!['done','archived'].includes(item.status)).length;if(highPriority)rows.push({level:'warn',title:'높은 우선순위 피드백 '+fmt(highPriority)+'건',detail:'완료되지 않은 높은 우선순위 의견이 있습니다.',tab:'feedback'});
+  const duplicateFeedback=feedbackDuplicateSummary();if(duplicateFeedback.groupCount)rows.push({level:'info',title:'반복 피드백 '+fmt(duplicateFeedback.groupCount)+'묶음',detail:'유사 제보 '+fmt(duplicateFeedback.itemCount)+'건을 함께 확인할 수 있습니다.',tab:'feedback'});
   if(!rows.length){state.textContent=currentSystem?'정상':'확인 중';state.className=currentSystem?'is-ok':'is-neutral';root.innerHTML=currentSystem?'<div class="operator-attention-item is-ok"><span>✓</span><div><strong>현재 확인할 이상 신호가 없습니다.</strong><small>Production · API · 저장소 · Push · 피드백 상태를 기준으로 확인했습니다.</small></div></div>':'<p class="operator-empty">운영 상태를 확인하고 있습니다.</p>';return}
   state.textContent=rows.some(row=>row.level==='bad')?'확인 필요':rows.some(row=>row.level==='warn')?'주의':'새 항목';state.className=rows.some(row=>row.level==='bad')?'is-bad':rows.some(row=>row.level==='warn')?'is-warn':'is-info';
   root.innerHTML=rows.map(row=>`<button type="button" class="operator-attention-item is-${row.level}" data-operator-jump="${row.tab}"><span aria-hidden="true">${row.level==='bad'?'!':row.level==='warn'?'△':'•'}</span><div><strong>${escapeHtml(row.title)}</strong><small>${escapeHtml(row.detail)}</small></div><b aria-hidden="true">→</b></button>`).join('');
@@ -256,6 +258,42 @@ function exportAnalyticsCsv(){
 const categoryLabel={bug:'버그 신고',inconvenience:'불편한 점',feature:'기능 제안',design:'디자인 의견',content:'콘텐츠 요청',other:'기타'};
 const statusLabel={new:'새로 들어옴',reviewing:'확인 중',planned:'반영 예정',done:'완료',archived:'보관'};
 const priorityLabel={high:'높음',normal:'보통',low:'낮음'};
+function feedbackFeatures(item={}){
+  const normalized=String(item.message||'').toLowerCase().replace(/https?:\/\/\S+/g,' ').replace(/[^0-9a-z가-힣\s]/g,' ').replace(/\s+/g,' ').trim();
+  const words=normalized.split(' ').filter(token=>token.length>=2);
+  const compact=normalized.replace(/\s+/g,'');
+  const grams=[];for(let i=0;i<compact.length-1&&i<120;i+=1)grams.push(compact.slice(i,i+2));
+  return new Set([...words,...grams]);
+}
+function feedbackSimilarity(a={},b={}){
+  if(!a.message||!b.message)return 0;
+  const left=feedbackFeatures(a),right=feedbackFeatures(b);if(left.size<4||right.size<4)return 0;
+  let same=0;for(const token of left)if(right.has(token))same+=1;
+  const union=left.size+right.size-same,base=union?same/union:0;
+  const context=(a.category===b.category?0.08:0)+(a.page===b.page?0.07:0);
+  return Math.min(1,base+context);
+}
+function similarFeedback(item={},limit=8){
+  return feedbackItems.filter(row=>row.id!==item.id).map(row=>({row,score:feedbackSimilarity(item,row)})).filter(entry=>entry.score>=0.48).sort((a,b)=>b.score-a.score||String(b.row.createdAt||'').localeCompare(String(a.row.createdAt||''))).slice(0,limit);
+}
+function feedbackDuplicateSummary(){
+  const active=feedbackItems.filter(row=>!['done','archived'].includes(row.status)),parent=new Map(active.map(row=>[row.id,row.id]));
+  const find=id=>{let root=parent.get(id)||id;while(parent.get(root)&&parent.get(root)!==root)root=parent.get(root);let cur=id;while(parent.get(cur)&&parent.get(cur)!==root){const next=parent.get(cur);parent.set(cur,root);cur=next}return root};
+  const union=(a,b)=>{const ra=find(a),rb=find(b);if(ra!==rb)parent.set(rb,ra)};
+  for(let i=0;i<active.length;i+=1)for(let j=i+1;j<active.length;j+=1)if(feedbackSimilarity(active[i],active[j])>=0.48)union(active[i].id,active[j].id);
+  const groups=new Map();for(const row of active){const root=find(row.id);if(!groups.has(root))groups.set(root,[]);groups.get(root).push(row)}
+  const repeated=[...groups.values()].filter(rows=>rows.length>1).sort((a,b)=>b.length-a.length);
+  return{groups:repeated,groupCount:repeated.length,itemCount:repeated.reduce((sum,rows)=>sum+rows.length,0)};
+}
+function renderFeedbackSummary(){
+  const duplicate=feedbackDuplicateSummary(),fresh=feedbackItems.filter(row=>row.status==='new').length,active=feedbackItems.filter(row=>['reviewing','planned'].includes(row.status)).length,high=feedbackItems.filter(row=>row.priority==='high'&&!['done','archived'].includes(row.status)).length;
+  $('#feedback-summary-new').textContent=fmt(fresh)+'건';$('#feedback-summary-new').className=fresh?'is-warn':'is-ok';
+  $('#feedback-summary-active').textContent=fmt(active)+'건';
+  $('#feedback-summary-high').textContent=fmt(high)+'건';$('#feedback-summary-high').className=high?'is-bad':'is-ok';
+  $('#feedback-summary-duplicates').textContent=fmt(duplicate.groupCount)+'묶음';$('#feedback-summary-duplicates').className=duplicate.groupCount?'is-warn':'is-ok';
+  $('#feedback-summary-duplicates-meta').textContent=duplicate.groupCount?'유사 제보 '+fmt(duplicate.itemCount)+'건':'반복 제보 없음';
+  return duplicate;
+}
 function filteredFeedback(){
   const q=String($('#operator-feedback-search')?.value||'').trim().toLowerCase(),statusFilter=$('#operator-feedback-status-filter')?.value||'all',categoryFilter=$('#operator-feedback-category-filter')?.value||'all',priorityFilter=$('#operator-feedback-priority-filter')?.value||'all',sort=$('#operator-feedback-sort')?.value||'newest';
   const rows=feedbackItems.filter(x=>(statusFilter==='all'||x.status===statusFilter)&&(categoryFilter==='all'||x.category===categoryFilter)&&(priorityFilter==='all'||(x.priority||'normal')===priorityFilter)&&(!q||[x.id,x.nickname,x.message,x.operatorMemo,x.relatedUpdate,...(x.tags||[])].some(v=>String(v||'').toLowerCase().includes(q))));
@@ -267,13 +305,16 @@ function renderFeedbackList(){
   list.innerHTML=rows.length?rows.map(x=>`<button class="operator-feedback-row ${selectedFeedback?.id===x.id?'active':''}" type="button" data-feedback-id="${x.id}"><span><i data-category="${x.category}">${escapeHtml(categoryLabel[x.category]||x.category)}</i><u data-priority="${x.priority||'normal'}">우선 ${escapeHtml(priorityLabel[x.priority||'normal'])}</u><b data-status="${x.status}">${escapeHtml(statusLabel[x.status]||x.status)}</b></span><strong>${escapeHtml(x.nickname||'익명')}</strong><p>${escapeHtml(x.message)}</p></button>`).join(''):'<p class="operator-empty">조건에 맞는 피드백이 없습니다.</p>';
   list.querySelectorAll('[data-feedback-id]').forEach(btn=>btn.addEventListener('click',()=>selectFeedback(btn.dataset.feedbackId)));
 }
-async function loadFeedback(){const data=await json(API+'operator-feedback');feedbackItems=data.items||[];if(selectedFeedback)selectedFeedback=feedbackItems.find(x=>x.id===selectedFeedback.id)||null;renderFeedbackList();if(selectedFeedback)renderFeedbackDetail();renderOperatorAttention()}
+async function loadFeedback(){const data=await json(API+'operator-feedback');feedbackItems=data.items||[];if(selectedFeedback)selectedFeedback=feedbackItems.find(x=>x.id===selectedFeedback.id)||null;renderFeedbackSummary();renderFeedbackList();if(selectedFeedback)renderFeedbackDetail();renderOperatorAttention()}
 function renderFeedbackDetail(){
   if(!selectedFeedback)return;
   $('#operator-feedback-empty').hidden=true;$('#operator-feedback-content').hidden=false;
   $('#feedback-category').textContent=categoryLabel[selectedFeedback.category]||selectedFeedback.category;$('#feedback-id').textContent=selectedFeedback.id;$('#feedback-message').textContent=selectedFeedback.message;$('#feedback-status').value=selectedFeedback.status;$('#feedback-priority').value=selectedFeedback.priority||'normal';$('#feedback-tags').value=(selectedFeedback.tags||[]).join(', ');$('#feedback-related-update').value=selectedFeedback.relatedUpdate||'';$('#feedback-memo').value=selectedFeedback.operatorMemo||'';
   const meta=[['닉네임',selectedFeedback.nickname||'익명'],['페이지',friendlyKey(selectedFeedback.page)],['기기',selectedFeedback.device],['화면',selectedFeedback.viewport],['PWA',selectedFeedback.pwa?'예':'아니오'],['테마',selectedFeedback.theme],['사이트 버전',selectedFeedback.siteSha?selectedFeedback.siteSha.slice(0,10):'-'],['접수',new Date(selectedFeedback.createdAt).toLocaleString('ko-KR')],['마지막 변경',new Date(selectedFeedback.updatedAt||selectedFeedback.createdAt).toLocaleString('ko-KR')]];
   $('#feedback-meta').innerHTML=meta.map(([k,v])=>`<div><dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd></div>`).join('');
+  const similar=similarFeedback(selectedFeedback),similarList=$('#feedback-similar-list'),similarCount=$('#feedback-similar-count');
+  if(similarCount)similarCount.textContent=fmt(similar.length)+'건';
+  if(similarList){similarList.innerHTML=similar.length?similar.map(({row,score})=>`<button type="button" data-similar-feedback="${escapeHtml(row.id)}"><span><b>${escapeHtml(categoryLabel[row.category]||row.category)}</b><i>${Math.round(score*100)}% 유사</i></span><strong>${escapeHtml(row.message)}</strong><small>${escapeHtml(statusLabel[row.status]||row.status)} · ${new Date(row.createdAt).toLocaleDateString('ko-KR')}</small></button>`).join(''):'<p class="operator-empty">비슷한 제보가 없습니다.</p>';similarList.querySelectorAll('[data-similar-feedback]').forEach(button=>button.addEventListener('click',()=>selectFeedback(button.dataset.similarFeedback)))}
 }
 function selectFeedback(id){selectedFeedback=feedbackItems.find(x=>x.id===id)||null;if(!selectedFeedback)return;renderFeedbackList();renderFeedbackDetail()}
 async function updateSelectedFeedback({statusValue,memoValue,priorityValue,tagsValue,relatedUpdateValue}={}){
@@ -281,7 +322,7 @@ async function updateSelectedFeedback({statusValue,memoValue,priorityValue,tagsV
   const body={id:selectedFeedback.id};
   if(statusValue!==undefined)body.status=statusValue;if(memoValue!==undefined)body.memo=memoValue;if(priorityValue!==undefined)body.priority=priorityValue;if(tagsValue!==undefined)body.tags=tagsValue;if(relatedUpdateValue!==undefined)body.relatedUpdate=relatedUpdateValue;
   const data=await json(API+'operator-feedback-update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  selectedFeedback=data.item;feedbackItems=feedbackItems.map(x=>x.id===selectedFeedback.id?selectedFeedback:x);renderFeedbackList();renderFeedbackDetail();await loadAnalytics();
+  selectedFeedback=data.item;feedbackItems=feedbackItems.map(x=>x.id===selectedFeedback.id?selectedFeedback:x);renderFeedbackSummary();renderFeedbackList();renderFeedbackDetail();renderOperatorAttention();await loadAnalytics();
 }
 function healthLabel(ok){return ok?'<span class="operator-health ok">● 정상</span>':'<span class="operator-health bad">● 확인 필요</span>'}
 function redisMemoryLabel(storage={}){
@@ -296,16 +337,23 @@ function renderHealthHistory(rows=[]){
   const el=$('#operator-health-history');if(!el)return;
   el.innerHTML=rows.length?rows.map(row=>`<article class="operator-event-row is-${escapeHtml(row.level||'ok')}"><span></span><div><strong>${row.level==='ok'?'정상 상태':row.level==='bad'?'장애 신호':'주의 상태'}</strong><p>${escapeHtml((row.issues||[]).join(' · ')||'이상 신호가 해소되었습니다.')}</p><small>${new Date(row.at).toLocaleString('ko-KR')}</small></div></article>`).join(''):'<p class="operator-empty">아직 상태 변경 이력이 없습니다.</p>';
 }
-function renderCommitHistory(rows=[],deploymentSha=''){
+function deploymentGap(rows=[],deploymentSha='',synced=null){
+  const normalized=Array.isArray(rows)?rows:[];if(synced===true)return{count:0,known:true,pending:[]};
+  const index=normalized.findIndex(row=>String(row.sha||'')===String(deploymentSha||''));
+  if(index>=0)return{count:index,known:true,pending:normalized.slice(0,index)};
+  return{count:normalized.length,known:false,pending:normalized};
+}
+function renderCommitHistory(rows=[],deploymentSha='',synced=null){
   const el=$('#operator-commit-history');if(!el)return;
-  const normalized=Array.isArray(rows)?rows:[];
+  const normalized=Array.isArray(rows)?rows:[],gap=deploymentGap(normalized,deploymentSha,synced),pendingIds=new Set(gap.pending.map(row=>String(row.sha||'')));
   el.innerHTML=normalized.length?normalized.map(row=>{
-    const production=deploymentSha&&String(row.sha||'')===String(deploymentSha);
+    const production=deploymentSha&&String(row.sha||'')===String(deploymentSha),pending=pendingIds.has(String(row.sha||''));
     const when=row.date?new Date(row.date).toLocaleString('ko-KR'):'날짜 확인 중';
     const author=row.author||'작성자 확인 중';
     const href=row.url||('https://github.com/gkzero0-cmyk/chunbong-fansite/commit/'+encodeURIComponent(row.sha||''));
-    return `<a class="operator-commit-row ${production?'is-production':''}" href="${escapeHtml(href)}" target="_blank" rel="noopener"><span class="operator-commit-sha">${escapeHtml(row.shortSha||shortSha(row.sha))}</span><div><strong>${escapeHtml(row.message||'변경사항')}</strong><small>${escapeHtml(author)} · ${escapeHtml(when)}</small></div>${production?'<b>Production</b>':'<i aria-hidden="true">↗</i>'}</a>`;
+    return `<a class="operator-commit-row ${production?'is-production':pending?'is-pending':''}" href="${escapeHtml(href)}" target="_blank" rel="noopener"><span class="operator-commit-sha">${escapeHtml(row.shortSha||shortSha(row.sha))}</span><div><strong>${escapeHtml(row.message||'변경사항')}</strong><small>${escapeHtml(author)} · ${escapeHtml(when)}</small></div>${production?'<b>Production</b>':pending?'<b class="is-pending">배포 대기</b>':'<i aria-hidden="true">↗</i>'}</a>`;
   }).join(''):'<p class="operator-empty">최근 GitHub 변경 이력을 확인하지 못했습니다.</p>';
+  return gap;
 }
 function renderChangelogHealth(changelog={}){
   const box=$('#operator-changelog-health'),title=$('#system-changelog-title'),date=$('#system-changelog-date'),sha=$('#system-changelog-sha');if(!box)return;
@@ -329,12 +377,13 @@ async function loadSystemStatus(){
   $('#system-sha').textContent=shortSha(dep.sha);$('#system-main-sha').textContent=shortSha(dep.mainSha);$('#system-url').textContent=dep.url||'-';
   $('#system-vercel-status').textContent=dep.rateLimited?'배포 제한 · '+(dep.vercel?.description||'rate limited'):dep.vercel?.description||dep.vercel?.state||'상태 정보 없음';
   $('#system-retry-at').textContent=dep.retryAfter?'안전 재시도 기준 '+new Date(dep.retryAfter).toLocaleString('ko-KR'):dep.synced===true?'재시도 불필요':'자동 재시도 조건 확인 중';
+  const commitRows=data.repository?.recentCommits||[],gap=deploymentGap(commitRows,dep.sha,dep.synced);$('#system-pending-commits').textContent=dep.synced===true?'0건':gap.known?fmt(gap.count)+'건':fmt(gap.count)+'건 이상';
   $('#system-repo-size').textContent=data.repository?.sizeKb?fmt(data.repository.sizeKb)+' KB':'-';$('#system-redis-keys').textContent=storage.keyCount===null||storage.keyCount===undefined?'제공되지 않음':fmt(storage.keyCount)+'개';$('#system-redis-memory').textContent=redisMemoryLabel(storage);$('#system-analytics-days').textContent=fmt(storage.analyticsRecordedDays)+'일';$('#system-feedback-total').textContent=fmt(storage.feedbackTotal)+'개';$('#system-checked-at').textContent=new Date(data.checkedAt).toLocaleString('ko-KR');
   const serviceRows=[['GitHub 운영자 인증',services.githubAuth],['이메일 운영자 인증',services.emailAuth],['Push 알림',services.push],['실사용 분석',services.analytics],['피드백 저장',services.feedback]];
   $('#operator-service-health').innerHTML=serviceRows.map(([label,ok])=>`<div><span>${label}</span>${healthLabel(Boolean(ok))}</div>`).join('');
   const endpoints=Array.isArray(data.endpoints)?data.endpoints:[];
   $('#operator-endpoint-health').innerHTML=endpoints.length?endpoints.map(row=>`<div><span>${escapeHtml(row.label||row.path||'API')} <small>${fmt(row.ms)}ms</small></span><span class="operator-endpoint-result ${row.ok?'ok':'bad'}">${row.ok?'HTTP '+fmt(row.status):row.status?'HTTP '+fmt(row.status):'응답 실패'}</span></div>`).join(''):'<p class="operator-empty">API 상태를 확인하지 못했습니다.</p>';
-  renderCommitHistory(data.repository?.recentCommits||[],dep.sha);renderChangelogHealth(data.changelog||{});
+  renderCommitHistory(commitRows,dep.sha,dep.synced);renderChangelogHealth(data.changelog||{});
   renderHealthHistory(data.health?.history||[]);renderOperatorAttention();
 }
 const securityActionLabel={
@@ -395,6 +444,7 @@ $('#operator-github-login')?.addEventListener('click',event=>{if(event.currentTa
 document.querySelectorAll('[data-days]').forEach(btn=>btn.addEventListener('click',async()=>{document.querySelectorAll('[data-days]').forEach(x=>{const active=x===btn;x.classList.toggle('active',active);x.setAttribute('aria-pressed',String(active))});currentDays=btn.dataset.days==='all'?'all':(Number(btn.dataset.days)||7);await loadAnalytics()}));
 $$('[data-operator-tab]').forEach((btn,index)=>{btn.tabIndex=index===0?0:-1;btn.addEventListener('click',()=>void activateOperatorTab(btn.dataset.operatorTab));btn.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const tabs=$$('[data-operator-tab]');let next=event.key==='Home'?0:event.key==='End'?tabs.length-1:Math.max(0,tabs.indexOf(btn)+(event.key==='ArrowRight'?1:-1));if(event.key==='ArrowLeft'&&tabs.indexOf(btn)===0)next=tabs.length-1;if(event.key==='ArrowRight'&&tabs.indexOf(btn)===tabs.length-1)next=0;tabs[next]?.focus();void activateOperatorTab(tabs[next]?.dataset.operatorTab)})});
 $$('[data-operator-quick-tab]').forEach(button=>button.addEventListener('click',()=>void activateOperatorTab(button.dataset.operatorQuickTab)));
+$('[data-operator-content-sync]')?.addEventListener('click',async event=>{const button=event.currentTarget;button.disabled=true;try{await activateOperatorTab('contents');const module=await operatorContentsModule();await module.runOfficialSync()}finally{button.disabled=false}});
 $('#operator-export-json')?.addEventListener('click',exportAnalyticsJson);$('#operator-export-csv')?.addEventListener('click',exportAnalyticsCsv);
 $('#operator-feedback-refresh')?.addEventListener('click',loadFeedback);
 ['#operator-feedback-search','#operator-feedback-status-filter','#operator-feedback-category-filter','#operator-feedback-priority-filter','#operator-feedback-sort'].forEach(selector=>$(selector)?.addEventListener(selector.includes('search')?'input':'change',renderFeedbackList));
