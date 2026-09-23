@@ -5,7 +5,7 @@ const workflow=fs.readFileSync(new URL('../.github/workflows/push-dispatch.yml',
 
 assert.match(workflow,/cron:\s*'\*\/5 \* \* \* \*'/,'background dispatch cadence must remain enabled');
 assert.match(workflow,/workflow_dispatch:/,'background dispatch must remain manually runnable');
-assert.match(workflow,/push:\s*\n\s*branches: \[main\][\s\S]*push-dispatch\.yml/,'workflow changes should self-trigger one immediate OIDC dispatch on main');
+assert.doesNotMatch(workflow,/^  push:/m,'GitHub OIDC policy does not authorize push-event tokens for this workflow');
 assert.match(workflow,/AUDIENCE:\s*chunbong-fansite-push/,'GitHub OIDC audience must remain stable');
 assert.match(workflow,/Authorization: Bearer \$token/,'archive sync must send the GitHub OIDC token');
 assert.match(workflow,/Origin: https:\/\/github\.com/,'archive sync must carry an explicit external Origin so it cannot be mistaken for a same-site browser request');
