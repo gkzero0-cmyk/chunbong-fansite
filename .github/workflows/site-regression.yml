@@ -15,29 +15,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Temporary NamuWiki Leopel inspection
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl -L --compressed -fsS 'https://r.jina.ai/https://namu.wiki/w/%EB%A0%88%EC%98%A4%ED%8E%A0' \
-            -H 'User-Agent: Mozilla/5.0' \
-            -o /tmp/leopel.txt
-          python3 - <<'PY'
-          import re
-          raw=open('/tmp/leopel.txt','r',encoding='utf-8',errors='ignore').read()
-          print('NAMU_PROXY_BYTES='+str(len(raw)))
-          print('NAMU_TEXT_BEGIN')
-          for line in raw.splitlines()[:1200]:
-              line=line.strip()
-              if line:
-                  print(line[:1200])
-          print('NAMU_TEXT_END')
-          print('NAMU_IMAGES_BEGIN')
-          for url in dict.fromkeys(re.findall(r'https?://[^)\s]+',raw)):
-              if any(x in url.lower() for x in ['image','img','namu','static','arca','cdn']):
-                  print('IMG\t'+url[:1200])
-          print('NAMU_IMAGES_END')
-          PY
       - name: Check JavaScript syntax
         run: |
           node --check service-worker.js
