@@ -85,6 +85,18 @@ jobs:
           assert.equal(boundary.before, '2026-09-19', 'KST date must remain the same before midnight');
           assert.equal(boundary.after, '2026-09-20', 'KST date must roll over exactly at midnight');
 
+          // Simulate the stale native-disabled state left by the previous implementation.
+          await page.locator('[data-daily-fortune-card]').evaluate(el => {
+            el.disabled = true;
+            el.setAttribute('aria-disabled','true');
+          });
+          await page.locator('[data-daily-fortune-close]').click();
+          await page.waitForFunction(() => document.querySelector('#daily-fortune-dialog')?.open === false);
+          await page.locator('[data-daily-fortune-launcher]').click();
+          await page.waitForFunction(() => document.querySelector('#daily-fortune-dialog')?.open === true);
+          assert.equal(await page.locator('[data-daily-fortune-card]').evaluate(el => el.disabled), false, 'reopening must repair a stale native-disabled card');
+          assert.equal(await page.locator('[data-daily-fortune-card]').getAttribute('aria-disabled'), 'false', 'fresh draw must restore the logical lock to false');
+
           await page.locator('[data-daily-fortune-card]').click();
           await page.waitForFunction(() => document.querySelector('[data-daily-fortune-stage]')?.classList.contains('is-spinning'));
           const storageKey = await page.evaluate(() => window.CHUNBONG_DAILY_FORTUNE.STORAGE_KEY);
@@ -92,7 +104,8 @@ jobs:
           await page.waitForTimeout(1900);
           assert.equal(await page.locator('[data-daily-fortune-stage]').evaluate(el=>el.classList.contains('is-spinning')),true,'extended spin should still be visibly spinning near two seconds');
           assert.equal(await page.locator('[data-daily-fortune-result]').isHidden(), true, 'result must remain hidden during the high-speed back spin');
-          assert.equal(await page.locator('[data-daily-fortune-card]').isDisabled(), true, 'draw must lock immediately while the card is spinning');
+          assert.equal(await page.locator('[data-daily-fortune-card]').evaluate(el => el.disabled), false, 'draw must remain natively clickable so interrupted states can recover');
+          assert.equal(await page.locator('[data-daily-fortune-card]').getAttribute('aria-disabled'), 'true', 'draw must use a logical lock while the card is spinning');
           assert.equal(await page.evaluate(key => localStorage.getItem(key), storageKey), null, 'a mid-spin interruption must not consume today\'s draw');
           await page.waitForFunction(() => {
             const key = window.CHUNBONG_DAILY_FORTUNE?.STORAGE_KEY;
@@ -106,7 +119,8 @@ jobs:
           const firstState = await page.evaluate(() => JSON.parse(localStorage.getItem(window.CHUNBONG_DAILY_FORTUNE.STORAGE_KEY)));
           assert.ok(firstState.date, 'drawn result must save its KST date');
           assert.ok(firstState.card >= 0 && firstState.card <= 21, 'drawn card must be one of the 22 Major Arcana');
-          assert.equal(await page.locator('[data-daily-fortune-card]').isDisabled(), true, 'same result dialog must not allow a second draw');
+          assert.equal(await page.locator('[data-daily-fortune-card]').evaluate(el => el.disabled), false, 'saved result must not use the native disabled attribute');
+          assert.equal(await page.locator('[data-daily-fortune-card]').getAttribute('aria-disabled'), 'true', 'same-day result must stay logically locked against a second draw');
           assert.match((await page.locator('[data-daily-fortune-image]').getAttribute('src')) || '', /res\.cloudinary\.com\/.*c_crop.*f_auto\/q_auto/, 'drawn card must use the optimized card crop URL');
 
           assert.equal(await page.locator('[data-daily-fortune-card]').evaluate(el=>el.classList.contains('is-revealed')), true, 'card must finish on the revealed front side');
@@ -153,7 +167,8 @@ jobs:
 
           await page.locator('[data-daily-fortune-launcher]').click();
           await page.waitForFunction(() => document.querySelector('#daily-fortune-dialog')?.open === true);
-          assert.equal(await page.locator('[data-daily-fortune-card]').isDisabled(), true, 'reopened same-day result must remain locked');
+          assert.equal(await page.locator('[data-daily-fortune-card]').evaluate(el => el.disabled), false, 'reopened same-day result must remain recoverable at the native button level');
+          assert.equal(await page.locator('[data-daily-fortune-card]').getAttribute('aria-disabled'), 'true', 'reopened same-day result must remain logically locked');
           assert.equal((await page.locator('[data-daily-fortune-result-title]').textContent())?.trim(), firstTitle, 'launcher must reopen the same fortune result');
 
           await page.locator('[data-daily-fortune-close]').click();
@@ -169,7 +184,8 @@ jobs:
           });
           await page.reload({ waitUntil: 'domcontentloaded' });
           await page.waitForFunction(() => document.querySelector('#daily-fortune-dialog')?.open === true);
-          assert.equal(await page.locator('[data-daily-fortune-card]').isDisabled(), false, 'expired KST date must unlock a new draw');
+          assert.equal(await page.locator('[data-daily-fortune-card]').evaluate(el => el.disabled), false, 'expired KST date must keep the card natively interactive');
+          assert.equal(await page.locator('[data-daily-fortune-card]').getAttribute('aria-disabled'), 'false', 'expired KST date must unlock the logical draw state');
           assert.equal(await page.locator('[data-daily-fortune-result]').isHidden(), true, 'expired result must not leak into the new day');
           assert.equal(await page.locator('[data-daily-fortune-image]').getAttribute('src'), null, 'new day must return to an unloaded card back');
 
