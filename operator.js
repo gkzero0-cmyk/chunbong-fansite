@@ -242,6 +242,8 @@ function exportAnalyticsCsv(){
   (currentAnalytics.daily||[]).forEach(x=>rows.push(['일별 '+x.date,'방문자',x.visitors],['일별 '+x.date,'세션',x.sessions],['일별 '+x.date,'페이지뷰',x.pageviews]));
   (currentAnalytics.topPages||[]).forEach(x=>rows.push(['페이지',x.key,x.value]));
   (currentAnalytics.topFeatures||[]).forEach(x=>rows.push(['기능',x.key,x.value]));
+  (currentAnalytics.search?.topQueries||[]).forEach(x=>rows.push(['검색어',x.key,x.value],['검색 결과 없음',x.key,x.zeroCount||0]));
+  (currentAnalytics.search?.topClicks||[]).forEach(x=>rows.push(['검색 후 클릭',x.query+' → '+x.label,x.value]));
   const csv='\ufeff'+rows.map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\n');
   download('chunbong-analytics-'+String(currentDays)+'d.csv',csv,'text/csv;charset=utf-8');
 }
