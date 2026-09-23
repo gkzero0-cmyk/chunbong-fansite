@@ -702,6 +702,7 @@
 
     const task = new Promise((resolve, reject) => {
       const img = new Image();
+      let triedFallback = false;
       img.decoding = 'async';
       img.onload = () => {
         images.set(meta.id, img);
@@ -711,6 +712,11 @@
         resolve(img);
       };
       img.onerror = () => {
+        if (!triedFallback && meta.fallbackImage) {
+          triedFallback = true;
+          img.src = meta.fallbackImage;
+          return;
+        }
         imageLoads.delete(meta.id);
         reject(new Error(`failed_stage_image_${meta.id}`));
       };
