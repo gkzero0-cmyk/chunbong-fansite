@@ -116,12 +116,22 @@
     </section>
 
     <section id="operator-panel-contents" role="tabpanel" aria-labelledby="operator-tab-contents" data-operator-panel="contents" hidden>
-      <div class="operator-system-summary operator-archive-summary" aria-label="콘텐츠 아카이브 상태">
-        <article class="operator-health-card"><span>전체 콘텐츠</span><strong id="archive-health-total">-</strong><small>등록된 콘텐츠 기록</small></article>
-        <article class="operator-health-card"><span>자료 보강 필요</span><strong id="archive-health-issues">-</strong><small id="archive-health-issues-meta">검사 대기 중</small></article>
-        <article class="operator-health-card"><span>이미지 · 썸네일</span><strong id="archive-health-visual">-</strong><small id="archive-health-visual-meta">검사 대기 중</small></article>
-        <article class="operator-health-card"><span>자동수집 검토</span><strong id="archive-health-candidates">-</strong><small id="archive-health-sync-meta">동기화 상태 확인 중</small></article>
+      <div class="operator-system-summary operator-archive-summary" aria-label="춘봉 콘텐츠 관리 상태">
+        <button type="button" class="operator-health-card operator-health-action" data-archive-health-action="all"><span>전체 콘텐츠</span><strong id="archive-health-total">-</strong><small>눌러서 전체 목록 보기</small></button>
+        <button type="button" class="operator-health-card operator-health-action" data-archive-health-action="issues"><span>자료 보강 필요</span><strong id="archive-health-issues">-</strong><small id="archive-health-issues-meta">눌러서 수정할 콘텐츠 보기</small></button>
+        <button type="button" class="operator-health-card operator-health-action" data-archive-health-action="visual"><span>이미지 · 썸네일</span><strong id="archive-health-visual">-</strong><small id="archive-health-visual-meta">눌러서 이미지 검사로 이동</small></button>
+        <button type="button" class="operator-health-card operator-health-action" data-archive-health-action="candidates"><span>자동수집 검토</span><strong id="archive-health-candidates">-</strong><small id="archive-health-sync-meta">눌러서 검토 자료 보기</small></button>
       </div>
+      <article class="operator-card operator-archive-workflow">
+        <header><div><h2>춘봉 콘텐츠 관리 순서</h2><small>무엇을 확인해야 하는지부터 실제 팬사이트 반영까지 순서대로 진행할 수 있습니다.</small></div></header>
+        <div class="operator-archive-workflow-status" data-archive-workflow-status></div>
+        <div class="operator-archive-workflow-actions">
+          <button type="button" data-archive-workflow-action="issues"><b>1</b><span><strong>확인 필요 콘텐츠</strong><small>보강 항목이 있는 콘텐츠만 보기</small></span></button>
+          <button type="button" data-archive-workflow-action="collector"><b>2</b><span><strong>수집 자료 정리</strong><small>SOOP·FM코리아 자동수집 연결 상태 관리</small></span></button>
+          <button type="button" data-archive-workflow-action="editor"><b>3</b><span><strong>선택 콘텐츠 수정</strong><small>기본 정보부터 영상·이미지까지 편집</small></span></button>
+          <button type="button" data-archive-workflow-action="public"><b>4</b><span><strong>팬사이트에서 확인</strong><small>현재 공개된 실제 페이지 열기</small></span></button>
+        </div>
+      </article>
       <article class="operator-card operator-collector-inbox-card" data-collector-inbox>
         <header>
           <div><h2>자동 수집 자료함</h2><small>SOOP · FM코리아에서 수집된 자료를 한곳에서 확인하고 콘텐츠 연결·공개 범위를 관리합니다.</small></div>
@@ -160,7 +170,7 @@
       </article>
       <div class="operator-archive-layout">
         <aside class="operator-card operator-archive-list-card">
-          <header><div><h2>콘텐츠 아카이브</h2><small>SOOP · YouTube · 나무위키 · FM코리아 자동 수집</small></div><div class="operator-archive-head-actions"><button type="button" data-archive-auto-sync>공식 자료 동기화</button><button type="button" data-archive-new>새 콘텐츠</button></div></header>
+          <header><div><h2>춘봉 콘텐츠 목록</h2><small>왼쪽에서 콘텐츠를 선택하면 오른쪽에서 수정할 수 있습니다.</small></div><div class="operator-archive-head-actions"><button type="button" data-archive-auto-sync>자료 새로 확인</button><button type="button" data-archive-new>새 콘텐츠</button></div></header>
           <div class="operator-archive-auto-state" data-archive-auto-state>공식 자료 자동 수집 상태를 확인하고 있습니다.</div>
           <details class="operator-soop-helper operator-unified-collector" data-unified-collector open>
             <summary><span>춘봉 콘텐츠 자동 수집기</span><b>한 번 설치</b></summary>
