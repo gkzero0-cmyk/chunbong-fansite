@@ -7,6 +7,70 @@
     errorState, bindRetry, setupReveal, requestedOpenId
   } = core;
   const itemKey=item=>String(item?.id||item?.link||item?.title||'');
+  const detailCache=new Map();
+  const detailQueue=[];
+  let detailActive=0;
+  const DETAIL_CONCURRENCY=2;
+
+  const pumpDetailQueue=()=>{
+    while(detailActive<DETAIL_CONCURRENCY&&detailQueue.length){
+      const job=detailQueue.shift();
+      detailActive+=1;
+      job().finally(()=>{detailActive-=1;pumpDetailQueue();});
+    }
+  };
+  const fetchDetailImages=item=>{
+    const id=String(item?.id||'');
+    if(!/^\d+$/.test(id))return Promise.resolve([]);
+    if(detailCache.has(id))return detailCache.get(id);
+    const promise=new Promise(resolve=>{
+      detailQueue.push(async()=>{
+        try{
+          const response=await fetch('/api/content?type=fanart-detail&id='+encodeURIComponent(id),{headers:{accept:'application/json'}});
+          if(!response.ok)return resolve([]);
+          const payload=await response.json();
+          resolve(Array.isArray(payload?.item?.images)?payload.item.images.filter(Boolean):[]);
+        }catch(_){resolve([]);}
+      });
+      pumpDetailQueue();
+    });
+    detailCache.set(id,promise);
+    return promise;
+  };
+
+  async function hydrateCardImage(button,item){
+    if(!button||!item||item.thumb||button.dataset.imageHydrated==='1')return;
+    button.dataset.imageHydrated='1';
+    const images=await fetchDetailImages(item);
+    if(!images.length||!button.isConnected)return;
+    item.thumb=images[0];
+    item.fullImage=images[0];
+    const wrap=button.querySelector('.fanart-image');
+    if(!wrap)return;
+    const img=document.createElement('img');
+    img.src=proxiedImage(images[0]);
+    img.alt=item.title||'춘봉 팬아트';
+    img.loading='lazy';
+    img.decoding='async';
+    wrap.replaceChildren(img);
+  }
+
+  function hydrateVisibleCards(grid,items){
+    const buttons=$$('[data-fanart-index]',grid);
+    if(!('IntersectionObserver' in window)){
+      buttons.slice(0,4).forEach(button=>void hydrateCardImage(button,items[Number(button.dataset.fanartIndex)]));
+      return;
+    }
+    const observer=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        if(!entry.isIntersecting)return;
+        observer.unobserve(entry.target);
+        const index=Number(entry.target.dataset.fanartIndex);
+        void hydrateCardImage(entry.target,items[index]);
+      });
+    },{rootMargin:'240px 0px',threshold:0.01});
+    buttons.forEach(button=>observer.observe(button));
+  }
 
   async function renderFanartPage() {
     const grid = $('#fanart-grid');
@@ -24,7 +88,7 @@
     grid.innerHTML = items.map((item, index) => `
       <button class="fanart-card reveal" type="button" data-fanart-index="${index}">
         <span class="fanart-image">
-          ${item.thumb ? `<img src="${esc(proxiedImage(item.thumb))}" alt="${esc(item.title || '춘봉 팬아트')}" loading="lazy">` : `<span class="fan-placeholder">${esc(item.symbol || '✦')}</span>`}
+          ${item.thumb ? `<img src="${esc(proxiedImage(item.thumb))}" alt="${esc(item.title || '춘봉 팬아트')}" loading="lazy" decoding="async">` : `<span class="fan-placeholder">${esc(item.symbol || '✦')}</span>`}
         </span>
         <span class="fanart-copy"><strong>${esc(item.title || item.caption || '춘봉 팬아트')}</strong><small>${esc(item.author || 'CHUNBONG FAN ART')}${item.date ? ` · ${esc(item.date)}` : ''}</small></span>
       </button>`).join('');
@@ -56,6 +120,7 @@
         }}));
       });
     });
+    hydrateVisibleCards(grid,items);
     $$('[data-dialog-close]', dialog).forEach(button => button.addEventListener('click', () => dialog.close()));
     dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
     if (requestedOpenId) {
