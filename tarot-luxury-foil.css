@@ -262,7 +262,7 @@
   border-radius:50%!important;
   pointer-events:none!important;
   opacity:0!important;
-  transform:translate(-50%,-50%) scale(calc(.82 * var(--foil-flare))) rotate(var(--foil-angle))!important;
+  transform:translate(-50%,-50%) scale(var(--foil-flare)) rotate(var(--foil-angle))!important;
   background:
     repeating-radial-gradient(circle,
       transparent 0 9%,
