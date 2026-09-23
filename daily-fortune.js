@@ -233,6 +233,10 @@
               </span>
               <span class="daily-fortune-holo-surface" data-daily-fortune-holo aria-hidden="true">
                 <span class="daily-fortune-holo-film"></span>
+                <span class="daily-fortune-holo-lens"></span>
+                <span class="daily-fortune-holo-crystals">
+                  <i></i><i></i><i></i><i></i><i></i><i></i>
+                </span>
               </span>
             </button>
           </span>
@@ -318,6 +322,8 @@
       stage.style.setProperty('--tilt-y', '0deg');
       stage.style.setProperty('--glow-x', '50%');
       stage.style.setProperty('--glow-y', '50%');
+      stage.style.setProperty('--prism-angle', '0deg');
+      stage.style.setProperty('--flare-scale', '1');
       lastRippleX = -1;
       lastRippleY = -1;
       holo.querySelectorAll('.daily-fortune-holo-ripple,.daily-fortune-holo-spark').forEach(node => node.remove());
@@ -580,13 +586,23 @@
       };
     };
 
+    const updateCrystalPointer = ({ px, py }) => {
+      const dx = px - 0.5;
+      const dy = py - 0.5;
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      const distance = Math.min(1, Math.hypot(dx, dy) * 1.55);
+      stage.style.setProperty('--glow-x', (px * 100).toFixed(1) + '%');
+      stage.style.setProperty('--glow-y', (py * 100).toFixed(1) + '%');
+      stage.style.setProperty('--prism-angle', angle.toFixed(1) + 'deg');
+      stage.style.setProperty('--flare-scale', (0.92 + distance * 0.20).toFixed(3));
+    };
+
     stage.addEventListener('pointerenter', event => {
       cardButton.disabled = false;
       if (drawing || event.pointerType === 'touch') return;
       const point = pointerPosition(event);
       if (!point) return;
-      stage.style.setProperty('--glow-x', (point.px * 100).toFixed(1) + '%');
-      stage.style.setProperty('--glow-y', (point.py * 100).toFixed(1) + '%');
+      updateCrystalPointer(point);
       stage.classList.add('is-prism-active');
       if (reducedMotion()) return;
       const now = performance.now();
@@ -601,8 +617,7 @@
       const point = pointerPosition(event);
       if (!point) return;
       const { px, py } = point;
-      stage.style.setProperty('--glow-x', (px * 100).toFixed(1) + '%');
-      stage.style.setProperty('--glow-y', (py * 100).toFixed(1) + '%');
+      updateCrystalPointer({ px, py });
       stage.classList.add('is-prism-active');
       if (reducedMotion()) return;
       const revealed = cardButton.classList.contains('is-revealed');

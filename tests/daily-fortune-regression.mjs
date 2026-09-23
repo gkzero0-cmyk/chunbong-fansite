@@ -8,8 +8,8 @@ const css = read('daily-fortune.css');
 const sw = read('service-worker.js');
 
 assert.doesNotThrow(() => new Function(js), 'daily fortune runtime must remain valid JavaScript');
-assert.match(home, /href="daily-fortune\.css\?v=7"/, 'home daily fortune CSS missing');
-assert.match(home, /src="daily-fortune\.js\?v=9"/, 'home daily fortune runtime missing');
+assert.match(home, /href="daily-fortune\.css\?v=8"/, 'home daily fortune CSS missing');
+assert.match(home, /src="daily-fortune\.js\?v=10"/, 'home daily fortune runtime missing');
 assert.match(js, /timeZone: SEOUL_TZ/, 'daily fortune must use the Seoul timezone');
 assert.match(js, /const STORAGE_KEY = 'chunbong-daily-fortune-v1'/, 'daily fortune storage key missing');
 assert.match(js, /parsed\?\.date !== today/, 'stored result must expire on the next KST date');
@@ -91,3 +91,11 @@ assert.match(js,/cardButton\.addEventListener\('click',[\s\S]*event\.detail === 
 assert.match(js,/pointerActivationSafe: true/,'runtime diagnostics must expose the pointer activation safety fix');
 assert.match(js,/const recoverIdleState = \(\) => \{[\s\S]*state = readState\(\);[\s\S]*renderState\(false\)/,'a saved same-day result must recover from storage whenever the dialog reopens');
 assert.match(js,/A single clear wind-chime strike/,'result reveal must use the refined wind-chime direction');
+assert.match(js,/daily-fortune-holo-lens/,'daily fortune hologram must include a pointer-follow lens layer');
+assert.match(js,/daily-fortune-holo-crystals/,'daily fortune hologram must include crystal shard layers');
+assert.match(js,/const updateCrystalPointer = \(\{ px, py \}\) =>/,'daily fortune must derive prism angle and flare scale from the pointer');
+assert.match(js,/--prism-angle/,'daily fortune runtime must expose pointer-driven prism angle');
+assert.match(css,/reference-grade crystal refraction hologram/,'reference-grade crystal refraction styling missing');
+assert.match(css,/\.daily-fortune-holo-lens::after/,'crystal lens must include a bright central refraction hotspot');
+assert.match(css,/repeating-radial-gradient\(circle/,'crystal lens must render diffraction rings rather than a flat color wash');
+assert.match(css,/\.daily-fortune-holo-crystals i:nth-child\(6\)/,'daily fortune must render multiple crystal shard highlights');

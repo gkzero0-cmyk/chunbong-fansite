@@ -57,6 +57,9 @@ jobs:
           ];
 
           const closeFortuneIfOpen=async target=>{
+            // Daily fortune auto-opens after ~900ms on a fresh KST day.
+            // Wait through that window so a late modal cannot intercept activity controls.
+            await target.waitForTimeout(1050);
             const dialog=target.locator('#daily-fortune-dialog');
             if(await dialog.count()){
               const open=await dialog.evaluate(el=>Boolean(el.open));

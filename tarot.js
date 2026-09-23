@@ -679,8 +679,12 @@ if (typeof document !== 'undefined') {
     if (!rect.width || !rect.height) return;
     const px = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
     const py = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+    const angle = Math.atan2(py - 0.5, px - 0.5) * (180 / Math.PI);
+    const distance = Math.min(1, Math.hypot(px - 0.5, py - 0.5) * 1.6);
     host.style.setProperty('--foil-x', (px * 100).toFixed(1) + '%');
     host.style.setProperty('--foil-y', (py * 100).toFixed(1) + '%');
+    host.style.setProperty('--foil-angle', angle.toFixed(1) + 'deg');
+    host.style.setProperty('--foil-flare', (0.92 + distance * 0.16).toFixed(3));
     host.style.setProperty('--foil-tilt-x', ((0.5 - py) * 5).toFixed(2) + 'deg');
     host.style.setProperty('--foil-tilt-y', ((px - 0.5) * 7).toFixed(2) + 'deg');
   }
@@ -708,6 +712,8 @@ if (typeof document !== 'undefined') {
     host.classList.remove('is-foil-active','is-foil-rippling');
     host.style.setProperty('--foil-tilt-x','0deg');
     host.style.setProperty('--foil-tilt-y','0deg');
+    host.style.setProperty('--foil-angle','0deg');
+    host.style.setProperty('--foil-flare','1');
   }
 
   function installTarotFoilEvents(container) {
