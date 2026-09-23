@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         춘봉 콘텐츠 자동 수집기
 // @namespace    https://chunbong-fansite.vercel.app/
-// @version      1.1.0
+// @version      1.2.0
 // @description  춘봉 팬사이트용 나무위키·SOOP·FM코리아 브라우저 자료 자동 수집기
 // @match        https://namu.wiki/w/*
 // @match        https://www.namu.wiki/w/*
@@ -24,18 +24,31 @@
 
 (function(){
   'use strict';
-  const VERSION='1.1.0';
+  const VERSION='1.2.0';
   const CHANNEL='chunbong-content-collector';
   const QUEUE_KEY='cb-content-collector-queue-v1';
   const SEEN_KEY='cb-content-collector-seen-v1';
   const AUTO_HASH='chunbong-auto-collect';
   const DISCOVER_HASH='chunbong-auto-discover';
+  const SOOP_BACKFILL_HASH='chunbong-soop-backfill';
+  const SOOP_HISTORY_KEY='cb-soop-history-v2';
+  const SOOP_BACKFILL_KEY='cb-soop-backfill-v2';
   const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const clean=value=>String(value||'').replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim();
   const read=(key,fallback)=>{try{const value=GM_getValue(key,fallback);return value??fallback}catch{return fallback}};
   const write=(key,value)=>{try{GM_setValue(key,value)}catch{}};
   const queueRows=()=>{const rows=read(QUEUE_KEY,[]);return Array.isArray(rows)?rows:[]};
   const seenMap=()=>{const rows=read(SEEN_KEY,{});return rows&&typeof rows==='object'&&!Array.isArray(rows)?rows:{}};
+  const soopHistory=()=>{const rows=read(SOOP_HISTORY_KEY,{});return rows&&typeof rows==='object'&&!Array.isArray(rows)?rows:{}};
+  const backfillState=()=>{const row=read(SOOP_BACKFILL_KEY,{});return row&&typeof row==='object'&&!Array.isArray(row)?row:{}};
+  function setBackfillState(patch={}){const next={...backfillState(),...patch,updatedAt:new Date().toISOString()};write(SOOP_BACKFILL_KEY,next);return next}
+  function markSoopHistory(postId,state='captured'){if(!/^\d+$/.test(String(postId||'')))return;const rows=soopHistory();rows[String(postId)]={state,at:Date.now()};write(SOOP_HISTORY_KEY,Object.fromEntries(Object.entries(rows).sort((a,b)=>Number(b[1]?.at||0)-Number(a[1]?.at||0)).slice(0,12000)))}
+  function soopHandled(postId,url='',recheckAuthenticated=false){
+    const row=soopHistory()[String(postId||'')],state=String(row?.state||'');
+    if(state==='public'||state==='restricted')return true;
+    if(state==='authenticated'){if(recheckAuthenticated&&Date.now()-Number(row?.at||0)>86400000)return false;return true}
+    return !!(url&&seenMap()[canonical(url)]);
+  }
   const canonical=value=>{try{
     const url=new URL(value,location.href);url.hash='';
     if(url.hostname==='www.namu.wiki')url.hostname='namu.wiki';
@@ -99,31 +112,52 @@
     return enqueue({version:1,source:'namuwiki-browser',url:canonical(location.origin+location.pathname),title,sections:sections.slice(0,64),capturedAt:new Date().toISOString()});
   }
   function soopMeta(selector){return document.querySelector(selector)?.getAttribute('content')||''}
-  async function waitForSoopBody(){
-    for(let i=0;i<16;i++){const text=clean(document.body?.innerText||'');if(text.length>160)return text;await sleep(350)}
-    return clean(document.body?.innerText||'');
+  async function waitForSoopBody(){for(let i=0;i<16;i++){const text=clean(document.body?.innerText||'');if(text.length>160)return text;await sleep(350)}return clean(document.body?.innerText||'')}
+  async function verifySoopPublic(postUrl,postId){
+    try{
+      const response=await fetch(postUrl,{credentials:'omit',cache:'no-store',redirect:'follow'});if(!response.ok)return false;
+      const html=(await response.text()).slice(0,600000);
+      if(/로그인이\s*필요|애청자|접근\s*권한|열람\s*권한|권한이\s*없|비공개\s*(?:게시글|글)|존재하지\s*않는\s*게시글/i.test(html))return false;
+      return html.includes(String(postId))||/article|board|post|contents/i.test(html);
+    }catch{return false}
   }
   async function captureSoopPost(force=false){
     const match=location.pathname.match(/^\/station\/chunbongtv\/post\/(\d+)\/?$/i);if(!match)return false;
-    if(!force&&recentlySeen(location.href,30))return false;
+    const postId=match[1],postUrl=canonical(location.origin+location.pathname);if(!force&&soopHandled(postId,postUrl))return false;
     const pageText=await waitForSoopBody();
+    if(/비공개\s*(?:게시글|글)|접근\s*(?:권한|할 수 없)|열람\s*(?:권한|할 수 없)|권한이\s*없|존재하지\s*않는\s*게시글|삭제된\s*게시글/i.test(pageText)){markSoopHistory(postId,'restricted');return false}
     const title=(soopMeta('meta[property="og:title"]')||document.querySelector('h1')?.textContent||document.title||'').replace(/\s*[|｜-]\s*SOOP.*$/i,'').trim();
     const dateRaw=soopMeta('meta[property="article:published_time"]')||document.querySelector('time[datetime]')?.getAttribute('datetime')||(pageText.match(/20\d{2}[.\/-]\d{1,2}[.\/-]\d{1,2}/)||[])[0]||'';
-    const nodes=[...document.querySelectorAll('article,main,[class*="post-content"],[class*="article-content"],[class*="board-content"],[class*="viewer"],[class*="content"]')];
-    const candidates=nodes.map(el=>({el,text:(el.innerText||'').trim()})).filter(row=>row.text.length>80).sort((a,b)=>b.text.length-a.text.length);
-    const chosen=candidates[0]?.el||document.querySelector('main')||document.body,body=((chosen?.innerText||pageText).trim()).slice(0,40000);
-    if(body.length<40)return false;
+    const chosen=[...document.querySelectorAll('article,main,[class*="post-content"],[class*="article-content"],[class*="board-content"],[class*="viewer"],[class*="content"]')].map(el=>({el,text:(el.innerText||'').trim()})).filter(row=>row.text.length>80).sort((a,b)=>b.text.length-a.text.length)[0]?.el||document.querySelector('main')||document.body;
+    const body=((chosen?.innerText||pageText).trim()).slice(0,40000);if(body.length<40)return false;
     const imageSet=new Set(),og=soopMeta('meta[property="og:image"]');if(/^https:\/\//i.test(og))imageSet.add(og);
     for(const img of [...(chosen?.querySelectorAll?.('img')||[])].slice(0,100)){const src=img.currentSrc||img.src||img.getAttribute?.('data-src')||'';if(/^https:\/\//i.test(src))imageSet.add(src)}
-    return enqueue({version:1,source:'soop-authenticated-browser',url:canonical(location.origin+location.pathname),title,date:dateRaw,body,images:[...imageSet].slice(0,24),capturedAt:new Date().toISOString()});
+    const isPublic=await verifySoopPublic(postUrl,postId),queued=enqueue({version:1,source:'soop-authenticated-browser',url:postUrl,title,date:dateRaw,body,images:[...imageSet].slice(0,24),access:isPublic?'anonymous-verified':'authenticated',capturedAt:new Date().toISOString()});
+    if(queued)markSoopHistory(postId,isPublic?'public':'authenticated');return queued;
   }
-  function discoverSoopPosts(){
-    const seen=seenMap(),urls=[...document.querySelectorAll('a[href*="/station/chunbongtv/post/"]')].map(a=>{try{return new URL(a.href,location.href).toString()}catch{return''}})
-      .filter(url=>/https:\/\/(?:www\.)?sooplive\.com\/station\/chunbongtv\/post\/\d+/i.test(url))
-      .map(canonical).filter((url,index,all)=>all.indexOf(url)===index)
-      .filter(url=>!seen[url]).slice(0,10);
-    urls.forEach((url,index)=>setTimeout(()=>openBackground(url,AUTO_HASH,false),index*900));
-    return urls.length;
+  function soopPostLinks(){return [...document.querySelectorAll('a[href*="/station/chunbongtv/post/"]')].map(a=>{try{const url=canonical(new URL(a.href,location.href).toString()),m=new URL(url).pathname.match(/^\/station\/chunbongtv\/post\/(\d+)\/?$/i);return m?{id:m[1],url}:null}catch{return null}}).filter(Boolean).filter((row,index,all)=>all.findIndex(x=>x.id===row.id)===index)}
+  function discoverSoopPosts(limit=10){const rows=soopPostLinks().filter(row=>!soopHandled(row.id,row.url)).slice(0,limit);rows.forEach((row,index)=>setTimeout(()=>openBackground(row.url,AUTO_HASH,false),index*900));return rows.length}
+  async function loadSoopListing(){let stable=0,lastHeight=0,lastCount=0;for(let i=0;i<28&&stable<4;i++){window.scrollTo(0,Math.max(document.body?.scrollHeight||0,document.documentElement?.scrollHeight||0));await sleep(450);const height=Math.max(document.body?.scrollHeight||0,document.documentElement?.scrollHeight||0),count=soopPostLinks().length;if(height===lastHeight&&count===lastCount)stable++;else stable=0;lastHeight=height;lastCount=count}window.scrollTo(0,0);await sleep(150)}
+  function soopPageSignature(){const ids=soopPostLinks().map(row=>row.id);return ids.length?ids.slice(0,3).join('-')+'|'+ids.slice(-3).join('-')+'|'+ids.length:'empty|'+canonical(location.href)}
+  function pageNum(raw){try{const url=new URL(raw,location.href),v=url.searchParams.get('page')||url.searchParams.get('p')||'';return /^\d+$/.test(v)?Number(v):0}catch{return 0}}
+  function findNextSoopPage(){
+    const anchors=[...document.querySelectorAll('a[href]')].map(a=>({a,href:a.href,text:clean(a.textContent),label:clean((a.getAttribute('aria-label')||'')+' '+(a.getAttribute('title')||''))}));
+    const next=anchors.find(row=>row.a.rel==='next'||/^(?:다음|next|›|»|>)$/i.test(row.text)||/다음|next/i.test(row.label));if(next?.href&&/sooplive\.com/i.test(next.href))return{type:'url',value:next.href};
+    const current=pageNum(location.href)||Number(clean(document.querySelector('[aria-current="page"]')?.textContent))||1;
+    const numbered=anchors.map(row=>({href:row.href,page:pageNum(row.href)})).filter(row=>row.page>current&&/sooplive\.com/i.test(row.href)).sort((a,b)=>a.page-b.page)[0];if(numbered)return{type:'url',value:numbered.href};
+    const button=[...document.querySelectorAll('button,[role="button"]')].find(el=>{const label=clean(el.textContent)+' '+clean(el.getAttribute('aria-label'))+' '+clean(el.getAttribute('title'));return /(?:다음|next|›|»)/i.test(label)&&!el.disabled&&el.getAttribute('aria-disabled')!=='true'});return button?{type:'button',value:button}:null;
+  }
+  async function waitSoopBatch(batch){const deadline=Date.now()+18000;while(Date.now()<deadline){const done=batch.filter(row=>soopHandled(row.id,row.url)).length;if(done===batch.length)return done;await sleep(queueRows().length>45?1200:650)}return batch.filter(row=>soopHandled(row.id,row.url)).length}
+  async function runSoopBackfill(){
+    let state=backfillState();if(state.status!=='running')state=setBackfillState({status:'running',startedAt:state.startedAt||new Date().toISOString(),lastError:''});
+    await loadSoopListing();const signature=soopPageSignature(),visited=Array.isArray(state.visited)?state.visited:[];
+    if(visited.includes(signature)){setBackfillState({status:'paused',lastError:'같은 게시판 페이지가 반복되어 중단했습니다.',currentUrl:canonical(location.href)});return}
+    visited.push(signature);const links=soopPostLinks(),targets=links.filter(row=>!soopHandled(row.id,row.url,true));
+    state=setBackfillState({status:'running',currentUrl:canonical(location.href),pagesScanned:visited.length,visited:visited.slice(-1000),linksFound:Number(state.linksFound||0)+links.length,newOnPage:targets.length,lastSignature:signature,lastError:''});
+    for(let offset=0;offset<targets.length;offset+=6){while(queueRows().length>45)await sleep(1200);const batch=targets.slice(offset,offset+6);batch.forEach((row,index)=>setTimeout(()=>openBackground(row.url,AUTO_HASH,false),index*700));const done=await waitSoopBatch(batch);state=setBackfillState({opened:Number(state.opened||0)+batch.length,handled:Number(state.handled||0)+done,unresolved:Number(state.unresolved||0)+(batch.length-done),currentUrl:canonical(location.href)})}
+    const next=findNextSoopPage();if(next?.type==='url'){const nextUrl=canonical(next.value);setBackfillState({status:'running',nextUrl,currentUrl:nextUrl});location.href=withMarker(nextUrl,SOOP_BACKFILL_HASH);return}
+    if(next?.type==='button'){const before=soopPageSignature();next.value.click();for(let i=0;i<24;i++){await sleep(500);if(soopPageSignature()!==before){history.replaceState(null,'',withMarker(location.href,SOOP_BACKFILL_HASH));return runSoopBackfill()}}setBackfillState({status:'paused',lastError:'다음 페이지 이동을 확인하지 못했습니다.',currentUrl:canonical(location.href)});return}
+    setBackfillState({status:'complete',completedAt:new Date().toISOString(),currentUrl:canonical(location.href),nextUrl:'',newOnPage:0});
   }
 
   function fmkPostId(raw=location.href){
@@ -194,7 +228,7 @@
 
   function operatorBridge(){
     let inflight='';
-    const emitState=()=>window.postMessage({channel:CHANNEL,type:'state',version:VERSION,queueCount:queueRows().length,seenCount:Object.keys(seenMap()).length},location.origin);
+    const emitState=()=>window.postMessage({channel:CHANNEL,type:'state',version:VERSION,queueCount:queueRows().length,seenCount:Object.keys(seenMap()).length,soopHistoryCount:Object.keys(soopHistory()).length,soopBackfill:backfillState()},location.origin);
     const flush=()=>{
       if(inflight)return;const first=queueRows()[0];if(!first){emitState();return}
       inflight=String(first.id||'');window.postMessage({channel:CHANNEL,type:'import',id:inflight,payload:first.payload},location.origin);
@@ -211,9 +245,17 @@
         const urls=Array.isArray(data.urls)?data.urls.slice(0,16):[];urls.forEach((url,index)=>setTimeout(()=>openBackground(url,AUTO_HASH,index===0),index*950));return;
       }
       if(data.type==='open-soop-board'&&data.url){openBackground(data.url,DISCOVER_HASH,true);return}
+      if(data.type==='start-soop-backfill'&&data.url){
+        const old=backfillState(),resume=['running','paused'].includes(String(old.status||''))&&old.currentUrl;
+        if(!resume)setBackfillState({status:'running',startedAt:new Date().toISOString(),completedAt:'',pagesScanned:0,linksFound:0,opened:0,handled:0,unresolved:0,visited:[],lastError:'',currentUrl:canonical(data.url),nextUrl:''});
+        else setBackfillState({status:'running',lastError:''});
+        openBackground(resume?old.currentUrl:data.url,SOOP_BACKFILL_HASH,true);emitState();return;
+      }
       if(data.type==='open-fmk-board'&&data.url){openBackground(data.url,'',true)}
     });
     try{GM_addValueChangeListener(QUEUE_KEY,()=>{emitState();flush()})}catch{}
+    try{GM_addValueChangeListener(SOOP_BACKFILL_KEY,()=>emitState())}catch{}
+    try{GM_addValueChangeListener(SOOP_HISTORY_KEY,()=>emitState())}catch{}
     emitState();setTimeout(flush,500);setInterval(flush,1800);
   }
   async function run(){
@@ -230,6 +272,7 @@
         if(location.hash.includes(AUTO_HASH))setTimeout(()=>window.close(),900);
         return;
       }
+      if(location.hash.includes(SOOP_BACKFILL_HASH)){await runSoopBackfill();return}
       setTimeout(discoverSoopPosts,1400);setTimeout(discoverSoopPosts,3800);
       if(location.hash.includes(DISCOVER_HASH))setTimeout(()=>window.close(),8500);
       return;
