@@ -35,7 +35,7 @@ for(const asset of ['/chunbong-contents.html','/chunbong-contents.css','/chunbon
 
 for(const token of ['archive-overview-highlight-grid','archive-people-chips','archive-record-strip','archive-media-visual']) assert.ok(css.includes(token),token);
 for(const token of ['주요 기록','기록 하이라이트','영상 · 방송','자료 이미지']) assert.ok(js.includes(token),token);
-for(const token of ['renderNotionGuide','renderNotionPreview','data-archive-tab="guide"','Notion 가이드']) assert.ok(js.includes(token),token);
+for(const token of ['renderNotionGuide','renderNotionPreview','data-archive-tab="guide"','KNOWLEDGE ARCHIVE','지식 가이드']) assert.ok(js.includes(token),token);
 for(const token of ['renderLeopelKnowledge','LEOPEL WORLD GUIDE','WORLD & STORY','LOCATIONS','MAJOR CONTENT','SERVER RECORDS','STORY CHAPTERS','archive-leopel-chapters','archive-leopel-media-strip']) assert.ok(js.includes(token)||css.includes(token),token);
 for(const token of ['notionImagesMarkup','documentGuideRows','guideContentMarkup','archive-document-guide','archive-guide-images','data-guide-image-src','data-guide-image-source','archive-guide-image-fallback']) assert.ok(js.includes(token)||css.includes(token),token);
 for(const token of ['renderJustserverKnowledge','guideBuckets','archive-fact-grid','archive-system-chip-grid','archive-flow']) assert.ok(js.includes(token)||css.includes(token),token);
