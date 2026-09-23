@@ -7,7 +7,8 @@
     errorState, bindRetry, setupReveal, requestedOpenId
   } = core;
   const itemKey=item=>String(item?.id||item?.link||item?.title||'');
-  const detailCache=new Map();
+  const detailCache=window.ChunbongFanartDetailCache||new Map();
+  window.ChunbongFanartDetailCache=detailCache;
   const detailQueue=[];
   let detailActive=0;
   const DETAIL_CONCURRENCY=2;
