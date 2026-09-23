@@ -16,7 +16,7 @@
       "endDate": "2025-07-06",
       "datePrecision": "day",
       "summary": "춘봉이 기획·운영한 SOOP·치지직·YouTube 플랫폼 통합 대규모 스트리머 마인크래프트 서버.",
-      "description": "2025년 6월 5일부터 7월 6일까지 진행된 SOOP·치지직·YouTube 통합 대규모 마인크래프트 서버입니다. 춘봉이 총괄 기획·주최했습니다. 공개 입주 발표 자료를 기준으로 1차 225명, 2차 171명, 3차 164명까지 총 560명의 명단을 구조화했으며, 최종 참여자 집계 671명은 이 입주 발표 명단 합계와 별도로 표시합니다.",
+      "description": "2025년 6월 5일부터 7월 6일까지 진행된 SOOP·치지직·YouTube 통합 대규모 마인크래프트 서버입니다. 춘봉이 총괄 기획·주최했습니다. 공개 입주 발표 자료를 기준으로 1차 225명, 2차 171명, 3차 164명까지 총 560명의 닉네임을 구조화했습니다. 최종 참여자 집계는 671명으로, 공개 입주 명단과의 차이 111명은 개별 명단·플랫폼·입주 차수를 확정할 수 없어 추가·미분류 인원으로 구분합니다.",
       "heroImage": {
         "src": "https://res.cloudinary.com/lyppgyei/image/upload/v1790109600/chunbong-fansite/leopel/presentation-source.jpg",
         "alt": "레오펠 서버 발표회 실제 SOOP VOD 기반 16:9 대표 이미지",
@@ -29,8 +29,12 @@
           "value": "671명 · 최종 집계"
         },
         {
-          "title": "구조화 입주 명단",
-          "value": "560명 · 1차 225명 + 2차 171명 + 3차 164명"
+          "title": "확인된 입주 명단",
+          "value": "560명 · 닉네임 확인 완료"
+        },
+        {
+          "title": "추가 · 미분류",
+          "value": "111명 · 최종 671명과 공개 1~3차 명단 560명의 차이"
         },
         {
           "title": "1차 입주",
@@ -349,7 +353,7 @@
         "conflicts": []
       },
       "published": true,
-      "updatedAt": "2026-09-23T09:05:00+09:00",
+      "updatedAt": "2026-09-23T09:22:00+09:00",
       "series": {
         "id": "leopel",
         "title": "레오펠",
@@ -998,6 +1002,16 @@
           ],
           "sourceId": "source-reference",
           "note": "3차 입주 발표 기준으로 확인되는 치지직·YouTube 입주 명단입니다."
+        },
+        {
+          "id": "leopel-unclassified-final-gap",
+          "stage": "추가 · 미분류",
+          "title": "최종 집계 차이",
+          "platform": "",
+          "count": 111,
+          "participants": [],
+          "sourceId": "source-reference",
+          "note": "최종 참여자 671명과 공개된 1~3차 입주 명단 560명의 차이 111명입니다. 현재 확인된 공개 자료만으로는 이 111명의 개별 닉네임·플랫폼·입주 차수를 확정할 수 없어 별도 미분류로 표시합니다."
         }
       ],
       "participantCount": 671

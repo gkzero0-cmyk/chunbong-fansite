@@ -74,13 +74,17 @@ assert.ok(leopel?.published,'verified Leopol record should be publicly seeded');
 assert.ok((leopel?.sources||[]).length>=2,'Leopol should be cross-checked with multiple public sources');
 assert.equal(leopel?.role,'주최 · 기획','Leopol role should match directly supported source wording');
 assert.equal(leopel?.participantCount,671,'레오펠 최종 참여자 수는 671명이어야 합니다');
-assert.equal((leopel?.participantGroups||[]).reduce((sum,row)=>sum+Number(row.count||0),0),560,'레오펠 1~3차 구조화 입주 명단 합계는 560명이어야 합니다');
-assert.deepEqual([...new Set((leopel?.participantGroups||[]).map(row=>row.stage))],['1차 입주','2차 입주','3차 입주'],'레오펠 참가자 그룹은 1~3차 입주 계층으로 표시해야 합니다');
-assert.deepEqual((leopel?.participantGroups||[]).map(row=>row.count),[140,68,17,127,44,104,60],'레오펠 플랫폼·번외 그룹별 인원수가 교차확인 자료와 일치해야 합니다');
+assert.equal((leopel?.participantGroups||[]).reduce((sum,row)=>sum+Number(row.count||0),0),671,'레오펠 그룹 합계는 최종 참여자 671명과 일치해야 합니다');
+assert.deepEqual([...new Set((leopel?.participantGroups||[]).map(row=>row.stage))],['1차 입주','2차 입주','3차 입주','추가 · 미분류'],'레오펠 참가자 그룹은 1~3차 입주와 추가 미분류 계층으로 표시해야 합니다');
+assert.deepEqual((leopel?.participantGroups||[]).map(row=>row.count),[140,68,17,127,44,104,60,111],'레오펠 플랫폼·번외·미분류 그룹별 인원수가 최종 집계와 일치해야 합니다');
 assert.equal(new Set((leopel?.participantGroups||[]).flatMap(row=>row.participants||[])).size,560,'레오펠 구조화 입주 명단 560명은 중복 없이 유지되어야 합니다');
 assert.ok((leopel?.participantGroups||[]).find(row=>row.id==='leopel-entry-1-other')?.participants.includes('다비'),'레오펠 1차 치지직·YouTube 누락 명단이 보강되어야 합니다');
 assert.ok((leopel?.participantGroups||[]).find(row=>row.id==='leopel-entry-3-soop')?.participants.includes('강다래'),'레오펠 3차 SOOP 명단이 보강되어야 합니다');
 assert.ok((leopel?.participantGroups||[]).find(row=>row.id==='leopel-entry-3-other')?.participants.includes('아야 AYA'),'레오펠 3차 치지직·YouTube 명단이 보강되어야 합니다');
+const leopelGap=(leopel?.participantGroups||[]).find(row=>row.id==='leopel-unclassified-final-gap');
+assert.equal(leopelGap?.count,111,'레오펠 최종 집계와 구조화 명단의 차이 111명을 별도 표시해야 합니다');
+assert.equal((leopelGap?.participants||[]).length,0,'근거 없는 닉네임을 레오펠 미분류 111명에 임의로 채우면 안 됩니다');
+assert.ok((leopel?.results||[]).some(row=>row.title==='추가 · 미분류'&&/111명/.test(row.value||'')),'레오펠 결과 요약에 미분류 111명 설명이 있어야 합니다');
 assert.ok((leopel?.sources||[]).some(row=>row.id==='source-nemopix-leopel'&&/nemopix\.xyz\/content\/leopel/i.test(row.url||'')),'Nemopix 레오펠 지통실을 교차확인 출처로 유지해야 합니다');
 for(const item of seed.items) assert.deepEqual(validateArchiveItem(normalizeArchiveItem(item),{publishing:true}),[]);
 
@@ -139,7 +143,7 @@ const mergedLeopel=archiveApi._internals.mergeArchiveRows([leopel],[{
 }])[0];
 assert.equal(mergedLeopel.description,leopel.description,'레오펠 설명은 오래된 저장값보다 교정된 seed를 우선해야 합니다');
 assert.equal(mergedLeopel.participantCount,671,'레오펠 전체 참가자 수는 오래된 311명 저장값보다 671명 교정값을 우선해야 합니다');
-assert.equal((mergedLeopel.participantGroups||[]).reduce((sum,row)=>sum+Number(row.count||0),0),560,'레오펠 저장 명단이 불완전해도 1~3차 560명 구조를 복원해야 합니다');
+assert.equal((mergedLeopel.participantGroups||[]).reduce((sum,row)=>sum+Number(row.count||0),0),671,'레오펠 저장 명단이 불완전해도 560명 구조화 명단과 미분류 111명을 합친 671명 구조를 복원해야 합니다');
 assert.ok((mergedLeopel.results||[]).some(row=>row.title==='3차 입주'&&/164명/.test(row.value||'')),'레오펠 3차 입주 요약이 공개 데이터에 유지되어야 합니다');
 
 const notionGuideSample=archiveApi._internals.notionGuideRows({
@@ -456,8 +460,8 @@ for(const item of seed.items){
 }
 
 const leopelGroupsItem=seed.items.find(item=>item.id==='leopel');
-assert.equal(leopelGroupsItem?.participantGroups?.length,7,'레오펠은 1~3차 입주와 플랫폼·번외 참가자 그룹을 제공해야 합니다');
-assert.deepEqual((leopelGroupsItem?.participantGroups||[]).map(group=>group.count),[140,68,17,127,44,104,60],'레오펠 참가자 그룹 인원수가 교차 자료와 일치해야 합니다');
+assert.equal(leopelGroupsItem?.participantGroups?.length,8,'레오펠은 1~3차 입주와 플랫폼·번외·미분류 참가자 그룹을 제공해야 합니다');
+assert.deepEqual((leopelGroupsItem?.participantGroups||[]).map(group=>group.count),[140,68,17,127,44,104,60,111],'레오펠 참가자 그룹 인원수가 최종 집계와 일치해야 합니다');
 assert.equal((leopelGroupsItem?.participantGroups||[]).reduce((sum,group)=>sum+(group.participants||[]).length,0),560,'레오펠 1~3차 구조화 명단은 총 560명이어야 합니다');
 assert.match(String(leopelGroupsItem?.heroImage?.src||''),/^https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/v\d+\/chunbong-fansite\/leopel\/presentation-source\.jpg$/,'레오펠 대표 이미지는 실제 SOOP 발표회 기반 16:9 자산을 사용해야 합니다');
 
@@ -471,7 +475,7 @@ const groupMerge=archiveApi._internals.mergeArchiveRows(
   [{...leopelGroupsItem,id:'group-merge'}],
   [{...leopelGroupsItem,id:'group-merge',participantGroups:[]}]
 );
-assert.equal(groupMerge[0].participantGroups.length,7,'기존 저장 레코드가 비어 있어도 seed 참가자 그룹을 보존해야 합니다');
+assert.equal(groupMerge[0].participantGroups.length,8,'기존 저장 레코드가 비어 있어도 seed 참가자 그룹을 보존해야 합니다');
 
 const diamondGroupMerge=archiveApi._internals.mergeArchiveRows(
   [diamondBackfill],
