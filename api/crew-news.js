@@ -63,6 +63,22 @@ function cleanBody(value = '', max = 12000) {
     .replace(/\n{3,}/g, '\n\n'), max);
 }
 
+function summarizeGenericPostTitle(title = '', body = '') {
+  const raw = safeText(title, 500).replace(/\s+/g, ' ').trim();
+  const generic = !raw ||
+    /^\d{6}\s*(?:오늘|공지|방송|일정)?\s*$/i.test(raw) ||
+    /^오늘(?:의)?\s*(?:방송|공지|일정)?\s*$/i.test(raw) ||
+    /^오뱅(?:공|공지)?\s*$/i.test(raw) ||
+    /^공지\s*$/i.test(raw);
+  if (!generic) return raw;
+
+  const text = safeText(body, 12000).replace(/\s+/g, ' ').trim();
+  const activity = '(정기\\s*회의|비방\\s*회의|회의|중계\\s*합방|종겜\\s*합방|합방|메이드\\s*카페|모캡\\s*합방|모집|면접|합격|영입|가입|탈퇴|입주|행사|대회|회식|여행|모임|콘텐츠|컨텐츠)';
+  const explicit = text.match(new RegExp('([가-힣A-Za-z0-9_]{2,24})\\s*' + activity, 'i'));
+  if (explicit) return (explicit[1] + ' ' + explicit[2]).replace(/\s+/g, ' ').trim();
+  return raw;
+}
+
 function first(row, keys) {
   for (const key of keys) {
     const value = row && row[key];
@@ -215,9 +231,12 @@ function normalizePost(row, station, menuByNo, req) {
   const boardName = normalizeBoardName(row, menuByNo);
   const images = collectImageUrls(row);
   const imageUrl = images[0] || '';
+  const contents = cleanBody(first(row, ['contents', 'content', 'body']), 12000);
+  const rawTitle = safeText(first(row, ['title_name', 'title', 'subject']), 500);
   return {
     id,
-    title: safeText(first(row, ['title_name', 'title', 'subject']), 500),
+    title: summarizeGenericPostTitle(rawTitle, contents),
+    originalTitle: rawTitle,
     author: safeText(first(row, ['user_nick', 'userNick', 'writer_nick', 'writerNick', 'nickname']), 160),
     authorId: safeText(first(row, ['user_id', 'userId', 'writer_id', 'writerId']), 120),
     publishedAt: safeText(first(row, ['reg_date', 'regDate', 'created_at', 'createdAt', 'write_date']), 80),
@@ -228,7 +247,7 @@ function normalizePost(row, station, menuByNo, req) {
     imageUrl,
     sheetImageUrl: proxyImageUrl(req, imageUrl),
     hashtags: first(row, ['hashtags', 'hash_tags', 'tags']) || [],
-    contents: cleanBody(first(row, ['contents', 'content', 'body']), 12000)
+    contents
   };
 }
 
@@ -313,5 +332,6 @@ module.exports._internals = {
   looksLikeContentImage,
   collectImageUrls,
   classifyAccess,
-  normalizePost
+  normalizePost,
+  summarizeGenericPostTitle
 };
