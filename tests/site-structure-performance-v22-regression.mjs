@@ -11,6 +11,7 @@ const sitemap=read('sitemap.xml');
 const shell=read('site-shell.js');
 const quality=read('site-quality.css');
 const mobileCss=read('mobile-site.css');
+const mobileJs=read('mobile-site.js');
 const operatorHtml=read('operator.html');
 const operatorJs=read('operator.js');
 
@@ -33,6 +34,8 @@ assert.ok(shell.length<13000,'shared shell must stay compact after navigation ce
 assert.match(quality,/Shared desktop MY fan hub entry/,'desktop MY styles must live in the shared quality layer');
 assert.doesNotMatch(mobileCss,/Compact mobile top chrome \+ desktop MY fan hub entry/,'duplicate desktop MY styles must be removed from mobile CSS');
 assert.match(mobileCss,/@media\(max-width:760px\) and \(prefers-reduced-motion:reduce\)/,'nested reduced-motion media query should be flattened');
+assert.match(mobileJs,/window\.ChunbongNavigation\?\.items/,'mobile navigation must consume the shared navigation definition');
+assert.match(mobileJs,/moreLink\('contents'/,'mobile More menu must expose 춘봉 콘텐츠 through the shared navigation');
 
 assert.match(operatorHtml,/id="operator-vitals-pages"/,'operator performance panel must expose page-level Web Vitals issues');
 assert.match(operatorJs,/issueMap=new Map\(\)/,'operator performance renderer must aggregate page-level Web Vitals issues');
@@ -46,5 +49,6 @@ assert.match(contentsJs,/srcset=/,'content archive images must expose responsive
 assert.doesNotThrow(()=>new Function(contentsJs));
 assert.doesNotThrow(()=>new Function(shell));
 assert.doesNotThrow(()=>new Function(operatorJs));
+assert.doesNotThrow(()=>new Function(mobileJs));
 
 console.log('site structure/performance v22 regression passed');
