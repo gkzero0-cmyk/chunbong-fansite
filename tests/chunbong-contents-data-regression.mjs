@@ -494,6 +494,15 @@ const fmkPublic=toPublicArchiveItem(normalizeArchiveItem({
 assert.equal(fmkPublic.sources.length,0,'FM Korea provenance must stay hidden from the public source list');
 assert.equal(fmkPublic.timeline.length,0,'FM Korea source material must stay hidden from the public timeline');
 assert.equal(/FM\s*코리아|FM\s*Korea|fmkorea/i.test(fmkPublic.description),false,'FM Korea provider name must not leak into public copy');
+const fmkCollectorPayload=archiveApi._internals.normalizeBrowserImportPayload({
+  source:'fmkorea-public-browser',url:'https://www.fmkorea.com/7042989434',postId:'7042989434',
+  access:'anonymous-verified',title:'자동 수집 참고 글',body:'자동 수집 테스트',capturedAt:'2026-09-24T12:00:00+09:00'
+});
+assert.ok(fmkCollectorPayload,'FM Korea automatic collector payload should normalize');
+assert.equal(archiveApi._internals.browserImportPublicEligible(fmkCollectorPayload),false,'FM Korea automatic collector must never expose public provenance');
+const fmkCollectorItem=archiveApi._internals.applyBrowserImportToItem({...monthOnly,id:'fmk-collector-test',timeline:[],sources:[]},fmkCollectorPayload);
+assert.equal(fmkCollectorItem.sources[0]?.visibility,'internal','FM Korea automatic collector source must be internal');
+assert.equal(fmkCollectorItem.timeline[0]?.visibility,'internal','FM Korea automatic collector material must be internal');
 assert.equal(archiveApi._internals.allowedSourceMetaUrl('http://127.0.0.1/private'),null,'local/non-HTTPS source metadata URL must be rejected');
 
 for(const item of seed.items){
