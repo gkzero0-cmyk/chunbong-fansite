@@ -709,11 +709,22 @@
         "categoryName": "버추얼",
         "followerCount": 30832,
         "fanclubCount": 7686
+      },
+      {
+        "capturedAt": "2026-09-24T16:03:59.699Z",
+        "live": true,
+        "startedAt": "2026-09-24T03:01:48.000Z",
+        "title": "마병대4 행정관입니다",
+        "viewerCount": 142,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30832,
+        "fanclubCount": 7686
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-24T15:55:25.911Z",
+    "capturedAt": "2026-09-24T16:03:59.699Z",
     "followerCount": 30832,
     "fanclubCount": 7686
   }
