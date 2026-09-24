@@ -149,37 +149,50 @@
     });
   }
 
+  function playSelectionBurstSound(ctx) {
+    if (!ctx) return;
+    const start = ctx.currentTime;
+    playTone(ctx, 720, start, 0.22, 0.0060, 'sine', 1320);
+    playTone(ctx, 1540, start + 0.025, 0.28, 0.0042, 'triangle', 2140);
+    playTone(ctx, 2480, start + 0.055, 0.22, 0.0020, 'sine', 3060);
+  }
+
   function playSpinSound(ctx) {
     if (!ctx) return;
     const start = ctx.currentTime;
     const prefs = fortuneSoundPreferences();
     if (!prefs.enabled || prefs.volume <= 0) return;
     try {
-      const length = Math.max(1, Math.floor(ctx.sampleRate * 3.02));
+      const duration = 3.26;
+      const length = Math.max(1, Math.floor(ctx.sampleRate * duration));
       const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
       const data = buffer.getChannelData(0);
       for (let index = 0; index < data.length; index += 1) {
         const p = index / Math.max(1, data.length - 1);
-        const fadeIn = Math.min(1, p / 0.05);
-        const fadeOut = p < 0.86 ? 1 : Math.max(0, (1 - p) / 0.14);
-        data[index] = (Math.random() * 2 - 1) * 0.10 * fadeIn * fadeOut;
+        const accel = Math.min(1, p / 0.40);
+        const plateau = p < 0.76 ? 1 : Math.max(0, (1 - p) / 0.24);
+        const texture = 0.035 + accel * 0.085;
+        data[index] = (Math.random() * 2 - 1) * texture * plateau;
       }
       const source = ctx.createBufferSource();
       const band = ctx.createBiquadFilter();
       const gain = ctx.createGain();
       band.type = 'bandpass';
-      band.Q.value = 0.55;
-      band.frequency.setValueAtTime(1350, start);
-      band.frequency.exponentialRampToValueAtTime(2850, start + 0.38);
-      band.frequency.setValueAtTime(2850, start + 2.55);
-      band.frequency.exponentialRampToValueAtTime(720, start + 3.0);
+      band.Q.value = 0.62;
+      band.frequency.setValueAtTime(620, start);
+      band.frequency.exponentialRampToValueAtTime(1080, start + 0.28);
+      band.frequency.exponentialRampToValueAtTime(3350, start + 1.35);
+      band.frequency.setValueAtTime(3650, start + 2.38);
+      band.frequency.exponentialRampToValueAtTime(680, start + duration);
+      const peak = Math.max(0.0002, 0.0125 * prefs.volume);
       gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, 0.010 * prefs.volume), start + 0.10);
-      gain.gain.setValueAtTime(Math.max(0.0002, 0.010 * prefs.volume), start + 2.50);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + 3.0);
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, peak * 0.28), start + 0.28);
+      gain.gain.exponentialRampToValueAtTime(peak, start + 1.35);
+      gain.gain.setValueAtTime(peak, start + 2.38);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
       source.connect(band).connect(gain).connect(ctx.destination);
       source.start(start);
-      source.stop(start + 3.02);
+      source.stop(start + duration + 0.02);
     } catch (_) {}
   }
 
@@ -269,9 +282,11 @@
     const result = document.querySelector('[data-daily-fortune-result]');
     if (!dialog || !cardButton || !stage || !holo || !fx || !closeButton || !launcher || !result) return;
 
-    const SPIN_MS = 3000;
-    const DECEL_START_MS = 2600;
-    const RESULT_MS = 3650;
+    const PRIME_MS = 280;
+    const HYPER_START_MS = 1350;
+    const DECEL_START_MS = 2450;
+    const SPIN_MS = 3250;
+    const RESULT_MS = 3900;
     let state = readState();
     let pendingState = null;
     let drawing = false;
@@ -279,9 +294,6 @@
     let autoOpenTimer = 0;
     let animationRun = 0;
     let hoverAudioCtx = null;
-    let lastRippleAt = 0;
-    let lastRippleX = -1;
-    let lastRippleY = -1;
     let lastHoverSoundAt = -Infinity;
     const reducedMotion = () => Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 
@@ -293,20 +305,26 @@
       return hoverAudioCtx;
     };
 
-    const spawnHoloRipple = (px, py) => {
+    const spawnSelectionBurst = (px = 0.5, py = 0.5) => {
       if (reducedMotion()) return;
-      const now = performance.now();
-      if (now - lastRippleAt < 1050) return;
-      lastRippleAt = now;
-      lastRippleX = px;
-      lastRippleY = py;
-
-      const ripple = document.createElement('i');
-      ripple.className = 'daily-fortune-holo-ripple';
-      ripple.style.left = (px * 100).toFixed(1) + '%';
-      ripple.style.top = (py * 100).toFixed(1) + '%';
-      holo.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 1050);
+      const burst = document.createElement('span');
+      burst.className = 'daily-fortune-click-burst';
+      burst.style.left = (px * 100).toFixed(2) + '%';
+      burst.style.top = (py * 100).toFixed(2) + '%';
+      stage.style.setProperty('--burst-x', (px * 100).toFixed(2) + '%');
+      stage.style.setProperty('--burst-y', (py * 100).toFixed(2) + '%');
+      for (let index = 0; index < 10; index += 1) {
+        const shard = document.createElement('i');
+        const angle = (Math.PI * 2 * index) / 10 + (Math.random() - 0.5) * 0.24;
+        const distance = 54 + Math.random() * 52;
+        shard.style.setProperty('--burst-dx', (Math.cos(angle) * distance).toFixed(1) + 'px');
+        shard.style.setProperty('--burst-dy', (Math.sin(angle) * distance).toFixed(1) + 'px');
+        shard.style.setProperty('--burst-rotate', ((angle * 180 / Math.PI) + 42 + Math.random() * 38).toFixed(1) + 'deg');
+        shard.style.setProperty('--burst-delay', (Math.random() * 90).toFixed(0) + 'ms');
+        burst.appendChild(shard);
+      }
+      stage.appendChild(burst);
+      setTimeout(() => burst.remove(), 980);
     };
 
     const showLauncher = () => {
@@ -324,8 +342,6 @@
       stage.style.setProperty('--glow-y', '50%');
       stage.style.setProperty('--prism-angle', '0deg');
       stage.style.setProperty('--flare-scale', '1');
-      lastRippleX = -1;
-      lastRippleY = -1;
       holo.querySelectorAll('.daily-fortune-holo-ripple,.daily-fortune-holo-spark').forEach(node => node.remove());
     };
 
@@ -408,6 +424,10 @@
       drawFailsafeTimer = 0;
     };
 
+    const clearSpinClasses = () => {
+      stage.classList.remove('is-priming','is-spinning','is-accelerating','is-hyper','is-decelerating');
+    };
+
     const forceCompleteDraw = () => {
       if (!drawing) return;
       animationRun += 1;
@@ -417,13 +437,14 @@
         drawing = false;
         setCardInteractionLocked(false);
         dialog.classList.remove('has-result','is-bursting','is-spinning','is-revealing');
-        stage.classList.remove('is-spinning','is-decelerating','is-interactive');
+        clearSpinClasses();
+        stage.classList.remove('is-interactive');
         cardButton.classList.remove('is-revealed');
         result.hidden = true;
         cardButton.setAttribute('aria-label','오늘의 타로 카드 한 장 뽑기');
         return;
       }
-      stage.classList.remove('is-spinning','is-decelerating');
+      clearSpinClasses();
       dialog.classList.remove('is-spinning');
       dialog.classList.add('has-result');
       cardButton.classList.add('is-revealed');
@@ -442,7 +463,8 @@
 
       if (!targetState) {
         dialog.classList.remove('has-result','is-bursting','is-spinning','is-revealing');
-        stage.classList.remove('is-spinning','is-decelerating','is-interactive');
+        clearSpinClasses();
+        stage.classList.remove('is-interactive');
         cardButton.classList.remove('is-revealed');
         result.hidden = true;
         setCardInteractionLocked(false);
@@ -456,7 +478,7 @@
       if (!animate || reducedMotion()) {
         if (pendingState) commitPendingState();
         dialog.classList.remove('is-spinning','is-revealing');
-        stage.classList.remove('is-spinning','is-decelerating');
+        clearSpinClasses();
         cardButton.classList.add('is-revealed');
         result.hidden = false;
         dialog.classList.add('has-result');
@@ -471,24 +493,39 @@
       result.hidden = true;
       dialog.classList.remove('has-result','is-bursting','is-revealing');
       cardButton.classList.remove('is-revealed');
-      stage.classList.remove('is-interactive','is-decelerating');
-      stage.classList.add('is-spinning');
+      clearSpinClasses();
+      stage.classList.remove('is-interactive');
+      stage.classList.add('is-priming');
       dialog.classList.add('is-spinning');
+      playSelectionBurstSound(audioCtx);
       playSpinSound(audioCtx);
-      try { navigator.vibrate?.([12, 28, 12, 35, 16]); } catch (_) {}
+      try { navigator.vibrate?.([10, 22, 12, 30, 14]); } catch (_) {}
 
       setTimeout(() => {
         if (run !== animationRun) return;
+        stage.classList.remove('is-priming');
+        stage.classList.add('is-spinning','is-accelerating');
+      }, PRIME_MS);
+
+      setTimeout(() => {
+        if (run !== animationRun) return;
+        stage.classList.remove('is-accelerating');
+        stage.classList.add('is-hyper');
+      }, HYPER_START_MS);
+
+      setTimeout(() => {
+        if (run !== animationRun) return;
+        stage.classList.remove('is-hyper','is-accelerating');
         stage.classList.add('is-decelerating');
-        playStopSound(audioCtx);
-        spawnBurst('stop');
         dialog.classList.add('is-revealing');
       }, DECEL_START_MS);
 
       setTimeout(() => {
         if (run !== animationRun) return;
+        playStopSound(audioCtx);
+        spawnBurst('stop');
         commitPendingState();
-        stage.classList.remove('is-spinning','is-decelerating');
+        clearSpinClasses();
         dialog.classList.remove('is-spinning');
         dialog.classList.add('is-bursting','is-revealing');
         requestAnimationFrame(() => cardButton.classList.add('is-revealed'));
@@ -534,7 +571,7 @@
       showLauncher();
     };
 
-    const startDraw = () => {
+    const startDraw = (origin = { px: 0.5, py: 0.5 }) => {
       if (drawing || state) return false;
       // Repair stale native button state immediately before the interaction.
       // Pointer activation below calls this before a browser-generated click, so
@@ -545,6 +582,7 @@
       pendingState = { date: kstDate(), card, drawnAt: new Date().toISOString() };
       const audioCtx = createFortuneAudio();
       try {
+        spawnSelectionBurst(origin.px, origin.py);
         renderState(true, audioCtx);
         clearDrawFailsafe();
         drawFailsafeTimer = setTimeout(forceCompleteDraw, RESULT_MS + 1200);
@@ -563,7 +601,7 @@
       // Keyboard / assistive-technology activation fallback.
       // Pointer activation is handled on the stage at pointerup so it does not
       // depend on native button click delivery.
-      if (event.detail === 0) startDraw();
+      if (event.detail === 0) startDraw({ px: 0.5, py: 0.5 });
     });
 
     stage.addEventListener('pointerdown', () => {
@@ -574,7 +612,9 @@
 
     stage.addEventListener('pointerup', event => {
       if (event.button != null && event.button !== 0) return;
-      startDraw();
+      const point = pointerPosition(event) || { px: 0.5, py: 0.5 };
+      updateCrystalPointer(point);
+      startDraw(point);
     });
 
     const pointerPosition = event => {
@@ -685,7 +725,7 @@
     }
   }
 
-  window.CHUNBONG_DAILY_FORTUNE = { STORAGE_KEY, kstDate, artworkUrl, readState, writeState, cards: CARDS.map(row => row[0]), nativeDisableSafe: true, pointerActivationSafe: true };
+  window.CHUNBONG_DAILY_FORTUNE = { STORAGE_KEY, kstDate, artworkUrl, readState, writeState, cards: CARDS.map(row => row[0]), nativeDisableSafe: true, pointerActivationSafe: true, crystalPointerImmediate: true, clickCrystalBurst: true, progressiveSpin: true, horizontalSpinFx: true };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();
