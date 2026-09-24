@@ -1,18 +1,14 @@
 (() => {
   'use strict';
 
+  const NAV_KEYWORDS={
+    home:'home 메인 춘봉 팬사이트',schedule:'schedule 오늘 방송 일정 스케줄',notice:'notice 공지사항 소식',
+    vod:'vod replay 다시보기 방송',clips:'clip catch 핫클립 클립',fanart:'fanart 팬아트 그림',
+    youtube:'youtube shorts 춘봉tv 영상',tarot:'tarot 오늘의 운세 카드',minigames:'game 춘트리스 춘박 춘과 춘컬타일',
+    contents:'춘봉 콘텐츠 아카이브 주최 기획 서버 노래대회 클래스',history:'history 방송 이력 기록',data:'data 통계 soop youtube 시청자'
+  };
   const ROUTES = [
-    {href:'index.html',label:'홈',kind:'메뉴',keywords:'home 메인 춘봉 팬사이트'},
-    {href:'schedule.html',label:'방송 일정',kind:'메뉴',keywords:'schedule 오늘 방송 일정 스케줄'},
-    {href:'notice.html',label:'공지',kind:'메뉴',keywords:'notice 공지사항 소식'},
-    {href:'vod.html',label:'다시보기',kind:'메뉴',keywords:'vod replay 다시보기 방송'},
-    {href:'clips.html',label:'핫클립',kind:'메뉴',keywords:'clip catch 핫클립 클립'},
-    {href:'fanart.html',label:'팬아트',kind:'메뉴',keywords:'fanart 팬아트 그림'},
-    {href:'youtube.html',label:'유튜브',kind:'메뉴',keywords:'youtube shorts 춘봉tv 영상'},
-    {href:'tarot.html',label:'타로',kind:'메뉴',keywords:'tarot 오늘의 운세 카드'},
-    {href:'minigames.html',label:'미니게임',kind:'메뉴',keywords:'game 춘트리스 춘박 춘과 춘컬타일'},
-    {href:'history.html',label:'방송 이력',kind:'메뉴',keywords:'history 방송 이력 기록'},
-    {href:'data.html',label:'춘봉 데이터',kind:'메뉴',keywords:'data 통계 soop youtube 시청자'},
+    ...(window.ChunbongNavigation?.items||[]).map(item=>({href:item.href,label:item.key==='home'?'홈':item.label,kind:'메뉴',keywords:NAV_KEYWORDS[item.key]||item.label})),
     {href:'data.html?view=calendar#soop',label:'방송 기록 캘린더',kind:'메뉴',keywords:'방송 기록 캘린더 날짜 아카이브 vod clip 영상 카테고리'},
     {href:'changelog.html',label:'업데이트 일지',kind:'메뉴',keywords:'update changelog 업데이트 변경사항'},
     {href:'myhub.html',label:'내 팬허브',kind:'메뉴',keywords:'my hub 보관함 이어보기 타로 기록 업적 개인 기록'}
@@ -38,8 +34,11 @@
   const stripHtml = value => String(value || '').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
   const contentKey=item=>String(item?.id||item?.videoId||item?.link||item?.sourceHref||item?.title||'').trim();
   const itemText = item => [
-    item?.title,item?.subject,item?.name,item?.description,item?.content,item?.meta,item?.date,item?.label,
-    ...(Array.isArray(item?.tags)?item.tags:[])
+    item?.title,item?.subject,item?.name,item?.summary,item?.description,item?.content,item?.meta,item?.date,item?.label,
+    ...(Array.isArray(item?.tags)?item.tags:[]),...(Array.isArray(item?.aliases)?item.aliases:[]),
+    ...(Array.isArray(item?.participants)?item.participants:[]),
+    ...(Array.isArray(item?.participantGroups)?item.participantGroups.flatMap(group=>group?.participants||[]):[]),
+    ...(Array.isArray(item?.participantProfiles)?item.participantProfiles.flatMap(row=>[row?.canonicalName,row?.displayName,row?.rpName,...(row?.aliases||[])]):[])
   ].filter(Boolean).join(' ');
 
   function ensureAssets() {
@@ -104,6 +103,12 @@
           const kind=item?.kind==='shorts'?'shorts':'videos';
           const href='youtube.html?kind='+kind+(id?'&open='+encodeURIComponent(id):'');
           add(kind==='shorts'?'YouTube Shorts':'YouTube',href,item);
+        });
+      }),
+      fetchJson('/api/content?type=chunbong-contents',8000,'search:chunbong-contents').then(payload=>{
+        (Array.isArray(payload?.items)?payload.items:[]).slice(0,60).forEach(item=>{
+          const id=String(item?.id||'').trim();
+          add('춘봉 콘텐츠',id?'/contents/'+encodeURIComponent(id):'chunbong-contents.html',item,item?.startDate||'');
         });
       }),
       fetchJson('/api/content?type=data',9000,'search:data').then(payload=>{
