@@ -10,7 +10,7 @@ const cssUrl = new URL('tarot-composite.css', root);
 assert.ok(fs.existsSync(jsUrl), 'tarot-composite.js must exist so full-card raster rendering can be replaced by a vector composite');
 assert.ok(fs.existsSync(cssUrl), 'tarot-composite.css must exist so upgraded cards can cancel legacy whole-card reversal and preserve crisp sizing');
 assert.ok(html.includes('<link rel="stylesheet" href="tarot-bundle.css?v=1">'), 'tarot.html must ship vector-composite styles through the generated tarot bundle');
-assert.ok(html.includes('<script src="tarot-composite.js?v=2"></script>'), 'tarot.html must load the vector-composite browser upgrader after tarot.js');
+assert.ok(html.includes('<script src="tarot-bundle.js?v=1"></script>'), 'tarot.html must ship the vector-composite browser upgrader through the generated JS bundle');
 
 const require = createRequire(import.meta.url);
 const data = require('../tarot-data.js');

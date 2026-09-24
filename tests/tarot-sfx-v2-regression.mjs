@@ -9,6 +9,7 @@ const read = path => fs.readFileSync(new URL('../' + path, import.meta.url), 'ut
 const preload = read('tarot-sfx-v2-preload.js');
 const enhanced = read('tarot-sfx-v2.js');
 const html = read('tarot.html');
+const bundle = read('tarot-bundle.js');
 const tarot = require('../tarot.js');
 
 let writes = 0;
@@ -43,10 +44,11 @@ bridge.setEnabled(true);
 bridge.setVolume(0.9);
 assert.equal(calls.some(call => call[0] === 'set'), false, 'legacy bridge must never write preferences');
 
+assert.match(html, /src="tarot-bundle\.js\?v=1"/, 'tarot page must load the generated JS bundle');
 assert.ok(
-  html.indexOf('tarot-sfx-v2-preload.js') < html.indexOf('tarot.js')
-  && html.indexOf('tarot.js') < html.indexOf('tarot-sfx-v2.js'),
-  'enhanced SFX preload must run before tarot.js and install after it'
+  bundle.indexOf('===== tarot-sfx-v2-preload.js =====') < bundle.indexOf('===== tarot.js =====')
+  && bundle.indexOf('===== tarot.js =====') < bundle.indexOf('===== tarot-sfx-v2.js ====='),
+  'enhanced SFX preload must run before tarot.js and install after it inside the generated bundle'
 );
 
 console.log('tarot enhanced SFX single-controller regression passed');

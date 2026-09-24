@@ -85,7 +85,7 @@ assert.ok(html.includes('id="tarot-spread-options"'));
 assert.ok(html.includes('춘봉 타로 상세 상담'));
 assert.ok(html.includes('상세 상담 보기'));
 assert.ok(html.includes('tarot-bundle.css?v=1'));
-assert.ok(html.includes('tarot-reading-config.js'));
+assert.ok(html.includes('tarot-bundle.js?v=1'));
 
 const script = read('tarot.js');
 assert.ok(script.includes('renderSpreadChoices'));
