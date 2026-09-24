@@ -29,6 +29,7 @@ function searchableText(item={}){
   const values=[
     item.title,item.summary,item.description,item.role,item.series?.title,item.series?.subtitle,
     ...(item.aliases||[]),...allPeople(item),
+    ...(item.participantProfiles||[]).flatMap(p=>[p.canonicalName,p.displayName,p.rpName,p.platform,p.entryRound,...(p.aliases||[])]),
     ...(item.participantGroups||[]).flatMap(g=>[g.stage,g.title,g.platform,g.note,...(g.participants||[])]),
     ...(item.seriesSessions||[]).flatMap(s=>[s.title,s.note,...(s.participants||[])]),
     ...(item.timeline||[]).flatMap(r=>[r.title,r.note]),
