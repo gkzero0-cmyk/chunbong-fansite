@@ -1015,12 +1015,6 @@
   .pwa-app-mode .site-header.pwa-compact-header .activity-center{order:6!important;flex:0 0 40px!important}
   .pwa-app-mode .site-header.pwa-compact-header .activity-bell{width:40px!important;height:40px!important}
 
-  /* These controls are already replaced by the app tab bar / compact controls in PWA mode. */
-  .pwa-app-mode .site-header.pwa-compact-header .nav-toggle,
-  .pwa-app-mode .site-header.pwa-compact-header .main-nav,
-  .pwa-app-mode .site-header.pwa-compact-header .header-live{
-    display:none!important
-  }
 }
 
 
