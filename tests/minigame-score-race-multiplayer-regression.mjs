@@ -39,7 +39,7 @@ assert.match(api,/room\.players\.every\(item=>item\.finished\)/,'score race must
 assert.match(api,/aScore>bScore\?a\.id:b\.id/,'score race winner must be chosen by score');
 assert.match(css,/\.chunbak-multiplayer-main[\s\S]*min-height:48px/,'Chunbak standalone multiplayer button CSS missing');
 assert.match(css,/\.mp-score-hud/,'score-race HUD CSS missing');
-assert.match(previewWorkflow,/startsWith\(github\.head_ref, 'ci\/'\)/,'preview smoke must skip internal CI slash branch names');
-assert.match(previewWorkflow,/startsWith\(github\.head_ref, 'internal\/'\)/,'preview smoke must skip internal slash branch names');
+assert.match(previewWorkflow,/github\.event_name == 'workflow_dispatch'/,'preview smoke must remain manually runnable');
+assert.match(previewWorkflow,/contains\(github\.event\.pull_request\.labels\.\*\.name, 'vercel-preview'\)/,'preview smoke must require the vercel-preview label on PRs');
 
 console.log('minigame score-race multiplayer regression passed');
