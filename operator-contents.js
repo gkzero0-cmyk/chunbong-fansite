@@ -244,24 +244,46 @@ function jumpEditorSection(section='basic'){
   target.scrollIntoView({behavior:'smooth',block:'start'});
   const focus=target.querySelector('input,textarea,select,button');setTimeout(()=>focus?.focus({preventScroll:true}),250);
 }
+function autoFixableIssues(item={}){
+  return archiveAudit(item).filter(([title])=>/(참가자|SOOP 게시글 메타데이터|미디어 메타데이터|영상 썸네일|대표 이미지)/.test(String(title||'')));
+}
+function setArchiveTaskMessage(text='',state=''){
+  const el=$('[data-archive-task-message]',root);if(!el)return;el.textContent=text||'';el.dataset.state=state||'';
+}
+function setTaskCount(name,value){
+  const el=$('[data-archive-task-count="'+name+'"]',root);if(el)el.textContent=String(Number(value)||0);
+}
 function renderArchiveWorkflow(){
   const status=$('[data-archive-workflow-status]',root);if(!status)return;
   const issueItems=items.filter(item=>archiveAudit(item).length).length;
-  const attention=browserImports.filter(row=>['unlinked','internal'].includes(row.state)).length;
+  const unlinked=browserImports.filter(row=>row.state==='unlinked').length;
+  const visualItems=items.filter(item=>archiveAudit(item).some(([title])=>/(이미지|썸네일)/.test(String(title||'')))).length;
+  const autoFixItems=items.filter(item=>autoFixableIssues(item).length).length;
   const selectedText=selected?.id?(selected.title||selected.id):'아직 선택 안 됨';
   const liveText=selected?.id?(isLiveItem(selected)?'팬사이트 공개 중':'팬사이트 미공개'):'콘텐츠 선택 필요';
-  status.innerHTML='<span><b>확인 필요</b>'+issueItems+'개 콘텐츠</span><span><b>수집 자료</b>'+attention+'건 확인</span><span><b>현재 편집</b>'+esc(selectedText)+'</span><span><b>공개 상태</b>'+esc(liveText)+'</span>';
+  status.innerHTML='<span><b>처리할 콘텐츠</b>'+issueItems+'개</span><span><b>연결 대기 원문</b>'+unlinked+'건</span><span><b>현재 편집</b>'+esc(selectedText)+'</span><span><b>공개 상태</b>'+esc(liveText)+'</span>';
+  setTaskCount('issues',issueItems);setTaskCount('collector',unlinked);setTaskCount('candidates',autoCandidates.length);setTaskCount('visual',visualItems);setTaskCount('autofix',autoFixItems);
 }
 function focusArchiveArea(action=''){
   if(action==='all'||action==='issues'){
     const quality=$('[data-archive-admin-quality]',root);if(quality){quality.value=action==='issues'?'issues':'all';renderList()}
     $('[data-archive-admin-list]',root)?.scrollIntoView({behavior:'smooth',block:'start'});return;
   }
-  if(action==='collector'){$('[data-collector-inbox]',root)?.scrollIntoView({behavior:'smooth',block:'start'});return}
-  if(action==='visual'){$('[data-archive-image-audit-card]',root)?.scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(action==='collector'){
+    const filter=$('[data-collector-inbox-state]',root);if(filter)filter.value='attention';renderCollectorInbox();
+    $('[data-collector-inbox]',root)?.scrollIntoView({behavior:'smooth',block:'start'});return;
+  }
+  if(action==='visual'){
+    $('[data-archive-image-audit-card]',root)?.scrollIntoView({behavior:'smooth',block:'start'});
+    if(!archiveLoading)void runImageAudit();return;
+  }
   if(action==='candidates'){const box=$('[data-archive-candidates]',root);if(box){box.open=true;box.scrollIntoView({behavior:'smooth',block:'start'})}return}
+  if(action==='collector-settings'){const box=$('[data-unified-collector]',root);if(box){box.open=true;box.scrollIntoView({behavior:'smooth',block:'start'})}return}
   if(action==='editor'){$('[data-archive-admin-editor]',root)?.scrollIntoView({behavior:'smooth',block:'start'});return}
-  if(action==='public'&&selected?.id&&isLiveItem(selected)){window.open(publicContentUrl(selected.id),'_blank','noopener');return}
+  if(action==='public'){
+    if(selected?.id&&isLiveItem(selected))window.open(publicContentUrl(selected.id),'_blank','noopener');
+    else setArchiveTaskMessage('먼저 공개된 춘봉 콘텐츠를 선택해 주세요.','bad');
+  }
 }
 async function verifyPublicReflection(item={}){
   if(!item?.id)return false;
@@ -272,21 +294,117 @@ async function verifyPublicReflection(item={}){
   }catch{return false}
 }
 
+
+function confirmDiscardChanges(){
+  if(!editorDirty)return true;
+  return confirm('저장하지 않은 변경사항이 있습니다.\n\n이동하면 현재 수정 내용이 사라집니다. 변경사항을 버리고 이동할까요?');
+}
+function setArchiveLoadState(state='idle',message=''){
+  const box=$('[data-archive-load-state]',root);if(!box)return;
+  if(state==='ok'||state==='idle'){box.hidden=true;box.dataset.state='';return}
+  box.hidden=false;box.dataset.state=state;
+  const title=$('[data-archive-load-title]',box),detail=$('[data-archive-load-detail]',box),retry=$('[data-archive-load-retry]',box);
+  if(title)title.textContent=state==='loading'?'콘텐츠 아카이브를 불러오는 중':'콘텐츠 아카이브를 불러오지 못했습니다';
+  if(detail)detail.textContent=message||(state==='loading'?'저장된 콘텐츠와 수집 자료 상태를 확인하고 있습니다.':'잠시 후 다시 시도해 주세요.');
+  if(retry)retry.hidden=state==='loading';
+}
+function markArchiveHealthUnavailable(){
+  for(const id of ['archive-health-total','archive-health-issues','archive-health-visual','archive-health-candidates']){const el=$('#'+id,root);if(el){el.textContent='!';el.className='is-bad'}}
+  const issue=$('#archive-health-issues-meta',root),visual=$('#archive-health-visual-meta',root),sync=$('#archive-health-sync-meta',root);
+  if(issue)issue.textContent='데이터 로딩 실패';if(visual)visual.textContent='검사 전 데이터 필요';if(sync)sync.textContent='다시 시도 필요';
+}
+function isPlaceholderVisual(value=''){
+  const raw=String(value||'');return !raw||raw.includes('/assets/chunbong-contents/')||/\.svg(?:\?|$)/i.test(raw);
+}
+async function getSourceMetaCached(url=''){
+  const key=String(url||'').trim();if(!key)throw new Error('source_url_required');
+  if(sourceMetaCache.has(key))return sourceMetaCache.get(key);
+  const promise=json('operator-content-source-meta',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:key})}).then(payload=>payload.meta||{});
+  sourceMetaCache.set(key,promise);
+  try{return await promise}catch(error){sourceMetaCache.delete(key);throw error}
+}
+async function autoEnhanceArchiveItem(rawItem={}){
+  const item=structuredClone(rawItem),stats={fields:0,urls:0,failed:0},sourceImages=[];
+  const fetchMeta=async url=>{if(!url)return null;stats.urls++;try{return await getSourceMetaCached(url)}catch{stats.failed++;return null}};
+  for(const source of Array.isArray(item.sources)?item.sources:[]){
+    const meta=await fetchMeta(source.url);if(!meta)continue;
+    if(!String(source.label||'').trim()&&meta.title){source.label=meta.title;stats.fields++}
+    if(Array.isArray(meta.participants)&&meta.participants.length&&!(item.participants||[]).length){item.participants=[...new Set(meta.participants.map(v=>String(v||'').trim()).filter(Boolean))];stats.fields++}
+    if(meta.image)sourceImages.push({src:meta.image,title:meta.title||item.title||'콘텐츠 대표 이미지',sourceId:source.id||''});
+  }
+  const enhanceMaterials=async rows=>{
+    for(const row of Array.isArray(rows)?rows:[]){
+      const needs=isGenericMaterialTitle(row.title)||!String(row.date||'').trim()||isPlaceholderVisual(row.thumbnail);
+      if(!needs||!row.url)continue;
+      const meta=await fetchMeta(row.url);if(!meta)continue;
+      if(meta.title&&(!String(row.title||'').trim()||isGenericMaterialTitle(row.title))){row.title=meta.title;stats.fields++}
+      const sourceDate=meta.publishedDate||meta.date||'';
+      if(sourceDate&&!String(row.date||'').trim()){row.date=sourceDate;row.datePrecision='day';stats.fields++}
+      if(meta.image&&isPlaceholderVisual(row.thumbnail)){row.thumbnail=meta.image;stats.fields++;sourceImages.push({src:meta.image,title:meta.title||row.title||item.title||'콘텐츠 이미지',sourceId:row.sourceId||''})}
+    }
+  };
+  await enhanceMaterials(item.timeline);await enhanceMaterials(item.media);
+  if(isPlaceholderVisual(item.heroImage?.src)&&sourceImages.length){
+    const image=sourceImages[0];item.heroImage={src:image.src,alt:image.title,sourceId:image.sourceId};stats.fields++;
+  }
+  return{item,stats,changed:stats.fields>0};
+}
+async function runSelectedAutoEnhance(){
+  const form=$('[data-archive-form]',root);if(!form)return;
+  const button=$('[data-archive-autofix-selected]',root);if(button)button.disabled=true;
+  setMessage('현재 콘텐츠에서 자동으로 보강할 수 있는 자료를 확인하고 있습니다…');
+  try{
+    const result=await autoEnhanceArchiveItem(collect());
+    if(!result.changed){setMessage('자동으로 새로 보강할 수 있는 항목을 찾지 못했습니다.','ok');return}
+    renderEditor(result.item);editorDirty=true;renderEditorLiveState();renderArchiveWorkflow();
+    setMessage(result.stats.fields+'개 필드를 자동 보강했습니다. 확인 후 임시 저장 또는 팬사이트 반영을 눌러 주세요.'+(result.stats.failed?' · 원문 확인 실패 '+result.stats.failed+'건':''),'ok');
+  }catch(error){setMessage('자동 보강에 실패했습니다: '+String(error?.message||error),'bad')}
+  finally{if(button)button.disabled=false}
+}
+async function runBulkAutoEnhance(){
+  if(editorDirty){setArchiveTaskMessage('현재 편집 중인 미저장 변경사항이 있습니다. 먼저 임시 저장하거나 반영한 뒤 일괄 보강을 실행해 주세요.','bad');return}
+  const targets=items.filter(item=>autoFixableIssues(item).length);
+  if(!targets.length){setArchiveTaskMessage('자동으로 보강할 수 있는 항목이 없습니다.','ok');return}
+  const button=$('[data-archive-auto-fix]',root);if(button)button.disabled=true;
+  let changedItems=0,changedFields=0,failedUrls=0,failedItems=0;
+  try{
+    for(let index=0;index<targets.length;index++){
+      const item=targets[index];
+      setArchiveTaskMessage('자동 보강 중 '+(index+1)+'/'+targets.length+' · '+(item.title||item.id),'busy');
+      try{
+        const result=await autoEnhanceArchiveItem(item);failedUrls+=result.stats.failed;
+        if(result.changed){
+          await json('operator-content-archive-save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({item:result.item})});
+          changedItems++;changedFields+=result.stats.fields;
+        }
+      }catch{failedItems++}
+    }
+    await load();
+    setArchiveTaskMessage('자동 보강 완료 · '+changedItems+'개 콘텐츠 / '+changedFields+'개 필드를 임시 저장했습니다.'+(failedUrls||failedItems?' 확인 실패 '+(failedUrls+failedItems)+'건은 수동 확인이 필요합니다.':' 팬사이트 공개 전 검토해 주세요.'),'ok');
+  }catch(error){setArchiveTaskMessage('일괄 자동 보강을 완료하지 못했습니다: '+String(error?.message||error),'bad')}
+  finally{if(button)button.disabled=false}
+}
+function toggleAdvancedFields(){
+  const editor=$('[data-archive-admin-editor]',root),button=$('[data-archive-advanced-toggle]',root);if(!editor||!button)return;
+  const shown=editor.classList.toggle('show-advanced');button.textContent=shown?'고급 필드 숨기기':'고급 필드 보기';
+}
+
 function conflictBlock(item){const rows=item.verification?.conflicts||[];return `<div class="operator-archive-conflicts ${rows.length?'has-conflict':''}"><div><strong>정보 충돌</strong><span>${rows.length?`${rows.length}건 확인 필요`:'미해결 충돌 없음'}</span></div>${rows.length?`<ul>${rows.map((c,i)=>`<li><span>${esc(c.field||'필드')} · ${esc(c.note||c.reason||'출처 간 값 확인 필요')}</span><button type="button" data-resolve-conflict="${i}">해소</button></li>`).join('')}</ul>`:''}</div>`}
 function renderEditor(item){
   selected=structuredClone(item||emptyItem());editorDirty=false;
   const editor=$('[data-archive-admin-editor]',root),live=isLiveItem(selected),publicLink=selected.id&&live?'<a class="operator-archive-open-public" href="'+publicContentUrl(selected.id)+'" target="_blank" rel="noreferrer">팬사이트에서 확인 ↗</a>':'';
+  editor.classList.remove('show-advanced');
   editor.innerHTML=`<form data-archive-form>
-    <div class="operator-archive-editor-head"><div><small>춘봉 콘텐츠 편집</small><h2>${esc(selected.title||'새 콘텐츠')}</h2><p>아래 순서대로 수정한 뒤 마지막에 <b>팬사이트에 반영</b>을 누르면 실제 사이트에 적용됩니다.</p></div><span class="operator-archive-state" data-state="${esc(statusText(selected))}">${esc(statusText(selected))}</span></div>
+    <div class="operator-archive-editor-head"><div><small>춘봉 콘텐츠 편집</small><h2>${esc(selected.title||'새 콘텐츠')}</h2><p>자주 쓰는 항목만 먼저 보여줍니다. ID·날짜 정확도·출처 ID 등은 <b>고급 필드 보기</b>에서 확인할 수 있습니다.</p></div><div class="operator-archive-editor-head-actions"><span class="operator-archive-state" data-state="${esc(statusText(selected))}">${esc(statusText(selected))}</span><button type="button" data-archive-advanced-toggle>고급 필드 보기</button></div></div>
     <div class="operator-archive-live-state" data-editor-live-state></div>
     <nav class="operator-archive-section-nav" aria-label="콘텐츠 편집 항목">
       <button type="button" data-editor-jump="basic">1. 기본 정보</button><button type="button" data-editor-jump="hero">2. 대표 이미지</button><button type="button" data-editor-jump="results">3. 결과·회차</button><button type="button" data-editor-jump="sources">4. 출처</button><button type="button" data-editor-jump="timeline">5. 게시글·기록</button><button type="button" data-editor-jump="media">6. 영상</button><button type="button" data-editor-jump="gallery">7. 갤러리</button>
     </nav>
     <section class="operator-archive-edit-section" data-editor-section="basic"><header><span>1</span><div><strong>기본 정보</strong><small>제목·날짜·참가자·설명을 수정합니다.</small></div></header>
-      <div class="operator-archive-form-grid">${field('콘텐츠 ID','id',selected.id)}${field('제목','title',selected.title)}${selectField('카테고리','category',selected.category,[['minecraft','마인크래프트'],['song','노래대회'],['broadcast','방송 기획'],['class-event','클래스 · 이벤트'],['other','기타']])}${field('춘봉 역할','role',selected.role)}${selectField('상태','status',selected.status,[['planned','예정'],['recruiting','모집'],['ongoing','진행 중'],['ended','종료']])}${selectField('날짜 정확도','datePrecision',selected.datePrecision,[['day','일'],['month','월'],['year','연도'],['unknown','확인 중']])}${field('시작 날짜','startDate',selected.startDate)}${field('종료 날짜','endDate',selected.endDate)}${field('참가자 / 수강생','participants',(selected.participants||[]).join(', '))}${field('별칭','aliases',(selected.aliases||[]).join(', '))}${selectField('검증 상태','verificationState',selected.verification?.state||'needs_review',[['official','공식 자료 확인'],['cross_checked','교차 확인'],['needs_review','확인 필요']])}</div>
+      <div class="operator-archive-form-grid">${techField('콘텐츠 ID','id',selected.id)}${field('제목','title',selected.title)}${selectField('카테고리','category',selected.category,[['minecraft','마인크래프트'],['song','노래대회'],['broadcast','방송 기획'],['class-event','클래스 · 이벤트'],['other','기타']])}${field('춘봉 역할','role',selected.role)}${selectField('상태','status',selected.status,[['planned','예정'],['recruiting','모집'],['ongoing','진행 중'],['ended','종료']])}${techSelectField('날짜 정확도','datePrecision',selected.datePrecision,[['day','일'],['month','월'],['year','연도'],['unknown','확인 중']])}${field('시작 날짜','startDate',selected.startDate)}${field('종료 날짜','endDate',selected.endDate)}${field('참가자 / 수강생','participants',(selected.participants||[]).join(', '))}${techField('별칭','aliases',(selected.aliases||[]).join(', '))}${techSelectField('검증 상태','verificationState',selected.verification?.state||'needs_review',[['official','공식 자료 확인'],['cross_checked','교차 확인'],['needs_review','확인 필요']])}</div>
       <label class="operator-archive-field operator-archive-wide"><span>한 줄 소개</span><textarea name="summary" rows="2">${esc(selected.summary)}</textarea></label><label class="operator-archive-field operator-archive-wide"><span>상세 소개</span><textarea name="description" rows="5">${esc(selected.description)}</textarea></label>
     </section>
-    <details class="operator-archive-edit-section" data-editor-section="hero" open><summary><span>2</span><div><strong>대표 이미지</strong><small>팬사이트 콘텐츠 카드와 상세 상단에 보이는 이미지입니다.</small></div></summary><div class="operator-archive-form-grid">${field('이미지 URL / /assets 경로','heroSrc',selected.heroImage?.src||'')}${field('대체 텍스트','heroAlt',selected.heroImage?.alt||'')}${field('출처 ID','heroSourceId',selected.heroImage?.sourceId||'')}</div></details>
+    <details class="operator-archive-edit-section" data-editor-section="hero" open><summary><span>2</span><div><strong>대표 이미지</strong><small>팬사이트 콘텐츠 카드와 상세 상단에 보이는 이미지입니다.</small></div></summary><div class="operator-archive-form-grid">${field('이미지 URL / /assets 경로','heroSrc',selected.heroImage?.src||'')}${field('대체 텍스트','heroAlt',selected.heroImage?.alt||'')}${techField('출처 ID','heroSourceId',selected.heroImage?.sourceId||'')}</div></details>
     ${conflictBlock(selected)}${auditBlock(selected)}
     <details class="operator-archive-edit-section" data-editor-section="results"><summary><span>3</span><div><strong>결과 · 회차 기록</strong><small>수상·순위·회차별 핵심 결과를 관리합니다.</small></div><button type="button" data-add-row="result">+ 추가</button></summary><div class="operator-archive-repeater" data-results>${(selected.results||[]).map(resultRow).join('')}</div></details>
     <details class="operator-archive-edit-section" data-editor-section="sources"><summary><span>4</span><div><strong>출처</strong><small>SOOP·나무위키·Notion 등 근거 원문과 공개 범위를 관리합니다.</small></div><button type="button" data-add-row="source">+ 추가</button></summary><div class="operator-archive-repeater" data-sources>${(selected.sources||[]).map(sourceRow).join('')}</div></details>
@@ -295,7 +413,7 @@ function renderEditor(item){
     <details class="operator-archive-edit-section" data-editor-section="gallery"><summary><span>7</span><div><strong>이미지 갤러리</strong><small>포스터·공식 이미지·대표 자료를 추가합니다.</small></div><button type="button" data-add-row="gallery">+ 추가</button></summary><div class="operator-archive-repeater" data-gallery>${(selected.gallery||[]).map(galleryRow).join('')}</div></details>
     <section class="operator-archive-preview" data-archive-admin-preview><small>팬사이트 카드 미리보기</small><div></div></section>
     <p class="operator-archive-message" data-archive-admin-message aria-live="polite"></p>
-    <div class="operator-archive-actions operator-archive-actions-sticky">${publicLink}<button type="button" data-archive-preview>미리보기 갱신</button><button type="button" data-archive-save>임시 저장 <small>팬사이트 미반영</small></button><button type="button" class="primary" data-archive-publish>팬사이트에 반영</button><button type="button" class="danger" data-archive-delete ${selected.id?'':'disabled'}>삭제</button></div>
+    <div class="operator-archive-actions operator-archive-actions-sticky">${publicLink}<button type="button" data-archive-autofix-selected ${selected.id?'':'disabled'}>자동 보강</button><button type="button" data-archive-preview>미리보기 갱신</button><button type="button" data-archive-save>임시 저장 <small>팬사이트 미반영</small></button><button type="button" class="primary" data-archive-publish>팬사이트에 반영</button><button type="button" class="danger" data-archive-delete ${selected.id?'':'disabled'}>삭제</button></div>
   </form>`;
   bindEditor();renderPreview();renderEditorLiveState();renderArchiveWorkflow();
 }
@@ -403,14 +521,20 @@ function bindEditor(){
   $$('[data-add-row]',root).forEach(b=>b.addEventListener('click',event=>{event.preventDefault();const details=b.closest('details');if(details)details.open=true;addRow(b.dataset.addRow);editorDirty=true;renderEditorLiveState()}));
   bindRowControls();
   $$('[data-resolve-conflict]',root).forEach(b=>b.addEventListener('click',()=>{selected.verification.conflicts.splice(Number(b.dataset.resolveConflict),1);editorDirty=true;renderEditor(selected)}));
-  $$('[data-editor-jump]',root).forEach(b=>b.addEventListener('click',()=>jumpEditorSection(b.dataset.editorJump)));
-  $$('[data-audit-jump]',root).forEach(b=>b.addEventListener('click',()=>jumpEditorSection(b.dataset.auditJump)));
+  $('[data-editor-jump]',root).forEach(b=>b.addEventListener('click',()=>jumpEditorSection(b.dataset.editorJump)));
+  $('[data-audit-jump]',root).forEach(b=>b.addEventListener('click',()=>jumpEditorSection(b.dataset.auditJump)));
+  $('[data-archive-advanced-toggle]',root)?.addEventListener('click',toggleAdvancedFields);
+  $('[data-archive-autofix-selected]',root)?.addEventListener('click',()=>void runSelectedAutoEnhance());
   $('[data-archive-preview]',root)?.addEventListener('click',renderPreview);
   $('[data-archive-save]',root)?.addEventListener('click',()=>persist('operator-content-archive-save'));
   $('[data-archive-publish]',root)?.addEventListener('click',()=>persist('operator-content-archive-publish'));
   $('[data-archive-delete]',root)?.addEventListener('click',async()=>{if(!selected?.id||!confirm('이 콘텐츠 기록을 삭제할까요?'))return;try{await json('operator-content-archive-delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:selected.id})});selected=null;editorDirty=false;await load();renderEditor(emptyItem())}catch(e){setMessage(errorLabel[e.message]||'삭제하지 못했습니다.','bad')}})
 }
-function selectItem(id){const item=items.find(x=>x.id===id);if(item){renderEditor(item);renderList();renderArchiveWorkflow()}}
+function selectItem(id){
+  const item=items.find(x=>x.id===id);if(!item)return false;
+  if(selected?.id!==item.id&&!confirmDiscardChanges())return false;
+  renderEditor(item);renderList();renderArchiveWorkflow();return true;
+}
 function renderAutoSyncState(){
   const el=$('[data-archive-auto-state]',root);if(!el)return;
   const failed=autoSyncMeta?.status==='failed',when=String((failed?autoSyncMeta?.failedAt:autoSyncMeta?.completedAt)||'').slice(0,16).replace('T',' '),lastOk=String(autoSyncMeta?.lastSuccessAt||'').slice(0,16).replace('T',' ');
@@ -455,7 +579,7 @@ const COLLECTOR_PAGE_MESSAGE_ATTR='data-chunbong-collector-message';
 const COLLECTOR_PAGE_COMMAND_ATTR='data-chunbong-collector-command';
 const collectorImportInFlight=new Set();
 
-function collectorInboxStateLabel(state=''){return({unlinked:'미연결',internal:'내부',public:'공개',ignored:'무시'}[state]||state||'확인 필요')}
+function collectorInboxStateLabel(state=''){return({unlinked:'연결 필요',internal:'내부 보관 완료',public:'공개 연결 완료',ignored:'무시'}[state]||state||'확인 필요')}
 function collectorInboxPlatformLabel(row={}){return row.platform==='fmkorea'?'FM코리아':'SOOP'}
 function setCollectorInboxMessage(text='',state=''){const el=$('[data-collector-inbox-message]',root);if(!el)return;el.textContent=text||'';el.dataset.state=state||''}
 function renderCollectorInbox(){
@@ -468,7 +592,7 @@ function renderCollectorInbox(){
   const q=String($('[data-collector-inbox-search]',root)?.value||'').toLowerCase().trim(),state=$('[data-collector-inbox-state]',root)?.value||'attention',source=$('[data-collector-inbox-source]',root)?.value||'all';
   const rows=browserImports.filter(row=>{
     if(source!=='all'&&row.platform!==source)return false;
-    if(state==='attention'&&!['unlinked','internal'].includes(row.state))return false;
+    if(state==='attention'&&row.state!=='unlinked')return false;
     if(state!=='all'&&state!=='attention'&&row.state!==state)return false;
     if(q&&![row.title,row.linkedItemTitle,row.author,row.board,row.url].join(' ').toLowerCase().includes(q))return false;
     return true;
@@ -870,5 +994,41 @@ export async function runOfficialSync(){
     if(el){el.textContent='공식 자료 동기화에 실패했습니다: '+e.message;el.dataset.state='bad'}
   }finally{if(button)button.disabled=false}
 }
-async function load(){try{const p=await json('operator-content-archive');items=Array.isArray(p.items)?p.items:[];autoSyncMeta=p.autoSync||null;autoCandidates=Array.isArray(p.candidates)?p.candidates:[];browserImports=Array.isArray(p.browserImports)?p.browserImports:[];liveIds=new Set(Array.isArray(p.liveIds)?p.liveIds.map(String):[]);renderList();renderAutoSyncState();renderCandidates();renderCollectorInbox();renderSoopHelper();renderNamuHelper();renderArchiveWorkflow();publishArchiveHealth(archiveHealthSnapshot(items,autoCandidates,autoSyncMeta))}catch(e){setMessage(e.message==='archive_storage_unavailable'?'콘텐츠 저장소를 사용할 수 없습니다.':'콘텐츠 목록을 불러오지 못했습니다.','bad')}}
-export async function bootOperatorContents(){if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;browserImport=readSoopImportHash();namuBrowserImport=readNamuImportHash();bindUnifiedCollector();bindCollectorInbox();$$('[data-archive-health-action]',root).forEach(button=>button.addEventListener('click',()=>focusArchiveArea(button.dataset.archiveHealthAction)));$$('[data-archive-workflow-action]',root).forEach(button=>button.addEventListener('click',()=>focusArchiveArea(button.dataset.archiveWorkflowAction)));$('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);$('[data-archive-admin-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-archive-select]');if(button)selectItem(button.dataset.archiveSelect)});$('[data-archive-new]',root)?.addEventListener('click',()=>renderEditor(emptyItem()));$('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());$('[data-archive-image-audit]',root)?.addEventListener('click',()=>void runImageAudit());renderEditor(emptyItem());await load();if(namuBrowserImport)await submitNamuImport();else if(browserImport)await autoRouteSoopImport();else{renderSoopHelper();renderNamuHelper();renderUnifiedCollectorStatus()}}
+async function load(){
+  if(archiveLoading)return false;archiveLoading=true;setArchiveLoadState('loading');
+  try{
+    const p=await json('operator-content-archive');
+    items=Array.isArray(p.items)?p.items:[];autoSyncMeta=p.autoSync||null;autoCandidates=Array.isArray(p.candidates)?p.candidates:[];browserImports=Array.isArray(p.browserImports)?p.browserImports:[];liveIds=new Set(Array.isArray(p.liveIds)?p.liveIds.map(String):[]);
+    renderList();renderAutoSyncState();renderCandidates();renderCollectorInbox();renderSoopHelper();renderNamuHelper();renderArchiveWorkflow();
+    publishArchiveHealth(archiveHealthSnapshot(items,autoCandidates,autoSyncMeta,browserImports));setArchiveLoadState('ok');return true;
+  }catch(e){
+    const message=e.message==='archive_storage_unavailable'?'콘텐츠 저장소를 사용할 수 없습니다.':'콘텐츠 목록을 불러오지 못했습니다: '+String(e.message||'request_failed');
+    setArchiveLoadState('error',message);markArchiveHealthUnavailable();setMessage(message,'bad');return false;
+  }finally{archiveLoading=false}
+}
+export async function bootOperatorContents(){
+  if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;
+  browserImport=readSoopImportHash();namuBrowserImport=readNamuImportHash();bindUnifiedCollector();bindCollectorInbox();
+  $('[data-archive-health-action]',root).forEach(button=>button.addEventListener('click',()=>focusArchiveArea(button.dataset.archiveHealthAction)));
+  $('[data-archive-workflow-action]',root).forEach(button=>button.addEventListener('click',()=>focusArchiveArea(button.dataset.archiveWorkflowAction)));
+  $('[data-archive-auto-fix]',root)?.addEventListener('click',()=>void runBulkAutoEnhance());
+  $('[data-archive-load-retry]',root)?.addEventListener('click',()=>void load());
+  $('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);
+  $('[data-archive-admin-list]',root)?.addEventListener('click',event=>{
+    const button=event.target.closest('[data-archive-select]');if(!button)return;
+    if(selectItem(button.dataset.archiveSelect)&&button.dataset.archiveJump)setTimeout(()=>jumpEditorSection(button.dataset.archiveJump),0);
+  });
+  $('[data-archive-new]',root)?.addEventListener('click',()=>{if(confirmDiscardChanges())renderEditor(emptyItem())});
+  $('[data-archive-auto-sync]',root)?.addEventListener('click',()=>void runOfficialSync());$('[data-archive-image-audit]',root)?.addEventListener('click',()=>void runImageAudit());
+  if(!document.documentElement.dataset.archiveUnsavedGuard){
+    document.documentElement.dataset.archiveUnsavedGuard='1';
+    window.addEventListener('beforeunload',event=>{if(!editorDirty)return;event.preventDefault();event.returnValue=''});
+    document.addEventListener('click',event=>{
+      const tab=event.target.closest?.('[data-operator-tab]');if(!tab||tab.dataset.operatorTab==='contents'||!editorDirty)return;
+      if(!confirmDiscardChanges()){event.preventDefault();event.stopImmediatePropagation()}
+      else editorDirty=false;
+    },true);
+  }
+  renderEditor(emptyItem());await load();
+  if(namuBrowserImport)await submitNamuImport();else if(browserImport)await autoRouteSoopImport();else{renderSoopHelper();renderNamuHelper();renderUnifiedCollectorStatus()}
+}
