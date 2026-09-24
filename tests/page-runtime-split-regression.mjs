@@ -18,11 +18,13 @@ const runtimeByPage = {
   'youtube.html':'page-media.js',
   'fanart.html':'page-fanart.js'
 };
+const runtimeVersionByPage = {'fanart.html':2};
 for (const [htmlFile, runtime] of Object.entries(runtimeByPage)) {
   const html = read(htmlFile);
+  const version = runtimeVersionByPage[htmlFile] || 1;
   assert.match(
     html,
-    new RegExp('<script src="page\\.js\\?v=2"></script><script src="' + runtime.replace('.', '\\.') + '\\?v=1"></script>'),
+    new RegExp('<script src="page\\.js\\?v=2"></script><script src="' + runtime.replace('.', '\\.') + '\\?v=' + version + '"></script>'),
     htmlFile + ' must load its runtime after page.js'
   );
 }
