@@ -30,8 +30,7 @@ assert.match(svg,/class="tarot-fortune-art-line"[^>]*stroke="#ffd55c" stroke-wid
 assert.doesNotMatch(svg,/stroke-width="18"/,'legacy thick outer gold frame must stay removed');
 assert.doesNotMatch(svg,/stroke-width="11"/,'legacy thick artwork gold frame must stay removed');
 
-assert.match(html,/href="tarot-composite\.css\?v=3"/,'updated frame CSS must be cache-busted');
-assert.match(html,/src="tarot\.js\?v=7"/,'updated selection runtime must be cache-busted');
-assert.match(html,/src="tarot-composite\.js\?v=2"/,'updated result frame runtime must be cache-busted');
+assert.match(html,/href="tarot-bundle\.css\?v=1"/,'tarot page must load the generated CSS bundle');
+assert.match(html,/src="tarot-bundle\.js\?v=1"/,'tarot page must load the generated JS bundle');
 
 console.log('tarot selection visibility and daily-fortune frame regression passed');
