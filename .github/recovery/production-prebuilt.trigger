@@ -1,8 +1,3 @@
-2026-09-23 chunbong-content-16x9-official-logo-recovery
-2026-09-23 curated-real-16x9-archive-refresh
-2026-09-23 chuntacle-gallery-dedupe-refresh
-2026-09-23 archive-readability-normalization-recovery
-2026-09-23 leopel-knowledge-archive-finish-recovery
-2026-09-23 21:02 KST leopel-reference-assets-final-recovery
-2026-09-23 21:08 KST namuwiki-byte-proxy-final-recovery
-2026-09-23 22:47 KST fanart-minigame-performance-recovery
+production prebuilt recovery trigger
+reason=deploy latest main after css cleanup
+source_sha=7174f61aca7e570ff8e27f034ae8474dd9b92cb7
