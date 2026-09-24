@@ -1,5 +1,9 @@
-/* CHUNBONG_PWA v1 */
-const CACHE_NAME = 'chunbong-pwa-20260923-v32';
+/* CHUNBONG_PWA v2 · deployment-aware cache */
+const CACHE_PREFIX = 'chunbong-pwa-';
+const FALLBACK_VERSION = 'runtime-v33';
+const requestedVersion = new URL(self.location.href).searchParams.get('v') || FALLBACK_VERSION;
+const BUILD_VERSION = String(requestedVersion).replace(/[^a-zA-Z0-9._-]/g,'-').slice(0,48) || FALLBACK_VERSION;
+const CACHE_NAME = CACHE_PREFIX + BUILD_VERSION;
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -10,8 +14,9 @@ const APP_SHELL = [
   '/site-design-system.css',
   '/site-quality.css',
   '/site-improvements.css',
-  '/mobile-site.css',
-  '/mobile-site.js',
+  '/mobile-site.css?v=3',
+  '/mobile-runtime-loader.js?v=1',
+  '/mobile-site.js?v=3',
   '/page.js?v=2',
   '/site-shell.js',
   '/site-meta.js',
@@ -38,7 +43,7 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter(key => key.startsWith('chunbong-pwa-') && key !== CACHE_NAME).map(key => caches.delete(key)));
+    await Promise.all(keys.filter(key => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME).map(key => caches.delete(key)));
     if (self.registration.navigationPreload) {
       try { await self.registration.navigationPreload.enable(); } catch {}
     }
