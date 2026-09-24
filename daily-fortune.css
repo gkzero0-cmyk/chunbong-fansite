@@ -1277,7 +1277,7 @@
   100%{opacity:0}
 }
 @keyframes dailyFortuneFoilChip{
-  0%{opacity:0;filter:brightness(.75);transform:translate(calc(-50% + var(--foil-x)),calc(-50% + var(--foil-y))) rotate(var(--foil-rotate)) scale(calc(var(--foil-scale) * .55))}
+  0%{opacity:0;filter:brightness(.75);transform:translate(calc(-50% + var(--foil-x)),calc(-50% + var(--foil-y))) rotate(var(--foil-rotate)) scale(.55)}
   22%{opacity:1;filter:brightness(1.75)}
   48%{opacity:.96;filter:brightness(1.12) saturate(1.7)}
   72%{opacity:1;filter:brightness(1.9) saturate(2)}
