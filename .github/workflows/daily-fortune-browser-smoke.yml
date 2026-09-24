@@ -99,32 +99,46 @@ jobs:
 
           // Click the visual stage rather than relying on native button click delivery.
           await page.mouse.click(initialStageBox.x + initialStageBox.width * 0.5, initialStageBox.y + initialStageBox.height * 0.5);
-          await page.waitForFunction(() => document.querySelector('[data-daily-fortune-stage]')?.classList.contains('is-spinning'));
-          const spinStyle = await page.locator('.daily-fortune-card-inner').evaluate(el => ({
+          await page.waitForFunction(() => document.querySelector('[data-daily-fortune-stage]')?.classList.contains('is-accelerating'));
+          const accelStyle = await page.locator('.daily-fortune-card-inner').evaluate(el => ({
             name:getComputedStyle(el).animationName,
             duration:getComputedStyle(el).animationDuration,
             iterations:getComputedStyle(el).animationIterationCount,
             opacity:Number(getComputedStyle(el).opacity)
           }));
-          assert.equal(spinStyle.name,'dailyFortuneHyperSpin','fast phase must use the dedicated hyper-spin animation');
-          assert.equal(spinStyle.duration,'0.05s','fast phase must run one turn every 50ms');
-          assert.equal(spinStyle.iterations,'infinite','fast phase must repeat continuously until deceleration');
-          assert.ok(spinStyle.opacity<=0.1,'fast phase must make the card nearly disappear');
+          assert.equal(accelStyle.name,'dailyFortuneProgressiveAccel','spin must visibly accelerate before the hyper phase');
+          assert.equal(accelStyle.duration,'1.07s','progressive acceleration must fill the transition into hyper spin');
+          assert.equal(accelStyle.iterations,'1','acceleration must run once before the cruise phase');
+          assert.ok(accelStyle.opacity>0.1,'acceleration must remain visibly readable before the card becomes a fast streak');
+
+          await page.waitForFunction(() => document.querySelector('[data-daily-fortune-stage]')?.classList.contains('is-hyper'), null, { timeout: 1800 });
+          const hyperStyle = await page.locator('.daily-fortune-card-inner').evaluate(el => ({
+            name:getComputedStyle(el).animationName,
+            duration:getComputedStyle(el).animationDuration,
+            iterations:getComputedStyle(el).animationIterationCount,
+            opacity:Number(getComputedStyle(el).opacity)
+          }));
+          assert.equal(hyperStyle.name,'dailyFortuneCrystalHyperSpin','cruise phase must use the current crystal hyper-spin animation');
+          assert.equal(hyperStyle.duration,'0.055s','hyper phase must run one turn every 55ms');
+          assert.equal(hyperStyle.iterations,'infinite','hyper phase must repeat continuously until deceleration');
+          assert.ok(hyperStyle.opacity<=0.1,'hyper phase must make the card nearly disappear');
+
           const storageKey = await page.evaluate(() => window.CHUNBONG_DAILY_FORTUNE.STORAGE_KEY);
           assert.equal(await page.evaluate(key => localStorage.getItem(key), storageKey), null, 'daily result must not be persisted before the reveal succeeds');
-          await page.waitForTimeout(1900);
+          await page.waitForTimeout(600);
           assert.equal(await page.locator('[data-daily-fortune-stage]').evaluate(el=>el.classList.contains('is-spinning')),true,'extended spin should still be visibly spinning near two seconds');
           assert.equal(await page.locator('[data-daily-fortune-result]').isHidden(), true, 'result must remain hidden during the high-speed back spin');
           assert.equal(await page.locator('[data-daily-fortune-card]').evaluate(el => el.disabled), false, 'draw must remain natively clickable so interrupted states can recover');
           assert.equal(await page.locator('[data-daily-fortune-card]').getAttribute('aria-disabled'), 'true', 'draw must use a logical lock while the card is spinning');
           assert.equal(await page.evaluate(key => localStorage.getItem(key), storageKey), null, 'a mid-spin interruption must not consume today\'s draw');
-          await page.waitForFunction(() => document.querySelector('[data-daily-fortune-stage]')?.classList.contains('is-decelerating'), null, { timeout: 1800 });
+
+          await page.waitForFunction(() => document.querySelector('[data-daily-fortune-stage]')?.classList.contains('is-decelerating'), null, { timeout: 1400 });
           const decelStyle = await page.locator('.daily-fortune-card-inner').evaluate(el => ({
             name:getComputedStyle(el).animationName,
             duration:getComputedStyle(el).animationDuration
           }));
-          assert.equal(decelStyle.name,'dailyFortuneHyperDecelerate','last 400ms must switch to the visible deceleration animation');
-          assert.equal(decelStyle.duration,'0.4s','deceleration must last four tenths of a second');
+          assert.equal(decelStyle.name,'dailyFortuneCrystalDecel','final phase must switch to the current visible deceleration animation');
+          assert.equal(decelStyle.duration,'0.8s','deceleration must fill the final 800ms before reveal');
           await page.waitForFunction(() => {
             const key = window.CHUNBONG_DAILY_FORTUNE?.STORAGE_KEY;
             const raw = key ? localStorage.getItem(key) : '';
