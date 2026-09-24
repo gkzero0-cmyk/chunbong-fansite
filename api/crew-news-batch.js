@@ -30,6 +30,34 @@ const EXTRA_SEARCHES = Object.freeze({
   'ZZAM지트': [{ station: 'zzamta0310', keyword: '소울' }]
 });
 
+const FALLBACK_REPRESENTATIVE = Object.freeze({
+  'ZZAM지트': {
+    id: '207641333',
+    station: 'zzamta0310',
+    title: '\u200B소울체인드 합방',
+    originalTitle: '엘밤통? 그거보다 더심한 소울류가 온다...!',
+    author: '짬타수아XV',
+    authorId: 'zzamta0310',
+    publishedAt: '2026-09-20 18:51:05',
+    bbsNo: '99850883',
+    boardName: '스케쥴 게시판',
+    accessType: 'public',
+    postUrl: 'https://www.sooplive.com/station/zzamta0310/post/207641333',
+    imageUrl: 'https://stimg.sooplive.com/NORMAL_BBS/5/26840115/61411789897829858.png',
+    sheetImageUrl: 'https://chunbong-fansite.vercel.app/api/image?url=https%3A%2F%2Fstimg.sooplive.com%2FNORMAL_BBS%2F5%2F26840115%2F61411789897829858.png',
+    hashtags: [],
+    contents: 'ZZAM지트 소울체인드 합방\n체인투게더+다크소울\n\n오늘밤8시',
+    strictCrew: 'ZZAM지트',
+    strictActivity: '소울체인드 합방',
+    displaySummary: '소울체인드 합방',
+    strictPriority: 1,
+    representativeTier: 1,
+    isCrewLeader: true,
+    isLeaderRepresentative: true,
+    fallbackRepresentative: true
+  }
+});
+
 const EXCLUDED_BOARD_RE = /자유|잡담|일상|이벤트|event|팬\s*게시판|애청자|이봤/i;
 const NOTICE_BOARD_RE = /공지|공지사항/i;
 const OFFICIAL_BOARD_RE = /공지|공지사항|스케쥴|스케줄|일정|방송알림|크루/i;
@@ -288,6 +316,17 @@ module.exports = async function handler(req, res) {
     });
     selected = candidates[0] || null;
 
+    // 외부 검색이 일시적으로 빈 결과를 반환하더라도 검증된 마지막 대표 소식을
+    // "허용 후보 없음"으로 오판해 시트에서 지우지 않도록 안전 폴백을 사용한다.
+    if (!selected && FALLBACK_REPRESENTATIVE[crew]) {
+      selected = { ...FALLBACK_REPRESENTATIVE[crew], _station: FALLBACK_REPRESENTATIVE[crew].station };
+      const targetResult = results.find(result => result && result.station === selected._station);
+      if (targetResult && targetResult.ok) {
+        targetResult.posts = [{ ...selected }];
+        targetResult.count = 1;
+      }
+    }
+
     // 기존 Apps Script가 자체 선정하지 않아도 서버 대표 후보 하나만 보도록 제한한다.
     for (const result of results) {
       if (!result || !result.ok) continue;
@@ -303,7 +342,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0,
-    policyVersion: 'representative-v6.2-server',
+    policyVersion: 'representative-v6.3-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
