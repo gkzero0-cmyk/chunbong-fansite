@@ -36,7 +36,7 @@ const mediaPayloads={
   ]},
   clips:{items:[{id:'clip-one',kind:'clip',title:'Mock Clip',date:MOCK_DATE,meta:'조회수 20',link:'https://example.com/clip'}]},
   youtube:{items:[{id:'yt-one',kind:'shorts',title:'Mock YouTube',date:MOCK_DATE,dateIso:'2026-09-20T03:00:00Z',meta:'조회수 30',link:'https://youtube.com/shorts/yt-one'}]},
-  schedule:{items:[{title:'Mock Schedule',tags:['테스트'],start:'2026-09-23T19:00:00+09:00',end:'',isDateTime:true,link:'https://example.com/schedule'}]},
+  schedule:{items:[{title:'Mock Schedule',tags:['테스트'],start:'2026-09-25T19:00:00+09:00',end:'',isDateTime:true,link:'https://example.com/schedule'}]},
   live:{live:false},
   activity:{items:[]},
   notice:{items:[]},
