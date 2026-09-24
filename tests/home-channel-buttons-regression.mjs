@@ -8,7 +8,7 @@ const index = fs.readFileSync(indexUrl, 'utf8');
 assert.equal(fs.existsSync(buttonsCssUrl), true, 'home channel button stylesheet must exist');
 const buttonsCss = fs.readFileSync(buttonsCssUrl, 'utf8');
 
-assert.match(index, /<link rel="stylesheet" href="home-channel-buttons\.css">/, 'home page must load channel button styles after the base stylesheet');
+assert.match(index, /<link rel="stylesheet" href="home-bundle\.css\?v=1">/, 'home page must load the generated home style bundle');
 assert.match(index, /class="btn btn-cafe"[^>]*>팬카페 ↗<\/a>/, 'home fan cafe button must use the dedicated cafe style');
 assert.match(index, /class="btn btn-youtube"[^>]*>YouTube ↗<\/a>/, 'home YouTube button label must be shortened to YouTube');
 assert.match(buttonsCss, /\.btn-cafe\s*\{[^}]*background:\s*#00c73c(?:;|\})/s, 'fan cafe button must use #00c73c');
