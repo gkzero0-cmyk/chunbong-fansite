@@ -99,6 +99,9 @@ jobs:
           node --check scripts/update-youtube-engagement-cache.mjs
           node --check .github/scripts/vercel-ignore-build.mjs
           node --check .github/scripts/vercel-rate-limit-fast-fail.mjs
+          node --check scripts/build-tarot-css.mjs
+      - name: Verify generated assets
+        run: node scripts/build-tarot-css.mjs --check
       - name: Run all regression tests
         run: |
           set -e
