@@ -7,6 +7,8 @@ const fanartHtml=read('fanart.html');
 const fanartJs=read('page-fanart.js');
 const fanartCss=read('fanart-hero-banner.css');
 const mobileCss=read('mobile-site.css');
+const mobileMinigamesCss=read('mobile-minigames.css');
+const gameLayoutCss=read('game-layout.css');
 const chunbak=read('chunbak.js');
 const chunbakHtml=read('chunbak.html');
 const chungwa=read('chungwagame.js');
@@ -20,6 +22,8 @@ assert.match(fanartCss,/\.fanart-card\{content-visibility:auto;contain-intrinsic
 assert.match(fanartJs,/fetchpriority="low"/,'server-provided fanart thumbnails must load at low priority');
 assert.match(fanartJs,/img\.fetchPriority = 'low'/,'hydrated fanart thumbnails must load at low priority');
 assert.doesNotMatch(mobileCss,/\.video-list-card,\.fanart-card,\.data-kpi/,'mobile generic rendering override must not override the fanart-specific intrinsic size');
+assert.match(mobileMinigamesCss,/body\[data-game="chunbak"\] \.chunbak-start-card\{width:min\(calc\(100vw - 24px\),calc\(\(100dvh - 260px\)\*420\/680\),420px\)!important/,'mobile Chunbak start/play board widths must use the same viewport formula');
+assert.match(gameLayoutCss,/\.chunbak-stage,\.chunbak-start-card\{width:min\(100%,660px\)!important\}/,'ultrawide Chunbak start/play board widths must stay aligned');
 
 for (const [name,source,html] of [
   ['춘과게임',chungwa,chungwaHtml],
