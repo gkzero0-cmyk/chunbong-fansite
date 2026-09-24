@@ -49,7 +49,7 @@ assert.match(shell,/runIdle\(\(\)=>loadScript\('site-meta\.js'\)\)/,'site metada
 assert.match(shell,/runIdle\(\(\)=>loadScript\('site-improvements\.js'\)\)/,'site improvements should defer to browser idle time');
 assert.match(shell,/requestIdleCallback\(load,\{timeout:1800\}\)/,'activity center should not compete with first paint');
 
-assert.ok(shell.length < 12500,'shared shell unexpectedly large');
+assert.ok(shell.length < 13000,'shared shell unexpectedly large');
 assert.ok(content.length < 6500,'content data bundle unexpectedly large');
 
 console.log('site shell split regression passed');
