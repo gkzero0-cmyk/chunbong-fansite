@@ -14,6 +14,7 @@ const mobileRuntime=read('mobile-site.js');
 const sw=read('service-worker.js');
 const page=read('page.js');
 const contentsUi=read('chunbong-contents.js');
+const archiveApi=read('lib/chunbong-content-archive-api.js');
 
 assert.doesNotMatch(quality,/@import url\("site-design-system\.css"\)/,'design-system CSS must not be serially imported');
 for(const name of pages){
@@ -50,5 +51,7 @@ assert.equal(normalized.participantProfiles.find(row=>row.canonicalName==='건�
 assert.ok(normalized.participantProfiles.find(row=>row.canonicalName==='와앙이')?.aliases.includes('와앙이♪'));
 assert.match(contentsUi,/p\.rpName/,'archive search must index RP names');
 assert.match(contentsUi,/p\.aliases/,'archive search must index participant aliases');
+assert.match(archiveApi,/compactPublicArchiveListItem/,'archive list payload must compact generated participant profiles');
+assert.match(archiveApi,/row\?\.rpName\|\|\(row\?\.aliases\|\|\[\]\)\.length/,'list payload must keep RP names and aliases while dropping generated duplicates');
 
 console.log('site structure/performance v21 regression passed');
