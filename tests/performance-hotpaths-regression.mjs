@@ -22,7 +22,7 @@ assert.match(gallery,/ChunbongCache\.fetchJson\('fanart-detail:'\+articleId/,'fa
 assert.match(api,/Vercel-CDN-Cache-Control','public, max-age=600/,'fanart list needs explicit edge caching');
 assert.match(api,/Vercel-CDN-Cache-Control','public, max-age=3600/,'fanart detail needs a longer edge cache');
 
-assert.match(sw,/chunbong-pwa-20260923-v32/,'performance work must advance the PWA cache');
+assert.match(sw,/const CACHE_NAME = CACHE_PREFIX \+ BUILD_VERSION/,'performance cache must follow the deployed build');
 assert.match(sw,/\['script','style'\][\s\S]*boundedNetworkFirst\(request, event, 450\)/,'JS/CSS should use bounded network-first');
 for(const heavy of ['/personal-hub.js','/chunbong-contents.js','/activity-center.js','/daily-fortune.js']){
   assert.ok(!sw.includes("'"+heavy+"'"),heavy+' should not inflate the initial PWA install');
