@@ -1191,6 +1191,16 @@
    Micro foil surface + soft foil bloom.
    No large polygon shards: the effect stays attached to the card surface. */
 
+/* v13 owns the revealed surface; retire older card pseudo-prism layers. */
+.daily-fortune-stage:hover .daily-fortune-card:before,
+.daily-fortune-stage:hover .daily-fortune-card:after,
+.daily-fortune-stage.is-prism-active .daily-fortune-card:before,
+.daily-fortune-stage.is-prism-active .daily-fortune-card:after{
+  opacity:0!important;
+  background:none!important;
+  animation:none!important
+}
+
 /* Dense holographic sticker film revealed only around the live pointer position. */
 .daily-fortune-holo-film{
   display:block!important;
