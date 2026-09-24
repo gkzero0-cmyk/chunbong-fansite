@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { pathToFileURL } from 'node:url';
 
 const bundles=[
   {out:'home-bundle.css',kind:'css',files:['home-channel-buttons.css','home-overview.css','home-refresh.css']},
@@ -15,5 +16,5 @@ export function build(){
   for(const entry of bundles)fs.writeFileSync(entry.out,bundleContent(entry));
 }
 
-if(import.meta.url===new URL('file://'+process.argv[1]).href)build();
+if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)build();
 export {bundles};
