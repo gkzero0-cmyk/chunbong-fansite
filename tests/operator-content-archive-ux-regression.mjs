@@ -25,8 +25,9 @@ assert.match(css,/operator-archive-technical-field/,'technical fields must be hi
 assert.match(operator,/operator-archive-issue-chip/,'content list must expose issue shortcuts');
 
 assert.match(api,/operatorOverride&&payload\?\.source==='soop-authenticated-browser'/,'owner must be able to publish authenticated SOOP imports manually');
-assert.match(operator,/외부 공개 권한을 확인했다면 계속하세요/,'restricted SOOP publication must require an explicit operator confirmation');
+assert.match(operator,/공개 가능 여부를 확인했다면 계속하세요/,'subscriber/private SOOP publication must require an explicit operator confirmation');
 assert.doesNotMatch(operator,/비로그인 일반 공개로 확인된 뒤에 공개할 수 있습니다/,'restricted SOOP public button must not remain disabled');
-assert.match(html,/자동 공개하지 않고 운영자 승인 시에만 공개/,'operator policy copy must distinguish automatic and manual publication');
+assert.match(html,/SOOP 일반 공개글과 <b>애청자 글은 자동 수집 → 자동 매칭 → 자동 공개<\/b>/,'operator policy copy must auto-publish favorite posts');
+assert.match(html,/구독자 전용·비공개·기타 로그인 제한 글은 내부 자료로 저장하고 운영자 확인 후에만 공개/,'operator policy copy must keep restricted SOOP publication review-gated');
 
 console.log('operator content archive UX regression passed');
