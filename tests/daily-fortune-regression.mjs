@@ -53,7 +53,7 @@ assert.match(css, /\.daily-fortune-holo-film/, 'pointer-follow hologram film mis
 assert.doesNotMatch(css, /\.daily-fortune-holo-ripple/, 'legacy circular ripple CSS must stay removed');
 assert.match(css, /conic-gradient\(from 215deg at var\(--glow-x\) var\(--glow-y\)/, 'pointer-follow crystal hologram material missing');
 assert.match(css, /2026-09-21 Luxury Tarot Foil/, 'refined luxury foil override missing');
-assert.match(css, /@keyframes dailyFortuneLuxuryRipple/, 'subtle luxury ripple animation missing');
+assert.doesNotMatch(css, /@keyframes dailyFortuneLuxuryRipple/, 'legacy luxury ripple animation must stay removed');
 assert.doesNotMatch(js, /rippleDistance > 0\.26/, 'pointer movement must not spawn circular ripple effects');
 assert.match(js, /\[945, 0\.60, 0\.0100/, 'hover entry sound must use the refined glass-halo resonance');
 assert.match(css, /scale\(1\.032\)/, 'hover lift must be visually noticeable');
