@@ -434,6 +434,11 @@ function base64ToUtf8(value=''){
 }
 
 const COLLECTOR_CHANNEL='chunbong-content-collector';
+const COLLECTOR_PAGE_MESSAGE_EVENT='chunbong-content-collector-page-message';
+const COLLECTOR_PAGE_COMMAND_EVENT='chunbong-content-collector-page-command';
+const COLLECTOR_PAGE_MESSAGE_ATTR='data-chunbong-collector-message';
+const COLLECTOR_PAGE_COMMAND_ATTR='data-chunbong-collector-command';
+const collectorImportInFlight=new Set();
 
 function collectorInboxStateLabel(state=''){return({unlinked:'미연결',internal:'내부',public:'공개',ignored:'무시'}[state]||state||'확인 필요')}
 function collectorInboxPlatformLabel(row={}){return row.platform==='fmkorea'?'FM코리아':'SOOP'}
@@ -516,7 +521,15 @@ function renderUnifiedCollectorStatus(){
   box.innerHTML='<strong>자동 수집기 연결됨'+(collectorState.version?' · v'+esc(collectorState.version):'')+'</strong><span>전송 대기 '+Number(collectorState.queueCount||0)+'건 · 브라우저에서 확인한 자료 '+Number(collectorState.seenCount||0)+'건 · SOOP 기록 '+Number(collectorState.soopHistoryCount||0)+'건'+progress+'</span>';
 }
 function collectorPost(type,data={}){
-  window.postMessage({channel:COLLECTOR_CHANNEL,type,...data},location.origin);
+  const command={channel:COLLECTOR_CHANNEL,type,commandId:'cmd-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),...data};
+  try{window.postMessage(command,location.origin)}catch{}
+  try{
+    const doc=document.documentElement;
+    if(doc){
+      doc.setAttribute(COLLECTOR_PAGE_COMMAND_ATTR,JSON.stringify(command));
+      document.dispatchEvent(new CustomEvent(COLLECTOR_PAGE_COMMAND_EVENT));
+    }
+  }catch{}
 }
 async function handleUnifiedCollectorImport(message={}){
   const id=String(message.id||''),payload=message.payload||{};
@@ -565,16 +578,27 @@ async function handleUnifiedCollectorImport(message={}){
 }
 function bindUnifiedCollector(){
   if(!root||root.dataset.collectorBound==='1')return;root.dataset.collectorBound='1';
-  window.addEventListener('message',event=>{
-    if(event.source!==window||event.origin!==location.origin)return;
-    const data=event.data||{};if(data.channel!==COLLECTOR_CHANNEL)return;
+  const handleCollectorData=data=>{
+    if(!data||data.channel!==COLLECTOR_CHANNEL)return;
     if(data.type==='state'){
       collectorState={connected:true,queueCount:Number(data.queueCount||0),seenCount:Number(data.seenCount||0),version:String(data.version||''),soopHistoryCount:Number(data.soopHistoryCount||0),soopBackfill:data.soopBackfill||{}};
       renderUnifiedCollectorStatus();return;
     }
     if(data.type==='import'){
-      collectorImportChain=collectorImportChain.then(()=>handleUnifiedCollectorImport(data)).catch(error=>setMessage('자동 수집 처리 중 오류: '+error.message,'bad'));
+      const id=String(data.id||'');if(id&&collectorImportInFlight.has(id))return;
+      if(id)collectorImportInFlight.add(id);
+      collectorImportChain=collectorImportChain.then(()=>handleUnifiedCollectorImport(data)).catch(error=>setMessage('자동 수집 처리 중 오류: '+error.message,'bad')).finally(()=>{if(id)setTimeout(()=>collectorImportInFlight.delete(id),800)});
     }
+  };
+  window.addEventListener('message',event=>{
+    if(event.source!==window||event.origin!==location.origin)return;
+    handleCollectorData(event.data||{});
+  });
+  document.addEventListener(COLLECTOR_PAGE_MESSAGE_EVENT,()=>{
+    try{
+      const raw=document.documentElement?.getAttribute(COLLECTOR_PAGE_MESSAGE_ATTR)||'';
+      if(raw)handleCollectorData(JSON.parse(raw));
+    }catch{}
   });
   $('[data-collector-run-namu]',root)?.addEventListener('click',()=>{
     const rows=namuPendingSources();if(!rows.length){setMessage('현재 이미지 수집이 필요한 나무위키 원문이 없습니다.','ok');return}
@@ -593,7 +617,14 @@ function bindUnifiedCollector(){
     collectorPost('open-fmk-board',{url:'https://www.fmkorea.com/'});
     setMessage('FM코리아를 열었습니다. 춘봉·콘텐츠 관련 제목을 자동 감지하며, 직접 연 공개 게시글도 자동 수집합니다.','ok');
   });
-  collectorPost('ping');renderUnifiedCollectorStatus();
+  const version=document.documentElement?.getAttribute('data-chunbong-collector-version')||'';
+  if(version&&!collectorState.connected){
+    collectorState={...collectorState,version};
+    const box=$('[data-unified-collector-status]',root);
+    if(box){box.dataset.state='busy';box.innerHTML='<strong>자동 수집기 감지됨 · v'+esc(version)+'</strong><span>운영자 센터와 연결을 확인하고 있습니다…</span>'}
+  }
+  [0,250,900,2200,5000].forEach(delay=>setTimeout(()=>collectorPost('ping'),delay));
+  renderUnifiedCollectorStatus();
 }
 
 function namuCollectorBookmarklet(){
