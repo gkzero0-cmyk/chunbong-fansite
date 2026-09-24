@@ -132,6 +132,35 @@
         }
       ],
       "measurement": "fan-site-sampled-5m"
+    },
+    {
+      "id": "2026-09-24T03:01:48.000Z",
+      "broadcastId": "",
+      "startedAt": "2026-09-24T03:01:48.000Z",
+      "endedAt": "2026-09-24T18:21:28.228Z",
+      "date": "2026-09-24",
+      "durationMinutes": 920,
+      "averageViewers": 167,
+      "maxViewers": 479,
+      "viewerSampleCount": 76,
+      "followerStart": 30773,
+      "followerEnd": 30838,
+      "followerDelta": 65,
+      "fanclubStart": 7686,
+      "fanclubEnd": 7686,
+      "fanclubDelta": 0,
+      "title": "마병대4 행정관입니다",
+      "categories": [
+        {
+          "id": "810000",
+          "name": "버추얼",
+          "minutes": 716,
+          "sampleCount": 76,
+          "averageViewers": 167,
+          "maxViewers": 479
+        }
+      ],
+      "measurement": "fan-site-sampled-5m"
     }
   ]
 }
