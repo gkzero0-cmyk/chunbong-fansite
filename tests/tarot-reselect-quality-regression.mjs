@@ -56,7 +56,7 @@ assert.deepEqual(tarot.cardArtworkDescriptor({ imageSheet: 5, imageSlot: 12 }), 
 const html = read('tarot.html');
 assert.ok(html.includes('id="tarot-confirm-selection"'), 'direct selection needs an explicit selection-complete button');
 assert.ok(html.includes('id="tarot-card-zoom"'), 'tarot results need a native large-card dialog');
-assert.ok(html.includes('tarot-quality.css'), 'quality override stylesheet must be loaded after the legacy tarot stylesheet');
+assert.ok(html.includes('tarot-bundle.css?v=1'), 'quality overrides must ship through the generated tarot bundle');
 
 const script = read('tarot.js');
 assert.ok(script.includes('toggleDirectSelection'), 'frontend must use toggle semantics instead of permanently disabling picked cards');
