@@ -35,10 +35,7 @@ assert.ok(sw.includes("'/theme.css'"));
 assert.ok(sw.includes("'/theme-init.js'"));
 
 const vercel=JSON.parse(read('vercel.json'));
-for(const branch of ['internal-*','ci-*','docs-*','feat/*','fix/*','chore/*','ci/*','refactor/*','test/*','hotfix/*']){
-  assert.equal(vercel.git?.deploymentEnabled?.[branch],false,`Vercel must skip ${branch} branches`);
-}
-assert.equal(vercel.git?.deploymentEnabled?.['data/soop-telemetry'],false);
+assert.equal(vercel.git?.deploymentEnabled?.['*'],false,'Vercel must skip all non-production Git branches by default');
 assert.equal(vercel.git?.deploymentEnabled?.main,true,'Vercel production branch must remain enabled');
 
 console.log('site theme, accessibility, PWA shell and deployment hygiene regression passed');
