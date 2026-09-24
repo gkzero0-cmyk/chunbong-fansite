@@ -390,7 +390,6 @@
       stage.style.setProperty('--prism-angle', '0deg');
       lastFoilX = -1;
       lastFoilY = -1;
-      holo.querySelectorAll('.daily-fortune-holo-ripple,.daily-fortune-holo-spark').forEach(node => node.remove());
     };
 
     const spawnBurst = (kind = 'reveal') => {
