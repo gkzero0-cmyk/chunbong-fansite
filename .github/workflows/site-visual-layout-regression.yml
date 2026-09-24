@@ -1,0 +1,49 @@
+name: Site visual layout regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '*.html'
+      - '*.css'
+      - '*.js'
+      - 'assets/**'
+      - 'tests/site-visual-layout-smoke.mjs'
+      - '.github/workflows/site-visual-layout-regression.yml'
+  workflow_dispatch:
+
+jobs:
+  visual-layout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local site
+        run: |
+          python3 -m http.server 4176 --bind 127.0.0.1 >/tmp/visual-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4176/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/visual-http.log
+          exit 1
+      - name: Verify visual layout and capture screenshots
+        env:
+          BASE_URL: http://127.0.0.1:4176
+          VISUAL_DIR: artifacts/visual-layout
+        run: node tests/site-visual-layout-smoke.mjs
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-visual-layout-screenshots
+          path: artifacts/visual-layout
+          retention-days: 7
+          if-no-files-found: warn
