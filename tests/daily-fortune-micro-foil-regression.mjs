@@ -19,6 +19,7 @@ assert.match(js,/revealedFoilBloom: true/,'foil bloom capability flag must be pr
 
 assert.match(css,/Micro foil surface \+ soft foil bloom/,'v13 foil design must exist');
 assert.doesNotMatch(css,/Daily Fortune v12/,'retired v12 large-fragment stylesheet must be removed entirely');
+assert.match(css,/retire older card pseudo-prism layers/,'v13 must explicitly neutralize pre-v13 card prism pseudo layers');
 assert.match(css,/radial-gradient\(circle,rgba\(255,255,255,.92\) 0 .7px/,'hover foil must use micro-scale reflective points');
 assert.match(css,/dailyFortuneMicroSparkle/,'small sparkle accent must exist');
 assert.match(css,/dailyFortuneFoilBloom/,'revealed click foil bloom must exist');
