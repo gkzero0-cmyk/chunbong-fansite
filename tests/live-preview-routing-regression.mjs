@@ -8,8 +8,8 @@ const chuntrisMultiplayer = read('.github/workflows/chuntris-multiplayer-preview
 const scoreMultiplayer = read('.github/workflows/minigame-score-multiplayer-preview-smoke.yml');
 
 for (const [name, source] of [['chuntris', chuntris], ['chunbak', chunbak], ['chuntris multiplayer', chuntrisMultiplayer], ['score multiplayer', scoreMultiplayer]]) {
-  assert.match(source, /!startsWith\(github\.head_ref, 'ci-'\)/, name + ' live preview must skip ci-* branches');
-  assert.match(source, /!startsWith\(github\.head_ref, 'internal-'\)/, name + ' live preview must skip internal-* branches');
+  assert.match(source, /github\.event_name == 'workflow_dispatch'/, name + ' live preview must remain manually runnable');
+  assert.match(source, /contains\(github\.event\.pull_request\.labels\.\*\.name, 'vercel-preview'\)/, name + ' live preview must require the vercel-preview label on PRs');
 }
 
 for (const token of [
