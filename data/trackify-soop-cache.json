@@ -1,43 +1,43 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-23T06:28:39.006Z",
+  "capturedAt": "2026-09-24T06:28:28.010Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 30649,
-    "fanclubCount": 7681,
+    "followerCount": 30777,
+    "fanclubCount": 7686,
     "subscriberCount": 48,
     "supporterCount": 24,
-    "averageViewers": 58,
-    "maxViewers": 173,
-    "airtimeMinutes": 10692,
-    "viewershipHours": 10269,
-    "cumulativeUpCount": 80658,
-    "totalAirtimeMinutes": 625902,
-    "monthlyStarCount": 86726,
-    "starsPerHour": 487,
-    "monthlySupporterCount": 206,
-    "monthlyChatCount": 44132,
+    "averageViewers": 62,
+    "maxViewers": 489,
+    "airtimeMinutes": 11441,
+    "viewershipHours": 11728,
+    "cumulativeUpCount": 80773,
+    "totalAirtimeMinutes": 626446,
+    "monthlyStarCount": 93642,
+    "starsPerHour": 491,
+    "monthlySupporterCount": 255,
+    "monthlyChatCount": 46629,
     "monthlyMuteCount": 6,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-09-22T05:39:38",
+    "latestBroadcastDate": "2026-09-23T18:42:56",
     "categories": [
       {
         "name": "버추얼",
-        "minutes": 9681,
-        "streamCount": 25,
-        "sharePercent": 50.1
+        "minutes": 10225,
+        "streamCount": 26,
+        "sharePercent": 53.8
       },
       {
         "name": "마인크래프트",
         "minutes": 4844,
         "streamCount": 8,
-        "sharePercent": 25.1
+        "sharePercent": 25.5
       },
       {
         "name": "오버워치",
-        "minutes": 3936,
-        "streamCount": 8,
-        "sharePercent": 20.4
+        "minutes": 3083,
+        "streamCount": 7,
+        "sharePercent": 16.2
       },
       {
         "name": "PUBG: 배틀그라운드",
@@ -11851,6 +11851,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/297300373"
+    },
+    {
+      "id": "trackify-297334779",
+      "broadcastId": "297334779",
+      "date": "2026-09-23",
+      "startedAt": "2026-09-23T18:42:56+09:00",
+      "endedAt": "2026-09-24T03:47:17+09:00",
+      "durationMinutes": 544,
+      "averageViewers": 85,
+      "maxViewers": 146,
+      "viewerSampleCount": 109,
+      "uniqueViewers": null,
+      "starCount": 4975,
+      "supporterCount": 19,
+      "chatCount": 1204,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "마병대4 악마 행정관 입니다.",
+      "categories": [
+        {
+          "id": "00810000",
+          "name": "버추얼",
+          "minutes": 544,
+          "sampleCount": 109,
+          "averageViewers": 85,
+          "maxViewers": 146
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297334779"
     }
   ]
 }
