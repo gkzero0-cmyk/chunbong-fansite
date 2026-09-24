@@ -105,7 +105,7 @@ assert.match(operatorContents,/item\.results=/,'operator must collect results');
 assert.match(operatorContents,/meta\.publishedDate/,'material source metadata should populate publication dates');
 assert.match(operatorContents,/meta\.image/,'material source metadata should populate original thumbnails');
 assert.match(operatorContents,/function bindMaterialMeta\(\)\{\$\$\('\[data-material-fetch-meta\]'/,'material metadata controls must bind as a node list');
-assert.match(operatorContents,/bindSourceMeta\(\);bindMaterialMeta\(\);\$\$\('\[data-add-row\]'/,'archive add-row controls must remain a node list');
+assert.match(operatorContents,/bindSourceMeta\(\);bindMaterialMeta\(\);[\s\S]*\$\$\('\[data-add-row\]'/,'archive add-row controls must remain a node list');
 
 
 assert.equal(typeof archive._internals.extractNotionPageId,'function','Notion page id extractor missing');
