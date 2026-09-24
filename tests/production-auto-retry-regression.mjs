@@ -12,6 +12,7 @@ assert.match(retry,/contents:\s*write/,'Git retry needs permission to create ret
 assert.match(retry,/statuses:\s*read/,'Git retry must be able to inspect Vercel commit statuses');
 assert.match(retry,/git commit --allow-empty/,'Git retry must retrigger Git integration without changing site files');
 assert.match(retry,/api\/version/,'Git retry must compare production version before committing');
+assert.match(retry,/runtimeSynced===true\|\|p\.synced===true/,'Git retry must honor runtime sync when only internal files differ');
 assert.doesNotMatch(retry,/VERCEL_TOKEN/,'Git-based retry must not require a Vercel token');
 assert.match(retry,/AGE_SECONDS.*72000/s,'scheduled retry must wait at least 20 hours after the latest main commit');
 assert.match(retry,/RATE_LIMIT_AGE_SECONDS.*86400/s,'scheduled retry must wait the documented 24 hours after the earliest observed Vercel rate-limit status');
@@ -23,9 +24,12 @@ assert.match(retry,/GITHUB_EVENT_NAME.*workflow_dispatch/s,'manual retry must by
 
 assert.match(prebuilt,/workflow_dispatch:/,'prebuilt recovery must remain manually runnable');
 assert.match(prebuilt,/push:\s*\n\s*branches: \[main\][\s\S]*production-prebuilt\.trigger/,'prebuilt recovery may run only for the explicit recovery marker on main');
-assert.match(prebuilt,/can_deploy=false/,'prebuilt recovery must expose a clean unavailable state when the token is absent');
-assert.match(prebuilt,/steps\.token\.outputs\.can_deploy == 'true'/,'prebuilt deployment steps must be guarded by token availability');
+assert.match(prebuilt,/can_deploy=false/,'prebuilt recovery must expose a clean unavailable state');
+assert.match(prebuilt,/steps\.availability\.outputs\.can_deploy == 'true'/,'prebuilt deployment steps must be guarded by recovery availability');
 assert.match(prebuilt,/::warning::VERCEL_TOKEN repository secret is not configured/,'missing Vercel token should produce a visible warning instead of a failed recovery run');
+assert.match(prebuilt,/vercel_deployment_quota_cooldown/,'prebuilt recovery must detect the deployment quota cooldown');
+assert.match(prebuilt,/RATE_LIMIT_CREATED_AT/,'prebuilt recovery must anchor its cooldown to observed Vercel rate-limit status');
+assert.match(prebuilt,/AGE_SECONDS.*86400/s,'prebuilt recovery must wait 24 hours after a deployment quota limit before uploading again');
 
 assert.match(sync,/GITHUB_EVENT_NAME.*schedule/s,'scheduled sync checks should be non-failing warnings while pending');
 assert.match(sw,/runtime-v33/,'PWA cache version must include the latest mobile app shell and alert assets');

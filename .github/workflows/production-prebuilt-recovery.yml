@@ -26,17 +26,68 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Check Vercel token availability
-        id: token
+      - name: Check recovery availability and Vercel cooldown
+        id: availability
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           if [[ -z "${VERCEL_TOKEN:-}" ]]; then
             echo 'can_deploy=false' >> "$GITHUB_OUTPUT"
+            echo 'reason=missing_token' >> "$GITHUB_OUTPUT"
             echo "::warning::VERCEL_TOKEN repository secret is not configured. Prebuilt recovery is unavailable until the secret is added."
-          else
-            echo 'can_deploy=true' >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+
+          RATE_LIMIT_CREATED_AT="$(
+            node --input-type=module <<'NODE'
+          const headers = {
+            authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+            accept: 'application/vnd.github+json',
+            'x-github-api-version': '2022-11-28'
+          };
+          const repository = process.env.GITHUB_REPOSITORY;
+          const commitsResponse = await fetch(`https://api.github.com/repos/${repository}/commits?sha=main&per_page=100`, { headers });
+          if (!commitsResponse.ok) throw new Error(`commit lookup failed: ${commitsResponse.status}`);
+          const commits = await commitsResponse.json();
+          const nowMs = Date.now();
+          const scanWindowMs = (86400 + 7200) * 1000;
+          let oldestRateLimitCreatedAt = '';
+          for (const commit of commits) {
+            const commitTime = Date.parse(commit?.commit?.committer?.date || commit?.commit?.author?.date || '');
+            if (Number.isFinite(commitTime) && nowMs - commitTime > scanWindowMs) break;
+            const response = await fetch(`https://api.github.com/repos/${repository}/commits/${commit.sha}/status`, { headers });
+            if (!response.ok) continue;
+            const combined = await response.json();
+            const limited = (combined.statuses || []).find(status =>
+              status.context === 'Vercel' && (
+                /rate limited|resource is limited|try again in 24 hours/i.test(String(status.description || '')) ||
+                /build-rate-limit/i.test(String(status.target_url || ''))
+              )
+            );
+            if (limited?.created_at) oldestRateLimitCreatedAt = limited.created_at;
+          }
+          if (oldestRateLimitCreatedAt) process.stdout.write(oldestRateLimitCreatedAt);
+          NODE
+          )"
+
+          if [[ -n "$RATE_LIMIT_CREATED_AT" ]]; then
+            NOW_TS="$(date +%s)"
+            LIMIT_TS="$(date -d "$RATE_LIMIT_CREATED_AT" +%s)"
+            AGE_SECONDS="$((NOW_TS - LIMIT_TS))"
+            if [[ "$AGE_SECONDS" -lt 86400 ]]; then
+              RETRY_AT="$((LIMIT_TS + 86400))"
+              echo 'can_deploy=false' >> "$GITHUB_OUTPUT"
+              echo 'reason=vercel_deployment_quota_cooldown' >> "$GITHUB_OUTPUT"
+              echo "retry_at=$RETRY_AT" >> "$GITHUB_OUTPUT"
+              echo "::warning::Vercel deployment quota is cooling down. Prebuilt upload is intentionally skipped until at least $(date -d "@$RETRY_AT" --iso-8601=seconds)."
+              exit 0
+            fi
+          fi
+
+          echo 'can_deploy=true' >> "$GITHUB_OUTPUT"
+          echo 'reason=ready' >> "$GITHUB_OUTPUT"
 
       - name: Publish recovery availability
         env:
@@ -44,17 +95,25 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "${{ steps.token.outputs.can_deploy }}" == "true" ]]; then
+          reason='${{ steps.availability.outputs.reason }}'
+          if [[ "${{ steps.availability.outputs.can_deploy }}" == "true" ]]; then
             state='pending'
             description='VERCEL_TOKEN available; prebuilt recovery starting'
+          elif [[ "$reason" == 'vercel_deployment_quota_cooldown' ]]; then
+            state='error'
+            description='Vercel deployment quota cooling down; prebuilt upload skipped'
           else
             state='error'
             description='VERCEL_TOKEN missing; prebuilt recovery unavailable'
           fi
-          curl -fsS -X POST             -H "Authorization: Bearer $GH_TOKEN"             -H 'Accept: application/vnd.github+json'             "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA"             -d "$(node -e "process.stdout.write(JSON.stringify({state:process.argv[1],context:'Prebuilt Recovery',description:process.argv[2]}))" "$state" "$description")"
+          curl -fsS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -d "$(node -e "process.stdout.write(JSON.stringify({state:process.argv[1],context:'Prebuilt Recovery',description:process.argv[2]}))" "$state" "$description")"
 
       - name: Link Vercel project
-        if: steps.token.outputs.can_deploy == 'true'
+        if: steps.availability.outputs.can_deploy == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -62,21 +121,21 @@ jobs:
           npx --yes vercel@latest pull --yes --environment=production --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
 
       - name: Build production output locally
-        if: steps.token.outputs.can_deploy == 'true'
+        if: steps.availability.outputs.can_deploy == 'true'
         shell: bash
         run: |
           set -euo pipefail
           npx --yes vercel@latest build --prod --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN"
 
       - name: Deploy prebuilt output to production
-        if: steps.token.outputs.can_deploy == 'true'
+        if: steps.availability.outputs.can_deploy == 'true'
         shell: bash
         run: |
           set -euo pipefail
           npx --yes vercel@latest deploy --prebuilt --prod --yes --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN" --env "DEPLOY_COMMIT_SHA=$GITHUB_SHA"
 
       - name: Verify production commit and new home
-        if: steps.token.outputs.can_deploy == 'true'
+        if: steps.availability.outputs.can_deploy == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -97,21 +156,33 @@ jobs:
           exit 1
 
       - name: Publish recovery success
-        if: success() && steps.token.outputs.can_deploy == 'true'
+        if: success() && steps.availability.outputs.can_deploy == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          curl -fsS -X POST             -H "Authorization: Bearer $GH_TOKEN"             -H 'Accept: application/vnd.github+json'             "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA"             -d '{"state":"success","context":"Prebuilt Recovery","description":"Production prebuilt recovery completed"}'
+          curl -fsS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -d '{"state":"success","context":"Prebuilt Recovery","description":"Production prebuilt recovery completed"}'
 
       - name: Publish recovery failure
-        if: failure() && steps.token.outputs.can_deploy == 'true'
+        if: failure() && steps.availability.outputs.can_deploy == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          curl -fsS -X POST             -H "Authorization: Bearer $GH_TOKEN"             -H 'Accept: application/vnd.github+json'             "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA"             -d '{"state":"failure","context":"Prebuilt Recovery","description":"Production prebuilt recovery failed"}'
+          curl -fsS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -d '{"state":"failure","context":"Prebuilt Recovery","description":"Production prebuilt recovery failed"}'
 
-      - name: Recovery unavailable without token
-        if: steps.token.outputs.can_deploy != 'true'
-        run: echo 'Skipped prebuilt recovery because VERCEL_TOKEN is not configured.'
+      - name: Recovery intentionally skipped
+        if: steps.availability.outputs.can_deploy != 'true'
+        run: |
+          echo "Prebuilt recovery skipped: ${{ steps.availability.outputs.reason }}"
+          if [[ -n "${{ steps.availability.outputs.retry_at }}" ]]; then
+            echo "retry_at_epoch=${{ steps.availability.outputs.retry_at }}"
+          fi
