@@ -671,6 +671,10 @@ function collectorRelativeTime(value=''){
   const at=Date.parse(value||'');if(!at)return'기록 없음';const seconds=Math.max(0,Math.floor((Date.now()-at)/1000));
   if(seconds<60)return seconds+'초 전';if(seconds<3600)return Math.floor(seconds/60)+'분 전';if(seconds<86400)return Math.floor(seconds/3600)+'시간 전';return Math.floor(seconds/86400)+'일 전';
 }
+function collectorFutureTime(value=''){
+  const at=Date.parse(value||'');if(!at)return'예정 없음';const seconds=Math.max(0,Math.ceil((at-Date.now())/1000));
+  if(seconds<60)return seconds+'초 후';if(seconds<3600)return Math.ceil(seconds/60)+'분 후';return Math.ceil(seconds/3600)+'시간 후';
+}
 function collectorAccessStatusLabel(access=''){
   return({favorite:'애청자 접근 확인',subscriber:'구독자 전용 확인',restricted:'비공개/제한 확인','anonymous-verified':'일반 공개 확인',authenticated:'로그인 제한 확인'}[String(access||'')]||'아직 확인 기록 없음');
 }
@@ -698,7 +702,7 @@ function renderUnifiedCollectorStatus(){
       '<div><span>마지막 수집</span><strong>'+esc(collectorRelativeTime(status.lastCaptureAt))+'</strong><small>'+esc(status.lastCapturedTitle||'수집 기록 없음')+'</small></div>'+
       '<div><span>마지막 서버 반영</span><strong>'+esc(collectorRelativeTime(status.lastServerOkAt))+'</strong><small>'+esc(status.lastServerResult==='matched'?'콘텐츠 자동 연결 완료':status.lastServerResult==='stored'?'수집 자료함 저장 완료':'반영 기록 없음')+'</small></div>'+
       '<div><span>SOOP 접근 상태</span><strong>'+esc(lastAccess)+'</strong><small>'+(status.lastFavoriteAt?'애청자 확인 '+esc(collectorRelativeTime(status.lastFavoriteAt)):'애청자 접근 확인 기록 없음')+'</small></div>'+
-      '<div><span>다음 확인 예정</span><strong>'+(watchEnabled?esc(collectorRelativeTime(status.nextScanAt).replace(' 전',' 후')):'중지')+'</strong><small>기본 주기 5분 · 백그라운드 탭은 브라우저 정책에 따라 지연될 수 있음</small></div>'+
+      '<div><span>다음 확인 예정</span><strong>'+(watchEnabled?esc(collectorFutureTime(status.nextScanAt)):'중지')+'</strong><small>기본 주기 5분 · 백그라운드 탭은 브라우저 정책에 따라 지연될 수 있음</small></div>'+
     '</div>'+
     '<div class="operator-collector-health-summary"><span>전송 대기 <b>'+Number(collectorState.queueCount||0)+'</b>건</span><span>SOOP 기록 <b>'+Number(collectorState.soopHistoryCount||0)+'</b>건</span><span>최근 24시간 <b>'+recent.length+'</b>건</span><span>애청자 자동 공개 <b>'+autoPublic+'</b>건</span><span>검토 필요 <b>'+review+'</b>건</span><span>전체수집 <b>'+esc(backfillText)+'</b></span></div>'+
     (hasError?'<div class="operator-collector-health-alert"><strong>최근 오류</strong><span>'+esc(status.lastError||'확인 필요')+' · '+esc(collectorRelativeTime(status.lastErrorAt))+'</span></div>':'')+
