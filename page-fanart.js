@@ -13,7 +13,9 @@
     const dialog = $('#fanart-modal');
     if (!grid || !dialog) return;
     grid.innerHTML = '<div class="loading-card">팬아트를 불러오는 중...</div>';
-    const payload = await loadContent('fanart');
+    const payload = window.ChunbongCache
+      ? await window.ChunbongCache.fetchJson('content:fanart','/api/content?type=fanart',{ttl:15*60*1000,staleIfError:true})
+      : await loadContent('fanart');
     const items = Array.isArray(payload.items) ? payload.items : [];
     if (!items.length) {
       grid.innerHTML = errorState('fanart', payload.reason || '네이버 카페 팬아트 게시판에서 공개 글을 가져오지 못했습니다.');
