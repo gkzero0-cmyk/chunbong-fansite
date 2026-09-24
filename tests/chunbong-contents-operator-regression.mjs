@@ -179,7 +179,7 @@ assert.equal(browserPayload?.date,'2026-04-09','browser handoff date should norm
 assert.equal(archive._internals.normalizeBrowserImportPayload({...browserPayload,url:'https://www.sooplive.com/station/other/post/1'}),null,'browser handoff must be restricted to Chunbong SOOP posts');
 const browserApplied=archive._internals.applyBrowserImportToItem({...base,id:'browser-import',timeline:[],sources:[]},browserPayload);
 assert.equal(browserApplied.sources[0]?.visibility,'internal','authenticated source URL must remain internal');
-assert.equal(browserApplied.timeline[0]?.visibility,'public','confirmed title/date may become a public factual timeline record');
+assert.equal(browserApplied.timeline[0]?.visibility,'internal','authenticated SOOP browser material must remain internal until explicitly verified for public use');
 assert.equal(browserApplied.timeline[0]?.url,'','protected post URL must not be copied into the public timeline material');
 assert.match(String(archive._internals.BROWSER_IMPORT_PREFIX||''),/browser-import:v1/,'browser import raw storage must be isolated from public archive records');
 assert.match(archiveSource,/\['auto','connect','draft'\]/,'browser import API should support automatic matching');
