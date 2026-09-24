@@ -11,23 +11,23 @@ for (const token of ['renderSchedulePage','renderNoticePage','renderClipsPage','
 }
 
 const runtimeByPage = {
-  'schedule.html':'page-schedule.js',
-  'notice.html':'page-notice.js',
-  'vod.html':'page-media.js',
-  'clips.html':'page-media.js',
-  'youtube.html':'page-media.js',
-  'fanart.html':'page-fanart.js'
+  'schedule.html':['page-schedule.js',1],
+  'notice.html':['page-notice.js',1],
+  'vod.html':['page-media.js',1],
+  'clips.html':['page-media.js',1],
+  'youtube.html':['page-media.js',1],
+  'fanart.html':['page-fanart.js',2]
 };
-for (const [htmlFile, runtime] of Object.entries(runtimeByPage)) {
+for (const [htmlFile, [runtime,version]] of Object.entries(runtimeByPage)) {
   const html = read(htmlFile);
   assert.match(
     html,
-    new RegExp('<script src="page\\.js\\?v=2"></script><script src="' + runtime.replace('.', '\\.') + '\\?v=1"></script>'),
+    new RegExp('<script src="page\\.js\\?v=2"></script><script src="' + runtime.replace('.', '\\.') + '\\?v=' + version + '"></script>'),
     htmlFile + ' must load its runtime after page.js'
   );
 }
 const home = read('index.html');
-for (const runtime of new Set(Object.values(runtimeByPage))) {
+for (const runtime of new Set(Object.values(runtimeByPage).map(([runtime])=>runtime))) {
   assert.doesNotMatch(home, new RegExp(runtime.replace('.', '\\.')), 'home must not load ' + runtime);
 }
 
