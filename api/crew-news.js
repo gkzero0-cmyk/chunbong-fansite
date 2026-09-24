@@ -30,6 +30,39 @@ function safeText(value = '', max = 20000) {
   return String(value == null ? '' : value).replace(/\u0000/g, '').trim().slice(0, max);
 }
 
+function textFromUnknown(value, depth = 0) {
+  if (value == null || depth > 6) return '';
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (Array.isArray(value)) return value.map(item => textFromUnknown(item, depth + 1)).filter(Boolean).join(' ');
+  if (typeof value === 'object') {
+    const preferred = ['plain_text','plainText','text','html','contents','content','body','memo','description','message','value','data'];
+    for (const key of preferred) {
+      if (!(key in value)) continue;
+      const text = textFromUnknown(value[key], depth + 1);
+      if (text && !/^\[object Object\]$/i.test(text.trim())) return text;
+    }
+    return Object.entries(value)
+      .filter(([key]) => !/^(id|seq|no|url|link|image|img|thumb|profile|user|nick|date|time|count|like|comment|board|station)$/i.test(key))
+      .map(([, item]) => textFromUnknown(item, depth + 1)).filter(Boolean).join(' ');
+  }
+  return '';
+}
+
+function cleanBody(value = '', max = 12000) {
+  return safeText(textFromUnknown(value)
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n'), max);
+}
+
 function first(row, keys) {
   for (const key of keys) {
     const value = row && row[key];
@@ -50,19 +83,20 @@ function absoluteHttps(raw = '') {
   }
 }
 
+const POST_IMAGE_HOSTS = new Set([
+  'stimg.sooplive.com','stimg.sooplive.co.kr','stimg.afreecatv.com',
+  'res.sooplive.com','res.sooplive.co.kr',
+  'liveimg.sooplive.com','liveimg.sooplive.co.kr',
+  'vodimg.sooplive.com','vodimg.sooplive.co.kr'
+]);
+
 function looksLikeContentImage(url = '') {
   try {
     const parsed = new URL(url);
     const host = parsed.hostname.toLowerCase();
-    if (!(
-      host === 'stimg.sooplive.com' ||
-      host === 'stimg.sooplive.co.kr' ||
-      host === 'stimg.afreecatv.com' ||
-      host.endsWith('.sooplive.com') ||
-      host.endsWith('.sooplive.co.kr')
-    )) return false;
+    if (!POST_IMAGE_HOSTS.has(host)) return false;
     if (/(?:profile|avatar|favicon|logo|thumb_profile|channel_logo|bj_logo)/i.test(parsed.pathname)) return false;
-    return /(?:NORMAL_BBS|bbs|board|post|station|upload|image|img|attach|file)/i.test(parsed.pathname) ||
+    return /(?:NORMAL_BBS|bbs|board|upload|image|img|attach|file|post)/i.test(parsed.pathname) ||
       /\.(?:png|jpe?g|webp|gif|avif)(?:$|\?)/i.test(parsed.pathname + parsed.search);
   } catch (_) {
     return false;
@@ -194,7 +228,7 @@ function normalizePost(row, station, menuByNo, req) {
     imageUrl,
     sheetImageUrl: proxyImageUrl(req, imageUrl),
     hashtags: first(row, ['hashtags', 'hash_tags', 'tags']) || [],
-    contents: safeText(first(row, ['contents', 'content', 'body']), 12000)
+    contents: cleanBody(first(row, ['contents', 'content', 'body']), 12000)
   };
 }
 
@@ -236,6 +270,7 @@ module.exports = async function handler(req, res) {
     const result = await firstJson(urls, headers);
     const rows = Array.isArray(result.data && result.data.data) ? result.data.data : [];
     const posts = rows.map(row => normalizePost(row, station, menu.byNo, req));
+    const debug = requestUrl.searchParams.get('debug') === '1';
     res.setHeader('Cache-Control', cookie ? 'no-store, max-age=0' : 'public, max-age=30, s-maxage=30, stale-while-revalidate=60');
     return res.status(200).json({
       ok: true,
@@ -247,7 +282,18 @@ module.exports = async function handler(req, res) {
       page,
       perPage,
       count: posts.length,
-      posts
+      posts,
+      ...(debug ? {
+        diagnostics: rows.slice(0, 12).map((row, index) => ({
+          index,
+          keys: Object.keys(row || {}).slice(0, 80),
+          imageUrls: collectImageUrls(row, []).slice(0, 12),
+          contentType: typeof first(row, ['contents','content','body']),
+          contentKeys: first(row, ['contents','content','body']) && typeof first(row, ['contents','content','body']) === 'object'
+            ? Object.keys(first(row, ['contents','content','body'])).slice(0, 50)
+            : []
+        }))
+      } : {})
     });
   } catch (error) {
     res.setHeader('Cache-Control', 'no-store');
