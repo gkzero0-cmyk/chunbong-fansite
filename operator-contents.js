@@ -527,8 +527,8 @@ function bindEditor(){
   $$('[data-add-row]',root).forEach(b=>b.addEventListener('click',event=>{event.preventDefault();const details=b.closest('details');if(details)details.open=true;addRow(b.dataset.addRow);editorDirty=true;renderEditorLiveState()}));
   bindRowControls();
   $$('[data-resolve-conflict]',root).forEach(b=>b.addEventListener('click',()=>{selected.verification.conflicts.splice(Number(b.dataset.resolveConflict),1);editorDirty=true;renderEditor(selected)}));
-  $('[data-editor-jump]',root).forEach(b=>b.addEventListener('click',()=>jumpEditorSection(b.dataset.editorJump)));
-  $('[data-audit-jump]',root).forEach(b=>b.addEventListener('click',()=>jumpEditorSection(b.dataset.auditJump)));
+  $$('[data-editor-jump]',root).forEach(b=>b.addEventListener('click',()=>jumpEditorSection(b.dataset.editorJump)));
+  $$('[data-audit-jump]',root).forEach(b=>b.addEventListener('click',()=>jumpEditorSection(b.dataset.auditJump)));
   $('[data-archive-advanced-toggle]',root)?.addEventListener('click',toggleAdvancedFields);
   $('[data-archive-autofix-selected]',root)?.addEventListener('click',()=>void runSelectedAutoEnhance());
   $('[data-archive-preview]',root)?.addEventListener('click',renderPreview);
@@ -1015,8 +1015,8 @@ async function load(){
 export async function bootOperatorContents(){
   if(booted)return;root=document.querySelector('[data-operator-panel="contents"]');if(!root)return;booted=true;
   browserImport=readSoopImportHash();namuBrowserImport=readNamuImportHash();bindUnifiedCollector();bindCollectorInbox();
-  $('[data-archive-health-action]',root).forEach(button=>button.addEventListener('click',()=>focusArchiveArea(button.dataset.archiveHealthAction)));
-  $('[data-archive-workflow-action]',root).forEach(button=>button.addEventListener('click',()=>focusArchiveArea(button.dataset.archiveWorkflowAction)));
+  $$('[data-archive-health-action]',root).forEach(button=>button.addEventListener('click',()=>focusArchiveArea(button.dataset.archiveHealthAction)));
+  $$('[data-archive-workflow-action]',root).forEach(button=>button.addEventListener('click',()=>focusArchiveArea(button.dataset.archiveWorkflowAction)));
   $('[data-archive-auto-fix]',root)?.addEventListener('click',()=>void runBulkAutoEnhance());
   $('[data-archive-load-retry]',root)?.addEventListener('click',()=>void load());
   $('[data-archive-admin-search]',root)?.addEventListener('input',renderList);$('[data-archive-admin-quality]',root)?.addEventListener('change',renderList);
