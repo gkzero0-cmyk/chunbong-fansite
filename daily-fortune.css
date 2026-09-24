@@ -1390,3 +1390,262 @@
   .daily-fortune-foil-patch,
   .daily-fortune-foil-burst{display:none!important}
 }
+
+
+/* 2026-09-24 · Daily Fortune v13
+   Micro foil surface + soft foil bloom.
+   No large polygon shards: the effect stays attached to the card surface. */
+
+/* Retire v12's confetti-like fragment emitters. */
+.daily-fortune-foil-patch,
+.daily-fortune-foil-burst{display:none!important}
+
+/* Dense holographic sticker film revealed only around the live pointer position. */
+.daily-fortune-holo-film{
+  display:block!important;
+  inset:0!important;
+  z-index:3!important;
+  border-radius:22px!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  transform:none!important;
+  transition:opacity .07s linear!important;
+  background:
+    radial-gradient(circle,rgba(255,255,255,.92) 0 .7px,transparent .9px) 1px 2px/7px 9px,
+    radial-gradient(circle,rgba(119,245,231,.80) 0 .65px,transparent .9px) 4px 1px/11px 13px,
+    radial-gradient(circle,rgba(150,177,255,.76) 0 .75px,transparent 1px) 2px 6px/13px 11px,
+    radial-gradient(circle,rgba(224,160,255,.70) 0 .55px,transparent .9px) 7px 4px/17px 15px,
+    radial-gradient(circle,rgba(255,235,169,.72) 0 .65px,transparent .95px) 9px 8px/19px 17px,
+    repeating-linear-gradient(127deg,
+      transparent 0 5px,
+      rgba(255,255,255,.11) 5.5px 6.2px,
+      rgba(110,240,217,.10) 7px 7.8px,
+      transparent 8.4px 14px),
+    repeating-linear-gradient(49deg,
+      transparent 0 8px,
+      rgba(145,179,255,.10) 8.5px 9.2px,
+      rgba(224,157,255,.08) 10px 10.8px,
+      transparent 11.4px 18px)!important;
+  background-blend-mode:screen,screen,screen,screen,screen,screen,screen!important;
+  mix-blend-mode:screen!important;
+  filter:saturate(1.34) contrast(1.10) brightness(1.12)!important;
+  -webkit-mask-image:radial-gradient(ellipse 34% 27% at var(--glow-x) var(--glow-y),
+    #000 0 22%,
+    rgba(0,0,0,.96) 40%,
+    rgba(0,0,0,.72) 57%,
+    rgba(0,0,0,.30) 72%,
+    transparent 88%)!important;
+  mask-image:radial-gradient(ellipse 34% 27% at var(--glow-x) var(--glow-y),
+    #000 0 22%,
+    rgba(0,0,0,.96) 40%,
+    rgba(0,0,0,.72) 57%,
+    rgba(0,0,0,.30) 72%,
+    transparent 88%)!important
+}
+.daily-fortune-holo-film::before,
+.daily-fortune-holo-film::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit
+}
+.daily-fortune-holo-film::before{
+  background:
+    repeating-conic-gradient(from calc(var(--prism-angle) + 17deg) at var(--glow-x) var(--glow-y),
+      rgba(255,255,255,.18) 0 2deg,
+      rgba(104,236,218,.18) 2.6deg 4deg,
+      transparent 4.5deg 8deg,
+      rgba(141,173,255,.15) 8.5deg 10deg,
+      transparent 10.5deg 14deg,
+      rgba(218,154,255,.15) 14.5deg 16deg,
+      transparent 16.5deg 21deg);
+  background-size:21px 21px;
+  opacity:.56;
+  mix-blend-mode:screen
+}
+.daily-fortune-holo-film::after{
+  background:
+    linear-gradient(calc(118deg + var(--prism-angle)),
+      transparent 24%,
+      rgba(255,255,255,.05) 34%,
+      rgba(135,238,225,.14) 41%,
+      rgba(154,177,255,.15) 47%,
+      rgba(224,162,255,.12) 53%,
+      rgba(255,235,173,.13) 60%,
+      rgba(255,255,255,.04) 68%,
+      transparent 78%);
+  opacity:.72;
+  mix-blend-mode:screen
+}
+.daily-fortune-stage:hover .daily-fortune-holo-film,
+.daily-fortune-stage.is-prism-active .daily-fortune-holo-film{opacity:.88!important}
+.daily-fortune-stage.is-spinning .daily-fortune-holo-film,
+.daily-fortune-stage.is-priming .daily-fortune-holo-film{opacity:0!important}
+
+/* Only a few tiny specular twinkles are emitted while moving. */
+.daily-fortune-foil-sparkle{
+  position:absolute;
+  z-index:13;
+  left:0;
+  top:0;
+  width:var(--sparkle-size,7px);
+  height:var(--sparkle-size,7px);
+  margin:calc(var(--sparkle-size,7px) / -2) 0 0 calc(var(--sparkle-size,7px) / -2);
+  transform:translate(var(--sparkle-x,0),var(--sparkle-y,0)) scale(.28);
+  opacity:0;
+  pointer-events:none;
+  mix-blend-mode:screen;
+  filter:
+    drop-shadow(0 0 2px rgba(255,255,255,.95))
+    drop-shadow(0 0 5px hsl(var(--sparkle-hue,195) 88% 72% / .52));
+  animation:dailyFortuneMicroSparkle .40s ease-out forwards
+}
+.daily-fortune-foil-sparkle::before,
+.daily-fortune-foil-sparkle::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  border-radius:999px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.96),transparent)
+}
+.daily-fortune-foil-sparkle::before{width:100%;height:1px}
+.daily-fortune-foil-sparkle::after{width:1px;height:100%;background:linear-gradient(180deg,transparent,rgba(255,255,255,.96),transparent)}
+@keyframes dailyFortuneMicroSparkle{
+  0%{opacity:0;transform:translate(var(--sparkle-x),var(--sparkle-y)) scale(.25) rotate(0deg)}
+  24%{opacity:.96;transform:translate(var(--sparkle-x),var(--sparkle-y)) scale(1) rotate(8deg)}
+  58%{opacity:.68;transform:translate(var(--sparkle-x),var(--sparkle-y)) scale(.76) rotate(16deg)}
+  100%{opacity:0;transform:translate(var(--sparkle-x),var(--sparkle-y)) scale(.30) rotate(26deg)}
+}
+
+/* Revealed-card click: a dense patch of the same foil grows across the surface. */
+.daily-fortune-foil-bloom{
+  position:absolute;
+  z-index:12;
+  left:0;
+  top:0;
+  width:230px;
+  height:180px;
+  margin:-90px 0 0 -115px;
+  pointer-events:none;
+  opacity:0;
+  transform:rotate(var(--bloom-rotate,0deg)) scale(.18);
+  transform-origin:center;
+  background:
+    radial-gradient(circle,rgba(255,255,255,.95) 0 .75px,transparent 1px) 1px 2px/6px 8px,
+    radial-gradient(circle,rgba(111,243,222,.88) 0 .75px,transparent 1px) 3px 5px/9px 11px,
+    radial-gradient(circle,rgba(140,174,255,.84) 0 .8px,transparent 1px) 7px 1px/11px 9px,
+    radial-gradient(circle,rgba(225,156,255,.80) 0 .65px,transparent 1px) 5px 7px/13px 12px,
+    radial-gradient(circle,rgba(255,235,167,.82) 0 .7px,transparent 1px) 9px 3px/15px 13px,
+    repeating-linear-gradient(126deg,
+      transparent 0 5px,
+      rgba(255,255,255,.13) 5.5px 6px,
+      rgba(116,239,220,.11) 6.7px 7.4px,
+      transparent 8px 13px);
+  background-blend-mode:screen;
+  mix-blend-mode:screen;
+  filter:saturate(1.45) contrast(1.12) brightness(1.15);
+  -webkit-mask-image:radial-gradient(ellipse at center,
+    #000 0 28%,
+    rgba(0,0,0,.95) 43%,
+    rgba(0,0,0,.62) 60%,
+    rgba(0,0,0,.22) 75%,
+    transparent 90%);
+  mask-image:radial-gradient(ellipse at center,
+    #000 0 28%,
+    rgba(0,0,0,.95) 43%,
+    rgba(0,0,0,.62) 60%,
+    rgba(0,0,0,.22) 75%,
+    transparent 90%);
+  animation:dailyFortuneFoilBloom .98s cubic-bezier(.12,.60,.16,1) forwards
+}
+.daily-fortune-foil-bloom::before,
+.daily-fortune-foil-bloom::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none
+}
+.daily-fortune-foil-bloom::before{
+  background:
+    repeating-conic-gradient(from 22deg,
+      rgba(255,255,255,.16) 0 2deg,
+      rgba(109,237,216,.16) 2.5deg 4deg,
+      transparent 4.5deg 9deg,
+      rgba(149,177,255,.14) 9.5deg 11deg,
+      transparent 11.5deg 16deg,
+      rgba(223,157,255,.13) 16.5deg 18deg,
+      transparent 18.5deg 24deg);
+  background-size:18px 18px;
+  opacity:.64
+}
+.daily-fortune-foil-bloom::after{
+  background:radial-gradient(ellipse at center,
+    rgba(255,255,255,.30) 0,
+    rgba(154,239,225,.11) 28%,
+    rgba(165,179,255,.09) 44%,
+    transparent 72%);
+  opacity:.70
+}
+@keyframes dailyFortuneFoilBloom{
+  0%{opacity:0;transform:rotate(var(--bloom-rotate)) scale(.16);filter:saturate(1.4) brightness(1.45)}
+  15%{opacity:.97;transform:rotate(var(--bloom-rotate)) scale(.48)}
+  48%{opacity:.92;transform:rotate(var(--bloom-rotate)) scale(1.05);filter:saturate(1.55) brightness(1.23)}
+  76%{opacity:.66;transform:rotate(var(--bloom-rotate)) scale(1.46);filter:saturate(1.35) brightness(1.12)}
+  100%{opacity:0;transform:rotate(var(--bloom-rotate)) scale(1.72);filter:saturate(1.1) brightness(1)}
+}
+
+/* Sparse sparkle accents stay small and on-surface; no flying polygons. */
+.daily-fortune-foil-bloom>i{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:var(--spark-size,5px);
+  height:var(--spark-size,5px);
+  margin:calc(var(--spark-size,5px) / -2) 0 0 calc(var(--spark-size,5px) / -2);
+  opacity:0;
+  pointer-events:none;
+  transform:translate(-50%,-50%) scale(.2);
+  filter:
+    drop-shadow(0 0 2px rgba(255,255,255,.96))
+    drop-shadow(0 0 5px hsl(var(--spark-hue,195) 90% 74% / .55));
+  animation:dailyFortuneBloomSpark .70s ease-out var(--spark-delay,0ms) forwards
+}
+.daily-fortune-foil-bloom>i::before,
+.daily-fortune-foil-bloom>i::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  border-radius:999px
+}
+.daily-fortune-foil-bloom>i::before{
+  width:100%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.98),transparent)
+}
+.daily-fortune-foil-bloom>i::after{
+  width:1px;
+  height:100%;
+  background:linear-gradient(180deg,transparent,rgba(255,255,255,.98),transparent)
+}
+@keyframes dailyFortuneBloomSpark{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}
+  26%{opacity:.94}
+  60%{opacity:.70;transform:translate(calc(-50% + var(--spark-dx)),calc(-50% + var(--spark-dy))) scale(1)}
+  100%{opacity:0;transform:translate(calc(-50% + var(--spark-dx)),calc(-50% + var(--spark-dy))) scale(.35)}
+}
+
+.daily-fortune-stage.is-spinning .daily-fortune-foil-sparkle,
+.daily-fortune-stage.is-spinning .daily-fortune-foil-bloom,
+.daily-fortune-stage.is-priming .daily-fortune-foil-sparkle,
+.daily-fortune-stage.is-priming .daily-fortune-foil-bloom{display:none!important}
+
+@media(prefers-reduced-motion:reduce){
+  .daily-fortune-holo-film,
+  .daily-fortune-foil-sparkle,
+  .daily-fortune-foil-bloom{display:none!important}
+}
