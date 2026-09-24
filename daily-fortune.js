@@ -285,6 +285,7 @@
     const PRIME_MS = 280;
     const HYPER_START_MS = 1350;
     const DECEL_START_MS = 2450;
+    const STOP_CUE_MS = 3130;
     const SPIN_MS = 3250;
     const RESULT_MS = 3900;
     let state = readState();
@@ -517,13 +518,16 @@
         if (run !== animationRun) return;
         stage.classList.remove('is-hyper','is-accelerating');
         stage.classList.add('is-decelerating');
-        dialog.classList.add('is-revealing');
       }, DECEL_START_MS);
 
       setTimeout(() => {
         if (run !== animationRun) return;
         playStopSound(audioCtx);
         spawnBurst('stop');
+      }, STOP_CUE_MS);
+
+      setTimeout(() => {
+        if (run !== animationRun) return;
         commitPendingState();
         clearSpinClasses();
         dialog.classList.remove('is-spinning');
