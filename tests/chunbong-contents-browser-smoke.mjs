@@ -316,7 +316,7 @@ try{
     await sourceRow.locator('[name="source-url"]').fill('https://www.sooplive.com/station/chunbongtv');
     await page.locator('[data-archive-publish]').click();
     await page.waitForFunction(()=>[...document.querySelectorAll('[data-archive-select]')].some(row=>row.getAttribute('data-archive-select')==='new-content-test'&&row.textContent?.includes('공개')));
-    assert.match((await page.locator('[data-archive-select="new-content-test"]').textContent())||'',/공개/,'verified record should publish');
+    assert.match((await page.locator('.operator-archive-list-item[data-archive-select="new-content-test"]').textContent())||'',/공개/,'verified record should publish');
     assert.match((await page.locator('.operator-archive-state').textContent())||'',/공개/,'published editor should show public state');
     assert.deepEqual(errors,[],errors.join(' | '));
   }
