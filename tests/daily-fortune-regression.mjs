@@ -91,11 +91,11 @@ assert.match(js,/cardButton\.addEventListener\('click',[\s\S]*event\.detail !== 
 assert.match(js,/pointerActivationSafe: true/,'runtime diagnostics must expose the pointer activation safety fix');
 assert.match(js,/const recoverIdleState = \(\) => \{[\s\S]*state = readState\(\);[\s\S]*renderState\(false\)/,'a saved same-day result must recover from storage whenever the dialog reopens');
 assert.match(js,/A single clear wind-chime strike/,'result reveal must use the refined wind-chime direction');
-assert.match(js,/daily-fortune-holo-lens/,'daily fortune hologram must include a pointer-follow lens layer');
-assert.match(js,/daily-fortune-holo-crystals/,'daily fortune hologram must include crystal shard layers');
+assert.doesNotMatch(js,/daily-fortune-holo-lens/,'obsolete crystal lens runtime must stay removed');
+assert.doesNotMatch(js,/daily-fortune-holo-crystals/,'obsolete crystal shard runtime must stay removed');
 assert.match(js,/const updateCrystalPointer = \(\{ px, py \}\) =>/,'daily fortune must derive prism angle and flare scale from the pointer');
 assert.match(js,/--prism-angle/,'daily fortune runtime must expose pointer-driven prism angle');
-assert.match(css,/reference-grade crystal refraction hologram/,'reference-grade crystal refraction styling missing');
-assert.match(css,/\.daily-fortune-holo-lens::after/,'crystal lens must include a bright central refraction hotspot');
-assert.match(css,/repeating-radial-gradient\(circle/,'crystal lens must render diffraction rings rather than a flat color wash');
-assert.match(css,/\.daily-fortune-holo-crystals i:nth-child\(6\)/,'daily fortune must render multiple crystal shard highlights');
+assert.match(css,/Micro foil surface \+ soft foil bloom/,'micro foil surface styling missing');
+assert.match(css,/\.daily-fortune-foil-sparkle/,'pointer movement must render sparse foil sparkles');
+assert.match(css,/\.daily-fortune-foil-bloom/,'revealed card click must render the foil bloom surface');
+assert.match(css,/@keyframes dailyFortuneFoilBloom/,'foil bloom animation must remain available after reveal');
