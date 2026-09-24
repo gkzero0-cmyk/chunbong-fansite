@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         춘봉 콘텐츠 자동 수집기
 // @namespace    https://chunbong-fansite.vercel.app/
-// @version      1.2.0
+// @version      1.2.1
 // @description  춘봉 팬사이트용 나무위키·SOOP·FM코리아 브라우저 자료 자동 수집기
 // @match        https://namu.wiki/w/*
 // @match        https://www.namu.wiki/w/*
@@ -11,6 +11,8 @@
 // @match        https://www.fmkorea.com/*
 // @match        https://m.fmkorea.com/*
 // @match        https://chunbong-fansite.vercel.app/operator.html*
+// @match        https://chunbong-fansite-git-main-gkzero0-9465.vercel.app/operator.html*
+// @match        https://chunbong-fansite-gkzero0-9465.vercel.app/operator.html*
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_deleteValue
@@ -24,8 +26,12 @@
 
 (function(){
   'use strict';
-  const VERSION='1.2.0';
+  const VERSION='1.2.1';
   const CHANNEL='chunbong-content-collector';
+  const PAGE_MESSAGE_EVENT='chunbong-content-collector-page-message';
+  const PAGE_COMMAND_EVENT='chunbong-content-collector-page-command';
+  const PAGE_MESSAGE_ATTR='data-chunbong-collector-message';
+  const PAGE_COMMAND_ATTR='data-chunbong-collector-command';
   const QUEUE_KEY='cb-content-collector-queue-v1';
   const SEEN_KEY='cb-content-collector-seen-v1';
   const AUTO_HASH='chunbong-auto-collect';
@@ -226,15 +232,52 @@
     return urls.length;
   }
 
+
+  function emitPageMessage(type,data={}){
+    const message={channel:CHANNEL,type,version:VERSION,...data};
+    try{window.postMessage(message,location.origin)}catch{}
+    try{
+      const root=document.documentElement;if(root){
+        root.setAttribute(PAGE_MESSAGE_ATTR,JSON.stringify(message));
+        root.setAttribute('data-chunbong-collector-version',VERSION);
+        root.setAttribute('data-chunbong-collector-ready','1');
+        document.dispatchEvent(new CustomEvent(PAGE_MESSAGE_EVENT));
+      }
+    }catch{}
+  }
+  function readPageCommand(){
+    try{
+      const raw=document.documentElement?.getAttribute(PAGE_COMMAND_ATTR)||'';
+      const data=raw?JSON.parse(raw):null;
+      return data&&data.channel===CHANNEL?data:null;
+    }catch{return null}
+  }
+  function isOperatorHost(){
+    return[
+      'chunbong-fansite.vercel.app',
+      'chunbong-fansite-git-main-gkzero0-9465.vercel.app',
+      'chunbong-fansite-gkzero0-9465.vercel.app'
+    ].includes(location.hostname)&&location.pathname.endsWith('/operator.html');
+  }
+
   function operatorBridge(){
     let inflight='';
-    const emitState=()=>window.postMessage({channel:CHANNEL,type:'state',version:VERSION,queueCount:queueRows().length,seenCount:Object.keys(seenMap()).length,soopHistoryCount:Object.keys(soopHistory()).length,soopBackfill:backfillState()},location.origin);
+    const handledCommands=new Map();
+    const rememberCommand=id=>{
+      if(!id)return false;
+      const now=Date.now(),last=Number(handledCommands.get(id)||0);
+      handledCommands.set(id,now);
+      for(const [key,at] of handledCommands)if(now-at>15000)handledCommands.delete(key);
+      return now-last<1200;
+    };
+    const emitState=()=>emitPageMessage('state',{queueCount:queueRows().length,seenCount:Object.keys(seenMap()).length,soopHistoryCount:Object.keys(soopHistory()).length,soopBackfill:backfillState()});
     const flush=()=>{
       if(inflight)return;const first=queueRows()[0];if(!first){emitState();return}
-      inflight=String(first.id||'');window.postMessage({channel:CHANNEL,type:'import',id:inflight,payload:first.payload},location.origin);
+      inflight=String(first.id||'');emitPageMessage('import',{id:inflight,payload:first.payload});
     };
-    window.addEventListener('message',event=>{
-      if(event.source!==window||event.origin!==location.origin)return;const data=event.data||{};if(data.channel!==CHANNEL)return;
+    const handleCommand=data=>{
+      if(!data||data.channel!==CHANNEL)return;
+      if(data.commandId&&rememberCommand(String(data.commandId)))return;
       if(data.type==='ping'){emitState();flush();return}
       if(data.type==='ack'&&String(data.id||'')===inflight){
         if(data.ok){write(QUEUE_KEY,queueRows().filter(row=>String(row.id||'')!==inflight));inflight='';emitState();setTimeout(flush,250)}
@@ -252,14 +295,23 @@
         openBackground(resume?old.currentUrl:data.url,SOOP_BACKFILL_HASH,true);emitState();return;
       }
       if(data.type==='open-fmk-board'&&data.url){openBackground(data.url,'',true)}
+    };
+    window.addEventListener('message',event=>{
+      if(event.source!==window||event.origin!==location.origin)return;
+      handleCommand(event.data||{});
     });
+    document.addEventListener(PAGE_COMMAND_EVENT,()=>handleCommand(readPageCommand()));
     try{GM_addValueChangeListener(QUEUE_KEY,()=>{emitState();flush()})}catch{}
     try{GM_addValueChangeListener(SOOP_BACKFILL_KEY,()=>emitState())}catch{}
     try{GM_addValueChangeListener(SOOP_HISTORY_KEY,()=>emitState())}catch{}
-    emitState();setTimeout(flush,500);setInterval(flush,1800);
+    try{
+      document.documentElement?.setAttribute('data-chunbong-collector-version',VERSION);
+      document.documentElement?.setAttribute('data-chunbong-collector-ready','1');
+    }catch{}
+    emitState();setTimeout(emitState,300);setTimeout(flush,500);setInterval(flush,1800);
   }
   async function run(){
-    if(location.hostname==='chunbong-fansite.vercel.app'&&location.pathname.endsWith('/operator.html')){operatorBridge();return}
+    if(isOperatorHost()){operatorBridge();return}
     if(location.hostname==='namu.wiki'||location.hostname==='www.namu.wiki'){
       try{GM_registerMenuCommand('현재 나무위키 문서 수집',()=>void captureNamu(true))}catch{}
       if(location.hash.includes(AUTO_HASH)){await captureNamu(true);setTimeout(()=>window.close(),700)}
