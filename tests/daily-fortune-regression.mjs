@@ -3,13 +3,17 @@ import assert from 'node:assert/strict';
 
 const read = file => fs.readFileSync(new URL('../' + file, import.meta.url), 'utf8');
 const home = read('index.html');
+const loader = read('home-fortune-loader.js');
 const js = read('daily-fortune.js');
 const css = read('daily-fortune.css');
 const sw = read('service-worker.js');
 
 assert.doesNotThrow(() => new Function(js), 'daily fortune runtime must remain valid JavaScript');
-assert.match(home, /href="daily-fortune\.css\?v=16"/, 'home daily fortune CSS missing');
-assert.match(home, /src="daily-fortune\.js\?v=15"/, 'home daily fortune runtime missing');
+assert.doesNotMatch(home, /href="daily-fortune\.css\?v=16"/, 'home must not block first paint on daily fortune CSS');
+assert.doesNotMatch(home, /src="daily-fortune\.js\?v=15"/, 'home must not parse the daily fortune runtime synchronously');
+assert.match(home, /src="home-fortune-loader\.js\?v=1"/, 'home daily fortune lazy loader missing');
+assert.match(loader, /daily-fortune\.css\?v=16/, 'lazy loader must retain the current daily fortune CSS');
+assert.match(loader, /daily-fortune\.js\?v=15/, 'lazy loader must retain the current daily fortune runtime');
 assert.match(js, /timeZone: SEOUL_TZ/, 'daily fortune must use the Seoul timezone');
 assert.match(js, /const STORAGE_KEY = 'chunbong-daily-fortune-v1'/, 'daily fortune storage key missing');
 assert.match(js, /parsed\?\.date !== today/, 'stored result must expire on the next KST date');
