@@ -20,6 +20,7 @@ assert.match(workflow, /git push origin HEAD:data\/soop-telemetry/);
 assert.match(workflow, /git push origin HEAD:main/);
 
 const vercel = JSON.parse(fs.readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
-assert.equal(vercel?.git?.deploymentEnabled?.['data/soop-telemetry'], false, 'telemetry branch must not trigger Vercel deployments');
+assert.equal(vercel?.git?.deploymentEnabled?.['*'], false, 'all non-main branches including telemetry must not trigger Vercel deployments');
+assert.equal(vercel?.git?.deploymentEnabled?.main, true, 'main must remain the only automatic deployment branch');
 
 console.log('SOOP telemetry workflow regression test passed');
