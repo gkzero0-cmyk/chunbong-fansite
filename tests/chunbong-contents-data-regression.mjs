@@ -483,11 +483,30 @@ assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://namu.wiki/w/test')
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://example.notion.site/example'),'public Notion source metadata URL should be allowed');
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d'),'public app.notion.com source metadata URL should be allowed');
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://naver.me/FbVX1U7z'),'Naver source metadata URL should be allowed');
-assert.equal(archiveApi._internals.allowedSourceMetaUrl('https://www.fmkorea.com/7042989434'),null,'FM Korea must stay excluded from archive source ingestion');
+assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://www.fmkorea.com/7042989434'),'FM Korea must remain available to the internal automatic collector');
+const fmkPublic=toPublicArchiveItem(normalizeArchiveItem({
+  id:'fmk-public-test',type:'other',title:'테스트',role:'주최',startDate:'2026-01-01',endDate:'2026-01-01',
+  summary:'테스트',description:'FM코리아 자료를 참고해 내용을 보강했습니다.',heroImage:null,participants:[],results:[],seriesSessions:[],participantGroups:[],media:[],gallery:[],
+  timeline:[{id:'fmk-row',type:'post',title:'FM코리아 참고 글',date:'2026-01-01',datePrecision:'day',url:'https://www.fmkorea.com/7042989434',sourceId:'source-fmk',visibility:'public'}],
+  sources:[{id:'source-fmk',kind:'reference',label:'FM코리아',url:'https://www.fmkorea.com/7042989434',visibility:'public'}],
+  verification:{state:'official',verifiedAt:'2026-01-01',conflicts:[]},published:true
+}));
+assert.equal(fmkPublic.sources.length,0,'FM Korea provenance must stay hidden from the public source list');
+assert.equal(fmkPublic.timeline.length,0,'FM Korea source material must stay hidden from the public timeline');
+assert.equal(/FM\s*코리아|FM\s*Korea|fmkorea/i.test(fmkPublic.description),false,'FM Korea provider name must not leak into public copy');
+const fmkCollectorPayload=archiveApi._internals.normalizeBrowserImportPayload({
+  source:'fmkorea-public-browser',url:'https://www.fmkorea.com/7042989434',postId:'7042989434',
+  access:'anonymous-verified',title:'자동 수집 참고 글',body:'자동 수집 테스트',capturedAt:'2026-09-24T12:00:00+09:00'
+});
+assert.ok(fmkCollectorPayload,'FM Korea automatic collector payload should normalize');
+assert.equal(archiveApi._internals.browserImportPublicEligible(fmkCollectorPayload),false,'FM Korea automatic collector must never expose public provenance');
+const fmkCollectorItem=archiveApi._internals.applyBrowserImportToItem({...monthOnly,id:'fmk-collector-test',timeline:[],sources:[]},fmkCollectorPayload);
+assert.equal(fmkCollectorItem.sources[0]?.visibility,'internal','FM Korea automatic collector source must be internal');
+assert.equal(fmkCollectorItem.timeline[0]?.visibility,'internal','FM Korea automatic collector material must be internal');
 assert.equal(archiveApi._internals.allowedSourceMetaUrl('http://127.0.0.1/private'),null,'local/non-HTTPS source metadata URL must be rejected');
 
 for(const item of seed.items){
-  assert.equal((item.sources||[]).some(source=>/fmkorea\.com/i.test(String(source.url||''))),false,`FM코리아 출처는 사용하지 않아야 합니다: ${item.id}`);
+  assert.equal((item.sources||[]).some(source=>/fmkorea\.com/i.test(String(source.url||''))),false,`FM코리아는 seed 공개 출처로 직접 노출하지 않아야 합니다: ${item.id}`);
   for(const source of item.sources||[]){
     const internal=/bngts\.com|streamscharts\.com/.test(String(source.url||''));
     if(internal)assert.equal(source.visibility,'internal',`internal reference source should not be public: ${source.url}`);
