@@ -81,7 +81,7 @@ function imageMarkup(image,alt='',priority=false){
   const sizes=priority?'(max-width:760px) calc(100vw - 24px), (max-width:1200px) 58vw, 920px':'(max-width:760px) calc(100vw - 24px), (max-width:1200px) 50vw, 560px';
   return`<img src="${escapeHtml(src)}"${srcset?` srcset="${escapeHtml(srcset)}" sizes="${sizes}"`:''} alt="${escapeHtml(image?.alt||alt)}" loading="${priority?'eager':'lazy'}" decoding="async"${priority?' fetchpriority="high"':''}>`;
 }
-function normalizedImageMarkup(image,alt='',priority=false){const src=safeUrl(image?.src||image?.thumbnail||image);if(!src)return imageMarkup(image,alt,priority);return`<span class="archive-normalized-media" data-archive-normalized-src="${escapeHtml(src)}">${imageMarkup(image,alt,priority)}</span>`}
+function normalizedImageMarkup(image,alt='',priority=false){const src=safeUrl(image?.src||image?.thumbnail||image);if(!src)return imageMarkup(image,alt,priority);const background=cloudinaryVariant(src,priority?1440:720)||src;return`<span class="archive-normalized-media" data-archive-normalized-src="${escapeHtml(background)}">${imageMarkup(image,alt,priority)}</span>`}
 function hydrateNormalizedMedia(root=d){root.querySelectorAll('[data-archive-normalized-src]').forEach(node=>{const src=safeUrl(node.dataset.archiveNormalizedSrc||'');if(!src)return;node.style.setProperty('--archive-media-image',`url("${src.replace(/"/g,'%22')}")`)})}
 function buildSeriesGroups(items=allItems){
   const map=new Map();
@@ -165,7 +165,7 @@ const ARCHIVE_META={
 };
 function setMeta(selector,attribute,value){
   let node=d.head.querySelector(selector);
-  if(!node){node=d.createElement('meta');const [name,key]=attribute.split(':');node.setAttribute(name,key);d.head.appendChild(node)}
+  if(!node){node=d.createElement('meta');const at=attribute.indexOf(':'),name=at>0?attribute.slice(0,at):attribute,key=at>0?attribute.slice(at+1):'';if(name&&key)node.setAttribute(name,key);d.head.appendChild(node)}
   node.setAttribute('content',String(value||''));
 }
 function syncArchiveSeo(item=null){
