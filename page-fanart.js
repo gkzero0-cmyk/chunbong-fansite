@@ -33,7 +33,7 @@
     const detailUrl = id => `/api/content?type=fanart-detail&id=${encodeURIComponent(id)}`;
     const detailPayload = async id => {
       const key = 'fanart-detail:' + id;
-      if (window.ChunbongCache) return window.ChunbongCache.fetchJson(key, detailUrl(id), { ttl:30*60*1000 });
+      if (window.ChunbongCache) return window.ChunbongCache.fetchJson(key, detailUrl(id), { ttl:60*60*1000 });
       const response = await fetch(detailUrl(id), { headers:{ accept:'application/json' } });
       if (!response.ok) throw new Error('HTTP ' + response.status);
       return response.json();
