@@ -61,6 +61,7 @@ function detectActivity(raw = '') {
     [/메이드\s*카페/i, '메이드카페'],
     [/합방/i, '합방'],
     [/세미\s*사주|세미사주/i, '세미사주'],
+    [/점호/i, '점호'],
     [/모집/i, '모집'],
     [/면접/i, '면접'],
     [/합격/i, '합격'],
@@ -113,7 +114,7 @@ function strictCrewPost(post, crew) {
   return {
     ...post,
     originalTitle: title,
-    title: direct ? ('공지 ' + crew) : '공지',
+    title: '공지 ' + crew,
     contents: crew + ' ' + activity + '\n' + body,
     strictCrew: crew,
     strictActivity: activity,
