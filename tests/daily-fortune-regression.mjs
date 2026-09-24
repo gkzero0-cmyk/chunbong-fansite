@@ -85,8 +85,8 @@ assert.match(js,/cardButton\.setAttribute\('aria-disabled', locked \? 'true' : '
 assert.match(js,/window\.addEventListener\('pageshow',[\s\S]*event\.persisted/,'BFCache restores must repair the daily fortune UI');
 assert.match(js,/const recoverIdleState = \(\) =>/,'opening the fortune dialog must reconcile stale browser state');
 assert.match(js,/stage\.addEventListener\('pointerdown',[\s\S]*cardButton\.disabled = false/,'stage pointerdown must repair a stale native disabled flag before release');
-assert.match(js,/stage\.addEventListener\('pointerup',[\s\S]*startDraw\(\)/,'stage pointerup must start the draw without depending on button click delivery');
-assert.match(js,/cardButton\.addEventListener\('click',[\s\S]*event\.detail === 0/,'button click must remain as keyboard and assistive-tech fallback');
+assert.match(js,/stage\.addEventListener\('pointerup',[\s\S]*startDraw\(point\)/,'stage pointerup must start the draw with the pointer origin');
+assert.match(js,/cardButton\.addEventListener\('click',[\s\S]*event\.detail !== 0\) return/,'button click must remain keyboard and assistive-tech only');
 assert.match(js,/pointerActivationSafe: true/,'runtime diagnostics must expose the pointer activation safety fix');
 assert.match(js,/const recoverIdleState = \(\) => \{[\s\S]*state = readState\(\);[\s\S]*renderState\(false\)/,'a saved same-day result must recover from storage whenever the dialog reopens');
 assert.match(js,/A single clear wind-chime strike/,'result reveal must use the refined wind-chime direction');
