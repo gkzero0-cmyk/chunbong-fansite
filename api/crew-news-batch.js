@@ -18,6 +18,7 @@ const LEADER_BY_CREW = Object.freeze(
 const MANUAL_SUMMARY = Object.freeze({
   '장지수용소': { '207422623': '러닝' },
   '강씨세가': { '207358053': '1주년' },
+  '진드기': { '207893749': '히어로 레드 웰컴 진드기' },
   'ZZAM지트': { '207641333': '소울체인드 합방' }
 });
 
@@ -82,6 +83,7 @@ function detectActivity(raw = '') {
     [/세미\s*사주|세미사주/i, '세미사주'],
     [/모집/i, '모집'],
     [/면접/i, '면접'],
+    [/웰컴|welcome/i, '영입'],
     [/영입/i, '영입'],
     [/신규\s*멤버|신입\s*멤버/i, '신규 멤버'],
     [/합격/i, '합격'],
@@ -294,7 +296,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0,
-    policyVersion: 'representative-v6-server',
+    policyVersion: 'representative-v6.1-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
