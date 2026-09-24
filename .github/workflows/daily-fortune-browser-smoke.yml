@@ -159,27 +159,24 @@ jobs:
           assert.notEqual(prism.y,'0deg','pointer hover must tilt the result card on Y');
           assert.ok(prism.gx && prism.gy,'pointer hover must move prism glow coordinates');
           assert.equal(await page.locator('[data-daily-fortune-holo]').count(),1,'hologram surface must exist');
-          assert.equal(await page.locator('.daily-fortune-holo-ripple').count(),0,'crystal material hover must not spawn legacy circular ripples');
-          assert.equal(await page.locator('.daily-fortune-holo-spark').count(),0,'crystal hover should not emit noisy spark particles');
-          await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('.daily-fortune-holo-film')).opacity) >= 0.82);
+          assert.equal(await page.locator('.daily-fortune-holo-ripple').count(),0,'micro foil hover must not revive legacy circular ripples');
+          assert.equal(await page.locator('.daily-fortune-holo-spark').count(),0,'micro foil hover must not revive noisy legacy spark particles');
+          await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('.daily-fortune-holo-film')).opacity) >= 0.75);
           const holo = await page.locator('.daily-fortune-holo-film').evaluate(el=>({
             opacity:Number(getComputedStyle(el).opacity),
             blend:getComputedStyle(el).mixBlendMode,
             background:getComputedStyle(el).backgroundImage
           }));
-          assert.ok(holo.opacity>=0.95&&holo.opacity<=1,'crystal material should be unmistakably visible without becoming opaque artwork');
-          assert.equal(holo.blend,'screen','crystal material must stay luminous over the artwork');
-          assert.match(holo.background,/conic-gradient|radial-gradient/,'pointer hover must render a crystal-prism material');
-          assert.equal(await page.locator('.daily-fortune-holo-lens').count(),1,'reference crystal effect must include one pointer-follow diffraction lens');
-          assert.equal(await page.locator('.daily-fortune-holo-crystals i').count(),6,'reference crystal effect must include six shard highlights');
-          const lens = await page.locator('.daily-fortune-holo-lens').evaluate(el=>({
-            opacity:Number(getComputedStyle(el).opacity),
-            blend:getComputedStyle(el).mixBlendMode,
-            background:getComputedStyle(el).backgroundImage
-          }));
-          assert.ok(lens.opacity>=0.9,'diffraction lens must be clearly visible on hover');
-          assert.equal(lens.blend,'screen','diffraction lens must use luminous screen blending');
-          assert.match(lens.background,/repeating-radial-gradient|conic-gradient/,'diffraction lens must contain spectral rings');
+          assert.ok(holo.opacity>=0.75&&holo.opacity<=1,'micro foil material should remain visible without obscuring the card artwork');
+          assert.equal(holo.blend,'screen','micro foil material must stay luminous over the artwork');
+          assert.match(holo.background,/radial-gradient|repeating-linear-gradient|linear-gradient/,'pointer hover must render the sticker-like foil material');
+          await page.waitForSelector('.daily-fortune-foil-sparkle',{state:'attached'});
+          assert.ok(await page.locator('.daily-fortune-foil-sparkle').count()>=1,'pointer movement must emit a sparse on-surface foil sparkle');
+          await page.mouse.click(stageBox.x + stageBox.width * 0.62, stageBox.y + stageBox.height * 0.48);
+          await page.waitForSelector('.daily-fortune-foil-bloom',{state:'attached'});
+          assert.equal(await page.locator('.daily-fortune-foil-bloom > i').count(),8,'revealed-card click must expand one dense foil patch with eight sparkle accents');
+          assert.equal(await page.locator('.daily-fortune-holo-lens').count(),0,'retired diffraction lens layer must stay removed');
+          assert.equal(await page.locator('.daily-fortune-holo-crystals').count(),0,'retired crystal shard layer must stay removed');
           await page.mouse.move(20,20);
 
           await page.locator('[data-daily-fortune-close]').click();
