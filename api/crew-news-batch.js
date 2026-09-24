@@ -176,11 +176,18 @@ function strictCrewPost(post, crew, station) {
   const summary = override || activity;
   const manualDisplay = MANUAL_DISPLAY_SUMMARY[crew] && MANUAL_DISPLAY_SUMMARY[crew][id] || '';
   const displaySummary = manualDisplay || (normalize(summary).includes(crewToken) ? summary : crew + ' ' + summary);
+  // Apps Script v4는 후보 허용 판정에서 제목/게시판에 크루명이 있어야 한다.
+  // 표시에서는 크루명 중복을 빼야 하는 manualDisplay의 경우 제목에 크루명을 앞에 붙여
+  // 후보 판정은 통과시키고, Apps Script 요약 단계에서 그 접두 크루명을 제거하게 한다.
+  // 그 외에는 zero-width 접두사를 유지해 "강씨세가 1주년" 같은 의도적 크루명 표기를 보존한다.
+  const compatibilityTitle = manualDisplay
+    ? crew + ' ' + displaySummary
+    : '\u200B' + displaySummary;
 
   return {
     ...post,
     originalTitle: title,
-    title: '\u200B' + displaySummary,
+    title: compatibilityTitle,
     contents: crew + ' ' + summary + '\n' + body,
     strictCrew: crew,
     strictActivity: summary,
@@ -342,7 +349,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0,
-    policyVersion: 'representative-v6.3-server',
+    policyVersion: 'representative-v6.4-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
