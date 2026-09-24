@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const html = fs.readFileSync(new URL('../tarot.html', import.meta.url), 'utf8');
+const bundle = fs.readFileSync(new URL('../tarot-bundle.js', import.meta.url), 'utf8');
 const enhancedJsUrl = new URL('../tarot-sfx-v2.js', import.meta.url);
 const preloadUrl = new URL('../tarot-sfx-v2-preload.js', import.meta.url);
 
@@ -13,11 +14,12 @@ assert.ok(fs.existsSync(enhancedJsUrl), 'enhanced Tarot SFX module should exist'
 const enhanced = require('../tarot-sfx-v2.js');
 const js = fs.readFileSync(enhancedJsUrl, 'utf8');
 
-const preloadIndex = html.indexOf('tarot-sfx-v2-preload.js');
-const coreIndex = html.indexOf('tarot.js');
-const enhancedIndex = html.indexOf('tarot-sfx-v2.js');
-assert.ok(preloadIndex >= 0 && preloadIndex < coreIndex, 'preload bridge should run before tarot.js so the old synthesized SFX stay muted');
-assert.ok(enhancedIndex > coreIndex, 'enhanced SFX should install after tarot.js');
+assert.match(html, /src="tarot-bundle\.js\?v=1"/, 'tarot page should load the generated JS bundle');
+const preloadIndex = bundle.indexOf('===== tarot-sfx-v2-preload.js =====');
+const coreIndex = bundle.indexOf('===== tarot.js =====');
+const enhancedIndex = bundle.indexOf('===== tarot-sfx-v2.js =====');
+assert.ok(preloadIndex >= 0 && preloadIndex < coreIndex, 'preload bridge should run before tarot.js inside the generated bundle so the old synthesized SFX stay muted');
+assert.ok(enhancedIndex > coreIndex, 'enhanced SFX should install after tarot.js inside the generated bundle');
 assert.ok(!html.includes('tarot-effects-v2.css'), 'retired Tarot reveal FX stylesheet must stay unloaded');
 
 const memory = new Map();
