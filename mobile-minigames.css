@@ -200,7 +200,7 @@ body[data-game] .game-mobile-only{display:none}
   body[data-game="chunbak"] .chunbak-ranking,
   body[data-game="chunbak"] .chunbak-evolution{display:none!important}
   body[data-game="chunbak"] .chunbak-start-view{min-height:calc(100dvh - 74px)!important;padding:8px 0!important}
-  body[data-game="chunbak"] .chunbak-start-card{width:100%!important;max-width:520px!important;padding:18px!important}
+  body[data-game="chunbak"] .chunbak-start-card{width:min(calc(100vw - 24px),calc((100dvh - 260px)*420/680),420px)!important;max-width:100%!important;padding:18px!important}
   body[data-game="chunbak"] .chunbak-start-utils{grid-template-columns:repeat(3,1fr)!important}
   body[data-game="chunbak"] .chunbak-start-utils button{min-height:44px!important;padding:7px!important;font-size:11px!important}
 }
