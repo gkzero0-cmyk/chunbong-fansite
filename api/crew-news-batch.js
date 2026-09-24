@@ -11,7 +11,7 @@ const CREW_BY_LEADER = Object.freeze({
   dstv: '자라섬'
 });
 
-const EXCLUDED_BOARD_RE = /자유|잡담|일상|이벤트|event|팬\s*게시판|애청자/i;
+const EXCLUDED_BOARD_RE = /자유|잡담|일상|이벤트|event|팬\s*게시판|애청자|이봤/i;
 const NOTICE_BOARD_RE = /공지|공지사항/i;
 
 function safeStations(raw = '') {
@@ -113,7 +113,7 @@ function strictCrewPost(post, crew) {
   return {
     ...post,
     originalTitle: title,
-    title: '공지',
+    title: direct ? ('공지 ' + crew) : '공지',
     contents: crew + ' ' + activity + '\n' + body,
     strictCrew: crew,
     strictActivity: activity,
