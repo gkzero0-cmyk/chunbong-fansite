@@ -5,15 +5,12 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const html = fs.readFileSync(new URL('../tarot.html', import.meta.url), 'utf8');
 const enhancedJsUrl = new URL('../tarot-sfx-v2.js', import.meta.url);
-const enhancedCssUrl = new URL('../tarot-effects-v2.css', import.meta.url);
 const preloadUrl = new URL('../tarot-sfx-v2-preload.js', import.meta.url);
 
 assert.ok(fs.existsSync(preloadUrl), 'tarot SFX preload bridge should exist');
 assert.ok(fs.existsSync(enhancedJsUrl), 'enhanced Tarot SFX module should exist');
-assert.ok(fs.existsSync(enhancedCssUrl), 'enhanced Tarot reveal stylesheet should exist');
 
 const enhanced = require('../tarot-sfx-v2.js');
-const css = fs.readFileSync(enhancedCssUrl, 'utf8');
 const js = fs.readFileSync(enhancedJsUrl, 'utf8');
 
 const preloadIndex = html.indexOf('tarot-sfx-v2-preload.js');
@@ -21,7 +18,7 @@ const coreIndex = html.indexOf('tarot.js');
 const enhancedIndex = html.indexOf('tarot-sfx-v2.js');
 assert.ok(preloadIndex >= 0 && preloadIndex < coreIndex, 'preload bridge should run before tarot.js so the old synthesized SFX stay muted');
 assert.ok(enhancedIndex > coreIndex, 'enhanced SFX should install after tarot.js');
-assert.ok(html.includes('tarot-effects-v2.css'), 'Tarot page should load enhanced reveal FX stylesheet');
+assert.ok(!html.includes('tarot-effects-v2.css'), 'retired Tarot reveal FX stylesheet must stay unloaded');
 
 const memory = new Map();
 const storage = {
@@ -118,10 +115,6 @@ for (const token of ['cardShuffle', 'cardSlap', 'cardSpread']) {
 }
 assert.ok(js.includes("classList.add('is-revealing')"), 'result reveal should enable the enhanced reveal state');
 assert.ok(js.includes("classList.remove('is-revealing')"), 'enhanced reveal state should be cleared after the animation');
-for (const keyframe of ['tarotRevealBurst', 'tarotRevealSpark', 'tarotArtFlare']) {
-  assert.ok(css.includes(`@keyframes ${keyframe}`), `enhanced reveal should include ${keyframe}`);
-}
-assert.ok(css.includes('.tarot-results.is-revealing'), 'enhanced reveal styling should be scoped to the reveal phase');
 
 assert.equal(typeof enhanced.hasRenderedTarotCards, 'function', 'enhanced reveal should expose a rendered-card guard');
 assert.equal(enhanced.hasRenderedTarotCards({ querySelector: () => null }), false, 'empty result area must not trigger reveal SFX/FX');

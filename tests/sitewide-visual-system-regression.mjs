@@ -8,6 +8,7 @@ const quality=read('site-quality.css');
 const home=read('home-refresh.css');
 const activity=read('activity-center.js');
 const dataPeriods=read('data-soop-periods-v3.js');
+const index=read('index.html');
 
 for(const token of [
   '--text-primary','--text-secondary','--text-muted','--text-meta','--text-disabled',
@@ -16,7 +17,8 @@ for(const token of [
 ]) assert.ok(css.includes(token+':'),token+' missing');
 
 assert.match(css,/\[data-theme="light"\]/,'light-mode token override missing');
-assert.match(quality,/@import url\("site-design-system\.css"\)/,'shared design stylesheet must load through the global quality layer');
+assert.doesNotMatch(quality,/@import url\("site-design-system\.css"\)/,'global quality layer must not duplicate the shared design stylesheet');
+assert.match(index,/href="site-design-system\.css"/,'home must load the shared design stylesheet directly');
 assert.match(shell,/is-current-section/,'header must expose current section state');
 assert.match(shell,/aria-current/,'header must expose exact current page');
 for(const key of ['replay','tarot','minigames','data','schedule','notice','clips','fanart','youtube','history','calendar']){

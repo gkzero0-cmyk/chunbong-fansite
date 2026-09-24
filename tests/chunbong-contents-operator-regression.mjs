@@ -98,14 +98,14 @@ assert.match(archiveSource,/SADD['\",\s]+HIDDEN_KEY/,'delete must create a seed 
 assert.match(archiveSource,/SREM['\",\s]+HIDDEN_KEY/,'publish must clear a seed tombstone');
 
 
-for(const token of ['별칭','결과 · 회차 기록','data-result-row','data-move-row','공개 페이지 열기','data-material-fetch-meta','원문 메타 가져오기','방통실 참가자 명단 미수집','FM코리아 참가자 명단 미수집','Notion 본문 미구조화','SOOP 게시글 메타데이터 확인']) assert.ok(operatorContents.includes(token),token);
+for(const token of ['별칭','결과 · 회차 기록','data-result-row','data-move-row','팬사이트에서 확인','data-material-fetch-meta','원문 메타 가져오기','방통실 참가자 명단 미수집','FM코리아 참가자 명단 미수집','Notion 본문 미구조화','SOOP 게시글 메타데이터 확인']) assert.ok(operatorContents.includes(token),token);
 assert.match(operatorContents,/item\.aliases=/,'operator must collect aliases');
 assert.match(operatorContents,/item\.results=/,'operator must collect results');
 
 assert.match(operatorContents,/meta\.publishedDate/,'material source metadata should populate publication dates');
 assert.match(operatorContents,/meta\.image/,'material source metadata should populate original thumbnails');
 assert.match(operatorContents,/function bindMaterialMeta\(\)\{\$\$\('\[data-material-fetch-meta\]'/,'material metadata controls must bind as a node list');
-assert.match(operatorContents,/bindSourceMeta\(\);bindMaterialMeta\(\);\$\$\('\[data-add-row\]'/,'archive add-row controls must remain a node list');
+assert.match(operatorContents,/bindSourceMeta\(\);bindMaterialMeta\(\);[\s\S]*\$\$\('\[data-add-row\]'/,'archive add-row controls must remain a node list');
 
 
 assert.equal(typeof archive._internals.extractNotionPageId,'function','Notion page id extractor missing');
@@ -179,7 +179,7 @@ assert.equal(browserPayload?.date,'2026-04-09','browser handoff date should norm
 assert.equal(archive._internals.normalizeBrowserImportPayload({...browserPayload,url:'https://www.sooplive.com/station/other/post/1'}),null,'browser handoff must be restricted to Chunbong SOOP posts');
 const browserApplied=archive._internals.applyBrowserImportToItem({...base,id:'browser-import',timeline:[],sources:[]},browserPayload);
 assert.equal(browserApplied.sources[0]?.visibility,'internal','authenticated source URL must remain internal');
-assert.equal(browserApplied.timeline[0]?.visibility,'public','confirmed title/date may become a public factual timeline record');
+assert.equal(browserApplied.timeline[0]?.visibility,'internal','authenticated SOOP browser material must remain internal until explicitly verified for public use');
 assert.equal(browserApplied.timeline[0]?.url,'','protected post URL must not be copied into the public timeline material');
 assert.match(String(archive._internals.BROWSER_IMPORT_PREFIX||''),/browser-import:v1/,'browser import raw storage must be isolated from public archive records');
 assert.match(archiveSource,/\['auto','connect','draft'\]/,'browser import API should support automatic matching');

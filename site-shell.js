@@ -1,74 +1,14 @@
-(() => {
-  'use strict';
-  const memory=new Map();
-  const CACHE_PREFIX= 'chunbong-cache-v2:';
-  const shouldPersist=key=>
-    String(key).startsWith('content:') ||
-    String(key).startsWith('notice-detail:') ||
-    String(key).startsWith('fanart-detail:') ||
-    String(key) === 'changelog-summary';
-
-  const read = key => {
-    const cached=memory.get(key);
-    if(cached)return cached;
-    if (!shouldPersist(key)) return null;
-    try {
-      const stored = sessionStorage.getItem(CACHE_PREFIX + key);
-      if (!stored) return null;
-      const row = JSON.parse(stored);
-      if (!row || typeof row.at !== 'number' || !('value' in row)) return null;
-      memory.set(key, row);
-      return row;
-    } catch (_) {
-      return null;
-    }
-  };
-
-  const write = (key, value) => {
-    const row = { at: Date.now(), value };
-    memory.set(key, row);
-    if (shouldPersist(key)) {
-      try {
-        sessionStorage.setItem(CACHE_PREFIX + key, JSON.stringify(row));
-      } catch (_) {}
-    }
-    return value;
-  };
-
-  const clear = key => {
-    memory.delete(key);
-    if (shouldPersist(key)) {
-      try { sessionStorage.removeItem(CACHE_PREFIX + key); } catch (_) {}
-    }
-  };
-
-  window.ChunbongCache = {
-    get(key, ttl = 180000) {
-      const row = read(key);
-      if (!row) return null;
-      if (Date.now() - Number(row.at || 0) >= ttl) {
-        clear(key);
-        return null;
-      }
-      return row.value;
-    },
-    set: write,
-    clear,
-    async fetchJson(key, url, { ttl = 180000, force = false, headers = { accept: 'application/json' } } = {}) {
-      if (!force) {
-        const cached = this.get(key, ttl);
-        if (cached) return cached;
-      }
-      const response = await fetch(url, { headers });
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      return write(key, await response.json());
-    }
-  };
-
-  const d=document,loadStyle=(h,k)=>{if(d.querySelector('link['+k+']'))return;const n=d.createElement('link');n.rel='stylesheet';n.href=h;n.setAttribute(k,'true');d.head.appendChild(n)},loadScript=s=>{if(d.querySelector('script[src="'+s+'"]'))return;const n=d.createElement('script');n.src=s;n.defer=1;d.head.appendChild(n)},runIdle=f=>'requestIdleCallback'in window?requestIdleCallback(f,{timeout:1800}):setTimeout(f,650);
-  loadScript('site-health.js');runIdle(()=>loadScript('site-improvements.js'));
-  const personalPriorityPages='|home|myhub|tarot|',loadPersonal=()=>{loadStyle('personal-hub.css','data-personal-hub-styles');loadScript('personal-hub.js')},page=d.body.dataset.page||'';
-  personalPriorityPages.includes('|'+page+'|')?loadPersonal():runIdle(loadPersonal);runIdle(()=>loadScript('site-meta.js'));
+(()=>{'use strict';
+const memory=new Map(),CACHE_PREFIX='chunbong-cache-v2:';
+const shouldPersist=key=>{key=String(key);return key.startsWith('content:')||key.startsWith('notice-detail:')||key.startsWith('fanart-detail:')||key==='changelog-summary'};
+const read=key=>{const cached=memory.get(key);if(cached)return cached;if(!shouldPersist(key))return null;try{const stored=sessionStorage.getItem(CACHE_PREFIX+key);if(!stored)return null;const row=JSON.parse(stored);if(!row||typeof row.at!=='number'||!('value'in row))return null;memory.set(key,row);return row}catch{return null}};
+const write=(key,value)=>{const row={at:Date.now(),value};memory.set(key,row);if(shouldPersist(key))try{sessionStorage.setItem(CACHE_PREFIX+key,JSON.stringify(row))}catch{}return value};
+const clear=key=>{memory.delete(key);if(shouldPersist(key))try{sessionStorage.removeItem(CACHE_PREFIX+key)}catch{}};
+window.ChunbongCache={get(key,ttl=180000){const row=read(key);if(!row)return null;if(Date.now()-Number(row.at||0)>=ttl){clear(key);return null}return row.value},set:write,clear,async fetchJson(key,url,{ttl=180000,force=false,headers={accept:'application/json'}}={}){if(!force){const cached=this.get(key,ttl);if(cached)return cached}const response=await fetch(url,{headers});if(!response.ok)throw new Error('HTTP '+response.status);return write(key,await response.json())}};
+const d=document,loadStyle=(h,k)=>{if(d.querySelector('link['+k+']'))return;const n=d.createElement('link');n.rel='stylesheet';n.href=h;n.setAttribute(k,'true');d.head.appendChild(n)},loadScript=s=>{if(d.querySelector('script[src="'+s+'"]'))return;const n=d.createElement('script');n.src=s;n.defer=1;d.head.appendChild(n)},runIdle=f=>'requestIdleCallback'in window?requestIdleCallback(f,{timeout:1800}):setTimeout(f,650);
+loadScript('site-health.js');runIdle(()=>loadScript('site-improvements.js'));
+const personalPriorityPages='|home|myhub|tarot|',loadPersonal=()=>{loadStyle('personal-hub.css','data-personal-hub-styles');loadScript('personal-hub.js')},page=d.body.dataset.page||'';
+personalPriorityPages.includes('|'+page+'|')?loadPersonal():runIdle(loadPersonal);runIdle(()=>loadScript('site-meta.js'));
 })();
 (()=>{const n=document.getElementById('main-nav');if(!n)return;const I=[['home','index.html','HOME'],['schedule','schedule.html','방송 일정'],['notice','notice.html','공지'],['vod','vod.html','다시보기'],['clips','clips.html','핫클립'],['fanart','fanart.html','팬아트'],['youtube','youtube.html','유튜브'],['tarot','tarot.html','TAROT'],['minigames','minigames.html','미니게임'],['contents','chunbong-contents.html','춘봉 콘텐츠'],['history','history.html','방송 이력'],['data','data.html','춘봉 데이터']];window.ChunbongNavigation={items:I.map(([key,href,label])=>({key,href,label}))};n.innerHTML=I.map(([k,h,t])=>`<a data-nav="${k}" href="${h}">${t}</a>`).join('')})();;
 (() => {

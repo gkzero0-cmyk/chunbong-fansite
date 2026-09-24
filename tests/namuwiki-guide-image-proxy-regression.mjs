@@ -72,7 +72,7 @@ assert.equal(merged.referenceSections[0].images[0].src,'https://i.namu.wiki/i/ex
 assert.match(merged.referenceSections[0].pageId,/^https:\/\/namu\.wiki\//);
 
 assert.match(client,/function namuCollectorBookmarklet/,'operator must provide direct NamuWiki collector');
-assert.match(client,/parsed\.hostname!==['\"]i\.namu\.wiki['\"]/,'collector must accept only official NamuWiki CDN images');
+assert.match(client,/parsed\.hostname===['\"]i\.namu\.wiki['\"]/,'collector must accept only official NamuWiki CDN images');
 assert.match(client,/#namu-import=/,'collector must return data to the operator center');
 assert.match(client,/Notion 원문/,'operator image audit must include Notion document images');
 assert.match(client,/나무위키 원문/,'operator image audit must include NamuWiki document images');

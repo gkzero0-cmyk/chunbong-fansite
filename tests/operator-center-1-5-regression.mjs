@@ -8,10 +8,10 @@ const css=read('operator.css');
 const contents=read('operator-contents.js');
 
 for(const id of ['archive-health-total','archive-health-issues','archive-health-visual','archive-health-candidates'])assert.match(html,new RegExp(id),'content health card missing: '+id);
-assert.match(html,/콘텐츠 아카이브 상태/);
-assert.match(html,/자료 보강 필요/);
-assert.match(html,/이미지 · 썸네일/);
-assert.match(html,/자동수집 검토/);
+assert.match(html,/춘봉 콘텐츠 관리 상태/);
+assert.match(html,/콘텐츠 오류 · 누락/);
+assert.match(html,/이미지 문제/);
+assert.match(html,/연결 대기 자료/);
 
 assert.match(contents,/export function archiveAudit/,'archive audit must be reusable');
 assert.match(contents,/function archiveHealthSnapshot/,'archive health snapshot missing');
