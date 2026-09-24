@@ -115,6 +115,10 @@
   ],
   "rewrites": [
     {
+      "source": "/contents/:id",
+      "destination": "/chunbong-contents.html?id=:id"
+    },
+    {
       "source": "/api/operator/github/start",
       "destination": "/api/content?type=operator-github-start"
     },
