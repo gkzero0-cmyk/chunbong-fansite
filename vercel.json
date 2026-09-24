@@ -16,7 +16,8 @@
       "main": true,
       "internal/*": false,
       "feature/*": false,
-      "perf/*": false
+      "perf/*": false,
+      "improve-*": false
     }
   },
   "headers": [
