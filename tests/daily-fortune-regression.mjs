@@ -35,7 +35,7 @@ assert.match(css, /f_auto,q_auto:good,c_limit,w_768\/v1789845157\/chunbong-fansi
 assert.match(css, /\.daily-fortune-back\{[\s\S]*background-image:url\("https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/f_auto,q_auto:good,c_limit,w_768\/v1789845157\/chunbong-fansite\/tarot-card-back\.png"\)/, 'daily fortune back must use the uploaded image');
 assert.match(css, /\.daily-fortune-launcher>span\{[\s\S]*tarot-card-back\.png/, 'saved-fortune launcher must reuse the uploaded card back');
 assert.match(css, /\.daily-fortune-front\{[\s\S]*#08152f/, 'daily fortune front must use the matching deep-navy celestial frame');
-assert.match(css, /\.daily-fortune-front-frame::before,\.daily-fortune-front-frame::after/, 'daily fortune front must include matching celestial star medallions');
+assert.match(css, /\.daily-fortune-front-frame::before,\s*\.daily-fortune-front-frame::after/, 'daily fortune front must include matching celestial star medallions');
 assert.match(css, /\.daily-fortune-front-title\{[\s\S]*#102344/, 'daily fortune title plate must use the matching navy-and-gold theme');
 assert.match(css, /@keyframes dailyFortuneBackSpin/, 'high-speed card-back spin animation missing');
 assert.match(css, /dailyFortuneHyperSpin\{[\s\S]*rotateY\(360deg\)/, 'hyper-spin must complete a full vertical turn every cycle');
