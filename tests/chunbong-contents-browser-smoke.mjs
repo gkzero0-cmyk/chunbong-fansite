@@ -144,7 +144,7 @@ try{
     assert.equal(await page.locator('.archive-card').count(),3,'그냥서버 시리즈에는 다이아·머니게임·적자생존 세 시즌이 보여야 합니다');
     assert.equal(await page.locator('.archive-series-child-links [data-archive-open]').count(),3,'그냥서버 시리즈 랜딩에 세 시즌 바로가기가 있어야 합니다');
     await page.locator('.archive-series-child-links [data-archive-open="justserver-survival"]').click();
-    await page.waitForURL(/id=justserver-survival/);
+    await page.waitForURL(/\/contents\/justserver-survival(?:\?|$)/);
     await page.locator('.archive-sibling-series-nav').waitFor({state:'visible'});
     assert.equal(await page.locator('.archive-sibling-series-nav [data-archive-sibling]').count(),3,'그냥서버 상세에서 세 시즌 간 전환이 가능해야 합니다');
     const siblingBoxes=await page.locator('.archive-sibling-series-nav [data-archive-sibling]').evaluateAll(nodes=>nodes.map(node=>{const r=node.getBoundingClientRect();return{x:Math.round(r.x),y:Math.round(r.y),width:Math.round(r.width)}}));
@@ -187,7 +187,7 @@ try{
     assert.match((await page.locator('.archive-series-child-links').textContent())||'',/제1회/);
     assert.match((await page.locator('.archive-series-child-links').textContent())||'',/제2회/);
     await page.locator('.archive-series-child-links [data-archive-open="psy-emotion-song-contest-2"]').click();
-    await page.waitForURL(/id=psy-emotion-song-contest-2/);
+    await page.waitForURL(/\/contents\/psy-emotion-song-contest-2(?:\?|$)/);
     await page.locator('.archive-sibling-series-nav').waitFor({state:'visible'});
     assert.equal(await page.locator('.archive-sibling-series-nav [data-archive-sibling]').count(),2,'싸이감성 상세에서 1회와 2회를 바로 전환할 수 있어야 합니다');
     const longDetailTitle=await page.locator('.archive-detail-copy.is-title-long h1').evaluate(el=>({scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,whiteSpace:getComputedStyle(el).whiteSpace}));
@@ -198,7 +198,7 @@ try{
     await page.locator('[data-archive-series-back]').click();
 
     await page.locator('[data-archive-open="leopel"]').click();
-    await page.waitForURL(/\?id=leopel/);
+    await page.waitForURL(/\/contents\/leopel(?:\?|$)/);
     assert.equal(await page.locator('[data-archive-detail] h1').textContent(),'레오펠: 사자의 노래');
     assert.ok(await page.locator('[data-archive-browser]').isHidden(),'list should hide in detail mode');
     await assertNoHorizontalOverflow(page,'desktop detail');
@@ -242,7 +242,7 @@ try{
     assert.ok(boxes[0].width<=390,'mobile card must fit viewport');
 
     await page.locator('[data-archive-open="leopel"]').click();
-    await page.waitForURL(/\?id=leopel/);
+    await page.waitForURL(/\/contents\/leopel(?:\?|$)/);
     await assertNoHorizontalOverflow(page,'mobile detail');
     const columns=await page.locator('.archive-detail-hero').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length);
     assert.equal(columns,1,'mobile detail hero should collapse to one column');
