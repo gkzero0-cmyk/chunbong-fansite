@@ -60,7 +60,7 @@ for (const token of [
   'id="tarot-number-error"', 'id="tarot-selected-slots"', 'id="tarot-sound-toggle"', 'id="tarot-question"',
   'id="tarot-deck"', 'id="tarot-confirm-selection"', 'id="tarot-results"', 'id="tarot-reading-grid"', 'id="tarot-summary"',
   'id="tarot-ai-panel"', 'id="tarot-ai-button"', 'id="tarot-ai-status"', 'id="tarot-ai-content"', 'id="tarot-card-zoom"',
-  'tarot.css', 'tarot-quality.css', 'tarot-data.js', 'tarot.js'
+  'tarot-bundle.css?v=1', 'tarot-data.js', 'tarot.js'
 ]) assert.ok(html.includes(token), `tarot.html should include ${token}`);
 assert.ok(html.includes('maxlength="500"'), 'question length should match server validation');
 assert.ok(html.includes('종합타로'));
