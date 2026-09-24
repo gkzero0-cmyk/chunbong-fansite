@@ -273,6 +273,11 @@ function focusArchiveArea(action=''){
     const filter=$('[data-collector-inbox-state]',root);if(filter)filter.value='attention';renderCollectorInbox();
     $('[data-collector-inbox]',root)?.scrollIntoView({behavior:'smooth',block:'start'});return;
   }
+  if(action==='review'){
+    const unlinked=browserImports.filter(row=>row.state==='unlinked').length;
+    if(unlinked)return focusArchiveArea('collector');
+    return focusArchiveArea('candidates');
+  }
   if(action==='visual'){
     $('[data-archive-image-audit-card]',root)?.scrollIntoView({behavior:'smooth',block:'start'});
     if(!archiveLoading)void runImageAudit();return;
@@ -379,7 +384,8 @@ async function runBulkAutoEnhance(){
         }
       }catch{failedItems++}
     }
-    await load();
+    const selectedId=selected?.id||'';await load();
+    if(selectedId){const fresh=items.find(row=>row.id===selectedId);if(fresh)renderEditor(fresh)}
     setArchiveTaskMessage('자동 보강 완료 · '+changedItems+'개 콘텐츠 / '+changedFields+'개 필드를 임시 저장했습니다.'+(failedUrls||failedItems?' 확인 실패 '+(failedUrls+failedItems)+'건은 수동 확인이 필요합니다.':' 팬사이트 공개 전 검토해 주세요.'),'ok');
   }catch(error){setArchiveTaskMessage('일괄 자동 보강을 완료하지 못했습니다: '+String(error?.message||error),'bad')}
   finally{if(button)button.disabled=false}
