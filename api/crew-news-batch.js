@@ -22,6 +22,10 @@ const MANUAL_SUMMARY = Object.freeze({
   'ZZAM지트': { '207641333': '소울체인드 합방' }
 });
 
+const MANUAL_DISPLAY_SUMMARY = Object.freeze({
+  'ZZAM지트': { '207641333': '소울체인드 합방' }
+});
+
 const EXTRA_SEARCHES = Object.freeze({
   'ZZAM지트': [{ station: 'zzamta0310', keyword: '소울' }]
 });
@@ -142,14 +146,17 @@ function strictCrewPost(post, crew, station) {
 
   const representativeTier = leaderRepresentative ? 1 : 2;
   const summary = override || activity;
+  const manualDisplay = MANUAL_DISPLAY_SUMMARY[crew] && MANUAL_DISPLAY_SUMMARY[crew][id] || '';
+  const displaySummary = manualDisplay || (normalize(summary).includes(crewToken) ? summary : crew + ' ' + summary);
 
   return {
     ...post,
     originalTitle: title,
-    title: '\u200B' + crew + ' ' + summary,
+    title: '\u200B' + displaySummary,
     contents: crew + ' ' + summary + '\n' + body,
     strictCrew: crew,
     strictActivity: summary,
+    displaySummary,
     strictPriority: representativeTier,
     representativeTier,
     isCrewLeader: leader,
@@ -296,7 +303,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0,
-    policyVersion: 'representative-v6.1-server',
+    policyVersion: 'representative-v6.2-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
