@@ -568,3 +568,19 @@ body[data-page="operator"]{background:radial-gradient(circle at 80% 0,color-mix(
   .operator-archive-actions-sticky{grid-template-columns:1fr 1fr}
 }
 @media(max-width:520px){.operator-archive-workflow-status{grid-template-columns:1fr}.operator-archive-actions-sticky{grid-template-columns:1fr}}
+
+
+/* Operator Center 2.0 — persistent deployment sync banner */
+.operator-deployment-banner{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;margin:0 0 14px;padding:13px 15px;border:1px solid var(--op-border);border-radius:14px;background:linear-gradient(135deg,var(--op-card),var(--op-card-2));box-shadow:0 10px 30px #00000018}
+.operator-deployment-banner>div{display:grid;gap:3px;min-width:0}
+.operator-deployment-banner small{color:var(--op-meta);font-size:8px;font-weight:900;letter-spacing:.12em}
+.operator-deployment-banner strong{font-size:13px}
+.operator-deployment-banner span{color:var(--op-muted);font-size:9px;line-height:1.45}
+.operator-deployment-banner>button{appearance:none;padding:8px 11px;border:1px solid var(--op-border);border-radius:9px;background:var(--op-card-2);color:var(--op-secondary);font:inherit;font-size:9px;font-weight:850;cursor:pointer;white-space:nowrap}
+.operator-deployment-banner[data-state="ok"]{border-color:color-mix(in srgb,var(--op-good) 42%,var(--op-border));background:linear-gradient(135deg,color-mix(in srgb,var(--op-good) 6%,var(--op-card)),var(--op-card-2))}
+.operator-deployment-banner[data-state="ok"] strong{color:var(--op-good)}
+.operator-deployment-banner[data-state="warn"]{border-color:color-mix(in srgb,var(--op-warn) 46%,var(--op-border));background:linear-gradient(135deg,color-mix(in srgb,var(--op-warn) 7%,var(--op-card)),var(--op-card-2))}
+.operator-deployment-banner[data-state="warn"] strong{color:var(--op-warn)}
+.operator-deployment-banner[data-state="bad"]{border-color:color-mix(in srgb,var(--op-bad) 48%,var(--op-border));background:linear-gradient(135deg,color-mix(in srgb,var(--op-bad) 8%,var(--op-card)),var(--op-card-2))}
+.operator-deployment-banner[data-state="bad"] strong{color:var(--op-bad)}
+@media(max-width:640px){.operator-deployment-banner{grid-template-columns:1fr}.operator-deployment-banner>button{width:100%}}

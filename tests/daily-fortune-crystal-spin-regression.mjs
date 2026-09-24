@@ -5,6 +5,7 @@ const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const js=read('daily-fortune.js');
 const css=read('daily-fortune.css');
 const index=read('index.html');
+const loader=read('home-fortune-loader.js');
 
 assert.doesNotThrow(()=>new Function(js),'daily fortune script must parse');
 
@@ -29,7 +30,7 @@ assert.match(css,/dailyFortuneHorizontalBeam/,'horizontal spin beam must replace
 assert.match(css,/width:174%!important;\s*height:3px!important/,'spin beam must be horizontal');
 assert.match(css,/transition-property:opacity!important/,'pointer hologram must not interpolate its position');
 
-assert.match(index,/daily-fortune\.css\?v=16/,'fortune CSS cache key must be v16');
-assert.match(index,/daily-fortune\.js\?v=15/,'fortune JS cache key must remain v15');
+assert.match(loader,/daily-fortune\.css\?v=16/,'fortune lazy loader must keep CSS cache key v16');
+assert.match(loader,/daily-fortune\.js\?v=15/,'fortune lazy loader must keep JS cache key v15');
 
 console.log('daily fortune crystal spin regression passed');

@@ -5,6 +5,7 @@ const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const css=read('daily-fortune.css');
 const js=read('daily-fortune.js');
 const index=read('index.html');
+const loader=read('home-fortune-loader.js');
 
 assert.ok(Buffer.byteLength(css,'utf8')<58000,'daily-fortune.css must stay under the 58KB source budget');
 assert.doesNotMatch(css,/Daily Fortune v12/,'retired v12 stylesheet must stay deleted');
@@ -22,6 +23,6 @@ assert.doesNotMatch(js,/daily-fortune-holo-lens|daily-fortune-holo-crystals|--fl
 assert.doesNotMatch(css,/daily-fortune-holo-ripple|daily-fortune-holo-spark/,'retired ripple and spark selectors must stay deleted');
 assert.doesNotMatch(css,/dailyFortuneHoloRipple|dailyFortuneHoloSpark|dailyFortuneLuxuryRipple/,'retired ripple keyframes must stay deleted');
 assert.doesNotMatch(js,/daily-fortune-holo-ripple|daily-fortune-holo-spark/,'runtime must not reference retired ripple or spark nodes');
-assert.match(index,/daily-fortune\.css\?v=16/,'home must request the cleaned v16 stylesheet');
+assert.match(loader,/daily-fortune\.css\?v=16/,'fortune lazy loader must keep CSS cache key v16');
 
 console.log('daily fortune CSS budget regression passed');

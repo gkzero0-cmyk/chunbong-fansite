@@ -65,6 +65,7 @@ jobs:
           node --check operator.js
           node --check activity-center.js
           node --check daily-fortune.js
+          node --check home-fortune-loader.js
           node --check home-overview.js
           node --check personal-hub.js
           node --check api/version.js

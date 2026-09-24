@@ -191,6 +191,28 @@ function renderFunnel(funnel={}){
   const rows=[['미니게임',funnel.game],['춘봉 타로',funnel.tarot],['피드백',funnel.feedback]],el=$('#operator-funnel');
   el.innerHTML=rows.map(([label,row])=>{const rate=completionRate(row);return `<div class="operator-funnel-row"><div><strong>${label}</strong><span>${fmt(row?.start)} 시작 → ${fmt(row?.finish)} 완료</span></div><div class="operator-funnel-track"><i style="width:${rate}%"></i></div><b>${rate}%</b></div>`}).join('');
 }
+function renderDeploymentBanner(){
+  const box=$('#operator-deployment-banner'),title=$('#operator-deployment-banner-title'),detail=$('#operator-deployment-banner-detail');if(!box||!title||!detail)return;
+  const dep=currentSystem?.deployment||{};
+  if(!currentSystem){box.dataset.state='loading';title.textContent='Production 상태 확인 중';detail.textContent='GitHub main과 실제 배포 버전을 비교하고 있습니다.';return}
+  const pending=deploymentGap(currentSystem?.repository?.recentCommits||[],dep.sha,dep.synced);
+  if(dep.synced===true){
+    box.dataset.state='ok';title.textContent='Production 최신 상태';
+    detail.textContent='main '+shortSha(dep.mainSha)+' · 실제 배포본과 일치합니다.';
+    return;
+  }
+  if(dep.rateLimited){
+    box.dataset.state='bad';title.textContent='Production 업데이트 대기 · Vercel 배포 제한';
+    detail.textContent='배포본 '+shortSha(dep.sha)+' · main '+shortSha(dep.mainSha)+' · 미반영 '+(pending.known?fmt(pending.count)+'건':fmt(pending.count)+'건 이상')+(dep.retryAfter?' · 재시도 기준 '+new Date(dep.retryAfter).toLocaleString('ko-KR'):'');
+    return;
+  }
+  if(dep.synced===false){
+    box.dataset.state='warn';title.textContent='Production 업데이트 대기';
+    detail.textContent='배포본 '+shortSha(dep.sha)+' · main '+shortSha(dep.mainSha)+' · 미반영 '+(pending.known?fmt(pending.count)+'건':fmt(pending.count)+'건 이상');
+    return;
+  }
+  box.dataset.state='warn';title.textContent='Production 동기화 확인 필요';detail.textContent='현재 배포 SHA와 GitHub main 비교 정보를 확인하지 못했습니다.';
+}
 function renderOperatorAttention(){
   const root=$('#operator-attention-list'),state=$('#operator-attention-state');if(!root||!state)return;
   const rows=[],dep=currentSystem?.deployment||{},endpoints=Array.isArray(currentSystem?.endpoints)?currentSystem.endpoints:[],services=currentSystem?.services||{};
@@ -400,7 +422,7 @@ async function loadSystemStatus(){
   const endpoints=Array.isArray(data.endpoints)?data.endpoints:[];
   $('#operator-endpoint-health').innerHTML=endpoints.length?endpoints.map(row=>`<div><span>${escapeHtml(row.label||row.path||'API')} <small>${fmt(row.ms)}ms</small></span><span class="operator-endpoint-result ${row.ok?'ok':'bad'}">${row.ok?'HTTP '+fmt(row.status):row.status?'HTTP '+fmt(row.status):'응답 실패'}</span></div>`).join(''):'<p class="operator-empty">API 상태를 확인하지 못했습니다.</p>';
   renderCommitHistory(commitRows,dep.sha,dep.synced);renderChangelogHealth(data.changelog||{});
-  renderHealthHistory(data.health?.history||[]);renderOperatorAttention();
+  renderHealthHistory(data.health?.history||[]);renderDeploymentBanner();renderOperatorAttention();
 }
 const securityActionLabel={
   login_success:'로그인 성공',login_failed:'로그인 실패',login_email_requested:'이메일 인증 요청',session_revoked:'세션 종료',logout:'로그아웃',logout_all:'모든 기기 로그아웃'

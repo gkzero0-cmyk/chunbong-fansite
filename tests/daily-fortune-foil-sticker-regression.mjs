@@ -5,6 +5,7 @@ const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const js=read('daily-fortune.js');
 const css=read('daily-fortune.css');
 const index=read('index.html');
+const loader=read('home-fortune-loader.js');
 
 assert.doesNotThrow(()=>new Function(js),'daily fortune script must parse');
 assert.match(js,/spawnSelectionBurst\(origin\.px, origin\.py\)/,'selection click burst must stay enabled');
@@ -18,7 +19,7 @@ assert.doesNotMatch(css,/dailyFortuneFoilBurstScatter/,'retired v12 flying fragm
 assert.match(css,/Daily Fortune v13/,'current micro foil surface must remain');
 assert.match(css,/retire older card pseudo-prism layers/,'current surface must neutralize legacy pseudo-prism layers');
 
-assert.match(index,/daily-fortune\.css\?v=16/,'fortune CSS cache key must be v16');
-assert.match(index,/daily-fortune\.js\?v=15/,'fortune JS cache key must remain v15');
+assert.match(loader,/daily-fortune\.css\?v=16/,'fortune lazy loader must keep CSS cache key v16');
+assert.match(loader,/daily-fortune\.js\?v=15/,'fortune lazy loader must keep JS cache key v15');
 
 console.log('daily fortune retired foil regression passed');

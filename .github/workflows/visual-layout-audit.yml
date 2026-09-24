@@ -1,0 +1,59 @@
+name: Visual layout audit
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '*.html'
+      - '*.css'
+      - '*.js'
+      - 'assets/**'
+      - '.github/workflows/visual-layout-audit.yml'
+      - 'tests/visual-layout-audit.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '*.html'
+      - '*.css'
+      - '*.js'
+      - 'assets/**'
+
+concurrency:
+  group: visual-layout-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  visual-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local site
+        run: |
+          python3 -m http.server 4178 --bind 127.0.0.1 >/tmp/visual-audit-http.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4178/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/visual-audit-http.log
+          exit 1
+      - name: Audit 1440 · 1920 · mobile layouts
+        env:
+          BASE_URL: http://127.0.0.1:4178
+          VISUAL_AUDIT_DIR: /tmp/chunbong-visual-audit
+        run: node tests/visual-layout-audit.mjs
+      - name: Upload visual audit screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-layout-audit-${{ github.sha }}
+          path: /tmp/chunbong-visual-audit
+          retention-days: 7
+          if-no-files-found: warn
