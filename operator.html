@@ -190,12 +190,15 @@
           <details class="operator-soop-helper operator-unified-collector" data-unified-collector>
             <summary><span>춘봉 콘텐츠 자동 수집기</span><b>한 번 설치</b></summary>
             <div class="operator-soop-helper-body">
-              <p><strong>나무위키 + SOOP 로그인 글 + FM코리아 공개글</strong>을 같은 브라우저 수집 큐로 처리합니다. 로그인 아이디·비밀번호·쿠키·세션 토큰은 수집하거나 팬사이트 서버로 전송하지 않습니다.</p>
+              <p><strong>나무위키 + SOOP 공개/애청자/로그인 글 + FM코리아 공개글</strong>을 같은 브라우저 수집 큐로 처리합니다. SOOP 애청자 글은 자동 공개하고, 구독자 전용·비공개·기타 로그인 제한 글만 검토 대상으로 남깁니다. 로그인 아이디·비밀번호·쿠키·세션 토큰은 수집하거나 팬사이트 서버로 전송하지 않습니다.</p>
               <div class="operator-collector-status" data-unified-collector-status>
                 <strong>자동 수집기 연결 대기</strong><span>설치 후 이 운영자 센터를 새로 열면 자동 연결됩니다.</span>
               </div>
               <div class="operator-soop-helper-actions">
                 <a href="/chunbong-content-collector.user.js" target="_blank" rel="noopener" data-collector-install>자동 수집기 설치 / 업데이트</a>
+                <button type="button" data-collector-watch-start>SOOP 상시 감시 시작</button>
+                <button type="button" data-collector-self-test>수집기 지금 점검</button>
+                <button type="button" data-collector-watch-stop>상시 감시 중지</button>
                 <button type="button" data-collector-run-namu>나무위키 대기 자료 자동 수집</button>
                 <button type="button" data-collector-backfill-soop>SOOP 전체 기록 1회 수집</button>
                 <button type="button" data-collector-open-soop>SOOP 신규 글 확인</button>
@@ -204,17 +207,18 @@
               <ol>
                 <li>Chrome의 userscript 관리자(Tampermonkey 등)에 위 스크립트를 <b>1회 설치</b>합니다.</li>
                 <li>나무위키는 운영자 센터의 대기 목록을 한 번에 열어 본문·<b>i.namu.wiki</b> 이미지를 자동 수집합니다.</li>
-                <li>SOOP은 최초에 <b>SOOP 전체 기록 1회 수집</b>을 실행하면 과거 게시판까지 순차적으로 훑습니다. 이미 처리한 글은 건너뛰고 중단 시 이어서 진행합니다. 완료 뒤에는 <b>SOOP 신규 글 확인</b>으로 새 글만 증분 수집합니다.</li>
-                <li>SOOP 일반 공개글은 비로그인 상태에서도 열리는지 별도 확인해 공개 자료로 자동 연결합니다. 애청자·로그인 제한 글은 자동 연결 시 내부 자료로 유지하되, 운영자가 외부 공개 권한을 확인한 경우 수집 원문함에서 직접 <b>공개로 전환</b>할 수 있습니다.</li>
+                <li>SOOP은 최초에 <b>SOOP 전체 기록 1회 수집</b>을 실행하면 과거 게시판까지 순차적으로 훑습니다. 이후 <b>SOOP 상시 감시 시작</b>을 켜두면 백그라운드 탭이 약 5분 간격으로 신규 게시글을 확인합니다.</li>
+                <li>SOOP 일반 공개글과 <b>애청자 글은 자동 수집 → 자동 매칭 → 자동 공개</b>합니다. 구독자 전용·비공개·기타 로그인 제한 글은 내부 자료로 저장하고 운영자 확인 후에만 공개할 수 있습니다.</li>
                 <li>FM코리아는 <b>비로그인 상태에서도 열리는 공개 게시글만</b> 익명 재확인 후 수집합니다. 춘봉·레오펠·그냥서버·춘타클 등 관련 제목은 목록에서도 자동 감지합니다.</li>
-                <li>FM코리아 공개글은 매칭이 확실한 기존 콘텐츠에 <b>내부 검증 자료로 자동 연결</b>하고, 동일 글 번호는 중복 수집하지 않습니다. 팬사이트 공개 화면에는 FM코리아 출처명과 원문 링크를 표시하지 않습니다. SOOP 로그인 제한 글은 자동 공개하지 않고 운영자 승인 시에만 공개합니다.</li>
+                <li>FM코리아 공개글은 매칭이 확실한 기존 콘텐츠에 <b>내부 검증 자료로 자동 연결</b>하고, 동일 글 번호는 중복 수집하지 않습니다. 팬사이트 공개 화면에는 FM코리아 출처명과 원문 링크를 표시하지 않습니다.</li>
+                <li>상태판은 <b>마지막 생존 신호 · 마지막 SOOP 확인 · 마지막 수집 · 마지막 서버 반영 · 최근 오류</b>를 보여줍니다. 문제가 의심되면 <b>수집기 지금 점검</b>으로 즉시 확인할 수 있습니다.</li>
               </ol>
             </div>
           </details>
           <details class="operator-soop-helper" data-soop-helper>
             <summary><span>SOOP 로그인 글 수동 수집</span><b>자동 수집기 보조</b></summary>
             <div class="operator-soop-helper-body">
-              <p>자동 수집기를 설치하지 않은 경우 사용하는 수동 방식입니다. 로그인된 SOOP 글에서 제목·작성일·본문·이미지만 읽고 인증정보는 읽거나 전송하지 않습니다.</p>
+              <p>자동 수집기를 설치하지 않은 경우 사용하는 수동 방식입니다. 로그인된 SOOP 글에서 제목·작성일·본문·이미지만 읽고 인증정보는 읽거나 전송하지 않습니다. 애청자 글은 연결 시 자동 공개되며, 구독·비공개·기타 로그인 제한 글은 검토 상태로 남습니다.</p>
               <div class="operator-soop-helper-actions">
                 <a href="#" data-soop-bookmarklet draggable="true">SOOP 글 수집</a>
                 <button type="button" data-soop-bookmarklet-copy>북마크 코드 복사</button>
