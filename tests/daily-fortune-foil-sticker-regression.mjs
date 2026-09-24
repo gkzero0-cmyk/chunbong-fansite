@@ -18,7 +18,7 @@ assert.doesNotMatch(css,/dailyFortuneFoilBurstScatter/,'retired v12 flying fragm
 assert.match(css,/Daily Fortune v13/,'current micro foil surface must remain');
 assert.match(css,/retire older card pseudo-prism layers/,'current surface must neutralize legacy pseudo-prism layers');
 
-assert.match(index,/daily-fortune\.css\?v=14/,'fortune CSS cache key must be v14');
-assert.match(index,/daily-fortune\.js\?v=13/,'fortune JS cache key must remain v13');
+assert.match(index,/daily-fortune\.css\?v=15/,'fortune CSS cache key must be v14');
+assert.match(index,/daily-fortune\.js\?v=14/,'fortune JS cache key must remain v13');
 
 console.log('daily fortune retired foil regression passed');
