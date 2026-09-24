@@ -9,12 +9,8 @@ const index=read('index.html');
 assert.doesNotThrow(()=>new Function(js),'daily fortune script must parse');
 
 assert.match(js,/spawnSelectionBurst\(origin\.px, origin\.py\)/,'selection click burst must stay enabled');
-assert.match(js,/spawnFoilPatch\(px, py\)/,'pointer movement must create foil patches');
-assert.match(js,/spawnRevealedFoilBurst\(point\.px, point\.py\)/,'revealed-card click must scatter foil from the click point');
-assert.match(js,/state && cardButton\.classList\.contains\('is-revealed'\)/,'revealed-card click behavior must be separated from card selection');
-assert.match(js,/index < 38/,'revealed-card burst must use a dense foil field');
-assert.match(js,/foilStickerHover: true/,'foil hover capability flag must be exposed');
-assert.match(js,/revealedFoilBurst: true/,'revealed click capability flag must be exposed');
+assert.doesNotMatch(js,/const spawnFoilPatch/,'retired v12 pointer patch generator must stay removed');
+assert.doesNotMatch(js,/const spawnRevealedFoilBurst/,'retired v12 fragment burst generator must stay removed');
 
 assert.match(css,/Holographic foil-sticker surface/,'foil-sticker visual layer must exist');
 assert.match(css,/\.daily-fortune-holo-film\{[\s\S]*?background:none!important/,'old soft prism wash must be disabled');
@@ -27,4 +23,4 @@ assert.doesNotMatch(css,/scale\(calc\(var\(--foil-scale\)/,'unsupported numeric 
 assert.match(index,/daily-fortune\.css\?v=12/,'fortune CSS cache key must be v12');
 assert.match(index,/daily-fortune\.js\?v=12/,'fortune JS cache key must be v12');
 
-console.log('daily fortune foil sticker regression passed');
+console.log('daily fortune retired foil regression passed');
