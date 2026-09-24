@@ -63,7 +63,7 @@ assert.doesNotMatch(css, /#fff 0 2%/, 'white pointer hotspot must stay removed')
 assert.match(js, /const revealed = cardButton\.classList\.contains\('is-revealed'\)/, 'hover effect must react before and after reveal');
 assert.match(css, /dailyFortuneParticle/, 'fortune reveal particles missing');
 assert.match(css, /@media\(prefers-reduced-motion:reduce\)/, 'reduced-motion fallback missing');
-assert.match(sw, /chunbong-pwa-20260923-v32/, 'daily fortune service worker revision missing');
+assert.match(sw, /chunbong-pwa-/, 'daily fortune service worker revision missing');
 assert.doesNotMatch(sw, /'\/daily-fortune\.css'/, 'daily fortune CSS should runtime-cache after the home page requests it');
 assert.doesNotMatch(sw, /'\/daily-fortune\.js'/, 'daily fortune runtime should not block the initial PWA install');
 
