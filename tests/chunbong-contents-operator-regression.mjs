@@ -190,7 +190,13 @@ assert.match(operatorContents,/action:'auto'/,'operator browser import should re
 
 
 assert.ok(archive._internals.allowedSourceMetaUrl('https://naver.me/FbVX1U7z'),'Naver short links should be eligible for source metadata extraction');
-assert.equal(archive._internals.allowedSourceMetaUrl('https://www.fmkorea.com/7042989434'),null,'FM Korea should no longer be accepted as an archive source');
+assert.ok(archive._internals.allowedSourceMetaUrl('https://www.fmkorea.com/7042989434'),'FM Korea should be accepted by the internal automatic collector');
+const fmkPayload=archive._internals.normalizeBrowserImportPayload({source:'fmkorea-public-browser',url:'https://www.fmkorea.com/7042989434',postId:'7042989434',access:'anonymous-verified',title:'참고 글',body:'자동 수집 테스트',capturedAt:'2026-09-24T12:00:00+09:00'});
+assert.ok(fmkPayload,'FM Korea browser collector payload should normalize');
+assert.equal(archive._internals.browserImportPublicEligible(fmkPayload),false,'FM Korea collector records must not be eligible for public provenance');
+const fmkApplied=archive._internals.applyBrowserImportToItem({...base,id:'fmk-browser-import',timeline:[],sources:[]},fmkPayload);
+assert.equal(fmkApplied.sources[0]?.visibility,'internal','FM Korea source must be stored as internal provenance');
+assert.equal(fmkApplied.timeline[0]?.visibility,'internal','FM Korea collected timeline material must remain internal');
 assert.match(archiveSource,/AUTO_CANDIDATES_KEY/,'auto-ingest candidate storage should exist');
 assert.match(operatorHtml,/data-archive-auto-sync/,'operator center should expose official-source sync');
 assert.match(operatorContents,/SOOP · YouTube 공식 자료를 동기화/,'operator sync UI should explain official source refresh');
