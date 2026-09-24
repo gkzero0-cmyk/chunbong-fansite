@@ -50,7 +50,7 @@ assert.match(css, /--glow-x/, 'pointer-follow glow variables missing');
 assert.match(css, /\.daily-fortune-card:before\{[\s\S]*linear-gradient\(118deg[\s\S]*mask-composite:exclude/, '22-card-safe gold-violet border sweep missing');
 assert.match(css, /@keyframes dailyFortuneEdgeSweep/, 'animated tarot border sweep missing');
 assert.match(css, /\.daily-fortune-holo-film/, 'pointer-follow hologram film missing');
-assert.match(css, /\.daily-fortune-holo-ripple,[\s\S]*display:none!important/, 'legacy circular ripple must be visually disabled');
+assert.doesNotMatch(css, /\.daily-fortune-holo-ripple/, 'legacy circular ripple CSS must stay removed');
 assert.match(css, /conic-gradient\(from 215deg at var\(--glow-x\) var\(--glow-y\)/, 'pointer-follow crystal hologram material missing');
 assert.match(css, /2026-09-21 Luxury Tarot Foil/, 'refined luxury foil override missing');
 assert.match(css, /@keyframes dailyFortuneLuxuryRipple/, 'subtle luxury ripple animation missing');
