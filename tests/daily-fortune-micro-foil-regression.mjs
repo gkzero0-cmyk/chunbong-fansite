@@ -25,7 +25,7 @@ assert.match(css,/dailyFortuneMicroSparkle/,'small sparkle accent must exist');
 assert.match(css,/dailyFortuneFoilBloom/,'revealed click foil bloom must exist');
 assert.match(css,/no flying polygons/,'revealed click must explicitly avoid flying polygon styling');
 
-assert.match(index,/daily-fortune\.css\?v=15/,'fortune CSS cache key must be v14');
-assert.match(index,/daily-fortune\.js\?v=14/,'fortune JS cache key must be v13');
+assert.match(index,/daily-fortune\.css\?v=16/,'fortune CSS cache key must be v16');
+assert.match(index,/daily-fortune\.js\?v=15/,'fortune JS cache key must be v13');
 
 console.log('daily fortune micro foil regression passed');
