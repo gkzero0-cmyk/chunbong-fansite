@@ -29,7 +29,7 @@ assert.match(css,/dailyFortuneHorizontalBeam/,'horizontal spin beam must replace
 assert.match(css,/width:174%!important;\s*height:3px!important/,'spin beam must be horizontal');
 assert.match(css,/transition-property:opacity!important/,'pointer hologram must not interpolate its position');
 
-assert.match(index,/daily-fortune\.css\?v=15/,'fortune CSS cache key must be v14');
-assert.match(index,/daily-fortune\.js\?v=14/,'fortune JS cache key must remain v13');
+assert.match(index,/daily-fortune\.css\?v=16/,'fortune CSS cache key must be v16');
+assert.match(index,/daily-fortune\.js\?v=15/,'fortune JS cache key must remain v15');
 
 console.log('daily fortune crystal spin regression passed');
