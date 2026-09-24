@@ -11,8 +11,24 @@ const CREW_BY_LEADER = Object.freeze({
   dstv: '자라섬'
 });
 
+const LEADER_BY_CREW = Object.freeze(
+  Object.fromEntries(Object.entries(CREW_BY_LEADER).map(([station, crew]) => [crew, station]))
+);
+
+const MANUAL_SUMMARY = Object.freeze({
+  '장지수용소': { '207422623': '러닝' },
+  '강씨세가': { '207358053': '1주년' },
+  'ZZAM지트': { '207641333': '소울체인드 합방' }
+});
+
+const EXTRA_SEARCHES = Object.freeze({
+  'ZZAM지트': [{ station: 'zzamta0310', keyword: '소울' }]
+});
+
 const EXCLUDED_BOARD_RE = /자유|잡담|일상|이벤트|event|팬\s*게시판|애청자|이봤/i;
 const NOTICE_BOARD_RE = /공지|공지사항/i;
+const OFFICIAL_BOARD_RE = /공지|공지사항|스케쥴|스케줄|일정|방송알림|크루/i;
+const COLLECTIVE_RE = /크루|크루원|멤버|친구들|전체|다\s*모|1\s*,?\s*2\s*기|함께|같이|with|합방|회의|점호|회식|여행|러닝|1주년|창단|모집|면접|영입|합격/i;
 
 function safeStations(raw = '') {
   const seen = new Set();
@@ -51,22 +67,24 @@ function inferCrew(stations) {
 function detectActivity(raw = '') {
   const text = String(raw || '').replace(/\s+/g, ' ');
   const tests = [
+    [/1\s*주년/i, '1주년'],
+    [/러닝|달리기/i, '러닝'],
+    [/soul\s*chained|소울\s*체인드|체인투게더\s*\+?\s*다크소울/i, '소울체인드 합방'],
     [/정기\s*회의/i, '정기회의'],
     [/비방\s*회의/i, '비방회의'],
     [/회의/i, '회의'],
     [/중계\s*합방/i, '중계합방'],
     [/종겜\s*합방/i, '종겜합방'],
     [/모캡/i, '모캡 합방'],
-    [/체인드/i, '체인드 합방'],
     [/메이드\s*카페/i, '메이드카페'],
+    [/점호/i, '점호'],
     [/합방/i, '합방'],
     [/세미\s*사주|세미사주/i, '세미사주'],
-    [/점호/i, '점호'],
     [/모집/i, '모집'],
     [/면접/i, '면접'],
-    [/합격/i, '합격'],
     [/영입/i, '영입'],
     [/신규\s*멤버|신입\s*멤버/i, '신규 멤버'],
+    [/합격/i, '합격'],
     [/가입/i, '가입'],
     [/탈퇴/i, '탈퇴'],
     [/창단/i, '창단'],
@@ -84,12 +102,18 @@ function detectActivity(raw = '') {
   return '';
 }
 
-function strictCrewPost(post, crew) {
+function parseTime(value = '') {
+  const t = Date.parse(String(value || '').replace(' ', 'T') + '+09:00');
+  return Number.isFinite(t) ? t : 0;
+}
+
+function strictCrewPost(post, crew, station) {
   if (!post || !crew) return null;
   const title = String(post.title || '');
   const body = String(post.contents || '');
   const board = String(post.boardName || '');
   const accessType = String(post.accessType || '');
+  const id = String(post.id || '');
 
   if (accessType === 'favorite' || EXCLUDED_BOARD_RE.test(board)) return null;
 
@@ -98,28 +122,61 @@ function strictCrewPost(post, crew) {
   const bodyCrew = normalize(body).includes(crewToken);
   const boardCrew = normalize(board).includes(crewToken);
   const notice = NOTICE_BOARD_RE.test(board);
-  const activity = detectActivity(title + '\n' + body);
+  const officialBoard = OFFICIAL_BOARD_RE.test(board);
+  const leader = station === LEADER_BY_CREW[crew];
+  const override = MANUAL_SUMMARY[crew] && MANUAL_SUMMARY[crew][id] || '';
+  const activity = override || detectActivity(title + '\n' + body);
 
-  // 단순 생일/휴방/잡담/개인 근황은 크루명이 있어도 크루 소식으로 보지 않는다.
   if (!activity) return null;
 
-  // ① 제목/게시판명에 크루명 + 실제 활동
   const direct = (titleCrew || boardCrew) && Boolean(activity);
-  // ② 공지/공지사항에서 크루명이 본문/제목/게시판에 있고 실제 활동
   const noticeRelated = notice && (titleCrew || bodyCrew || boardCrew) && Boolean(activity);
-  if (!direct && !noticeRelated) return null;
+  const leaderRepresentative = leader && officialBoard && (
+    Boolean(override) ||
+    ((titleCrew || bodyCrew || boardCrew) && COLLECTIVE_RE.test(title + '\n' + body))
+  );
 
-  // 설치된 Apps Script v4가 의미 없는 제목을 본문에서 요약하도록 유도한다.
-  // 본문 첫 줄에 정규화된 "크루명 + 활동"을 넣고 제목은 generic으로 전달한다.
+  if (!leaderRepresentative && !direct && !noticeRelated) return null;
+
+  const representativeTier = leaderRepresentative ? 1 : 2;
+  const summary = override || activity;
+
   return {
     ...post,
     originalTitle: title,
     title: '공지 ' + crew,
-    contents: crew + ' ' + activity + '\n' + body,
+    contents: crew + ' ' + summary + '\n' + body,
     strictCrew: crew,
-    strictActivity: activity,
-    strictPriority: direct ? 1 : 2
+    strictActivity: summary,
+    strictPriority: representativeTier,
+    representativeTier,
+    isCrewLeader: leader,
+    isLeaderRepresentative: leaderRepresentative
   };
+}
+
+async function fetchJson(url, headers = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
+  try {
+    const response = await fetch(url, { signal: controller.signal, headers });
+    const body = await response.json().catch(() => null);
+    return { response, body };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function mergePosts(...lists) {
+  const byId = new Map();
+  for (const list of lists) {
+    for (const post of Array.isArray(list) ? list : []) {
+      const key = String(post && post.id || '');
+      if (!key) continue;
+      byId.set(key, post);
+    }
+  }
+  return [...byId.values()];
 }
 
 async function mapLimit(items, limit, mapper) {
@@ -151,6 +208,7 @@ module.exports = async function handler(req, res) {
   const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim() || 'https';
   const host = String(req.headers['x-forwarded-host'] || req.headers.host || 'chunbong-fansite.vercel.app').split(',')[0].trim();
   const base = proto + '://' + host;
+  const headers = { Accept: 'application/json', 'User-Agent': 'ChunbongCrewSheet/1.2' };
 
   const results = await mapLimit(stations, 5, async station => {
     const params = new URLSearchParams({
@@ -161,31 +219,31 @@ module.exports = async function handler(req, res) {
       end_date: endDate
     });
     const url = base + '/api/crew-news?' + params.toString();
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 12000);
     try {
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          Accept: 'application/json',
-          'User-Agent': 'ChunbongCrewSheet/1.1'
-        }
-      });
-      const body = await response.json().catch(() => null);
+      const { response, body } = await fetchJson(url, headers);
       if (!response.ok || !body || body.ok !== true) {
-        return {
-          station,
-          ok: false,
-          status: response.status,
-          error: body && body.error ? body.error : 'crew_news_failed'
-        };
+        return { station, ok: false, status: response.status, error: body && body.error ? body.error : 'crew_news_failed' };
       }
 
-      const rawPosts = Array.isArray(body.posts) ? body.posts : [];
-      const posts = crew
-        ? rawPosts.map(post => strictCrewPost(post, crew)).filter(Boolean)
-        : rawPosts;
+      let rawPosts = Array.isArray(body.posts) ? body.posts : [];
+      const extras = (EXTRA_SEARCHES[crew] || []).filter(item => item.station === station);
+      for (const extra of extras) {
+        const extraParams = new URLSearchParams({
+          station,
+          per_page: '50',
+          keyword: extra.keyword,
+          start_date: startDate,
+          end_date: endDate
+        });
+        try {
+          const extraFetch = await fetchJson(base + '/api/crew-news?' + extraParams.toString(), headers);
+          if (extraFetch.response.ok && extraFetch.body && extraFetch.body.ok === true) {
+            rawPosts = mergePosts(rawPosts, extraFetch.body.posts);
+          }
+        } catch (_) {}
+      }
 
+      const posts = crew ? rawPosts.map(post => strictCrewPost(post, crew, station)).filter(Boolean) : rawPosts;
       return {
         station,
         ok: true,
@@ -202,22 +260,55 @@ module.exports = async function handler(req, res) {
         status: 0,
         error: error && error.name === 'AbortError' ? 'timeout' : String(error && error.message || error)
       };
-    } finally {
-      clearTimeout(timer);
     }
   });
+
+  let selected = null;
+  if (crew) {
+    const candidates = [];
+    for (const result of results) {
+      if (!result || !result.ok) continue;
+      for (const post of result.posts || []) candidates.push({ ...post, _station: result.station });
+    }
+    candidates.sort((a, b) => {
+      const tier = Number(a.representativeTier || 9) - Number(b.representativeTier || 9);
+      if (tier) return tier;
+      const time = parseTime(b.publishedAt) - parseTime(a.publishedAt);
+      if (time) return time;
+      return Number(Boolean(b.isCrewLeader)) - Number(Boolean(a.isCrewLeader));
+    });
+    selected = candidates[0] || null;
+
+    // 기존 Apps Script가 자체 선정하지 않아도 서버 대표 후보 하나만 보도록 제한한다.
+    for (const result of results) {
+      if (!result || !result.ok) continue;
+      result.posts = selected && result.station === selected._station
+        ? (result.posts || []).filter(post => String(post.id) === String(selected.id))
+        : [];
+      result.count = result.posts.length;
+    }
+  }
 
   const failures = results.filter(item => !item.ok);
   res.setHeader('Cache-Control', 'no-store');
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0,
-    policyVersion: 'strict-v5-server',
+    policyVersion: 'representative-v6-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
     succeeded: results.length - failures.length,
     failed: failures.length,
+    selected: selected ? {
+      id: selected.id,
+      station: selected._station,
+      postUrl: selected.postUrl,
+      summary: selected.strictActivity,
+      publishedAt: selected.publishedAt,
+      representativeTier: selected.representativeTier,
+      isCrewLeader: selected.isCrewLeader
+    } : null,
     results
   });
 };
@@ -227,5 +318,7 @@ module.exports._internals = {
   intParam,
   inferCrew,
   detectActivity,
-  strictCrewPost
+  strictCrewPost,
+  parseTime,
+  mergePosts
 };
