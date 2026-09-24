@@ -327,6 +327,8 @@
   function operatorBridge(){
     let inflight='';
     const autoFlushMode=location.hash.includes(AUTO_FLUSH_OPERATOR_HASH);
+    const initialStatus=collectorStatus();
+    if(!autoFlushMode&&typeof initialStatus.watchEnabled!=='boolean')setCollectorStatus({watchEnabled:true},'SOOP 상시 감시 기본 활성화');
     const handledCommands=new Map();
     const rememberCommand=id=>{
       if(!id)return false;
