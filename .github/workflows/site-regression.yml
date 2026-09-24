@@ -88,6 +88,7 @@ jobs:
           node --check lib/chungwagame-ranking-api.js
           node --check lib/chuncortile-ranking-api.js
           node --check lib/chunbong-data.js
+          node --check lib/deployment-sync.js
           node --check lib/soop-analytics.js
           node --check lib/soop-analytics-base.js
           node --check lib/soop-live-state.js
