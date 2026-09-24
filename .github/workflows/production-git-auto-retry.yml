@@ -46,6 +46,7 @@ jobs:
 
           BODY="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'cache-control: no-cache' "${BASE}/api/version?_ts=$(date +%s)" || true)"
           ACTUAL="$(printf '%s' "$BODY" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(JSON.parse(s).sha||'')}catch{}})")"
+          RUNTIME_SYNCED="$(printf '%s' "$BODY" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{const p=JSON.parse(s);process.stdout.write(String(p.runtimeSynced===true||p.synced===true))}catch{}})")"
 
           RATE_LIMIT_CREATED_AT="$(
             node --input-type=module <<'NODE'
@@ -90,12 +91,14 @@ jobs:
 
           echo "expected=$EXPECTED"
           echo "actual=${ACTUAL:-missing}"
+          echo "runtime_synced=${RUNTIME_SYNCED:-unknown}"
           echo "main_age_seconds=$AGE_SECONDS"
           echo "cooldown_anchor_rate_limit_at=${RATE_LIMIT_CREATED_AT:-none}"
           echo "rate_limit_age_seconds=$RATE_LIMIT_AGE_SECONDS"
 
-          if [[ "$ACTUAL" == "$EXPECTED" ]]; then
+          if [[ "$ACTUAL" == "$EXPECTED" || "$RUNTIME_SYNCED" == "true" ]]; then
             echo "needs_retry=false" >> "$GITHUB_OUTPUT"
+            echo "Production runtime is already synced; no deployment retry is needed."
           elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
             echo "needs_retry=true" >> "$GITHUB_OUTPUT"
           elif [[ -n "$RATE_LIMIT_CREATED_AT" && "$RATE_LIMIT_AGE_SECONDS" -ge 86400 ]]; then
