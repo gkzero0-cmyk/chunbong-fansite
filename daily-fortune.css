@@ -835,3 +835,353 @@
     animation:none!important
   }
 }
+
+
+/* 2026-09-24 · Daily Fortune v11
+   Immediate pointer crystal material + click-origin burst + progressive spin. */
+.daily-fortune-stage{
+  --burst-x:50%;
+  --burst-y:50%;
+}
+
+/* Hover is now a local material response. No floating lens and no trailing position easing. */
+.daily-fortune-holo-lens,
+.daily-fortune-holo-crystals{display:none!important}
+
+.daily-fortune-holo-surface{
+  overflow:hidden!important;
+  border-radius:22px!important;
+  opacity:1!important
+}
+.daily-fortune-holo-film{
+  inset:0!important;
+  border-radius:22px!important;
+  opacity:0!important;
+  transform:none!important;
+  transition:opacity .08s ease!important;
+  animation:none!important;
+  background:
+    radial-gradient(ellipse 22% 17% at var(--glow-x) var(--glow-y),
+      rgba(255,255,255,.98) 0 3%,
+      rgba(220,252,255,.82) 5%,
+      rgba(105,229,255,.50) 11%,
+      rgba(160,128,255,.37) 18%,
+      rgba(255,143,220,.25) 25%,
+      rgba(255,224,127,.22) 32%,
+      transparent 47%),
+    repeating-conic-gradient(from calc(var(--prism-angle) - 22deg) at var(--glow-x) var(--glow-y),
+      transparent 0deg 8deg,
+      rgba(133,238,255,.26) 10deg 14deg,
+      rgba(174,132,255,.34) 17deg 21deg,
+      rgba(255,142,222,.27) 24deg 28deg,
+      rgba(255,225,132,.31) 31deg 36deg,
+      rgba(126,239,213,.22) 39deg 44deg,
+      transparent 47deg 58deg),
+    linear-gradient(calc(118deg + var(--prism-angle)),
+      transparent 18%,
+      rgba(105,229,255,.12) 32%,
+      rgba(165,128,255,.18) 42%,
+      rgba(255,146,219,.14) 51%,
+      rgba(255,224,130,.17) 60%,
+      rgba(121,236,215,.12) 70%,
+      transparent 82%)!important;
+  background-size:100% 100%,132% 132%,190% 190%!important;
+  background-position:center,var(--glow-x) var(--glow-y),var(--glow-x) var(--glow-y)!important;
+  mix-blend-mode:screen!important;
+  filter:saturate(1.6) contrast(1.11) brightness(1.08)!important;
+  -webkit-mask-image:radial-gradient(ellipse 41% 34% at var(--glow-x) var(--glow-y),
+    #000 0 22%,rgba(0,0,0,.96) 43%,rgba(0,0,0,.56) 66%,transparent 91%)!important;
+  mask-image:radial-gradient(ellipse 41% 34% at var(--glow-x) var(--glow-y),
+    #000 0 22%,rgba(0,0,0,.96) 43%,rgba(0,0,0,.56) 66%,transparent 91%)!important
+}
+.daily-fortune-stage:hover .daily-fortune-holo-film,
+.daily-fortune-stage.is-prism-active .daily-fortune-holo-film{opacity:.98!important}
+
+.daily-fortune-stage:hover .daily-fortune-card:after,
+.daily-fortune-stage.is-prism-active .daily-fortune-card:after{
+  opacity:.88!important;
+  transition:opacity .08s ease!important;
+  background:
+    radial-gradient(ellipse 18% 14% at var(--glow-x) var(--glow-y),
+      rgba(255,255,255,.66) 0 5%,
+      rgba(129,228,255,.30) 20%,
+      rgba(174,127,255,.19) 39%,
+      transparent 68%),
+    linear-gradient(122deg,
+      transparent 20%,
+      rgba(105,225,255,.15) 35%,
+      rgba(170,130,255,.22) 46%,
+      rgba(255,153,220,.16) 54%,
+      rgba(255,224,132,.18) 62%,
+      transparent 76%)!important;
+  background-position:var(--glow-x) var(--glow-y)!important;
+  mix-blend-mode:screen!important
+}
+.daily-fortune-stage:hover .daily-fortune-card:before,
+.daily-fortune-stage.is-prism-active .daily-fortune-card:before{
+  opacity:.44!important;
+  animation:none!important;
+  background:linear-gradient(118deg,
+    transparent 18%,rgba(113,230,255,.58) 35%,rgba(172,130,255,.50) 44%,
+    rgba(255,151,219,.42) 52%,rgba(255,224,128,.50) 61%,transparent 80%)!important
+}
+
+/* Click-origin crystal burst. The pointer location becomes the source of the effect. */
+.daily-fortune-click-burst{
+  position:absolute;
+  z-index:13;
+  width:56px;
+  height:56px;
+  margin:-28px 0 0 -28px;
+  pointer-events:none;
+  border-radius:50%;
+  transform:scale(.18);
+  opacity:0;
+  background:
+    radial-gradient(circle,
+      rgba(255,255,255,.98) 0 4%,
+      rgba(200,250,255,.80) 8%,
+      rgba(103,227,255,.48) 15%,
+      rgba(174,126,255,.38) 23%,
+      rgba(255,137,216,.30) 31%,
+      rgba(255,224,124,.28) 40%,
+      transparent 61%);
+  box-shadow:
+    0 0 16px rgba(255,255,255,.78),
+    0 0 38px rgba(107,226,255,.54),
+    0 0 68px rgba(169,119,255,.38);
+  mix-blend-mode:screen;
+  animation:dailyFortuneCrystalBurst .86s cubic-bezier(.08,.66,.14,1) forwards
+}
+.daily-fortune-click-burst::before,
+.daily-fortune-click-burst::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  pointer-events:none;
+  border-radius:50%;
+  transform:translate(-50%,-50%) scale(.25);
+  opacity:0
+}
+.daily-fortune-click-burst::before{
+  width:150%;
+  height:150%;
+  border:2px solid rgba(178,245,255,.78);
+  box-shadow:
+    0 0 14px rgba(255,255,255,.54),
+    0 0 34px rgba(111,223,255,.40),
+    inset 0 0 18px rgba(180,128,255,.28);
+  animation:dailyFortuneCrystalRing .82s cubic-bezier(.08,.62,.14,1) .02s forwards
+}
+.daily-fortune-click-burst::after{
+  width:230%;
+  height:230%;
+  border:1px solid rgba(198,143,255,.55);
+  box-shadow:0 0 28px rgba(255,146,219,.28),0 0 46px rgba(255,220,126,.18);
+  animation:dailyFortuneCrystalRing .86s cubic-bezier(.08,.62,.14,1) .08s forwards
+}
+.daily-fortune-click-burst>i{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:9px;
+  height:22px;
+  margin:-11px 0 0 -4.5px;
+  clip-path:polygon(50% 0,100% 58%,62% 100%,14% 70%,0 34%);
+  background:linear-gradient(145deg,
+    rgba(255,255,255,.94),rgba(112,231,255,.62) 28%,
+    rgba(179,129,255,.60) 52%,rgba(255,149,220,.50) 72%,rgba(255,225,135,.54));
+  box-shadow:0 0 8px rgba(215,250,255,.62),0 0 15px rgba(153,113,255,.34);
+  opacity:0;
+  transform:translate(-50%,-50%) scale(.35);
+  mix-blend-mode:screen;
+  animation:dailyFortuneCrystalShard .72s cubic-bezier(.12,.62,.16,1) var(--burst-delay,0ms) forwards
+}
+@keyframes dailyFortuneCrystalBurst{
+  0%{opacity:0;transform:scale(.14);filter:brightness(1.8)}
+  14%{opacity:1;transform:scale(.48);filter:brightness(1.5)}
+  55%{opacity:.92;transform:scale(2.6);filter:brightness(1.15)}
+  100%{opacity:0;transform:scale(5.3);filter:brightness(1)}
+}
+@keyframes dailyFortuneCrystalRing{
+  0%{opacity:.92;transform:translate(-50%,-50%) scale(.22)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(3.8)}
+}
+@keyframes dailyFortuneCrystalShard{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.25) rotate(0deg)}
+  18%{opacity:.92}
+  100%{opacity:0;transform:translate(calc(-50% + var(--burst-dx)),calc(-50% + var(--burst-dy))) scale(1.05) rotate(var(--burst-rotate))}
+}
+
+/* Priming: energy gathers before the card actually accelerates. */
+.daily-fortune-stage.is-priming .daily-fortune-card-inner{
+  animation:dailyFortunePrime .28s cubic-bezier(.18,.74,.22,1) both!important
+}
+@keyframes dailyFortunePrime{
+  0%{transform:translateY(0) rotateY(0) scale(1);filter:brightness(1)}
+  55%{transform:translateY(-5px) rotateY(12deg) scale(1.028);filter:brightness(1.13)}
+  100%{transform:translateY(-2px) rotateY(28deg) scale(1.018);filter:brightness(1.08)}
+}
+
+/* Acceleration: visibly starts slow and climbs into the hyper-spin. */
+.daily-fortune-stage.is-spinning.is-accelerating .daily-fortune-card-inner{
+  animation:dailyFortuneProgressiveAccel 1.07s cubic-bezier(.38,.02,.88,.42) both!important;
+  opacity:1!important;
+  will-change:transform,opacity,filter
+}
+@keyframes dailyFortuneProgressiveAccel{
+  0%{transform:rotateY(28deg) scaleX(1);opacity:1;filter:blur(0) brightness(1.05)}
+  16%{transform:rotateY(82deg) scaleX(.94);opacity:.98;filter:blur(.05px) brightness(1.06)}
+  34%{transform:rotateY(230deg) scaleX(.76);opacity:.92;filter:blur(.15px) brightness(1.08)}
+  53%{transform:rotateY(590deg) scaleX(.48);opacity:.74;filter:blur(.45px) brightness(1.12)}
+  72%{transform:rotateY(1190deg) scaleX(.25);opacity:.48;filter:blur(.9px) brightness(1.16)}
+  87%{transform:rotateY(1760deg) scaleX(.13);opacity:.27;filter:blur(1.35px) brightness(1.19)}
+  100%{transform:rotateY(2240deg) scaleX(.075);opacity:.12;filter:blur(1.8px) brightness(1.22)}
+}
+
+/* Cruise: ultra-fast but visually stable rather than an immediate jump from idle. */
+.daily-fortune-stage.is-spinning.is-hyper .daily-fortune-card-inner{
+  animation:dailyFortuneCrystalHyperSpin .055s linear infinite!important;
+  opacity:.085!important;
+  filter:blur(2.15px) brightness(1.24)!important;
+  will-change:transform,opacity,filter
+}
+@keyframes dailyFortuneCrystalHyperSpin{
+  0%{transform:rotateY(0deg) scaleX(.075)}
+  25%{transform:rotateY(90deg) scaleX(.022)}
+  50%{transform:rotateY(180deg) scaleX(.075)}
+  75%{transform:rotateY(270deg) scaleX(.022)}
+  100%{transform:rotateY(360deg) scaleX(.075)}
+}
+
+/* Deceleration: fast first, then each visible face lasts longer before the stop. */
+.daily-fortune-stage.is-spinning.is-decelerating .daily-fortune-card-inner{
+  animation:dailyFortuneCrystalDecel .8s cubic-bezier(.12,.64,.12,1) both!important;
+  will-change:transform,opacity,filter
+}
+@keyframes dailyFortuneCrystalDecel{
+  0%{transform:rotateY(0deg) scaleX(.06);opacity:.10;filter:blur(2px) brightness(1.22)}
+  27%{transform:rotateY(1080deg) scaleX(.16);opacity:.22;filter:blur(1.45px) brightness(1.18)}
+  51%{transform:rotateY(1620deg) scaleX(.34);opacity:.43;filter:blur(.88px) brightness(1.13)}
+  70%{transform:rotateY(1890deg) scaleX(.57);opacity:.65;filter:blur(.48px) brightness(1.09)}
+  86%{transform:rotateY(2070deg) scaleX(.82);opacity:.84;filter:blur(.18px) brightness(1.04)}
+  100%{transform:rotateY(2160deg) scaleX(1);opacity:1;filter:blur(0) brightness(1)}
+}
+
+/* Replace the old vertical spindle with wide horizontal energy. */
+.daily-fortune-stage.is-spinning::before,
+.daily-fortune-stage.is-spinning::after{
+  content:""!important;
+  position:absolute!important;
+  z-index:2!important;
+  left:50%!important;
+  top:50%!important;
+  pointer-events:none!important;
+  transform:translate(-50%,-50%)!important;
+  border:0!important;
+  border-radius:50%!important
+}
+.daily-fortune-stage.is-spinning::before{
+  width:188%!important;
+  height:34%!important;
+  opacity:.74!important;
+  background:
+    radial-gradient(ellipse at center,
+      rgba(255,255,255,.42) 0 2%,
+      rgba(119,228,255,.30) 10%,
+      rgba(168,125,255,.26) 23%,
+      rgba(255,147,219,.16) 35%,
+      rgba(255,221,126,.12) 45%,
+      transparent 69%)!important;
+  box-shadow:0 0 34px rgba(113,223,255,.25),0 0 64px rgba(164,112,244,.20)!important;
+  filter:blur(4px)!important;
+  animation:dailyFortuneHorizontalAura .42s ease-in-out infinite alternate!important
+}
+.daily-fortune-stage.is-spinning::after{
+  width:174%!important;
+  height:3px!important;
+  opacity:.88!important;
+  background:linear-gradient(90deg,
+    transparent 0%,
+    rgba(104,218,255,.12) 16%,
+    rgba(171,124,255,.42) 31%,
+    rgba(255,255,255,.94) 48%,
+    rgba(255,227,142,.86) 52%,
+    rgba(255,144,220,.38) 68%,
+    rgba(105,224,255,.13) 84%,
+    transparent 100%)!important;
+  box-shadow:
+    0 0 9px rgba(255,255,255,.66),
+    0 0 22px rgba(107,223,255,.48),
+    0 0 40px rgba(174,119,255,.34)!important;
+  filter:blur(.45px)!important;
+  animation:dailyFortuneHorizontalBeam .18s ease-in-out infinite alternate!important
+}
+@keyframes dailyFortuneHorizontalAura{
+  from{transform:translate(-50%,-50%) scaleX(.92) scaleY(.82)!important;opacity:.48}
+  to{transform:translate(-50%,-50%) scaleX(1.08) scaleY(1.08)!important;opacity:.82}
+}
+@keyframes dailyFortuneHorizontalBeam{
+  from{transform:translate(-50%,-50%) scaleX(.90)!important;opacity:.55}
+  to{transform:translate(-50%,-50%) scaleX(1.10)!important;opacity:1}
+}
+
+/* Existing orbit is reshaped into a horizontal holographic track. */
+.daily-fortune-stage.is-spinning .daily-fortune-orbit{
+  display:block!important;
+  opacity:.78!important;
+  left:50%!important;
+  top:50%!important;
+  inset:auto!important;
+  width:168%!important;
+  height:42%!important;
+  transform:translate(-50%,-50%) rotateX(70deg)!important;
+  border:1px solid rgba(133,230,255,.44)!important;
+  border-radius:50%!important;
+  box-shadow:
+    0 0 18px rgba(111,221,255,.26),
+    inset 0 0 18px rgba(183,126,255,.22),
+    0 0 38px rgba(255,215,123,.10)!important;
+  animation:dailyFortuneHorizontalOrbit .36s linear infinite!important
+}
+@keyframes dailyFortuneHorizontalOrbit{
+  0%{filter:hue-rotate(0deg) brightness(.92)}
+  50%{filter:hue-rotate(45deg) brightness(1.18)}
+  100%{filter:hue-rotate(0deg) brightness(.92)}
+}
+
+/* Energy strength tracks the four spin phases. */
+.daily-fortune-stage.is-spinning.is-accelerating::before,
+.daily-fortune-stage.is-spinning.is-accelerating::after,
+.daily-fortune-stage.is-spinning.is-accelerating .daily-fortune-orbit{animation-duration:.48s!important}
+.daily-fortune-stage.is-spinning.is-hyper::before{opacity:.94!important;filter:blur(5px) brightness(1.18)!important}
+.daily-fortune-stage.is-spinning.is-hyper::after{height:4px!important;opacity:1!important}
+.daily-fortune-stage.is-spinning.is-hyper .daily-fortune-orbit{opacity:.94!important;animation-duration:.14s!important}
+.daily-fortune-stage.is-spinning.is-decelerating::before,
+.daily-fortune-stage.is-spinning.is-decelerating::after,
+.daily-fortune-stage.is-spinning.is-decelerating .daily-fortune-orbit{animation-duration:.62s!important;opacity:.58!important}
+
+/* Click burst remains visible as the spin begins, but the ordinary hover material disappears. */
+.daily-fortune-stage.is-spinning .daily-fortune-holo-surface{opacity:1!important}
+.daily-fortune-stage.is-spinning .daily-fortune-holo-film{opacity:0!important}
+.daily-fortune-stage.is-priming .daily-fortune-holo-film{opacity:.34!important}
+
+/* Keep pointer position changes immediate; only opacity may fade. */
+.daily-fortune-holo-film,
+.daily-fortune-stage:hover .daily-fortune-holo-film,
+.daily-fortune-stage.is-prism-active .daily-fortune-holo-film{
+  transition-property:opacity!important;
+  transition-duration:.08s!important
+}
+
+@media(prefers-reduced-motion:reduce){
+  .daily-fortune-click-burst{display:none!important}
+  .daily-fortune-stage.is-priming .daily-fortune-card-inner,
+  .daily-fortune-stage.is-spinning.is-accelerating .daily-fortune-card-inner,
+  .daily-fortune-stage.is-spinning.is-hyper .daily-fortune-card-inner,
+  .daily-fortune-stage.is-spinning.is-decelerating .daily-fortune-card-inner{animation:none!important;opacity:1!important;filter:none!important}
+  .daily-fortune-stage.is-spinning::before,
+  .daily-fortune-stage.is-spinning::after,
+  .daily-fortune-stage.is-spinning .daily-fortune-orbit{display:none!important}
+}
