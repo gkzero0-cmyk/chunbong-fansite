@@ -197,8 +197,14 @@ function renderDeploymentBanner(){
   if(!currentSystem){box.dataset.state='loading';title.textContent='Production 상태 확인 중';detail.textContent='GitHub main과 실제 배포 버전을 비교하고 있습니다.';return}
   const pending=deploymentGap(currentSystem?.repository?.recentCommits||[],dep.sha,dep.synced);
   if(dep.synced===true){
-    box.dataset.state='ok';title.textContent='Production 최신 상태';
-    detail.textContent='main '+shortSha(dep.mainSha)+' · 실제 배포본과 일치합니다.';
+    box.dataset.state='ok';
+    if(dep.internalOnlyGap&&dep.exactSynced===false){
+      title.textContent='Production 사이트 코드 최신 상태';
+      detail.textContent='배포본 '+shortSha(dep.sha)+' · main '+shortSha(dep.mainSha)+' · CI/테스트/문서 변경만 배포를 생략했습니다.';
+    }else{
+      title.textContent='Production 최신 상태';
+      detail.textContent='main '+shortSha(dep.mainSha)+' · 실제 배포본과 일치합니다.';
+    }
     return;
   }
   if(dep.rateLimited){
@@ -408,7 +414,8 @@ async function loadSystemStatus(){
   const data=await json(API+'operator-system-status');currentSystem=data;
   const dep=data.deployment||{},storage=data.storage||{},services=data.services||{},traffic=data.traffic||{};
   $('#system-production').innerHTML=dep.sha?'<span class="operator-health ok">● READY</span>':'<span class="operator-health bad">● 확인 필요</span>';$('#system-production-meta').textContent=(dep.environment||'-')+' · '+shortSha(dep.sha);
-  $('#system-sync').innerHTML=dep.synced===true?'<span class="operator-health ok">● 동기화</span>':dep.synced===false?'<span class="operator-health warn">● SHA 불일치</span>':'<span class="operator-health warn">● 확인 불가</span>';$('#system-sync-meta').textContent=shortSha(dep.sha)+' / '+shortSha(dep.mainSha);
+  const internalOnlySync=dep.synced===true&&dep.internalOnlyGap&&dep.exactSynced===false;
+  $('#system-sync').innerHTML=dep.synced===true?(internalOnlySync?'<span class="operator-health ok">● 사이트 코드 동기화</span>':'<span class="operator-health ok">● 동기화</span>'):dep.synced===false?'<span class="operator-health warn">● 코드 배포 지연</span>':'<span class="operator-health warn">● 확인 불가</span>';$('#system-sync-meta').textContent=shortSha(dep.sha)+' / '+shortSha(dep.mainSha)+(internalOnlySync?' · CI/테스트 변경만 생략':'');
   $('#system-storage').innerHTML=healthLabel(Boolean(storage.redisOk));$('#system-storage-meta').textContent=storage.redisConfigured?'Redis/KV 연결 '+(storage.redisOk?'정상':'확인 필요'):'저장소 설정 없음';
   $('#system-push').innerHTML=healthLabel(Boolean(services.push));$('#system-push-meta').textContent=services.push?'VAPID 준비됨':'Push 설정 확인 필요';
   $('#system-active').textContent=fmt(traffic.activeNow);$('#system-visitors').textContent=fmt(traffic.visitors);$('#system-sessions').textContent=fmt(traffic.sessions);$('#system-pageviews').textContent=fmt(traffic.pageviews);
