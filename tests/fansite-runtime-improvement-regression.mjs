@@ -24,10 +24,10 @@ assert.match(loader,/daily-fortune\.js\?v=15/,'lazy loader must retain current d
 assert.match(shell,/peek\(key\)/,'shared cache needs a stale snapshot reader');
 assert.match(shell,/staleIfError=false/,'shared cache must expose opt-in stale-on-error behavior');
 assert.match(shell,/if\(staleIfError&&stale\)return stale/,'stale content must be returned only when explicitly requested');
-assert.match(fanartPage,/ttl:15\*60\*1000,staleIfError:true/,'fanart list must use the warm stale-safe browser cache');
-assert.match(fanartApi,/LIST_CACHE_TTL_MS=15\*60\*1000/,'fanart origin list cache must be fifteen minutes');
-assert.match(contentApi,/Vercel-CDN-Cache-Control','fanart route must keep an explicit Vercel edge cache');
-assert.match(contentApi,/max-age=900, stale-while-revalidate=3600/,'fanart list should use a fifteen-minute edge cache with stale fallback');
+assert.match(fanartPage,/ttl:30\*60\*1000,staleIfError:true/,'fanart list must use the warm stale-safe browser cache');
+assert.match(fanartApi,/LIST_CACHE_TTL_MS=30\*60\*1000/,'fanart origin list cache must be thirty minutes');
+assert.match(contentApi,/Vercel-CDN-Cache-Control/,'fanart route must keep an explicit Vercel edge cache');
+assert.match(contentApi,/max-age=1800, stale-while-revalidate=21600/,'fanart list should use a thirty-minute edge cache with stale fallback');
 
 assert.match(operatorHtml,/id="operator-deployment-banner"/,'operator deployment banner missing');
 assert.match(operatorHtml,/DEPLOYMENT STATUS/,'operator deployment banner must be immediately understandable');

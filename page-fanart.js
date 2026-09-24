@@ -14,7 +14,7 @@
     if (!grid || !dialog) return;
     grid.innerHTML = '<div class="loading-card">팬아트를 불러오는 중...</div>';
     const payload = window.ChunbongCache
-      ? await window.ChunbongCache.fetchJson('content:fanart','/api/content?type=fanart',{ttl:15*60*1000,staleIfError:true}).catch(()=>loadContent('fanart'))
+      ? await window.ChunbongCache.fetchJson('content:fanart','/api/content?type=fanart',{ttl:30*60*1000,staleIfError:true}).catch(()=>loadContent('fanart'))
       : await loadContent('fanart');
     const items = Array.isArray(payload.items) ? payload.items : [];
     if (!items.length) {

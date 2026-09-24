@@ -12,10 +12,8 @@ const workflows=[
 
 for(const path of workflows){
   const source=fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
-  for(const prefix of ['internal-','internal/','ci-','docs-','feat/','feature/','perf/','fix/','chore/','ci/','refactor/','test/','hotfix/']){
-    assert.ok(source.includes("!startsWith(github.head_ref, '"+prefix+"')"),path+' must skip Vercel-disabled '+prefix+' branches');
-  }
-  assert.ok(source.includes("github.head_ref != 'data/soop-telemetry'"),path+' must skip data/soop-telemetry');
+  assert.ok(source.includes("github.event_name == 'workflow_dispatch'"),path+' must remain manually runnable');
+  assert.ok(source.includes("contains(github.event.pull_request.labels.*.name, 'vercel-preview')"),path+' must require the vercel-preview label for PR execution');
 }
 for(const key of ['data/soop-telemetry','internal-*','internal/*','ci-*','docs-*','feat/*','feature/*','perf/*','fix/*','chore/*','ci/*','refactor/*','test/*','hotfix/*']){
   assert.equal(disabled[key],false,'vercel disabled branch policy changed: '+key);

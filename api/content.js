@@ -311,9 +311,9 @@ async function handler(req,res) {
   if(forceDataRefresh){
     res.setHeader('Cache-Control','no-store, max-age=0');
   }else if(type==='fanart'){
-    res.setHeader('Cache-Control','public, max-age=30, stale-while-revalidate=300');
-    res.setHeader('CDN-Cache-Control','public, max-age=900, stale-while-revalidate=3600');
-    res.setHeader('Vercel-CDN-Cache-Control','public, max-age=900, stale-while-revalidate=3600');
+    res.setHeader('Cache-Control','public, max-age=60, stale-while-revalidate=900');
+    res.setHeader('CDN-Cache-Control','public, max-age=1800, stale-while-revalidate=21600');
+    res.setHeader('Vercel-CDN-Cache-Control','public, max-age=1800, stale-while-revalidate=21600');
   }else if(type==='fanart-detail'){
     res.setHeader('Cache-Control','public, max-age=300, stale-while-revalidate=1800');
     res.setHeader('CDN-Cache-Control','public, max-age=1800, stale-while-revalidate=3600');

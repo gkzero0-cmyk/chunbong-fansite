@@ -27,7 +27,7 @@ function jpegSize(bytes) {
   throw new Error('JPEG SOF marker not found');
 }
 
-assert.match(tarot, /href="tarot-hero-banner\.css"/, 'tarot page should load the dedicated hero banner stylesheet');
+assert.match(tarot, /href="tarot-bundle\.css\?v=1"/, 'tarot page should load the bundled hero banner stylesheet');
 assert.match(tarot, /class="page-hero tarot-hero"[\s\S]*class="tarot-hero-grid"/, 'tarot hero should use a two-column wrapper');
 assert.doesNotMatch(tarot, /src="assets\/tarot-consult-banner\.webp"/, 'tarot hero must not use the invalid WebP asset');
 assert.match(tarot, /<img[^>]+class="tarot-hero-banner"[^>]+src="assets\/tarot-consult-banner\.jpg"/, 'tarot hero should use the validated JPEG banner');

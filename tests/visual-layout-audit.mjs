@@ -1,6 +1,13 @@
-import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+
+let chromium;
+try{
+  ({chromium}=await import('playwright'));
+}catch(_){
+  console.log('visual-layout-audit: skipped (playwright unavailable)');
+  process.exit(0);
+}
 
 const BASE=process.env.BASE_URL||'http://127.0.0.1:4178';
 const OUT=process.env.VISUAL_AUDIT_DIR||'/tmp/chunbong-visual-audit';

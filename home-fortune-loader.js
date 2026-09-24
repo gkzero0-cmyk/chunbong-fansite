@@ -52,11 +52,14 @@
   }, true);
 
   const warm = () => void loadFortune();
-  if (document.readyState === 'complete') {
-    ('requestIdleCallback' in window ? requestIdleCallback(warm, { timeout:1800 }) : setTimeout(warm, 900));
-  } else {
-    window.addEventListener('load', () => {
-      ('requestIdleCallback' in window ? requestIdleCallback(warm, { timeout:1800 }) : setTimeout(warm, 900));
-    }, { once:true });
+  const fortuneTrigger = document.querySelector('[data-home-overview-fortune]');
+  if (fortuneTrigger) {
+    ['pointerenter','focusin','touchstart'].forEach(type => fortuneTrigger.addEventListener(type, warm, { once:true, passive:true }));
   }
+  const lateWarm = () => {
+    if (document.visibilityState !== 'visible' || navigator.connection?.saveData) return;
+    ('requestIdleCallback' in window ? requestIdleCallback(warm, { timeout:2500 }) : setTimeout(warm, 1200));
+  };
+  if (document.readyState === 'complete') setTimeout(lateWarm, 8000);
+  else window.addEventListener('load', () => setTimeout(lateWarm, 8000), { once:true });
 })();
