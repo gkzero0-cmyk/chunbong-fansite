@@ -1119,12 +1119,12 @@
   animation:dailyFortuneHorizontalBeam .18s ease-in-out infinite alternate!important
 }
 @keyframes dailyFortuneHorizontalAura{
-  from{transform:translate(-50%,-50%) scaleX(.92) scaleY(.82)!important;opacity:.48}
-  to{transform:translate(-50%,-50%) scaleX(1.08) scaleY(1.08)!important;opacity:.82}
+  from{opacity:.48;filter:blur(4px) brightness(.92)}
+  to{opacity:.82;filter:blur(5px) brightness(1.14)}
 }
 @keyframes dailyFortuneHorizontalBeam{
-  from{transform:translate(-50%,-50%) scaleX(.90)!important;opacity:.55}
-  to{transform:translate(-50%,-50%) scaleX(1.10)!important;opacity:1}
+  from{opacity:.55;filter:blur(.45px) brightness(.95)}
+  to{opacity:1;filter:blur(.65px) brightness(1.25)}
 }
 
 /* Existing orbit is reshaped into a horizontal holographic track. */
