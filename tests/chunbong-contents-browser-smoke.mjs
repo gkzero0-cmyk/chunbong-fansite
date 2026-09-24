@@ -301,6 +301,7 @@ try{
     assert.match((await page.locator('.operator-archive-state').textContent())||'',/공개/);
 
     await page.locator('[data-archive-new]').click();
+    await page.locator('[data-archive-advanced-toggle]').click();
     await page.locator('[name="title"]').fill('새 콘텐츠 테스트');
     await page.locator('[name="id"]').fill('new-content-test');
     await page.locator('[name="summary"]').fill('새 콘텐츠 설명');
