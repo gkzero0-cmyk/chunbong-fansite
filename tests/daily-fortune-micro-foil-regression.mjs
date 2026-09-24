@@ -18,13 +18,13 @@ assert.match(js,/microFoilSurface: true/,'micro foil capability flag must be pre
 assert.match(js,/revealedFoilBloom: true/,'foil bloom capability flag must be present');
 
 assert.match(css,/Micro foil surface \+ soft foil bloom/,'v13 foil design must exist');
-assert.match(css,/\.daily-fortune-foil-patch,\s*\.daily-fortune-foil-burst\{display:none!important\}/,'v12 large fragment visuals must be disabled');
+assert.doesNotMatch(css,/Daily Fortune v12/,'retired v12 large-fragment stylesheet must be removed entirely');
 assert.match(css,/radial-gradient\(circle,rgba\(255,255,255,.92\) 0 .7px/,'hover foil must use micro-scale reflective points');
 assert.match(css,/dailyFortuneMicroSparkle/,'small sparkle accent must exist');
 assert.match(css,/dailyFortuneFoilBloom/,'revealed click foil bloom must exist');
 assert.match(css,/no flying polygons/,'revealed click must explicitly avoid flying polygon styling');
 
-assert.match(index,/daily-fortune\.css\?v=13/,'fortune CSS cache key must be v13');
+assert.match(index,/daily-fortune\.css\?v=14/,'fortune CSS cache key must be v14');
 assert.match(index,/daily-fortune\.js\?v=13/,'fortune JS cache key must be v13');
 
 console.log('daily fortune micro foil regression passed');
