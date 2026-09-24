@@ -605,11 +605,11 @@ function renderCollectorInbox(){
   });
   const options=items.map(item=>'<option value="'+esc(item.id)+'">'+esc(item.title)+'</option>').join('');
   list.innerHTML=rows.length?rows.map(row=>{
-    const publicBadge=row.publicEligible?'<span class="operator-collector-access is-public">일반 공개 확인</span>':row.operatorPublicAllowed?'<span class="operator-collector-access is-limited">로그인 제한 · 수동 공개 가능</span>':'<span class="operator-collector-access is-limited">로그인 제한</span>';
+    const isFmk=row.platform==='fmkorea',publicBadge=isFmk?'<span class="operator-collector-access is-limited">내부 검증 전용</span>':row.publicEligible?'<span class="operator-collector-access is-public">일반 공개 확인</span>':row.operatorPublicAllowed?'<span class="operator-collector-access is-limited">로그인 제한 · 수동 공개 가능</span>':'<span class="operator-collector-access is-limited">로그인 제한</span>';
     const thumb=row.thumbnail?'<img src="'+esc(row.thumbnail)+'" alt="">':'<span>'+esc(row.platform==='fmkorea'?'FM':'SO')+'</span>';
     const linked=row.linkedItemId?'<b>'+esc(row.linkedItemTitle||row.linkedItemId)+'</b>':'<b>연결된 콘텐츠 없음</b>';
     const meta=[row.date||'',row.author||'',row.board||'',row.imageCount?('이미지 '+row.imageCount+'장'):''].filter(Boolean).join(' · ');
-    const publicTitle=row.publicEligible?'':' title="로그인 권한으로 수집된 자료입니다. 운영자 판단으로 공개 전환할 수 있습니다."';
+    const publicTitle=row.publicEligible?'':' title="로그인 권한으로 수집된 자료입니다. 운영자 판단으로 공개 전환할 수 있습니다."',showPublicAction=!isFmk&&(row.publicEligible||row.operatorPublicAllowed);
     const ignored=row.state==='ignored';
     return '<article class="operator-collector-inbox-row" data-collector-record="'+esc(row.recordId)+'" data-state="'+esc(row.state)+'">'+
       '<div class="operator-collector-inbox-thumb">'+thumb+'</div>'+
@@ -619,7 +619,7 @@ function renderCollectorInbox(){
       '<div class="operator-collector-inbox-actions">'+
       (ignored?'<button type="button" data-collector-manage="restore">다시 관리</button>':
         '<button type="button" data-collector-manage="connect">'+(row.linkedItemId?'연결 변경':'콘텐츠 연결')+'</button>'+
-        '<button type="button" data-collector-manage="public"'+publicTitle+'>공개로 전환</button>'+
+        (showPublicAction?'<button type="button" data-collector-manage="public"'+publicTitle+'>공개로 전환</button>':'')+
         '<button type="button" data-collector-manage="internal">내부로 전환</button>'+
         '<button type="button" data-collector-manage="ignore">목록에서 무시</button>')+
       '<a href="'+esc(row.url)+'" target="_blank" rel="noopener noreferrer">원문 열기 ↗</a></div>'+
@@ -713,7 +713,7 @@ async function handleUnifiedCollectorImport(message={}){
       const result=await json('operator-content-browser-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'auto',payload})});
       if(result?.matched){
         const title=result.item?.title||'춘봉 콘텐츠';await load();if(result.item?.id)selectItem(result.item.id);
-        setMessage('FM코리아 공개글을 '+title+'에 공개 참고자료로 자동 연결했습니다'+(result.duplicate?' (이미 수집된 글)':'')+'.','ok');
+        setMessage('FM코리아 공개글을 '+title+'에 내부 검증 자료로 자동 연결했습니다'+(result.duplicate?' (이미 수집된 글)':'')+'.','ok');
       }else{
         setMessage('FM코리아 공개글을 수집해 보관했지만 연결할 춘봉 콘텐츠를 확실하게 찾지 못했습니다. 원문은 중복 없이 저장되어 있습니다.','ok');
       }
