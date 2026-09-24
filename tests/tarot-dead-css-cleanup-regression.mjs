@@ -5,7 +5,7 @@ const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const html=read('tarot.html');
 const css=read('tarot.css');
 
-assert.match(html,/href="tarot\.css\?v=2"/,'cleaned tarot stylesheet must be cache-busted');
+assert.match(html,/href="tarot-bundle\.css\?v=1"/,'tarot page must load the generated bundled stylesheet');
 assert.doesNotMatch(html,/tarot-effects-v2\.css/,'unused reveal stylesheet must not load');
 assert.ok(!fs.existsSync(new URL('../tarot-effects-v2.css',import.meta.url)),'unused reveal stylesheet file must stay deleted');
 
