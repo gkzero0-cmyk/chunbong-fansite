@@ -8,6 +8,20 @@ const API_LIST='/api/content?type=chunbong-contents',API_DETAIL='/api/content?ty
 function normalize(v){return String(v||'').toLocaleLowerCase('ko-KR').replace(/\s+/g,' ').trim()}
 function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]))}
 function safeUrl(v){try{const u=new URL(String(v||''),global.location?.href||'https://chunbong-fansite.vercel.app/');return ['http:','https:'].includes(u.protocol)?u.href:''}catch{return''}}
+const ARCHIVE_BASE_PATH='/chunbong-contents.html';
+function contentPath(id=''){const value=String(id||'').trim();return value?'/contents/'+encodeURIComponent(value):ARCHIVE_BASE_PATH}
+function pathContentId(){const path=String(global.location?.pathname||'');const match=path.match(/^\/contents\/([^/?#]+)\/?$/);if(!match)return'';try{return decodeURIComponent(match[1])}catch{return match[1]}}
+function cloudinaryVariant(src,width){
+  const url=safeUrl(src);if(!url||!Number(width)||!/^https:\/\/res\.cloudinary\.com\//i.test(url))return url;
+  const marker='/image/upload/',at=url.indexOf(marker);if(at<0)return url;
+  const rest=url.slice(at+marker.length);if(!/^v\d+\//.test(rest))return url;
+  return url.slice(0,at+marker.length)+'f_auto,q_auto:good,c_limit,w_'+Math.round(width)+'/'+rest;
+}
+function cloudinarySrcset(src){
+  const url=safeUrl(src);if(!url)return'';
+  const rows=[480,720,960,1440].map(width=>[cloudinaryVariant(url,width),width]).filter(([variant])=>variant&&variant!==url);
+  return rows.length===4?rows.map(([variant,width])=>variant+' '+width+'w').join(', '):'';
+}
 function formatDate(v,p='unknown'){if(p==='unknown'||!v)return'날짜 확인 중';if(p==='year')return String(v).slice(0,4)+'년';if(p==='month')return String(v).slice(0,4)+'년 '+Number(String(v).slice(5,7))+'월';const [y,m,d]=String(v).split('-').map(Number);return y&&m&&d?`${y}년 ${m}월 ${d}일`:'날짜 확인 중'}
 function formatRange(item={}){const s=formatDate(item.startDate,item.datePrecision);if(!item.endDate)return s;const p=item.endDate.length===10?'day':item.endDate.length===7?'month':item.endDate.length===4?'year':'unknown',e=formatDate(item.endDate,p);return s===e?s:s+' ~ '+e}
 function itemSeriesId(item){return String(item?.series?.id||item?.id||'')}
@@ -54,14 +68,19 @@ function filterItems(items,{q='',category='all',status='all',year='all',mediaKin
 }
 function sortItems(items,sort='newest'){const d=sort==='oldest'?1:-1;return[...(Array.isArray(items)?items:[])].sort((a,b)=>d*String(a.startDate||'').localeCompare(String(b.startDate||''))||String(a.title||'').localeCompare(String(b.title||''),'ko'))}
 function materialTypeLabel(t){return TYPE_LABELS[t]||'자료'} function categoryLabel(c){return CATEGORY_LABELS[c]||'기타'} function statusLabel(s){return STATUS_LABELS[s]||'종료'}
-const api={formatDate,formatRange,filterItems,sortItems,materialTypeLabel,categoryLabel,statusLabel,allPeople,itemPeopleCount,searchableText};if(typeof module!=='undefined'&&module.exports)module.exports=api;if(!global.document){global.ChunbongContents=api;return}global.ChunbongContents=api;
+const api={formatDate,formatRange,filterItems,sortItems,materialTypeLabel,categoryLabel,statusLabel,allPeople,itemPeopleCount,searchableText,contentPath,cloudinaryVariant};if(typeof module!=='undefined'&&module.exports)module.exports=api;if(!global.document){global.ChunbongContents=api;return}global.ChunbongContents=api;
 const d=global.document,$=s=>d.querySelector(s),els={browser:$('[data-archive-browser]'),list:$('[data-archive-list]'),detail:$('[data-archive-detail]'),search:$('[data-archive-search]'),category:$('[data-archive-category]'),status:$('[data-archive-status]'),year:$('[data-archive-year]'),mediaKind:$('[data-archive-media-kind]'),sort:$('[data-archive-sort]'),count:$('[data-archive-count]'),empty:$('[data-archive-empty]'),lightbox:$('[data-archive-lightbox]'),seriesHome:$('[data-archive-series-home]'),seriesList:$('[data-archive-series-list]'),seriesLanding:$('[data-archive-series-landing]'),seriesCount:$('[data-archive-series-count]'),listHeading:$('[data-archive-list-heading]'),listCopy:$('[data-archive-list-copy]'),history:$('[data-archive-history]')};let allItems=[];
 async function fetchJson(url){if(global.ChunbongCache?.fetchJson)return global.ChunbongCache.fetchJson('content:'+url,url,{ttl:300000});const r=await fetch(url,{headers:{accept:'application/json'}});if(!r.ok){const e=new Error('HTTP '+r.status);e.status=r.status;throw e}return r.json()}
-function queryState(){const p=new URLSearchParams(global.location.search);return{id:p.get('id')||'',session:p.get('session')||'',series:p.get('series')||'',q:p.get('q')||'',category:p.get('category')||'all',status:p.get('status')||'all',year:p.get('year')||'all',mediaKind:p.get('media')||'all',sort:p.get('sort')==='oldest'?'oldest':'newest'}}
-function writeState(next,{push=false}={}){const p=new URLSearchParams();if(next.series)p.set('series',next.series);if(next.id)p.set('id',next.id);if(next.id&&next.session)p.set('session',next.session);if(next.q)p.set('q',next.q);if(next.category&&next.category!=='all')p.set('category',next.category);if(next.status&&next.status!=='all')p.set('status',next.status);if(next.year&&next.year!=='all')p.set('year',next.year);if(next.mediaKind&&next.mediaKind!=='all')p.set('media',next.mediaKind);if(next.sort==='oldest')p.set('sort','oldest');const url=global.location.pathname+(p.size?'?'+p.toString():'');(push?history.pushState:history.replaceState).call(history,null,'',url)}
+function queryState(){const p=new URLSearchParams(global.location.search);return{id:pathContentId()||p.get('id')||'',session:p.get('session')||'',series:p.get('series')||'',q:p.get('q')||'',category:p.get('category')||'all',status:p.get('status')||'all',year:p.get('year')||'all',mediaKind:p.get('media')||'all',sort:p.get('sort')==='oldest'?'oldest':'newest'}}
+function writeState(next,{push=false}={}){const p=new URLSearchParams(),id=String(next.id||'').trim();if(next.series)p.set('series',next.series);if(id&&next.session)p.set('session',next.session);if(next.q)p.set('q',next.q);if(next.category&&next.category!=='all')p.set('category',next.category);if(next.status&&next.status!=='all')p.set('status',next.status);if(next.year&&next.year!=='all')p.set('year',next.year);if(next.mediaKind&&next.mediaKind!=='all')p.set('media',next.mediaKind);if(next.sort==='oldest')p.set('sort','oldest');const path=id?contentPath(id):ARCHIVE_BASE_PATH,url=path+(p.size?'?'+p.toString():'');(push?history.pushState:history.replaceState).call(history,null,'',url)}
 function syncControls(s){if(els.search)els.search.value=s.q;if(els.category)els.category.value=s.category;if(els.status)els.status.value=s.status;if(els.year&&[...els.year.options].some(o=>o.value===s.year))els.year.value=s.year;if(els.mediaKind)els.mediaKind.value=s.mediaKind;if(els.sort)els.sort.value=s.sort}
 function populateYears(items){if(!els.year)return;const cur=queryState().year,years=[...new Set(items.map(i=>String(i.startDate||'').slice(0,4)).filter(y=>/^20\d{2}$/.test(y)))].sort((a,b)=>b.localeCompare(a));els.year.innerHTML='<option value="all">전체 연도</option>'+years.map(y=>`<option value="${y}">${y}년</option>`).join('');if(years.includes(cur))els.year.value=cur}
-function imageMarkup(image,alt='',priority=false){const src=safeUrl(image?.src||image?.thumbnail||image);if(!src)return'<div class="archive-card-media is-fallback"></div>';return`<img src="${escapeHtml(src)}" alt="${escapeHtml(image?.alt||alt)}" loading="${priority?'eager':'lazy'}" decoding="async"${priority?' fetchpriority="high"':''}>`}
+function imageMarkup(image,alt='',priority=false){
+  const original=safeUrl(image?.src||image?.thumbnail||image);if(!original)return'<div class="archive-card-media is-fallback"></div>';
+  const src=cloudinaryVariant(original,priority?1440:720)||original,srcset=cloudinarySrcset(original);
+  const sizes=priority?'(max-width:760px) calc(100vw - 24px), (max-width:1200px) 58vw, 920px':'(max-width:760px) calc(100vw - 24px), (max-width:1200px) 50vw, 560px';
+  return`<img src="${escapeHtml(src)}"${srcset?` srcset="${escapeHtml(srcset)}" sizes="${sizes}"`:''} alt="${escapeHtml(image?.alt||alt)}" loading="${priority?'eager':'lazy'}" decoding="async"${priority?' fetchpriority="high"':''}>`;
+}
 function normalizedImageMarkup(image,alt='',priority=false){const src=safeUrl(image?.src||image?.thumbnail||image);if(!src)return imageMarkup(image,alt,priority);return`<span class="archive-normalized-media" data-archive-normalized-src="${escapeHtml(src)}">${imageMarkup(image,alt,priority)}</span>`}
 function hydrateNormalizedMedia(root=d){root.querySelectorAll('[data-archive-normalized-src]').forEach(node=>{const src=safeUrl(node.dataset.archiveNormalizedSrc||'');if(!src)return;node.style.setProperty('--archive-media-image',`url("${src.replace(/"/g,'%22')}")`)})}
 function buildSeriesGroups(items=allItems){
@@ -132,13 +151,40 @@ function renderSiblingSeriesNav(item){const rows=siblingSeriesItems(item);if(row
 function sourceKindLabel(kind){return SOURCE_KIND_LABELS[kind]||'참고 자료'}
 function cardMarkup(item){
   const people=itemPeopleCount(item),media=(item.media||[]).length;
-  return`<a class="archive-card" href="?id=${encodeURIComponent(item.id)}" data-archive-open="${escapeHtml(item.id)}"><div class="archive-card-media">${normalizedImageMarkup(item.heroImage,item.title)}<div class="archive-card-badges"><span class="archive-chip">${escapeHtml(categoryLabel(item.category))}</span><span class="archive-chip">${escapeHtml(statusLabel(item.status))}</span></div></div><div class="archive-card-copy">${item.series?.title?`<small class="archive-card-series">${escapeHtml(item.series.title)}</small>`:''}<h2>${escapeHtml(item.title)}</h2><p>${escapeHtml(item.summary||'공식 자료를 기반으로 기록을 정리하고 있습니다.')}</p><div class="archive-card-meta"><span>${escapeHtml(formatRange(item))}</span><span>${people?'참가 '+people+'명':escapeHtml(item.role||'주최')}</span><span>${media?'영상 '+media+'개':'출처 '+Number(item.sourceCount||item.sources?.length||0)+'개'}</span></div></div></a>`;
+  return`<a class="archive-card" href="${escapeHtml(contentPath(item.id))}" data-archive-open="${escapeHtml(item.id)}"><div class="archive-card-media">${normalizedImageMarkup(item.heroImage,item.title)}<div class="archive-card-badges"><span class="archive-chip">${escapeHtml(categoryLabel(item.category))}</span><span class="archive-chip">${escapeHtml(statusLabel(item.status))}</span></div></div><div class="archive-card-copy">${item.series?.title?`<small class="archive-card-series">${escapeHtml(item.series.title)}</small>`:''}<h2>${escapeHtml(item.title)}</h2><p>${escapeHtml(item.summary||'공식 자료를 기반으로 기록을 정리하고 있습니다.')}</p><div class="archive-card-meta"><span>${escapeHtml(formatRange(item))}</span><span>${people?'참가 '+people+'명':escapeHtml(item.role||'주최')}</span><span>${media?'영상 '+media+'개':'출처 '+Number(item.sourceCount||item.sources?.length||0)+'개'}</span></div></div></a>`;
 }
 function bindBrokenImages(root=d){hydrateNormalizedMedia(root);root.querySelectorAll('img').forEach(img=>{if(img.dataset.archiveErrorBound)return;img.dataset.archiveErrorBound='1';img.addEventListener('error',()=>{const w=img.parentElement;if(w){img.remove();w.classList.add('is-fallback')}},{once:true})})}
 function renderList(){const s=queryState();syncControls(s);renderSeriesNavigation(s);renderHistory();const rows=sortItems(filterItems(allItems,s),s.sort);els.list.innerHTML=rows.map(cardMarkup).join('');bindBrokenImages(els.list);els.empty.hidden=rows.length>0;els.count.textContent=allItems.length?`전체 ${allItems.length}개 · 현재 ${rows.length}개`:'검증된 콘텐츠 기록을 준비하고 있습니다.';els.list.querySelectorAll('[data-archive-open]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();writeState({...s,id:a.dataset.archiveOpen},{push:true});void renderRoute()}))}
 function resetFilters(){writeState({id:'',session:'',series:'',q:'',category:'all',status:'all',year:'all',mediaKind:'all',sort:'newest'});syncControls(queryState());renderList()}
 function bindToolbar(){const update=()=>{const s=queryState();writeState({...s,id:'',q:els.search?.value||'',category:els.category?.value||'all',status:els.status?.value||'all',year:els.year?.value||'all',mediaKind:els.mediaKind?.value||'all',sort:els.sort?.value||'newest'});renderList()};els.search?.addEventListener('input',update);els.category?.addEventListener('change',update);els.status?.addEventListener('change',update);els.year?.addEventListener('change',update);els.mediaKind?.addEventListener('change',update);els.sort?.addEventListener('change',update);d.querySelectorAll('[data-archive-reset]').forEach(b=>b.addEventListener('click',resetFilters))}
 function sourceMap(item){return new Map((item.sources||[]).map(s=>[s.id,s]))}
+const ARCHIVE_META={
+  title:'춘봉 콘텐츠 | 춘봉 팬사이트',
+  description:'춘봉이 직접 주최하고 기획한 콘텐츠 아카이브',
+  image:'https://chunbong-fansite.vercel.app/assets/chunbong-main.webp'
+};
+function setMeta(selector,attribute,value){
+  let node=d.head.querySelector(selector);
+  if(!node){node=d.createElement('meta');const [name,key]=attribute.split(':');node.setAttribute(name,key);d.head.appendChild(node)}
+  node.setAttribute('content',String(value||''));
+}
+function syncArchiveSeo(item=null){
+  const origin='https://chunbong-fansite.vercel.app';
+  const title=item?`${item.title} | 춘봉 콘텐츠`:ARCHIVE_META.title;
+  const description=String(item?.summary||item?.description||ARCHIVE_META.description).replace(/\s+/g,' ').trim().slice(0,180);
+  const url=origin+(item?contentPath(item.id):ARCHIVE_BASE_PATH);
+  const image=safeUrl(item?.heroImage?.src)||ARCHIVE_META.image;
+  d.title=title;
+  let canonical=d.head.querySelector('link[rel="canonical"]');if(!canonical){canonical=d.createElement('link');canonical.rel='canonical';d.head.appendChild(canonical)}canonical.href=url;
+  setMeta('meta[name="description"]','name:description',description);
+  setMeta('meta[property="og:title"]','property:og:title',title);
+  setMeta('meta[property="og:description"]','property:og:description',description);
+  setMeta('meta[property="og:url"]','property:og:url',url);
+  setMeta('meta[property="og:image"]','property:og:image',image);
+  setMeta('meta[name="twitter:title"]','name:twitter:title',title);
+  setMeta('meta[name="twitter:description"]','name:twitter:description',description);
+  setMeta('meta[name="twitter:image"]','name:twitter:image',image);
+}
 function detailEmpty(message,title='기록을 찾을 수 없습니다'){els.detail.innerHTML=`<div class="archive-empty"><span aria-hidden="true">✦</span><strong>${escapeHtml(title)}</strong><p>${escapeHtml(message)}</p><button type="button" data-archive-back>목록으로 돌아가기</button></div>`;els.detail.querySelector('[data-archive-back]')?.addEventListener('click',()=>{writeState({...queryState(),id:''},{push:true});void renderRoute()})}
 function renderRecordStrip(item){
   const verified=String(item.verifiedAt||'').slice(0,10);
@@ -187,7 +233,8 @@ function notionImageMarkup(image={}){
   const caption=guideImageLabel(image.caption||image.alt||image.filename);
   const sourceUrl=safeUrl(image.sourceUrl||'');
   const sourceLabel=guideProviderLabel(image.provider||'');
-  return `<button type="button" class="archive-guide-image" data-guide-image-src="${escapeHtml(src)}" data-guide-image-alt="${escapeHtml(alt)}" data-guide-image-caption="${escapeHtml(caption||alt)}" data-guide-image-fallback="이미지를 불러오지 못했습니다." data-guide-image-source="${escapeHtml(sourceUrl)}" data-guide-image-source-label="${escapeHtml(sourceLabel)}"><span class="archive-normalized-media" style="--archive-media-image:url('&quot;${escapeHtml(src)}&quot;')"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy" referrerpolicy="no-referrer"></span>${caption?`<small>${escapeHtml(caption)}</small>`:''}</button>`;
+  const display=cloudinaryVariant(src,960)||src,srcset=cloudinarySrcset(src);
+  return `<button type="button" class="archive-guide-image" data-guide-image-src="${escapeHtml(src)}" data-guide-image-alt="${escapeHtml(alt)}" data-guide-image-caption="${escapeHtml(caption||alt)}" data-guide-image-fallback="이미지를 불러오지 못했습니다." data-guide-image-source="${escapeHtml(sourceUrl)}" data-guide-image-source-label="${escapeHtml(sourceLabel)}"><span class="archive-normalized-media" style="--archive-media-image:url('&quot;${escapeHtml(display)}&quot;')"><img src="${escapeHtml(display)}"${srcset?` srcset="${escapeHtml(srcset)}" sizes="(max-width:760px) calc(100vw - 36px), 520px"`:''} alt="${escapeHtml(alt)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></span>${caption?`<small>${escapeHtml(caption)}</small>`:''}</button>`;
 }
 function notionImagesMarkup(section={}){
   const images=(section.images||[]).filter(row=>safeUrl(row?.src));
@@ -407,7 +454,8 @@ function knowledgeImageMarkup(image={},item={}){
   const src=safeUrl(image.src||'');if(!src)return'';
   const source=sourceMap(item).get(image.sourceId);const sourceUrl=source?.url||image.sourceUrl||'';
   const alt=image.alt||image.caption||'자료 이미지';
-  return `<button type="button" class="archive-knowledge-image ${image.layout==='wide'||image.layout==='full'?'is-wide':''}" data-knowledge-image-src="${escapeHtml(src)}" data-knowledge-image-alt="${escapeHtml(alt)}" data-knowledge-image-caption="${escapeHtml(image.caption||alt)}" data-knowledge-image-source="${escapeHtml(safeUrl(sourceUrl))}"><span class="archive-normalized-media" style="--archive-media-image:url('&quot;${escapeHtml(src)}&quot;')"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy"></span>${image.caption?`<small>${escapeHtml(image.caption)}</small>`:''}</button>`;
+  const display=cloudinaryVariant(src,image.layout==='wide'||image.layout==='full'?1440:960)||src,srcset=cloudinarySrcset(src);
+  return `<button type="button" class="archive-knowledge-image ${image.layout==='wide'||image.layout==='full'?'is-wide':''}" data-knowledge-image-src="${escapeHtml(src)}" data-knowledge-image-alt="${escapeHtml(alt)}" data-knowledge-image-caption="${escapeHtml(image.caption||alt)}" data-knowledge-image-source="${escapeHtml(safeUrl(sourceUrl))}"><span class="archive-normalized-media" style="--archive-media-image:url('&quot;${escapeHtml(display)}&quot;')"><img src="${escapeHtml(display)}"${srcset?` srcset="${escapeHtml(srcset)}" sizes="(max-width:760px) calc(100vw - 36px), 720px"`:''} alt="${escapeHtml(alt)}" loading="lazy" decoding="async"></span>${image.caption?`<small>${escapeHtml(image.caption)}</small>`:''}</button>`;
 }
 function renderKnowledgeSection(section,item,{compact=false}={}){
   const cards=(section.cards||[]).slice(0,compact?4:24),flow=(section.flow||[]).slice(0,compact?4:20),chips=(section.chips||[]).slice(0,compact?8:40),images=(section.images||[]).slice(0,compact?2:12);
@@ -570,8 +618,8 @@ function renderDetail(item){
   els.detail.querySelectorAll('[data-archive-sibling]').forEach(b=>b.addEventListener('click',()=>{writeState({...queryState(),series:itemSeriesId(item),id:b.dataset.archiveSibling||'',session:''},{push:true});void renderRoute()}));
   bindSeriesArchive(item);bindBrokenImages(els.detail);bindPersonLinks(els.detail);bindGuideImages(els.detail);bindKnowledgeImages(els.detail);bindLeopelGallery(els.detail,item);bindRelated();
 }
-async function showDetail(id){els.browser.hidden=true;els.detail.hidden=false;els.detail.innerHTML='<div class="archive-empty"><span aria-hidden="true">✦</span><strong>기록을 불러오는 중입니다.</strong><p>공식 자료와 연결하고 있습니다.</p></div>';try{const p=await fetchJson(API_DETAIL+encodeURIComponent(id));if(!p.item)return detailEmpty('목록에서 다른 콘텐츠를 선택해 주세요.');renderDetail(p.item)}catch(e){detailEmpty(e?.status===404?'해당 콘텐츠가 없거나 아직 공개되지 않았습니다.':'자료를 불러오지 못했습니다. 잠시 뒤 다시 확인해 주세요.')}}
-async function renderRoute(){const s=queryState();if(s.id)return showDetail(s.id);els.detail.hidden=true;els.browser.hidden=false;renderList()}
+async function showDetail(id){els.browser.hidden=true;els.detail.hidden=false;els.detail.innerHTML='<div class="archive-empty"><span aria-hidden="true">✦</span><strong>기록을 불러오는 중입니다.</strong><p>공식 자료와 연결하고 있습니다.</p></div>';try{const p=await fetchJson(API_DETAIL+encodeURIComponent(id));if(!p.item)return detailEmpty('목록에서 다른 콘텐츠를 선택해 주세요.');syncArchiveSeo(p.item);renderDetail(p.item)}catch(e){detailEmpty(e?.status===404?'해당 콘텐츠가 없거나 아직 공개되지 않았습니다.':'자료를 불러오지 못했습니다. 잠시 뒤 다시 확인해 주세요.')}}
+async function renderRoute(){const s=queryState();if(s.id){if(!pathContentId())writeState(s);return showDetail(s.id)}syncArchiveSeo();els.detail.hidden=true;els.browser.hidden=false;renderList()}
 async function refreshAfterAutoSync(){
   try{
     const response=await fetch('/api/content?type=content-archive-auto-sync',{method:'POST',headers:{accept:'application/json','content-type':'application/json'},body:'{}'});
