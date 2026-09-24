@@ -229,9 +229,27 @@
       if (reloadOnControllerChange) window.location.reload();
     });
 
+    const resolveServiceWorkerVersion = async () => {
+      const fallback='runtime-v33';
+      const controller=new AbortController();
+      const timer=setTimeout(()=>controller.abort(),1400);
+      try {
+        const response=await fetch('/api/version',{headers:{accept:'application/json'},cache:'no-store',signal:controller.signal});
+        if(!response.ok)return fallback;
+        const payload=await response.json();
+        const raw=String(payload?.sha||payload?.deployed||payload?.mainSha||'').trim();
+        return raw?raw.replace(/[^a-zA-Z0-9._-]/g,'-').slice(0,40):fallback;
+      } catch (_) {
+        return fallback;
+      } finally {
+        clearTimeout(timer);
+      }
+    };
+
     const register = async () => {
       try {
-        const registration = await navigator.serviceWorker.register('/service-worker.js', {
+        const version=await resolveServiceWorkerVersion();
+        const registration = await navigator.serviceWorker.register('/service-worker.js?v='+encodeURIComponent(version), {
           scope: '/',
           updateViaCache: 'none'
         });
