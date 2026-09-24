@@ -615,10 +615,6 @@
   --burst-y:50%;
 }
 
-/* Hover is now a local material response. No floating lens and no trailing position easing. */
-.daily-fortune-holo-lens,
-.daily-fortune-holo-crystals{display:none!important}
-
 .daily-fortune-holo-surface{
   overflow:hidden!important;
   border-radius:22px!important;
