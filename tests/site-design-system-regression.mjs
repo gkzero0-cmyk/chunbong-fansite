@@ -12,7 +12,11 @@ for(const token of [
 
 assert.match(css,/\[data-theme="light"\]/);
 assert.match(css,/\.category-accent\[data-kind="calendar"\]/);
-assert.match(quality,/@import url\("site-design-system\.css"\)/);
+assert.doesNotMatch(quality,/@import url\("site-design-system\.css"\)/,'shared design system should not be serially imported from site-quality.css');
+for(const page of ['index.html','schedule.html','notice.html','vod.html','clips.html','fanart.html','youtube.html','tarot.html','minigames.html','history.html','data.html','changelog.html','myhub.html','chunbong-contents.html']){
+  const html=fs.readFileSync(new URL('../'+page,import.meta.url),'utf8');
+  assert.match(html,/href="site-design-system\.css"/,page+' must load the design system directly for parallel CSS discovery');
+}
 
 const rootBlock=(css.match(/:root\{([\s\S]*?)\}/)||[])[1]||'';
 const dark=[...rootBlock.matchAll(/--accent-(schedule|notice|replay|clips|fanart|youtube|tarot|minigames|history|data|calendar):\s*(#[0-9a-fA-F]{6})/g)].map(m=>m[2].toLowerCase());
