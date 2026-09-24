@@ -23,7 +23,7 @@ assert.equal(Dday.calculate({year:2026,month:11,day:30}).soop.years,3);
 for(const id of ['home-dday-trigger','home-dday-first','home-dday-soop','home-dday-dialog','home-dday-first-years','home-dday-soop-years']){
   assert.match(index,new RegExp(`id="${id}"`),`missing ${id}`);
 }
-assert.match(index,/home-dday\.js/,'home D-day script missing');
+assert.match(index,/home-bundle\.js\?v=1/,'home bundle containing the D-day runtime must load');
 assert.match(index,/<p class="home-dday-date">2020년 7월 3일<\/p>/,'first broadcast date must be plain text');
 assert.match(index,/<p class="home-dday-date">2023년 11월 30일<\/p>/,'SOOP first broadcast date must be plain text');
 assert.doesNotMatch(index,/<p class="home-dday-date"><a\b/,'broadcast dates must not contain links');
