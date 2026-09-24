@@ -513,7 +513,7 @@ const groupMerge=archiveApi._internals.mergeArchiveRows(
   [{...leopelGroupsItem,id:'group-merge'}],
   [{...leopelGroupsItem,id:'group-merge',participantGroups:[]}]
 );
-assert.equal(groupMerge[0].participantGroups.length,8,'기존 저장 레코드가 비어 있어도 seed 참가자 그룹을 보존해야 합니다');
+assert.equal(groupMerge[0].participantGroups.length,10,'기존 저장 레코드가 비어 있어도 최신 seed 참가자 그룹을 보존해야 합니다');
 
 const diamondGroupMerge=archiveApi._internals.mergeArchiveRows(
   [diamondBackfill],
