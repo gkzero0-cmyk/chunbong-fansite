@@ -36,7 +36,7 @@ assert.match(operatorJs,/Production 업데이트 대기/,'operator banner must s
 assert.match(operatorJs,/Vercel 배포 제한/,'operator banner must surface deployment rate limiting');
 
 assert.equal(vercel.git?.deploymentEnabled?.main,true,'main must remain deployable');
-for(const key of ['feat/*','fix/*','chore/*','test/*','hotfix/*','feature/*','perf/*','refactor/*']){
+for(const key of ['feat/*','fix/*','chore/*','test/*','hotfix/*','feature/*','perf/*','refactor/*','improve-*']){
   assert.equal(vercel.git?.deploymentEnabled?.[key],false,key+' must not auto-create Vercel previews');
 }
 
