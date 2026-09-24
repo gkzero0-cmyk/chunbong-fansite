@@ -5,6 +5,7 @@ const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const js=read('daily-fortune.js');
 const css=read('daily-fortune.css');
 const index=read('index.html');
+const loader=read('home-fortune-loader.js');
 
 assert.doesNotThrow(()=>new Function(js),'daily fortune script must parse');
 
@@ -25,7 +26,7 @@ assert.match(css,/dailyFortuneMicroSparkle/,'small sparkle accent must exist');
 assert.match(css,/dailyFortuneFoilBloom/,'revealed click foil bloom must exist');
 assert.match(css,/no flying polygons/,'revealed click must explicitly avoid flying polygon styling');
 
-assert.match(index,/daily-fortune\.css\?v=16/,'fortune CSS cache key must be v16');
-assert.match(index,/daily-fortune\.js\?v=15/,'fortune JS cache key must be v13');
+assert.match(loader,/daily-fortune\.css\?v=16/,'fortune lazy loader must keep CSS cache key v16');
+assert.match(loader,/daily-fortune\.js\?v=15/,'fortune lazy loader must keep JS cache key v15');
 
 console.log('daily fortune micro foil regression passed');
