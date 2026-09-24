@@ -1498,7 +1498,316 @@
           "images": []
         }
       ],
-      "knowledgeSyncedAt": "2026-09-23T20:15:00+09:00"
+      "knowledgeSyncedAt": "2026-09-23T20:15:00+09:00",
+      "participantProfiles": [
+        {
+          "canonicalName": "거지",
+          "displayName": "거지",
+          "aliases": [],
+          "rpName": "멀록",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "구본좌",
+          "displayName": "구본좌",
+          "aliases": [],
+          "rpName": "임걱정",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "김규태",
+          "displayName": "김규태",
+          "aliases": [
+            "김규태_"
+          ],
+          "rpName": "머슴",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "김동백",
+          "displayName": "김동백",
+          "aliases": [],
+          "rpName": "핑구엄마",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "나린인데",
+          "displayName": "나린인데",
+          "aliases": [],
+          "rpName": "나인숙",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "라율",
+          "displayName": "라율",
+          "aliases": [],
+          "rpName": "GM다비",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "란다",
+          "displayName": "란다",
+          "aliases": [],
+          "rpName": "김뻐끔",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "마두",
+          "displayName": "마두",
+          "aliases": [
+            "마두:"
+          ],
+          "rpName": "영포티",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "배민정",
+          "displayName": "배민정",
+          "aliases": [],
+          "rpName": "배달의민족",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "빈쫑",
+          "displayName": "빈쫑",
+          "aliases": [],
+          "rpName": "성진우",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "빵땅콩",
+          "displayName": "빵땅콩",
+          "aliases": [],
+          "rpName": "모방년",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "뽀뽀뇽",
+          "displayName": "뽀뽀뇽",
+          "aliases": [],
+          "rpName": "설명충",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "상어히나",
+          "displayName": "상어히나",
+          "aliases": [],
+          "rpName": "한도비",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "새턴",
+          "displayName": "새턴",
+          "aliases": [],
+          "rpName": "노예",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "여다봄",
+          "displayName": "여다봄",
+          "aliases": [],
+          "rpName": "황봉자",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "연솔이",
+          "displayName": "연솔이",
+          "aliases": [],
+          "rpName": "노예연춘식",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "와앙이",
+          "displayName": "와앙이",
+          "aliases": [
+            "와앙이♪"
+          ],
+          "rpName": "루삥뽕",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "요잉",
+          "displayName": "요잉",
+          "aliases": [
+            "요잉♡"
+          ],
+          "rpName": "예으니",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "우정잉",
+          "displayName": "우정잉",
+          "aliases": [],
+          "rpName": "차카니",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "이티드",
+          "displayName": "이티드",
+          "aliases": [],
+          "rpName": "소심걸",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "이한울",
+          "displayName": "이한울",
+          "aliases": [],
+          "rpName": "이한울",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "임아니",
+          "displayName": "임아니",
+          "aliases": [],
+          "rpName": "안희정",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "첫눈에뿅",
+          "displayName": "첫눈에뿅",
+          "aliases": [],
+          "rpName": "금사빠",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "최르",
+          "displayName": "최르",
+          "aliases": [
+            "최르_"
+          ],
+          "rpName": "성철",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "퍼드",
+          "displayName": "퍼드",
+          "aliases": [],
+          "rpName": "한지우",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "카코_",
+          "displayName": "카코_",
+          "aliases": [],
+          "rpName": "투명인간",
+          "platform": "SOOP",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "건망고",
+          "displayName": "건망고",
+          "aliases": [],
+          "rpName": "마고-800",
+          "platform": "치지직",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "나는 만타",
+          "displayName": "나는 만타",
+          "aliases": [],
+          "rpName": "나는수닝",
+          "platform": "치지직",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "냐류98",
+          "displayName": "냐류98",
+          "aliases": [],
+          "rpName": "냐백숙",
+          "platform": "치지직",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "린시",
+          "displayName": "린시",
+          "aliases": [],
+          "rpName": "요르골",
+          "platform": "치지직",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "마이리",
+          "displayName": "마이리",
+          "aliases": [],
+          "rpName": "마이리타",
+          "platform": "치지직",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "초아해요",
+          "displayName": "초아해요",
+          "aliases": [],
+          "rpName": "토끼겅듀",
+          "platform": "치지직",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        },
+        {
+          "canonicalName": "콩콩",
+          "displayName": "콩콩",
+          "aliases": [],
+          "rpName": "훈삼",
+          "platform": "치지직",
+          "entryRound": "추가 · 미분류",
+          "role": "participant"
+        }
+      ]
     },
     {
       "id": "justserver-moneygame",
