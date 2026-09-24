@@ -2,21 +2,8 @@
   "cleanUrls": false,
   "git": {
     "deploymentEnabled": {
-      "data/soop-telemetry": false,
-      "internal-*": false,
-      "ci-*": false,
-      "docs-*": false,
-      "feat/*": false,
-      "fix/*": false,
-      "chore/*": false,
-      "ci/*": false,
-      "refactor/*": false,
-      "test/*": false,
-      "hotfix/*": false,
-      "main": true,
-      "internal/*": false,
-      "feature/*": false,
-      "perf/*": false
+      "*": false,
+      "main": true
     }
   },
   "headers": [
