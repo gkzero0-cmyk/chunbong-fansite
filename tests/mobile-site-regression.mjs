@@ -4,13 +4,14 @@ import assert from 'node:assert/strict';
 const read=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const css=read('mobile-site.css');
 const js=read('mobile-site.js');
+const mobileLoader=read('mobile-runtime-loader.js');
 
 const pages=['index.html','schedule.html','notice.html','vod.html','clips.html','fanart.html','youtube.html','tarot.html','minigames.html','history.html','data.html','changelog.html','myhub.html'];
 for(const path of pages){
   const html=read(path);
   assert.match(html,/viewport-fit=cover/,`${path} missing mobile safe-area viewport`);
-  assert.match(html,/href="mobile-site\.css"/,`${path} missing mobile-site.css`);
-  assert.match(html,/src="mobile-site\.js"/,`${path} missing mobile-site.js`);
+  assert.match(html,/href="mobile-site\.css\?v=3" media="\(max-width:1024px\), \(display-mode: standalone\)"/,`${path} missing conditional mobile-site.css`);
+  assert.match(html,/src="mobile-runtime-loader\.js\?v=1"/,`${path} missing mobile runtime loader`);
 }
 for(const path of ['chuntris.html','chunbak.html','chungwagame.html','chuncortile.html']){
   const html=read(path);
@@ -33,6 +34,8 @@ assert.match(css,/body\[data-page="data"\] \.data-detail-table\{[\s\S]*overflow:
 assert.match(css,/body\[data-page="changelog"\] #changelog-index-list\{[\s\S]*overflow-x:auto!important/,'changelog mobile date index must stay available as a horizontal scroller');
 assert.match(css,/\.activity-panel\{[\s\S]*bottom:max\(8px,env\(safe-area-inset-bottom\)\)!important/,'activity center must become a mobile bottom sheet');
 
+assert.match(mobileLoader,/matchMedia\('\(max-width:760px\)'\)/,'mobile runtime loader must gate the heavy mobile script');
+assert.match(mobileLoader,/mobile-site\.js\?v=3/,'mobile runtime loader must request the versioned mobile bundle');
 assert.match(js,/mobile-site-nav-open/);
 assert.match(js,/event\.key==='Escape'/);
 assert.match(js,/visualViewport/);
