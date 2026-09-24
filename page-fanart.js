@@ -25,7 +25,7 @@
     grid.innerHTML = items.map((item, index) => `
       <button class="fanart-card reveal" type="button" data-fanart-index="${index}" data-fanart-id="${esc(item.id || '')}">
         <span class="fanart-image" data-fanart-thumb>
-          ${item.thumb ? `<img src="${esc(proxiedImage(item.thumb))}" alt="${esc(item.title || '춘봉 팬아트')}" loading="lazy" decoding="async">` : `<span class="fan-placeholder">${esc(item.symbol || '✦')}</span>`}
+          ${item.thumb ? `<img src="${esc(proxiedImage(item.thumb))}" alt="${esc(item.title || '춘봉 팬아트')}" loading="lazy" decoding="async" fetchpriority="low">` : `<span class="fan-placeholder">${esc(item.symbol || '✦')}</span>`}
         </span>
         <span class="fanart-copy"><strong>${esc(item.title || item.caption || '춘봉 팬아트')}</strong><small>${esc(item.author || 'CHUNBONG FAN ART')}${item.date ? ` · ${esc(item.date)}` : ''}</small></span>
       </button>`).join('');
@@ -58,6 +58,7 @@
           img.alt = button.querySelector('strong')?.textContent || '춘봉 팬아트';
           img.loading = 'lazy';
           img.decoding = 'async';
+          img.fetchPriority = 'low';
           wrap.replaceChildren(img);
         }).catch(()=>{}).finally(() => {
           activeThumbLoads -= 1;

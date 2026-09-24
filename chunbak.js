@@ -673,6 +673,9 @@
       }
     });
   });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && gameState === 'playing') openPauseMenu();
+  });
   document.addEventListener('keydown', event => {
     if (event.key !== 'Escape') return;
     if (modal && !modal.hidden) {

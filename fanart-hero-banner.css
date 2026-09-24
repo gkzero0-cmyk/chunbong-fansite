@@ -6,3 +6,6 @@
 [data-theme="light"] .fanart-hero-banner{box-shadow:0 18px 50px #5c351f28,0 0 32px #ff6b1812}
 @media(max-width:900px){.fanart-hero-grid{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:24px}}
 @media(max-width:700px){.fanart-hero-grid{grid-template-columns:1fr;gap:24px}.fanart-hero-media{justify-self:stretch}.fanart-hero-banner{border-radius:16px}}
+/* Performance: keep original-resolution art while skipping off-screen gallery paint. */
+.fanart-card{content-visibility:auto;contain-intrinsic-size:0 330px}
+@media(max-width:700px){.fanart-card{contain-intrinsic-size:0 390px}}
