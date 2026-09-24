@@ -1,5 +1,5 @@
 const API='/api/content?type=';
-let root=null,items=[],selected=null,booted=false,autoSyncMeta=null,autoCandidates=[],browserImports=[],liveIds=new Set(),editorDirty=false,archiveLoading=false,browserImport=null,namuBrowserImport=null,collectorState={connected:false,queueCount:0,seenCount:0,version:'',soopHistoryCount:0,soopBackfill:{}},collectorImportChain=Promise.resolve();
+let root=null,items=[],selected=null,booted=false,autoSyncMeta=null,autoCandidates=[],browserImports=[],liveIds=new Set(),editorDirty=false,archiveLoading=false,browserImport=null,namuBrowserImport=null,collectorState={connected:false,queueCount:0,seenCount:0,version:'',soopHistoryCount:0,soopBackfill:{},collectorStatus:{}},collectorImportChain=Promise.resolve(),collectorClock=null;
 const sourceMetaCache=new Map();
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -587,6 +587,15 @@ const collectorImportInFlight=new Set();
 
 function collectorInboxStateLabel(state=''){return({unlinked:'연결 필요',internal:'내부 보관 완료',public:'공개 연결 완료',ignored:'무시'}[state]||state||'확인 필요')}
 function collectorInboxPlatformLabel(row={}){return row.platform==='fmkorea'?'FM코리아':'SOOP'}
+function collectorAccessLabel(row={}){
+  if(row.platform==='fmkorea')return'내부 검증 전용';
+  const access=String(row.access||'');
+  if(access==='anonymous-verified')return'일반 공개';
+  if(access==='favorite')return'애청자 · 자동 공개';
+  if(access==='subscriber')return'구독자 전용 · 검토';
+  if(access==='private')return'비공개 · 검토';
+  return'로그인 제한 · 검토';
+}
 function setCollectorInboxMessage(text='',state=''){const el=$('[data-collector-inbox-message]',root);if(!el)return;el.textContent=text||'';el.dataset.state=state||''}
 function renderCollectorInbox(){
   const list=$('[data-collector-inbox-list]',root),total=$('[data-collector-inbox-total]',root),pending=$('[data-collector-inbox-pending]',root),internal=$('[data-collector-inbox-internal]',root),published=$('[data-collector-inbox-public]',root);
@@ -605,11 +614,11 @@ function renderCollectorInbox(){
   });
   const options=items.map(item=>'<option value="'+esc(item.id)+'">'+esc(item.title)+'</option>').join('');
   list.innerHTML=rows.length?rows.map(row=>{
-    const isFmk=row.platform==='fmkorea',publicBadge=isFmk?'<span class="operator-collector-access is-limited">내부 검증 전용</span>':row.publicEligible?'<span class="operator-collector-access is-public">일반 공개 확인</span>':row.operatorPublicAllowed?'<span class="operator-collector-access is-limited">로그인 제한 · 수동 공개 가능</span>':'<span class="operator-collector-access is-limited">로그인 제한</span>';
+    const isFmk=row.platform==='fmkorea',accessLabel=collectorAccessLabel(row),publicBadge='<span class="operator-collector-access '+(row.publicEligible?'is-public':'is-limited')+'">'+esc(accessLabel)+'</span>';
     const thumb=row.thumbnail?'<img src="'+esc(row.thumbnail)+'" alt="">':'<span>'+esc(row.platform==='fmkorea'?'FM':'SO')+'</span>';
     const linked=row.linkedItemId?'<b>'+esc(row.linkedItemTitle||row.linkedItemId)+'</b>':'<b>연결된 콘텐츠 없음</b>';
     const meta=[row.date||'',row.author||'',row.board||'',row.imageCount?('이미지 '+row.imageCount+'장'):''].filter(Boolean).join(' · ');
-    const publicTitle=row.publicEligible?'':' title="로그인 권한으로 수집된 자료입니다. 운영자 판단으로 공개 전환할 수 있습니다."',showPublicAction=!isFmk&&(row.publicEligible||row.operatorPublicAllowed);
+    const publicTitle=row.publicEligible?'':' title="구독·비공개·기타 로그인 제한 자료입니다. 공개 전환 전 운영자 확인이 필요합니다."',showPublicAction=!isFmk&&(row.publicEligible||row.operatorPublicAllowed);
     const ignored=row.state==='ignored';
     return '<article class="operator-collector-inbox-row" data-collector-record="'+esc(row.recordId)+'" data-state="'+esc(row.state)+'">'+
       '<div class="operator-collector-inbox-thumb">'+thumb+'</div>'+
@@ -623,7 +632,7 @@ function renderCollectorInbox(){
         '<button type="button" data-collector-manage="internal">내부로 전환</button>'+
         '<button type="button" data-collector-manage="ignore">목록에서 무시</button>')+
       '<a href="'+esc(row.url)+'" target="_blank" rel="noopener noreferrer">원문 열기 ↗</a></div>'+
-      (!row.publicEligible&&row.platform==='soop'?'<small class="operator-collector-policy">애청자·로그인 제한 글은 자동 공개하지 않습니다. 해당 자료의 외부 공개 권한을 운영자가 확인한 경우 “공개로 전환”을 눌러 공개 참고자료로 사용할 수 있습니다.</small>':'')+
+      (row.reviewRequired&&row.platform==='soop'?'<small class="operator-collector-policy">구독자 전용·비공개·기타 로그인 제한 글은 자동 공개하지 않습니다. 공개 가능 여부를 확인한 뒤 “공개로 전환”을 사용하세요.</small>':'')+
       '</div></article>';
   }).join(''):'<div class="operator-collector-inbox-empty"><strong>조건에 맞는 수집 자료가 없습니다.</strong><span>필터를 바꾸거나 자동 수집을 실행해 주세요.</span></div>';
   rows.forEach(row=>{
@@ -636,8 +645,8 @@ async function manageCollectorInbox(button){
   if(!recordId||!action)return;
   if(['connect','public','internal'].includes(action)&&!itemId){setCollectorInboxMessage('먼저 연결할 춘봉 콘텐츠를 선택해 주세요.','bad');return}
   const row=browserImports.find(entry=>entry.recordId===recordId);
-  if(action==='public'&&row?.platform==='soop'&&!row.publicEligible){
-    const ok=confirm('이 SOOP 글은 로그인/애청자 권한으로 수집된 자료입니다.\n\n공개로 전환하면 팬사이트 방문자에게 이 글을 참고한 제목·날짜·썸네일·원문 링크 등의 자료가 공개될 수 있습니다. 외부 공개 권한을 확인했다면 계속하세요.');
+  if(action==='public'&&row?.platform==='soop'&&row.reviewRequired){
+    const ok=confirm('이 SOOP 글은 '+collectorAccessLabel(row)+' 자료입니다.\n\n공개로 전환하면 팬사이트 방문자에게 제목·날짜·썸네일·원문 링크 등의 자료가 공개될 수 있습니다. 공개 가능 여부를 확인했다면 계속하세요.');
     if(!ok)return;
   }
   button.disabled=true;setCollectorInboxMessage('수집 자료 상태를 변경하고 있습니다.','busy');
@@ -645,7 +654,7 @@ async function manageCollectorInbox(button){
     const result=await json('operator-content-browser-import-manage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId,action,itemId})});
     await load();if(result.item?.id)selectItem(result.item.id);
     const label={connect:'콘텐츠 연결',public:'공개 전환',internal:'내부 전환',ignore:'무시 처리',restore:'관리 복원'}[action]||'변경';
-    setCollectorInboxMessage(label+'이 완료됐습니다.'+(action==='public'&&row?.platform==='soop'&&!row.publicEligible?' · 운영자 승인으로 로그인 제한 자료를 공개 참고자료로 전환했습니다.':''),'ok');
+    setCollectorInboxMessage(label+'이 완료됐습니다.'+(action==='public'&&row?.platform==='soop'&&row.reviewRequired?' · 검토가 필요한 로그인 제한 자료를 운영자 확인 후 공개로 전환했습니다.':''),'ok');
   }catch(error){
     const message=error.message==='browser_import_not_publicly_accessible'?'이 자료는 공개 전환이 허용되지 않는 수집 유형입니다.':error.message==='content_target_required'?'연결할 춘봉 콘텐츠를 선택해 주세요.':'수집 자료 상태를 변경하지 못했습니다: '+error.message;
     setCollectorInboxMessage(message,'bad');
@@ -658,17 +667,46 @@ function bindCollectorInbox(){
   $('[data-collector-inbox-list]',root)?.addEventListener('click',event=>{const button=event.target.closest('[data-collector-manage]');if(button)void manageCollectorInbox(button)});
 }
 
+function collectorRelativeTime(value=''){
+  const at=Date.parse(value||'');if(!at)return'기록 없음';const seconds=Math.max(0,Math.floor((Date.now()-at)/1000));
+  if(seconds<60)return seconds+'초 전';if(seconds<3600)return Math.floor(seconds/60)+'분 전';if(seconds<86400)return Math.floor(seconds/3600)+'시간 전';return Math.floor(seconds/86400)+'일 전';
+}
+function collectorFutureTime(value=''){
+  const at=Date.parse(value||'');if(!at)return'예정 없음';const seconds=Math.max(0,Math.ceil((at-Date.now())/1000));
+  if(seconds<60)return seconds+'초 후';if(seconds<3600)return Math.ceil(seconds/60)+'분 후';return Math.ceil(seconds/3600)+'시간 후';
+}
+function collectorAccessStatusLabel(access=''){
+  return({favorite:'애청자 접근 확인',subscriber:'구독자 전용 확인',restricted:'비공개/제한 확인','anonymous-verified':'일반 공개 확인',authenticated:'로그인 제한 확인'}[String(access||'')]||'아직 확인 기록 없음');
+}
 function renderUnifiedCollectorStatus(){
   const box=$('[data-unified-collector-status]',root);if(!box)return;
   if(!collectorState.connected){
     box.dataset.state='idle';
-    box.innerHTML='<strong>자동 수집기 연결 대기</strong><span>아래 설치 링크로 1회 설치하면 나무위키·SOOP·FM코리아 수집을 같은 큐로 처리합니다.</span>';
+    box.innerHTML='<div class="operator-collector-health-head"><div><strong>자동 수집기 연결 대기</strong><span>자동 수집기 설치 후 운영자 센터를 새로 열어 상태를 확인합니다.</span></div><b>연결 대기</b></div>';
     return;
   }
-  box.dataset.state=collectorState.queueCount?'busy':'ok';
-  const backfill=collectorState.soopBackfill||{},status=String(backfill.status||''),statusText={running:'진행 중',paused:'일시 중단',complete:'완료'}[status]||status;
-  const progress=status?' · SOOP 전체수집 '+statusText+' '+Number(backfill.pagesScanned||0)+'페이지 / '+Number(backfill.handled||0)+'건 처리':'';
-  box.innerHTML='<strong>자동 수집기 연결됨'+(collectorState.version?' · v'+esc(collectorState.version):'')+'</strong><span>전송 대기 '+Number(collectorState.queueCount||0)+'건 · 브라우저에서 확인한 자료 '+Number(collectorState.seenCount||0)+'건 · SOOP 기록 '+Number(collectorState.soopHistoryCount||0)+'건'+progress+'</span>';
+  const status=collectorState.collectorStatus||{},heartbeatAt=Date.parse(status.lastWatcherHeartbeatAt||'')||0,heartbeatAge=heartbeatAt?Date.now()-heartbeatAt:Infinity;
+  const watchEnabled=status.watchEnabled===true,healthy=watchEnabled&&heartbeatAge<3*60*1000,warn=watchEnabled&&heartbeatAge<10*60*1000;
+  const hasError=Boolean(status.lastError)&&Date.parse(status.lastErrorAt||'')>(Date.now()-30*60*1000);
+  const health=healthy&&!hasError?'ok':warn&&!hasError?'warn':watchEnabled?'bad':'idle';
+  const healthLabel=health==='ok'?'정상 감시 중':health==='warn'?'감시 지연':health==='bad'?'감시 중단 확인':'상시 감시 꺼짐';
+  box.dataset.state=health==='ok'?(collectorState.queueCount?'busy':'ok'):health;
+  const backfill=collectorState.soopBackfill||{},backfillStatus=String(backfill.status||''),backfillText={running:'진행 중',paused:'일시 중단',complete:'완료'}[backfillStatus]||'미실행';
+  const recent=browserImports.filter(row=>(Date.parse(row.storedAt||'')||0)>Date.now()-86400000),autoPublic=recent.filter(row=>row.managedAction==='auto-public'||(row.state==='public'&&row.access==='favorite')).length,review=recent.filter(row=>row.reviewRequired&&row.state!=='ignored').length;
+  const events=(Array.isArray(status.events)?status.events:[]).slice(0,8);
+  const lastAccess=collectorAccessStatusLabel(status.lastSoopAccess);
+  box.innerHTML='<div class="operator-collector-health-head"><div><strong>'+esc(healthLabel)+(collectorState.version?' · v'+esc(collectorState.version):'')+'</strong><span>SOOP 상시 감시 상태와 실제 수집·서버 반영 기록을 기준으로 표시합니다.</span></div><b data-health="'+esc(health)+'">'+esc(healthLabel)+'</b></div>'+
+    '<div class="operator-collector-health-grid">'+
+      '<div><span>마지막 생존 신호</span><strong>'+esc(collectorRelativeTime(status.lastWatcherHeartbeatAt))+'</strong><small>'+(status.lastWatcherHeartbeatAt?esc(new Date(status.lastWatcherHeartbeatAt).toLocaleString('ko-KR')):'상시 감시를 시작해 주세요.')+'</small></div>'+
+      '<div><span>마지막 SOOP 확인</span><strong>'+esc(collectorRelativeTime(status.lastScanAt))+'</strong><small>'+(status.lastScanAt?'게시글 '+Number(status.lastScanPostCount||0)+'건 확인 · 신규 '+Number(status.lastDiscoveredCount||0)+'건':'확인 기록 없음')+'</small></div>'+
+      '<div><span>마지막 수집</span><strong>'+esc(collectorRelativeTime(status.lastCaptureAt))+'</strong><small>'+esc(status.lastCapturedTitle||'수집 기록 없음')+'</small></div>'+
+      '<div><span>마지막 서버 반영</span><strong>'+esc(collectorRelativeTime(status.lastServerOkAt))+'</strong><small>'+esc(status.lastServerResult==='matched'?'콘텐츠 자동 연결 완료':status.lastServerResult==='stored'?'수집 자료함 저장 완료':'반영 기록 없음')+'</small></div>'+
+      '<div><span>SOOP 접근 상태</span><strong>'+esc(lastAccess)+'</strong><small>'+(status.lastFavoriteAt?'애청자 확인 '+esc(collectorRelativeTime(status.lastFavoriteAt)):'애청자 접근 확인 기록 없음')+'</small></div>'+
+      '<div><span>다음 확인 예정</span><strong>'+(watchEnabled?esc(collectorFutureTime(status.nextScanAt)):'중지')+'</strong><small>기본 주기 5분 · 백그라운드 탭은 브라우저 정책에 따라 지연될 수 있음</small></div>'+
+    '</div>'+
+    '<div class="operator-collector-health-summary"><span>전송 대기 <b>'+Number(collectorState.queueCount||0)+'</b>건</span><span>SOOP 기록 <b>'+Number(collectorState.soopHistoryCount||0)+'</b>건</span><span>최근 24시간 <b>'+recent.length+'</b>건</span><span>애청자 자동 공개 <b>'+autoPublic+'</b>건</span><span>검토 필요 <b>'+review+'</b>건</span><span>전체수집 <b>'+esc(backfillText)+'</b></span></div>'+
+    (hasError?'<div class="operator-collector-health-alert"><strong>최근 오류</strong><span>'+esc(status.lastError||'확인 필요')+' · '+esc(collectorRelativeTime(status.lastErrorAt))+'</span></div>':'')+
+    '<div class="operator-collector-event-log"><strong>최근 동작</strong>'+(events.length?'<ol>'+events.map(row=>'<li><time>'+esc(collectorRelativeTime(row.at))+'</time><span>'+esc(row.event||'동작 기록')+'</span></li>').join('')+'</ol>':'<p>아직 동작 기록이 없습니다.</p>')+'</div>';
 }
 function collectorPost(type,data={}){
   const command={channel:COLLECTOR_CHANNEL,type,commandId:'cmd-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),...data};
@@ -702,7 +740,7 @@ async function handleUnifiedCollectorImport(message={}){
       const result=await json('operator-content-browser-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'auto',payload})});
       if(result?.matched){
         const title=result.item?.title||'춘봉 콘텐츠';browserImport=null;await load();if(result.item?.id)selectItem(result.item.id);
-        setMessage('SOOP 글을 '+title+'에 자동 연결했습니다. 수집 자료함에서 공개/내부 상태를 바로 확인할 수 있습니다.','ok');
+        const mode=result.autoVisibility==='public'?'자동 공개':'내부 연결';setMessage('SOOP 글을 '+title+'에 '+mode+'했습니다. '+(payload.access==='favorite'?'애청자 글은 운영자 확인 없이 바로 공개됩니다.':'수집 자료함에서 상태를 확인할 수 있습니다.'),'ok');
       }else{
         renderSoopHelper();setMessage('SOOP 글을 수집 자료함에 보관했습니다. 자동 매칭이 확실하지 않아 미연결 상태로 남겼습니다.','ok');
       }
@@ -731,7 +769,7 @@ function bindUnifiedCollector(){
   const handleCollectorData=data=>{
     if(!data||data.channel!==COLLECTOR_CHANNEL)return;
     if(data.type==='state'){
-      collectorState={connected:true,queueCount:Number(data.queueCount||0),seenCount:Number(data.seenCount||0),version:String(data.version||''),soopHistoryCount:Number(data.soopHistoryCount||0),soopBackfill:data.soopBackfill||{}};
+      collectorState={connected:true,queueCount:Number(data.queueCount||0),seenCount:Number(data.seenCount||0),version:String(data.version||''),soopHistoryCount:Number(data.soopHistoryCount||0),soopBackfill:data.soopBackfill||{},collectorStatus:data.collectorStatus||{}};
       renderUnifiedCollectorStatus();return;
     }
     if(data.type==='import'){
@@ -755,6 +793,16 @@ function bindUnifiedCollector(){
     collectorPost('open-urls',{kind:'namuwiki',urls:rows.map(row=>row.url)});
     setMessage('나무위키 수집 대기 '+rows.length+'개를 브라우저 자동 수집 큐로 보냈습니다.','ok');
   });
+  $('[data-collector-watch-start]',root)?.addEventListener('click',()=>{
+    collectorPost('start-soop-watch',{url:'https://www.sooplive.com/station/chunbongtv/post'});
+    setMessage('SOOP 상시 감시를 시작했습니다. 감시 탭은 백그라운드에서 약 5분 간격으로 새 글을 확인합니다.','ok');
+  });
+  $('[data-collector-watch-stop]',root)?.addEventListener('click',()=>{
+    collectorPost('stop-soop-watch');setMessage('SOOP 상시 감시 중지를 요청했습니다.','ok');
+  });
+  $('[data-collector-self-test]',root)?.addEventListener('click',()=>{
+    collectorPost('self-test-soop',{url:'https://www.sooplive.com/station/chunbongtv/post'});setMessage('자동 수집기 자가진단을 실행했습니다. SOOP 게시판 접근과 신규 글 탐색을 확인합니다.','ok');
+  });
   $('[data-collector-backfill-soop]',root)?.addEventListener('click',()=>{
     collectorPost('start-soop-backfill',{url:'https://www.sooplive.com/station/chunbongtv/post'});
     setMessage('SOOP 전체 기록 수집을 시작했습니다. 과거 게시판을 순회하고, 중단되면 다음 실행에서 이어서 진행합니다.','ok');
@@ -774,6 +822,7 @@ function bindUnifiedCollector(){
     if(box){box.dataset.state='busy';box.innerHTML='<strong>자동 수집기 감지됨 · v'+esc(version)+'</strong><span>운영자 센터와 연결을 확인하고 있습니다…</span>'}
   }
   [0,250,900,2200,5000].forEach(delay=>setTimeout(()=>collectorPost('ping'),delay));
+  if(!collectorClock)collectorClock=setInterval(renderUnifiedCollectorStatus,15000);
   renderUnifiedCollectorStatus();
 }
 
@@ -902,6 +951,8 @@ function soopCollectorBookmarklet(){
     const meta=(selector)=>document.querySelector(selector)?.getAttribute('content')||'';
     const title=(meta('meta[property="og:title"]')||document.querySelector('h1')?.textContent||document.title||'').replace(/\\s*[|｜-]\\s*SOOP.*$/i,'').trim();
     const pageText=(document.body?.innerText||'').replace(/\\u00a0/g,' ');
+    const accessText=[...document.querySelectorAll('[class*="grade"],[class*="badge"],[class*="scope"],[class*="permission"],[class*="auth"],[class*="subscribe"],[class*="fan"]')].slice(0,80).map(node=>(node.textContent||'').replace(/\\s+/g,' ').trim()).join(' ')+' '+pageText.slice(0,3500);
+    const access=/구독자\\s*(?:전용|공개|만|이상)?|구독\\s*(?:전용|회원|멤버)/i.test(accessText)?'subscriber':/애청자\\s*(?:전용|공개|만|이상)?/i.test(accessText)?'favorite':'authenticated';
     const dateRaw=meta('meta[property="article:published_time"]')||document.querySelector('time[datetime]')?.getAttribute('datetime')||(pageText.match(/20\\d{2}[.\\/-]\\d{1,2}[.\\/-]\\d{1,2}/)||[])[0]||'';
     const nodes=[...document.querySelectorAll('article,main,[class*="post-content"],[class*="article-content"],[class*="board-content"],[class*="viewer"],[class*="content"]')];
     const candidates=nodes.map(el=>({el,text:(el.innerText||'').trim()})).filter(row=>row.text.length>80).sort((a,b)=>b.text.length-a.text.length);
@@ -912,7 +963,7 @@ function soopCollectorBookmarklet(){
     for(const img of [...(chosen?.querySelectorAll?.('img')||[])].slice(0,80)){
       const src=img.currentSrc||img.src||'';if(/^https:\\/\\//i.test(src))imageSet.add(src);
     }
-    const payload={version:1,source:'soop-authenticated-browser',url:location.href.split('#')[0],title,date:dateRaw,body,images:[...imageSet].slice(0,24),capturedAt:new Date().toISOString()};
+    const payload={version:1,source:'soop-authenticated-browser',url:location.href.split('#')[0],title,date:dateRaw,body,images:[...imageSet].slice(0,24),access,capturedAt:new Date().toISOString()};
     const bytes=new TextEncoder().encode(JSON.stringify(payload));let binary='';for(const byte of bytes)binary+=String.fromCharCode(byte);
     const encoded=btoa(binary);window.open(${JSON.stringify(target)}+'#soop-import='+encodeURIComponent(encoded),'_blank','noopener');
   }catch(error){alert('SOOP 글 수집에 실패했습니다: '+(error?.message||error))}})()`;
@@ -949,7 +1000,8 @@ function renderSoopHelper(){
   box.hidden=false;
   const facts=analyzeSoopImport(browserImport),target=$('[data-soop-import-target]',box);
   $('[data-soop-import-title]',box).textContent=browserImport.title||'제목 확인 필요';
-  $('[data-soop-import-meta]',box).textContent='SOOP 애청자 공개글 · '+(browserImport.date||'날짜 확인 중');
+  const accessText={favorite:'SOOP 애청자 공개글 · 자동 공개',subscriber:'SOOP 구독자 전용글 · 검토 필요','anonymous-verified':'SOOP 일반 공개글',authenticated:'SOOP 로그인 제한글 · 검토 필요'}[browserImport.access]||'SOOP 로그인 글 · 검토 필요';
+  $('[data-soop-import-meta]',box).textContent=accessText+' · '+(browserImport.date||'날짜 확인 중');
   $('[data-soop-import-summary]',box).textContent=String(browserImport.body||'').slice(0,420)||(browserImport.url||'');
   $('[data-soop-import-facts]',box).innerHTML=[
     '<span>본문 '+facts.lineCount+'줄</span>',
@@ -1010,7 +1062,7 @@ async function load(){
   try{
     const p=await json('operator-content-archive');
     items=Array.isArray(p.items)?p.items:[];autoSyncMeta=p.autoSync||null;autoCandidates=Array.isArray(p.candidates)?p.candidates:[];browserImports=Array.isArray(p.browserImports)?p.browserImports:[];liveIds=new Set(Array.isArray(p.liveIds)?p.liveIds.map(String):[]);
-    renderList();renderAutoSyncState();renderCandidates();renderCollectorInbox();renderSoopHelper();renderNamuHelper();renderArchiveWorkflow();
+    renderList();renderAutoSyncState();renderCandidates();renderCollectorInbox();renderUnifiedCollectorStatus();renderSoopHelper();renderNamuHelper();renderArchiveWorkflow();
     publishArchiveHealth(archiveHealthSnapshot(items,autoCandidates,autoSyncMeta,browserImports));setArchiveLoadState('ok');return true;
   }catch(e){
     const message=e.message==='archive_storage_unavailable'?'콘텐츠 저장소를 사용할 수 없습니다.':'콘텐츠 목록을 불러오지 못했습니다: '+String(e.message||'request_failed');

@@ -60,6 +60,10 @@ jobs:
           node --check lib/changelog-history-api.js
           node --check lib/push-notifications-api.js
           node --check lib/operator-center-api.js
+          node --check lib/chunbong-content-archive-api.js
+          node --check lib/chunbong-content-auto-ingest.js
+          node --check operator-contents.js
+          node --check chunbong-content-collector.user.js
           node --check site-analytics.js
           node --check feedback-widget.js
           node --check operator.js
