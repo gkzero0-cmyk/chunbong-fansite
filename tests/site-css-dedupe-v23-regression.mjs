@@ -18,4 +18,5 @@ assert.ok(Buffer.byteLength(mobile,'utf8')<73000,'mobile-site.css must stay belo
 assert.ok(Buffer.byteLength(contents,'utf8')<70000,'chunbong-contents.css must stay below 70KB source budget');
 assert.ok(Buffer.byteLength(operator,'utf8')<81000,'operator.css must stay below 81KB source budget');
 
+// deployment-sync:v23
 console.log('site CSS dedupe v23 regression passed');
