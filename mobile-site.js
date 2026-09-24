@@ -62,12 +62,10 @@
     if(!mobile.matches||document.querySelector('[data-pwa-app-tabbar]'))return;
     const page=body.dataset.page||'home';
     const primaryPages=new Set(['home','schedule','tarot','minigames']);
-    const tabs=[
-      {key:'home',href:'index.html',label:'홈'},
-      {key:'schedule',href:'schedule.html',label:'일정'},
-      {key:'tarot',href:'tarot.html',label:'타로'},
-      {key:'minigames',href:'minigames.html',label:'미니게임'}
-    ];
+    const sharedNav=new Map((window.ChunbongNavigation?.items||[]).map(item=>[item.key,item]));
+    const navItem=(key,label)=>{const item=sharedNav.get(key);return{key,href:item?.href||({home:'index.html',schedule:'schedule.html',tarot:'tarot.html',minigames:'minigames.html'}[key]||key+'.html'),label:label||item?.label||key}};
+    const tabs=[navItem('home','홈'),navItem('schedule','일정'),navItem('tarot','타로'),navItem('minigames','미니게임')];
+    const moreLink=(key,detail,label='')=>{const item=navItem(key,label);return `<a href="${item.href}" data-more-page="${key}"><span>${item.label}</span><small>${detail}</small></a>`};
 
     const bar=document.createElement('nav');
     bar.className='pwa-app-tabbar';
@@ -105,13 +103,14 @@
           <button type="button" class="pwa-app-more-close" aria-label="더보기 닫기">×</button>
         </div>
         <div class="pwa-app-more-grid">
-          <a href="notice.html" data-more-page="notice"><span>공지</span><small>최신 공지</small></a>
-          <a href="vod.html" data-more-page="vod"><span>다시보기</span><small>방송 VOD</small></a>
-          <a href="clips.html" data-more-page="clips"><span>핫클립</span><small>CATCH · 클립</small></a>
-          <a href="fanart.html" data-more-page="fanart"><span>팬아트</span><small>팬 작품</small></a>
-          <a href="youtube.html" data-more-page="youtube"><span>유튜브</span><small>춘봉TV</small></a>
-          <a href="history.html" data-more-page="history"><span>방송 이력</span><small>방송 기록</small></a>
-          <a href="data.html" data-more-page="data"><span>춘봉 데이터</span><small>통계 · 분석</small></a>
+          ${moreLink('contents','주최 · 기획 아카이브')}
+          ${moreLink('notice','최신 공지')}
+          ${moreLink('vod','방송 VOD')}
+          ${moreLink('clips','CATCH · 클립')}
+          ${moreLink('fanart','팬 작품')}
+          ${moreLink('youtube','춘봉TV')}
+          ${moreLink('history','방송 기록')}
+          ${moreLink('data','통계 · 분석')}
           <a href="changelog.html" data-more-page="changelog"><span>업데이트</span><small>변경 기록</small></a>
           <a href="myhub.html" data-more-page="myhub"><span>내 팬허브</span><small>보관함 · 기록</small></a>
           <button type="button" class="pwa-app-more-action" data-mobile-theme-toggle><span>화면 테마</span><small>라이트 · 다크 전환</small></button>
