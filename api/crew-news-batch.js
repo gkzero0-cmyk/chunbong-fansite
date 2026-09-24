@@ -144,7 +144,7 @@ function strictCrewPost(post, crew, station) {
   return {
     ...post,
     originalTitle: title,
-    title: '공지 ' + crew,
+    title: '\u200B' + crew + ' ' + summary,
     contents: crew + ' ' + summary + '\n' + body,
     strictCrew: crew,
     strictActivity: summary,
