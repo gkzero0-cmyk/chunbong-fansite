@@ -106,14 +106,25 @@ jobs:
             iterations:getComputedStyle(el).animationIterationCount,
             opacity:Number(getComputedStyle(el).opacity)
           }));
-          assert.equal(spinStyle.name,'dailyFortuneHyperSpin','fast phase must use the dedicated hyper-spin animation');
-          assert.equal(spinStyle.duration,'0.05s','fast phase must run one turn every 50ms');
-          assert.equal(spinStyle.iterations,'infinite','fast phase must repeat continuously until deceleration');
-          assert.ok(spinStyle.opacity<=0.1,'fast phase must make the card nearly disappear');
+          assert.equal(spinStyle.name,'dailyFortuneProgressiveAccel','spin must begin with the progressive acceleration animation');
+          assert.equal(spinStyle.duration,'1.07s','progressive acceleration must visibly ramp into the hyper-spin');
+          assert.equal(spinStyle.iterations,'1','progressive acceleration must run once before cruise');
+          assert.ok(spinStyle.opacity>0.1,'acceleration must remain visible before the hyper-spin');
           const storageKey = await page.evaluate(() => window.CHUNBONG_DAILY_FORTUNE.STORAGE_KEY);
           assert.equal(await page.evaluate(key => localStorage.getItem(key), storageKey), null, 'daily result must not be persisted before the reveal succeeds');
           await page.waitForTimeout(1900);
           assert.equal(await page.locator('[data-daily-fortune-stage]').evaluate(el=>el.classList.contains('is-spinning')),true,'extended spin should still be visibly spinning near two seconds');
+          assert.equal(await page.locator('[data-daily-fortune-stage]').evaluate(el=>el.classList.contains('is-hyper')),true,'extended spin should reach the hyper-spin cruise phase');
+          const hyperStyle = await page.locator('.daily-fortune-card-inner').evaluate(el => ({
+            name:getComputedStyle(el).animationName,
+            duration:getComputedStyle(el).animationDuration,
+            iterations:getComputedStyle(el).animationIterationCount,
+            opacity:Number(getComputedStyle(el).opacity)
+          }));
+          assert.equal(hyperStyle.name,'dailyFortuneCrystalHyperSpin','cruise phase must use the crystal hyper-spin animation');
+          assert.equal(hyperStyle.duration,'0.055s','hyper-spin must remain ultra-fast');
+          assert.equal(hyperStyle.iterations,'infinite','hyper-spin must repeat until deceleration');
+          assert.ok(hyperStyle.opacity<=0.1,'hyper-spin must visually compress the card');
           assert.equal(await page.locator('[data-daily-fortune-result]').isHidden(), true, 'result must remain hidden during the high-speed back spin');
           assert.equal(await page.locator('[data-daily-fortune-card]').evaluate(el => el.disabled), false, 'draw must remain natively clickable so interrupted states can recover');
           assert.equal(await page.locator('[data-daily-fortune-card]').getAttribute('aria-disabled'), 'true', 'draw must use a logical lock while the card is spinning');
@@ -123,8 +134,8 @@ jobs:
             name:getComputedStyle(el).animationName,
             duration:getComputedStyle(el).animationDuration
           }));
-          assert.equal(decelStyle.name,'dailyFortuneHyperDecelerate','last 400ms must switch to the visible deceleration animation');
-          assert.equal(decelStyle.duration,'0.4s','deceleration must last four tenths of a second');
+          assert.equal(decelStyle.name,'dailyFortuneCrystalDecel','final phase must switch to the visible crystal deceleration animation');
+          assert.equal(decelStyle.duration,'0.8s','crystal deceleration must visibly ease to a stop');
           await page.waitForFunction(() => {
             const key = window.CHUNBONG_DAILY_FORTUNE?.STORAGE_KEY;
             const raw = key ? localStorage.getItem(key) : '';
@@ -161,25 +172,17 @@ jobs:
           assert.equal(await page.locator('[data-daily-fortune-holo]').count(),1,'hologram surface must exist');
           assert.equal(await page.locator('.daily-fortune-holo-ripple').count(),0,'crystal material hover must not spawn legacy circular ripples');
           assert.equal(await page.locator('.daily-fortune-holo-spark').count(),0,'crystal hover should not emit noisy spark particles');
-          await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('.daily-fortune-holo-film')).opacity) >= 0.82);
+          await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('.daily-fortune-holo-film')).opacity) >= 0.8);
           const holo = await page.locator('.daily-fortune-holo-film').evaluate(el=>({
             opacity:Number(getComputedStyle(el).opacity),
             blend:getComputedStyle(el).mixBlendMode,
             background:getComputedStyle(el).backgroundImage
           }));
-          assert.ok(holo.opacity>=0.95&&holo.opacity<=1,'crystal material should be unmistakably visible without becoming opaque artwork');
+          assert.ok(holo.opacity>=0.8&&holo.opacity<=0.9,'micro-foil material should stay visible without overpowering the artwork');
           assert.equal(holo.blend,'screen','crystal material must stay luminous over the artwork');
           assert.match(holo.background,/conic-gradient|radial-gradient/,'pointer hover must render a crystal-prism material');
-          assert.equal(await page.locator('.daily-fortune-holo-lens').count(),1,'reference crystal effect must include one pointer-follow diffraction lens');
-          assert.equal(await page.locator('.daily-fortune-holo-crystals i').count(),6,'reference crystal effect must include six shard highlights');
-          const lens = await page.locator('.daily-fortune-holo-lens').evaluate(el=>({
-            opacity:Number(getComputedStyle(el).opacity),
-            blend:getComputedStyle(el).mixBlendMode,
-            background:getComputedStyle(el).backgroundImage
-          }));
-          assert.ok(lens.opacity>=0.9,'diffraction lens must be clearly visible on hover');
-          assert.equal(lens.blend,'screen','diffraction lens must use luminous screen blending');
-          assert.match(lens.background,/repeating-radial-gradient|conic-gradient/,'diffraction lens must contain spectral rings');
+          assert.equal(await page.locator('.daily-fortune-holo-lens').count(),0,'retired floating diffraction lens must stay removed');
+          assert.equal(await page.locator('.daily-fortune-holo-crystals').count(),0,'retired floating crystal shards must stay removed');
           await page.mouse.move(20,20);
 
           await page.locator('[data-daily-fortune-close]').click();
