@@ -6,6 +6,11 @@ on:
     paths:
       - 'tarot.html'
       - 'tarot.js'
+      - 'tarot-bundle.js'
+      - 'tarot-reading-config.js'
+      - 'tarot-sfx-v2-preload.js'
+      - 'scripts/build-tarot-js.mjs'
+      - 'tests/tarot-js-bundle-regression.mjs'
       - 'tarot-sfx-v2.js'
       - 'tarot.css'
       - 'tarot-quality.css'
@@ -37,6 +42,7 @@ jobs:
           node tests/tarot-clarity-numbered-backs-regression.mjs
           node tests/tarot-selection-fortune-frame-regression.mjs
           node tests/tarot-luxury-foil-zoom-regression.mjs
+          node tests/tarot-js-bundle-regression.mjs
 
       - name: Install Playwright Chromium
         run: |
