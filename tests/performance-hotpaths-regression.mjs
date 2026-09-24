@@ -14,12 +14,12 @@ const chunbak=read('chunbak.js');
 const multiplayer=read('score-race-multiplayer.js');
 
 assert.doesNotMatch(fanartApi,/Promise\.all\(raw\.slice\(0,12\)[\s\S]*map\(enrich\)/,'fanart list must not block on per-post detail enrichment');
-assert.match(fanartApi,/LIST_CACHE_TTL_MS=5\*60\*1000/,'fanart list should keep a warm runtime cache');
+assert.match(fanartApi,/LIST_CACHE_TTL_MS=30\*60\*1000/,'fanart list should keep a thirty-minute warm runtime cache');
 assert.match(fanartPage,/activeThumbLoads < 2/,'fanart thumbnail hydration must have bounded concurrency');
 assert.match(fanartPage,/IntersectionObserver/,'fanart detail images should load near the viewport');
 assert.match(gallery,/ChunbongCache\.fetchJson\('fanart-detail:'\+articleId/,'fanart gallery should reuse session detail cache');
 
-assert.match(api,/Vercel-CDN-Cache-Control','public, max-age=600/,'fanart list needs explicit edge caching');
+assert.match(api,/Vercel-CDN-Cache-Control','public, max-age=1800/,'fanart list needs explicit edge caching');
 assert.match(api,/Vercel-CDN-Cache-Control','public, max-age=3600/,'fanart detail needs a longer edge cache');
 
 assert.match(sw,/const CACHE_NAME = CACHE_PREFIX \+ BUILD_VERSION/,'performance cache must follow the deployed build');
