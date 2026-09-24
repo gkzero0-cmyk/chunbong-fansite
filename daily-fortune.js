@@ -246,10 +246,6 @@
               </span>
               <span class="daily-fortune-holo-surface" data-daily-fortune-holo aria-hidden="true">
                 <span class="daily-fortune-holo-film"></span>
-                <span class="daily-fortune-holo-lens"></span>
-                <span class="daily-fortune-holo-crystals">
-                  <i></i><i></i><i></i><i></i><i></i><i></i>
-                </span>
               </span>
             </button>
           </span>
@@ -696,7 +692,6 @@
       const dx = px - 0.5;
       const dy = py - 0.5;
       const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      const distance = Math.min(1, Math.hypot(dx, dy) * 1.55);
       stage.style.setProperty('--glow-x', (px * 100).toFixed(1) + '%');
       stage.style.setProperty('--glow-y', (py * 100).toFixed(1) + '%');
       stage.style.setProperty('--prism-angle', angle.toFixed(1) + 'deg');
