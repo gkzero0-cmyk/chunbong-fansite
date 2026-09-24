@@ -27,6 +27,12 @@ export function shouldIgnoreFiles(files=[]){
   return normalized.length>0&&normalized.every(isInternalPath);
 }
 
+export function shouldSkipPreview(ref='',forcePreview=''){
+  const branch=String(ref||'').trim();
+  if(!branch||branch==='main')return false;
+  return String(forcePreview||'').trim()!=='1';
+}
+
 export function changedFiles(previousSha='',currentSha='HEAD'){
   if(!previousSha)return [];
   const output=execFileSync('git',['diff','--name-only',previousSha,currentSha],{
@@ -37,6 +43,11 @@ export function changedFiles(previousSha='',currentSha='HEAD'){
 }
 
 export function main(){
+  const ref=String(process.env.VERCEL_GIT_COMMIT_REF||'').trim();
+  if(shouldSkipPreview(ref,process.env.VERCEL_FORCE_PREVIEW)){
+    console.log(`Preview deployment skipped for ${ref}; set VERCEL_FORCE_PREVIEW=1 only for an intentional manual preview.`);
+    process.exit(0);
+  }
   const previousSha=String(process.env.VERCEL_GIT_PREVIOUS_SHA||'').trim();
   const currentSha=String(process.env.VERCEL_GIT_COMMIT_SHA||'HEAD').trim()||'HEAD';
 
