@@ -16,6 +16,7 @@ const LEADER_BY_CREW = Object.freeze(
 );
 
 const MANUAL_SUMMARY = Object.freeze({
+  '조적단': { '207589893': '배그 킬내기 일정 조율' },
   '장지수용소': { '207422623': '러닝' },
   '강씨세가': { '207358053': '1주년' },
   '진드기': { '207893749': '히어로 레드 웰컴 진드기' },
@@ -23,6 +24,8 @@ const MANUAL_SUMMARY = Object.freeze({
 });
 
 const MANUAL_DISPLAY_SUMMARY = Object.freeze({
+  '조적단': { '207589893': '배그 킬내기 일정 조율' },
+  '진드기': { '207893749': '히어로 레드 웰컴 진드기' },
   'ZZAM지트': { '207641333': '소울체인드 합방' }
 });
 
@@ -177,12 +180,9 @@ function strictCrewPost(post, crew, station) {
   const manualDisplay = MANUAL_DISPLAY_SUMMARY[crew] && MANUAL_DISPLAY_SUMMARY[crew][id] || '';
   const displaySummary = manualDisplay || (normalize(summary).includes(crewToken) ? summary : crew + ' ' + summary);
   // Apps Script v4는 후보 허용 판정에서 제목/게시판에 크루명이 있어야 한다.
-  // 표시에서는 크루명 중복을 빼야 하는 manualDisplay의 경우 제목에 크루명을 앞에 붙여
-  // 후보 판정은 통과시키고, Apps Script 요약 단계에서 그 접두 크루명을 제거하게 한다.
-  // 그 외에는 zero-width 접두사를 유지해 "강씨세가 1주년" 같은 의도적 크루명 표기를 보존한다.
-  const compatibilityTitle = manualDisplay
-    ? crew + ' ' + displaySummary
-    : '\u200B' + displaySummary;
+  // 모든 후보 제목을 "크루명 + 표시 요약"으로 전달하고 Apps Script가 첫 크루명만 제거하게 한다.
+  // 이렇게 하면 후보 판정은 통과하면서 zero-width 문자를 전혀 쓰지 않는다.
+  const compatibilityTitle = crew + ' ' + displaySummary;
 
   return {
     ...post,
@@ -270,6 +270,7 @@ module.exports = async function handler(req, res) {
       }
 
       let rawPosts = Array.isArray(body.posts) ? body.posts : [];
+      let extraSearchFailed = false;
       const extras = (EXTRA_SEARCHES[crew] || []).filter(item => item.station === station);
       for (const extra of extras) {
         const extraParams = new URLSearchParams({
@@ -283,8 +284,12 @@ module.exports = async function handler(req, res) {
           const extraFetch = await fetchJson(base + '/api/crew-news?' + extraParams.toString(), headers);
           if (extraFetch.response.ok && extraFetch.body && extraFetch.body.ok === true) {
             rawPosts = mergePosts(rawPosts, extraFetch.body.posts);
+          } else {
+            extraSearchFailed = true;
           }
-        } catch (_) {}
+        } catch (_) {
+          extraSearchFailed = true;
+        }
       }
 
       const posts = crew ? rawPosts.map(post => strictCrewPost(post, crew, station)).filter(Boolean) : rawPosts;
@@ -295,6 +300,7 @@ module.exports = async function handler(req, res) {
         count: posts.length,
         rawCount: rawPosts.length,
         strictFiltered: Boolean(crew),
+        extraSearchFailed,
         posts
       };
     } catch (error) {
@@ -345,21 +351,44 @@ module.exports = async function handler(req, res) {
   }
 
   const failures = results.filter(item => !item.ok);
+  const auxiliaryFailures = results.filter(item => item && item.ok && item.extraSearchFailed);
+  const reliableEmpty = !selected && failures.length === 0 && auxiliaryFailures.length === 0;
+
+  // 후보가 비었는데 일부 방송국/보조 검색이 실패했다면 "소식 없음"이 아니라 조회 실패다.
+  // 200 + 빈 후보를 반환하면 Apps Script가 기존 정상 소식을 지울 수 있으므로 오류 응답으로 보존시킨다.
+  if (crew && !selected && (failures.length > 0 || auxiliaryFailures.length > 0)) {
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(503).json({
+      ok: false,
+      complete: false,
+      error: 'crew_news_incomplete',
+      policyVersion: 'representative-v6.5-server',
+      strictCrew: crew,
+      requested: stations.length,
+      failed: failures.length,
+      auxiliaryFailed: auxiliaryFailures.length,
+      preservePrevious: true
+    });
+  }
+
   res.setHeader('Cache-Control', 'no-store');
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
-    complete: failures.length === 0,
-    policyVersion: 'representative-v6.4-server',
+    complete: failures.length === 0 && auxiliaryFailures.length === 0,
+    policyVersion: 'representative-v6.5-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
     succeeded: results.length - failures.length,
     failed: failures.length,
+    auxiliaryFailed: auxiliaryFailures.length,
+    reliableEmpty,
     selected: selected ? {
       id: selected.id,
       station: selected._station,
       postUrl: selected.postUrl,
       summary: selected.strictActivity,
+      displaySummary: selected.displaySummary || selected.strictActivity,
       publishedAt: selected.publishedAt,
       representativeTier: selected.representativeTier,
       isCrewLeader: selected.isCrewLeader
