@@ -42,7 +42,7 @@ assert.match(css, /dailyFortuneHyperSpin\{[\s\S]*rotateY\(360deg\)/, 'hyper-spin
 assert.match(css, /animation:dailyFortuneHyperSpin \.05s linear infinite!important/, 'hyper-spin must run at twenty rotations per second during the fast phase');
 assert.match(css, /dailyFortuneHyperDecelerate\{[\s\S]*rotateY\(1440deg\)/, 'final 400ms must visibly decelerate through four additional turns');
 assert.doesNotMatch(css, /dailyFortuneBackSpin\{[^}]*rotateZ\(/, 'draw spin must not look like a flat card rotating on the table');
-assert.match(js, /const SPIN_MS = 3000/, 'ultra-fast spin must run for three seconds');
+assert.match(js, /const SPIN_MS = 3250/, 'progressive spin must keep the current 3.25-second timing');
 assert.match(css, /\.daily-fortune-stage\.is-spinning \.daily-fortune-card-inner/, 'spin state styling missing');
 assert.match(css, /\.daily-fortune-card\.is-revealed \.daily-fortune-card-inner\{transform:rotateY\(180deg\) rotateZ\(1turn\)\}/, 'card flip animation missing');
 assert.match(css, /\.daily-fortune-stage\.is-prism-active \.daily-fortune-card/, 'pointer tilt state missing');
@@ -71,7 +71,7 @@ console.log('home daily fortune regression passed');
 assert.match(js,/lastHoverSoundAt >= 5000|now - lastHoverSoundAt >= 5000/,'fortune hover sound must have a long entry cooldown');
 assert.doesNotMatch(js,/spawnHoloRipple\(point\.px, point\.py\)/,'pointer entry and movement must not spawn circular ripples');
 assert.match(css,/opacity:\.07!important;[\s\S]*blur\(2\.2px\)/,'high-speed phase must make the card nearly disappear');
-assert.match(js,/const DECEL_START_MS = 2600/,'final 400ms must be reserved for deceleration');
+assert.match(js,/const DECEL_START_MS = 2450/,'deceleration phase must begin at the current 2.45-second timing');
 assert.match(js,/stage\.classList\.add\('is-decelerating'\)/,'runtime must switch from hyper-spin into the final deceleration phase');
 assert.match(css,/\.daily-fortune-stage:hover \.daily-fortune-holo-film/,'CSS hover fallback must show the crystal film even before JS class activation');
 assert.match(css,/filter:saturate\(1\.55\) contrast\(1\.10\) brightness\(1\.08\)!important/,'crystal film must use a clearly visible premium prism treatment');
