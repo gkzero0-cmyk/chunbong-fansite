@@ -638,7 +638,7 @@
       pendingState = { date: kstDate(), card, drawnAt: new Date().toISOString() };
       const audioCtx = createFortuneAudio();
       try {
-        holo.querySelectorAll('.daily-fortune-foil-patch,.daily-fortune-foil-burst,.daily-fortune-foil-sparkle,.daily-fortune-foil-bloom').forEach(node => node.remove());
+        holo.querySelectorAll('.daily-fortune-foil-sparkle,.daily-fortune-foil-bloom').forEach(node => node.remove());
         spawnSelectionBurst(origin.px, origin.py);
         renderState(true, audioCtx);
         clearDrawFailsafe();
