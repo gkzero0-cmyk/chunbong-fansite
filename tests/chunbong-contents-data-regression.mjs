@@ -484,6 +484,7 @@ assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://example.notion.sit
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d'),'public app.notion.com source metadata URL should be allowed');
 assert.ok(archiveApi._internals.allowedSourceMetaUrl('https://naver.me/FbVX1U7z'),'Naver source metadata URL should be allowed');
 assert.equal(archiveApi._internals.allowedSourceMetaUrl('https://www.fmkorea.com/7042989434'),null,'FM Korea must stay excluded from archive source ingestion');
+assert.equal(archiveApi._internals.normalizeBrowserImportPayload({source:'fmkorea-public-browser',url:'https://www.fmkorea.com/7042989434',postId:'7042989434',access:'anonymous-verified'}),null,'FM Korea browser imports must remain disabled');
 assert.equal(archiveApi._internals.allowedSourceMetaUrl('http://127.0.0.1/private'),null,'local/non-HTTPS source metadata URL must be rejected');
 
 for(const item of seed.items){
