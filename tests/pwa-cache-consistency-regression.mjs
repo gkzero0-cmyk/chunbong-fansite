@@ -5,16 +5,14 @@ import { fileURLToPath } from 'node:url';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
-const version=sw.match(/const CACHE_NAME = '([^']+)'/)?.[1]||'';
-assert.ok(version,'service worker cache version missing');
+assert.match(sw,/const CACHE_PREFIX = 'chunbong-pwa-'/,'service worker cache prefix missing');
+assert.match(sw,/const CACHE_NAME = CACHE_PREFIX \+ BUILD_VERSION/,'service worker cache must be deployment-aware');
 
-const mismatches=[];
+const stale=[];
 for(const name of fs.readdirSync(path.join(root,'tests'))){
-  if(!name.endsWith('.mjs')||name==='pwa-cache-consistency-regression.mjs')continue;
-  const text=fs.readFileSync(path.join(root,'tests',name),'utf8');
-  for(const match of text.matchAll(/chunbong-pwa-\d{8}-v\d+/g)){
-    if(match[0]!==version)mismatches.push(name+': '+match[0]+' != '+version);
-  }
+  if(!name.endsWith('.mjs'))continue;
+  const source=fs.readFileSync(path.join(root,'tests',name),'utf8');
+  for(const match of source.matchAll(/chunbong-pwa-\d{8}-v\d+/g))stale.push(name+': '+match[0]);
 }
-assert.deepEqual(mismatches,[],'stale PWA cache expectations:\n'+mismatches.join('\n'));
-console.log('PWA cache expectation consistency regression passed:',version);
+assert.deepEqual(stale,[],'dated PWA cache literals must not return:\n'+stale.join('\n'));
+console.log('deployment-aware PWA cache consistency passed');
