@@ -1,69 +1,11 @@
 (() => {
   'use strict';
-  const memory=new Map();
-  const CACHE_PREFIX= 'chunbong-cache-v2:';
-  const shouldPersist=key=>
-    String(key).startsWith('content:') ||
-    String(key).startsWith('notice-detail:') ||
-    String(key).startsWith('fanart-detail:') ||
-    String(key) === 'changelog-summary';
-
-  const read = key => {
-    const cached=memory.get(key);
-    if(cached)return cached;
-    if (!shouldPersist(key)) return null;
-    try {
-      const stored = sessionStorage.getItem(CACHE_PREFIX + key);
-      if (!stored) return null;
-      const row = JSON.parse(stored);
-      if (!row || typeof row.at !== 'number' || !('value' in row)) return null;
-      memory.set(key, row);
-      return row;
-    } catch (_) {
-      return null;
-    }
-  };
-
-  const write = (key, value) => {
-    const row = { at: Date.now(), value };
-    memory.set(key, row);
-    if (shouldPersist(key)) {
-      try {
-        sessionStorage.setItem(CACHE_PREFIX + key, JSON.stringify(row));
-      } catch (_) {}
-    }
-    return value;
-  };
-
-  const clear = key => {
-    memory.delete(key);
-    if (shouldPersist(key)) {
-      try { sessionStorage.removeItem(CACHE_PREFIX + key); } catch (_) {}
-    }
-  };
-
-  window.ChunbongCache = {
-    get(key, ttl = 180000) {
-      const row = read(key);
-      if (!row) return null;
-      if (Date.now() - Number(row.at || 0) >= ttl) {
-        clear(key);
-        return null;
-      }
-      return row.value;
-    },
-    set: write,
-    clear,
-    async fetchJson(key, url, { ttl = 180000, force = false, headers = { accept: 'application/json' } } = {}) {
-      if (!force) {
-        const cached = this.get(key, ttl);
-        if (cached) return cached;
-      }
-      const response = await fetch(url, { headers });
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      return write(key, await response.json());
-    }
-  };
+  const memory=new Map(),CACHE_PREFIX='chunbong-cache-v2:';
+  const shouldPersist=key=>/^(?:content:|notice-detail:|fanart-detail:)/.test(String(key))||key==='changelog-summary';
+  const read=key=>{const cached=memory.get(key);if(cached)return cached;if(!shouldPersist(key))return null;try{const stored=sessionStorage.getItem(CACHE_PREFIX+key);if(!stored)return null;const row=JSON.parse(stored);if(!row||typeof row.at!=='number'||!('value'in row))return null;memory.set(key,row);return row}catch{return null}};
+  const write=(key,value)=>{const row={at:Date.now(),value};memory.set(key,row);if(shouldPersist(key))try{sessionStorage.setItem(CACHE_PREFIX+key,JSON.stringify(row))}catch{}return value};
+  const clear=key=>{memory.delete(key);if(shouldPersist(key))try{sessionStorage.removeItem(CACHE_PREFIX+key)}catch{}};
+  window.ChunbongCache={get(key,ttl=180000){const row=read(key);if(!row)return null;if(Date.now()-Number(row.at||0)>=ttl){clear(key);return null}return row.value},set:write,clear,async fetchJson(key,url,{ttl=180000,force=false,headers={accept:'application/json'}}={}){if(!force){const cached=this.get(key,ttl);if(cached)return cached}const response=await fetch(url,{headers});if(!response.ok)throw new Error('HTTP '+response.status);return write(key,await response.json())}};
 
   const d=document,loadStyle=(h,k)=>{if(d.querySelector('link['+k+']'))return;const n=d.createElement('link');n.rel='stylesheet';n.href=h;n.setAttribute(k,'true');d.head.appendChild(n)},loadScript=s=>{if(d.querySelector('script[src="'+s+'"]'))return;const n=d.createElement('script');n.src=s;n.defer=1;d.head.appendChild(n)},runIdle=f=>'requestIdleCallback'in window?requestIdleCallback(f,{timeout:1800}):setTimeout(f,650);
   loadScript('site-health.js');runIdle(()=>loadScript('site-improvements.js'));
