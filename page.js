@@ -11,6 +11,7 @@
     youtube: '/api/content?type=youtube',
     schedule: '/api/content?type=schedule'
   };
+  const CONTENT_CACHE_TTL={fanart:10*60*1000};
   const pageParams = new URLSearchParams(window.location.search);
   const requestedOpenId = pageParams.get('open') || '';
   const requestedKind = pageParams.get('kind') || '';
@@ -24,7 +25,7 @@
   async function loadContent(type, force = false) {
     try {
       const payload = window.ChunbongCache
-        ? await window.ChunbongCache.fetchJson('content:'+type, API_ENDPOINTS[type], { ttl: 3 * 60 * 1000, force })
+        ? await window.ChunbongCache.fetchJson('content:'+type, API_ENDPOINTS[type], { ttl: CONTENT_CACHE_TTL[type] || 3 * 60 * 1000, force })
         : await (async()=>{const response=await fetch(API_ENDPOINTS[type],{headers:{accept:'application/json'}});if(!response.ok)throw new Error(`HTTP ${response.status}`);return response.json()})();
       return payload && typeof payload === 'object' ? payload : { items: [], fallback: true, reason: 'invalid response' };
     } catch (error) {
