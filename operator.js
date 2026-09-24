@@ -169,6 +169,22 @@ function renderPerformance(performance={}){
   const vitals=performance.webVitals||{};renderVital('lcp',vitals.lcp||{});renderVital('inp',vitals.inp||{});renderVital('cls',vitals.cls||{});
   const el=$('#operator-performance-pages'),max=Math.max(1,...pages.map(row=>Number(row.averageMs)||0));
   el.innerHTML=pages.length?pages.map((row,i)=>`<li class="operator-rank-rich"><em>${i+1}</em><div><strong title="${escapeHtml(row.key)}">${escapeHtml(friendlyKey(row.key))}</strong><span>평균 ${fmt(row.averageMs)}ms · 표본 ${fmt(row.samples)}회</span><i><b style="width:${Math.max(4,(Number(row.averageMs)||0)/max*100)}%"></b></i></div><b>${fmt(row.averageMs)}ms</b></li>`).join(''):'<li><em>–</em><strong>아직 성능 측정 데이터가 없습니다.</strong><b>-</b></li>';
+  const vitalLabels={lcp:'LCP',inp:'INP',cls:'CLS'},issueMap=new Map();
+  for(const metric of ['lcp','inp','cls']){
+    for(const row of Array.isArray(vitals?.[metric]?.pages)?vitals[metric].pages:[]){
+      const key=String(row.key||'');if(!key)continue;
+      const issue={metric,key,samples:Number(row.samples)||0,average:Number(row.average)||0,goodPct:Number(row.goodPct)||0,needsPct:Number(row.needsPct)||0,poorPct:Number(row.poorPct)||0};
+      const score=issue.poorPct*1000+(issue.needsPct+issue.poorPct)*10+issue.average;
+      const current=issueMap.get(key);
+      if(!current||score>current.score)issueMap.set(key,{...issue,score});
+    }
+  }
+  const issueRows=[...issueMap.values()].filter(row=>row.samples>0).sort((a,b)=>b.poorPct-a.poorPct||(b.needsPct+b.poorPct)-(a.needsPct+a.poorPct)||b.samples-a.samples).slice(0,12);
+  const vitalList=$('#operator-vitals-pages');
+  if(vitalList)vitalList.innerHTML=issueRows.length?issueRows.map((row,i)=>{
+    const severity=row.poorPct>=25?'나쁨':row.needsPct+row.poorPct>=25?'개선 필요':'양호';
+    return `<li class="operator-rank-rich"><em>${i+1}</em><div><strong title="${escapeHtml(row.key)}">${escapeHtml(friendlyKey(row.key))}</strong><span>${vitalLabels[row.metric]} ${vitalValue(row.metric,row.average)} · ${severity} · 나쁨 ${row.poorPct}% · 표본 ${fmt(row.samples)}회</span><i><b style="width:${Math.max(4,Math.min(100,row.poorPct+row.needsPct))}%"></b></i></div><b>${row.poorPct}%</b></li>`;
+  }).join(''):'<li><em>–</em><strong>아직 페이지별 웹 바이탈 표본이 없습니다.</strong><b>-</b></li>';
 }
 function completionRate(row){const start=Number(row?.start)||0,finish=Number(row?.finish)||0;return start?Math.min(100,Math.round(finish/start*100)):0}
 function renderFunnel(funnel={}){
