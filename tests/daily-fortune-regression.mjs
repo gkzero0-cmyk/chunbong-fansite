@@ -24,7 +24,7 @@ assert.match(js, /playRevealSound/, 'daily fortune reveal sound missing');
 assert.match(js, /data-daily-fortune-stage/, 'daily fortune interactive stage missing');
 assert.match(js, /pointermove/, 'daily fortune pointer-follow tilt tracking missing');
 assert.match(js, /pointerenter/, 'daily fortune hover entry ripple trigger missing');
-assert.match(js, /spawnHoloRipple/, 'pointer-origin hologram ripple runtime missing');
+assert.doesNotMatch(js, /spawnHoloRipple/, 'legacy circular hologram ripple runtime must stay removed');
 assert.match(js, /playMagicRippleSound/, 'magical ripple hover sound missing');
 assert.match(js, /chunbongTarotSound/, 'daily fortune sounds must respect the tarot sound preference');
 assert.match(js, /chunbongTarotVolume/, 'daily fortune sounds must respect the tarot volume preference');
