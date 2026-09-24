@@ -947,6 +947,8 @@ function soopCollectorBookmarklet(){
     const meta=(selector)=>document.querySelector(selector)?.getAttribute('content')||'';
     const title=(meta('meta[property="og:title"]')||document.querySelector('h1')?.textContent||document.title||'').replace(/\\s*[|｜-]\\s*SOOP.*$/i,'').trim();
     const pageText=(document.body?.innerText||'').replace(/\\u00a0/g,' ');
+    const accessText=[...document.querySelectorAll('[class*="grade"],[class*="badge"],[class*="scope"],[class*="permission"],[class*="auth"],[class*="subscribe"],[class*="fan"]')].slice(0,80).map(node=>(node.textContent||'').replace(/\\s+/g,' ').trim()).join(' ')+' '+pageText.slice(0,3500);
+    const access=/구독자\\s*(?:전용|공개|만|이상)?|구독\\s*(?:전용|회원|멤버)/i.test(accessText)?'subscriber':/애청자\\s*(?:전용|공개|만|이상)?/i.test(accessText)?'favorite':'authenticated';
     const dateRaw=meta('meta[property="article:published_time"]')||document.querySelector('time[datetime]')?.getAttribute('datetime')||(pageText.match(/20\\d{2}[.\\/-]\\d{1,2}[.\\/-]\\d{1,2}/)||[])[0]||'';
     const nodes=[...document.querySelectorAll('article,main,[class*="post-content"],[class*="article-content"],[class*="board-content"],[class*="viewer"],[class*="content"]')];
     const candidates=nodes.map(el=>({el,text:(el.innerText||'').trim()})).filter(row=>row.text.length>80).sort((a,b)=>b.text.length-a.text.length);
@@ -957,7 +959,7 @@ function soopCollectorBookmarklet(){
     for(const img of [...(chosen?.querySelectorAll?.('img')||[])].slice(0,80)){
       const src=img.currentSrc||img.src||'';if(/^https:\\/\\//i.test(src))imageSet.add(src);
     }
-    const payload={version:1,source:'soop-authenticated-browser',url:location.href.split('#')[0],title,date:dateRaw,body,images:[...imageSet].slice(0,24),capturedAt:new Date().toISOString()};
+    const payload={version:1,source:'soop-authenticated-browser',url:location.href.split('#')[0],title,date:dateRaw,body,images:[...imageSet].slice(0,24),access,capturedAt:new Date().toISOString()};
     const bytes=new TextEncoder().encode(JSON.stringify(payload));let binary='';for(const byte of bytes)binary+=String.fromCharCode(byte);
     const encoded=btoa(binary);window.open(${JSON.stringify(target)}+'#soop-import='+encodeURIComponent(encoded),'_blank','noopener');
   }catch(error){alert('SOOP 글 수집에 실패했습니다: '+(error?.message||error))}})()`;
@@ -994,7 +996,8 @@ function renderSoopHelper(){
   box.hidden=false;
   const facts=analyzeSoopImport(browserImport),target=$('[data-soop-import-target]',box);
   $('[data-soop-import-title]',box).textContent=browserImport.title||'제목 확인 필요';
-  $('[data-soop-import-meta]',box).textContent='SOOP 애청자 공개글 · '+(browserImport.date||'날짜 확인 중');
+  const accessText={favorite:'SOOP 애청자 공개글 · 자동 공개',subscriber:'SOOP 구독자 전용글 · 검토 필요','anonymous-verified':'SOOP 일반 공개글',authenticated:'SOOP 로그인 제한글 · 검토 필요'}[browserImport.access]||'SOOP 로그인 글 · 검토 필요';
+  $('[data-soop-import-meta]',box).textContent=accessText+' · '+(browserImport.date||'날짜 확인 중');
   $('[data-soop-import-summary]',box).textContent=String(browserImport.body||'').slice(0,420)||(browserImport.url||'');
   $('[data-soop-import-facts]',box).innerHTML=[
     '<span>본문 '+facts.lineCount+'줄</span>',
