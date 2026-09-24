@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   live-preview:
-    if: ${{ github.head_ref != 'data/soop-telemetry' && !startsWith(github.head_ref, 'internal-') && !startsWith(github.head_ref, 'internal/') && !startsWith(github.head_ref, 'ci-') && !startsWith(github.head_ref, 'docs-') && !startsWith(github.head_ref, 'feat/') && !startsWith(github.head_ref, 'feature/') && !startsWith(github.head_ref, 'perf/') && !startsWith(github.head_ref, 'fix/') && !startsWith(github.head_ref, 'chore/') && !startsWith(github.head_ref, 'ci/') && !startsWith(github.head_ref, 'refactor/') && !startsWith(github.head_ref, 'test/') && !startsWith(github.head_ref, 'hotfix/') }}
+    if: ${{ github.head_ref != 'data/soop-telemetry' && !startsWith(github.head_ref, 'internal-') && !startsWith(github.head_ref, 'internal/') && !startsWith(github.head_ref, 'ci-') && !startsWith(github.head_ref, 'docs-') && !startsWith(github.head_ref, 'feat/') && !startsWith(github.head_ref, 'feature/') && !startsWith(github.head_ref, 'perf/') && !startsWith(github.head_ref, 'fix/') && !startsWith(github.head_ref, 'chore/') && !startsWith(github.head_ref, 'ci/') && !startsWith(github.head_ref, 'refactor/') && !startsWith(github.head_ref, 'test/') && !startsWith(github.head_ref, 'hotfix/') && !startsWith(github.head_ref, 'improve-') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
