@@ -6,6 +6,8 @@ const ctJs=fs.readFileSync(new URL('../chuntris.js',import.meta.url),'utf8');
 const ctCss=fs.readFileSync(new URL('../chuntris-board-start-ui.css',import.meta.url),'utf8');
 const cbHtml=fs.readFileSync(new URL('../chunbak.html',import.meta.url),'utf8');
 const cbCss=fs.readFileSync(new URL('../chunbak-board-start-ui.css',import.meta.url),'utf8');
+const gameLayout=fs.readFileSync(new URL('../game-layout.css',import.meta.url),'utf8');
+const mobileMinigames=fs.readFileSync(new URL('../mobile-minigames.css',import.meta.url),'utf8');
 
 assert.match(ctHtml,/chuntris-board-start-ui\.css/,'Chuntris board UI override must load last');
 assert.match(ctHtml,/id="chuntris-countdown"/,'Chuntris countdown layer missing');
@@ -36,5 +38,8 @@ assert.match(cbCss,/\.chunbak-page \.content-section\{padding:4px 0 28px\}/,'Chu
 assert.match(cbCss,/\.chunbak-start-utils\{display:grid;grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/,'Chunbak board-sized menu must retain ranking/sound/controls');
 assert.match(cbCss,/\.chunbak-center\{order:1\}/,'mobile Chunbak must place the playable stage before stats so the board is not pushed below the viewport');
 assert.match(cbCss,/background:linear-gradient\(135deg,#ff6416,#ff9f31\)/,'Chunbak start action must use fan-site orange palette');
+assert.match(gameLayout,/\.chunbak-stage\{width:min\(100%,560px\)!important\}[\s\S]*\.chunbak-start-card\{width:min\(100%,560px\)!important/,'short desktop Chunbak start card must match the live stage width');
+assert.match(gameLayout,/\.chunbak-stage,\.chunbak-start-card\{width:min\(100%,660px\)!important\}/,'wide desktop Chunbak start card and live stage must share the same width');
+assert.match(mobileMinigames,/\.chunbak-start-card\{width:min\(calc\(100vw - 24px\),calc\(\(100dvh - 260px\)\*420\/680\),420px\)!important/,'mobile Chunbak start card must use the same viewport-height-aware board footprint');
 
 console.log('Chuntris/Chunbak board-sized start UI regression passed');
