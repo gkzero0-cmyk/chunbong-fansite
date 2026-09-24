@@ -117,39 +117,49 @@
 
     <section id="operator-panel-contents" role="tabpanel" aria-labelledby="operator-tab-contents" data-operator-panel="contents" hidden>
       <div class="operator-system-summary operator-archive-summary" aria-label="춘봉 콘텐츠 관리 상태">
-        <button type="button" class="operator-health-card operator-health-action" data-archive-health-action="all"><span>전체 콘텐츠</span><strong id="archive-health-total">-</strong><small>눌러서 전체 목록 보기</small></button>
-        <button type="button" class="operator-health-card operator-health-action" data-archive-health-action="issues"><span>자료 보강 필요</span><strong id="archive-health-issues">-</strong><small id="archive-health-issues-meta">눌러서 수정할 콘텐츠 보기</small></button>
-        <button type="button" class="operator-health-card operator-health-action" data-archive-health-action="visual"><span>이미지 · 썸네일</span><strong id="archive-health-visual">-</strong><small id="archive-health-visual-meta">눌러서 이미지 검사로 이동</small></button>
-        <button type="button" class="operator-health-card operator-health-action" data-archive-health-action="candidates"><span>자동수집 검토</span><strong id="archive-health-candidates">-</strong><small id="archive-health-sync-meta">눌러서 검토 자료 보기</small></button>
+        <button type="button" class="operator-health-card operator-health-action" data-archive-health-action="all"><span>전체 콘텐츠</span><strong id="archive-health-total">-</strong><small>전체 목록 보기</small></button>
+        <button type="button" class="operator-health-card operator-health-action" data-archive-health-action="issues"><span>콘텐츠 오류 · 누락</span><strong id="archive-health-issues">-</strong><small id="archive-health-issues-meta">수정할 콘텐츠 확인</small></button>
+        <button type="button" class="operator-health-card operator-health-action" data-archive-health-action="visual"><span>이미지 문제</span><strong id="archive-health-visual">-</strong><small id="archive-health-visual-meta">클릭하면 즉시 검사</small></button>
+        <button type="button" class="operator-health-card operator-health-action" data-archive-health-action="candidates"><span>연결 대기 자료</span><strong id="archive-health-candidates">-</strong><small id="archive-health-sync-meta">미연결 원문 + 자동 발견 후보</small></button>
+      </div>
+      <div class="operator-archive-load-state" data-archive-load-state hidden>
+        <div><strong data-archive-load-title>콘텐츠 아카이브를 불러오는 중</strong><span data-archive-load-detail>저장된 콘텐츠와 수집 자료 상태를 확인하고 있습니다.</span></div>
+        <button type="button" data-archive-load-retry hidden>다시 시도</button>
       </div>
       <article class="operator-card operator-archive-workflow">
-        <header><div><h2>춘봉 콘텐츠 관리 순서</h2><small>무엇을 확인해야 하는지부터 실제 팬사이트 반영까지 순서대로 진행할 수 있습니다.</small></div></header>
+        <header><div><h2>오늘 처리할 일</h2><small>실제로 손봐야 하는 항목만 모았습니다. 내부 보관 완료 자료는 확인 필요 건수에서 제외합니다.</small></div><button type="button" data-archive-workflow-action="collector-settings">수집기 설정</button></header>
         <div class="operator-archive-workflow-status" data-archive-workflow-status></div>
-        <div class="operator-archive-workflow-actions">
-          <button type="button" data-archive-workflow-action="issues"><b>1</b><span><strong>확인 필요 콘텐츠</strong><small>보강 항목이 있는 콘텐츠만 보기</small></span></button>
-          <button type="button" data-archive-workflow-action="collector"><b>2</b><span><strong>수집 자료 정리</strong><small>SOOP·FM코리아 자동수집 연결 상태 관리</small></span></button>
-          <button type="button" data-archive-workflow-action="editor"><b>3</b><span><strong>선택 콘텐츠 수정</strong><small>기본 정보부터 영상·이미지까지 편집</small></span></button>
-          <button type="button" data-archive-workflow-action="public"><b>4</b><span><strong>팬사이트에서 확인</strong><small>현재 공개된 실제 페이지 열기</small></span></button>
+        <div class="operator-archive-task-grid">
+          <button type="button" data-archive-workflow-action="issues"><b data-archive-task-count="issues">0</b><span><strong>콘텐츠 오류 · 누락</strong><small>문제가 있는 콘텐츠만 보기</small></span></button>
+          <button type="button" data-archive-workflow-action="collector"><b data-archive-task-count="collector">0</b><span><strong>연결 필요한 수집 원문</strong><small>SOOP·FM코리아 미연결 자료</small></span></button>
+          <button type="button" data-archive-workflow-action="candidates"><b data-archive-task-count="candidates">0</b><span><strong>자동 발견 후보</strong><small>기존 콘텐츠 연결 또는 관련 없음 처리</small></span></button>
+          <button type="button" data-archive-workflow-action="visual"><b data-archive-task-count="visual">0</b><span><strong>이미지 문제</strong><small>클릭하면 이미지 검사를 바로 시작</small></span></button>
         </div>
+        <div class="operator-archive-quick-actions">
+          <button type="button" class="primary" data-archive-auto-fix><span>자동 보강 가능한 항목 일괄 처리</span><small><b data-archive-task-count="autofix">0</b>개 콘텐츠 · 결과는 임시 저장</small></button>
+          <button type="button" data-archive-workflow-action="editor"><span>선택 콘텐츠 편집기로 이동</span><small>직접 수정이 필요한 항목 처리</small></button>
+          <button type="button" data-archive-workflow-action="public"><span>팬사이트 실제 페이지 확인</span><small>현재 선택 콘텐츠의 공개 페이지 열기</small></button>
+        </div>
+        <div class="operator-archive-task-message" data-archive-task-message aria-live="polite"></div>
       </article>
       <article class="operator-card operator-collector-inbox-card" data-collector-inbox>
         <header>
-          <div><h2>자동 수집 자료함</h2><small>SOOP · FM코리아에서 수집된 자료를 한곳에서 확인하고 콘텐츠 연결·공개 범위를 관리합니다.</small></div>
+          <div><h2>수집 원문함</h2><small>SOOP · FM코리아에서 실제로 수집된 원문입니다. 연결이 필요한 자료만 먼저 표시합니다.</small></div>
           <div class="operator-collector-inbox-counts" aria-label="수집 자료 상태 요약">
             <span>전체 <b data-collector-inbox-total>0건</b></span>
-            <span>미연결 <b data-collector-inbox-pending>0건</b></span>
-            <span>내부 <b data-collector-inbox-internal>0건</b></span>
-            <span>공개 <b data-collector-inbox-public>0건</b></span>
+            <span>연결 필요 <b data-collector-inbox-pending>0건</b></span>
+            <span>내부 보관 완료 <b data-collector-inbox-internal>0건</b></span>
+            <span>공개 연결 완료 <b data-collector-inbox-public>0건</b></span>
           </div>
         </header>
         <div class="operator-collector-inbox-guide">
           <strong>관리 흐름</strong>
-          <span><b>미연결</b> 자료는 콘텐츠를 선택해 연결하고, <b>일반 공개 확인</b> 자료만 공개로 전환할 수 있습니다. 애청자·로그인 제한 SOOP 글은 내부 자료로 유지됩니다.</span>
+          <span><b>연결 필요</b> 자료만 처리하면 됩니다. <b>내부 보관 완료</b>는 정상 상태이며 추가 확인 대상으로 세지 않습니다. 일반 공개가 확인된 자료만 공개 전환할 수 있습니다.</span>
         </div>
         <div class="operator-collector-inbox-tools">
           <input type="search" data-collector-inbox-search placeholder="제목 · 작성자 · 연결 콘텐츠 검색" aria-label="수집 자료 검색">
           <select data-collector-inbox-state aria-label="수집 자료 상태">
-            <option value="attention">확인 필요 먼저</option><option value="all">전체 상태</option><option value="unlinked">미연결</option><option value="internal">내부</option><option value="public">공개</option><option value="ignored">무시</option>
+            <option value="attention">연결 필요한 자료</option><option value="all">전체 상태</option><option value="unlinked">연결 필요</option><option value="internal">내부 보관 완료</option><option value="public">공개 연결 완료</option><option value="ignored">무시</option>
           </select>
           <select data-collector-inbox-source aria-label="수집 출처">
             <option value="all">모든 출처</option><option value="soop">SOOP</option><option value="fmkorea">FM코리아</option>
@@ -172,7 +182,7 @@
         <aside class="operator-card operator-archive-list-card">
           <header><div><h2>춘봉 콘텐츠 목록</h2><small>왼쪽에서 콘텐츠를 선택하면 오른쪽에서 수정할 수 있습니다.</small></div><div class="operator-archive-head-actions"><button type="button" data-archive-auto-sync>자료 새로 확인</button><button type="button" data-archive-new>새 콘텐츠</button></div></header>
           <div class="operator-archive-auto-state" data-archive-auto-state>공식 자료 자동 수집 상태를 확인하고 있습니다.</div>
-          <details class="operator-soop-helper operator-unified-collector" data-unified-collector open>
+          <details class="operator-soop-helper operator-unified-collector" data-unified-collector>
             <summary><span>춘봉 콘텐츠 자동 수집기</span><b>한 번 설치</b></summary>
             <div class="operator-soop-helper-body">
               <p><strong>나무위키 + SOOP 로그인 글 + FM코리아 공개글</strong>을 같은 브라우저 수집 큐로 처리합니다. 로그인 아이디·비밀번호·쿠키·세션 토큰은 수집하거나 팬사이트 서버로 전송하지 않습니다.</p>
@@ -245,8 +255,8 @@
             </div>
           </details>
           <details class="operator-archive-candidates" data-archive-candidates>
-            <summary><span>자동수집 검토 후보</span><b data-archive-candidate-count>0건</b></summary>
-            <div data-archive-candidate-list><p class="operator-empty">검토 후보가 없습니다.</p></div>
+            <summary><span>자동 발견 후보</span><b data-archive-candidate-count>0건</b></summary>
+            <div data-archive-candidate-list><p class="operator-empty">자동 발견 후보가 없습니다.</p></div>
           </details>
           <div class="operator-archive-list-tools">
             <input class="operator-archive-search" type="search" data-archive-admin-search placeholder="콘텐츠명 · ID 검색" aria-label="콘텐츠 검색">
