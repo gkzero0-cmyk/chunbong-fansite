@@ -7,7 +7,7 @@
   const COMBO_WINDOW=2800;
   const CLEAR_PARTICLES_PER_TILE=4;
   const CLEAR_RESOLVE_MS=300;
-  const HUD_FRAME_MS=window.matchMedia?.('(max-width:760px), (pointer:coarse)')?.matches?50:0;
+  const HUD_FRAME_MS=50;
   const COLORS=['#E53935','#1E88E5','#FDD835','#43A047','#FB8C00','#8E24AA','#00ACC1','#EC407A','#90A4AE','#3949AB','#7CB342'];
 
   const e={

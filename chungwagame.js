@@ -1,7 +1,7 @@
 (()=>{
   'use strict';
   const ROWS=10,COLS=17,GAME_MS=120000,COMBO_WINDOW=2400,BEST_KEY='chungwagame-best-v2',RANKING_ENDPOINT='/api/content?type=chungwagame-ranking&mode=classic';
-  const HUD_FRAME_MS=window.matchMedia?.('(max-width:760px), (pointer:coarse)')?.matches?50:0;
+  const HUD_FRAME_MS=50;
   const $=id=>document.getElementById(id);const e={root:$('chungwagame'),board:$('cg-board'),wrap:$('cg-board-wrap'),dragRect:$('cg-drag'),hintRect:$('cg-hint'),fx:$('cg-fx-layer'),combo:$('cg-combo'),score:$('cg-score'),best:$('cg-best'),timer:$('cg-timer'),timeFill:$('cg-time-fill'),sum:$('cg-sum'),sumBox:$('cg-selection-box'),message:$('cg-message'),startOverlay:$('cg-start-overlay'),pauseOverlay:$('cg-pause-overlay'),overOverlay:$('cg-over-overlay'),start:$('cg-start'),resume:$('cg-resume'),again:$('cg-again'),pauseRestart:$('cg-pause-restart'),pauseRanking:$('cg-pause-ranking'),hintBtn:$('cg-hint-btn'),shuffle:$('cg-shuffle'),pause:$('cg-pause'),sound:$('cg-sound'),soundIcon:$('cg-sound-icon'),soundLabel:$('cg-sound-label'),restart:$('cg-restart'),ranking:$('cg-ranking'),rankingModal:$('cg-ranking-modal'),rankingClose:$('cg-ranking-close'),rankingStatus:$('cg-ranking-status'),rankingList:$('cg-ranking-list'),final:$('cg-final'),finalCombo:$('cg-final-combo'),finalCleared:$('cg-final-cleared'),resultMessage:$('cg-result-message')};
   if(!e.root||!e.board)return;
   let board=[],score=0,best=Number(localStorage.getItem(BEST_KEY)||0),remainingMs=GAME_MS,running=false,paused=false,endAt=0,rafId=0,drag=null,soundOn=true,audioCtx=null,combo=0,maxCombo=0,cleared=0,lastClearAt=0,hintTimer=0,modalPaused=false,modalFromPause=false,lastHudFrameAt=0,gameRandom=Math.random;

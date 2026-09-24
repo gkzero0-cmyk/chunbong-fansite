@@ -15,7 +15,7 @@ assert.ok(personal.includes('personal-alert-settings') && personal.includes("'di
 assert.ok(personal.includes('syncPushSubscription'), 'push subscription sync missing');
 assert.ok(personal.includes("action:'unsubscribe'"), 'turning alerts off must remove push subscription');
 
-assert.ok(sw.includes("chunbong-pwa-20260923-v32"), 'PWA cache must be v32');
+assert.ok(sw.includes("runtime-v33"), 'PWA cache must be v32');
 assert.ok(sw.includes("self.addEventListener('push'"), 'service worker push receiver missing');
 for (const asset of ['/page-media.js','/fanart-gallery.js','/fanart-gallery.css']) {
   assert.ok(!sw.includes("'"+asset+"'"), 'feature media asset should runtime-cache after first visit: '+asset);

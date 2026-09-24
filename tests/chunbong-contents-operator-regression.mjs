@@ -26,7 +26,7 @@ assert.match(operatorHtml,/data-operator-tab="contents"/);
 assert.match(operatorHtml,/data-operator-panel="contents"/);
 assert.match(operatorHtml,/콘텐츠 아카이브/);
 assert.match(operatorJs,/loadOperatorContents/);
-for(const text of ['operator-content-archive','초안 저장','공개하기','정보 충돌','원문 URL']) assert.ok(operatorContents.includes(text),text);
+for(const text of ['operator-content-archive','임시 저장','팬사이트에 반영','정보 충돌','원문 URL']) assert.ok(operatorContents.includes(text),text);
 
 assert.equal(typeof archive._internals.mergeArchiveRows,'function','seed/stored merge helper missing');
 const seedPublished={...base,id:'leopel',title:'시드 레오펠',published:true};

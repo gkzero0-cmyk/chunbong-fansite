@@ -8,8 +8,8 @@ const css = read('daily-fortune.css');
 const sw = read('service-worker.js');
 
 assert.doesNotThrow(() => new Function(js), 'daily fortune runtime must remain valid JavaScript');
-assert.match(home, /href="daily-fortune\.css\?v=8"/, 'home daily fortune CSS missing');
-assert.match(home, /src="daily-fortune\.js\?v=10"/, 'home daily fortune runtime missing');
+assert.match(home, /href="daily-fortune\.css\?v=16"/, 'home daily fortune CSS missing');
+assert.match(home, /src="daily-fortune\.js\?v=15"/, 'home daily fortune runtime missing');
 assert.match(js, /timeZone: SEOUL_TZ/, 'daily fortune must use the Seoul timezone');
 assert.match(js, /const STORAGE_KEY = 'chunbong-daily-fortune-v1'/, 'daily fortune storage key missing');
 assert.match(js, /parsed\?\.date !== today/, 'stored result must expire on the next KST date');
@@ -24,7 +24,7 @@ assert.match(js, /playRevealSound/, 'daily fortune reveal sound missing');
 assert.match(js, /data-daily-fortune-stage/, 'daily fortune interactive stage missing');
 assert.match(js, /pointermove/, 'daily fortune pointer-follow tilt tracking missing');
 assert.match(js, /pointerenter/, 'daily fortune hover entry ripple trigger missing');
-assert.match(js, /spawnHoloRipple/, 'pointer-origin hologram ripple runtime missing');
+assert.doesNotMatch(js, /spawnHoloRipple/, 'legacy circular hologram ripple runtime must stay removed');
 assert.match(js, /playMagicRippleSound/, 'magical ripple hover sound missing');
 assert.match(js, /chunbongTarotSound/, 'daily fortune sounds must respect the tarot sound preference');
 assert.match(js, /chunbongTarotVolume/, 'daily fortune sounds must respect the tarot volume preference');
@@ -35,7 +35,7 @@ assert.match(css, /f_auto,q_auto:good,c_limit,w_768\/v1789845157\/chunbong-fansi
 assert.match(css, /\.daily-fortune-back\{[\s\S]*background-image:url\("https:\/\/res\.cloudinary\.com\/lyppgyei\/image\/upload\/f_auto,q_auto:good,c_limit,w_768\/v1789845157\/chunbong-fansite\/tarot-card-back\.png"\)/, 'daily fortune back must use the uploaded image');
 assert.match(css, /\.daily-fortune-launcher>span\{[\s\S]*tarot-card-back\.png/, 'saved-fortune launcher must reuse the uploaded card back');
 assert.match(css, /\.daily-fortune-front\{[\s\S]*#08152f/, 'daily fortune front must use the matching deep-navy celestial frame');
-assert.match(css, /\.daily-fortune-front-frame::before,\.daily-fortune-front-frame::after/, 'daily fortune front must include matching celestial star medallions');
+assert.match(css, /\.daily-fortune-front-frame::before,\s*\.daily-fortune-front-frame::after/, 'daily fortune front must include matching celestial star medallions');
 assert.match(css, /\.daily-fortune-front-title\{[\s\S]*#102344/, 'daily fortune title plate must use the matching navy-and-gold theme');
 assert.match(css, /@keyframes dailyFortuneBackSpin/, 'high-speed card-back spin animation missing');
 assert.match(css, /dailyFortuneHyperSpin\{[\s\S]*rotateY\(360deg\)/, 'hyper-spin must complete a full vertical turn every cycle');
@@ -63,7 +63,7 @@ assert.doesNotMatch(css, /#fff 0 2%/, 'white pointer hotspot must stay removed')
 assert.match(js, /const revealed = cardButton\.classList\.contains\('is-revealed'\)/, 'hover effect must react before and after reveal');
 assert.match(css, /dailyFortuneParticle/, 'fortune reveal particles missing');
 assert.match(css, /@media\(prefers-reduced-motion:reduce\)/, 'reduced-motion fallback missing');
-assert.match(sw, /chunbong-pwa-20260923-v32/, 'daily fortune service worker revision missing');
+assert.match(sw, /runtime-v33/, 'daily fortune service worker revision missing');
 assert.doesNotMatch(sw, /'\/daily-fortune\.css'/, 'daily fortune CSS should runtime-cache after the home page requests it');
 assert.doesNotMatch(sw, /'\/daily-fortune\.js'/, 'daily fortune runtime should not block the initial PWA install');
 
