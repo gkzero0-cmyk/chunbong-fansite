@@ -296,6 +296,9 @@
     let animationRun = 0;
     let hoverAudioCtx = null;
     let lastHoverSoundAt = -Infinity;
+    let lastFoilAt = 0;
+    let lastFoilX = -1;
+    let lastFoilY = -1;
     const reducedMotion = () => Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 
     const ensureHoverAudio = () => {
@@ -328,6 +331,69 @@
       setTimeout(() => burst.remove(), 980);
     };
 
+    const configureFoilChip = (chip, spread = 28) => {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = 4 + Math.random() * spread;
+      chip.style.setProperty('--foil-x', (Math.cos(angle) * distance).toFixed(1) + 'px');
+      chip.style.setProperty('--foil-y', (Math.sin(angle) * distance).toFixed(1) + 'px');
+      chip.style.setProperty('--foil-rotate', (-70 + Math.random() * 140).toFixed(1) + 'deg');
+      chip.style.setProperty('--foil-scale', (0.58 + Math.random() * 0.92).toFixed(2));
+      chip.style.setProperty('--foil-hue', String(Math.round(Math.random() * 330)));
+      chip.style.setProperty('--foil-w', (4 + Math.random() * 10).toFixed(1) + 'px');
+      chip.style.setProperty('--foil-h', (3 + Math.random() * 12).toFixed(1) + 'px');
+      chip.style.setProperty('--foil-delay', Math.round(Math.random() * 70) + 'ms');
+    };
+
+    const spawnFoilPatch = (px, py, force = false) => {
+      if (reducedMotion() || drawing) return;
+      const now = performance.now();
+      const moved = Math.hypot(px - lastFoilX, py - lastFoilY);
+      if (!force && now - lastFoilAt < 18 && moved < 0.008) return;
+      lastFoilAt = now;
+      lastFoilX = px;
+      lastFoilY = py;
+
+      const patch = document.createElement('span');
+      patch.className = 'daily-fortune-foil-patch';
+      patch.style.left = (px * 100).toFixed(2) + '%';
+      patch.style.top = (py * 100).toFixed(2) + '%';
+      patch.style.setProperty('--patch-rotate', (-18 + Math.random() * 36).toFixed(1) + 'deg');
+      const count = 7 + Math.floor(Math.random() * 3);
+      for (let index = 0; index < count; index += 1) {
+        const chip = document.createElement('i');
+        configureFoilChip(chip, 31);
+        patch.appendChild(chip);
+      }
+      holo.appendChild(patch);
+      const patches = holo.querySelectorAll('.daily-fortune-foil-patch');
+      if (patches.length > 22) patches[0]?.remove();
+      setTimeout(() => patch.remove(), 460);
+    };
+
+    const spawnRevealedFoilBurst = (px = 0.5, py = 0.5) => {
+      if (reducedMotion()) return;
+      const burst = document.createElement('span');
+      burst.className = 'daily-fortune-foil-burst';
+      burst.style.left = (px * 100).toFixed(2) + '%';
+      burst.style.top = (py * 100).toFixed(2) + '%';
+      for (let index = 0; index < 38; index += 1) {
+        const chip = document.createElement('i');
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 48 + Math.random() * 125;
+        chip.style.setProperty('--burst-dx', (Math.cos(angle) * distance).toFixed(1) + 'px');
+        chip.style.setProperty('--burst-dy', (Math.sin(angle) * distance).toFixed(1) + 'px');
+        chip.style.setProperty('--foil-rotate', (-150 + Math.random() * 300).toFixed(1) + 'deg');
+        chip.style.setProperty('--foil-scale', (0.65 + Math.random() * 1.3).toFixed(2));
+        chip.style.setProperty('--foil-hue', String(Math.round(Math.random() * 330)));
+        chip.style.setProperty('--foil-w', (4 + Math.random() * 12).toFixed(1) + 'px');
+        chip.style.setProperty('--foil-h', (4 + Math.random() * 15).toFixed(1) + 'px');
+        chip.style.setProperty('--foil-delay', Math.round(Math.random() * 120) + 'ms');
+        burst.appendChild(chip);
+      }
+      holo.appendChild(burst);
+      setTimeout(() => burst.remove(), 1150);
+    };
+
     const showLauncher = () => {
       launcher.hidden = false;
       launcher.setAttribute('aria-label', state ? '오늘의 운세 다시 보기' : '오늘의 운세 열기');
@@ -343,6 +409,8 @@
       stage.style.setProperty('--glow-y', '50%');
       stage.style.setProperty('--prism-angle', '0deg');
       stage.style.setProperty('--flare-scale', '1');
+      lastFoilX = -1;
+      lastFoilY = -1;
       holo.querySelectorAll('.daily-fortune-holo-ripple,.daily-fortune-holo-spark').forEach(node => node.remove());
     };
 
@@ -586,6 +654,7 @@
       pendingState = { date: kstDate(), card, drawnAt: new Date().toISOString() };
       const audioCtx = createFortuneAudio();
       try {
+        holo.querySelectorAll('.daily-fortune-foil-patch,.daily-fortune-foil-burst').forEach(node => node.remove());
         spawnSelectionBurst(origin.px, origin.py);
         renderState(true, audioCtx);
         clearDrawFailsafe();
@@ -605,7 +674,12 @@
       // Keyboard / assistive-technology activation fallback.
       // Pointer activation is handled on the stage at pointerup so it does not
       // depend on native button click delivery.
-      if (event.detail === 0) startDraw({ px: 0.5, py: 0.5 });
+      if (event.detail !== 0) return;
+      if (state && cardButton.classList.contains('is-revealed') && !drawing) {
+        spawnRevealedFoilBurst(0.5, 0.5);
+        return;
+      }
+      startDraw({ px: 0.5, py: 0.5 });
     });
 
     stage.addEventListener('pointerdown', () => {
@@ -618,6 +692,11 @@
       if (event.button != null && event.button !== 0) return;
       const point = pointerPosition(event) || { px: 0.5, py: 0.5 };
       updateCrystalPointer(point);
+      if (state && cardButton.classList.contains('is-revealed') && !drawing) {
+        spawnFoilPatch(point.px, point.py, true);
+        spawnRevealedFoilBurst(point.px, point.py);
+        return;
+      }
       startDraw(point);
     });
 
@@ -648,6 +727,7 @@
       if (!point) return;
       updateCrystalPointer(point);
       stage.classList.add('is-prism-active');
+      spawnFoilPatch(point.px, point.py, true);
       if (reducedMotion()) return;
       const now = performance.now();
       if (now - lastHoverSoundAt >= 5000) {
@@ -663,6 +743,7 @@
       const { px, py } = point;
       updateCrystalPointer({ px, py });
       stage.classList.add('is-prism-active');
+      spawnFoilPatch(px, py);
       if (reducedMotion()) return;
       const revealed = cardButton.classList.contains('is-revealed');
       const tiltX = revealed ? 8 : 6.5;
@@ -729,7 +810,7 @@
     }
   }
 
-  window.CHUNBONG_DAILY_FORTUNE = { STORAGE_KEY, kstDate, artworkUrl, readState, writeState, cards: CARDS.map(row => row[0]), nativeDisableSafe: true, pointerActivationSafe: true, crystalPointerImmediate: true, clickCrystalBurst: true, progressiveSpin: true, horizontalSpinFx: true };
+  window.CHUNBONG_DAILY_FORTUNE = { STORAGE_KEY, kstDate, artworkUrl, readState, writeState, cards: CARDS.map(row => row[0]), nativeDisableSafe: true, pointerActivationSafe: true, crystalPointerImmediate: true, clickCrystalBurst: true, progressiveSpin: true, horizontalSpinFx: true, foilStickerHover: true, revealedFoilBurst: true };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();
