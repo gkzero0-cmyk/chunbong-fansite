@@ -14,6 +14,7 @@ const mobileCss=read('mobile-site.css');
 const mobileJs=read('mobile-site.js');
 const operatorHtml=read('operator.html');
 const operatorJs=read('operator.js');
+const improvements=read('site-improvements.js');
 
 assert.equal(archive.contentPath('leopel'),'/contents/leopel');
 assert.equal(archive.contentPath('justserver-moneygame'),'/contents/justserver-moneygame');
@@ -36,6 +37,9 @@ assert.doesNotMatch(mobileCss,/Compact mobile top chrome \+ desktop MY fan hub e
 assert.match(mobileCss,/@media\(max-width:760px\) and \(prefers-reduced-motion:reduce\)/,'nested reduced-motion media query should be flattened');
 assert.match(mobileJs,/window\.ChunbongNavigation\?\.items/,'mobile navigation must consume the shared navigation definition');
 assert.match(mobileJs,/moreLink\('contents'/,'mobile More menu must expose 춘봉 콘텐츠 through the shared navigation');
+assert.match(improvements,/window\.ChunbongNavigation\?\.items/,'global search routes must consume the shared navigation definition');
+assert.match(improvements,/search:chunbong-contents/,'global search must index 춘봉 콘텐츠');
+assert.match(improvements,/row\?\.rpName/,'global search must index RP names');
 
 assert.match(operatorHtml,/id="operator-vitals-pages"/,'operator performance panel must expose page-level Web Vitals issues');
 assert.match(operatorJs,/issueMap=new Map\(\)/,'operator performance renderer must aggregate page-level Web Vitals issues');
@@ -50,5 +54,6 @@ assert.doesNotThrow(()=>new Function(contentsJs));
 assert.doesNotThrow(()=>new Function(shell));
 assert.doesNotThrow(()=>new Function(operatorJs));
 assert.doesNotThrow(()=>new Function(mobileJs));
+assert.doesNotThrow(()=>new Function(improvements));
 
 console.log('site structure/performance v22 regression passed');
