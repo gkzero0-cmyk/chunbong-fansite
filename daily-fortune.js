@@ -392,7 +392,6 @@
       stage.style.setProperty('--glow-x', '50%');
       stage.style.setProperty('--glow-y', '50%');
       stage.style.setProperty('--prism-angle', '0deg');
-      stage.style.setProperty('--flare-scale', '1');
       lastFoilX = -1;
       lastFoilY = -1;
       holo.querySelectorAll('.daily-fortune-holo-ripple,.daily-fortune-holo-spark').forEach(node => node.remove());
@@ -701,7 +700,6 @@
       stage.style.setProperty('--glow-x', (px * 100).toFixed(1) + '%');
       stage.style.setProperty('--glow-y', (py * 100).toFixed(1) + '%');
       stage.style.setProperty('--prism-angle', angle.toFixed(1) + 'deg');
-      stage.style.setProperty('--flare-scale', (0.92 + distance * 0.20).toFixed(3));
     };
 
     stage.addEventListener('pointerenter', event => {
