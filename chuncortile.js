@@ -7,6 +7,7 @@
   const COMBO_WINDOW=2800;
   const CLEAR_PARTICLES_PER_TILE=4;
   const CLEAR_RESOLVE_MS=300;
+  const HUD_FRAME_MS=window.matchMedia?.('(max-width:760px), (pointer:coarse)')?.matches?50:0;
   const COLORS=['#E53935','#1E88E5','#FDD835','#43A047','#FB8C00','#8E24AA','#00ACC1','#EC407A','#90A4AE','#3949AB','#7CB342'];
 
   const e={
@@ -25,7 +26,7 @@
   if(Object.values(e).some(value=>!value))return;
 
   let board=Core.createBoard(),score=0,best=Number(localStorage.getItem(BEST_KEY)||0),misses=0,combo=0,maxCombo=0,lastClearAt=0;
-  let remainingMs=Core.GAME_MS,endAt=0,running=false,paused=false,resolving=false,raf=0,soundOn=true,audioCtx=null,hintIndex=-1,seed=0;
+  let remainingMs=Core.GAME_MS,endAt=0,running=false,paused=false,resolving=false,raf=0,soundOn=true,audioCtx=null,hintIndex=-1,seed=0,lastHudFrameAt=0;
   let modalPaused=false,modalFromPause=false;
   let previewIndex=-1,previewMatches=[];
   let touchTargetIndex=-1;
@@ -211,7 +212,7 @@
 
   function tick(now=performance.now()){
     if(!running||paused)return;
-    remainingMs=Math.max(0,endAt-now);updateHud();
+    remainingMs=Math.max(0,endAt-now);if(!HUD_FRAME_MS||now-lastHudFrameAt>=HUD_FRAME_MS||remainingMs<=0){lastHudFrameAt=now;updateHud();}
     if(remainingMs<=0){finishGame('time');return;}
     raf=requestAnimationFrame(tick);
   }
@@ -233,7 +234,7 @@
   }
 
   function resetRoundState(){
-    score=0;misses=0;combo=0;maxCombo=0;lastClearAt=0;remainingMs=Core.GAME_MS;hintIndex=-1;running=false;paused=false;resolving=false;cancelAnimationFrame(raf);
+    score=0;misses=0;combo=0;maxCombo=0;lastClearAt=0;remainingMs=Core.GAME_MS;hintIndex=-1;lastHudFrameAt=0;running=false;paused=false;resolving=false;cancelAnimationFrame(raf);
     e.pauseOverlay.classList.add('hidden');e.over.classList.add('hidden');e.rankingModal.hidden=true;e.comboPop.classList.remove('show','hot');e.fx.replaceChildren();
   }
 
@@ -378,6 +379,7 @@
   e.pause.addEventListener('click',()=>paused?resumeGame():pauseGame(true));e.resume.addEventListener('click',resumeGame);e.hint.addEventListener('click',showHint);e.sound.addEventListener('click',toggleSound);
   e.ranking.addEventListener('click',openRanking);e.pauseRanking.addEventListener('click',openRanking);e.overRanking.addEventListener('click',openRanking);e.rankingClose.addEventListener('click',closeRanking);e.rankingModal.querySelector('[data-ct-ranking-close]')?.addEventListener('click',closeRanking);
   document.addEventListener('keydown',handleEscape);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!paused)pauseGame(true);});
 
   globalThis.ChuncortileApp=Object.freeze({
     startGame:newBoard,getSnapshot:snapshot,pauseGame,resumeGame,loadRanking,renderRanking,
