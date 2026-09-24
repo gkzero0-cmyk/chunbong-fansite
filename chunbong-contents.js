@@ -620,17 +620,6 @@ function renderDetail(item){
 }
 async function showDetail(id){els.browser.hidden=true;els.detail.hidden=false;els.detail.innerHTML='<div class="archive-empty"><span aria-hidden="true">✦</span><strong>기록을 불러오는 중입니다.</strong><p>공식 자료와 연결하고 있습니다.</p></div>';try{const p=await fetchJson(API_DETAIL+encodeURIComponent(id));if(!p.item)return detailEmpty('목록에서 다른 콘텐츠를 선택해 주세요.');syncArchiveSeo(p.item);renderDetail(p.item)}catch(e){detailEmpty(e?.status===404?'해당 콘텐츠가 없거나 아직 공개되지 않았습니다.':'자료를 불러오지 못했습니다. 잠시 뒤 다시 확인해 주세요.')}}
 async function renderRoute(){const s=queryState();if(s.id){if(!pathContentId())writeState(s);return showDetail(s.id)}syncArchiveSeo();els.detail.hidden=true;els.browser.hidden=false;renderList()}
-async function refreshAfterAutoSync(){
-  try{
-    const response=await fetch('/api/content?type=content-archive-auto-sync',{method:'POST',headers:{accept:'application/json','content-type':'application/json'},body:'{}'});
-    if(!response.ok)return;
-    const result=await response.json();
-    if(result.skipped||!Number(result.changedItemCount||0))return;
-    const fresh=await fetch(API_LIST+'&_sync='+Date.now(),{headers:{accept:'application/json'},cache:'no-store'}).then(r=>r.ok?r.json():null);
-    if(!fresh?.items)return;
-    allItems=fresh.items;populateYears(allItems);await renderRoute();
-  }catch{}
-}
-async function boot(){bindToolbar();try{const p=await fetchJson(API_LIST);allItems=Array.isArray(p.items)?p.items:[]}catch{allItems=[]}populateYears(allItems);await renderRoute();void refreshAfterAutoSync()}
+async function boot(){bindToolbar();try{const p=await fetchJson(API_LIST);allItems=Array.isArray(p.items)?p.items:[]}catch{allItems=[]}populateYears(allItems);await renderRoute()}
 d.querySelector('[data-archive-lightbox-close]')?.addEventListener('click',()=>els.lightbox?.close());els.lightbox?.addEventListener('click',e=>{if(e.target===els.lightbox)els.lightbox.close()});d.addEventListener('keydown',e=>{if(e.key==='Escape'&&els.lightbox?.open)els.lightbox.close()});global.addEventListener('popstate',()=>void renderRoute());if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',()=>void boot(),{once:true});else void boot();
 })(typeof window!=='undefined'?window:globalThis);
