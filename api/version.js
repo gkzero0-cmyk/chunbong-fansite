@@ -51,7 +51,7 @@ module.exports = async function handler(req, res) {
   res.status(200).json({
     sha,
     mainSha,
-    synced,
+    synced:synced,
     exactSynced:sync.exactSynced,
     runtimeSynced:sync.runtimeSynced,
     internalOnlyGap:sync.internalOnlyGap===true,
