@@ -605,11 +605,11 @@ function renderCollectorInbox(){
   });
   const options=items.map(item=>'<option value="'+esc(item.id)+'">'+esc(item.title)+'</option>').join('');
   list.innerHTML=rows.length?rows.map(row=>{
-    const publicBadge=row.publicEligible?'<span class="operator-collector-access is-public">일반 공개 확인</span>':'<span class="operator-collector-access is-limited">로그인 제한</span>';
+    const publicBadge=row.publicEligible?'<span class="operator-collector-access is-public">일반 공개 확인</span>':row.operatorPublicAllowed?'<span class="operator-collector-access is-limited">로그인 제한 · 수동 공개 가능</span>':'<span class="operator-collector-access is-limited">로그인 제한</span>';
     const thumb=row.thumbnail?'<img src="'+esc(row.thumbnail)+'" alt="">':'<span>'+esc(row.platform==='fmkorea'?'FM':'SO')+'</span>';
     const linked=row.linkedItemId?'<b>'+esc(row.linkedItemTitle||row.linkedItemId)+'</b>':'<b>연결된 콘텐츠 없음</b>';
     const meta=[row.date||'',row.author||'',row.board||'',row.imageCount?('이미지 '+row.imageCount+'장'):''].filter(Boolean).join(' · ');
-    const disabledPublic=row.publicEligible?'':' disabled title="SOOP에서 비로그인 일반 공개로 확인된 뒤에 공개할 수 있습니다."';
+    const publicTitle=row.publicEligible?'':' title="로그인 권한으로 수집된 자료입니다. 운영자 판단으로 공개 전환할 수 있습니다."';
     const ignored=row.state==='ignored';
     return '<article class="operator-collector-inbox-row" data-collector-record="'+esc(row.recordId)+'" data-state="'+esc(row.state)+'">'+
       '<div class="operator-collector-inbox-thumb">'+thumb+'</div>'+
@@ -619,11 +619,11 @@ function renderCollectorInbox(){
       '<div class="operator-collector-inbox-actions">'+
       (ignored?'<button type="button" data-collector-manage="restore">다시 관리</button>':
         '<button type="button" data-collector-manage="connect">'+(row.linkedItemId?'연결 변경':'콘텐츠 연결')+'</button>'+
-        '<button type="button" data-collector-manage="public"'+disabledPublic+'>공개로 전환</button>'+
+        '<button type="button" data-collector-manage="public"'+publicTitle+'>공개로 전환</button>'+
         '<button type="button" data-collector-manage="internal">내부로 전환</button>'+
         '<button type="button" data-collector-manage="ignore">목록에서 무시</button>')+
       '<a href="'+esc(row.url)+'" target="_blank" rel="noopener noreferrer">원문 열기 ↗</a></div>'+
-      (!row.publicEligible&&row.platform==='soop'?'<small class="operator-collector-policy">애청자·로그인 제한 글은 내부 자료로만 연결됩니다. SOOP에서 일반 공개로 바뀌면 공개 전환이 활성화됩니다.</small>':'')+
+      (!row.publicEligible&&row.platform==='soop'?'<small class="operator-collector-policy">애청자·로그인 제한 글은 자동 공개하지 않습니다. 해당 자료의 외부 공개 권한을 운영자가 확인한 경우 “공개로 전환”을 눌러 공개 참고자료로 사용할 수 있습니다.</small>':'')+
       '</div></article>';
   }).join(''):'<div class="operator-collector-inbox-empty"><strong>조건에 맞는 수집 자료가 없습니다.</strong><span>필터를 바꾸거나 자동 수집을 실행해 주세요.</span></div>';
   rows.forEach(row=>{
@@ -635,14 +635,19 @@ async function manageCollectorInbox(button){
   const card=button.closest('[data-collector-record]'),recordId=card?.dataset.collectorRecord||'',action=button.dataset.collectorManage||'',itemId=$('[data-collector-target]',card)?.value||'';
   if(!recordId||!action)return;
   if(['connect','public','internal'].includes(action)&&!itemId){setCollectorInboxMessage('먼저 연결할 춘봉 콘텐츠를 선택해 주세요.','bad');return}
+  const row=browserImports.find(entry=>entry.recordId===recordId);
+  if(action==='public'&&row?.platform==='soop'&&!row.publicEligible){
+    const ok=confirm('이 SOOP 글은 로그인/애청자 권한으로 수집된 자료입니다.\n\n공개로 전환하면 팬사이트 방문자에게 이 글을 참고한 제목·날짜·썸네일·원문 링크 등의 자료가 공개될 수 있습니다. 외부 공개 권한을 확인했다면 계속하세요.');
+    if(!ok)return;
+  }
   button.disabled=true;setCollectorInboxMessage('수집 자료 상태를 변경하고 있습니다.','busy');
   try{
     const result=await json('operator-content-browser-import-manage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId,action,itemId})});
     await load();if(result.item?.id)selectItem(result.item.id);
     const label={connect:'콘텐츠 연결',public:'공개 전환',internal:'내부 전환',ignore:'무시 처리',restore:'관리 복원'}[action]||'변경';
-    setCollectorInboxMessage(label+'이 완료됐습니다.','ok');
+    setCollectorInboxMessage(label+'이 완료됐습니다.'+(action==='public'&&row?.platform==='soop'&&!row.publicEligible?' · 운영자 승인으로 로그인 제한 자료를 공개 참고자료로 전환했습니다.':''),'ok');
   }catch(error){
-    const message=error.message==='browser_import_not_publicly_accessible'?'이 자료는 현재 SOOP에서 일반 공개로 확인되지 않아 팬사이트 공개로 전환할 수 없습니다.':error.message==='content_target_required'?'연결할 춘봉 콘텐츠를 선택해 주세요.':'수집 자료 상태를 변경하지 못했습니다: '+error.message;
+    const message=error.message==='browser_import_not_publicly_accessible'?'이 자료는 공개 전환이 허용되지 않는 수집 유형입니다.':error.message==='content_target_required'?'연결할 춘봉 콘텐츠를 선택해 주세요.':'수집 자료 상태를 변경하지 못했습니다: '+error.message;
     setCollectorInboxMessage(message,'bad');
   }finally{button.disabled=false}
 }
