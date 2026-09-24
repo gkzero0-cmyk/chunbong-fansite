@@ -17,8 +17,8 @@ assert.match(data, /▥<\/span> DATA/, 'data page must use the semantic data ide
 assert.doesNotMatch(history, /\d{2} \/ BROADCAST HISTORY/, 'history page must not restore decorative navigation numbers');
 assert.doesNotMatch(data, /\d{2} \/ DATA/, 'data page must not restore decorative navigation numbers');
 assert.match(home, /TODAY · CHUNBONG/, 'home today overview missing');
-assert.match(home, /home-overview\.css/, 'home overview stylesheet missing');
-assert.match(home, /home-overview\.js/, 'home overview runtime missing');
+assert.match(home, /home-bundle\.css\?v=1/, 'home bundle containing overview styles missing');
+assert.match(home, /home-bundle\.js\?v=1/, 'home bundle containing overview runtime missing');
 assert.match(homeOverview, /get\('schedule'\)/, 'home overview must reuse schedule API');
 assert.match(homeOverview, /get\('activity'\)/, 'home overview must reuse activity API');
 assert.doesNotMatch(youtube, /data-youtube-count="videos">0</, 'video count must not flash zero before load');
