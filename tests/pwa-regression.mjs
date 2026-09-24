@@ -31,14 +31,14 @@ assert.ok(manifest.icons.some(icon => icon.src === '/assets/app-icon-192.png' &&
 assert.ok(manifest.icons.some(icon => icon.src === '/assets/app-icon-512.png' && icon.sizes === '512x512' && icon.type === 'image/png' && icon.purpose === 'any'), '512px PNG PWA icon missing');
 assert.ok(manifest.icons.some(icon => icon.src === '/assets/app-icon-512.png' && icon.sizes === '512x512' && icon.type === 'image/png' && icon.purpose === 'maskable'), 'maskable PWA icon missing');
 assert.match(page, /setupPwaExperience/);
-assert.match(page, /serviceWorker\.register\('\/service-worker\.js'/);
+assert.match(page, /serviceWorker\.register\('\/service-worker\.js\?v='\+encodeURIComponent\(version\)/);
 assert.match(page, /beforeinstallprompt/);
 assert.match(page, /link\.href = '\/manifest\.webmanifest'/);
 assert.match(page, /새 버전 준비 완료/);
 assert.match(css, /\.pwa-install-chip/);
 assert.match(css, /\.pwa-update-toast/);
 assert.match(sw, /CHUNBONG_PWA/);
-assert.match(sw, /chunbong-pwa-20260923-v32/,'broadcast alert fix must advance the PWA cache');
+assert.match(sw, /const CACHE_NAME = CACHE_PREFIX \+ BUILD_VERSION/,'PWA cache must follow the deployed build version');
 assert.match(sw, /\/offline\.html/);
 assert.match(sw, /url\.pathname\.startsWith\('\/api\/'\)/);
 assert.match(sw, /networkFirst/);
@@ -52,7 +52,8 @@ assert.match(shell, /sessionStorage\.setItem/, 'shared cache should persist with
 assert.match(sw, /\/site-shell\.js/, 'PWA app shell must cache site-shell.js');
 assert.match(sw, /\/site-meta\.js/, 'PWA app shell must cache runtime metadata loaded by site-shell.js');
 assert.match(sw, /\/site-health\.js/, 'PWA app shell must cache runtime health checks loaded by site-shell.js');
-assert.match(sw, /\/mobile-site\.js/, 'PWA app shell must cache mobile-site.js');
+assert.match(sw, /\/mobile-runtime-loader\.js\?v=1/, 'PWA app shell must cache the tiny mobile runtime loader');
+assert.match(sw, /\/mobile-site\.js\?v=3/, 'PWA app shell must cache mobile-site.js');
 assert.doesNotMatch(sw, /\/personal-hub\.js/, 'personal hub should runtime-cache after first use instead of blocking PWA install');
 assert.doesNotMatch(sw, /\/chunbong-contents\.js/, 'content archive should not inflate the initial PWA install');
 assert.doesNotMatch(sw, /\/activity-center\.js/, 'activity center should runtime-cache after idle load');
