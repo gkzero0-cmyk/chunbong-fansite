@@ -19,7 +19,8 @@ assert.match(js,/const DECEL_START_MS = 2450/,'deceleration timing must be expli
 assert.match(js,/const STOP_CUE_MS = 3130/,'stop cue must occur near the end of deceleration');
 assert.match(js,/const SPIN_MS = 3250/,'spin completion timing must be explicit');
 
-assert.match(css,/\.daily-fortune-holo-lens,\s*\.daily-fortune-holo-crystals\{display:none!important\}/,'floating crystal lens must be disabled');
+assert.doesNotMatch(css,/daily-fortune-holo-lens|daily-fortune-holo-crystals/,'retired floating crystal lens styles must stay deleted');
+assert.doesNotMatch(js,/daily-fortune-holo-lens|daily-fortune-holo-crystals/,'retired floating crystal lens DOM must stay deleted');
 assert.match(css,/dailyFortuneCrystalBurst/,'click crystal burst animation must exist');
 assert.match(css,/dailyFortuneProgressiveAccel/,'acceleration animation must exist');
 assert.match(css,/dailyFortuneCrystalHyperSpin/,'hyper-spin animation must exist');
@@ -28,7 +29,7 @@ assert.match(css,/dailyFortuneHorizontalBeam/,'horizontal spin beam must replace
 assert.match(css,/width:174%!important;\s*height:3px!important/,'spin beam must be horizontal');
 assert.match(css,/transition-property:opacity!important/,'pointer hologram must not interpolate its position');
 
-assert.match(index,/daily-fortune\.css\?v=14/,'fortune CSS cache key must be v14');
-assert.match(index,/daily-fortune\.js\?v=13/,'fortune JS cache key must remain v13');
+assert.match(index,/daily-fortune\.css\?v=15/,'fortune CSS cache key must be v14');
+assert.match(index,/daily-fortune\.js\?v=14/,'fortune JS cache key must remain v13');
 
 console.log('daily fortune crystal spin regression passed');
