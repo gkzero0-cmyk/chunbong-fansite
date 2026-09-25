@@ -720,12 +720,23 @@
         "categoryName": "마인크래프트",
         "followerCount": 30847,
         "fanclubCount": 7728
+      },
+      {
+        "capturedAt": "2026-09-25T14:33:34.014Z",
+        "live": true,
+        "startedAt": "2026-09-25T01:30:51.000Z",
+        "title": "마병대4 행정관 오침권이 필요합니다 형님들",
+        "viewerCount": 114,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 30848,
+        "fanclubCount": 7728
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-25T14:19:22.355Z",
-    "followerCount": 30847,
+    "capturedAt": "2026-09-25T14:33:34.014Z",
+    "followerCount": 30848,
     "fanclubCount": 7728
   }
 }
