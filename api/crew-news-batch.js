@@ -146,7 +146,7 @@ function parseTime(value = '') {
 
 function strictCrewPost(post, crew, station) {
   if (!post || !crew) return null;
-  const title = String(post.title || '');
+  const title = String(post.title || '');\n  const sourceTitle = String(post.originalTitle || post.title || '');
   const body = String(post.contents || '');
   const board = String(post.boardName || '');
   const accessType = String(post.accessType || '');
@@ -186,7 +186,7 @@ function strictCrewPost(post, crew, station) {
 
   return {
     ...post,
-    originalTitle: title,
+    originalTitle: sourceTitle,
     title: compatibilityTitle,
     contents: crew + ' ' + summary + '\n' + body,
     strictCrew: crew,
