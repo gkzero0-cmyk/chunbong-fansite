@@ -161,6 +161,43 @@
         }
       ],
       "measurement": "fan-site-sampled-5m"
+    },
+    {
+      "id": "2026-09-25T01:30:51.000Z",
+      "broadcastId": "",
+      "startedAt": "2026-09-25T01:30:51.000Z",
+      "endedAt": "2026-09-25T19:24:15.915Z",
+      "date": "2026-09-25",
+      "durationMinutes": 1073,
+      "averageViewers": 150,
+      "maxViewers": 294,
+      "viewerSampleCount": 90,
+      "followerStart": 30834,
+      "followerEnd": 30865,
+      "followerDelta": 31,
+      "fanclubStart": 7728,
+      "fanclubEnd": 7728,
+      "fanclubDelta": 0,
+      "title": "마병대4 행정관 오침권이 필요합니다 형님들",
+      "categories": [
+        {
+          "id": "810000",
+          "name": "버추얼",
+          "minutes": 502,
+          "sampleCount": 53,
+          "averageViewers": 163,
+          "maxViewers": 294
+        },
+        {
+          "id": "40017",
+          "name": "마인크래프트",
+          "minutes": 353,
+          "sampleCount": 37,
+          "averageViewers": 132,
+          "maxViewers": 194
+        }
+      ],
+      "measurement": "fan-site-sampled-5m"
     }
   ]
 }
