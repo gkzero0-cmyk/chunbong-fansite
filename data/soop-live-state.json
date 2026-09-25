@@ -1,8 +1,26 @@
 {
   "version": 1,
-  "session": null,
+  "session": {
+    "active": true,
+    "sessionId": "2026-09-25T01:30:51.000Z",
+    "startedAt": "2026-09-25T01:30:51.000Z",
+    "title": "마병대4 행정관의 하루",
+    "samples": [
+      {
+        "capturedAt": "2026-09-25T01:40:04.181Z",
+        "live": true,
+        "startedAt": "2026-09-25T01:30:51.000Z",
+        "title": "마병대4 행정관의 하루",
+        "viewerCount": 57,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30834,
+        "fanclubCount": 7728
+      }
+    ]
+  },
   "lastProfile": {
-    "capturedAt": "2026-09-25T01:30:01.329Z",
+    "capturedAt": "2026-09-25T01:40:04.181Z",
     "followerCount": 30834,
     "fanclubCount": 7728
   }
