@@ -49,10 +49,7 @@ const FALLBACK_REPRESENTATIVE = Object.freeze({
     imageUrl: 'https://stimg.sooplive.com/NORMAL_BBS/5/26840115/61411789897829858.png',
     sheetImageUrl: 'https://chunbong-fansite.vercel.app/api/image?url=https%3A%2F%2Fstimg.sooplive.com%2FNORMAL_BBS%2F5%2F26840115%2F61411789897829858.png',
     hashtags: [],
-    contents: 'ZZAM지트 소울체인드 합방
-체인투게더+다크소울
-
-오늘밤8시',
+    contents: 'ZZAM지트 소울체인드 합방\n체인투게더+다크소울\n\n오늘밤8시',
     strictCrew: 'ZZAM지트',
     strictActivity: '소울체인드 합방',
     displaySummary: '소울체인드 합방',
@@ -166,8 +163,9 @@ function strictCrewPost(post, crew, station) {
   const officialBoard = OFFICIAL_BOARD_RE.test(board);
   const leader = station === LEADER_BY_CREW[crew];
   const override = MANUAL_SUMMARY[crew] && MANUAL_SUMMARY[crew][id] || '';
-  const activity = override || detectActivity(title + '
-' + body);
+  if (!override && /방셀|당첨자|당첨\s*안내|보상|경품|상품|배송|배달|전달\s*완료|수령|정산/i.test(sourceTitle)) return null;
+
+  const activity = override || detectActivity(sourceTitle + '\n' + body) || (leader && boardCrew && /특집/i.test(sourceTitle) ? '추석특집' : '');
 
   if (!activity) return null;
 
@@ -175,8 +173,7 @@ function strictCrewPost(post, crew, station) {
   const noticeRelated = notice && (titleCrew || bodyCrew || boardCrew) && Boolean(activity);
   const leaderRepresentative = leader && officialBoard && (
     Boolean(override) ||
-    ((titleCrew || bodyCrew || boardCrew) && COLLECTIVE_RE.test(title + '
-' + body))
+    ((titleCrew || bodyCrew || boardCrew) && COLLECTIVE_RE.test(sourceTitle + '\n' + body))
   );
 
   if (!leaderRepresentative && !direct && !noticeRelated) return null;
@@ -194,8 +191,7 @@ function strictCrewPost(post, crew, station) {
     ...post,
     originalTitle: sourceTitle,
     title: compatibilityTitle,
-    contents: crew + ' ' + summary + '
-' + body,
+    contents: crew + ' ' + summary + '\n' + body,
     strictCrew: crew,
     strictActivity: summary,
     displaySummary,
