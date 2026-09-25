@@ -362,7 +362,7 @@ module.exports = async function handler(req, res) {
       ok: false,
       complete: false,
       error: 'crew_news_incomplete',
-      policyVersion: 'representative-v6.5-server',
+      policyVersion: 'representative-v6.6-server',
       strictCrew: crew,
       requested: stations.length,
       failed: failures.length,
@@ -375,7 +375,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
-    policyVersion: 'representative-v6.5-server',
+    policyVersion: 'representative-v6.6-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
