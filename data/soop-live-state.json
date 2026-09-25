@@ -478,12 +478,23 @@
         "categoryName": "버추얼",
         "followerCount": 30841,
         "fanclubCount": 7728
+      },
+      {
+        "capturedAt": "2026-09-25T09:55:29.013Z",
+        "live": true,
+        "startedAt": "2026-09-25T01:30:51.000Z",
+        "title": "마병대4 행정관 오침권이 필요합니다 형님들",
+        "viewerCount": 137,
+        "categoryId": "810000",
+        "categoryName": "버추얼",
+        "followerCount": 30842,
+        "fanclubCount": 7728
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-25T09:46:11.076Z",
-    "followerCount": 30841,
+    "capturedAt": "2026-09-25T09:55:29.013Z",
+    "followerCount": 30842,
     "fanclubCount": 7728
   }
 }
