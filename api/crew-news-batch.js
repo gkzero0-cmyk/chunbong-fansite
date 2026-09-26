@@ -191,6 +191,8 @@ function strictCrewPost(post, crew, station) {
     ...post,
     originalTitle: sourceTitle,
     title: compatibilityTitle,
+    publishedAt: eventPublishedAt,
+    sourcePublishedAt: post.publishedAt,
     contents: crew + ' ' + summary + '\n' + body,
     strictCrew: crew,
     strictActivity: summary,
