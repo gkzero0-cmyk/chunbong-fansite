@@ -139,6 +139,18 @@ function detectActivity(raw = '') {
   return '';
 }
 
+function explicitEventDate(title = '', body = '', publishedAt = '') {
+  const text = String(title || '') + ' ' + String(body || '');
+  const year = (String(publishedAt || '').match(/^(\d{4})/) || [,'2026'])[1];
+  let m = text.match(/(?:^|\D)(\d{1,2})\s*월\s*(\d{1,2})\s*일/);
+  if (!m) m = text.match(/(?:^|\D)(\d{1,2})\s*[./-]\s*(\d{1,2})(?:\D|$)/);
+  if (!m) return '';
+  const month = Number(m[1]), day = Number(m[2]);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return '';
+  const hh = (String(publishedAt || '').match(/\s(\d{2}:\d{2}:\d{2})/) || [,'00:00:00'])[1];
+  return year + '-' + String(month).padStart(2,'0') + '-' + String(day).padStart(2,'0') + ' ' + hh;
+}
+
 function parseTime(value = '') {
   const t = Date.parse(String(value || '').replace(' ', 'T') + '+09:00');
   return Number.isFinite(t) ? t : 0;
@@ -185,7 +197,7 @@ function strictCrewPost(post, crew, station) {
   // Apps Script v4는 후보 허용 판정에서 제목/게시판에 크루명이 있어야 한다.
   // 모든 후보 제목을 "크루명 + 표시 요약"으로 전달하고 Apps Script가 첫 크루명만 제거하게 한다.
   // 이렇게 하면 후보 판정은 통과하면서 zero-width 문자를 전혀 쓰지 않는다.
-  const compatibilityTitle = crew + ' ' + displaySummary;
+  const compatibilityTitle = crew + ' ' + displaySummary;\n  const eventPublishedAt = explicitEventDate(sourceTitle, body, post.publishedAt) || post.publishedAt;
 
   return {
     ...post,
