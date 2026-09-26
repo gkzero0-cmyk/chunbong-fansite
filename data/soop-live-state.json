@@ -236,11 +236,22 @@
         "categoryName": "마인크래프트",
         "followerCount": 30901,
         "fanclubCount": 7754
+      },
+      {
+        "capturedAt": "2026-09-26T06:38:31.494Z",
+        "live": true,
+        "startedAt": "2026-09-26T02:51:51.000Z",
+        "title": "마병대4 행정관 선진병영 시스템 도입하겠습니다",
+        "viewerCount": 347,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 30901,
+        "fanclubCount": 7754
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-26T06:22:24.266Z",
+    "capturedAt": "2026-09-26T06:38:31.494Z",
     "followerCount": 30901,
     "fanclubCount": 7754
   }
