@@ -61,7 +61,8 @@ for(const token of ['class="archive-hero-copy reveal"','class="archive-series-ho
 const serviceWorker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');
 assert.ok(serviceWorker.includes("runtime-v33"),'service worker cache namespace should remain compatible');
 assert.ok(serviceWorker.includes("event.respondWith(networkFirst(request, event));"),'documents/scripts/styles should prefer network to avoid stale markup/style mismatches');
-assert.ok(serviceWorker.includes("await self.skipWaiting();"),'new service worker should activate immediately after install');
+assert.ok(!/self\.addEventListener\('install',[\s\S]*?await self\.skipWaiting\(\)/.test(serviceWorker),'new service worker should wait for explicit refresh activation instead of racing the update toast');
+assert.ok(serviceWorker.includes("event.data?.type === 'SKIP_WAITING'"),'service worker should still support explicit refresh activation');
 assert.ok(css.includes('Archive stale-markup compatibility'),'archive CSS should explicitly recover stale reveal markup');
 
 for(const token of ['archive-series-statuses','archive-media-filter','archive-participant-search','archive-related-grid','position:sticky']) assert.ok(css.includes(token),token);

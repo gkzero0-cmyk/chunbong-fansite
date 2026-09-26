@@ -8,7 +8,7 @@ const apiFiles=fs.readdirSync(apiDir)
   .sort();
 
 assert.ok(apiFiles.length<=12,'Vercel Hobby allows at most 12 Serverless Functions per deployment; found '+apiFiles.length);
-assert.deepEqual(apiFiles,['content.js','image.js','tarot-reading.js','version.js'],'api/ should contain only public serverless endpoints');
+assert.deepEqual(apiFiles,['content.js','crew-news-batch.js','crew-news.js','image.js','tarot-reading.js','version.js'],'api/ should contain only intentional public serverless endpoints');
 
 const content=fs.readFileSync(new URL('../api/content.js',import.meta.url),'utf8');
 const libDir=new URL('../lib/',import.meta.url);
