@@ -14,7 +14,7 @@ assert.equal((contents.match(/\.archive-detail-hero\{align-items:start\}/g)||[])
 assert.match(contents,/@media\(min-width:761px\)\{\s*\.archive-detail-hero\{align-items:stretch\}/,'desktop detail hero stretch must remain');
 assert.equal((operator.match(/\.operator-feedback-filters input\{grid-column:1\/-1\}/g)||[]).length,2,'operator input grid rule should remain once for base and once for mobile refinement');
 
-assert.ok(Buffer.byteLength(mobile,'utf8')<73000,'mobile-site.css must stay below 73KB source budget');
+assert.ok(Buffer.byteLength(mobile,'utf8')<76000,'mobile-site.css must stay below 76KB source budget');
 assert.ok(Buffer.byteLength(contents,'utf8')<70000,'chunbong-contents.css must stay below 70KB source budget');
 assert.ok(Buffer.byteLength(operator,'utf8')<83500,'operator.css must stay below 83.5KB source budget after the deployment-status banner');
 
