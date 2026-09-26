@@ -348,3 +348,57 @@ body[data-page="home"] :is(.home-overview-card,.home-quick-stats>a) small{
   body[data-page="home"] .home-all-links{margin-top:12px}
   body[data-page="home"] .home-all-links>summary{min-height:48px}
 }
+
+
+/* 2026-09-27 mobile discovery polish: explain horizontal calendar and keep archive sections reachable. */
+.schedule-calendar-mobile-hint{display:none}
+@media(max-width:760px){
+  body[data-page="schedule"] .schedule-calendar-mobile-hint{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin:0;
+    padding:10px 12px;
+    border-bottom:1px solid var(--line,#2b2b2b);
+    color:var(--muted,#aaa39d);
+    font-size:11px;
+    line-height:1.4;
+  }
+  body[data-page="schedule"] .schedule-calendar-mobile-hint span{
+    flex:0 0 auto;
+    color:var(--orange-2,#ff9d2e);
+    font-size:16px;
+    font-weight:900;
+  }
+  body[data-page="contents"] .archive-tabs{
+    position:sticky;
+    top:64px;
+    z-index:18;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    margin:18px -12px 14px;
+    padding:8px 12px;
+    background:color-mix(in srgb,var(--black,#070707) 92%,transparent);
+    backdrop-filter:blur(12px);
+    scrollbar-width:none;
+    overscroll-behavior-x:contain;
+  }
+  body[data-page="contents"] .archive-tabs::-webkit-scrollbar{display:none}
+  body[data-page="contents"] .archive-tabs button{
+    flex:0 0 auto;
+    min-height:44px;
+    white-space:nowrap;
+  }
+}
+@media(max-width:760px) and (prefers-reduced-transparency:reduce){
+  body[data-page="contents"] .archive-tabs{background:var(--black,#070707);backdrop-filter:none}
+}
+
+@media(max-width:760px){
+  [data-theme="light"] body[data-page="contents"] .archive-tabs,
+  body[data-theme="light"][data-page="contents"] .archive-tabs{
+    background:rgba(255,250,246,.94);
+    border-color:#eadfd6;
+  }
+}
