@@ -1362,3 +1362,24 @@
     pointer-events:none!important;
   }
 }
+
+
+/* 2026-09-27 compact home continuation: keep secondary information easy to scan. */
+@media(max-width:760px){
+  body[data-page="home"] .home-overview-grid{gap:8px!important}
+  body[data-page="home"] .home-overview-card{
+    min-height:112px!important;
+    padding:14px!important;
+    border-radius:15px!important;
+  }
+  body[data-page="home"] .home-overview-card :is(strong,p){overflow-wrap:anywhere}
+  body[data-page="home"] .home-quick-stats{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:7px!important;
+  }
+  body[data-page="home"] .home-quick-stats>a{
+    min-height:92px!important;
+    padding:12px!important;
+    border-radius:14px!important;
+  }
+}
