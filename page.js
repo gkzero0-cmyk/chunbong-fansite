@@ -191,16 +191,40 @@
       return button;
     };
 
-    const showUpdate = registration => {
+    let updateReloadFallback = 0;
+
+    const activateUpdate = async (registration, candidate = null) => {
+      reloadOnControllerChange = true;
+      let waiting = registration.waiting || (candidate?.state === 'installed' ? candidate : null);
+      if (!waiting) {
+        try { await registration.update(); } catch {}
+        waiting = registration.waiting;
+      }
+      if (!waiting) {
+        window.location.reload();
+        return;
+      }
+      waiting.postMessage({ type: 'SKIP_WAITING' });
+      clearTimeout(updateReloadFallback);
+      updateReloadFallback = window.setTimeout(() => {
+        window.location.reload();
+      }, 2500);
+    };
+
+    const showUpdate = (registration, candidate = null) => {
       if (!navigator.serviceWorker.controller || document.querySelector('[data-pwa-update]')) return;
       const toast = document.createElement('div');
       toast.className = 'pwa-update-toast';
       toast.dataset.pwaUpdate = '';
       toast.setAttribute('role', 'status');
       toast.innerHTML = '<div><strong>새 버전 준비 완료</strong><span>최신 팬사이트로 바로 바꿀 수 있어요.</span></div><button type="button">새로고침</button>';
-      toast.querySelector('button')?.addEventListener('click', () => {
-        reloadOnControllerChange = true;
-        registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+      toast.querySelector('button')?.addEventListener('click', async event => {
+        const button = event.currentTarget;
+        if (button) {
+          button.disabled = true;
+          button.textContent = '업데이트 중…';
+        }
+        await activateUpdate(registration, candidate);
       });
       document.body.appendChild(toast);
     };
@@ -255,17 +279,16 @@
         });
         if (registration.waiting) {
           if (standalone) {
-            reloadOnControllerChange = true;
-            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            void activateUpdate(registration, registration.waiting);
           } else {
-            showUpdate(registration);
+            showUpdate(registration, registration.waiting);
           }
         }
         registration.addEventListener('updatefound', () => {
           const worker = registration.installing;
           if (!worker) return;
           worker.addEventListener('statechange', () => {
-            if (worker.state === 'installed' && navigator.serviceWorker.controller) showUpdate(registration);
+            if (worker.state === 'installed' && navigator.serviceWorker.controller) showUpdate(registration, worker);
           });
         });
       } catch (error) {
