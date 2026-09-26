@@ -13,16 +13,26 @@ const BASE=process.env.BASE_URL||'http://127.0.0.1:4178';
 const OUT=process.env.VISUAL_AUDIT_DIR||'/tmp/chunbong-visual-audit';
 const pages=[
   ['home','/index.html'],
+  ['schedule','/schedule.html'],
+  ['notice','/notice.html'],
+  ['vod','/vod.html'],
+  ['clips','/clips.html'],
+  ['fanart','/fanart.html'],
+  ['youtube','/youtube.html'],
   ['tarot','/tarot.html'],
   ['minigames','/minigames.html'],
   ['contents','/chunbong-contents.html'],
-  ['fanart','/fanart.html'],
+  ['history','/history.html'],
+  ['data','/data.html'],
   ['operator','/operator.html']
 ];
 const viewports=[
   {name:'desktop-1440',width:1440,height:900},
   {name:'desktop-1920',width:1920,height:1080},
-  {name:'mobile-390',width:390,height:844}
+  {name:'mobile-320',width:320,height:720},
+  {name:'mobile-360',width:360,height:800},
+  {name:'mobile-390',width:390,height:844},
+  {name:'mobile-430',width:430,height:932}
 ];
 
 await fs.mkdir(OUT,{recursive:true});
