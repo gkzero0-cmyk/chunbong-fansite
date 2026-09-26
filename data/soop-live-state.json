@@ -1,9 +1,27 @@
 {
   "version": 1,
-  "session": null,
+  "session": {
+    "active": true,
+    "sessionId": "2026-09-26T02:51:51.000Z",
+    "startedAt": "2026-09-26T02:51:51.000Z",
+    "title": "마병대4 행정관 선진병영 시스템 도입하겠습니다",
+    "samples": [
+      {
+        "capturedAt": "2026-09-26T02:53:06.068Z",
+        "live": true,
+        "startedAt": "2026-09-26T02:51:51.000Z",
+        "title": "마병대4 행정관 선진병영 시스템 도입하겠습니다",
+        "viewerCount": 20,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 30868,
+        "fanclubCount": 7754
+      }
+    ]
+  },
   "lastProfile": {
-    "capturedAt": "2026-09-26T02:44:29.918Z",
-    "followerCount": 30872,
+    "capturedAt": "2026-09-26T02:53:06.068Z",
+    "followerCount": 30868,
     "fanclubCount": 7754
   }
 }
