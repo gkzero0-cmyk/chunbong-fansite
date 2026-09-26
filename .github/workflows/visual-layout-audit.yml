@@ -49,6 +49,10 @@ jobs:
           BASE_URL: http://127.0.0.1:4178
           VISUAL_AUDIT_DIR: /tmp/chunbong-visual-audit
         run: node tests/visual-layout-audit.mjs
+      - name: Audit browser accessibility
+        env:
+          BASE_URL: http://127.0.0.1:4178
+        run: node tests/predeploy-browser-accessibility.mjs
       - name: Upload visual audit screenshots
         if: always()
         uses: actions/upload-artifact@v4
