@@ -29,7 +29,7 @@ assert.match(versionApi, /DEPLOY_COMMIT_SHA/, 'version endpoint must support pre
 assert.match(versionApi, /no-store/, 'version endpoint must not be cached');
 assert.match(workflow, /api\/version/, 'production sync workflow must query version endpoint');
 assert.match(workflow, /git rev-parse HEAD/, 'production sync workflow must compare against checked-out main');
-assert.match(recoveryWorkflow, /vercel@latest build --prod/, 'recovery must build locally');
+assert.match(recoveryWorkflow, /vercel@59\\.19\\.1 build --prod/, 'recovery must build locally');
 assert.match(recoveryWorkflow, /deploy --prebuilt --prod/, 'recovery must upload prebuilt output');
 assert.match(recoveryWorkflow, /DEPLOY_COMMIT_SHA=\$GITHUB_SHA/, 'recovery must stamp the deployed commit');
 assert.doesNotMatch(serviceWorker, /'\/home-overview\.css'/, 'home overview CSS should runtime-cache after the home page requests it');
