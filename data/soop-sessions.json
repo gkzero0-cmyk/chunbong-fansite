@@ -198,6 +198,35 @@
         }
       ],
       "measurement": "fan-site-sampled-5m"
+    },
+    {
+      "id": "2026-09-26T02:51:51.000Z",
+      "broadcastId": "",
+      "startedAt": "2026-09-26T02:51:51.000Z",
+      "endedAt": "2026-09-26T20:09:25.338Z",
+      "date": "2026-09-26",
+      "durationMinutes": 1038,
+      "averageViewers": 195,
+      "maxViewers": 430,
+      "viewerSampleCount": 101,
+      "followerStart": 30868,
+      "followerEnd": 30925,
+      "followerDelta": 57,
+      "fanclubStart": 7754,
+      "fanclubEnd": 7813,
+      "fanclubDelta": 59,
+      "title": "마병대4 행정관 선진병영 시스템 도입하겠습니다",
+      "categories": [
+        {
+          "id": "40017",
+          "name": "마인크래프트",
+          "minutes": 917,
+          "sampleCount": 101,
+          "averageViewers": 195,
+          "maxViewers": 430
+        }
+      ],
+      "measurement": "fan-site-sampled-5m"
     }
   ]
 }
