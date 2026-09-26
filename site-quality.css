@@ -317,3 +317,19 @@ body[data-game] .pwa-install-chip{display:none!important}
   .daily-fortune-card,
   .daily-fortune-card-inner{transform:none!important;filter:none!important}
 }
+
+
+/* 2026-09-27 resilient pre-hydration header.
+   site-shell groups these destinations after JS starts; this prevents cramped fallback navigation. */
+@media(min-width:761px){
+  .site-header .main-nav:not(:has(.nav-group)){
+    max-width:min(66vw,900px);
+    overflow:hidden;
+    white-space:nowrap;
+  }
+}
+@media(max-width:760px){
+  .site-header .main-nav:not(.open){
+    visibility:hidden;
+  }
+}
