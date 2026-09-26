@@ -31,7 +31,7 @@ for(const file of publicHtml){
   const source=fs.readFileSync(file,'utf8');
   for(const match of source.matchAll(/\bhref="([^"]+)"/gi)){
     const href=match[1];
-    if(!href||/^(?:https?:|mailto:|tel:|javascript:|#|\/\/)/i.test(href))continue;
+    if(!href||/^(?:https?:|mailto:|tel:|javascript:|#|\/\/|\/api\/)/i.test(href))continue;
     const clean=href.split(/[?#]/)[0].replace(/^\.\//,'').replace(/^\//,'');
     if(!clean)continue;
     assert.ok(existing.has(clean),rel(file)+' has broken internal href '+href);
