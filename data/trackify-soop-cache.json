@@ -1,43 +1,43 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-25T06:28:36.883Z",
+  "capturedAt": "2026-09-26T06:27:10.961Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 30828,
-    "fanclubCount": 7728,
-    "subscriberCount": 49,
+    "followerCount": 30876,
+    "fanclubCount": 7754,
+    "subscriberCount": 62,
     "supporterCount": 24,
-    "averageViewers": 69,
+    "averageViewers": 77,
     "maxViewers": 489,
-    "airtimeMinutes": 12438,
-    "viewershipHours": 14227,
-    "cumulativeUpCount": 81102,
-    "totalAirtimeMinutes": 627358,
-    "monthlyStarCount": 97752,
-    "starsPerHour": 472,
-    "monthlySupporterCount": 278,
-    "monthlyChatCount": 49527,
+    "airtimeMinutes": 13423,
+    "viewershipHours": 17265,
+    "cumulativeUpCount": 81302,
+    "totalAirtimeMinutes": 628421,
+    "monthlyStarCount": 108273,
+    "starsPerHour": 484,
+    "monthlySupporterCount": 346,
+    "monthlyChatCount": 55159,
     "monthlyMuteCount": 6,
     "stationOpenedAt": "2022-09-29T14:58:14",
     "latestBroadcastDate": "2026-09-25T10:30:51",
     "categories": [
       {
         "name": "버추얼",
-        "minutes": 11138,
-        "streamCount": 27,
-        "sharePercent": 58
+        "minutes": 11750,
+        "streamCount": 28,
+        "sharePercent": 60.4
       },
       {
         "name": "마인크래프트",
-        "minutes": 4844,
-        "streamCount": 8,
-        "sharePercent": 25.2
+        "minutes": 5294,
+        "streamCount": 9,
+        "sharePercent": 27.2
       },
       {
         "name": "오버워치",
-        "minutes": 2660,
-        "streamCount": 6,
-        "sharePercent": 13.8
+        "minutes": 1841,
+        "streamCount": 5,
+        "sharePercent": 9.5
       },
       {
         "name": "PUBG: 배틀그라운드",
@@ -11919,6 +11919,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/297351427"
+    },
+    {
+      "id": "trackify-297370263",
+      "broadcastId": "297370263",
+      "date": "2026-09-25",
+      "startedAt": "2026-09-25T10:30:51+09:00",
+      "endedAt": "2026-09-26T04:13:00+09:00",
+      "durationMinutes": 1062,
+      "averageViewers": 150,
+      "maxViewers": 309,
+      "viewerSampleCount": 212,
+      "uniqueViewers": null,
+      "starCount": 8873,
+      "supporterCount": 40,
+      "chatCount": 4504,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "마병대4 행정관 오침권이 필요합니다 형님들",
+      "categories": [
+        {
+          "id": "00040017",
+          "name": "마인크래프트",
+          "minutes": 1062,
+          "sampleCount": 212,
+          "averageViewers": 150,
+          "maxViewers": 309
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297370263"
     }
   ]
 }
