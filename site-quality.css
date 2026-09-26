@@ -333,3 +333,18 @@ body[data-game] .pwa-install-chip{display:none!important}
     visibility:hidden;
   }
 }
+
+
+/* 2026-09-27 information hierarchy polish. */
+body[data-page="home"] .home-all-links{margin-top:18px}
+body[data-page="home"] .home-all-links>summary{opacity:.88}
+body[data-page="home"] .home-all-links[open]>summary{opacity:1}
+body[data-page="home"] :is(.home-overview-card,.home-quick-stats>a) small{
+  letter-spacing:.06em;
+  text-transform:none;
+}
+@media(max-width:760px){
+  body[data-page="home"] .portal-feature-grid{gap:8px}
+  body[data-page="home"] .home-all-links{margin-top:12px}
+  body[data-page="home"] .home-all-links>summary{min-height:48px}
+}
