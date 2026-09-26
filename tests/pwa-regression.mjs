@@ -46,7 +46,14 @@ assert.match(sw, /request\.destination === 'document'[\s\S]*networkFirst\(reques
 assert.match(sw, /\['script','style'\][\s\S]*boundedNetworkFirst\(request, event, 450\)/, 'scripts and styles should prefer fresh network briefly, then use cached assets when revalidation is slow');
 assert.match(sw, /request\.destination === 'worker'[\s\S]*networkFirst\(request, event\)/, 'workers should remain network-first');
 assert.match(sw, /\['image','font'\]/, 'heavy visual assets should keep stale-while-revalidate');
-assert.match(page, /standalone[\s\S]*registration\.waiting[\s\S]*SKIP_WAITING/, 'installed PWA should activate a waiting update on app launch');
+assert.match(page, /standalone[\s\S]*activateUpdate\(registration, registration\.waiting\)/, 'installed PWA should activate a waiting update on app launch');
+const installBlock=(sw.match(/self\.addEventListener\('install',[\s\S]*?\n\}\);/)||[''])[0];
+assert.doesNotMatch(installBlock,/skipWaiting/,'service worker install must not auto-activate before the refresh button is used');
+assert.match(sw,/event\.data\?\.type === 'SKIP_WAITING'[\s\S]*self\.skipWaiting\(\)/,'service worker must still activate when the page explicitly requests it');
+assert.match(page,/registration\.waiting \|\| \(candidate\?\.state === 'installed' \? candidate : null\)/,'update refresh must retain the installed worker even before registration.waiting settles');
+assert.match(page,/await registration\.update\(\)/,'update refresh should retry registration state before falling back');
+assert.match(page,/button\.textContent = '업데이트 중…'/,'update refresh button must expose click progress');
+assert.match(page,/updateReloadFallback[\s\S]*window\.location\.reload\(\)/,'update refresh must have a reload fallback if controllerchange is missed');
 assert.match(shell, /chunbong-cache-v2:/, 'cross-page session cache namespace missing');
 assert.match(shell, /sessionStorage\.setItem/, 'shared cache should persist within the tab');
 assert.match(sw, /\/site-shell\.js/, 'PWA app shell must cache site-shell.js');
