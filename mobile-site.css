@@ -1383,3 +1383,39 @@
     border-radius:14px!important;
   }
 }
+
+
+/* 2026-09-27 archive controls: keep six filters usable without a tall mobile wall. */
+@media(max-width:760px){
+  body[data-page="contents"] .archive-toolbar{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+  }
+  body[data-page="contents"] .archive-toolbar .archive-search{
+    grid-column:1/-1!important;
+  }
+  body[data-page="contents"] .archive-toolbar label{
+    min-width:0!important;
+  }
+  body[data-page="contents"] .archive-toolbar :is(input,select){
+    width:100%!important;
+    min-width:0!important;
+    min-height:44px!important;
+  }
+  body[data-page="contents"] .archive-browser-head{
+    gap:8px!important;
+    align-items:center!important;
+  }
+  body[data-page="contents"] .archive-reset{
+    min-height:44px!important;
+  }
+}
+@media(max-width:390px){
+  body[data-page="contents"] .archive-toolbar{
+    grid-template-columns:1fr!important;
+  }
+  body[data-page="contents"] .archive-toolbar .archive-search{
+    grid-column:auto!important;
+  }
+}
