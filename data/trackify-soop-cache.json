@@ -1,55 +1,55 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-26T06:27:10.961Z",
+  "capturedAt": "2026-09-27T06:27:38.985Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 30876,
-    "fanclubCount": 7754,
-    "subscriberCount": 62,
-    "supporterCount": 24,
-    "averageViewers": 77,
+    "followerCount": 30923,
+    "fanclubCount": 7813,
+    "subscriberCount": 61,
+    "supporterCount": 25,
+    "averageViewers": 83,
     "maxViewers": 489,
-    "airtimeMinutes": 13423,
-    "viewershipHours": 17265,
-    "cumulativeUpCount": 81302,
-    "totalAirtimeMinutes": 628421,
-    "monthlyStarCount": 108273,
-    "starsPerHour": 484,
-    "monthlySupporterCount": 346,
-    "monthlyChatCount": 55159,
+    "airtimeMinutes": 14247,
+    "viewershipHours": 19736,
+    "cumulativeUpCount": 81555,
+    "totalAirtimeMinutes": 629149,
+    "monthlyStarCount": 115467,
+    "starsPerHour": 486,
+    "monthlySupporterCount": 376,
+    "monthlyChatCount": 59041,
     "monthlyMuteCount": 6,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-09-25T10:30:51",
+    "latestBroadcastDate": "2026-09-26T11:51:51",
     "categories": [
       {
         "name": "버추얼",
         "minutes": 11750,
         "streamCount": 28,
-        "sharePercent": 60.4
+        "sharePercent": 59.3
       },
       {
         "name": "마인크래프트",
-        "minutes": 5294,
-        "streamCount": 9,
-        "sharePercent": 27.2
+        "minutes": 6330,
+        "streamCount": 10,
+        "sharePercent": 31.9
       },
       {
         "name": "오버워치",
-        "minutes": 1841,
-        "streamCount": 5,
-        "sharePercent": 9.5
+        "minutes": 1176,
+        "streamCount": 4,
+        "sharePercent": 5.9
       },
       {
         "name": "PUBG: 배틀그라운드",
         "minutes": 341,
         "streamCount": 3,
-        "sharePercent": 1.8
+        "sharePercent": 1.7
       },
       {
         "name": "아르마 3",
         "minutes": 228,
         "streamCount": 1,
-        "sharePercent": 1.2
+        "sharePercent": 1.1
       }
     ]
   },
@@ -11953,6 +11953,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/297370263"
+    },
+    {
+      "id": "trackify-297390031",
+      "broadcastId": "297390031",
+      "date": "2026-09-26",
+      "startedAt": "2026-09-26T11:51:51+09:00",
+      "endedAt": "2026-09-27T05:08:15+09:00",
+      "durationMinutes": 1036,
+      "averageViewers": 197,
+      "maxViewers": 483,
+      "viewerSampleCount": 207,
+      "uniqueViewers": null,
+      "starCount": 11116,
+      "supporterCount": 90,
+      "chatCount": 5803,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "마병대4 행정관 선진병영 시스템 도입하겠습니다",
+      "categories": [
+        {
+          "id": "00040017",
+          "name": "마인크래프트",
+          "minutes": 1036,
+          "sampleCount": 207,
+          "averageViewers": 197,
+          "maxViewers": 483
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297390031"
     }
   ]
 }
