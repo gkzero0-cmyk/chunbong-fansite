@@ -511,11 +511,22 @@
         "categoryName": "마인크래프트",
         "followerCount": 30979,
         "fanclubCount": 7813
+      },
+      {
+        "capturedAt": "2026-09-27T13:50:55.145Z",
+        "live": true,
+        "startedAt": "2026-09-27T05:25:17.000Z",
+        "title": "마병대4 행정관 오늘은 잘하자 애들아.",
+        "viewerCount": 112,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 30979,
+        "fanclubCount": 7813
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-09-27T13:42:36.655Z",
+    "capturedAt": "2026-09-27T13:50:55.145Z",
     "followerCount": 30979,
     "fanclubCount": 7813
   }
