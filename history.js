@@ -142,7 +142,7 @@
       button.setAttribute('aria-pressed', String(active));
     });
     if (viewTitle) viewTitle.textContent = currentView === 'simple' ? '한눈에 보는 방송 이력' : '기록을 자세히 보기';
-    if (viewDesc) viewDesc.textContent = currentView === 'simple' ? '년도 · 날짜(기간) · 내용만 간결하게 확인합니다.' : 'SOOP 공식 게시글의 상세 내용과 이미지까지 확인합니다.';
+    if (viewDesc) viewDesc.textContent = currentView === 'simple' ? '년도 · 날짜(기간) · 내용만 간결하게 확인합니다.' : '연도별 타임라인에서 분류와 주요 기록 설명까지 확인합니다.';
     document.body.dataset.historyView = currentView;
     if (guide) guide.hidden = currentView === 'simple';
   }
@@ -162,16 +162,20 @@
 
   async function loadHistory(force = false) {
     if (!root || loading) return;
+    if (!currentItem) {
+      currentItem = { title: '춘봉 방송 이력' };
+      renderItem(currentItem);
+    }
     loading = true;
-    if (force) root.innerHTML = '<div class="history-loading"><span></span><strong>춘봉 방송 이력을 다시 불러오는 중...</strong><p>SOOP 원본 게시글과 동기화하고 있습니다.</p></div>';
     try {
       const response = await fetch(`${API}${force ? `&_ts=${Date.now()}` : ''}`, { headers: { accept: 'application/json' }, cache: force ? 'no-store' : 'default' });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const payload = await response.json();
-      if (!payload?.item) throw new Error(payload?.reason || '방송 이력 데이터가 없습니다.');
-      renderItem(payload.item);
-    } catch (error) { renderError(error?.message || 'network error'); }
-    finally { loading = false; }
+      if (payload?.item) currentItem = payload.item;
+      if (status) status.textContent = syncText();
+    } catch (error) {
+      if (status) status.textContent = '구조화 방송 이력 표시 중 · SOOP 원본 확인은 일시 지연';
+    } finally { loading = false; }
   }
 
   viewButtons.forEach(button => button.addEventListener('click', () => setView(button.dataset.historyView)));
