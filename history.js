@@ -102,55 +102,35 @@
     }).filter(row => row.content && !/^(춘봉\s*)?방송\s*이력$/i.test(row.content));
   }
 
-  function renderSimple(item = {}) {
-    const rows = extractSimpleRows(item);
-    if (!rows.length) {
-      root.innerHTML = `<div class="history-simple-empty"><strong>간단 보기를 구성하는 중입니다.</strong><p>원문 형식을 자동 분석하지 못해 상세 보기에서 공식 기록을 확인할 수 있습니다.</p><button class="btn btn-primary" type="button" data-open-detail>상세 보기</button></div>`;
-      root.querySelector('[data-open-detail]')?.addEventListener('click', () => setView('detail'));
-      return;
-    }
-    const years = [...new Set(rows.map(row => row.year).filter(Boolean))];
-    const filters = years.length > 1 ? `<div class="history-year-filters"><button type="button" class="is-active" data-history-year="all">전체</button>${years.map(year => `<button type="button" data-history-year="${esc(year)}">${esc(year)}</button>`).join('')}</div>` : '';
-    root.innerHTML = `
-      <section class="history-simple" aria-label="간단 방송 이력">
-        ${filters}
-        <div class="history-simple-head" aria-hidden="true"><span>년도</span><span>날짜 / 기간</span><span>내용</span></div>
-        <div class="history-simple-list">
-          ${rows.map((row, index) => `<article class="history-simple-row" data-history-row data-year="${esc(row.year)}">
-            <strong class="history-simple-year">${index === 0 || rows[index - 1].year !== row.year ? esc(row.year) : '<span class="sr-only">' + esc(row.year) + '</span>'}</strong>
-            <time class="history-simple-date">${esc(row.date || '—')}</time>
-            <p class="history-simple-content">${esc(row.content)}</p>
-          </article>`).join('')}
-        </div>
-        <footer class="history-simple-foot"><span>SOOP 공식 방송 이력 기반 · 원본 변경 시 자동 갱신</span><button type="button" class="history-detail-link" data-open-detail>상세 기록 보기 →</button></footer>
-      </section>`;
-    root.querySelectorAll('[data-open-detail]').forEach(button => button.addEventListener('click', () => setView('detail')));
-    root.querySelectorAll('[data-history-year]').forEach(button => button.addEventListener('click', () => {
-      const selected = button.dataset.historyYear;
-      root.querySelectorAll('[data-history-year]').forEach(node => node.classList.toggle('is-active', node === button));
-      root.querySelectorAll('[data-history-row]').forEach(row => { row.hidden = selected !== 'all' && row.dataset.year !== selected; });
-    }));
+  function curatedRecords() { return Array.isArray(window.CHUNBONG_HISTORY_RECORDS) ? window.CHUNBONG_HISTORY_RECORDS : []; }
+  function displayDate(record) {
+    const fmt = value => { const [y,m,d] = String(value).split('-'); return `${y}. ${Number(m)}. ${Number(d)}`; };
+    if (!record.end || record.end === record.start) return fmt(record.start);
+    const [sy] = record.start.split('-'); const [ey,em,ed] = record.end.split('-');
+    return sy === ey ? `${fmt(record.start)} ~ ${Number(em)}. ${Number(ed)}` : `${fmt(record.start)} ~ ${fmt(record.end)}`;
+  }
+  function renderSimple() {
+    const rows = curatedRecords();
+    const years = [...new Set(rows.map(row => row.start.slice(0,4)))].sort((a,b)=>b-a);
+    root.innerHTML = `<section class="history-simple" aria-label="간단 방송 이력">
+      <div class="history-year-filters"><button type="button" class="is-active" data-history-year="all">전체</button>${years.map(y=>`<button type="button" data-history-year="${y}">${y}</button>`).join('')}</div>
+      <div class="history-simple-head" aria-hidden="true"><span>년도</span><span>날짜 / 기간</span><span>내용</span></div>
+      <div class="history-simple-list">${rows.map((row,i)=>{const year=row.start.slice(0,4);const prev=i?rows[i-1].start.slice(0,4):'';return `<article class="history-simple-row" data-history-row data-year="${year}"><strong class="history-simple-year">${year!==prev?year:''}</strong><time class="history-simple-date">${esc(displayDate(row))}</time><p class="history-simple-content">${esc(row.label)}</p></article>`}).join('')}</div>
+      <footer class="history-simple-foot"><span>SOOP 공식 기록 중심 · 공개 자료 교차 검증</span><button type="button" class="history-detail-link" data-open-detail>상세 기록 보기 →</button></footer></section>`;
+    root.querySelector('[data-open-detail]')?.addEventListener('click',()=>setView('detail'));
+    root.querySelectorAll('[data-history-year]').forEach(button=>button.addEventListener('click',()=>{const y=button.dataset.historyYear;root.querySelectorAll('[data-history-year]').forEach(n=>n.classList.toggle('is-active',n===button));root.querySelectorAll('[data-history-row]').forEach(row=>row.hidden=y!=='all'&&row.dataset.year!==y);}));
   }
 
-  function renderDetail(item = {}) {
-    const body = item.html
-      ? `<div class="history-source-body">${item.html}</div>`
-      : item.content
-        ? `<div class="history-source-body"><p>${esc(item.content).replaceAll('\n', '<br>')}</p></div>`
-        : '';
-    if (!body) { renderError('SOOP 게시글의 방송 이력 내용을 가져오지 못했습니다.'); return; }
-    root.innerHTML = `
-      <article class="history-document">
-        <header class="history-document-head"><div><span class="history-document-label">SOOP OFFICIAL POST</span><h2>${esc(item.title || '춘봉 방송 이력')}</h2><p>${esc(formatDate(item.date))}</p></div><a class="btn btn-ghost history-source-button" href="${esc(item.link || SOURCE_URL)}" target="_blank" rel="noreferrer">SOOP 원본 ↗</a></header>
-        ${body}
-        <footer class="history-document-foot"><span>원본 게시글 #${SOURCE_ID}</span><a class="inline-link" href="${SOURCE_URL}" target="_blank" rel="noreferrer">원본에서 보기 ↗</a></footer>
-      </article>`;
+  function renderDetail() {
+    const rows = curatedRecords();
+    const groups = rows.reduce((acc,row)=>{const y=row.start.slice(0,4);(acc[y] ||= []).push(row);return acc;},{});
+    root.innerHTML = `<section class="history-curated-detail">${Object.keys(groups).sort((a,b)=>b-a).map(year=>`<section class="history-year-block"><header><span>${year}</span><h2>${year}년 방송 이력</h2><small>${groups[year].length}개 기록</small></header><div class="history-timeline">${groups[year].map(row=>`<article class="history-timeline-item ${row.featured?'is-featured':''}"><div class="history-timeline-date">${esc(displayDate(row))}</div><div class="history-timeline-card"><div class="history-timeline-meta"><span>${esc(row.kind||'방송')}</span>${row.featured?'<b>주요 이력</b>':''}</div><h3>${esc(row.label)}</h3>${row.detail?`<p>${esc(row.detail)}</p>`:''}</div></article>`).join('')}</div></section>`).join('')}<footer class="history-curated-source"><strong>기록 기준</strong><p>SOOP 공식 방송 이력을 중심으로 공개 자료를 교차 확인해 정리했습니다. 원문은 참고·검증용으로 유지합니다.</p><a class="btn btn-ghost" href="${SOURCE_URL}" target="_blank" rel="noreferrer">SOOP 원본 ↗</a></footer></section>`;
   }
 
   function renderItem(item = {}) {
     if (!root) return;
     currentItem = item;
-    if (currentView === 'detail') renderDetail(item); else renderSimple(item);
+    if (currentView === 'detail') renderDetail(); else renderSimple();
     if (status) status.textContent = syncText();
     updateViewUI();
   }
@@ -196,7 +176,7 @@
 
   viewButtons.forEach(button => button.addEventListener('click', () => setView(button.dataset.historyView)));
   document.addEventListener('visibilitychange', () => { if (!document.hidden) loadHistory(true); });
-  window.__CHUNBONG_HISTORY_HELPERS__ = { renderItem, renderSimple, renderDetail, extractSimpleRows, formatDate, setView };
+  window.__CHUNBONG_HISTORY_HELPERS__ = { renderItem, renderSimple, renderDetail, formatDate, setView };
   updateViewUI();
   loadHistory();
   timer = setInterval(() => { if (!document.hidden) loadHistory(true); }, REFRESH_MS);
