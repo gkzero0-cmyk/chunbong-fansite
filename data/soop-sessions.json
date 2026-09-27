@@ -227,6 +227,35 @@
         }
       ],
       "measurement": "fan-site-sampled-5m"
+    },
+    {
+      "id": "2026-09-27T05:25:17.000Z",
+      "broadcastId": "",
+      "startedAt": "2026-09-27T05:25:17.000Z",
+      "endedAt": "2026-09-27T21:19:35.402Z",
+      "date": "2026-09-27",
+      "durationMinutes": 954,
+      "averageViewers": 155,
+      "maxViewers": 477,
+      "viewerSampleCount": 90,
+      "followerStart": 30930,
+      "followerEnd": 30982,
+      "followerDelta": 52,
+      "fanclubStart": 7813,
+      "fanclubEnd": 7826,
+      "fanclubDelta": 13,
+      "title": "마병대4 행정관 오늘은 잘하자 애들아.",
+      "categories": [
+        {
+          "id": "40017",
+          "name": "마인크래프트",
+          "minutes": 827,
+          "sampleCount": 90,
+          "averageViewers": 155,
+          "maxViewers": 477
+        }
+      ],
+      "measurement": "fan-site-sampled-5m"
     }
   ]
 }
