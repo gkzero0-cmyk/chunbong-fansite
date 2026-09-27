@@ -1,6 +1,6 @@
 'use strict';
-const fs=require('node:fs');
-const assert=require('node:assert/strict');
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
 const files=['lib/operator-center-api.js','lib/push-notifications-api.js','lib/chungwagame-ranking-api.js','lib/chunbak-ranking-api.js','lib/chuncortile-ranking-api.js','lib/chuntris-ranking-api.js'];
 for(const file of files){
  const source=fs.readFileSync(file,'utf8');
