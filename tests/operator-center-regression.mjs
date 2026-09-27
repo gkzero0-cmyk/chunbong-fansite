@@ -44,7 +44,7 @@ assert.match(api,/sha256/,'owner email comparison must use hash');
 assert.match(api,/operator:session-secret:v1/,'server-managed session secret missing');
 assert.match(api,/operator:analytics:start:v1/,'analytics collection start marker missing');
 assert.match(api,/ANALYTICS_DAYS_KEY/,'analytics day index missing');
-assert.match(api,/analyticsKeys\('all'\)/,'all-time analytics aggregate missing');
+assert.match(api,/const aggregateDates=all\?recordedDates:requestedDates;/,'all-time analytics must aggregate from recorded daily keys');
 assert.match(api,/ACTIVE_KEY='operator:analytics:active:v1'/,'active visitor key missing');
 assert.match(api,/\['ZADD',ACTIVE_KEY/,'active visitor tracking missing');
 assert.match(api,/PFADD/,'anonymous unique visitor aggregation missing');
