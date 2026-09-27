@@ -8,9 +8,10 @@ try{
  for(const theme of ['dark','light']){
   for(const file of pages){
    const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});
-   const consoleErrors=[],failed=[];
+   const consoleErrors=[],failed=[],httpErrors=[];
    page.on('console',msg=>{if(msg.type()==='error')consoleErrors.push(msg.text())});
    page.on('requestfailed',req=>{if(req.url().startsWith(BASE))failed.push(req.url())});
+   page.on('response',res=>{if(res.status()>=400&&res.url().startsWith(BASE))httpErrors.push(res.status()+' '+res.url())});
    await page.addInitScript(value=>localStorage.setItem('chunbong-theme',value),theme);
    await page.route('**/api/content?*',route=>route.fulfill({status:200,contentType:'application/json',body:'{"items":[],"fallback":true}'}));
    await page.goto(BASE+'/'+file+'?_quality=1',{waitUntil:'domcontentloaded'});
@@ -25,7 +26,8 @@ try{
    assert.equal(result.theme,theme,file+' theme did not apply '+theme);
    assert.ok(result.scrollWidth<=result.clientWidth+1,file+' overflows horizontally in '+theme);
    assert.deepEqual(result.tiny,[],file+' has very small interactive targets: '+JSON.stringify(result.tiny));
-   assert.deepEqual(consoleErrors,[],file+' console errors: '+consoleErrors.join(' | '));
+   assert.deepEqual(consoleErrors,[],file+' console errors: '+consoleErrors.join(' | ')+'; HTTP errors: '+httpErrors.join(' | '));
+   assert.deepEqual(httpErrors,[],file+' HTTP errors: '+httpErrors.join(' | '));
    assert.deepEqual(failed,[],file+' failed local requests: '+failed.join(' | '));
    await page.close();
   }
