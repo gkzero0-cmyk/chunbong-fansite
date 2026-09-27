@@ -14,6 +14,7 @@ try{
    page.on('response',res=>{if(res.status()>=400&&res.url().startsWith(BASE))httpErrors.push(res.status()+' '+res.url())});
    await page.addInitScript(value=>localStorage.setItem('chunbong-theme',value),theme);
    await page.route('**/api/content?*',route=>route.fulfill({status:200,contentType:'application/json',body:'{"items":[],"fallback":true}'}));
+   await page.route('**/api/version*',route=>route.fulfill({status:200,contentType:'application/json',body:'{"sha":"test","mainSha":"test","synced":true,"runtimeSynced":true,"exactSynced":true}'}));
    await page.goto(BASE+'/'+file+'?_quality=1',{waitUntil:'domcontentloaded'});
    await page.waitForTimeout(300);
    const result=await page.evaluate(()=>{
