@@ -16,7 +16,7 @@ function add(event){queue.push({...event,page:page()});if(queue.length>=8)flush(
 function activeTick(){
  if(!visibleAt)return;
  const now=performance.now(),delta=Math.max(0,now-visibleAt);visibleAt=now;activePending+=delta;
- while(activePending>=15000){add({type:'active_time',activeMs:15000});activePending-=15000}
+ while(activePending>=120000){add({type:'active_time',activeMs:120000});activePending-=120000}
 }
 async function flush({beacon=false}={}){
  activeTick();if(activePending>=1000){queue.push({type:'active_time',page:page(),activeMs:Math.round(activePending)});activePending=0}
@@ -101,7 +101,7 @@ document.addEventListener('chunbong:tarot-start',()=>add({type:'tarot_start'}));
 document.addEventListener('chunbong:tarot-result',()=>add({type:'tarot_result'}));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){activeTick();visibleAt=0;reportWebVitals();void flush({beacon:true})}else visibleAt=performance.now()});
 window.addEventListener('pagehide',()=>{reportWebVitals();void flush({beacon:true})});
-setInterval(()=>{if(document.visibilityState==='visible'){activeTick();void flush()}},15000);
+setInterval(()=>{if(document.visibilityState==='visible'){activeTick();void flush()}},120000);
 setTimeout(flush,1200);
 const pending=Array.isArray(window.__ChunbongAnalyticsQueue)?window.__ChunbongAnalyticsQueue.splice(0):[];
 for(const event of pending){if(event&&typeof event==='object'&&event.type)add(event)}
