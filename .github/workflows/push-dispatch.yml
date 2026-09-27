@@ -9,21 +9,19 @@ permissions:
   contents: read
   id-token: write
 
-concurrency:
-  group: background-push-dispatch
-  cancel-in-progress: true
-
 jobs:
-  dispatch:
+  push_dispatch:
     runs-on: ubuntu-latest
     timeout-minutes: 3
+    concurrency:
+      group: background-push-dispatch
+      cancel-in-progress: true
     steps:
       - name: Request GitHub OIDC token and dispatch push checks
         env:
           AUDIENCE: chunbong-fansite-push
           CONFIG_URL: https://chunbong-fansite.vercel.app/api/content?type=push-config
           PUSH_URL: https://chunbong-fansite.vercel.app/api/content?type=push-dispatch
-          ARCHIVE_SYNC_URL: https://chunbong-fansite.vercel.app/api/content?type=content-archive-auto-sync
         shell: bash
         run: |
           set -euo pipefail
@@ -43,7 +41,9 @@ jobs:
           separator='?'
           if [[ "$ACTIONS_ID_TOKEN_REQUEST_URL" == *'?'* ]]; then separator='&'; fi
           response="$(
-            curl -fsS               -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN"               "${ACTIONS_ID_TOKEN_REQUEST_URL}${separator}audience=${AUDIENCE}"
+            curl -fsS \
+              -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+              "${ACTIONS_ID_TOKEN_REQUEST_URL}${separator}audience=${AUDIENCE}"
           )"
           token="$(
             printf '%s' "$response" | node -e "
@@ -56,7 +56,50 @@ jobs:
               });
             "
           )"
-          curl -fsS --retry 2 --retry-delay 2 --max-time 55             -H "Authorization: Bearer $token"             -H "User-Agent: chunbong-github-actions-push"             "$PUSH_URL"
+          curl -fsS --retry 2 --retry-delay 2 --max-time 55 \
+            -H "Authorization: Bearer $token" \
+            -H "User-Agent: chunbong-github-actions-push" \
+            "$PUSH_URL"
           echo
-          curl -fsS --retry 2 --retry-delay 2 --max-time 55             -X POST             -H "Authorization: Bearer $token"             -H "Origin: https://github.com"             -H "Content-Type: application/json"             -H "User-Agent: chunbong-github-actions-archive-sync"             -d '{}'             "$ARCHIVE_SYNC_URL"
+
+  archive_sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    concurrency:
+      group: content-archive-auto-sync
+      cancel-in-progress: false
+    steps:
+      - name: Request GitHub OIDC token and sync content archive
+        env:
+          AUDIENCE: chunbong-fansite-push
+          ARCHIVE_SYNC_URL: https://chunbong-fansite.vercel.app/api/content?type=content-archive-auto-sync
+        shell: bash
+        run: |
+          set -euo pipefail
+          separator='?'
+          if [[ "$ACTIONS_ID_TOKEN_REQUEST_URL" == *'?'* ]]; then separator='&'; fi
+          response="$(
+            curl -fsS \
+              -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+              "${ACTIONS_ID_TOKEN_REQUEST_URL}${separator}audience=${AUDIENCE}"
+          )"
+          token="$(
+            printf '%s' "$response" | node -e "
+              let input='';
+              process.stdin.on('data',chunk=>input+=chunk);
+              process.stdin.on('end',()=>{
+                const value=JSON.parse(input).value||'';
+                if(!value)process.exit(2);
+                process.stdout.write(value);
+              });
+            "
+          )"
+          curl -fsS --retry 2 --retry-delay 2 --max-time 55 \
+            -X POST \
+            -H "Authorization: Bearer $token" \
+            -H "Origin: https://github.com" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: chunbong-github-actions-archive-sync" \
+            -d '{}' \
+            "$ARCHIVE_SYNC_URL"
           echo
