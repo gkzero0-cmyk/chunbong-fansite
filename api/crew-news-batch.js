@@ -20,13 +20,21 @@ const MANUAL_SUMMARY = Object.freeze({
   '장지수용소': { '207422623': '러닝' },
   '강씨세가': { '207358053': '1주년' },
   '진드기': { '207893749': '히어로 레드 웰컴 진드기' },
-  'ZZAM지트': { '207641333': '소울체인드 합방' }
+  'ZZAM지트': { '207641333': '소울체인드 합방' },
+  '자라섬': { '208189099': 'VRC 윷놀이' }
 });
 
 const MANUAL_DISPLAY_SUMMARY = Object.freeze({
   '조적단': { '207589893': '배그 킬내기 일정 조율' },
   '진드기': { '207893749': '히어로 레드 웰컴 진드기' },
-  'ZZAM지트': { '207641333': '소울체인드 합방' }
+  'ZZAM지트': { '207641333': '소울체인드 합방' },
+  '자라섬': { '208189099': 'VRC 윷놀이' }
+});
+
+// 동일한 크루 활동을 여러 멤버가 공통 공지한 경우, 내용 정확성이 같은 후보 중
+// 크루 전체를 가장 잘 보여주는 대표 이미지가 확인된 게시글을 우선한다.
+const REPRESENTATIVE_MEDIA_PRIORITY = Object.freeze({
+  '자라섬': { '208189099': 1 }
 });
 
 const EXTRA_SEARCHES = Object.freeze({
@@ -130,6 +138,7 @@ function detectActivity(raw = '') {
     [/모임/i, '모임'],
     [/행사/i, '행사'],
     [/대회/i, '대회'],
+    [/vrc\s*윷놀이|윷놀이/i, 'VRC 윷놀이'],
     [/콘텐츠|컨텐츠/i, '콘텐츠'],
     [/일정/i, '일정']
   ];
@@ -201,7 +210,8 @@ function strictCrewPost(post, crew, station) {
     strictPriority: representativeTier,
     representativeTier,
     isCrewLeader: leader,
-    isLeaderRepresentative: leaderRepresentative
+    isLeaderRepresentative: leaderRepresentative,
+    representativeMediaPriority: Number(REPRESENTATIVE_MEDIA_PRIORITY[crew] && REPRESENTATIVE_MEDIA_PRIORITY[crew][id] || 0)
   };
 }
 
@@ -329,6 +339,8 @@ module.exports = async function handler(req, res) {
     candidates.sort((a, b) => {
       const tier = Number(a.representativeTier || 9) - Number(b.representativeTier || 9);
       if (tier) return tier;
+      const mediaPriority = Number(b.representativeMediaPriority || 0) - Number(a.representativeMediaPriority || 0);
+      if (mediaPriority) return mediaPriority;
       const time = parseTime(b.publishedAt) - parseTime(a.publishedAt);
       if (time) return time;
       return Number(Boolean(b.isCrewLeader)) - Number(Boolean(a.isCrewLeader));
@@ -368,7 +380,7 @@ module.exports = async function handler(req, res) {
       ok: false,
       complete: false,
       error: 'crew_news_incomplete',
-      policyVersion: 'representative-v6.6-server',
+      policyVersion: 'representative-v6.7-server',
       strictCrew: crew,
       requested: stations.length,
       failed: failures.length,
@@ -381,7 +393,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
-    policyVersion: 'representative-v6.6-server',
+    policyVersion: 'representative-v6.7-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
