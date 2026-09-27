@@ -14,3 +14,9 @@ const pageGate=api.indexOf('if(hasPageView)commands.push',baseStart);
 const visitorPf=api.indexOf("['PFADD',keys.visitors",baseStart);
 assert.ok(baseStart>=0&&pageGate>baseStart&&visitorPf>pageGate);
 console.log('analytics Redis budget regression passed');
+
+const ingest=api.slice(api.indexOf('async function ingestAnalytics'),api.indexOf('/* Privacy guard'));
+assert.doesNotMatch(ingest,/allKeys\./,'analytics ingestion must not duplicate every write into all-time keys');
+assert.doesNotMatch(ingest,/analyticsKeys\('all'\)/,'analytics ingestion must be daily-key only');
+assert.doesNotMatch(ingest,/ZREMRANGEBYSCORE',ACTIVE_KEY/,'active-user pruning should happen on operator reads, not every analytics write');
+assert.match(api,/const aggregateDates=all\?recordedDates:requestedDates;/,'all-time analytics must aggregate from daily keys');
