@@ -16,7 +16,7 @@
   });
   const openButton=document.querySelector('[data-chuntris-multiplayer]');if(!openButton)return;
 
-  let pollTimer=0,progressTimer=0,startedRound=0,lastRoom=null,terminalSent='',startTimer=0,clockOffset=0;
+  let pollTimer=0,progressTimer=0,startedRound=0,lastRoom=null,terminalSent='',startTimer=0,clockOffset=0,refreshInFlight=false,progressInFlight=false;
   let selectedMode=localStorage.getItem(MODE_KEY);if(!MODES[selectedMode])selectedMode='sprint40';
   let selectedDifficulty=localStorage.getItem(DIFFICULTY_KEY);if(!DIFFICULTIES[selectedDifficulty])selectedDifficulty='normal';
 
@@ -113,8 +113,8 @@
   }
 
   function errorMessage(error){const map={room_not_found:'방을 찾을 수 없습니다.',room_full:'이미 2명이 참가한 방입니다.',room_started:'이미 시작된 방입니다.',invalid_nickname:'닉네임을 확인해 주세요.',invalid_mode:'지원하지 않는 게임 모드입니다.',invalid_difficulty:'지원하지 않는 난이도입니다.',multiplayer_unavailable:'멀티플레이 서버에 연결할 수 없습니다.'};return map[error?.code]||error?.message||'잠시 후 다시 시도해 주세요.';}
-  async function refresh(){if(!client.code)return;try{const data=await client.refresh();render(data.room);handleRoom(data.room);}catch(error){if(error.status===404||error.status===403){client.clear();saveSession();render(null);stopTimers();}message(errorMessage(error),true);}}
-  function startPolling(){if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(refresh,650);void refresh();}
+  async function refresh(){if(!client.code||refreshInFlight)return;refreshInFlight=true;try{const data=await client.refresh();render(data.room);handleRoom(data.room);}catch(error){if(error.status===404||error.status===403){client.clear();saveSession();render(null);stopTimers();}message(errorMessage(error),true);}finally{refreshInFlight=false;}}
+  function startPolling(){if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(refresh,1000);void refresh();}
   function handleRoom(room){
     if(!room)return;clockOffset=Number(room.serverNow||Date.now())-Date.now();
     if(room.state==='countdown'&&room.startAt&&room.round!==startedRound){
@@ -127,14 +127,16 @@
   function startProgress(room){
     if(progressTimer)clearInterval(progressTimer);
     const send=async()=>{
+      if(progressInFlight)return;
       const snap=App.getGame()?.getSnapshot?.();if(!snap)return;
       let status=snap.status==='completed'?'completed':snap.status==='gameover'?'gameover':'playing';
       if((status==='completed'||status==='gameover')&&terminalSent===status)return;
       const elapsed=Math.max(snap.elapsedMs,serverNow()-(room.startAt||serverNow()));
       const payload={lines:snap.lines,score:snap.score,timeMs:room.mode==='score180'?Math.min(180000,elapsed):elapsed,status};
-      try{const data=await client.progress(payload);render(data.room);handleRoom(data.room);if(status!=='playing')terminalSent=status;}catch(error){message(errorMessage(error),true);}
+      progressInFlight=true;
+      try{const data=await client.progress(payload);render(data.room);handleRoom(data.room);if(status!=='playing')terminalSent=status;}catch(error){message(errorMessage(error),true);}finally{progressInFlight=false;}
     };
-    progressTimer=setInterval(send,550);void send();
+    progressTimer=setInterval(send,1000);void send();
   }
 
   openButton.classList.add('mp-open-button');openButton.addEventListener('click',()=>{open();render(client.room);});els.close.addEventListener('click',close);shell.addEventListener('click',event=>{if(event.target===shell)close();});
