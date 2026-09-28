@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
-import { buildTrackifyCache, historyToFreshCache } from '../scripts/update-trackify-soop-cache.mjs';
+import { buildTrackifyCache, historyToFreshCache, incrementalFrom } from '../scripts/update-trackify-soop-cache.mjs';
 
 assert.equal(typeof buildTrackifyCache, 'function', 'Trackify cache builder should be exported');
 assert.equal(typeof historyToFreshCache, 'function', 'Trackify API history adapter should be exported');
+assert.equal(incrementalFrom({sessions:[{startedAt:'2026-08-01T10:00:00+09:00'}]},new Date('2026-09-01T00:00:00Z')),'2026-07-30','incremental refresh should overlap the last cached broadcast by two days');
 
 const previous = {
   version: 1,
