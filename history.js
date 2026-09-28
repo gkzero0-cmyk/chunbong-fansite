@@ -873,6 +873,7 @@
       });
     });
 
+    bindMonthJumps();
     applyDetailFilters();
   }
 
@@ -911,7 +912,9 @@
           ${renderKindFilters(rows)}
         </div>
         ${renderYearFilters(years,'detail',detailYear)}
-        <small class="history-search-note" data-history-search-note>검색은 제목·설명과 불러온 세부 기록을 함께 확인합니다.</small>
+        ${renderMonthJumpBars(groups,years)}
+        <div class="history-active-summary" data-history-active-summary hidden></div>
+        <small class="history-search-note" data-history-search-note>검색은 제목·역할·설명과 불러온 세부 기록까지 함께 확인합니다.</small>
       </div>
 
       <div class="history-search-empty" data-history-search-empty hidden><strong>검색 결과가 없습니다.</strong><span>검색어, 유형 또는 연도 필터를 바꿔보세요.</span></div>
@@ -934,13 +937,14 @@
                     const search=detailSearchText(row);
                     const searchBase=detailBaseSearchText(row);
                     const searchDetail=detailChildSearchText(row);
+                    const role=row.role||'';
                     const content=contentHref(row);
                     const calendar=calendarHref(row);
                     const calendarLabel=row.end&&row.end!==row.start?'시작일 기록':'캘린더';
                     const actionLinks=`${content?`<a href="${esc(content)}">콘텐츠</a>`:''}${calendar?`<a href="${esc(calendar)}">${calendarLabel}</a>`:''}<button type="button" data-copy-record="${id}" aria-label="${esc(row.label)} 기록 링크 복사">링크</button>`;
                     const canLoad=detailTerms(row).length>0&&Number(year)>=2025&&!rowMonthsLoaded(row);
                     const compact=!row.featured&&!row.detail&&!children.length&&!canLoad;
-                    return `<article id="${id}" class="history-timeline-item ${compact?'is-compact':''} ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" data-history-detail-item data-year="${year}" data-kind="${esc(row.kind||'콘텐츠')}" data-search="${esc(search)}" data-search-base="${esc(searchBase)}" data-search-detail="${esc(searchDetail)}">
+                    return `<article id="${id}" class="history-timeline-item ${compact?'is-compact':''} ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" data-history-detail-item data-year="${year}" data-kind="${esc(row.kind||'콘텐츠')}" data-search="${esc(search)}" data-search-base="${esc(searchBase)}" data-search-title="${esc(String(row.label||'').toLowerCase())}" data-search-role="${esc(String(role).toLowerCase())}" data-search-description="${esc(String(row.detail||'').toLowerCase())}" data-search-dates="${esc([row.start,row.end].filter(Boolean).join(' ').toLowerCase())}" data-search-detail="${esc(searchDetail)}">
                       <div class="history-timeline-date">${esc(displayDate(row))}</div>
                       <div class="history-timeline-card">
                         <div class="history-record-head">
@@ -948,7 +952,14 @@
                           <div class="history-record-actions">${actionLinks}</div>
                           <details class="history-record-more"><summary>관련 보기</summary><div>${actionLinks}</div></details>
                         </div>
-                        <div class="history-timeline-meta"><span>${esc(row.kind||'방송')}</span>${row.featured?'<b>주요 이력</b>':''}${statusBadge(row)}${sourceBadges(row)}<span class="history-search-match" data-search-match hidden>세부 기록 일치</span></div>
+                        <div class="history-timeline-meta">
+                          <span class="history-meta-kind">${esc(displayKind(row.kind||'콘텐츠'))}</span>
+                          ${role?`<span class="history-meta-role">${esc(role)}</span>`:''}
+                          ${row.featured?'<b class="history-meta-featured">주요 이력</b>':''}
+                          ${statusBadge(row)}
+                          ${sourceBadges(row)}
+                          <span class="history-search-match" data-search-match hidden></span>
+                        </div>
                         ${row.detail?`<p data-highlight data-raw="${esc(row.detail)}">${esc(row.detail)}</p>`:''}
                         ${children.length?`<details class="history-event-details"><summary>세부 방송 기록 ${children.length}개 보기 <span>⌄</span></summary><ol>${children.map(item=>`<li><time>${esc(item.end?displayDate({start:item.date,end:item.end}):fmt(item.date))}</time><span data-highlight data-raw="${esc(item.label)}">${esc(item.label)}</span></li>`).join('')}</ol></details>`:canLoad?`<button type="button" class="history-load-details" data-load-sub-events="${id}">세부 방송 기록 불러오기</button>`:''}
                       </div>
