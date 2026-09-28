@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "capturedAt": "2026-09-28T16:40:58.789Z",
+  "version": 2,
+  "capturedAt": "2026-09-28T16:51:40.229Z",
   "sources": [
     "data/chunbong-data-history.json",
     "data/trackify-soop-cache.json",
@@ -9,6 +9,44 @@
     "data/soop-external-history.json",
     "data/soop-sessions.json"
   ],
+  "integrity": {
+    "data/chunbong-data-history.json": {
+      "rows": 27,
+      "bytes": 14716,
+      "sha256": "475eea53d76f3f43fd44e6e99f0ec5245c832493b83864d0afebd5ea9cc6bda8",
+      "latestAt": "2026-09-29T00:00:00.000Z"
+    },
+    "data/trackify-soop-cache.json": {
+      "rows": 354,
+      "bytes": 248834,
+      "sha256": "70952bee4ca0fef79ca61a90e09c9424a3637d3ee22096268abbcaaeb8a0d9cf",
+      "latestAt": "2026-09-28T16:51:22.830Z"
+    },
+    "data/soop-follower-history.json": {
+      "rows": 349,
+      "bytes": 63578,
+      "sha256": "4f181a9eb618ee81aa7ccc3459d24e5747221069bf8e987f52464c91ed1da5c6",
+      "latestAt": "2026-09-29T00:00:00.000Z"
+    },
+    "data/youtube-engagement-cache.json": {
+      "rows": 214,
+      "bytes": 55076,
+      "sha256": "7ef725c9e12f4259817a2e42139cc12921c0c76dda853a5e79fd7bdcbebfa5d8",
+      "latestAt": "2026-09-28T16:51:35.473Z"
+    },
+    "data/soop-external-history.json": {
+      "rows": 0,
+      "bytes": 98,
+      "sha256": "ad6e09f07f273c7b83495818d41e5b40655127fbc14d88420083af6af2b6447b",
+      "latestAt": null
+    },
+    "data/soop-sessions.json": {
+      "rows": 8,
+      "bytes": 4807,
+      "sha256": "567dd2f111efa169db6c570e6b62eea74aeaa0f4fd2c5cd459351ca650edfe84",
+      "latestAt": "2026-09-27T05:25:17.000Z"
+    }
+  },
   "data": {
     "data/chunbong-data-history.json": {
       "version": 1,
@@ -757,22 +795,22 @@
         },
         {
           "date": "2026-09-29",
-          "capturedAt": "2026-09-28T16:40:55.579Z",
+          "capturedAt": "2026-09-28T16:51:35.907Z",
           "soop": {
-            "live": true,
+            "live": false,
             "followerCount": 31049,
             "fanclubCount": 7826,
-            "measuredTotalMinutes": 266528,
+            "measuredTotalMinutes": 267255,
             "totalAirtimeMinutes": 630405,
             "monthAverageViewers": 89,
             "monthMaxViewers": 524,
             "subscriberCount": 62,
             "supporterCount": 25,
             "monthUniqueViewers": null,
-            "viewershipHours": 23697,
+            "viewershipHours": 23707,
             "cumulativeUsers": null,
             "cumulativeUpCount": 81923,
-            "monthlyVodCount": 28,
+            "monthlyVodCount": 29,
             "monthlyVodMinutes": null,
             "monthlyCatchCount": 12,
             "monthlyClipCount": 12
@@ -788,7 +826,7 @@
     },
     "data/trackify-soop-cache.json": {
       "version": 1,
-      "capturedAt": "2026-09-28T16:40:38.716Z",
+      "capturedAt": "2026-09-28T16:51:22.830Z",
       "stats": {
         "source": "trackify",
         "followerCount": 31035,
@@ -797,14 +835,14 @@
         "supporterCount": 25,
         "averageViewers": 89,
         "maxViewers": 524,
-        "airtimeMinutes": 15912,
-        "viewershipHours": 23697,
+        "airtimeMinutes": 15922,
+        "viewershipHours": 23707,
         "cumulativeUpCount": 81923,
         "totalAirtimeMinutes": 630405,
         "monthlyStarCount": 120515,
         "starsPerHour": 454,
-        "monthlySupporterCount": 432,
-        "monthlyChatCount": 64891,
+        "monthlySupporterCount": 434,
+        "monthlyChatCount": 64991,
         "monthlyMuteCount": 6,
         "stationOpenedAt": "2022-09-29T14:58:14",
         "latestBroadcastDate": "2026-09-28T13:38:11",
@@ -813,19 +851,19 @@
             "name": "버추얼",
             "minutes": 11750,
             "streamCount": 28,
-            "sharePercent": 59.4
+            "sharePercent": 57.3
           },
           {
             "name": "마인크래프트",
-            "minutes": 6856,
-            "streamCount": 11,
-            "sharePercent": 34.7
+            "minutes": 7583,
+            "streamCount": 12,
+            "sharePercent": 37
           },
           {
             "name": "오버워치",
             "minutes": 592,
             "streamCount": 3,
-            "sharePercent": 3
+            "sharePercent": 2.9
           },
           {
             "name": "PUBG: 배틀그라운드",
@@ -837,7 +875,7 @@
             "name": "아르마 3",
             "minutes": 228,
             "streamCount": 1,
-            "sharePercent": 1.2
+            "sharePercent": 1.1
           }
         ]
       },
@@ -12843,6 +12881,40 @@
           ],
           "measurement": "trackify-public-api",
           "source": "https://www.trackify.kr/soop/broadcast/297436657"
+        },
+        {
+          "id": "trackify-297436777",
+          "broadcastId": "297436777",
+          "date": "2026-09-28",
+          "startedAt": "2026-09-28T13:38:11+09:00",
+          "endedAt": "2026-09-29T01:45:23+09:00",
+          "durationMinutes": 727,
+          "averageViewers": 131,
+          "maxViewers": 235,
+          "viewerSampleCount": 145,
+          "uniqueViewers": null,
+          "starCount": 2516,
+          "supporterCount": 53,
+          "chatCount": 2856,
+          "followerStart": null,
+          "followerEnd": null,
+          "followerDelta": null,
+          "fanclubStart": null,
+          "fanclubEnd": null,
+          "fanclubDelta": null,
+          "title": "마병대4 완",
+          "categories": [
+            {
+              "id": "00040017",
+              "name": "마인크래프트",
+              "minutes": 727,
+              "sampleCount": 145,
+              "averageViewers": 131,
+              "maxViewers": 235
+            }
+          ],
+          "measurement": "trackify-public-api",
+          "source": "https://www.trackify.kr/soop/broadcast/297436777"
         }
       ]
     },
@@ -15884,7 +15956,7 @@
           "followerCount": 27159,
           "fanclubCount": 7437,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -15896,7 +15968,7 @@
           "followerCount": 27172,
           "fanclubCount": 7450,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -15908,7 +15980,7 @@
           "followerCount": 27161,
           "fanclubCount": 7456,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -15920,7 +15992,7 @@
           "followerCount": 27136,
           "fanclubCount": 7472,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -15932,7 +16004,7 @@
           "followerCount": 27128,
           "fanclubCount": 7475,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -15944,7 +16016,7 @@
           "followerCount": 27105,
           "fanclubCount": 7476,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -15956,7 +16028,7 @@
           "followerCount": 27087,
           "fanclubCount": 7479,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -15968,7 +16040,7 @@
           "followerCount": 27081,
           "fanclubCount": 7480,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -15980,7 +16052,7 @@
           "followerCount": 27060,
           "fanclubCount": 7482,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -15992,7 +16064,7 @@
           "followerCount": 27043,
           "fanclubCount": 7486,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16004,7 +16076,7 @@
           "followerCount": 27040,
           "fanclubCount": 7486,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16016,7 +16088,7 @@
           "followerCount": 27009,
           "fanclubCount": 7496,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16028,7 +16100,7 @@
           "followerCount": 27002,
           "fanclubCount": 7496,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16040,7 +16112,7 @@
           "followerCount": 26992,
           "fanclubCount": 7496,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16052,7 +16124,7 @@
           "followerCount": 28187,
           "fanclubCount": 7513,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16064,7 +16136,7 @@
           "followerCount": 28325,
           "fanclubCount": 7520,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16076,7 +16148,7 @@
           "followerCount": 28509,
           "fanclubCount": 7525,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16088,7 +16160,7 @@
           "followerCount": 28723,
           "fanclubCount": 7530,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16100,7 +16172,7 @@
           "followerCount": 28773,
           "fanclubCount": 7540,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16112,7 +16184,7 @@
           "followerCount": 28904,
           "fanclubCount": 7541,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16124,7 +16196,7 @@
           "followerCount": 28933,
           "fanclubCount": 7544,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16136,7 +16208,7 @@
           "followerCount": 29094,
           "fanclubCount": 7546,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16148,7 +16220,7 @@
           "followerCount": 29225,
           "fanclubCount": 7547,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16160,7 +16232,7 @@
           "followerCount": 29315,
           "fanclubCount": 7549,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16172,7 +16244,7 @@
           "followerCount": 29451,
           "fanclubCount": 7549,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16184,7 +16256,7 @@
           "followerCount": 29418,
           "fanclubCount": 7550,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16196,7 +16268,7 @@
           "followerCount": 29349,
           "fanclubCount": 7550,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16208,7 +16280,7 @@
           "followerCount": 29361,
           "fanclubCount": 7558,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16220,7 +16292,7 @@
           "followerCount": 29385,
           "fanclubCount": 7558,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16232,7 +16304,7 @@
           "followerCount": 29645,
           "fanclubCount": 7562,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16244,7 +16316,7 @@
           "followerCount": 29793,
           "fanclubCount": 7591,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16256,7 +16328,7 @@
           "followerCount": 29769,
           "fanclubCount": 7595,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16268,7 +16340,7 @@
           "followerCount": 29775,
           "fanclubCount": 7596,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16280,7 +16352,7 @@
           "followerCount": 29730,
           "fanclubCount": 7597,
           "source": "trackify",
-          "capturedAt": "2026-09-28T16:40:57.568Z",
+          "capturedAt": "2026-09-28T16:51:38.115Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16592,7 +16664,7 @@
           "followerCount": 31049,
           "fanclubCount": 7826,
           "source": "fan-site-snapshot",
-          "capturedAt": "2026-09-28T16:40:55.579Z",
+          "capturedAt": "2026-09-28T16:51:35.907Z",
           "confidence": 2,
           "fieldSources": {
             "followerCount": "fan-site-snapshot",
@@ -16603,7 +16675,7 @@
     },
     "data/youtube-engagement-cache.json": {
       "version": 1,
-      "capturedAt": "2026-09-28T16:40:55.339Z",
+      "capturedAt": "2026-09-28T16:51:35.473Z",
       "source": "https://www.youtube.com/@%EC%B6%98%EB%B4%89TV",
       "itemCount": 214,
       "items": [
@@ -16614,7 +16686,7 @@
           "publishedAt": "2026-09-19T00:00:00.000Z",
           "viewCount": 5127,
           "commentCount": 14,
-          "metricCheckedAt": "2026-09-28T16:40:41.663Z",
+          "metricCheckedAt": "2026-09-28T16:51:24.101Z",
           "link": "https://www.youtube.com/shorts/UR-rdrOqfVU"
         },
         {
@@ -16624,7 +16696,7 @@
           "publishedAt": "2026-09-18T00:00:00.000Z",
           "viewCount": 23066,
           "commentCount": 11,
-          "metricCheckedAt": "2026-09-28T16:40:41.408Z",
+          "metricCheckedAt": "2026-09-28T16:51:24.122Z",
           "link": "https://www.youtube.com/shorts/sVtO1JLL7Mg"
         },
         {
@@ -16632,9 +16704,9 @@
           "kind": "shorts",
           "title": "여사친이랑 우정키스 한 남친",
           "publishedAt": "2026-09-17T00:00:00.000Z",
-          "viewCount": 1459,
+          "viewCount": 1400,
           "commentCount": 5,
-          "metricCheckedAt": "2026-09-28T16:40:41.105Z",
+          "metricCheckedAt": "2026-09-28T16:51:24.795Z",
           "link": "https://www.youtube.com/shorts/tAiux8aGWs8"
         },
         {
@@ -16644,7 +16716,7 @@
           "publishedAt": "2026-09-16T00:00:00.000Z",
           "viewCount": 6922,
           "commentCount": 28,
-          "metricCheckedAt": "2026-09-28T16:40:41.043Z",
+          "metricCheckedAt": "2026-09-28T16:51:24.345Z",
           "link": "https://www.youtube.com/shorts/kRolU27DwjE"
         },
         {
@@ -16654,7 +16726,7 @@
           "publishedAt": "2026-09-15T00:00:00.000Z",
           "viewCount": 10626,
           "commentCount": 25,
-          "metricCheckedAt": "2026-09-28T16:40:42.217Z",
+          "metricCheckedAt": "2026-09-28T16:51:25.066Z",
           "link": "https://www.youtube.com/shorts/bevaLtagoUY"
         },
         {
@@ -16664,7 +16736,7 @@
           "publishedAt": "2026-09-13T00:00:00.000Z",
           "viewCount": 14926,
           "commentCount": 37,
-          "metricCheckedAt": "2026-09-28T16:40:42.288Z",
+          "metricCheckedAt": "2026-09-28T16:51:25.086Z",
           "link": "https://www.youtube.com/shorts/_Nl_imSHTzk"
         },
         {
@@ -16674,7 +16746,7 @@
           "publishedAt": "2026-09-12T00:00:00.000Z",
           "viewCount": 93930,
           "commentCount": 52,
-          "metricCheckedAt": "2026-09-28T16:40:42.988Z",
+          "metricCheckedAt": "2026-09-28T16:51:25.338Z",
           "link": "https://www.youtube.com/shorts/oC23MsS0jb0"
         },
         {
@@ -16684,7 +16756,7 @@
           "publishedAt": "2026-09-11T00:00:00.000Z",
           "viewCount": 2239,
           "commentCount": 6,
-          "metricCheckedAt": "2026-09-28T16:40:42.733Z",
+          "metricCheckedAt": "2026-09-28T16:51:25.473Z",
           "link": "https://www.youtube.com/shorts/age2vHsla-E"
         },
         {
@@ -16694,7 +16766,7 @@
           "publishedAt": "2026-09-08T00:00:00.000Z",
           "viewCount": 1434,
           "commentCount": 3,
-          "metricCheckedAt": "2026-09-28T16:40:43.008Z",
+          "metricCheckedAt": "2026-09-28T16:51:25.881Z",
           "link": "https://www.youtube.com/shorts/vPrIZRm1EM4"
         },
         {
@@ -16704,7 +16776,7 @@
           "publishedAt": "2026-09-06T00:00:00.000Z",
           "viewCount": 3002,
           "commentCount": 3,
-          "metricCheckedAt": "2026-09-28T16:40:43.051Z",
+          "metricCheckedAt": "2026-09-28T16:51:25.847Z",
           "link": "https://www.youtube.com/shorts/SypNo7aFYIc"
         },
         {
@@ -16714,7 +16786,7 @@
           "publishedAt": "2026-09-05T00:00:00.000Z",
           "viewCount": 33769,
           "commentCount": 31,
-          "metricCheckedAt": "2026-09-28T16:40:43.741Z",
+          "metricCheckedAt": "2026-09-28T16:51:26.135Z",
           "link": "https://www.youtube.com/shorts/5FhqgCM05UY"
         },
         {
@@ -16724,7 +16796,7 @@
           "publishedAt": "2026-09-02T00:00:00.000Z",
           "viewCount": 2359,
           "commentCount": 6,
-          "metricCheckedAt": "2026-09-28T16:40:44.019Z",
+          "metricCheckedAt": "2026-09-28T16:51:26.174Z",
           "link": "https://www.youtube.com/shorts/r86mgXf7GLo"
         },
         {
@@ -16734,7 +16806,7 @@
           "publishedAt": "2026-09-01T00:00:00.000Z",
           "viewCount": 45964,
           "commentCount": 284,
-          "metricCheckedAt": "2026-09-28T16:40:45.962Z",
+          "metricCheckedAt": "2026-09-28T16:51:28.705Z",
           "link": "https://www.youtube.com/shorts/lK7z53JgErc"
         },
         {
@@ -16744,7 +16816,7 @@
           "publishedAt": "2026-08-31T00:00:00.000Z",
           "viewCount": 532,
           "commentCount": 6,
-          "metricCheckedAt": "2026-09-28T16:40:43.948Z",
+          "metricCheckedAt": "2026-09-28T16:51:26.868Z",
           "link": "https://www.youtube.com/shorts/mu8lf9RKAC4"
         },
         {
@@ -16754,7 +16826,7 @@
           "publishedAt": "2026-08-19T00:00:00.000Z",
           "viewCount": 14445,
           "commentCount": 73,
-          "metricCheckedAt": "2026-09-28T16:40:45.297Z",
+          "metricCheckedAt": "2026-09-28T16:51:27.290Z",
           "link": "https://www.youtube.com/shorts/Bp3cG3Ck-LI"
         },
         {
@@ -16764,7 +16836,7 @@
           "publishedAt": "2026-08-15T00:00:00.000Z",
           "viewCount": 31751,
           "commentCount": 19,
-          "metricCheckedAt": "2026-09-28T16:40:44.926Z",
+          "metricCheckedAt": "2026-09-28T16:51:26.859Z",
           "link": "https://www.youtube.com/shorts/TP5KfjKL7WE"
         },
         {
@@ -16774,7 +16846,7 @@
           "publishedAt": "2026-08-14T00:00:00.000Z",
           "viewCount": 4445,
           "commentCount": 24,
-          "metricCheckedAt": "2026-09-28T16:40:45.022Z",
+          "metricCheckedAt": "2026-09-28T16:51:27.880Z",
           "link": "https://www.youtube.com/shorts/u4E9O18C-10"
         },
         {
@@ -16784,7 +16856,7 @@
           "publishedAt": "2026-08-13T00:00:00.000Z",
           "viewCount": 8547,
           "commentCount": 2,
-          "metricCheckedAt": "2026-09-28T16:40:45.943Z",
+          "metricCheckedAt": "2026-09-28T16:51:27.483Z",
           "link": "https://www.youtube.com/shorts/2s0mjijmiU0"
         },
         {
@@ -16794,7 +16866,7 @@
           "publishedAt": "2026-08-12T00:00:00.000Z",
           "viewCount": 38590,
           "commentCount": 224,
-          "metricCheckedAt": "2026-09-28T16:40:47.695Z",
+          "metricCheckedAt": "2026-09-28T16:51:30.050Z",
           "link": "https://www.youtube.com/shorts/apNSU7Ko2kk"
         },
         {
@@ -16804,7 +16876,7 @@
           "publishedAt": "2026-08-11T00:00:00.000Z",
           "viewCount": 4471,
           "commentCount": 6,
-          "metricCheckedAt": "2026-09-28T16:40:46.046Z",
+          "metricCheckedAt": "2026-09-28T16:51:28.305Z",
           "link": "https://www.youtube.com/shorts/Tq-bEZOyf5A"
         },
         {
@@ -16814,7 +16886,7 @@
           "publishedAt": "2026-08-10T00:00:00.000Z",
           "viewCount": 31772,
           "commentCount": 15,
-          "metricCheckedAt": "2026-09-28T16:40:46.738Z",
+          "metricCheckedAt": "2026-09-28T16:51:28.654Z",
           "link": "https://www.youtube.com/shorts/haJ9y0pi9mw"
         },
         {
@@ -16824,7 +16896,7 @@
           "publishedAt": "2026-08-09T00:00:00.000Z",
           "viewCount": 24454,
           "commentCount": 49,
-          "metricCheckedAt": "2026-09-28T16:40:47.134Z",
+          "metricCheckedAt": "2026-09-28T16:51:29.487Z",
           "link": "https://www.youtube.com/shorts/sSUVf_aD3MI"
         },
         {
@@ -16833,8 +16905,8 @@
           "title": "십일조 때문에 갈등이 생긴 부부",
           "publishedAt": "2026-08-08T00:00:00.000Z",
           "viewCount": 20959,
-          "commentCount": 97,
-          "metricCheckedAt": "2026-09-28T16:40:47.533Z",
+          "commentCount": 95,
+          "metricCheckedAt": "2026-09-28T16:51:29.979Z",
           "link": "https://www.youtube.com/shorts/YIiO-maV_-I"
         },
         {
@@ -16844,7 +16916,7 @@
           "publishedAt": "2026-08-07T00:00:00.000Z",
           "viewCount": 2469,
           "commentCount": 9,
-          "metricCheckedAt": "2026-09-28T16:40:47.613Z",
+          "metricCheckedAt": "2026-09-28T16:51:29.353Z",
           "link": "https://www.youtube.com/shorts/CpjbVV-3j0Y"
         },
         {
@@ -16854,7 +16926,7 @@
           "publishedAt": "2026-08-06T00:00:00.000Z",
           "viewCount": 5199,
           "commentCount": 5,
-          "metricCheckedAt": "2026-09-28T16:40:47.975Z",
+          "metricCheckedAt": "2026-09-28T16:51:30.238Z",
           "link": "https://www.youtube.com/shorts/OOxRGn_kIkE"
         },
         {
@@ -16864,7 +16936,7 @@
           "publishedAt": "2026-08-05T00:00:00.000Z",
           "viewCount": 104,
           "commentCount": 2,
-          "metricCheckedAt": "2026-09-28T16:40:48.384Z",
+          "metricCheckedAt": "2026-09-28T16:51:30.166Z",
           "link": "https://www.youtube.com/watch?v=8rnQKGwa1qw"
         },
         {
@@ -16874,7 +16946,7 @@
           "publishedAt": "2026-08-03T00:00:00.000Z",
           "viewCount": 7710,
           "commentCount": 16,
-          "metricCheckedAt": "2026-09-28T16:40:48.411Z",
+          "metricCheckedAt": "2026-09-28T16:51:30.792Z",
           "link": "https://www.youtube.com/shorts/hOoMSGYAFX0"
         },
         {
@@ -16884,7 +16956,7 @@
           "publishedAt": "2026-08-01T00:00:00.000Z",
           "viewCount": 65,
           "commentCount": 1,
-          "metricCheckedAt": "2026-09-28T16:40:48.429Z",
+          "metricCheckedAt": "2026-09-28T16:51:30.703Z",
           "link": "https://www.youtube.com/watch?v=gJKw13B7ydc"
         },
         {
@@ -16894,7 +16966,7 @@
           "publishedAt": "2026-08-01T00:00:00.000Z",
           "viewCount": 6853,
           "commentCount": 6,
-          "metricCheckedAt": "2026-09-28T16:40:48.747Z",
+          "metricCheckedAt": "2026-09-28T16:51:31.077Z",
           "link": "https://www.youtube.com/shorts/wo7zsSFXuCs"
         },
         {
@@ -16904,7 +16976,7 @@
           "publishedAt": "2026-07-31T00:00:00.000Z",
           "viewCount": 19035,
           "commentCount": 12,
-          "metricCheckedAt": "2026-09-28T16:40:49.115Z",
+          "metricCheckedAt": "2026-09-28T16:51:31.012Z",
           "link": "https://www.youtube.com/shorts/-Y22E0uHheE"
         },
         {
@@ -17914,7 +17986,7 @@
           "publishedAt": "2025-12-27T00:00:00.000Z",
           "viewCount": 25942,
           "commentCount": 120,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:32.647Z",
           "link": "https://www.youtube.com/shorts/h6vBHjeJEn4"
         },
         {
@@ -17924,7 +17996,7 @@
           "publishedAt": "2025-12-26T00:00:00.000Z",
           "viewCount": 16142,
           "commentCount": 10,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:31.591Z",
           "link": "https://www.youtube.com/shorts/e5L7xvO1sHI"
         },
         {
@@ -17932,9 +18004,9 @@
           "kind": "shorts",
           "title": "안성재가 최현석을 존경하면서 싫어하는 이유",
           "publishedAt": "2025-12-25T00:00:00.000Z",
-          "viewCount": 89800,
+          "viewCount": 89809,
           "commentCount": 21,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:32.313Z",
           "link": "https://www.youtube.com/shorts/akXugTe57wk"
         },
         {
@@ -17944,7 +18016,7 @@
           "publishedAt": "2025-12-24T00:00:00.000Z",
           "viewCount": 4862,
           "commentCount": 3,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:31.954Z",
           "link": "https://www.youtube.com/shorts/lIWeF2qnQec"
         },
         {
@@ -17952,9 +18024,9 @@
           "kind": "shorts",
           "title": "만화로 보는 포켓몬스터의 시작",
           "publishedAt": "2025-12-23T00:00:00.000Z",
-          "viewCount": 3362,
+          "viewCount": 3363,
           "commentCount": 3,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:32.207Z",
           "link": "https://www.youtube.com/shorts/OT0Zl7KSLtA"
         },
         {
@@ -17962,9 +18034,9 @@
           "kind": "shorts",
           "title": "원피스 VS 나루토",
           "publishedAt": "2025-12-21T00:00:00.000Z",
-          "viewCount": 24645,
+          "viewCount": 24647,
           "commentCount": 18,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:32.868Z",
           "link": "https://www.youtube.com/shorts/GyAxoBw2H4U"
         },
         {
@@ -17974,7 +18046,7 @@
           "publishedAt": "2025-12-20T00:00:00.000Z",
           "viewCount": 6282,
           "commentCount": 6,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:33.178Z",
           "link": "https://www.youtube.com/shorts/2hT4Q3ruGiI"
         },
         {
@@ -17984,7 +18056,7 @@
           "publishedAt": "2025-12-19T00:00:00.000Z",
           "viewCount": 3038,
           "commentCount": 10,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:33.019Z",
           "link": "https://www.youtube.com/shorts/8wSZrfpSapU"
         },
         {
@@ -17992,9 +18064,9 @@
           "kind": "shorts",
           "title": "매운 짬뽕에 도전한 쯔양님 ㄷㄷ",
           "publishedAt": "2025-12-18T00:00:00.000Z",
-          "viewCount": 4991,
+          "viewCount": 4992,
           "commentCount": 6,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:33.442Z",
           "link": "https://www.youtube.com/shorts/ciVLE3_7j-w"
         },
         {
@@ -18004,7 +18076,7 @@
           "publishedAt": "2025-12-17T00:00:00.000Z",
           "viewCount": 34752,
           "commentCount": 13,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:33.653Z",
           "link": "https://www.youtube.com/shorts/Tci8gBBO2iQ"
         },
         {
@@ -18014,7 +18086,7 @@
           "publishedAt": "2025-12-16T00:00:00.000Z",
           "viewCount": 16310,
           "commentCount": 10,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:33.809Z",
           "link": "https://www.youtube.com/shorts/bSkSWRE-32A"
         },
         {
@@ -18024,7 +18096,7 @@
           "publishedAt": "2025-12-15T00:00:00.000Z",
           "viewCount": 7330,
           "commentCount": 9,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:33.929Z",
           "link": "https://www.youtube.com/shorts/uvA6i3W_EgA"
         },
         {
@@ -18034,7 +18106,7 @@
           "publishedAt": "2025-12-14T00:00:00.000Z",
           "viewCount": 1145,
           "commentCount": 4,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:34.481Z",
           "link": "https://www.youtube.com/shorts/Q7Pv0K8uV24"
         },
         {
@@ -18044,7 +18116,7 @@
           "publishedAt": "2025-12-13T00:00:00.000Z",
           "viewCount": 933,
           "commentCount": 1,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:34.405Z",
           "link": "https://www.youtube.com/shorts/0USpkmzhLJc"
         },
         {
@@ -18054,7 +18126,7 @@
           "publishedAt": "2025-12-12T00:00:00.000Z",
           "viewCount": 2675,
           "commentCount": 8,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:34.579Z",
           "link": "https://www.youtube.com/shorts/lDTVMUeJkkc"
         },
         {
@@ -18064,7 +18136,7 @@
           "publishedAt": "2025-12-11T00:00:00.000Z",
           "viewCount": 3961,
           "commentCount": 1,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:34.598Z",
           "link": "https://www.youtube.com/shorts/MfXJ1bmX3tk"
         },
         {
@@ -18074,7 +18146,7 @@
           "publishedAt": "2025-12-10T00:00:00.000Z",
           "viewCount": 1700,
           "commentCount": 4,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:35.127Z",
           "link": "https://www.youtube.com/shorts/jt-bfxSAWEY"
         },
         {
@@ -18082,9 +18154,9 @@
           "kind": "shorts",
           "title": "우리말 겨루기 출연자의 이불킥",
           "publishedAt": "2025-12-09T00:00:00.000Z",
-          "viewCount": 32000,
+          "viewCount": 32200,
           "commentCount": 7,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:35.449Z",
           "link": "https://www.youtube.com/shorts/QM5kxj6m7V8"
         },
         {
@@ -18094,7 +18166,7 @@
           "publishedAt": "2025-12-07T00:00:00.000Z",
           "viewCount": 19283,
           "commentCount": 20,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:35.409Z",
           "link": "https://www.youtube.com/shorts/VE0la893PbA"
         },
         {
@@ -18104,7 +18176,7 @@
           "publishedAt": "2025-12-06T00:00:00.000Z",
           "viewCount": 5906,
           "commentCount": 11,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-09-28T16:51:35.473Z",
           "link": "https://www.youtube.com/shorts/9Chm2Mqf5Zo"
         },
         {

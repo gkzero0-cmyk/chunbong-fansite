@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-28T16:40:38.716Z",
+  "capturedAt": "2026-09-28T16:51:22.830Z",
   "stats": {
     "source": "trackify",
     "followerCount": 31035,
@@ -9,14 +9,14 @@
     "supporterCount": 25,
     "averageViewers": 89,
     "maxViewers": 524,
-    "airtimeMinutes": 15912,
-    "viewershipHours": 23697,
+    "airtimeMinutes": 15922,
+    "viewershipHours": 23707,
     "cumulativeUpCount": 81923,
     "totalAirtimeMinutes": 630405,
     "monthlyStarCount": 120515,
     "starsPerHour": 454,
-    "monthlySupporterCount": 432,
-    "monthlyChatCount": 64891,
+    "monthlySupporterCount": 434,
+    "monthlyChatCount": 64991,
     "monthlyMuteCount": 6,
     "stationOpenedAt": "2022-09-29T14:58:14",
     "latestBroadcastDate": "2026-09-28T13:38:11",
@@ -25,19 +25,19 @@
         "name": "버추얼",
         "minutes": 11750,
         "streamCount": 28,
-        "sharePercent": 59.4
+        "sharePercent": 57.3
       },
       {
         "name": "마인크래프트",
-        "minutes": 6856,
-        "streamCount": 11,
-        "sharePercent": 34.7
+        "minutes": 7583,
+        "streamCount": 12,
+        "sharePercent": 37
       },
       {
         "name": "오버워치",
         "minutes": 592,
         "streamCount": 3,
-        "sharePercent": 3
+        "sharePercent": 2.9
       },
       {
         "name": "PUBG: 배틀그라운드",
@@ -49,7 +49,7 @@
         "name": "아르마 3",
         "minutes": 228,
         "streamCount": 1,
-        "sharePercent": 1.2
+        "sharePercent": 1.1
       }
     ]
   },
@@ -12055,6 +12055,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/297436657"
+    },
+    {
+      "id": "trackify-297436777",
+      "broadcastId": "297436777",
+      "date": "2026-09-28",
+      "startedAt": "2026-09-28T13:38:11+09:00",
+      "endedAt": "2026-09-29T01:45:23+09:00",
+      "durationMinutes": 727,
+      "averageViewers": 131,
+      "maxViewers": 235,
+      "viewerSampleCount": 145,
+      "uniqueViewers": null,
+      "starCount": 2516,
+      "supporterCount": 53,
+      "chatCount": 2856,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "마병대4 완",
+      "categories": [
+        {
+          "id": "00040017",
+          "name": "마인크래프트",
+          "minutes": 727,
+          "sampleCount": 145,
+          "averageViewers": 131,
+          "maxViewers": 235
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297436777"
     }
   ]
 }
