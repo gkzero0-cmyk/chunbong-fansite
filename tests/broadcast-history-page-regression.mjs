@@ -34,6 +34,10 @@ assert.match(js, /history-series-links/, 'related-series navigation must exist')
 assert.match(js, /contentMatch\(row\)/, 'history must reuse content archive matches');
 assert.match(js, /콘텐츠 대표 이미지/, 'content archive hero must have priority as representative media');
 assert.match(js, /taxonomyLabel\(row\)/, 'detail cards must display separated taxonomy labels');
+assert.match(js, /function fallbackEnrichment\(/, 'sheet records must reuse verified legacy summaries');
+assert.match(js, /function recordSummary\(/, 'detail cards must use archive or verified fallback summaries');
+assert.match(js, /요양타운 · 이세갱 2인자[^\n]*GTA 서버/, '2024 요양타운 must be classified as GTA');
+assert.match(js, /로나월드 2\\.5 리부트 참여[^\n]*서버·마크/, '로나월드 2.5 리부트 must stay Minecraft');
 assert.match(css, /history-series-links/, 'related-series navigation styles must exist');
 assert.match(css, /history-event-stage-list/, 'grouped detail stage styles must exist');
 assert.match(js, /normalizeMediaUrl/, 'history media URLs must normalize protocol-relative image URLs');
