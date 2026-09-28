@@ -1109,6 +1109,17 @@
       });
     });
 
+    root.querySelectorAll('[data-series-record]').forEach(button=>{
+      button.addEventListener('click',()=>{
+        const id=button.dataset.seriesRecord||'';
+        const year=button.dataset.seriesYear||'all';
+        if(!id) return;
+        detailYear=year;
+        renderDetail();
+        requestAnimationFrame(()=>scrollToRecord(id,true));
+      });
+    });
+
     bindMonthJumps();
     applyDetailFilters();
   }
@@ -1226,7 +1237,7 @@
                             <details class="history-record-more"><summary>관련 보기</summary><div>${actionLinks}</div></details>
                           </div>
                           <div class="history-timeline-meta">
-                            <span class="history-meta-kind">${esc(displayKind(row.kind||'콘텐츠'))}</span>
+                            <span class="history-meta-kind">${esc(taxonomyLabel(row))}</span>
                             ${role?`<span class="history-meta-role">${esc(role)}</span>`:''}
                             ${row.featured?'<b class="history-meta-featured">주요 이력</b>':''}
                             ${statusBadge(row)}
@@ -1234,6 +1245,7 @@
                             <span class="history-search-match" data-search-match hidden></span>
                           </div>
                           ${row.detail?`<section class="history-record-summary"><span>방송 요약</span><p data-highlight data-raw="${esc(row.detail)}">${esc(row.detail)}</p></section>`:''}
+                          ${renderSeriesLinks(row,rows)}
                           ${highlights.length?`<section class="history-record-highlights"><div class="history-record-section-title"><span>주요 진행 기록</span><b>${children.length}개</b></div><ol>${highlights.map(item=>`<li><time>${esc(item.end?displayDate({start:item.date,end:item.end}):fmt(item.date))}</time><span data-highlight data-raw="${esc(item.label)}">${esc(item.label)}</span></li>`).join('')}</ol></section>`:''}
                           ${children.length>3?`<details class="history-event-details"><summary>전체 세부 방송 기록 ${children.length}개 보기 <span>⌄</span></summary><div class="history-event-stage-list">${renderGroupedSubEvents(children)}</div></details>`:children.length?'':canLoad?`<button type="button" class="history-load-details" data-load-sub-events="${id}">세부 방송 기록 불러오기</button>`:''}
                         </div>
