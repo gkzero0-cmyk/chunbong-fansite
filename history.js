@@ -710,6 +710,8 @@
                     const search=detailSearchText(row);
                     const content=contentHref(row);
                     const calendar=calendarHref(row);
+                    const calendarLabel=row.end&&row.end!==row.start?'시작일 기록':'캘린더';
+                    const actionLinks=`${content?`<a href="${esc(content)}">콘텐츠</a>`:''}${calendar?`<a href="${esc(calendar)}">${calendarLabel}</a>`:''}<button type="button" data-copy-record="${id}" aria-label="${esc(row.label)} 기록 링크 복사">링크</button>`;
                     const canLoad=detailTerms(row).length>0&&Number(year)>=2025&&!rowMonthsLoaded(row);
                     const compact=!row.featured&&!row.detail&&!children.length&&!canLoad;
                     return `<article id="${id}" class="history-timeline-item ${compact?'is-compact':''} ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" data-history-detail-item data-year="${year}" data-kind="${esc(row.kind||'콘텐츠')}" data-search="${esc(search)}">
@@ -717,11 +719,8 @@
                       <div class="history-timeline-card">
                         <div class="history-record-head">
                           <h3 data-highlight data-raw="${esc(row.label)}">${esc(row.label)}</h3>
-                          <div class="history-record-actions">
-                            ${content?`<a href="${esc(content)}">콘텐츠</a>`:''}
-                            ${calendar?`<a href="${esc(calendar)}">캘린더</a>`:''}
-                            <button type="button" data-copy-record="${id}" aria-label="${esc(row.label)} 기록 링크 복사">링크</button>
-                          </div>
+                          <div class="history-record-actions">${actionLinks}</div>
+                          <details class="history-record-more"><summary>관련 보기</summary><div>${actionLinks}</div></details>
                         </div>
                         <div class="history-timeline-meta"><span>${esc(row.kind||'방송')}</span>${row.featured?'<b>주요 이력</b>':''}${statusBadge(row)}${sourceBadges(row)}</div>
                         ${row.detail?`<p data-highlight data-raw="${esc(row.detail)}">${esc(row.detail)}</p>`:''}
@@ -780,7 +779,7 @@
     updateViewUI();
 
     if(status){
-      status.textContent=liveReady?'최신 기록 반영됨':'검증 기록 표시 중 · 최신 기록 확인 중';
+      status.textContent=liveReady?'':'최신 기록 확인 중';
     }
   }
 
@@ -791,7 +790,29 @@
     localStorage.setItem('chunbong-history-view',currentView);
     if(currentView==='simple'&&location.hash.startsWith('#history-')) history.replaceState(null,'',location.pathname+location.search);
     render();
+    if(currentView==='detail'&&!contentIndexLoaded){
+      void ensureContentIndex().then(()=>{if(currentView==='detail') renderDetail();});
+    }
     if(currentView==='simple'&&simpleScrollY>0) requestAnimationFrame(()=>window.scrollTo({top:simpleScrollY,behavior:'auto'}));
+  }
+
+  function readAnnualCache(){
+    try{
+      const cached=JSON.parse(sessionStorage.getItem('chunbong-history-annual-v1')||'null');
+      if(!cached||!Array.isArray(cached.items)||cached.items.length<50) return null;
+      if(Date.now()-Number(cached.savedAt||0)>10*60*1000) return null;
+      return cached;
+    }catch(_error){return null;}
+  }
+
+  function writeAnnualCache(items,fetchedAt){
+    try{
+      sessionStorage.setItem('chunbong-history-annual-v1',JSON.stringify({
+        savedAt:Date.now(),
+        fetchedAt:fetchedAt||'',
+        items
+      }));
+    }catch(_error){}
   }
 
   function recordSignature(rows){
@@ -804,7 +825,7 @@
     return response.json();
   }
 
-  async function loadLiveSheets(){
+  async function loadLiveSheets({renderOnSuccess=true}={}){
     try{
       const before=recordSignature(records());
       const [y2025,y2026]=await Promise.all([
@@ -816,17 +837,49 @@
         throw new Error('sheet_data_incomplete');
       }
 
-      liveAnnual=[...y2025.items,...y2026.items].map(enrichSheetRecord);
+      const freshItems=[...y2025.items,...y2026.items];
+      liveAnnual=freshItems.map(enrichSheetRecord);
       liveFetchedAt=y2026.fetchedAt||y2025.fetchedAt||'';
       liveReady=true;
+      writeAnnualCache(freshItems,liveFetchedAt);
 
       const after=recordSignature(records());
-      if(after!==before||currentView==='detail') render();
-      else if(status) status.textContent='최신 기록 반영됨';
+      if(renderOnSuccess&&(after!==before||currentView==='detail')) render();
+      else if(status) status.textContent='';
+      return true;
     }catch(_error){
-      liveReady=false;
-      if(status) status.textContent='검증 기록 표시 중 · 최신 기록 연결 지연';
+      if(!liveReady){
+        liveReady=false;
+        if(status) status.textContent='최신 기록 연결이 지연되고 있습니다';
+      }
+      return false;
     }
+  }
+
+  async function initialize(){
+    const cached=readAnnualCache();
+    if(cached){
+      liveAnnual=cached.items.map(enrichSheetRecord);
+      liveFetchedAt=cached.fetchedAt||'';
+      liveReady=true;
+      if(currentView==='detail') await ensureContentIndex();
+      render();
+      void loadLiveSheets({renderOnSuccess:true});
+      return;
+    }
+
+    let fallbackRendered=false;
+    const fallbackTimer=setTimeout(()=>{
+      fallbackRendered=true;
+      render();
+    },420);
+
+    const tasks=[loadLiveSheets({renderOnSuccess:false})];
+    if(currentView==='detail') tasks.push(ensureContentIndex());
+    await Promise.allSettled(tasks);
+    clearTimeout(fallbackTimer);
+    render();
+    if(fallbackRendered&&status&&liveReady) status.textContent='';
   }
 
   viewButtons.forEach(button=>button.addEventListener('click',()=>setView(button.dataset.historyView)));
@@ -835,10 +888,10 @@
       currentView='detail';
       localStorage.setItem('chunbong-history-view','detail');
       render();
+      if(!contentIndexLoaded) void ensureContentIndex().then(()=>{if(currentView==='detail') renderDetail();});
     }
   });
 
   window.__CHUNBONG_HISTORY_HELPERS__={records,displayDate,compactDate,renderSimple,renderDetail,setView,loadLiveSheets,recordId};
-  render();
-  loadLiveSheets();
+  void initialize();
 })();
