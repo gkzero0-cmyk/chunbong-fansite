@@ -543,15 +543,18 @@ function renderAutoSyncState(){
   const el=$('[data-archive-auto-state]',root);if(!el)return;
   const failed=autoSyncMeta?.status==='failed',when=String((failed?autoSyncMeta?.failedAt:autoSyncMeta?.completedAt)||'').slice(0,16).replace('T',' '),lastOk=String(autoSyncMeta?.lastSuccessAt||'').slice(0,16).replace('T',' ');
   const d=autoSyncMeta?.discovered||{},total=['posts','vods','catches','clips','youtube','shorts'].reduce((sum,key)=>sum+Number(d[key]||0),0);
-  const checkpointStops=Number(autoSyncMeta?.scan?.stoppedAtCheckpoint||0),notionSkipped=Number(autoSyncMeta?.notion?.skippedUnchanged||0);
+  const checkpointStops=Number(autoSyncMeta?.scan?.stoppedAtCheckpoint||0),notionSkipped=Number(autoSyncMeta?.notion?.skippedUnchanged||0),namuSkipped=Number(autoSyncMeta?.references?.skippedUnchanged||0);
+  const intervalMin=Math.max(0,Math.round(Number(autoSyncMeta?.adaptiveIntervalMs||0)/60000));
   el.dataset.state=failed?'bad':autoSyncMeta?'ok':'';
   if(!autoSyncMeta){el.innerHTML='<strong>공식 자료 자동 수집</strong><span>아직 동기화 기록이 없습니다.</span><small>SOOP 방송국을 최우선으로 수집합니다.</small>';return}
   if(failed){el.innerHTML='<strong>공식 자료 자동 수집 · 실패</strong><span>실패 '+esc(when||'확인 중')+' · 마지막 성공 '+esc(lastOk||'없음')+' · 검토 후보 '+autoCandidates.length+'건</span><small>'+esc(autoSyncMeta.error||'원인을 확인해 주세요.')+'</small>';return}
   const saved=[];
   if(checkpointStops)saved.push('체크포인트 조기 종료 '+checkpointStops+'개');
   if(notionSkipped)saved.push('Notion 변경 없음 '+notionSkipped+'개');
+  if(namuSkipped)saved.push('나무위키 변경 없음 '+namuSkipped+'개');
+  if(intervalMin)saved.push('재확인 '+intervalMin+'분');
   const savingText=saved.length?' · '+saved.join(' · '):'';
-  el.innerHTML='<strong>공식 자료 자동 수집 · 정상</strong><span>마지막 성공 '+esc(when||'확인 중')+' · 발견 '+total+'건 · 자동 연결 '+Number(autoSyncMeta.attachedCount||0)+'건 · 검토 후보 '+autoCandidates.length+'건 · '+Number(autoSyncMeta.durationMs||0)+'ms</span><small>'+(autoSyncMeta.scanMode==='incremental-checkpoint'?'증분 수집':'전체 수집')+savingText+' · 우선순위: SOOP → YouTube → Notion</small>';
+  el.innerHTML='<strong>공식 자료 자동 수집 · 정상</strong><span>마지막 성공 '+esc(when||'확인 중')+' · 발견 '+total+'건 · 자동 연결 '+Number(autoSyncMeta.attachedCount||0)+'건 · 검토 후보 '+autoCandidates.length+'건 · '+Number(autoSyncMeta.durationMs||0)+'ms</span><small>'+(autoSyncMeta.scanMode==='incremental-checkpoint'?'증분 수집':'전체 수집')+savingText+' · 우선순위: SOOP → YouTube → Notion → 나무위키</small>';
 }
 function renderCandidates(){
   const wrap=$('[data-archive-candidate-list]',root),count=$('[data-archive-candidate-count]',root);if(count)count.textContent=autoCandidates.length+'건';if(!wrap)return;
