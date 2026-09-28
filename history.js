@@ -71,8 +71,8 @@
     {test:/^꾸다방\s*2\.5$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^감블러의 놀이터$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^또오냥의 조까치수련회\s*2$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
-    {test:/^마병대\s*3$/i,kind:'마인크래프트',role:'교육교관'},
-    {test:/^마병대\s*4$/i,kind:'마인크래프트',role:'행정관'},
+    {test:/^마병대\s*3$/i,kind:'마인크래프트',role:'교육교관',simple:true,importance:'core',type:'마크 서버'},
+    {test:/^마병대\s*4$/i,kind:'마인크래프트',role:'행정관',simple:true,importance:'core',type:'마크 서버'},
     {test:/^오함마\s*3/i,kind:'마인크래프트',role:'수장',importance:'core',type:'마크 서버'},
     {test:/^킹콩서버$/i,kind:'마인크래프트',role:'조교',importance:'core',type:'마크 서버'},
     {test:/^돌발서버$/i,kind:'마인크래프트',role:'운영자',importance:'core',type:'마크 서버'},
@@ -82,11 +82,12 @@
     {test:/^더켓몬 민원아저씨$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^퍼켓몬(?:\s+w\.\s*조통박치기)?$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^모징어게임$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 대형 콘텐츠'},
-    {test:/^청더일레븐(?:\s+w\.\s*춘밥즈)?$/i,kind:'대회',role:'참가',importance:'core',type:'마크 대회'},
+    {test:/^청더일레븐(?:\s+w\.\s*춘밥즈)?$/i,kind:'대회',role:'참가',simple:true,importance:'core',type:'마크 콘텐츠 · 대회',simpleTags:['마크 콘텐츠','대회']},
     {test:/^염병서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^챈나룽 서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^밍친서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^챈나의 경찰과 도둑(?:\s*2)?$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 일일 콘텐츠'},
+    {test:/^그 날의 그림자$/i,kind:'마인크래프트',role:'참가',simple:true,importance:'core',type:'마크 콘텐츠'},
     {test:/^야구자의 왁업$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 콘텐츠'},
     {test:/^해리의 RE병대$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 콘텐츠'},
     {test:/^사자회 체력공유 엔더런$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 콘텐츠'},
@@ -538,6 +539,13 @@
     return taxonomyLabel(row);
   }
 
+  function simpleTypeLabels(row={}){
+    const override=recordRule(row.label);
+    if(Array.isArray(override?.simpleTags)&&override.simpleTags.length) return [...new Set(override.simpleTags.filter(Boolean))];
+    const label=simpleTypeLabel(row);
+    return label?[label]:[];
+  }
+
   function simpleRoleLabel(row={}){
     const role=String(row.role||inferRole(row.label,normalizeKind(row.kind,row.label))||'').trim();
     if(!role||role==='참가') return '';
@@ -550,32 +558,39 @@
     return role;
   }
 
-  function participationBucket(row={}){
+  function participationBuckets(row={}){
+    const override=recordRule(row.label);
+    if(Array.isArray(override?.simpleTags)&&override.simpleTags.length) return [...new Set(override.simpleTags.filter(Boolean))];
     const taxonomy=taxonomyFor(row);
     const platform=taxonomy.platform;
     const format=taxonomy.format;
     if(platform==='마인크래프트'){
-      if(format==='서버') return '마크 서버';
-      if(format==='대회') return '마크 대회';
-      return '마크 콘텐츠';
+      if(format==='서버') return ['마크 서버'];
+      if(format==='대회') return ['마크 대회'];
+      return ['마크 콘텐츠'];
     }
-    if(platform==='GTA') return 'GTA 서버';
-    if(platform==='팰월드') return '팰월드 서버';
-    if(platform==='좀보이드') return '좀보이드 서버';
-    if(platform==='VRC') return 'VRC 콘텐츠';
-    if(['배틀그라운드','아르마','언레일드','오버워치','스트리트 파이터','파블로프 VR','WOW','게임'].includes(platform)&&format==='콘텐츠') return '게임 콘텐츠';
-    if(format==='대회') return '대회';
-    if(platform==='타로'||format==='타로') return '타로 콘텐츠';
-    if(platform==='콘텐츠'||format==='콘텐츠'||format==='행사') return '주요 콘텐츠';
-    return '';
+    if(platform==='GTA') return ['GTA 서버'];
+    if(platform==='팰월드') return ['팰월드 서버'];
+    if(platform==='좀보이드') return ['좀보이드 서버'];
+    if(platform==='VRC') return ['VRC 콘텐츠'];
+    if(['배틀그라운드','아르마','언레일드','오버워치','스트리트 파이터','파블로프 VR','WOW','게임'].includes(platform)&&format==='콘텐츠') return ['게임 콘텐츠'];
+    if(format==='대회') return ['대회'];
+    if(platform==='타로'||format==='타로') return ['타로 콘텐츠'];
+    if(platform==='콘텐츠'||format==='콘텐츠'||format==='행사') return ['주요 콘텐츠'];
+    return [];
+  }
+
+  function participationBucket(row={}){
+    return participationBuckets(row)[0]||'';
   }
 
   function yearParticipationStats(rows=[]){
     const counts=new Map();
     for(const row of rows){
-      const bucket=participationBucket(row);
-      if(!bucket) continue;
-      counts.set(bucket,(counts.get(bucket)||0)+1);
+      for(const bucket of participationBuckets(row)){
+        if(!bucket) continue;
+        counts.set(bucket,(counts.get(bucket)||0)+1);
+      }
     }
     const order=['마크 서버','마크 콘텐츠','마크 대회','GTA 서버','팰월드 서버','좀보이드 서버','VRC 콘텐츠','게임 콘텐츠','대회','타로 콘텐츠','주요 콘텐츠'];
     return order.filter(label=>counts.has(label)).map(label=>({label,count:counts.get(label)}));
@@ -606,7 +621,7 @@
     if(!stats.length&&!roles.length) return '';
     return `<div class="history-year-activity-summary">
       <div class="history-year-participation" aria-label="${esc(year)}년 콘텐츠 활동 횟수">
-        <div class="history-year-participation-head"><span class="history-year-participation-label">활동 요약</span><small>콘텐츠 1건 = 1회 · 주최·운영도 1건 · 신청·면접·설명회 제외</small></div>
+        <div class="history-year-participation-head"><span class="history-year-participation-label">활동 요약</span><small>콘텐츠 1건 = 1회 · 신청·면접·설명회 제외 · 복합 콘텐츠는 해당 유형에 각각 집계</small></div>
         <div>${stats.map(item=>`<button type="button" data-simple-bucket="${esc(item.label)}" aria-pressed="false"><b>${esc(item.label)}</b><em>${item.count}회</em></button>`).join('')}</div>
       </div>
       <div class="history-simple-filter-state" data-simple-filter-state hidden><span></span><button type="button" data-simple-clear-bucket>전체 보기</button></div>
@@ -963,10 +978,10 @@
           <div class="history-simple-year-list">
             ${groups[year].map(row=>{
               const id=recordId(row);
-              return `<article class="history-simple-row ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" tabindex="0" role="link" data-open-record="${id}" data-simple-month="${esc(String(row.start||'').slice(0,7))}" data-simple-bucket="${esc(participationBucket(row))}" aria-label="${esc(row.label)} 상세 기록 보기">
+              return `<article class="history-simple-row ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" tabindex="0" role="link" data-open-record="${id}" data-simple-month="${esc(String(row.start||'').slice(0,7))}" data-simple-buckets="${esc(participationBuckets(row).join('|'))}" aria-label="${esc(row.label)} 상세 기록 보기">
                 <time class="history-simple-date" datetime="${esc(row.start)}">${esc(compactDate(row))}</time>
                 <p class="history-simple-content"><span>${esc(row.label)}</span>${simpleRoleLabel(row)?`<em class="history-simple-role">${esc(simpleRoleLabel(row))}</em>`:''}${statusBadge(row)}</p>
-                <span class="history-simple-type" data-simple-type="${esc(simpleTypeLabel(row))}">${esc(simpleTypeLabel(row))}</span>
+                <span class="history-simple-types">${simpleTypeLabels(row).map(type=>`<span class="history-simple-type" data-simple-type="${esc(type)}">${esc(type)}</span>`).join('')}</span>
               </article>`;
             }).join('')}
           </div>
@@ -996,7 +1011,7 @@
         button.classList.add('is-active');
         let visible=0;
         section.querySelectorAll('.history-simple-row').forEach(row=>{
-          const show=row.dataset.simpleBucket===bucket;
+          const show=String(row.dataset.simpleBuckets||'').split('|').includes(bucket);
           row.hidden=!show;
           if(show) visible+=1;
         });
