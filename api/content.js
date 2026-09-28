@@ -292,7 +292,7 @@ async function handler(req,res) {
   if(type==='operator-content-source-meta') return contentArchive.handleOperatorSourceMeta(req,res);
   if(type==='operator-content-archive-delete') return contentArchive.handleOperatorDelete(req,res);
   if(type==='live'){
-    res.setHeader('Cache-Control','s-maxage=30, stale-while-revalidate=30');
+    res.setHeader('Cache-Control','public, max-age=15, s-maxage=45, stale-while-revalidate=120');
     try{
       const state=await fetchSoopLive();
       return res.status(200).json({
