@@ -74,6 +74,8 @@
     {test:/^킹콩서버$/i,kind:'마인크래프트',role:'조교'},
     {test:/^돌발서버$/i,kind:'마인크래프트',role:'운영자'},
 
+    {test:/^원조 다이아게임$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^니즈 좀비서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
     {test:/^더켓몬 민원아저씨$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'픽셀몬 서버'},
     {test:/^퍼켓몬(?:\s+w\.\s*조통박치기)?$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'픽셀몬 서버'},
     {test:/^모징어게임$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 대형 콘텐츠'},
@@ -322,7 +324,7 @@
     if(/VR쳇|VRChat|VRC|세바버/.test(text)) return 'VRC';
     if(/노래자랑|상영회|행사/.test(text)) return '콘텐츠';
     if(/입사|인터뷰/.test(text)) return '방송';
-    if(/마병대|레오펠|퍼켓몬|더켓몬|모징어게임|청더일레븐|염병서버|챈나룽|밍친서버|해초마을|맹든링|픽크타|오함마|수미랜드|원블럭|다이아|엔더런|왁업/.test(text)) return '마인크래프트';
+    if(/마병대|레오펠|퍼켓몬|더켓몬|모징어게임|청더일레븐|염병서버|챈나룽|밍친서버|니즈 좀비서버|원조 다이아게임|해초마을|맹든링|픽크타|오함마|수미랜드|원블럭|다이아|엔더런|왁업/.test(text)) return '마인크래프트';
     return '콘텐츠';
   }
 
