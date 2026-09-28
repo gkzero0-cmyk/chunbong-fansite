@@ -1113,6 +1113,36 @@
     applyDetailFilters();
   }
 
+  function seriesKey(row={}){
+    const label=String(row.label||'').trim();
+    const rules=[
+      [/^마병대\s*\d+/i,'마병대'],
+      [/^담월드\s*\d*/i,'담월드'],
+      [/경찰과 도둑/i,'경찰과 도둑'],
+      [/^싸이감성 노래자랑/i,'싸이감성 노래자랑'],
+      [/^그냥서버/i,'그냥서버'],
+      [/^레오펠/i,'레오펠'],
+      [/^춘타클/i,'춘타클'],
+      [/^오함마\s*\d+/i,'오함마']
+    ];
+    return rules.find(([pattern])=>pattern.test(label))?.[1]||'';
+  }
+
+  function relatedSeriesRows(row={},allRows=[]){
+    const key=seriesKey(row);
+    if(!key) return [];
+    const currentId=recordId(row);
+    return allRows
+      .filter(item=>seriesKey(item)===key&&recordId(item)!==currentId)
+      .sort((a,b)=>String(a.start).localeCompare(String(b.start)))
+      .slice(-6);
+  }
+
+  function renderSeriesLinks(row={},allRows=[]){
+    const related=relatedSeriesRows(row,allRows);
+    if(!related.length) return '';
+    return `<nav class="history-series-links" aria-label="같은 시리즈"><span>같은 시리즈</span><div>${related.map(item=>`<button type="button" data-series-record="${recordId(item)}" data-series-year="${esc(String(item.start||'').slice(0,4))}">${esc(item.label)}</button>`).join('')}</div></nav>`;
+  }
   function shouldOpenMonth(year,month,yearIndex,monthIndex){
     const key=`${year}-${month}`;
     if(monthOpenState.has(key)) return monthOpenState.get(key);
