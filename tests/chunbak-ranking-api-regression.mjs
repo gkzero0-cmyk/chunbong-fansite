@@ -38,7 +38,7 @@ delete process.env.UPSTASH_REDIS_REST_URL; delete process.env.UPSTASH_REDIS_REST
 process.env.KV_REST_API_URL='https://example.upstash.test'; process.env.KV_REST_API_TOKEN='kv-test-token';
 const kvFallback=await invoke({method:'GET',query:{mode:'classic'}}); assert.equal(kvFallback.statusCode,200); assert.equal(kvFallback.body.mode,'classic');
 delete process.env.KV_REST_API_URL; delete process.env.KV_REST_API_TOKEN;
-const missingEnv=await invoke({method:'GET',query:{mode:'classic'}}); assert.equal(missingEnv.statusCode,503); assert.deepEqual(missingEnv.body,{error:'ranking_unavailable'});
+const missingEnv=await invoke({method:'GET',query:{mode:'classic'}}); assert.equal(missingEnv.statusCode,200); assert.equal(missingEnv.body.unavailable,true); assert.equal(missingEnv.body.retryAfterSeconds,300); assert.deepEqual(missingEnv.body.entries,[]);
 process.env.UPSTASH_REDIS_REST_URL=savedUrl; process.env.UPSTASH_REDIS_REST_TOKEN=savedToken;
 global.fetch=originalFetch;
 console.log('Chunbak ranking API regression passed');
