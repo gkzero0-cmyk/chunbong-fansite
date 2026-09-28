@@ -185,7 +185,17 @@
     syncRankingButtons();const requestId=++rankingRequestId;
     if(els.rankingStatus)els.rankingStatus.textContent='랭킹 불러오는 중…';
     if(typeof fetch!=='function'){if(els.rankingStatus)els.rankingStatus.textContent='랭킹 연결을 사용할 수 없어요. 게임은 계속할 수 있어요.';return;}
-    try{const response=await fetch(`${RANKING_ENDPOINT}&mode=${encodeURIComponent(rankingMode)}&difficulty=${encodeURIComponent(rankingDifficulty)}`,{headers:{accept:'application/json'}});if(!response.ok)throw new Error(`ranking ${response.status}`);const payload=await response.json();if(requestId!==rankingRequestId)return;if(payload.unavailable){if(els.rankingStatus)els.rankingStatus.textContent='랭킹 서버 사용량 제한으로 잠시 확인할 수 없어요. 게임은 계속할 수 있어요.';return;}renderRanking(Array.isArray(payload.entries)?payload.entries:[]);}catch{if(requestId===rankingRequestId&&els.rankingStatus)els.rankingStatus.textContent='랭킹을 불러오지 못했어요. 게임은 계속할 수 있어요.';}
+    try{
+      const url=`${RANKING_ENDPOINT}&mode=${encodeURIComponent(rankingMode)}&difficulty=${encodeURIComponent(rankingDifficulty)}`;
+      const key=`ranking:chuntris:${rankingMode}:${rankingDifficulty}`;
+      const payload=window.ChunbongCache
+        ?await window.ChunbongCache.fetchJson(key,url,{ttl:300000,staleIfError:true,backoffMs:300000})
+        :await fetch(url,{headers:{accept:'application/json'}}).then(async response=>{if(!response.ok)throw new Error(`ranking ${response.status}`);return response.json()});
+      if(requestId!==rankingRequestId)return;
+      if(payload.unavailable){if(els.rankingStatus)els.rankingStatus.textContent='랭킹 서버 사용량 제한으로 잠시 확인할 수 없어요. 게임은 계속할 수 있어요.';return;}
+      renderRanking(Array.isArray(payload.entries)?payload.entries:[]);
+      if(payload.snapshot&&els.rankingStatus)els.rankingStatus.textContent='최근 정상 랭킹을 표시하고 있어요.';
+    }catch{if(requestId===rankingRequestId&&els.rankingStatus)els.rankingStatus.textContent='랭킹을 불러오지 못했어요. 게임은 계속할 수 있어요.';}
   }
   async function submitRanking(state){
     const nickname=currentNickname();
