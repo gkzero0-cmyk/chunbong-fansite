@@ -63,23 +63,22 @@ function parseAnnual(rows,year){
 }
 
 function parseMonth(rows,year){
-  const items=[];let currentDate='';
+  const items=[];let currentDate='',currentRange=null;
   for(const row of rows){
-    let rowRange=null;
     for(const raw of row){
       const value=String(raw||'').trim();
       if(!value) continue;
       const date=value.match(/^(\d{1,2})월\s*(\d{1,2})일$/);
-      if(date){currentDate=iso(year,Number(date[1]),Number(date[2]));rowRange=null;continue;}
+      if(date){currentDate=iso(year,Number(date[1]),Number(date[2]));currentRange=null;continue;}
       const range=value.match(/^(\d{1,2})\/(\d{1,2})\s*[~-]\s*(\d{1,2})\/(\d{1,2})$/)
         || value.match(/^(\d{1,2})월\s*(\d{1,2})일\s*[~-]\s*(\d{1,2})월\s*(\d{1,2})일$/);
       if(range){
         const sm=Number(range[1]),sd=Number(range[2]),em=Number(range[3]),ed=Number(range[4]);
-        rowRange={date:iso(year,sm,sd),end:iso(em<sm?year+1:year,em,ed)};
+        currentRange={date:iso(year,sm,sd),end:iso(em<sm?year+1:year,em,ed)};
         continue;
       }
       if(!currentDate||/춘봉 방송 기록$/.test(value)||/^\d+월 춘봉 방송 기록$/.test(value)) continue;
-      items.push({date:rowRange?.date||currentDate,...(rowRange?.end?{end:rowRange.end}:{}),label:value});
+      items.push({date:currentRange?.date||currentDate,...(currentRange?.end?{end:currentRange.end}:{}),label:value});
     }
   }
   return items;
