@@ -11,6 +11,9 @@ assert.match(multiplayer,/multiplayerDiagnostics=\{since:/);
 assert.match(multiplayer,/roomBusy\+=1/);
 assert.match(multiplayer,/lockRetries\+=1/);
 assert.match(multiplayer,/redisCircuitRejects\+=1/);
+assert.match(api,/progressHeartbeatMilliseconds:5000/);
+assert.match(api,/progressDeltaSync:true/);
+assert.match(ui,/멀티플레이 delta sync/);
 assert.match(ui,/멀티플레이 room_busy/);
 assert.match(ui,/멀티플레이 Redis circuit/);
 
