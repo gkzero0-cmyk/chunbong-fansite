@@ -83,6 +83,9 @@
   let raceEndAt=0;
   let clockOffset=0;
   let localFinished=false;
+  let lastProgressSignature='';
+  let lastProgressSentAt=0;
+  const PROGRESS_HEARTBEAT_MS=5000;
 
   const shell=document.createElement('div');
   shell.className='mp-shell';shell.hidden=true;
@@ -240,9 +243,13 @@
       const remaining=Math.max(0,raceEndAt-serverNow());
       updateClock();
       if(snap.terminal||remaining<=0){await finishLocal();return;}
+      const payload={score:snap.score,lines:snap.secondary,timeMs:Math.max(0,120000-remaining),status:'playing'};
+      const signature=[payload.score,payload.lines,payload.status].join('|');
+      if(signature===lastProgressSignature&&Date.now()-lastProgressSentAt<PROGRESS_HEARTBEAT_MS)return;
       progressInFlight=true;
       try{
-        const data=await client.progress({score:snap.score,lines:snap.secondary,timeMs:Math.max(0,120000-remaining),status:'playing'});
+        const data=await client.progress(payload);
+        lastProgressSignature=signature;lastProgressSentAt=Date.now();
         render(data.room);handleRoom(data.room);
       }catch(error){message(errorMessage(error),true);}
       finally{progressInFlight=false;}
@@ -257,7 +264,7 @@
       const delay=Math.max(0,room.startAt-serverNow());
       countdownTimer=setTimeout(()=>{
         if(startedRound===room.round)return;
-        startedRound=room.round;localFinished=false;raceEndAt=room.startAt+120000;
+        startedRound=room.round;localFinished=false;lastProgressSignature='';lastProgressSentAt=0;raceEndAt=room.startAt+120000;
         config.start(room.seed);close();startProgress(room);
       },delay);
     }
@@ -266,7 +273,7 @@
       open();render(room);
     }
     if(room.state==='waiting'&&startedRound===room.round){
-      startedRound=0;localFinished=false;raceEndAt=0;hud.hidden=true;
+      startedRound=0;localFinished=false;lastProgressSignature='';lastProgressSentAt=0;raceEndAt=0;hud.hidden=true;
     }
   }
 
