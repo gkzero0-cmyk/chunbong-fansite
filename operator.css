@@ -652,3 +652,16 @@ body[data-page="operator"]{background:radial-gradient(circle at 80% 0,color-mix(
   .operator-history-year-quality>span{align-items:flex-start;flex-direction:column}
   .operator-history-year-quality em{text-align:left}
 }
+
+
+.operator-history-priority{
+  color:var(--op-accent);
+  font-size:8px;
+  font-weight:900;
+}
+.operator-history-audit-results article[data-history-audit-priority="0"]{
+  border-color:color-mix(in srgb,var(--op-accent) 40%,var(--op-border));
+}
+.operator-history-audit-results article[data-history-audit-priority="1"]{
+  border-color:color-mix(in srgb,#d8a756 34%,var(--op-border));
+}
