@@ -1258,3 +1258,26 @@ body[data-history-view="simple"] .history-layout{display:block}.history-guide[hi
   .history-year-participation>div:last-child{grid-template-columns:1fr}
   .history-simple-row{grid-template-columns:64px minmax(0,1fr);gap:5px 8px}
 }
+
+
+/* Multi-tag simple history rows v25 */
+.history-simple-types{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:flex-start;
+  gap:5px;
+  min-width:0;
+}
+.history-simple-types .history-simple-type{
+  justify-self:auto;
+}
+@media(max-width:700px){
+  .history-simple-types{
+    grid-area:type;
+    justify-self:start;
+  }
+  .history-simple-types .history-simple-type{
+    grid-area:auto;
+  }
+}
