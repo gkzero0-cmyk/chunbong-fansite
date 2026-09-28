@@ -148,10 +148,10 @@
     return `history-${String(row.start||'date')}-${stableHash(`${row.start||''}|${row.end||''}|${row.label||''}`)}`;
   }
 
-  function contentHref(row={}){
-    if(!contentIndex.length) return '';
+  function contentMatch(row={}){
+    if(!contentIndex.length) return null;
     const labelNorm=normalizeLabel(row.label||'');
-    if(!labelNorm) return '';
+    if(!labelNorm) return null;
     let best=null,bestScore=0;
     for(const item of contentIndex){
       const names=[item.title,...(Array.isArray(item.aliases)?item.aliases:[])].filter(Boolean);
@@ -172,9 +172,13 @@
       }
       if(score>bestScore){best=item;bestScore=score;}
     }
-    return best?.id?`/contents/${encodeURIComponent(best.id)}`:'';
+    return bestScore>=80?best:null;
   }
 
+  function contentHref(row={}){
+    const match=contentMatch(row);
+    return match?.id?`/contents/${encodeURIComponent(match.id)}`:'';
+  }
   function calendarHref(row={}){
     const date=String(row.start||'').slice(0,10);
     return /^\d{4}-\d{2}-\d{2}$/.test(date)?`data.html?view=calendar&date=${encodeURIComponent(date)}#soop`:'';
