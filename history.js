@@ -479,6 +479,30 @@
     </div>`;
   }
 
+  function renderMonthJumpBars(groups,years){
+    return `<div class="history-month-jump-wrap" aria-label="월 바로가기">
+      ${years.map(year=>{
+        const months=Object.keys(groupByMonth(groups[year]||[])).sort((a,b)=>Number(a)-Number(b));
+        return `<div class="history-month-jumps" data-month-jump-year="${year}" ${detailYear===year?'':'hidden'}>
+          <span>${year} 월 이동</span>
+          <div>${months.map(month=>`<button type="button" data-jump-month="${year}-${month}">${Number(month)}월</button>`).join('')}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  function bindMonthJumps(){
+    root.querySelectorAll('[data-jump-month]').forEach(button=>{
+      button.addEventListener('click',()=>{
+        const key=button.dataset.jumpMonth;
+        const block=root.querySelector(`[data-history-month-block][data-month-key="${key}"]`);
+        if(!block) return;
+        block.open=true;
+        block.scrollIntoView({behavior:'smooth',block:'start'});
+      });
+    });
+  }
+
   function renderKindFilters(rows){
     const available=kindOrder.filter(kind=>rows.some(row=>row.kind===kind));
     return `<div class="history-kind-filters" aria-label="콘텐츠 유형 필터">
@@ -609,14 +633,27 @@
     root.querySelectorAll('[data-history-detail-item]').forEach(item=>{
       const yearMatch=detailYear==='all'||item.dataset.year===detailYear;
       const kindMatch=detailKind==='all'||item.dataset.kind===detailKind;
-      const baseMatch=!query||String(item.dataset.searchBase||'').includes(query);
+      const titleMatch=!query||String(item.dataset.searchTitle||'').includes(query);
+      const roleMatch=Boolean(query)&&String(item.dataset.searchRole||'').includes(query);
+      const descriptionMatch=Boolean(query)&&String(item.dataset.searchDescription||'').includes(query);
+      const kindTextMatch=Boolean(query)&&String(item.dataset.kind||'').toLowerCase().includes(query);
       const detailMatch=Boolean(query)&&String(item.dataset.searchDetail||'').includes(query);
-      const textMatch=baseMatch||detailMatch;
+      const dateMatch=Boolean(query)&&String(item.dataset.searchDates||'').includes(query);
+      const textMatch=!query||titleMatch||roleMatch||descriptionMatch||kindTextMatch||detailMatch||dateMatch;
       const visible=yearMatch&&kindMatch&&textMatch;
       item.hidden=!visible;
+
       const matchBadge=item.querySelector('[data-search-match]');
       if(matchBadge){
-        const reason=query?String(item.dataset.matchReason||''):'';
+        let reason='';
+        if(query){
+          if(titleMatch) reason='제목 일치';
+          else if(roleMatch) reason='역할 일치';
+          else if(descriptionMatch) reason='설명 일치';
+          else if(detailMatch) reason='세부 기록 일치';
+          else if(kindTextMatch) reason='유형 일치';
+          else if(dateMatch) reason='날짜 일치';
+        }
         matchBadge.textContent=reason;
         matchBadge.hidden=!(visible&&reason);
       }
@@ -645,6 +682,20 @@
     if(count) count.textContent=`${visibleCount}개 기록`;
     const empty=root.querySelector('[data-history-search-empty]');
     if(empty) empty.hidden=visibleCount!==0;
+
+    root.querySelectorAll('[data-month-jump-year]').forEach(bar=>{
+      bar.hidden=detailYear==='all'||bar.dataset.monthJumpYear!==detailYear;
+    });
+
+    const active=root.querySelector('[data-history-active-summary]');
+    if(active){
+      const parts=[];
+      if(detailYear!=='all') parts.push(detailYear);
+      if(detailKind!=='all') parts.push(detailKind);
+      if(detailQuery.trim()) parts.push(`“${detailQuery.trim()}”`);
+      active.textContent=parts.length?`${parts.join(' · ')} · ${visibleCount}개`:'';
+      active.hidden=!parts.length;
+    }
 
     applyHighlights();
   }
