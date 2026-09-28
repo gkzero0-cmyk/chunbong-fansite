@@ -50,7 +50,7 @@
     {test:/^서버개발 방송$/i,kind:'방송',importance:'normal'},
     {test:/구독플러스/i,kind:'방송',importance:'normal'},
 
-    {test:/^레오펠\s*2\s*무기한 연기$/i,kind:'마인크래프트',role:'주최',importance:'core',type:'서버·마크'},
+    {test:/^레오펠\s*2\s*무기한 연기$/i,kind:'활동',importance:'normal',type:'프로젝트 상태'},
     {test:/^레오펠(?:\s*:?\s*.*)?$/i,kind:'마인크래프트',role:'주최·운영'},
     {test:/^그냥서버(?:\s*:?\s*.*)?$/i,kind:'마인크래프트',role:'주최·운영'},
     {test:/싸이감성 노래자랑/i,kind:'콘텐츠',role:'주최',importance:'core',type:'콘텐츠'},
@@ -97,9 +97,9 @@
     {test:/^담월드(?:2)?(?:\s+w\..*)?$/i,kind:'게임',role:'참가',importance:'core',type:'팰월드 서버'},
     {test:/^고세구의 세바버$/i,kind:'VRC',role:'참가',importance:'core',type:'VRC 콘텐츠'},
 
-    {test:/^레오펠\s*2\s*무기한 연기$/i,kind:'활동',importance:'normal',type:'프로젝트 상태'},
     {test:/^퍼켓몬\s*UP전쟁$/i,kind:'콘텐츠',importance:'normal',type:'세부 이벤트'},
 
+    {test:/^2025 SOOP 스트리머 대상(?: 참여)?$/i,kind:'활동',role:'참가',importance:'core',type:'공식 행사'},
     {test:/패러블 입사 발표/i,kind:'활동',role:'소속',importance:'core',type:'활동 변화'},
     {test:/사자컴퍼니 결성/i,kind:'활동',role:'결성',importance:'core',type:'활동 변화'},
     {test:/춘동아리 결성/i,kind:'활동',role:'결성',importance:'core',type:'활동 변화'},
@@ -399,7 +399,7 @@
 
   function isFeatured(label=''){
     return /레오펠|패러블 입사|결성|마병대|SOOP 스트리머 대상|홍창의 숲|그냥서버|싸이감성 노래자랑|사자회 해체/.test(String(label))
-      && !/설명회|입주자 발표|모집/.test(String(label));
+      && !/설명회|입주자 발표|모집|무기한 연기/.test(String(label));
   }
 
   function simpleTypeLabel(row={}){
