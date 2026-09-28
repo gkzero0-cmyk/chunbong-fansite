@@ -7,7 +7,15 @@ on:
       - '.github/**'
       - 'tests/**'
       - 'docs/**'
+      - 'scripts/**'
       - '**/*.md'
+      - 'data/last-known-good.json'
+      - 'data/soop-sessions.json'
+      - 'data/soop-external-history.json'
+      - 'data/youtube-engagement-cache.json'
+      - 'data/soop-follower-history.json'
+      - 'data/trackify-soop-cache.json'
+      - 'data/chunbong-data-history.json'
   workflow_dispatch:
 
 permissions:
