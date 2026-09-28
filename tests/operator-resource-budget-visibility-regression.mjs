@@ -39,5 +39,9 @@ assert.match(api,/retryAfterSeconds=\(name==='redis_service_limit'\|\|name==='re
 assert.match(ui,/24시간 제한 이벤트/);
 assert.match(ui,/일일 검증 복구본/);
 assert.match(ui,/외부 장애 캐시 보존/);
+assert.match(api,/VERCEL_LIMIT_STATE_KEY='operator:vercel-limit-state:v1'/);
+assert.match(api,/vercel-rate-limit-recovered/);
+assert.match(ui,/system-quota-breakdown/);
+assert.match(ui,/Vercel 회복/);
 
 console.log('operator resource budget visibility regression passed');
