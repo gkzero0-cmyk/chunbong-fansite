@@ -613,8 +613,14 @@ async function loadHistoryVerification(){
       const hasSummary=Boolean(String(row.detail||archive?.summary||'').trim());
       if(!hasSummary)addIssue(row,'상세 요약 없음');
     }
-    const issues=[...issueMap.values()];
     const classificationReasons=new Set(['게임 종류 확인','콘텐츠 형태 확인','간단 보기 포함 기준 확인']);
+    const issuePriority=row=>{
+      if(row.reasons.some(reason=>classificationReasons.has(reason))) return 0;
+      if(row.reasons.includes('대표 이미지 지정 없음')) return 1;
+      if(row.reasons.includes('상세 요약 없음')) return 2;
+      return 3;
+    };
+    const issues=[...issueMap.values()].sort((a,b)=>issuePriority(a)-issuePriority(b)||String(b.start||'').localeCompare(String(a.start||'')));
     const classificationCount=issues.filter(row=>row.reasons.some(reason=>classificationReasons.has(reason))).length;
     const imageCount=issues.filter(row=>row.reasons.includes('대표 이미지 지정 없음')).length;
     const summaryCount=issues.filter(row=>row.reasons.includes('상세 요약 없음')).length;
@@ -634,7 +640,7 @@ async function loadHistoryVerification(){
     });
     summary.innerHTML=`<div class="operator-history-audit-metrics"><span><b>${pct(classificationCount)}%</b>분류 완료</span><span><b>${pct(imageCount)}%</b>대표 이미지</span><span><b>${pct(summaryCount)}%</b>상세 요약</span><span><b>${fmt(majorRows.length)}</b>주요 기록 점검</span></div><div class="operator-history-year-quality">${yearQuality.map(row=>`<span><b>${escapeHtml(row.year)}</b><em>분류 ${row.classification}% · 이미지 ${row.image}% · 요약 ${row.summary}%</em></span>`).join('')}</div><small>${issues.length?'확인 필요한 항목만 아래에 표시합니다.':'현재 주요 기록에 추가 확인 항목이 없습니다.'}</small>`;
     results.innerHTML=issues.length
-      ?issues.slice(0,40).map(row=>`<article><time>${escapeHtml(row.start||'')}</time><div><strong>${escapeHtml(row.label)}</strong><span>${escapeHtml(row.reasons.join(' · '))} · ${row.year}년</span></div><a href="history.html" target="_blank" rel="noopener">이력 보기 ↗</a></article>`).join('')
+      ?issues.slice(0,40).map(row=>{const priority=issuePriority(row),label=priority===0?'분류 우선':priority===1?'이미지':priority===2?'요약':'확인';return `<article data-history-audit-priority="${priority}"><time>${escapeHtml(row.start||'')}</time><div><strong>${escapeHtml(row.label)}</strong><span><b class="operator-history-priority">[${label}]</b> ${escapeHtml(row.reasons.join(' · '))} · ${row.year}년</span></div><a href="history.html?q=${encodeURIComponent(row.label||'')}&view=detail" target="_blank" rel="noopener">이력 보기 ↗</a></article>`}).join('')
       :'<p class="operator-empty">추가로 확인할 주요 방송 이력이 없습니다.</p>';
   }catch(error){
     summary.innerHTML='<strong>검증 실패</strong><span>스프레드시트 또는 콘텐츠 아카이브를 불러오지 못했습니다.</span>';
