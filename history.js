@@ -35,6 +35,9 @@
   let sourcePost=null;
   let sourcePostLoadedAt=0;
   let sourcePostLoading=null;
+  let vodMedia=[];
+  let vodMediaLoaded=false;
+  let vodMediaLoading=null;
 
   const kindOrder=['마인크래프트','대회','게임','타로','콘텐츠','활동','방송'];
 
@@ -138,6 +141,79 @@
   function calendarHref(row={}){
     const date=String(row.start||'').slice(0,10);
     return /^\d{4}-\d{2}-\d{2}$/.test(date)?`data.html?view=calendar&date=${encodeURIComponent(date)}#soop`:'';
+  }
+
+  const proxiedImage=(url='')=>url?`/api/image?url=${encodeURIComponent(url)}`:'';
+
+  async function ensureVodMedia(){
+    if(vodMediaLoaded) return vodMedia;
+    if(vodMediaLoading) return vodMediaLoading;
+    vodMediaLoading=loadJson('/api/content?type=vod')
+      .then(payload=>{
+        vodMedia=(Array.isArray(payload?.items)?payload.items:[])
+          .filter(item=>item?.thumb&&item?.date)
+          .map(item=>({
+            date:String(item.date||'').slice(0,10),
+            title:String(item.title||''),
+            thumb:String(item.thumb||''),
+            link:String(item.link||'')
+          }));
+        vodMediaLoaded=true;
+        return vodMedia;
+      })
+      .catch(()=>{
+        vodMedia=[];
+        vodMediaLoaded=true;
+        return [];
+      })
+      .finally(()=>{vodMediaLoading=null;});
+    return vodMediaLoading;
+  }
+
+  function spreadsheetImage(row={}){
+    return String(row.thumb||row.image||row.imageUrl||'').trim();
+  }
+
+  function vodMatch(row={}){
+    const start=String(row.start||'').slice(0,10);
+    const end=String(row.end||row.start||'').slice(0,10);
+    if(!start) return null;
+    const rowText=normalizeLabel(row.label||'');
+    let best=null;
+    let bestScore=-1;
+    for(const item of vodMedia){
+      const date=String(item.date||'').slice(0,10);
+      if(!date||date<start||date>end) continue;
+      let score=date===start?100:70;
+      const titleNorm=normalizeLabel(item.title||'');
+      if(rowText&&titleNorm){
+        if(titleNorm.includes(rowText)||rowText.includes(titleNorm)) score+=80;
+        for(const term of detailTerms(row)){
+          const t=normalizeLabel(term);
+          if(t&&titleNorm.includes(t)) score+=25;
+        }
+      }
+      if(score>bestScore){best=item;bestScore=score;}
+    }
+    return best;
+  }
+
+  function recordMedia(row={}){
+    const sheet=spreadsheetImage(row);
+    if(sheet) return {url:sheet,source:'스프레드시트',link:'',title:row.label||''};
+    const vod=vodMatch(row);
+    if(vod?.thumb) return {url:vod.thumb,source:'다시보기 썸네일',link:vod.link||'',title:vod.title||row.label||''};
+    return null;
+  }
+
+  function renderRecordMedia(row={}){
+    const media=recordMedia(row);
+    if(!media) return '';
+    const image=`<img src="${esc(proxiedImage(media.url))}" alt="${esc(media.title||row.label||'방송 대표 이미지')}" loading="lazy" decoding="async">`;
+    const visual=media.link
+      ?`<a class="history-record-media-link" href="${esc(media.link)}" target="_blank" rel="noreferrer" aria-label="${esc(media.title||row.label)} 다시보기 열기">${image}</a>`
+      :image;
+    return `<figure class="history-record-media">${visual}<figcaption><span>${esc(media.source)}</span>${media.link?'<b>다시보기 ↗</b>':''}</figcaption></figure>`;
   }
 
   async function ensureContentIndex(){
@@ -927,6 +1003,9 @@
   }
 
   function renderDetail(){
+    if(!vodMediaLoaded&&!vodMediaLoading){
+      void ensureVodMedia().then(()=>{if(currentView==='detail') renderDetail();});
+    }
     const rows=records();
     const groups=groupByYear(rows);
     const years=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
@@ -981,25 +1060,31 @@
                     const calendarLabel=row.end&&row.end!==row.start?'시작일 기록':'캘린더';
                     const actionLinks=`${content?`<a href="${esc(content)}">콘텐츠</a>`:''}${calendar?`<a href="${esc(calendar)}">${calendarLabel}</a>`:''}<button type="button" data-copy-record="${id}" aria-label="${esc(row.label)} 기록 링크 복사">링크</button>`;
                     const canLoad=detailTerms(row).length>0&&Number(year)>=2025&&!rowMonthsLoaded(row);
-                    const compact=!row.featured&&!row.detail&&!children.length&&!canLoad;
+                    const mediaHtml=renderRecordMedia(row);
+                    const compact=!row.featured&&!row.detail&&!children.length&&!canLoad&&!mediaHtml;
+                    const highlights=children.slice(0,3);
                     return `<article id="${id}" class="history-timeline-item ${compact?'is-compact':''} ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" data-history-detail-item data-year="${year}" data-kind="${esc(row.kind||'콘텐츠')}" data-search="${esc(search)}" data-search-base="${esc(searchBase)}" data-search-title="${esc(String(row.label||'').toLowerCase())}" data-search-role="${esc(String(role).toLowerCase())}" data-search-description="${esc(String(row.detail||'').toLowerCase())}" data-search-dates="${esc([row.start,row.end].filter(Boolean).join(' ').toLowerCase())}" data-search-detail="${esc(searchDetail)}">
                       <div class="history-timeline-date">${esc(displayDate(row))}</div>
-                      <div class="history-timeline-card">
-                        <div class="history-record-head">
-                          <h3 data-highlight data-raw="${esc(row.label)}">${esc(row.label)}</h3>
-                          <div class="history-record-actions">${actionLinks}</div>
-                          <details class="history-record-more"><summary>관련 보기</summary><div>${actionLinks}</div></details>
+                      <div class="history-timeline-card ${mediaHtml?'has-media':''}">
+                        ${mediaHtml}
+                        <div class="history-record-body">
+                          <div class="history-record-head">
+                            <h3 data-highlight data-raw="${esc(row.label)}">${esc(row.label)}</h3>
+                            <div class="history-record-actions">${actionLinks}</div>
+                            <details class="history-record-more"><summary>관련 보기</summary><div>${actionLinks}</div></details>
+                          </div>
+                          <div class="history-timeline-meta">
+                            <span class="history-meta-kind">${esc(displayKind(row.kind||'콘텐츠'))}</span>
+                            ${role?`<span class="history-meta-role">${esc(role)}</span>`:''}
+                            ${row.featured?'<b class="history-meta-featured">주요 이력</b>':''}
+                            ${statusBadge(row)}
+                            ${sourceBadges(row)}
+                            <span class="history-search-match" data-search-match hidden></span>
+                          </div>
+                          ${row.detail?`<section class="history-record-summary"><span>방송 요약</span><p data-highlight data-raw="${esc(row.detail)}">${esc(row.detail)}</p></section>`:''}
+                          ${highlights.length?`<section class="history-record-highlights"><div class="history-record-section-title"><span>주요 진행 기록</span><b>${children.length}개</b></div><ol>${highlights.map(item=>`<li><time>${esc(item.end?displayDate({start:item.date,end:item.end}):fmt(item.date))}</time><span data-highlight data-raw="${esc(item.label)}">${esc(item.label)}</span></li>`).join('')}</ol></section>`:''}
+                          ${children.length>3?`<details class="history-event-details"><summary>전체 세부 방송 기록 ${children.length}개 보기 <span>⌄</span></summary><ol>${children.map(item=>`<li><time>${esc(item.end?displayDate({start:item.date,end:item.end}):fmt(item.date))}</time><span data-highlight data-raw="${esc(item.label)}">${esc(item.label)}</span></li>`).join('')}</ol></details>`:children.length?'':canLoad?`<button type="button" class="history-load-details" data-load-sub-events="${id}">세부 방송 기록 불러오기</button>`:''}
                         </div>
-                        <div class="history-timeline-meta">
-                          <span class="history-meta-kind">${esc(displayKind(row.kind||'콘텐츠'))}</span>
-                          ${role?`<span class="history-meta-role">${esc(role)}</span>`:''}
-                          ${row.featured?'<b class="history-meta-featured">주요 이력</b>':''}
-                          ${statusBadge(row)}
-                          ${sourceBadges(row)}
-                          <span class="history-search-match" data-search-match hidden></span>
-                        </div>
-                        ${row.detail?`<p data-highlight data-raw="${esc(row.detail)}">${esc(row.detail)}</p>`:''}
-                        ${children.length?`<details class="history-event-details"><summary>세부 방송 기록 ${children.length}개 보기 <span>⌄</span></summary><ol>${children.map(item=>`<li><time>${esc(item.end?displayDate({start:item.date,end:item.end}):fmt(item.date))}</time><span data-highlight data-raw="${esc(item.label)}">${esc(item.label)}</span></li>`).join('')}</ol></details>`:canLoad?`<button type="button" class="history-load-details" data-load-sub-events="${id}">세부 방송 기록 불러오기</button>`:''}
                       </div>
                     </article>`;
                   }).join('')}
@@ -1065,8 +1150,8 @@
     localStorage.setItem('chunbong-history-view',currentView);
     if(currentView==='simple'&&location.hash.startsWith('#history-')) history.replaceState(null,'',location.pathname+location.search);
     render();
-    if(currentView==='detail'&&!contentIndexLoaded){
-      void ensureContentIndex().then(()=>{if(currentView==='detail') renderDetail();});
+    if(currentView==='detail'&&(!contentIndexLoaded||!vodMediaLoaded)){
+      void Promise.all([ensureContentIndex(),ensureVodMedia()]).then(()=>{if(currentView==='detail') renderDetail();});
     }
     if(currentView==='simple'&&simpleScrollY>0) requestAnimationFrame(()=>window.scrollTo({top:simpleScrollY,behavior:'auto'}));
   }
@@ -1138,7 +1223,7 @@
       liveAnnual=cached.items.map(enrichSheetRecord);
       liveFetchedAt=cached.fetchedAt||'';
       liveReady=true;
-      if(currentView==='detail') await ensureContentIndex();
+      if(currentView==='detail') await Promise.all([ensureContentIndex(),ensureVodMedia()]);
       render();
       void loadLiveSheets({renderOnSuccess:true});
       return;
