@@ -11,7 +11,8 @@
   const viewDesc=document.querySelector('[data-history-view-desc]');
   const fallback=[...(Array.isArray(window.CHUNBONG_HISTORY_RECORDS)?window.CHUNBONG_HISTORY_RECORDS:[])];
 
-  let currentView=location.hash.startsWith('#history-')
+  const initialParams=new URLSearchParams(location.search);
+  let currentView=location.hash.startsWith('#history-')||initialParams.get('view')==='detail'||initialParams.get('q')
     ?'detail'
     :(localStorage.getItem('chunbong-history-view')==='detail'?'detail':'simple');
   let liveAnnual=[];
@@ -20,7 +21,7 @@
   let simpleYear='all';
   let detailYear='all';
   let detailKind='all';
-  let detailQuery='';
+  let detailQuery=String(initialParams.get('q')||'').trim();
   let detailFiltersOpen=false;
   let simpleScrollY=0;
   let searchTimer=0;
@@ -1280,7 +1281,7 @@
         <div class="history-detail-tools">
           <label class="history-search">
             <span aria-hidden="true">⌕</span>
-            <input type="search" data-history-search placeholder="레오펠, 마병대, 행정관 검색" aria-label="방송 이력 검색" autocomplete="off">
+            <input type="search" data-history-search value="${esc(detailQuery)}" placeholder="레오펠, 마병대, GTA, 행정관 검색" aria-label="방송 이력 검색" autocomplete="off">
             <button type="button" data-history-search-clear aria-label="검색어 지우기">×</button>
           </label>
           <button type="button" class="history-filter-toggle ${activeFilterCount?'is-active':''}" data-history-filter-toggle aria-expanded="${detailFiltersOpen}">
