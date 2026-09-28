@@ -483,6 +483,20 @@ async function loadSystemStatus(){
   const recoveryButton=$('#operator-recovery-toggle');
   if(recoveryButton){recoveryButton.textContent=recovery.active?'현재 데이터로 복귀':'last-known-good 사용';recoveryButton.dataset.active=recovery.active?'1':'0';recoveryButton.disabled=!recovery.available}
   if($('#system-quota-history'))$('#system-quota-history').innerHTML=quotaHistory.length?quotaHistory.slice(-14).reverse().map(row=>`<div><span>${escapeHtml(row.day||'-')}</span><b>${fmt(row.total||0)}건</b></div>`).join(''):'<p class="operator-empty">최근 저장된 제한 이벤트가 없습니다.</p>';
+  const quotaCauseCounts={};
+  for(const row of quotaHistory){
+    for(const [type,count] of Object.entries(row?.counts||{}))quotaCauseCounts[type]=(quotaCauseCounts[type]||0)+(Number(count)||0);
+  }
+  const quotaCauseLabels={
+    'redis-circuit':'Redis circuit',
+    'vercel-rate-limit':'Vercel 제한',
+    'vercel-rate-limit-recovered':'Vercel 회복',
+    'endpoint-failure':'외부/API 실패',
+    'analytics-saving':'분석 절약모드',
+    'recovery-mode':'복구 모드'
+  };
+  const quotaCauseRows=Object.entries(quotaCauseCounts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  if($('#system-quota-breakdown'))$('#system-quota-breakdown').innerHTML=quotaCauseRows.length?quotaCauseRows.map(([type,count])=>`<div><span>${escapeHtml(quotaCauseLabels[type]||type)}</span><b>${fmt(count)}건</b></div>`).join(''):'<p class="operator-empty">최근 저장된 원인별 이벤트가 없습니다.</p>';
   if($('#system-budget-protections'))$('#system-budget-protections').innerHTML=[
     ...quotaRows.map(([label,ok,level])=>`<div><span>${escapeHtml(label)}</span><span class="operator-health ${level==='limit'?'bad':level==='warn'?'warn':'ok'}">${level==='limit'?'제한':level==='warn'?'절약':'정상'}</span></div>`),
     ...protectionRows.map(([label,ok])=>`<div><span>${label}</span>${healthLabel(Boolean(ok))}</div>`)
