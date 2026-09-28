@@ -58,14 +58,25 @@
     return containsAny(text,majorMatchers);
   }
 
+  function currentKstDate(){
+    const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+    const pick=type=>parts.find(part=>part.type===type)?.value||'';
+    return `${pick('year')}-${pick('month')}-${pick('day')}`;
+  }
+
   function enrichSheetRecord(item){
     const label=String(item.label||'').trim();
+    const today=currentKstDate();
+    let status;
+    if(item.start>today) status='예정';
+    else if(item.end&&item.start<=today&&item.end>=today) status='진행';
     return {
       ...item,
       label,
       kind:inferKind(label),
       major:isMajorSheetEvent(label),
       featured:containsAny(label,featuredMatchers)&&!/설명회|1차 입주자 발표/.test(label),
+      ...(status?{status}:{}),
       sources:['google-sheet'],
       sheet:true
     };
@@ -133,9 +144,17 @@
     return sheet+cross;
   }
 
+  function detailWindow(row={}){
+    const label=String(row.label||'');
+    if(/마병대\s*4|마병대4/.test(label)) return {start:'2026-09-07',end:row.end||row.start};
+    if(/적자생존/.test(label)) return {start:'2026-09-12',end:row.end||row.start};
+    return {start:row.start,end:row.end||row.start};
+  }
+
   function inRange(date,row){
     if(!date||!row.start) return false;
-    return date>=row.start&&date<=(row.end||row.start);
+    const window=detailWindow(row);
+    return date>=window.start&&date<=window.end;
   }
 
   function detailTerms(row={}){
@@ -150,7 +169,8 @@
   function subEvents(row={}){
     const terms=detailTerms(row);
     if(!terms.length) return [];
-    return liveMonth.filter(item=>inRange(item.date,row)&&terms.some(term=>String(item.label||'').includes(term)));
+    return liveMonth.filter(item=>inRange(item.date,row)&&terms.some(term=>String(item.label||'').includes(term)))
+      .filter((item,index,array)=>array.findIndex(other=>other.date===item.date&&other.end===item.end&&other.label===item.label)===index);
   }
 
   function renderSimple(){
@@ -204,7 +224,7 @@
               <div class="history-timeline-meta"><span>${esc(row.kind||'방송')}</span>${row.featured?'<b>주요 이력</b>':''}${statusBadge(row)}${sourceBadges(row)}</div>
               <h3>${esc(row.label)}</h3>
               ${row.detail?`<p>${esc(row.detail)}</p>`:''}
-              ${children.length?`<details class="history-event-details"><summary>세부 방송 기록 ${children.length}개 보기 <span>⌄</span></summary><ol>${children.map(item=>`<li><time>${esc(fmt(item.date))}</time><span>${esc(item.label)}</span></li>`).join('')}</ol></details>`:''}
+              ${children.length?`<details class="history-event-details"><summary>세부 방송 기록 ${children.length}개 보기 <span>⌄</span></summary><ol>${children.map(item=>`<li><time>${esc(item.end?displayDate({start:item.date,end:item.end}):fmt(item.date))}</time><span>${esc(item.label)}</span></li>`).join('')}</ol></details>`:''}
             </div>
           </article>`;}).join('')}</div>
       </section>`).join('')}
