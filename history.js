@@ -190,7 +190,13 @@
   };
   const proxiedImage=(url='')=>{
     const normalized=normalizeMediaUrl(url);
-    return normalized?`/api/image?url=${encodeURIComponent(normalized)}`:'';
+    if(!normalized) return '';
+    if(normalized.startsWith('/')&&!normalized.startsWith('//')) return normalized;
+    try{
+      const host=new URL(normalized).hostname.toLowerCase();
+      if(host==='res.cloudinary.com'||host.endsWith('.cloudinary.com')) return normalized;
+    }catch(_error){}
+    return `/api/image?url=${encodeURIComponent(normalized)}`;
   };
 
   async function ensureVodMedia(){
