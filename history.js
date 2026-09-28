@@ -548,12 +548,46 @@
     return order.filter(label=>counts.has(label)).map(label=>({label,count:counts.get(label)}));
   }
 
-  function renderYearParticipationStats(rows=[]){
-    const stats=yearParticipationStats(rows);
-    if(!stats.length) return '';
-    return `<div class="history-year-participation" aria-label="연도별 콘텐츠 참가 횟수"><span class="history-year-participation-label">활동 요약</span><div>${stats.map(item=>`<span><b>${esc(item.label)}</b><em>${item.count}회</em></span>`).join('')}</div></div>`;
+  function yearRoleStats(rows=[]){
+    const counts=new Map();
+    const add=label=>counts.set(label,(counts.get(label)||0)+1);
+    for(const row of rows){
+      const raw=String(row.role||inferRole(row.label,normalizeKind(row.kind,row.label))||'');
+      if(!raw||raw==='참가') continue;
+      if(/주최|개최/.test(raw)) add('주최');
+      if(/운영/.test(raw)) add('운영');
+      if(/수장|부두목|2인자/.test(raw)) add('리더');
+      if(/행정관/.test(raw)) add('행정관');
+      if(/교관/.test(raw)) add('교관');
+      if(/조교/.test(raw)) add('조교');
+      if(/경찰/.test(raw)) add('경찰');
+      if(/중계/.test(raw)) add('중계');
+    }
+    const order=['주최','운영','리더','행정관','교관','조교','경찰','중계'];
+    return order.filter(label=>counts.has(label)).map(label=>({label,count:counts.get(label)}));
   }
 
+  function renderYearParticipationStats(rows=[],year=''){
+    const stats=yearParticipationStats(rows);
+    const roles=yearRoleStats(rows);
+    if(!stats.length&&!roles.length) return '';
+    return `<div class="history-year-activity-summary">
+      <div class="history-year-participation" aria-label="${esc(year)}년 콘텐츠 참가 횟수">
+        <div class="history-year-participation-head"><span class="history-year-participation-label">활동 요약</span><small>콘텐츠 1건 = 1회 · 신청·면접·준비 기록 제외</small></div>
+        <div>${stats.map(item=>`<button type="button" data-simple-bucket="${esc(item.label)}" aria-pressed="false"><b>${esc(item.label)}</b><em>${item.count}회</em></button>`).join('')}</div>
+      </div>
+      ${roles.length?`<div class="history-year-role-summary" aria-label="${esc(year)}년 역할 요약"><span>역할</span><div>${roles.map(item=>`<em><b>${esc(item.label)}</b>${item.count}회</em>`).join('')}</div></div>`:''}
+    </div>`;
+  }
+
+  function renderYearComparison(groups={},years=[]){
+    if(years.length<2) return '';
+    return `<details class="history-year-compare"><summary><strong>연도 비교 보기</strong><span>활동 유형과 역할 변화 비교</span><i>⌄</i></summary><div class="history-year-compare-grid">${years.map(year=>{
+      const stats=yearParticipationStats(groups[year]||[]).slice(0,5);
+      const roles=yearRoleStats(groups[year]||[]).slice(0,4);
+      return `<section><header><b>${esc(year)}</b><span>${(groups[year]||[]).length}개</span></header><div>${stats.map(item=>`<span>${esc(item.label)} <b>${item.count}</b></span>`).join('')}</div>${roles.length?`<small>${roles.map(item=>`${esc(item.label)} ${item.count}`).join(' · ')}</small>`:''}</section>`;
+    }).join('')}</div></details>`;
+  }
   function renderSimpleMonthJumps(rows=[],year=''){
     const months=[...new Set(rows.map(row=>String(row.start||'').slice(5,7)).filter(month=>/^\d{2}$/.test(month)))].sort((a,b)=>Number(a)-Number(b));
     if(months.length<2) return '';
@@ -873,16 +907,17 @@
     root.innerHTML=`<section class="history-simple" aria-label="간단 방송 이력">
       <div class="history-simple-note"><strong>검증된 참여 이력</strong><span>스프레드시트 기록을 SOOP·공개 자료와 교차 확인해 게임 종류와 역할이 확인된 서버·마크·게임·VRC·대회만 표시합니다. 연기·신청·준비·세부 이벤트와 분류가 불확실한 기록은 상세 보기에서만 확인합니다.</span></div>
       ${renderYearFilters(years,'simple',simpleYear)}
+      ${renderYearComparison(groups,years)}
       <div class="history-simple-list">
         ${years.map(year=>`<section class="history-simple-year-section" data-simple-year="${year}" ${simpleYear!=='all'&&simpleYear!==year?'hidden':''}>
           <header class="history-simple-year-head"><div><strong>${year}</strong><span>${groups[year].length}개 핵심 이력</span></div>${yearSource(year)}</header>
-          ${renderYearParticipationStats(groups[year])}
+          ${renderYearParticipationStats(groups[year],year)}
           ${renderSimpleMonthJumps(groups[year],year)}
           <div class="history-simple-table-head" aria-hidden="true"><span>날짜 / 기간</span><span>내용</span><span>유형</span></div>
           <div class="history-simple-year-list">
             ${groups[year].map(row=>{
               const id=recordId(row);
-              return `<article class="history-simple-row ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" tabindex="0" role="link" data-open-record="${id}" data-simple-month="${esc(String(row.start||'').slice(0,7))}" aria-label="${esc(row.label)} 상세 기록 보기">
+              return `<article class="history-simple-row ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" tabindex="0" role="link" data-open-record="${id}" data-simple-month="${esc(String(row.start||'').slice(0,7))}" data-simple-bucket="${esc(participationBucket(row))}" aria-label="${esc(row.label)} 상세 기록 보기">
                 <time class="history-simple-date" datetime="${esc(row.start)}">${esc(compactDate(row))}</time>
                 <p class="history-simple-content"><span>${esc(row.label)}</span>${simpleRoleLabel(row)?`<em class="history-simple-role">${esc(simpleRoleLabel(row))}</em>`:''}${statusBadge(row)}<span class="history-row-arrow" aria-hidden="true">→</span></p>
                 <span class="history-simple-type">${esc(simpleTypeLabel(row))}</span>
@@ -896,6 +931,19 @@
 
     root.querySelector('[data-open-detail]')?.addEventListener('click',()=>setView('detail'));
     bindSimpleRows();
+    root.querySelectorAll('[data-simple-bucket]').forEach(button=>{
+      if(!button.matches('button')) return;
+      button.addEventListener('click',()=>{
+        const section=button.closest('[data-simple-year]');
+        if(!section) return;
+        const bucket=button.dataset.simpleBucket||'';
+        const wasActive=button.getAttribute('aria-pressed')==='true';
+        section.querySelectorAll('button[data-simple-bucket]').forEach(other=>{other.setAttribute('aria-pressed','false');other.classList.remove('is-active');});
+        section.querySelectorAll('.history-simple-row').forEach(row=>{row.hidden=!wasActive&&row.dataset.simpleBucket!==bucket;});
+        if(!wasActive){button.setAttribute('aria-pressed','true');button.classList.add('is-active');}
+      });
+    });
+
     root.querySelectorAll('[data-simple-jump-month]').forEach(button=>{
       button.addEventListener('click',()=>{
         const key=button.dataset.simpleJumpMonth||'';
