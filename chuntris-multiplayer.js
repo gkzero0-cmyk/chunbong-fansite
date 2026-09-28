@@ -114,7 +114,8 @@
 
   function errorMessage(error){const map={room_not_found:'방을 찾을 수 없습니다.',room_full:'이미 2명이 참가한 방입니다.',room_started:'이미 시작된 방입니다.',invalid_nickname:'닉네임을 확인해 주세요.',invalid_mode:'지원하지 않는 게임 모드입니다.',invalid_difficulty:'지원하지 않는 난이도입니다.',multiplayer_unavailable:'멀티플레이 서버에 연결할 수 없습니다.'};return map[error?.code]||error?.message||'잠시 후 다시 시도해 주세요.';}
   async function refresh(){if(!client.code||refreshInFlight)return;refreshInFlight=true;try{const data=await client.refresh();render(data.room);handleRoom(data.room);}catch(error){if(error.status===404||error.status===403){client.clear();saveSession();render(null);stopTimers();}message(errorMessage(error),true);}finally{refreshInFlight=false;}}
-  function startPolling(){if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(refresh,1300);void refresh();}
+  function pollingDelay(){return document.hidden?5000:1300;}
+  function startPolling(){if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(refresh,pollingDelay());void refresh();}
   function handleRoom(room){
     if(!room)return;clockOffset=Number(room.serverNow||Date.now())-Date.now();
     if(room.state==='countdown'&&room.startAt&&room.round!==startedRound){
@@ -163,5 +164,6 @@
   const params=new URLSearchParams(location.search),invite=params.get('room');
   if(invite){open();els.showJoin.click();els.code.value=normalizeCodeInput(invite);message('닉네임을 입력하고 입장해 주세요. 모드와 난이도는 방 설정을 따릅니다.');}
   try{const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');if(saved?.code&&saved?.token&&!invite){client.restore(saved.code,saved.token);open();startPolling();message('이전 멀티플레이 방을 다시 연결하는 중…');}}catch{}
+  document.addEventListener('visibilitychange',()=>{if(client.code)startPolling();});
   root.addEventListener('beforeunload',stopTimers);
 })(typeof globalThis!=='undefined'?globalThis:window);
