@@ -122,8 +122,9 @@ assert.match(api,/analyticsTotalsForDates/,'previous-period analytics totals mis
 assert.match(api,/funnel/,'feature funnel aggregation missing');
 assert.match(api,/operatorSystemStatus/,'server-side system health aggregator missing');
 assert.match(api,/redisStorageStats/,'Redis storage capacity probe missing');
-assert.match(api,/redisCommand\('DBSIZE'\)/,'Redis key count probe missing');
-assert.match(api,/redisCommand\('INFO','memory'\)/,'Redis memory probe missing');
+assert.match(api,/\['DBSIZE'\]/,'Redis key count probe missing');
+assert.match(api,/\['INFO','memory'\]/,'Redis memory probe missing');
+assert.match(api,/redisPipeline\(\[\['DBSIZE'\],\['INFO','memory'\]\]\)/,'Redis storage probes should share one pipeline');
 assert.match(api,/publicEndpointHealth/,'public API response health probe missing');
 assert.match(api,/endpointHealth\(base,'LIVE'/,'LIVE endpoint health probe missing');
 assert.match(api,/endpointHealth\(base,'방송 일정'/,'schedule endpoint health probe missing');
