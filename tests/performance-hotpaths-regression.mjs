@@ -27,7 +27,7 @@ assert.match(sw,/\['script','style'\][\s\S]*boundedNetworkFirst\(request, event,
 for(const heavy of ['/personal-hub.js','/chunbong-contents.js','/activity-center.js','/daily-fortune.js']){
   assert.ok(!sw.includes("'"+heavy+"'"),heavy+' should not inflate the initial PWA install');
 }
-assert.match(shell,/runIdle\(\(\)=>loadScript\('site-improvements\.js'\)\)/,'site improvements should defer to idle time');
+assert.match(shell,/runIdle\(\(\)=>loadScript\('site-improvements\.js(?:\?v=\d+)?'\)\)/,'site improvements should defer to idle time');
 assert.doesNotMatch(shell,/personalPriorityPages='[^']*fanart/,'fanart should not synchronously load personal hub');
 assert.doesNotMatch(shell,/personalPriorityPages='[^']*minigames/,'minigames should not synchronously load personal hub');
 
