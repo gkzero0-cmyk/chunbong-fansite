@@ -25,6 +25,16 @@ assert.match(js, /\/api\/content\?type=vod/, 'detail view must use VOD data as a
 assert.match(js, /function recordMedia\(/, 'detail view must resolve representative media per history record');
 assert.match(js, /스프레드시트/, 'spreadsheet media must be preferred when available');
 assert.match(js, /history-record-media/, 'detail view must render a representative image region');
+assert.match(js, /챈나의 경찰과 도둑/, 'police-and-thief content must have an explicit classification rule');
+assert.match(js, /마크 일일 콘텐츠/, 'police-and-thief content must be classified as a Minecraft daily content');
+assert.match(js, /야구자의 왁업/, '왁업 must have an explicit Minecraft rule');
+assert.match(js, /LAC 서버[^\n]*GTA 서버/, 'LAC must be classified as a GTA server');
+assert.match(js, /진보이드 서버[^\n]*좀보이드 서버/, '진보이드 must be classified as a Zomboid server');
+assert.match(js, /담월드[^\n]*팰월드 서버/, '담월드 must be classified as a Palworld server');
+assert.match(js, /고세구의 세바버[^\n]*VRC/, '세바버 must be classified as VRC');
+assert.match(js, /레오펠\\s\*2\\s\*무기한 연기[^\n]*importance:'normal'/, 'Leopel 2 postponement must stay out of simple history');
+assert.match(js, /퍼켓몬\\s\*UP전쟁[^\n]*importance:'normal'/, 'Pokemon UP war must stay out of simple history');
+assert.match(js, /2025 SOOP 스트리머 대상 참여/, 'award entry must explicitly say participation');
 assert.match(js, /주요 진행 기록/, 'detail view must surface a compact broadcast highlight summary');
 assert.match(sheetApi, /extractImageUrl/, 'history sheet API must preserve image URLs exposed by published sheets');
 assert.match(sheetApi, /imageSource:'sheet'/, 'spreadsheet images must be tagged as sheet media');
