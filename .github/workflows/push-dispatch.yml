@@ -3,7 +3,7 @@ name: Background push dispatch
 on:
   schedule:
     # Low-frequency safety net if the primary SOOP telemetry schedule is delayed.
-    - cron: '4,19,34,49 * * * *'
+    - cron: '4 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -48,9 +48,9 @@ jobs:
           echo
 
           minute="$(date -u +%M)"
-          if [[ "$EVENT_NAME" == "workflow_dispatch" || "$minute" == "00" || "$minute" == "30" ]]; then
+          if [[ "$EVENT_NAME" == "workflow_dispatch" || "$minute" == "04" ]]; then
             curl -fsS --retry 1 --retry-delay 2 --max-time 55               -X POST               -H "Authorization: Bearer $token"               -H "Origin: https://github.com"               -H "Content-Type: application/json"               -H "User-Agent: chunbong-github-actions-archive-sync"               -d '{}'               "$ARCHIVE_SYNC_URL"
             echo
           else
-            echo "Archive auto-sync skipped on this push tick; 30-minute safety sync remains active."
+            echo "Archive auto-sync skipped on this fallback tick; primary telemetry keeps the 30-minute safety sync active."
           fi
