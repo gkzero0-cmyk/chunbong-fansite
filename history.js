@@ -280,8 +280,9 @@
     const media=recordMedia(row);
     if(!media) return '';
     const image=`<img src="${esc(proxiedImage(media.url))}" alt="${esc(media.title||row.label||'방송 대표 이미지')}" loading="lazy" decoding="async" onerror="this.closest('.history-record-media')?.setAttribute('hidden','')">`;
+    const internalLink=String(media.link||'').startsWith('/');
     const visual=media.link
-      ?`<a class="history-record-media-link" href="${esc(media.link)}" target="_blank" rel="noreferrer" aria-label="${esc(media.title||row.label)} 다시보기 열기">${image}</a>`
+      ?`<a class="history-record-media-link" href="${esc(media.link)}" ${internalLink?'':'target="_blank" rel="noreferrer"'} aria-label="${esc(media.title||row.label)} ${internalLink?'콘텐츠':'다시보기'} 열기">${image}</a>`
       :image;
     return `<figure class="history-record-media">${visual}<figcaption><span>${esc(media.source)}</span>${media.link?'<b>다시보기 ↗</b>':''}</figcaption></figure>`;
   }
@@ -1150,7 +1151,7 @@
     if(!key) return [];
     const currentId=recordId(row);
     return allRows
-      .filter(item=>seriesKey(item)===key&&recordId(item)!==currentId)
+      .filter(item=>seriesKey(item)===key&&recordId(item)!==currentId&&!isPreparation(item.label)&&!/무기한 연기/.test(String(item.label||'')))
       .sort((a,b)=>String(a.start).localeCompare(String(b.start)))
       .slice(-6);
   }
