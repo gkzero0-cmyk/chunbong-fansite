@@ -391,6 +391,7 @@
         <article class="operator-health-card"><span>Git 동기화</span><strong id="system-sync">확인 중</strong><small id="system-sync-meta">-</small></article>
         <article class="operator-health-card"><span>Redis / KV</span><strong id="system-storage">확인 중</strong><small id="system-storage-meta">-</small></article>
         <article class="operator-health-card"><span>Push 알림</span><strong id="system-push">확인 중</strong><small id="system-push-meta">-</small></article>
+        <article class="operator-health-card"><span>사용량 보호</span><strong id="system-budget">확인 중</strong><small id="system-budget-meta">외부 한도 보호 상태</small></article>
       </div>
       <div class="operator-grid-2">
         <article class="operator-card">
@@ -420,6 +421,11 @@
         <article class="operator-card">
           <header><h2>핵심 API 응답</h2><span>실제 서버 요청 · 최대 3.5초</span></header>
           <div id="operator-endpoint-health" class="operator-service-health operator-endpoint-health"></div>
+        </article>
+        <article class="operator-card operator-budget-card">
+          <header><div><h2>외부 사용량 보호</h2><small>추가 외부 호출 없이 현재 런타임에서 감지한 상태</small></div><span id="system-budget-since">-</span></header>
+          <div id="operator-budget-health" class="operator-service-health"></div>
+          <div class="operator-usage-note"><strong id="system-budget-summary">보호 상태 확인 중</strong><span id="system-budget-note">Redis · 외부 API · 화면 검증의 절약 정책을 확인합니다.</span></div>
         </article>
         <article class="operator-card operator-commit-history-card">
           <header><div><h2>최근 변경 이력</h2><small>GitHub main · 누가 언제 무엇을 변경했는지</small></div><a href="https://github.com/gkzero0-cmyk/chunbong-fansite/commits/main" target="_blank" rel="noopener">GitHub 열기 ↗</a></header>
