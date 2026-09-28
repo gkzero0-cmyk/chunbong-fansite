@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 concurrency:
   group: chunbong-soop-telemetry
@@ -38,7 +39,55 @@ jobs:
           SOOP_STATE_PATH=/tmp/soop-live-state.json \
           SOOP_NEXT_STATE_PATH=/tmp/soop-next-state.json \
           SOOP_FINAL_SESSION_PATH=/tmp/soop-final-session.json \
+          SOOP_SAMPLE_PATH=/tmp/soop-sample.json \
           node scripts/collect-soop-telemetry.mjs
+      - name: Reuse telemetry sample for push and archive checks
+        env:
+          AUDIENCE: chunbong-fansite-push
+          PUSH_URL: https://chunbong-fansite.vercel.app/api/content?type=push-dispatch
+          ARCHIVE_SYNC_URL: https://chunbong-fansite.vercel.app/api/content?type=content-archive-auto-sync
+          EVENT_NAME: ${{ github.event_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          separator='?'
+          if [[ "$ACTIONS_ID_TOKEN_REQUEST_URL" == *'?'* ]]; then separator='&'; fi
+          response="$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "${ACTIONS_ID_TOKEN_REQUEST_URL}${separator}audience=${AUDIENCE}")"
+          token="$(printf '%s' "$response" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const v=JSON.parse(s).value||'';if(!v)process.exit(2);process.stdout.write(v)})")"
+          payload="$(node - <<'NODE'
+          const fs=require('fs');
+          const s=JSON.parse(fs.readFileSync('/tmp/soop-sample.json','utf8'));
+          const live=typeof s.live==='boolean'?{
+            live:s.live,
+            title:String(s.title||''),
+            startedAt:String(s.startedAt||''),
+            broadcastId:String(s.broadcastId||s.startedAt||s.title||'')
+          }:null;
+          process.stdout.write(JSON.stringify(live?{live}:{skipLive:true}));
+          NODE
+          )"
+          curl -fsS --retry 1 --retry-delay 2 --max-time 55 \
+            -X POST \
+            -H "Authorization: Bearer $token" \
+            -H "Origin: https://github.com" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: chunbong-soop-telemetry-push" \
+            -d "$payload" \
+            "$PUSH_URL"
+          echo
+
+          minute="$(date -u +%M)"
+          if [[ "$EVENT_NAME" == "workflow_dispatch" || "$minute" == "00" || "$minute" == "30" ]]; then
+            curl -fsS --retry 1 --retry-delay 2 --max-time 55 \
+              -X POST \
+              -H "Authorization: Bearer $token" \
+              -H "Origin: https://github.com" \
+              -H "Content-Type: application/json" \
+              -H "User-Agent: chunbong-soop-telemetry-archive-sync" \
+              -d '{}' \
+              "$ARCHIVE_SYNC_URL"
+            echo
+          fi
       - name: Persist transient telemetry state
         run: |
           set -euo pipefail

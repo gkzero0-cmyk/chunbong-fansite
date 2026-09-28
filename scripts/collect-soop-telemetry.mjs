@@ -119,11 +119,13 @@ async function main() {
   const input = process.env.SOOP_STATE_PATH || DEFAULT_STATE;
   const output = process.env.SOOP_NEXT_STATE_PATH || input;
   const finalOutput = process.env.SOOP_FINAL_SESSION_PATH || path.join(path.dirname(output), 'soop-final-session.json');
+  const sampleOutput = process.env.SOOP_SAMPLE_PATH || '';
   const previous = readJson(input, { version: 1, session: null, lastProfile: null });
   const sample = await collectPublicSample();
   const result = advanceTelemetry(previous, sample);
   writeJson(output, result.state);
   writeJson(finalOutput, result.finalizedSession);
+  if(sampleOutput)writeJson(sampleOutput,sample);
   console.log(`SOOP_TELEMETRY_LIVE=${sample.live}`);
   console.log(`SOOP_TELEMETRY_VIEWERS=${sample.viewerCount ?? ''}`);
   console.log(`SOOP_TELEMETRY_FOLLOWERS=${sample.followerCount ?? ''}`);

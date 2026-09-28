@@ -1,8 +1,8 @@
-name: Production Git auto retry
+name: Production guardian
 
 on:
   schedule:
-    # Check hourly. If Vercel rate-limited a recent commit, retry after the documented 24-hour cooldown even when newer main commits exist.
+    # Single hourly guardian: verify Production and retry only after the safe Vercel cooldown.
     - cron: '17 * * * *'
   workflow_dispatch:
 
@@ -11,7 +11,7 @@ permissions:
   statuses: read
 
 concurrency:
-  group: production-git-auto-retry
+  group: production-guardian
   cancel-in-progress: false
 
 jobs:

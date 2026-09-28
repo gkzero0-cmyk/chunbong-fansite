@@ -1,8 +1,6 @@
 name: Background push dispatch
 
 on:
-  schedule:
-    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 permissions:

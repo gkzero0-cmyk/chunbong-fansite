@@ -1,5 +1,7 @@
 'use strict';
 
+const crewNewsHandler=require('./crew-news.js');
+
 const CREW_BY_LEADER = Object.freeze({
   yjkim5500: '조적단',
   rkdakstlr911: '강씨세가',
@@ -215,16 +217,26 @@ function strictCrewPost(post, crew, station) {
   };
 }
 
-async function fetchJson(url, headers = {}) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 12000);
-  try {
-    const response = await fetch(url, { signal: controller.signal, headers });
-    const body = await response.json().catch(() => null);
-    return { response, body };
-  } finally {
-    clearTimeout(timer);
-  }
+async function invokeCrewNews(req, params) {
+  let statusCode=200;
+  let body=null;
+  const headers={...(req?.headers||{})};
+  const fakeReq={
+    method:'GET',
+    url:'/api/crew-news?'+params.toString(),
+    headers
+  };
+  const fakeRes={
+    status(code){statusCode=Number(code)||500;return this;},
+    json(payload){body=payload;return payload;},
+    setHeader(){},
+    end(payload){
+      if(payload&&body==null){try{body=JSON.parse(String(payload))}catch{body=payload}}
+      return payload;
+    }
+  };
+  await crewNewsHandler(fakeReq,fakeRes);
+  return{status:statusCode,body};
 }
 
 function mergePosts(...lists) {
@@ -277,11 +289,6 @@ module.exports = async function handler(req, res) {
   const endDate = String(requestUrl.searchParams.get('end_date') || '').trim().slice(0, 32);
   const crew = inferCrew(stations);
 
-  const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim() || 'https';
-  const host = String(req.headers['x-forwarded-host'] || req.headers.host || 'chunbong-fansite.vercel.app').split(',')[0].trim();
-  const base = proto + '://' + host;
-  const headers = { Accept: 'application/json', 'User-Agent': 'ChunbongCrewSheet/1.2' };
-
   const results = await mapLimit(stations, 5, async station => {
     const params = new URLSearchParams({
       station,
@@ -291,11 +298,10 @@ module.exports = async function handler(req, res) {
       end_date: endDate
     });
     if (forceRefresh) params.set('refresh', '1');
-    const url = base + '/api/crew-news?' + params.toString();
     try {
-      const { response, body } = await fetchJson(url, headers);
-      if (!response.ok || !body || body.ok !== true) {
-        return { station, ok: false, status: response.status, error: body && body.error ? body.error : 'crew_news_failed' };
+      const { status, body } = await invokeCrewNews(req, params);
+      if (status < 200 || status >= 300 || !body || body.ok !== true) {
+        return { station, ok: false, status, error: body && body.error ? body.error : 'crew_news_failed' };
       }
 
       let rawPosts = Array.isArray(body.posts) ? body.posts : [];
@@ -311,8 +317,8 @@ module.exports = async function handler(req, res) {
         });
         if (forceRefresh) extraParams.set('refresh', '1');
         try {
-          const extraFetch = await fetchJson(base + '/api/crew-news?' + extraParams.toString(), headers);
-          if (extraFetch.response.ok && extraFetch.body && extraFetch.body.ok === true) {
+          const extraFetch = await invokeCrewNews(req, extraParams);
+          if (extraFetch.status >= 200 && extraFetch.status < 300 && extraFetch.body && extraFetch.body.ok === true) {
             rawPosts = mergePosts(rawPosts, extraFetch.body.posts);
           } else {
             extraSearchFailed = true;
