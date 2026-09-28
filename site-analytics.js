@@ -31,7 +31,7 @@ function flushApiNetworkCounts(){
  apiNetworkCounts.clear();
 }
 async function flush({beacon=false}={}){
- activeTick();if(activePending>=1000){queue.push({type:'active_time',page:page(),activeMs:Math.round(activePending)});activePending=0}
+ activeTick();if(activePending>=120000){queue.push({type:'active_time',page:page(),activeMs:Math.round(activePending)});activePending=0}
  flushApiNetworkCounts();
  if(!queue.length||sending)return;
  const events=queue.splice(0,20),payload=JSON.stringify({visitorId,sessionId,events});
