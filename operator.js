@@ -593,7 +593,10 @@ async function loadHistoryVerification(){
       ...(Array.isArray(y2025?.items)?y2025.items.map(item=>({...item,year:2025})):[]),
       ...(Array.isArray(y2026?.items)?y2026.items.map(item=>({...item,year:2026})):[])
     ];
-    const majorRows=rows.filter(row=>historyAuditCandidate(row.label));
+    const legacyRows=(Array.isArray(window.CHUNBONG_HISTORY_RECORDS)?window.CHUNBONG_HISTORY_RECORDS:[])
+      .filter(row=>String(row.start||'')<'2025-01-01')
+      .map(row=>({...row,year:Number(String(row.start||'').slice(0,4))||0}));
+    const majorRows=[...rows.filter(row=>historyAuditCandidate(row.label)),...legacyRows.filter(row=>historyAuditCandidate(row.label))];
     const issueMap=new Map();
     const addIssue=(row,reason)=>{
       const key=[row.start||'',row.label||''].join('|');
@@ -607,11 +610,14 @@ async function loadHistoryVerification(){
       const hasArchiveHero=Boolean(archive?.heroImage?.src);
       const hasSheetImage=Boolean(row.thumb||row.image||row.imageUrl);
       if(!hasArchiveHero&&!hasSheetImage)addIssue(row,'대표 이미지 지정 없음');
+      const hasSummary=Boolean(String(row.detail||archive?.summary||'').trim());
+      if(!hasSummary)addIssue(row,'상세 요약 없음');
     }
     const issues=[...issueMap.values()];
     const classificationCount=issues.filter(row=>row.reasons.some(reason=>reason!=='대표 이미지 지정 없음')).length;
     const imageCount=issues.filter(row=>row.reasons.includes('대표 이미지 지정 없음')).length;
-    summary.innerHTML=`<div class="operator-history-audit-metrics"><span><b>${fmt(classificationCount)}</b>분류 확인</span><span><b>${fmt(imageCount)}</b>대표 이미지 없음</span><span><b>${fmt(majorRows.length)}</b>주요 기록 점검</span></div><small>${issues.length?'확인 필요한 항목만 아래에 표시합니다.':'현재 주요 기록에 추가 확인 항목이 없습니다.'}</small>`;
+    const summaryCount=issues.filter(row=>row.reasons.includes('상세 요약 없음')).length;
+    summary.innerHTML=`<div class="operator-history-audit-metrics"><span><b>${fmt(classificationCount)}</b>분류 확인</span><span><b>${fmt(imageCount)}</b>대표 이미지 없음</span><span><b>${fmt(summaryCount)}</b>상세 요약 없음</span><span><b>${fmt(majorRows.length)}</b>주요 기록 점검</span></div><small>${issues.length?'확인 필요한 항목만 아래에 표시합니다.':'현재 주요 기록에 추가 확인 항목이 없습니다.'}</small>`;
     results.innerHTML=issues.length
       ?issues.slice(0,40).map(row=>`<article><time>${escapeHtml(row.start||'')}</time><div><strong>${escapeHtml(row.label)}</strong><span>${escapeHtml(row.reasons.join(' · '))} · ${row.year}년</span></div><a href="history.html" target="_blank" rel="noopener">이력 보기 ↗</a></article>`).join('')
       :'<p class="operator-empty">추가로 확인할 주요 방송 이력이 없습니다.</p>';
