@@ -428,6 +428,24 @@ async function loadSystemStatus(){
   $('#operator-service-health').innerHTML=serviceRows.map(([label,ok])=>`<div><span>${label}</span>${healthLabel(Boolean(ok))}</div>`).join('');
   const endpoints=Array.isArray(data.endpoints)?data.endpoints:[];
   $('#operator-endpoint-health').innerHTML=endpoints.length?endpoints.map(row=>`<div><span>${escapeHtml(row.label||row.path||'API')} <small>${fmt(row.ms)}ms</small></span><span class="operator-endpoint-result ${row.ok?'ok':'bad'}">${row.ok?'HTTP '+fmt(row.status):row.status?'HTTP '+fmt(row.status):'응답 실패'}</span></div>`).join(''):'<p class="operator-empty">API 상태를 확인하지 못했습니다.</p>';
+  const budget=data.resourceBudget||{},mode=budget.mode||'saving';
+  const budgetMode=$('#system-budget-mode');
+  if(budgetMode){budgetMode.textContent=mode==='limit'?'● 제한 모드':'● 절약 모드';budgetMode.className='operator-health '+(mode==='limit'?'bad':'ok')}
+  if($('#system-budget-sample'))$('#system-budget-sample').textContent=Math.round((Number(budget.analyticsSampleRate)||0)*100)+'%';
+  if($('#system-budget-retention'))$('#system-budget-retention').textContent=fmt(budget.analyticsRetentionDays||0)+'일';
+  if($('#system-budget-polling'))$('#system-budget-polling').textContent=fmt(budget.operatorPollingSeconds||0)+'초';
+  if($('#system-budget-redis'))$('#system-budget-redis').textContent=budget.redisCircuitOpen?'호출 중지 중':'정상';
+  const protections=budget.protections||{};
+  const protectionRows=[
+    ['중복 요청 합치기',protections.requestDedupe],
+    ['마지막 정상 데이터',protections.lastGoodSnapshot],
+    ['크루 소식 캐시',protections.crewNewsCache],
+    ['랭킹 제한 완화',protections.rankingGracefulFallback],
+    ['화면 검증',protections.visualCheck==='playwright']
+  ];
+  if($('#system-budget-protections'))$('#system-budget-protections').innerHTML=protectionRows.map(([label,ok])=>`<div><span>${label}</span>${healthLabel(Boolean(ok))}</div>`).join('');
+  const isolated=budget.isolatedStores||{},isolatedCount=Object.values(isolated).filter(Boolean).length;
+  if($('#system-budget-isolation'))$('#system-budget-isolation').innerHTML=`<strong>Redis 기능 격리</strong><span>${isolatedCount?fmt(isolatedCount)+'개 기능이 별도 저장소 사용 중':'현재는 공용 Redis 사용 · 필요 시 기능별 분리 가능'}</span>`;
   renderCommitHistory(commitRows,dep.sha,dep.synced);renderChangelogHealth(data.changelog||{});
   renderHealthHistory(data.health?.history||[]);renderDeploymentBanner();renderOperatorAttention();
 }
