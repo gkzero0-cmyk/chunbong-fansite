@@ -393,9 +393,13 @@ module.exports = async function handler(req, res) {
   }
 
   const authenticated = results.some(item => item && item.authenticated === true);
-  res.setHeader('Cache-Control', (forceRefresh || authenticated || failures.length>0 || auxiliaryFailures.length>0)
-    ? 'no-store, max-age=0'
-    : 'public, max-age=300, s-maxage=3600, stale-while-revalidate=21600');
+  if(forceRefresh || authenticated || failures.length>0 || auxiliaryFailures.length>0){
+    res.setHeader('Cache-Control','no-store, max-age=0');
+  }else{
+    res.setHeader('Cache-Control','public, max-age=300, stale-while-revalidate=1800');
+    res.setHeader('CDN-Cache-Control','public, max-age=3600, stale-while-revalidate=21600, stale-if-error=86400');
+    res.setHeader('Vercel-CDN-Cache-Control','public, max-age=3600, stale-while-revalidate=21600, stale-if-error=86400');
+  }
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
