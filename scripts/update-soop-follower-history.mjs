@@ -47,6 +47,25 @@ export function monthRange(start = '2025-09', end = kstMonthKey()) {
   return rows;
 }
 
+function previousMonthKey(month) {
+  const [year, number] = String(month).split('-').map(Number);
+  const date = new Date(Date.UTC(year, number - 2, 1));
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
+export function monthsForRefresh(previousPoints = [], now = new Date()) {
+  const current = kstMonthKey(now);
+  const previous = previousMonthKey(current);
+  const covered = new Set(
+    (Array.isArray(previousPoints) ? previousPoints : [])
+      .map(point => String(point?.date || point?.capturedAt || '').slice(0, 7))
+      .filter(value => /^20\d{2}-\d{2}$/.test(value))
+  );
+  const missingHistorical = monthRange('2025-09', previous)
+    .filter(month => !covered.has(month));
+  return [...new Set([...missingHistorical, previous, current])];
+}
+
 export function monthBounds(month) {
   const [year, number] = String(month).split('-').map(Number);
   const nextYear = number === 12 ? year + 1 : year;
@@ -91,13 +110,15 @@ async function main() {
   const previous = readJson(HISTORY_PATH, { version: 1, points: [] });
   const snapshots = readJson(SNAPSHOT_PATH, { version: 1, snapshots: [] });
   const direct = snapshotsToFollowerPoints(snapshots);
-  const collected = await collectTrackifyFollowerPoints();
+  const refreshMonths = monthsForRefresh(previous.points, new Date());
+  const collected = await collectTrackifyFollowerPoints({ months: refreshMonths });
   const points = mergeFollowerHistory(previous, collected.points, direct);
   const next = { version: Number(previous?.version) || 1, points };
   fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(HISTORY_PATH, `${JSON.stringify(next, null, 2)}\n`);
   console.log(`SOOP_FOLLOWER_HISTORY_POINTS=${points.length}`);
   console.log(`SOOP_FOLLOWER_HISTORY_TRACKIFY_POINTS=${collected.points.length}`);
+  console.log(`SOOP_FOLLOWER_HISTORY_REFRESH_MONTHS=${refreshMonths.join(',')}`);
   console.log(`SOOP_FANCLUB_HISTORY_POINTS=${points.filter(point => Number.isFinite(point?.fanclubCount)).length}`);
   console.log(`SOOP_FOLLOWER_HISTORY_FETCH_ERRORS=${collected.errors.length}`);
   if (collected.errors.length) console.log(`SOOP_FOLLOWER_HISTORY_FAILED_MONTHS=${collected.errors.map(error => error.month).join(',')}`);
