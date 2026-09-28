@@ -44,13 +44,13 @@
   // Category answers "what kind of content was this?" while role answers
   // "what did Chunbong do in it?". Importance controls only the simple view.
   const HISTORY_RECORD_RULES=[
-    {test:/^춘이괜$/i,importance:'normal'},
-    {test:/^읍더스게이트\s*3$/i,importance:'normal'},
-    {test:/^현실합방\s*w\.\s*스노$/i,importance:'normal'},
+    {test:/^춘이괜$/i,simple:false,importance:'normal'},
+    {test:/^읍더스게이트\s*3$/i,simple:false,importance:'normal'},
+    {test:/^현실합방\s*w\.\s*스노$/i,simple:false,importance:'normal'},
     {test:/^서버개발 방송$/i,kind:'방송',importance:'normal'},
     {test:/구독플러스/i,kind:'방송',importance:'normal'},
 
-    {test:/^레오펠\s*2\s*무기한 연기$/i,kind:'활동',importance:'normal',type:'프로젝트 상태'},
+    {test:/^레오펠\s*2\s*무기한 연기$/i,kind:'활동',simple:false,importance:'normal',type:'프로젝트 상태'},
     {test:/^레오펠(?:\s*:?\s*.*)?$/i,kind:'마인크래프트',role:'주최·운영'},
     {test:/^그냥서버(?:\s*:?\s*.*)?$/i,kind:'마인크래프트',role:'주최·운영'},
     {test:/싸이감성 노래자랑/i,kind:'콘텐츠',role:'주최',importance:'core',type:'콘텐츠'},
@@ -106,7 +106,7 @@
     {test:/^담월드(?:2)?(?:\s+w\..*)?$/i,kind:'게임',role:'참가',importance:'core',type:'팰월드 서버'},
     {test:/^고세구의 세바버$/i,kind:'VRC',role:'참가',importance:'core',type:'VRC 콘텐츠'},
 
-    {test:/^퍼켓몬\s*UP전쟁$/i,kind:'콘텐츠',importance:'normal',type:'세부 이벤트'},
+    {test:/^퍼켓몬\s*UP전쟁$/i,kind:'콘텐츠',simple:false,importance:'normal',type:'세부 이벤트'},
 
     {test:/^2025 SOOP 스트리머 대상(?: 참여)?$/i,kind:'활동',role:'참가',importance:'core',type:'공식 행사'},
     {test:/패러블 입사 발표/i,kind:'활동',role:'소속',importance:'core',type:'활동 변화'},
@@ -180,7 +180,14 @@
     return /^\d{4}-\d{2}-\d{2}$/.test(date)?`data.html?view=calendar&date=${encodeURIComponent(date)}#soop`:'';
   }
 
-  const proxiedImage=(url='')=>url?`/api/image?url=${encodeURIComponent(url)}`:'';
+  const normalizeMediaUrl=(url='')=>{
+    const value=String(url||'').trim();
+    return value.startsWith('//')?'https:'+value:value;
+  };
+  const proxiedImage=(url='')=>{
+    const normalized=normalizeMediaUrl(url);
+    return normalized?`/api/image?url=${encodeURIComponent(normalized)}`:'';
+  };
 
   async function ensureVodMedia(){
     if(vodMediaLoaded) return vodMedia;
@@ -216,23 +223,33 @@
     const end=String(row.end||row.start||'').slice(0,10);
     if(!start) return null;
     const rowText=normalizeLabel(row.label||'');
+    const rowTokens=String(row.label||'')
+      .replace(/[()<>·:]/g,' ')
+      .split(/\s+/)
+      .map(token=>normalizeLabel(token))
+      .filter(token=>token.length>=2&&!/^(서버|콘텐츠|방송|참가|최종)$/.test(token));
     let best=null;
     let bestScore=-1;
     for(const item of vodMedia){
       const date=String(item.date||'').slice(0,10);
       if(!date||date<start||date>end) continue;
-      let score=date===start?100:70;
+      let score=date===start?100:65;
       const titleNorm=normalizeLabel(item.title||'');
       if(rowText&&titleNorm){
-        if(titleNorm.includes(rowText)||rowText.includes(titleNorm)) score+=80;
+        if(titleNorm===rowText) score+=120;
+        else if(titleNorm.includes(rowText)||rowText.includes(titleNorm)) score+=80;
         for(const term of detailTerms(row)){
           const t=normalizeLabel(term);
-          if(t&&titleNorm.includes(t)) score+=25;
+          if(t&&titleNorm.includes(t)) score+=20;
+        }
+        for(const token of rowTokens){
+          if(titleNorm.includes(token)) score+=18;
         }
       }
       if(score>bestScore){best=item;bestScore=score;}
     }
-    return best;
+    // 날짜만 같은 영상이나 약한 키워드 일치는 잘못된 대표 이미지가 되기 쉬우므로 사용하지 않는다.
+    return bestScore>=135?best:null;
   }
 
   function recordMedia(row={}){
@@ -246,7 +263,7 @@
   function renderRecordMedia(row={}){
     const media=recordMedia(row);
     if(!media) return '';
-    const image=`<img src="${esc(proxiedImage(media.url))}" alt="${esc(media.title||row.label||'방송 대표 이미지')}" loading="lazy" decoding="async">`;
+    const image=`<img src="${esc(proxiedImage(media.url))}" alt="${esc(media.title||row.label||'방송 대표 이미지')}" loading="lazy" decoding="async" onerror="this.closest('.history-record-media')?.setAttribute('hidden','')">`;
     const visual=media.link
       ?`<a class="history-record-media-link" href="${esc(media.link)}" target="_blank" rel="noreferrer" aria-label="${esc(media.title||row.label)} 다시보기 열기">${image}</a>`
       :image;
@@ -363,6 +380,35 @@
     })[kind]||kind||'콘텐츠';
   }
 
+  function taxonomyFor(row={}){
+    const override=recordRule(row.label);
+    const kind=normalizeKind(override?.kind||row.kind,row.label);
+    const type=override?.type||simpleDecision({...row,kind}).type||'';
+    let platform=displayKind(kind);
+    let format='콘텐츠';
+    if(kind==='마인크래프트') platform='마인크래프트';
+    else if(kind==='VRC') platform='VRC';
+    else if(/GTA/.test(type)) platform='GTA';
+    else if(/좀보이드/.test(type)) platform='좀보이드';
+    else if(/팰월드/.test(type)) platform='팰월드';
+    else if(kind==='게임') platform='게임';
+    if(/서버/.test(type)) format='서버';
+    else if(/대회/.test(type)||kind==='대회') format='대회';
+    else if(/일일/.test(type)) format='일일 콘텐츠';
+    else if(/행사/.test(type)) format='행사';
+    else if(/활동 변화|프로젝트 상태/.test(type)) format='활동';
+    else if(kind==='타로') format='타로';
+    else if(kind==='방송') format='방송';
+    return {platform,format,type};
+  }
+
+  function taxonomyLabel(row={}){
+    const taxonomy=taxonomyFor(row);
+    return taxonomy.platform&&taxonomy.format&&taxonomy.platform!==taxonomy.format
+      ?`${taxonomy.platform} · ${taxonomy.format}`
+      :taxonomy.type||taxonomy.platform||'콘텐츠';
+  }
+
   function isPreparation(label=''){
     return /설명회|입주자 발표|모집|신청|면접|지원 영상|신청자 살펴보기|추가 운영자 모집/.test(String(label))
       && !/패러블 입사 발표/.test(String(label));
@@ -376,6 +422,8 @@
 
     if(!text||item.detailOnly) return {include:false,type:'',importance:'normal',role,reason:'detail-only'};
     if(isPreparation(text)) return {include:false,type:'',importance:'normal',role,reason:'preparation'};
+    if(override?.simple===false) return {include:false,type:override.type||'',importance:'normal',role,reason:'curated-detail-only'};
+    if(override?.simple===true) return {include:true,type:override.type||displayKind(kind),importance:'core',role,reason:'curated-simple'};
     if(override?.importance==='normal') return {include:false,type:'',importance:'normal',role,reason:'curated-normal'};
     if(override?.importance==='core') return {
       include:true,
@@ -412,18 +460,7 @@
   }
 
   function simpleTypeLabel(row={}){
-    const override=recordRule(row.label);
-    const kind=normalizeKind(override?.kind||row.kind,row.label);
-    return override?.type||simpleDecision({...row,kind}).type||({
-      '마인크래프트':'서버·마크',
-      '대회':'대회',
-      '타로':'타로',
-      '게임':'게임',
-      'VRC':'VRC 콘텐츠',
-      '활동':'활동 변화',
-      '방송':'방송',
-      '콘텐츠':'콘텐츠'
-    }[kind]||'콘텐츠');
+    return taxonomyLabel(row);
   }
 
   function simpleRoleLabel(row={}){
