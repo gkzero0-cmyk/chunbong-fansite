@@ -255,6 +255,7 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'method_not_allowed' });
 
   const requestUrl = new URL(req.url || '/', 'https://chunbong.local');
+  const forceRefresh = requestUrl.searchParams.get('refresh') === '1';
   const station = safeStation(requestUrl.searchParams.get('station') || '');
   if (!station) return res.status(400).json({ error: 'invalid_station' });
 
@@ -290,7 +291,9 @@ module.exports = async function handler(req, res) {
     const rows = Array.isArray(result.data && result.data.data) ? result.data.data : [];
     const posts = rows.map(row => normalizePost(row, station, menu.byNo, req));
     const debug = requestUrl.searchParams.get('debug') === '1';
-    res.setHeader('Cache-Control', cookie ? 'no-store, max-age=0' : 'public, max-age=30, s-maxage=30, stale-while-revalidate=60');
+    res.setHeader('Cache-Control', (cookie || forceRefresh)
+      ? 'no-store, max-age=0'
+      : 'public, max-age=60, s-maxage=600, stale-while-revalidate=3600');
     return res.status(200).json({
       ok: true,
       station,
