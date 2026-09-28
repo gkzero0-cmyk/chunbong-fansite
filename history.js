@@ -52,14 +52,20 @@
     return '콘텐츠';
   }
 
+  function isMajorSheetEvent(label=''){
+    const text=String(label);
+    if(/설명회|1차 입주자 발표|\b모집\b|신청|면접|지원 영상/.test(text)&&!/패러블 입사 발표/.test(text)) return false;
+    return containsAny(text,majorMatchers);
+  }
+
   function enrichSheetRecord(item){
     const label=String(item.label||'').trim();
     return {
       ...item,
       label,
       kind:inferKind(label),
-      major:containsAny(label,majorMatchers),
-      featured:containsAny(label,featuredMatchers),
+      major:isMajorSheetEvent(label),
+      featured:containsAny(label,featuredMatchers)&&!/설명회|1차 입주자 발표/.test(label),
       sources:['google-sheet'],
       sheet:true
     };
