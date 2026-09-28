@@ -833,3 +833,158 @@ body[data-history-view="simple"] .history-layout{display:block}.history-guide[hi
   .history-simple-month-jumps{align-items:flex-start;flex-direction:column;gap:5px;padding:5px 4px}
   .history-simple-month-jumps button{min-height:36px;padding:6px 9px}
 }
+
+
+/* Interactive annual summary, role stats, comparison and related resources v23 */
+.history-year-activity-summary{display:grid;gap:7px}
+.history-year-participation{grid-template-columns:1fr}
+.history-year-participation-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.history-year-participation-head small{color:rgba(255,255,255,.34);font-size:.61rem;line-height:1.4}
+.history-year-participation>div:last-child{display:flex;flex-wrap:wrap;gap:6px}
+.history-year-participation button{
+  appearance:none;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:28px;
+  padding:4px 8px;
+  border:1px solid rgba(255,255,255,.075);
+  border-radius:999px;
+  background:rgba(255,255,255,.025);
+  color:inherit;
+  font:inherit;
+  cursor:pointer;
+}
+.history-year-participation button b{color:rgba(255,255,255,.68);font-size:.67rem}
+.history-year-participation button em{color:#ffad79;font-size:.67rem;font-style:normal;font-weight:900}
+.history-year-participation button:hover,
+.history-year-participation button:focus-visible,
+.history-year-participation button.is-active{
+  border-color:rgba(255,145,79,.5);
+  background:rgba(255,107,24,.1);
+}
+.history-year-participation button.is-active b{color:#fff}
+.history-year-role-summary{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:0 12px 9px;
+}
+.history-year-role-summary>span{
+  color:rgba(255,255,255,.38);
+  font-size:.62rem;
+  font-weight:900;
+  white-space:nowrap;
+}
+.history-year-role-summary>div{display:flex;flex-wrap:wrap;gap:5px}
+.history-year-role-summary em{
+  display:inline-flex;
+  gap:5px;
+  align-items:center;
+  min-height:25px;
+  padding:3px 7px;
+  border-radius:999px;
+  background:rgba(255,255,255,.02);
+  color:rgba(255,255,255,.47);
+  font-size:.62rem;
+  font-style:normal;
+}
+.history-year-role-summary em b{color:rgba(255,255,255,.67)}
+.history-year-compare{
+  margin:10px 0 14px;
+  border:1px solid rgba(255,255,255,.065);
+  border-radius:13px;
+  background:rgba(255,255,255,.015);
+}
+.history-year-compare>summary{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:42px;
+  padding:0 12px;
+  list-style:none;
+  cursor:pointer;
+}
+.history-year-compare>summary::-webkit-details-marker{display:none}
+.history-year-compare>summary strong{font-size:.72rem}
+.history-year-compare>summary span{color:rgba(255,255,255,.38);font-size:.64rem}
+.history-year-compare>summary i{margin-left:auto;color:rgba(255,255,255,.3);font-style:normal}
+.history-year-compare-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;padding:0 10px 10px}
+.history-year-compare-grid section{
+  padding:9px;
+  border:1px solid rgba(255,255,255,.055);
+  border-radius:10px;
+  background:rgba(255,255,255,.018);
+}
+.history-year-compare-grid header{display:flex;justify-content:space-between;gap:8px;margin-bottom:7px}
+.history-year-compare-grid header b{font-size:.75rem}
+.history-year-compare-grid header span{color:rgba(255,255,255,.34);font-size:.63rem}
+.history-year-compare-grid section>div{display:flex;flex-wrap:wrap;gap:4px}
+.history-year-compare-grid section>div span{
+  padding:3px 6px;
+  border-radius:999px;
+  background:rgba(255,255,255,.025);
+  color:rgba(255,255,255,.5);
+  font-size:.61rem;
+}
+.history-year-compare-grid section>div b{color:#ffad79}
+.history-year-compare-grid small{display:block;margin-top:7px;color:rgba(255,255,255,.34);font-size:.59rem;line-height:1.5}
+.history-related-resources{
+  display:grid;
+  gap:7px;
+  margin-top:10px;
+  padding:10px 11px;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:11px;
+  background:rgba(255,255,255,.016);
+}
+.history-related-resources>span{
+  color:rgba(255,255,255,.4);
+  font-size:.64rem;
+  font-weight:900;
+  letter-spacing:.05em;
+}
+.history-related-resources>div{display:flex;flex-wrap:wrap;gap:6px}
+.history-related-resources a,.history-related-resources button{
+  display:inline-flex;
+  align-items:center;
+  min-height:30px;
+  padding:5px 9px;
+  border:1px solid rgba(255,255,255,.085);
+  border-radius:8px;
+  background:rgba(255,255,255,.025);
+  color:rgba(255,255,255,.67);
+  font:inherit;
+  font-size:.67rem;
+  font-weight:800;
+  text-decoration:none;
+  cursor:pointer;
+}
+.history-related-resources a:hover,.history-related-resources a:focus-visible,
+.history-related-resources button:hover,.history-related-resources button:focus-visible{
+  border-color:rgba(255,145,79,.42);
+  color:#ffb080;
+}
+[data-theme="light"] .history-year-participation-head small,
+[data-theme="light"] .history-year-role-summary>span,
+[data-theme="light"] .history-year-compare>summary span,
+[data-theme="light"] .history-year-compare-grid header span,
+[data-theme="light"] .history-year-compare-grid small{color:#918279}
+[data-theme="light"] .history-year-participation button{border-color:#e6dad2;background:#fff}
+[data-theme="light"] .history-year-participation button b{color:#6e6159}
+[data-theme="light"] .history-year-participation button.is-active{border-color:#e4a779;background:#fff0e4}
+[data-theme="light"] .history-year-role-summary em{background:#f9f5f1;color:#8c7d74}
+[data-theme="light"] .history-year-role-summary em b{color:#655950}
+[data-theme="light"] .history-year-compare{border-color:#eadfd7;background:#fbf7f4}
+[data-theme="light"] .history-year-compare-grid section{border-color:#e8ddd5;background:#fff}
+[data-theme="light"] .history-year-compare-grid section>div span{background:#f8f3ef;color:#786a62}
+[data-theme="light"] .history-related-resources{border-color:#eadfd7;background:#fbf7f4}
+[data-theme="light"] .history-related-resources>span{color:#8e7f76}
+[data-theme="light"] .history-related-resources a,
+[data-theme="light"] .history-related-resources button{border-color:#e5d9d0;background:#fff;color:#6f625a}
+@media(max-width:700px){
+  .history-year-participation-head{align-items:flex-start;flex-direction:column;gap:4px}
+  .history-year-role-summary{align-items:flex-start;flex-direction:column;padding:0 9px 8px}
+  .history-year-compare-grid{grid-template-columns:1fr}
+  .history-related-resources a,.history-related-resources button{min-height:36px;padding:7px 10px}
+}
