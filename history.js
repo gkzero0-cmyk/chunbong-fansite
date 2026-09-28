@@ -52,51 +52,53 @@
     {test:/구독플러스/i,kind:'방송',importance:'normal'},
 
     {test:/^레오펠\s*2\s*무기한 연기$/i,kind:'활동',simple:false,importance:'normal',type:'프로젝트 상태'},
-    {test:/^레오펠(?:\s*:?\s*.*)?$/i,kind:'마인크래프트',role:'주최·운영'},
-    {test:/^그냥서버(?:\s*:?\s*.*)?$/i,kind:'마인크래프트',role:'주최·운영'},
+    {test:/^레오펠(?:\s*:?\s*.*)?$/i,kind:'마인크래프트',role:'주최·운영',importance:'core',type:'마크 서버'},
+    {test:/^그냥서버(?:\s*:?\s*.*)?$/i,kind:'마인크래프트',role:'주최·운영',importance:'core',type:'마크 서버'},
     {test:/싸이감성 노래자랑/i,kind:'콘텐츠',role:'주최',importance:'core',type:'콘텐츠'},
     {test:/^춘타클(?:\s*.*)?$/i,kind:'타로',role:'진행',importance:'core',type:'타로'},
 
+    {test:/^감롤\s*CK\s*정글\s*참여$/i,kind:'콘텐츠',role:'참가',simple:false,importance:'normal',type:'내부 게임 콘텐츠'},
+    {test:/^춘동아리\s*CK$/i,kind:'콘텐츠',role:'참가',simple:false,importance:'normal',type:'내부 게임 콘텐츠'},
     {test:/^처니랜드\s*쪼이팀\s*뻐꾸기병$/i,kind:'대회',role:'참가',importance:'core',type:'대회'},
     {test:/^버추얼 종합대회 시즌3\s*:\s*넥버워치 중계$/i,kind:'대회',role:'중계진',importance:'core',type:'대회·중계'},
     {test:/^김멘탈의 랜버워치 대회 3등$/i,kind:'대회',role:'참가',importance:'core',type:'대회'},
 
-    {test:/^홍창의 숲$/i,kind:'마인크래프트',role:'수장',importance:'core',type:'서버·마크'},
-    {test:/^하루살이 서버$/i,kind:'마인크래프트',role:'운영자',importance:'core',type:'서버·마크'},
-    {test:/^충동서버$/i,kind:'마인크래프트',role:'운영자',importance:'core',type:'서버·마크'},
-    {test:/^린코레일\s*2$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
-    {test:/^픽크타\s*2$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
-    {test:/^꾸다방\s*2\.5$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
-    {test:/^감블러의 놀이터$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
-    {test:/^또오냥의 조까치수련회\s*2$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^홍창의 숲$/i,kind:'마인크래프트',role:'수장',importance:'core',type:'마크 서버'},
+    {test:/^하루살이 서버$/i,kind:'마인크래프트',role:'운영자',importance:'core',type:'마크 서버'},
+    {test:/^충동서버$/i,kind:'마인크래프트',role:'운영자',importance:'core',type:'마크 서버'},
+    {test:/^린코레일\s*2$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^픽크타\s*2$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^꾸다방\s*2\.5$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^감블러의 놀이터$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^또오냥의 조까치수련회\s*2$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^마병대\s*3$/i,kind:'마인크래프트',role:'교육교관'},
     {test:/^마병대\s*4$/i,kind:'마인크래프트',role:'행정관'},
-    {test:/^오함마\s*3/i,kind:'마인크래프트',role:'수장',importance:'core',type:'서버·마크'},
-    {test:/^킹콩서버$/i,kind:'마인크래프트',role:'조교',importance:'core',type:'서버·마크'},
-    {test:/^돌발서버$/i,kind:'마인크래프트',role:'운영자',importance:'core',type:'서버·마크'},
+    {test:/^오함마\s*3/i,kind:'마인크래프트',role:'수장',importance:'core',type:'마크 서버'},
+    {test:/^킹콩서버$/i,kind:'마인크래프트',role:'조교',importance:'core',type:'마크 서버'},
+    {test:/^돌발서버$/i,kind:'마인크래프트',role:'운영자',importance:'core',type:'마크 서버'},
 
-    {test:/^원조 다이아게임$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
-    {test:/^니즈 좀비서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
-    {test:/^더켓몬 민원아저씨$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'픽셀몬 서버'},
-    {test:/^퍼켓몬(?:\s+w\.\s*조통박치기)?$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'픽셀몬 서버'},
+    {test:/^원조 다이아게임$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^니즈 좀비서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^더켓몬 민원아저씨$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^퍼켓몬(?:\s+w\.\s*조통박치기)?$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^모징어게임$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 대형 콘텐츠'},
     {test:/^청더일레븐(?:\s+w\.\s*춘밥즈)?$/i,kind:'대회',role:'참가',importance:'core',type:'마크 대회'},
-    {test:/^염병서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
-    {test:/^챈나룽 서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
-    {test:/^밍친서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^염병서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^챈나룽 서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^밍친서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^챈나의 경찰과 도둑(?:\s*2)?$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 일일 콘텐츠'},
     {test:/^야구자의 왁업$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 콘텐츠'},
     {test:/^해리의 RE병대$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 콘텐츠'},
     {test:/^사자회 체력공유 엔더런$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 콘텐츠'},
     {test:/^춘앤룽 엔더런 원정대$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 콘텐츠'},
-    {test:/^다이아랜딩 서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
-    {test:/^두둥투어 서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
-    {test:/^하요리 서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
-    {test:/^춘동아리 다이아서버$/i,kind:'마인크래프트',role:'주최·운영',importance:'core',type:'서버·마크'},
-    {test:/^수미랜드 다이아서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^다이아랜딩 서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^두둥투어 서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^하요리 서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^춘동아리 다이아서버$/i,kind:'마인크래프트',role:'주최·운영',importance:'core',type:'마크 서버'},
+    {test:/^수미랜드 다이아서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^사자회 원블럭$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 콘텐츠'},
-    {test:/^해초마을\s*2$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
-    {test:/^맹든링$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^해초마을\s*2$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^맹든링$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
 
     {test:/^GTA 좀비서버/i,kind:'게임',role:'참가',importance:'core',type:'GTA 서버'},
     {test:/^LAC 서버$/i,kind:'게임',role:'참가',importance:'core',type:'GTA 서버'},
@@ -107,18 +109,18 @@
     {test:/^담월드(?:2)?(?:\s+w\..*)?$/i,kind:'게임',role:'참가',importance:'core',type:'팰월드 서버'},
     {test:/^고세구의 세바버$/i,kind:'VRC',role:'참가',importance:'core',type:'VRC 콘텐츠'},
 
-    {test:/^마카오톡 참여$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^마카오톡 참여$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^마카오톡 내부 콘텐츠 ‘마딴섬’ 참여$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 일일 콘텐츠'},
-    {test:/^포켓꾸 · 춘물상 활동$/i,kind:'마인크래프트',role:'운영',importance:'core',type:'서버·마크'},
-    {test:/^랜드마꾸 · 춘밭 운영$/i,kind:'마인크래프트',role:'운영',importance:'core',type:'서버·마크'},
-    {test:/^후추 다이아 서버 참여·클리어$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
-    {test:/^별농일기 참여$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
-    {test:/^클로배 서버 참여$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
-    {test:/^마카오톡 1\.5 · 악오중대 길드원$/i,kind:'마인크래프트',role:'길드원',importance:'core',type:'서버·마크'},
-    {test:/^마카오톡 1\.75 · 리제로 길드 수장$/i,kind:'마인크래프트',role:'수장',importance:'core',type:'서버·마크'},
+    {test:/^포켓꾸 · 춘물상 활동$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^랜드마꾸 · 춘밭 운영$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^후추 다이아 서버 참여·클리어$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^별농일기 참여$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^클로배 서버 참여$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
+    {test:/^마카오톡 1\.5 · 악오중대 길드원$/i,kind:'마인크래프트',role:'길드원',importance:'core',type:'마크 서버'},
+    {test:/^마카오톡 1\.75 · 리제로 길드 수장$/i,kind:'마인크래프트',role:'수장',importance:'core',type:'마크 서버'},
     {test:/^요양타운 · 이세갱 2인자$/i,kind:'게임',role:'부두목',importance:'core',type:'GTA 서버'},
-    {test:/^코창서버 · 북해빙궁 문파원$/i,kind:'마인크래프트',role:'문파원',importance:'core',type:'서버·마크'},
-    {test:/^로나월드 2\.5 리부트 참여$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^코창서버 · 북해빙궁 문파원$/i,kind:'마인크래프트',role:'문파원',importance:'core',type:'마크 서버'},
+    {test:/^로나월드 2\.5 리부트 참여$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^퍼켓몬\s*UP전쟁$/i,kind:'콘텐츠',simple:false,importance:'normal',type:'세부 이벤트'},
 
     {test:/^2025 SOOP 스트리머 대상(?: 참여)?$/i,kind:'활동',role:'참가',importance:'core',type:'공식 행사'},
@@ -373,12 +375,32 @@
     return [...monthlyCache.values()].flat();
   }
 
+  function isFormalCompetition(label=''){
+    const text=String(label||'');
+    // '대회/리그/토너먼트/예선/결승'처럼 경쟁 형식이 명시되거나 별도 검증 규칙이 있는 경우만 대회로 분류한다.
+    return /대회|종합대회|리그|토너먼트|예선|결승|결승전/.test(text);
+  }
+
+  function gamePlatform(label='',type=''){
+    const text=`${label} ${type}`;
+    if(/GTA|고래시티|여우도시|요양타운|LAC/.test(text)) return 'GTA';
+    if(/배틀\s*그라운드|배그/.test(text)) return '배틀그라운드';
+    if(/아르마/.test(text)) return '아르마';
+    if(/언레일드/.test(text)) return '언레일드';
+    if(/오버워치|버워치|육버워치|랜버워치|넥버워치/.test(text)) return '오버워치';
+    if(/좀보이드/.test(text)) return '좀보이드';
+    if(/팰월드|담월드/.test(text)) return '팰월드';
+    if(/스트리트\s*파이터/.test(text)) return '스트리트 파이터';
+    if(/파블로프/.test(text)) return '파블로프 VR';
+    if(/WOW|월드\s*오브\s*워크래프트/.test(text)) return 'WOW';
+    return '게임';
+  }
   function inferKind(label=''){
     const text=String(label);
     const override=recordRule(text);
     if(override?.kind) return override.kind;
     if(/타로|사주|신점/.test(text)) return '타로';
-    if(/대회|F1|CK|와튜버|스모오라|크루대전/.test(text)) return '대회';
+    if(isFormalCompetition(text)) return '대회';
     if(/GTA|배그|배틀 그라운드|오버워치|옵치|WOW|스트리트 파이터|아르마|파블로프|언레일드|버워치|좀보이드|팰월드/.test(text)) return '게임';
     if(/입사 발표|결성|해체|크루 리빌딩|SOOP 스트리머 대상/.test(text)) return '활동';
     if(/VR쳇|VRChat|VRC|세바버/.test(text)) return 'VRC';
@@ -434,7 +456,7 @@
     else if(/GTA/.test(type)) platform='GTA';
     else if(/좀보이드/.test(type)) platform='좀보이드';
     else if(/팰월드/.test(type)) platform='팰월드';
-    else if(kind==='게임') platform='게임';
+    else if(kind==='게임') platform=gamePlatform(row.label,type);
     if(/서버/.test(type)) format='서버';
     else if(/대회/.test(type)||kind==='대회') format='대회';
     else if(/일일/.test(type)) format='일일 콘텐츠';
@@ -482,8 +504,8 @@
     if(kind==='대회') return {include:true,type:'대회',importance:'core',role,reason:'competition'};
     if(role&&/주최|운영/.test(role)) return {include:true,type:displayKind(kind),importance:'core',role,reason:'hosted'};
 
-    if(/배그|배틀 그라운드|아르마|오버워치|옵치|버워치|언레일드|스모오라|랜버워치/i.test(text)){
-      return {include:true,type:'게임 이벤트',importance:'core',role:role||'참가',reason:'official-game-event'};
+    if(/배그|배틀\s*그라운드|아르마|오버워치|옵치|버워치|언레일드|스모오라|랜버워치|와튜버|파블로프/i.test(text)){
+      return {include:true,type:`${gamePlatform(text)} 콘텐츠`,importance:'core',role:role||'참가',reason:'game-content'};
     }
 
     if(/노래자랑|춘타클/.test(text)){
@@ -503,6 +525,16 @@
   }
 
   function simpleTypeLabel(row={}){
+    const taxonomy=taxonomyFor(row);
+    const {platform,format}=taxonomy;
+    if(platform==='마인크래프트') return format==='서버'?'마크 서버':format==='대회'?'마크 대회':'마크 콘텐츠';
+    if(platform==='GTA'&&format==='서버') return 'GTA 서버';
+    if(platform==='팰월드'&&format==='서버') return '팰월드 서버';
+    if(platform==='좀보이드'&&format==='서버') return '좀보이드 서버';
+    if(platform==='VRC') return 'VRC 콘텐츠';
+    if(platform==='배틀그라운드') return '배그 콘텐츠';
+    if(['아르마','언레일드','오버워치','스트리트 파이터','파블로프 VR','WOW'].includes(platform)) return `${platform} 콘텐츠`;
+    if(format==='대회') return '대회';
     return taxonomyLabel(row);
   }
 
@@ -531,6 +563,7 @@
     if(platform==='팰월드') return '팰월드 서버';
     if(platform==='좀보이드') return '좀보이드 서버';
     if(platform==='VRC') return 'VRC 콘텐츠';
+    if(['배틀그라운드','아르마','언레일드','오버워치','스트리트 파이터','파블로프 VR','WOW','게임'].includes(platform)&&format==='콘텐츠') return '게임 콘텐츠';
     if(format==='대회') return '대회';
     if(platform==='타로'||format==='타로') return '타로 콘텐츠';
     if(platform==='콘텐츠'||format==='콘텐츠'||format==='행사') return '주요 콘텐츠';
@@ -544,7 +577,7 @@
       if(!bucket) continue;
       counts.set(bucket,(counts.get(bucket)||0)+1);
     }
-    const order=['마크 서버','마크 콘텐츠','마크 대회','GTA 서버','팰월드 서버','좀보이드 서버','VRC 콘텐츠','대회','타로 콘텐츠','주요 콘텐츠'];
+    const order=['마크 서버','마크 콘텐츠','마크 대회','GTA 서버','팰월드 서버','좀보이드 서버','VRC 콘텐츠','게임 콘텐츠','대회','타로 콘텐츠','주요 콘텐츠'];
     return order.filter(label=>counts.has(label)).map(label=>({label,count:counts.get(label)}));
   }
 
