@@ -32,6 +32,9 @@ assert.match(multiplayer,/App\.startMultiplayer\?\.\(room\.seed,room\.mode,room\
 assert.match(multiplayer,/function pollingDelay\(\)\{return document\.hidden\?5000:1300;\}/);
 assert.match(multiplayer,/setInterval\(refresh,pollingDelay\(\)\)/);
 assert.match(multiplayer,/setInterval\(send,1400\)/);
+assert.match(multiplayer,/PROGRESS_HEARTBEAT_MS=5000/,'unchanged Chuntris progress should use a heartbeat instead of constant writes');
+assert.match(multiplayer,/signature=\[payload\.lines,payload\.score,payload\.status\]\.join\('\|'\)/);
+assert.match(multiplayer,/signature===lastProgressSignature&&Date\.now\(\)-lastProgressSentAt<PROGRESS_HEARTBEAT_MS/);
 assert.match(multiplayer,/refreshInFlight/,'multiplayer polling must not overlap slow network reads');
 assert.match(multiplayer,/progressInFlight/,'multiplayer progress writes must not overlap');
 assert.match(multiplayer,/visibilitychange/,'background tabs should reschedule multiplayer polling');
