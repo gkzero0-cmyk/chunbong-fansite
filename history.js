@@ -282,7 +282,14 @@
             title:String(item.title),
             aliases:Array.isArray(item.aliases)?item.aliases.map(String):[],
             startDate:String(item.startDate||''),
-            endDate:String(item.endDate||'')
+            endDate:String(item.endDate||''),
+            category:String(item.category||''),
+            role:String(item.role||''),
+            summary:String(item.summary||''),
+            heroImage:item?.heroImage?.src?{
+              src:String(item.heroImage.src),
+              alt:String(item.heroImage.alt||item.title||'')
+            }:{}
           }));
         contentIndexLoaded=true;
         return contentIndex;
