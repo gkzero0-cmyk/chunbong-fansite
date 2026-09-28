@@ -309,8 +309,8 @@ async function handler(req,res) {
       return res.status(503).json({live:null,authoritative:false,error:'live_state_unavailable'});
     }
   }
-  const forceDataRefresh=type==='data'&&requestUrl.searchParams.get('refresh')==='1';
-  if(forceDataRefresh){
+  const forceRefresh=requestUrl.searchParams.get('refresh')==='1';
+  if(forceRefresh){
     res.setHeader('Cache-Control','no-store, max-age=0');
   }else if(type==='fanart'){
     res.setHeader('Cache-Control','public, max-age=60, stale-while-revalidate=900');
