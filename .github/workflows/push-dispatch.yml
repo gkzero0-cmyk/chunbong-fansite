@@ -21,25 +21,12 @@ jobs:
       - name: Request GitHub OIDC token and dispatch push checks
         env:
           AUDIENCE: chunbong-fansite-push
-          CONFIG_URL: https://chunbong-fansite.vercel.app/api/content?type=push-config
           PUSH_URL: https://chunbong-fansite.vercel.app/api/content?type=push-dispatch
           ARCHIVE_SYNC_URL: https://chunbong-fansite.vercel.app/api/content?type=content-archive-auto-sync
+          EVENT_NAME: ${{ github.event_name }}
         shell: bash
         run: |
           set -euo pipefail
-          config="$(curl -fsS --retry 2 --retry-delay 2 --max-time 30 "$CONFIG_URL" || true)"
-          dispatch_auth="$(printf '%s' "$config" | node -e "
-            let input='';
-            process.stdin.on('data',chunk=>input+=chunk);
-            process.stdin.on('end',()=>{
-              try{process.stdout.write(JSON.parse(input).dispatchAuth||'')}catch{}
-            });
-          ")"
-          if [[ "$dispatch_auth" != 'github-oidc-v1' ]]; then
-            echo 'Production does not have GitHub OIDC push dispatch yet; skip until the pending deployment is live.'
-            exit 0
-          fi
-
           separator='?'
           if [[ "$ACTIONS_ID_TOKEN_REQUEST_URL" == *'?'* ]]; then separator='&'; fi
           response="$(
@@ -56,7 +43,13 @@ jobs:
               });
             "
           )"
-          curl -fsS --retry 2 --retry-delay 2 --max-time 55             -H "Authorization: Bearer $token"             -H "User-Agent: chunbong-github-actions-push"             "$PUSH_URL"
+          curl -fsS --retry 1 --retry-delay 2 --max-time 55             -H "Authorization: Bearer $token"             -H "User-Agent: chunbong-github-actions-push"             "$PUSH_URL"
           echo
-          curl -fsS --retry 2 --retry-delay 2 --max-time 55             -X POST             -H "Authorization: Bearer $token"             -H "Origin: https://github.com"             -H "Content-Type: application/json"             -H "User-Agent: chunbong-github-actions-archive-sync"             -d '{}'             "$ARCHIVE_SYNC_URL"
-          echo
+
+          minute="$(date -u +%M)"
+          if [[ "$EVENT_NAME" == "workflow_dispatch" || "$minute" == "00" || "$minute" == "30" ]]; then
+            curl -fsS --retry 1 --retry-delay 2 --max-time 55               -X POST               -H "Authorization: Bearer $token"               -H "Origin: https://github.com"               -H "Content-Type: application/json"               -H "User-Agent: chunbong-github-actions-archive-sync"               -d '{}'               "$ARCHIVE_SYNC_URL"
+            echo
+          else
+            echo "Archive auto-sync skipped on this push tick; 30-minute safety sync remains active."
+          fi
