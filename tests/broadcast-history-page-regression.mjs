@@ -44,6 +44,12 @@ assert.match(js, /챈나룽 서버[^\n]*서버·마크/, '챈나룽 must be clas
 assert.match(js, /밍친서버[^\n]*서버·마크/, '밍친서버 must be classified as Minecraft');
 assert.match(js, /원조 다이아게임[^\n]*서버·마크/, '원조 다이아게임 must be classified as Minecraft');
 assert.match(js, /니즈 좀비서버[^\n]*서버·마크/, '니즈 좀비서버 must be classified as Minecraft, not Zomboid');
+assert.match(js, /픽크타\\s\*2[^\n]*role:'참가'[^\n]*서버·마크/, '픽크타2 must be a Minecraft server participation, not a leader role');
+assert.match(js, /하루살이 서버[^\n]*role:'운영자'[^\n]*서버·마크/, '하루살이 서버 must preserve verified operator role');
+assert.match(js, /충동서버[^\n]*role:'운영자'[^\n]*서버·마크/, '충동서버 must preserve verified operator role');
+assert.match(js, /킹콩서버[^\n]*role:'조교'[^\n]*서버·마크/, '킹콩서버 must preserve verified assistant role');
+assert.match(js, /돌발서버[^\n]*role:'운영자'[^\n]*서버·마크/, '돌발서버 must preserve verified operator role');
+assert.match(js, /오함마\\s\*3[^\n]*role:'수장'[^\n]*서버·마크/, '오함마3 must preserve verified leader role');
 assert.match(js, /주요 진행 기록/, 'detail view must surface a compact broadcast highlight summary');
 assert.match(sheetApi, /extractImageUrl/, 'history sheet API must preserve image URLs exposed by published sheets');
 assert.match(sheetApi, /imageSource:'sheet'/, 'spreadsheet images must be tagged as sheet media');
