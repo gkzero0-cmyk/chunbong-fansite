@@ -58,7 +58,7 @@ function readCache() {
   catch (_) { return { version: 1, capturedAt: '', stats: null, sessions: [] }; }
 }
 
-function incrementalFrom(previous = {}, now = new Date()) {
+export function incrementalFrom(previous = {}, now = new Date()) {
   const latest = (Array.isArray(previous?.sessions) ? previous.sessions : [])
     .map(session => Date.parse(session?.startedAt || session?.date || ''))
     .filter(Number.isFinite)
