@@ -16,7 +16,10 @@ const {
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cachePath = path.join(root, 'data', 'youtube-engagement-cache.json');
-const MAX_CONCURRENCY = 6;
+const MAX_CONCURRENCY = 4;
+const DAILY_RECENT_LIMIT = 30;
+const STALE_REFRESH_LIMIT = 20;
+const MAX_DISCOVERY_PAGES = 6;
 const DISCOVERY_RETRY_ATTEMPTS = 3;
 const DISCOVERY_RETRY_DELAY_MS = 1000;
 
@@ -29,6 +32,26 @@ function readCache() {
   } catch (_) {
     return { version: 1, capturedAt: '', source: CHANNEL, itemCount: 0, items: [] };
   }
+}
+
+function newestCheckpoint(items, kind) {
+  return [...items]
+    .filter(item => item?.kind === kind && item?.id)
+    .sort((a,b)=>(Date.parse(b.publishedAt||'')||0)-(Date.parse(a.publishedAt||'')||0))[0]?.id || '';
+}
+
+function refreshIntervalMs(item, nowMs = Date.now()) {
+  const published = Date.parse(item?.publishedAt || '');
+  const ageDays = Number.isFinite(published) ? Math.max(0, (nowMs - published) / 86400000) : 9999;
+  if (ageDays <= 30) return 24 * 60 * 60 * 1000;
+  if (ageDays <= 180) return 7 * 24 * 60 * 60 * 1000;
+  return 30 * 24 * 60 * 60 * 1000;
+}
+
+function dueForMetricRefresh(item, nowMs = Date.now()) {
+  const checked = Date.parse(item?.metricCheckedAt || '');
+  if (!Number.isFinite(checked)) return true;
+  return nowMs - checked >= refreshIntervalMs(item, nowMs);
 }
 
 function dedupe(items) {
@@ -89,9 +112,11 @@ async function mapLimit(items, limit, mapper) {
 }
 
 const previous = readCache();
+const videoCheckpoint = newestCheckpoint(previous.items, 'videos');
+const shortsCheckpoint = newestCheckpoint(previous.items, 'shorts');
 const [videos, shorts] = await Promise.all([
-  withRetry(() => fetchAllChannelItems('videos')),
-  withRetry(() => fetchAllChannelItems('shorts'))
+  withRetry(() => fetchAllChannelItems('videos', { maxPages: MAX_DISCOVERY_PAGES, stopId: videoCheckpoint })),
+  withRetry(() => fetchAllChannelItems('shorts', { maxPages: MAX_DISCOVERY_PAGES, stopId: shortsCheckpoint }))
 ]);
 const discovered = dedupe([...videos, ...shorts]);
 
@@ -103,21 +128,41 @@ if (!discovered.length) {
   throw new Error('YouTube engagement refresh returned no public content');
 }
 
+const previousById = new Map(previous.items.map(item => [item.id, item]));
+const discoveredById = new Map(discovered.map(item => [item.id, item]));
+const nowMs = Date.now();
+const latestKnown = [...previous.items, ...discovered]
+  .filter(item => item?.id)
+  .sort((a,b)=>(Date.parse(b.publishedAt||'')||0)-(Date.parse(a.publishedAt||'')||0));
+const recentIds = new Set(latestKnown.slice(0, DAILY_RECENT_LIMIT).map(item => item.id));
+const staleIds = latestKnown
+  .filter(item => !recentIds.has(item.id) && dueForMetricRefresh(item, nowMs))
+  .slice(0, STALE_REFRESH_LIMIT)
+  .map(item => item.id);
+const metricIds = [...new Set([...recentIds, ...staleIds])];
+const metricTargets = metricIds.map(id => discoveredById.get(id) || previousById.get(id)).filter(Boolean);
+
 let metricErrors = 0;
-const freshItems = await mapLimit(discovered, MAX_CONCURRENCY, async item => {
+const refreshedItems = await mapLimit(metricTargets, MAX_CONCURRENCY, async item => {
   try {
     const metrics = await fetchWatchMetrics(item.id);
     return {
       ...item,
       publishedAt: metrics.publishedAt || item.publishedAt || '',
       viewCount: Number.isFinite(metrics.viewCount) ? metrics.viewCount : item.viewCount,
-      commentCount: Number.isFinite(metrics.commentCount) ? metrics.commentCount : null
+      commentCount: Number.isFinite(metrics.commentCount) ? metrics.commentCount : item.commentCount,
+      metricCheckedAt: new Date().toISOString()
     };
   } catch (error) {
     metricErrors += 1;
     return { ...item };
   }
 });
+const refreshedById = new Map(refreshedItems.map(item => [item.id, item]));
+const freshItems = discovered.map(item => refreshedById.get(item.id) || item);
+for (const item of refreshedItems) {
+  if (!discoveredById.has(item.id)) freshItems.push(item);
+}
 
 const fresh = {
   version: 1,
@@ -144,4 +189,7 @@ console.log(`YOUTUBE_ENGAGEMENT_DISCOVERED=${discovered.length}`);
 console.log(`YOUTUBE_ENGAGEMENT_CACHED=${merged.items.length}`);
 console.log(`YOUTUBE_ENGAGEMENT_VIEWS=${views}`);
 console.log(`YOUTUBE_ENGAGEMENT_COMMENTS=${comments}`);
+console.log(`YOUTUBE_ENGAGEMENT_METRIC_REFRESHED=${metricTargets.length}`);
 console.log(`YOUTUBE_ENGAGEMENT_METRIC_ERRORS=${metricErrors}`);
+console.log(`YOUTUBE_ENGAGEMENT_VIDEO_CHECKPOINT=${videoCheckpoint}`);
+console.log(`YOUTUBE_ENGAGEMENT_SHORTS_CHECKPOINT=${shortsCheckpoint}`);
