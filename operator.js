@@ -438,7 +438,8 @@ async function loadSystemStatus(){
   const endpoints=Array.isArray(data.endpoints)?data.endpoints:[];
   $('#operator-endpoint-health').innerHTML=endpoints.length?endpoints.map(row=>`<div><span>${escapeHtml(row.label||row.path||'API')} <small>${fmt(row.ms)}ms</small></span><span class="operator-endpoint-result ${row.ok?'ok':'bad'}">${row.ok?'HTTP '+fmt(row.status):row.status?'HTTP '+fmt(row.status):'응답 실패'}</span></div>`).join(''):'<p class="operator-empty">API 상태를 확인하지 못했습니다.</p>';
   const multiplayer=data.multiplayer||{};
-  const quota=data.quota||{},quotaSignals=Array.isArray(quota.signals)?quota.signals:[],quotaEvents=Array.isArray(quota.recentEvents)?quota.recentEvents:[];
+  const quota=data.quota||{},quotaSignals=Array.isArray(quota.signals)?quota.signals:[],quotaEvents=Array.isArray(quota.recentEvents)?quota.recentEvents:[],quotaHistory=Array.isArray(quota.history)?quota.history:[];
+  const recovery=data.recovery||{};
   const budget=data.resourceBudget||{},mode=budget.mode||'saving';
   const budgetMode=$('#system-budget-mode');
   if(budgetMode){budgetMode.textContent=mode==='limit'?'● 제한 모드':'● 절약 모드';budgetMode.className='operator-health '+(mode==='limit'?'bad':'ok')}
@@ -478,6 +479,10 @@ async function loadSystemStatus(){
     row.level==='ok',
     row.level
   ]);
+  if($('#system-recovery-status'))$('#system-recovery-status').textContent=recovery.active?'last-known-good 사용 중':'현재 데이터 사용 중';
+  const recoveryButton=$('#operator-recovery-toggle');
+  if(recoveryButton){recoveryButton.textContent=recovery.active?'현재 데이터로 복귀':'last-known-good 사용';recoveryButton.dataset.active=recovery.active?'1':'0'}
+  if($('#system-quota-history'))$('#system-quota-history').innerHTML=quotaHistory.length?quotaHistory.slice(-14).reverse().map(row=>`<div><span>${escapeHtml(row.day||'-')}</span><b>${fmt(row.total||0)}건</b></div>`).join(''):'<p class="operator-empty">최근 저장된 제한 이벤트가 없습니다.</p>';
   if($('#system-budget-protections'))$('#system-budget-protections').innerHTML=[
     ...quotaRows.map(([label,ok,level])=>`<div><span>${escapeHtml(label)}</span><span class="operator-health ${level==='limit'?'bad':level==='warn'?'warn':'ok'}">${level==='limit'?'제한':level==='warn'?'절약':'정상'}</span></div>`),
     ...protectionRows.map(([label,ok])=>`<div><span>${label}</span>${healthLabel(Boolean(ok))}</div>`)
@@ -553,6 +558,17 @@ $('#feedback-status')?.addEventListener('change',e=>void updateSelectedFeedback(
 $('#feedback-priority')?.addEventListener('change',e=>void updateSelectedFeedback({priorityValue:e.target.value}));
 $('#feedback-memo-save')?.addEventListener('click',()=>void updateSelectedFeedback({memoValue:$('#feedback-memo').value,tagsValue:$('#feedback-tags').value,relatedUpdateValue:$('#feedback-related-update').value,priorityValue:$('#feedback-priority').value}));
 $('#operator-system-refresh')?.addEventListener('click',()=>void loadSystemStatus());
+$('#operator-recovery-toggle')?.addEventListener('click',async()=>{
+  const button=$('#operator-recovery-toggle'),active=button?.dataset?.active==='1',next=!active;
+  const message=next?'검증된 last-known-good 데이터로 전환할까요? 원본 파일은 변경하지 않습니다.':'현재 데이터 사용으로 복귀할까요?';
+  if(!confirm(message))return;
+  try{
+    button.disabled=true;
+    await json(API+'operator-recovery-mode',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({active:next})});
+    await loadSystemStatus();
+  }catch(error){alert('복구 모드 전환에 실패했습니다. '+(error?.message||''))}
+  finally{button.disabled=false}
+});
 $('#operator-security-refresh')?.addEventListener('click',()=>void loadSecurityLog());
 logout.addEventListener('click',async()=>{await json(API+'operator-logout',{method:'POST'});try{localStorage.removeItem('chunbong:operator:access-hint:v1')}catch(_){}session=null;showLogin()});
 $('#operator-logout-all')?.addEventListener('click',async()=>{if(!confirm('모든 기기에서 운영자 로그인을 해제할까요?'))return;await json(API+'operator-logout-all',{method:'POST'});try{localStorage.removeItem('chunbong:operator:access-hint:v1')}catch(_){}session=null;showLogin();status.textContent='모든 기기의 운영자 세션을 해제했습니다.'});
