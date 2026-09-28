@@ -1,12 +1,13 @@
 window.CHUNBONG_HISTORY_META = Object.freeze({
   verifiedAt: "2026-09-28",
+  googleSheetModifiedAt: "2026-09-28 07:12 KST",
   rule: "SOOP 공식 기록과 방송국/방송 제목을 우선하고, 공개 아카이브·나무위키 원문·FM코리아는 교차 확인용으로 사용합니다. 기간은 시작/종료가 확인된 경우에만 범위로 표시합니다.",
   sourceStatus: {
     soop: "checked",
     station: "checked",
     namuwiki: "checked",
     fmkorea: "checked_auxiliary",
-    googleSheet: "unavailable_403"
+    googleSheet: "checked_raw_csv"
   }
 });
 
@@ -235,18 +236,53 @@ window.CHUNBONG_HISTORY_RECORDS = Object.freeze([
     sources:["soop-post-repost","self-activity-list"]
   },
   {
-    start:"2026-09-14", label:"춘타클 · 메이저 카드 마지막 수업", kind:"타로",
-    detail:"참여 스트리머 방송 기록에서 ‘메이저 카드 마지막 수업’이 확인됩니다.",
-    sources:["public-broadcast-record"]
+    start:"2026-09-04", end:"2026-09-11", label:"하요리 서버 참여", kind:"마인크래프트", featured:true,
+    detail:"Google Sheet 방송 기록에서 9월 4일 1일차·입주부터 9월 11일 6일차·‘하요리 서버 -완-’까지 연속 참여가 확인됩니다. 서버 전체 운영기간과 구분해 춘봉 개인 방송 참여기간만 표기합니다.",
+    sources:["google-sheet","public-server-archive"]
   },
   {
-    start:"2026-09-22", label:"마병대4 간부 합격 · 행정관 활동", kind:"마인크래프트", status:"진행", featured:true,
-    detail:"9월 22일 최종 간부 합격자 명단에 포함됐고, 9월 23일부터 본인 방송 제목에서 ‘마병대4 행정관’ 활동이 연속으로 확인됩니다.",
-    sources:["public-notice","station-stream-title","public-broadcast-record"]
+    start:"2026-09-07", label:"마병대4 신청", kind:"마인크래프트", detailOnly:true,
+    detail:"Google Sheet 9월 7일 방송 기록에 ‘마병대 4 신청’이 확인됩니다.",
+    sources:["google-sheet"]
+  },
+  {
+    start:"2026-09-09", label:"버추얼 종합대회 시즌3 : 넥버워치 중계", kind:"중계", detailOnly:true,
+    detail:"Google Sheet와 공개 방송 기록에서 같은 날짜와 방송명이 교차 확인됩니다.",
+    sources:["google-sheet","public-broadcast-record"]
+  },
+  {
+    start:"2026-09-10", label:"마병대4 지원 영상 준비", kind:"마인크래프트", detailOnly:true,
+    detail:"Google Sheet 9월 10일 기록의 ‘마병대 지원 영상’을 기준으로 정리합니다.",
+    sources:["google-sheet"]
+  },
+  {
+    start:"2026-09-14", label:"춘타클 제5회 · 마지막 수업", kind:"타로", featured:true,
+    detail:"Google Sheet 9월 14일 기록에 ‘춘타클 제5회 - 마지막 수업’으로 명시되어 있습니다.",
+    sources:["google-sheet","content-archive"]
+  },
+  {
+    start:"2026-09-19", label:"그냥서버 : 적자생존 서버 설명회", kind:"주최", detailOnly:true,
+    detail:"Google Sheet와 춘봉 공개 방송 제목에서 9월 19일 서버 설명회가 교차 확인됩니다.",
+    sources:["google-sheet","station-stream-title"]
+  },
+  {
+    start:"2026-09-21", label:"마병대4 2차 면접", kind:"마인크래프트", detailOnly:true,
+    detail:"Google Sheet에는 ‘마병대 2차 면접’, 춘봉 방송 기록에는 ‘마병대 4 간부 면접’으로 확인됩니다.",
+    sources:["google-sheet","station-stream-title"]
+  },
+  {
+    start:"2026-09-22", label:"마병대4 간부 최종 합격", kind:"마인크래프트", featured:true,
+    detail:"9월 22일 공개된 최종 합격자 공지의 간부 명단에 춘봉이 포함되어 있습니다.",
+    sources:["public-final-roster","station-stream-title"]
+  },
+  {
+    start:"2026-09-23", end:"2026-09-28", label:"마병대4 · 행정관 활동", kind:"마인크래프트", featured:true,
+    detail:"Google Sheet는 9월 23~28일 마병대4 활동을 묶어 기록하고 있으며, 춘봉의 공개 방송 제목에서도 9월 23일부터 ‘행정관’ 역할이 연속 확인됩니다.",
+    sources:["google-sheet","station-stream-title","public-broadcast-record"]
   },
   {
     start:"2026-09-30", end:"2026-10-21", label:"그냥서버 : 적자생존 개최 예정", kind:"주최", status:"예정", featured:true,
-    detail:"9월 중 신청자 확인·작업 방송과 9월 19일 설명회가 진행됐으며, 9월 30일 오픈 예정으로 확인됩니다.",
-    sources:["station-stream-title","server-schedule"]
+    detail:"9월 12일 조기 모집 마감, 9월 14~16일 신청자 확인·작업, 9월 19일 서버 설명회가 Google Sheet에 이어져 기록되어 있으며 9월 30일 오픈 일정으로 정리합니다.",
+    sources:["google-sheet","station-stream-title","server-schedule"]
   }
 ]);
