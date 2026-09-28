@@ -465,6 +465,10 @@
       const response = await fetch(`${RANKING_ENDPOINT}&mode=classic`, { headers:{ accept:'application/json' } });
       if (!response.ok) throw new Error(`ranking ${response.status}`);
       const payload = await response.json();
+      if (payload.unavailable) {
+        setRankingStatus('랭킹 서버 사용량 제한으로 잠시 확인할 수 없습니다.');
+        return;
+      }
       rankingEntries = Array.isArray(payload.entries) ? payload.entries : [];
       renderRankings();
       setRankingStatus(rankingEntries.length ? '전체 최고 기록' : '아직 등록된 기록이 없습니다.');
