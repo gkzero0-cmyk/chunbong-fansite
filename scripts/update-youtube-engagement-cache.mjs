@@ -114,10 +114,19 @@ async function mapLimit(items, limit, mapper) {
 const previous = readCache();
 const videoCheckpoint = newestCheckpoint(previous.items, 'videos');
 const shortsCheckpoint = newestCheckpoint(previous.items, 'shorts');
-const [videos, shorts] = await Promise.all([
-  withRetry(() => fetchAllChannelItems('videos', { maxPages: MAX_DISCOVERY_PAGES, stopId: videoCheckpoint })),
-  withRetry(() => fetchAllChannelItems('shorts', { maxPages: MAX_DISCOVERY_PAGES, stopId: shortsCheckpoint }))
-]);
+let videos=[],shorts=[];
+try{
+  [videos, shorts] = await Promise.all([
+    withRetry(() => fetchAllChannelItems('videos', { maxPages: MAX_DISCOVERY_PAGES, stopId: videoCheckpoint })),
+    withRetry(() => fetchAllChannelItems('shorts', { maxPages: MAX_DISCOVERY_PAGES, stopId: shortsCheckpoint }))
+  ]);
+}catch(error){
+  if(previous.items.length){
+    console.warn(`YouTube discovery unavailable; preserving ${previous.items.length} cached items: ${error?.message||error}`);
+    process.exit(0);
+  }
+  throw error;
+}
 const discovered = dedupe([...videos, ...shorts]);
 
 if (!discovered.length) {
