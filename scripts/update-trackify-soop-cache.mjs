@@ -71,7 +71,16 @@ export function incrementalFrom(previous = {}, now = new Date()) {
 async function main() {
   const previous = readCache();
   const from = incrementalFrom(previous, new Date());
-  const history = await fetchTrackifySoopHistory({ from: from || undefined, maxBroadcasts: 120, maxPages: 4, pageSize: 30 });
+  let history;
+  try{
+    history = await fetchTrackifySoopHistory({ from: from || undefined, maxBroadcasts: 120, maxPages: 4, pageSize: 30 });
+  }catch(error){
+    if((Array.isArray(previous.sessions)&&previous.sessions.length)||previous.stats){
+      console.warn(`Trackify unavailable; preserving cached data: ${error?.message||error}`);
+      return;
+    }
+    throw error;
+  }
   const fresh = historyToFreshCache(history);
   const next = buildTrackifyCache(previous, fresh, new Date());
 
