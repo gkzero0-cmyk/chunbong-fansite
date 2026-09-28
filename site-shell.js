@@ -22,7 +22,9 @@
       if(type==='live')return{memoryMs:45*1000,snapshotMs:5*60*1000};
       if(['schedule','notice','activity'].includes(type))return{memoryMs:10*60*1000,snapshotMs:12*60*60*1000};
       if(['vod','clips','youtube'].includes(type))return{memoryMs:20*60*1000,snapshotMs:24*60*60*1000};
+      if(['notice-detail','catch-detail'].includes(type))return{memoryMs:30*60*1000,snapshotMs:24*60*60*1000};
       if(type==='fanart')return{memoryMs:15*60*1000,snapshotMs:12*60*60*1000};
+      if(type==='fanart-detail')return{memoryMs:60*60*1000,snapshotMs:24*60*60*1000};
       if(type==='data')return{memoryMs:10*60*1000,snapshotMs:24*60*60*1000};
       if(['chunbong-contents','chunbong-content-index','chunbong-content-home'].includes(type))return{memoryMs:10*60*1000,snapshotMs:24*60*60*1000};
       if(type==='changelog-history')return{memoryMs:10*60*1000,snapshotMs:24*60*60*1000};
