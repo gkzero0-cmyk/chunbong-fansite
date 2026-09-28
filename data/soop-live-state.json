@@ -1,82 +1,9 @@
 {
   "version": 1,
-  "session": {
-    "active": true,
-    "sessionId": "2026-09-28T04:38:11.000Z",
-    "startedAt": "2026-09-28T04:38:11.000Z",
-    "title": "마병대 4 행정관 중령님이 오신다고..?",
-    "samples": [
-      {
-        "capturedAt": "2026-09-28T08:48:07.874Z",
-        "live": true,
-        "startedAt": "2026-09-28T04:38:11.000Z",
-        "title": "마병대 4 행정관 마지막 이야기",
-        "viewerCount": 134,
-        "categoryId": "40017",
-        "categoryName": "마인크래프트",
-        "followerCount": 30999,
-        "fanclubCount": 7826
-      },
-      {
-        "capturedAt": "2026-09-28T12:32:11.787Z",
-        "live": true,
-        "startedAt": "2026-09-28T04:38:11.000Z",
-        "title": "마병대 4 행정관 중령님이 오신다고..?",
-        "viewerCount": 168,
-        "categoryId": "40017",
-        "categoryName": "마인크래프트",
-        "followerCount": 31032,
-        "fanclubCount": 7826
-      },
-      {
-        "capturedAt": "2026-09-28T13:15:23.480Z",
-        "live": true,
-        "startedAt": "2026-09-28T04:38:11.000Z",
-        "title": "마병대 4 행정관 중령님이 오신다고..?",
-        "viewerCount": 119,
-        "categoryId": "40017",
-        "categoryName": "마인크래프트",
-        "followerCount": 31035,
-        "fanclubCount": 7826
-      },
-      {
-        "capturedAt": "2026-09-28T13:37:52.637Z",
-        "live": true,
-        "startedAt": "2026-09-28T04:38:11.000Z",
-        "title": "마병대 4 행정관 중령님이 오신다고..?",
-        "viewerCount": 102,
-        "categoryId": "40017",
-        "categoryName": "마인크래프트",
-        "followerCount": 31035,
-        "fanclubCount": 7826
-      },
-      {
-        "capturedAt": "2026-09-28T14:17:51.915Z",
-        "live": true,
-        "startedAt": "2026-09-28T04:38:11.000Z",
-        "title": "마병대 4 행정관 중령님이 오신다고..?",
-        "viewerCount": 91,
-        "categoryId": "40017",
-        "categoryName": "마인크래프트",
-        "followerCount": 31035,
-        "fanclubCount": 7826
-      },
-      {
-        "capturedAt": "2026-09-28T14:59:12.832Z",
-        "live": true,
-        "startedAt": "2026-09-28T04:38:11.000Z",
-        "title": "마병대 4 행정관 중령님이 오신다고..?",
-        "viewerCount": 74,
-        "categoryId": "40017",
-        "categoryName": "마인크래프트",
-        "followerCount": 31035,
-        "fanclubCount": 7826
-      }
-    ]
-  },
+  "session": null,
   "lastProfile": {
-    "capturedAt": "2026-09-28T14:59:12.832Z",
-    "followerCount": 31035,
+    "capturedAt": "2026-09-28T20:13:48.423Z",
+    "followerCount": 31063,
     "fanclubCount": 7826
   }
 }
