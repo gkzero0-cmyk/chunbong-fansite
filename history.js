@@ -26,15 +26,13 @@
   const monthOpenState=new Map();
   const monthlyCache=new Map();
   const monthLoading=new Map();
-  const searchBundleLoadedYears=new Set();
+  const searchIndexLoadedYears=new Set();
+  const searchIndexLoading=new Map();
+  let contentIndex=[];
+  let contentIndexLoaded=false;
+  let contentIndexLoading=null;
 
   const kindOrder=['마인크래프트','주최','타로','대회','방송','게임','콘텐츠'];
-  const CONTENT_LINK_RULES=[
-    {test:/적자생존/,id:'justserver-survival'},
-    {test:/머니게임/,id:'justserver-moneygame'},
-    {test:/춘타클/,id:'chuntacle-2026'},
-    {test:/레오펠/,id:'leopel'}
-  ];
 
   const esc=(value='')=>String(value)
     .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
@@ -58,16 +56,57 @@
   }
 
   function contentHref(row={}){
-    const label=String(row.label||'');
-    if(/싸이감성/.test(label)) return row.start==='2024-05-19'?'/contents/psy-emotion-song-contest-1':'/contents/psy-emotion-song-contest-2';
-    if(/^그냥서버(?:\s*:)?\s*$/.test(label)||(/그냥서버/.test(label)&&!/머니게임|적자생존/.test(label))) return '/contents/justserver-diamond';
-    const rule=CONTENT_LINK_RULES.find(item=>item.test.test(label));
-    return rule?`/contents/${rule.id}`:'';
+    if(!contentIndex.length) return '';
+    const labelNorm=normalizeLabel(row.label||'');
+    if(!labelNorm) return '';
+    let best=null,bestScore=0;
+    for(const item of contentIndex){
+      const names=[item.title,...(Array.isArray(item.aliases)?item.aliases:[])].filter(Boolean);
+      let score=0;
+      for(const name of names){
+        const nameNorm=normalizeLabel(name);
+        if(nameNorm.length<3) continue;
+        if(labelNorm===nameNorm) score=Math.max(score,200+nameNorm.length);
+        else if(labelNorm.includes(nameNorm)) score=Math.max(score,100+nameNorm.length);
+        else if(nameNorm.includes(labelNorm)&&labelNorm.length>=5) score=Math.max(score,70+labelNorm.length);
+      }
+      if(!score) continue;
+      const rowStart=String(row.start||'');
+      const itemStart=String(item.startDate||item.start||'');
+      if(rowStart&&itemStart){
+        if(rowStart===itemStart) score+=30;
+        else if(rowStart.slice(0,4)===itemStart.slice(0,4)) score+=5;
+      }
+      if(score>bestScore){best=item;bestScore=score;}
+    }
+    return best?.id?`/contents/${encodeURIComponent(best.id)}`:'';
   }
 
   function calendarHref(row={}){
     const date=String(row.start||'').slice(0,10);
     return /^\d{4}-\d{2}-\d{2}$/.test(date)?`data.html?view=calendar&date=${encodeURIComponent(date)}#soop`:'';
+  }
+
+  async function ensureContentIndex(){
+    if(contentIndexLoaded) return contentIndex;
+    if(contentIndexLoading) return contentIndexLoading;
+    contentIndexLoading=loadJson('/api/content?type=chunbong-contents')
+      .then(payload=>{
+        contentIndex=(Array.isArray(payload?.items)?payload.items:[])
+          .filter(item=>item?.id&&item?.title)
+          .map(item=>({
+            id:String(item.id),
+            title:String(item.title),
+            aliases:Array.isArray(item.aliases)?item.aliases.map(String):[],
+            startDate:String(item.startDate||''),
+            endDate:String(item.endDate||'')
+          }));
+        contentIndexLoaded=true;
+        return contentIndex;
+      })
+      .catch(()=>{contentIndexLoaded=true;return [];})
+      .finally(()=>{contentIndexLoading=null;});
+    return contentIndexLoading;
   }
 
   function monthCacheKey(year,month){
