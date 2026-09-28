@@ -9,6 +9,27 @@ const SOOP_MENU_HOSTS = [
   'https://api-channel.sooplive.co.kr'
 ];
 
+const publicSnapshots=new Map();
+function publicSnapshotKey({station,page,perPage,keyword,startDate,endDate}){
+  return [station,page,perPage,keyword,startDate,endDate].join('|');
+}
+function rememberPublicSnapshot(key,payload){
+  publicSnapshots.set(key,{at:Date.now(),payload});
+  if(publicSnapshots.size>80){
+    const oldest=[...publicSnapshots.entries()].sort((a,b)=>a[1].at-b[1].at)[0]?.[0];
+    if(oldest)publicSnapshots.delete(oldest);
+  }
+}
+function readPublicSnapshot(key,maxAgeMs=24*60*60*1000){
+  const row=publicSnapshots.get(key);
+  return row&&Date.now()-row.at<=maxAgeMs?row:null;
+}
+function setPublicCache(res,seconds=600){
+  res.setHeader('Cache-Control','public, max-age=60, stale-while-revalidate=600');
+  res.setHeader('CDN-Cache-Control',`public, max-age=${seconds}, stale-while-revalidate=3600, stale-if-error=86400`);
+  res.setHeader('Vercel-CDN-Cache-Control',`public, max-age=${seconds}, stale-while-revalidate=3600, stale-if-error=86400`);
+}
+
 const BROWSER_HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36',
   'Accept': 'application/json,text/plain,*/*',
@@ -286,15 +307,15 @@ module.exports = async function handler(req, res) {
   });
 
   const urls = SOOP_BOARD_HOSTS.map(host => `${host}/api/${encodeURIComponent(station)}/board/?${params.toString()}`);
+  const snapshotKey=publicSnapshotKey({station,page,perPage,keyword,startDate,endDate});
   try {
     const result = await firstJson(urls, headers);
     const rows = Array.isArray(result.data && result.data.data) ? result.data.data : [];
     const posts = rows.map(row => normalizePost(row, station, menu.byNo, req));
     const debug = requestUrl.searchParams.get('debug') === '1';
-    res.setHeader('Cache-Control', (cookie || forceRefresh)
-      ? 'no-store, max-age=0'
-      : 'public, max-age=60, s-maxage=600, stale-while-revalidate=3600');
-    return res.status(200).json({
+    if(cookie||forceRefresh)res.setHeader('Cache-Control','no-store, max-age=0');
+    else setPublicCache(res,600);
+    const payload={
       ok: true,
       station,
       authenticated: Boolean(cookie),
@@ -316,8 +337,15 @@ module.exports = async function handler(req, res) {
             : []
         }))
       } : {})
-    });
+    };
+    if(!cookie&&!forceRefresh)rememberPublicSnapshot(snapshotKey,payload);
+    return res.status(200).json(payload);
   } catch (error) {
+    const snapshot=(!cookie&&!forceRefresh)?readPublicSnapshot(snapshotKey):null;
+    if(snapshot){
+      setPublicCache(res,1800);
+      return res.status(200).json({...snapshot.payload,degraded:true,snapshot:true,snapshotAt:new Date(snapshot.at).toISOString()});
+    }
     res.setHeader('Cache-Control', 'no-store');
     return res.status(502).json({
       ok: false,
