@@ -526,6 +526,66 @@ async function setupFirebaseEmail(){
  const form=$('#operator-email-form');form.addEventListener('submit',async e=>{e.preventDefault();const email=$('#operator-email').value.trim().toLowerCase();status.textContent='인증 메일 요청 중…';try{await json(API+'operator-email-start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});localStorage.setItem('chunbong:operator:email',email);status.textContent='등록된 운영자 계정이라면 인증 메일이 발송됩니다. 메일함을 확인해 주세요.'}catch(err){status.textContent=err.message==='email_auth_not_configured'?'이메일 인증 설정이 아직 완료되지 않았습니다.':'인증 요청을 처리하지 못했습니다.'}})
  if(new URLSearchParams(location.search).get('email')==='complete'){try{const config=await json(API+'operator-auth-config');if(!config.providers.email||!config.firebase)return;const email=localStorage.getItem('chunbong:operator:email')||prompt('인증 메일을 받은 주소를 입력하세요')||'';if(!email)return;const {initializeApp}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js');const {getAuth,isSignInWithEmailLink,signInWithEmailLink}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js');const app=initializeApp(config.firebase,'operator-email-complete');const auth=getAuth(app);if(!isSignInWithEmailLink(auth,location.href))throw new Error('invalid_link');const credential=await signInWithEmailLink(auth,email,location.href);const idToken=await credential.user.getIdToken();await json(API+'operator-email-complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken})});localStorage.removeItem('chunbong:operator:email');history.replaceState(null,'','/operator.html');await boot()}catch{status.textContent='이메일 인증 링크를 확인하지 못했습니다.'}}
 }
+
+const HISTORY_VERIFIED_PATTERNS=[
+  /^레오펠(?:\s*:?.*)?$/i,/^그냥서버(?:\s*:?.*)?$/i,/^마병대\s*[34]$/i,
+  /^홍창의 숲$/i,/^하루살이 서버$/i,/^충동서버$/i,/^린코레일\s*2$/i,/^픽크타\s*2$/i,
+  /^꾸다방\s*2\.5$/i,/^감블러의 놀이터$/i,/^또오냥의 조까치수련회\s*2$/i,/^오함마\s*3/i,
+  /^킹콩서버$/i,/^돌발서버$/i,/^원조 다이아게임$/i,/^니즈 좀비서버$/i,/^더켓몬 민원아저씨$/i,
+  /^퍼켓몬(?:\s+w\.\s*조통박치기)?$/i,/^모징어게임$/i,/^청더일레븐(?:\s+w\.\s*춘밥즈)?$/i,
+  /^염병서버$/i,/^챈나룽 서버$/i,/^밍친서버$/i,/^챈나의 경찰과 도둑(?:\s*2)?$/i,/^야구자의 왁업$/i,
+  /^해리의 RE병대$/i,/^사자회 체력공유 엔더런$/i,/^춘앤룽 엔더런 원정대$/i,/^다이아랜딩 서버$/i,
+  /^두둥투어 서버$/i,/^하요리 서버$/i,/^춘동아리 다이아서버$/i,/^수미랜드 다이아서버$/i,
+  /^사자회 원블럭$/i,/^해초마을\s*2$/i,/^맹든링$/i,/^GTA 좀비서버/i,/^LAC 서버$/i,/^요양타운$/i,
+  /^여우도시$/i,/^고래시티$/i,/^진보이드 서버$/i,/^담월드(?:2)?(?:\s+w\..*)?$/i,/^고세구의 세바버$/i,
+  /^처니랜드\s*쪼이팀\s*뻐꾸기병$/i,/^버추얼 종합대회 시즌3\s*:\s*넥버워치 중계$/i,
+  /^김멘탈의 랜버워치 대회 3등$/i,/^2025 SOOP 스트리머 대상(?: 참여)?$/i
+];
+function historyAuditCandidate(label=''){
+  const text=String(label||'').trim();
+  if(!text)return false;
+  if(/설명회|모집|신청|면접|지원 영상|입주자 발표|무기한 연기/.test(text))return false;
+  return /서버|월드|마병대|레오펠|다이아|VRC|VR쳇|배그|아르마|오버워치|버워치|대회|GTA|팰월드|좀보이드|원블럭|엔더런|타운|시티|마을|랜드|픽셀몬|퍼켓몬|더켓몬/i.test(text);
+}
+function historyAuditReason(label=''){
+  const text=String(label||'');
+  if(/서버|월드|타운|시티|마을|랜드/.test(text))return '게임 종류 확인';
+  if(/대회|배그|아르마|오버워치|버워치/.test(text))return '콘텐츠 형태 확인';
+  return '간단 보기 포함 기준 확인';
+}
+function isVerifiedHistoryLabel(label=''){
+  return HISTORY_VERIFIED_PATTERNS.some(pattern=>pattern.test(String(label||'').trim()));
+}
+async function loadHistoryVerification(){
+  const card=$('[data-history-audit-card]'),summary=$('[data-history-audit-summary]'),results=$('[data-history-audit-results]'),button=$('[data-history-audit-run]');
+  if(!card||!summary||!results)return;
+  if(button)button.disabled=true;
+  summary.innerHTML='<strong>검증 중</strong><span>2025~2026 연간 방송 이력을 비교하고 있습니다.</span>';
+  try{
+    const [y2025,y2026]=await Promise.all([
+      json('/api/history-sheet?sheet=2025'),
+      json('/api/history-sheet?sheet=2026')
+    ]);
+    const rows=[
+      ...(Array.isArray(y2025?.items)?y2025.items.map(item=>({...item,year:2025})):[]),
+      ...(Array.isArray(y2026?.items)?y2026.items.map(item=>({...item,year:2026})):[])
+    ];
+    const issues=rows
+      .filter(row=>historyAuditCandidate(row.label)&&!isVerifiedHistoryLabel(row.label))
+      .map(row=>({...row,reason:historyAuditReason(row.label)}));
+    summary.innerHTML=issues.length
+      ?`<strong>${fmt(issues.length)}개 확인 필요</strong><span>검증 규칙에 아직 고정되지 않은 서버·대회성 기록입니다.</span>`
+      :'<strong>확인 필요 0개</strong><span>현재 2025~2026 주요 서버·대회 기록은 검증 규칙에 포함되어 있습니다.</span>';
+    results.innerHTML=issues.length
+      ?issues.slice(0,30).map(row=>`<article><time>${escapeHtml(row.start||'')}</time><div><strong>${escapeHtml(row.label)}</strong><span>${escapeHtml(row.reason)} · ${row.year}년</span></div><a href="history.html#history-${escapeHtml(String(row.start||''))}" target="_blank" rel="noopener">이력 보기 ↗</a></article>`).join('')
+      :'<p class="operator-empty">추가로 확인할 주요 방송 이력이 없습니다.</p>';
+  }catch(error){
+    summary.innerHTML='<strong>검증 실패</strong><span>스프레드시트 자료를 불러오지 못했습니다.</span>';
+    results.innerHTML='<p class="operator-empty">잠시 뒤 다시 실행해 주세요.</p>';
+  }finally{
+    if(button)button.disabled=false;
+  }
+}
 let operatorContentsModulePromise=null,operatorContentsPromise=null;
 function operatorContentsModule(){
   if(!operatorContentsModulePromise)operatorContentsModulePromise=import('./operator-contents.js?v=2');
@@ -546,7 +606,7 @@ async function activateOperatorTab(tab){
   const target=String(tab||'overview');
   $$('[data-operator-tab]').forEach(button=>{const active=button.dataset.operatorTab===target;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1});
   $$('[data-operator-panel]').forEach(panel=>panel.hidden=panel.dataset.operatorPanel!==target);
-  if(target==='contents')await loadOperatorContents();
+  if(target==='contents'){await loadOperatorContents();const state=$('[data-history-audit-summary] strong')?.textContent||'';if(/검사 대기/.test(state))void loadHistoryVerification();}
   if((target==='performance'||target==='search')&&!currentAnalytics)await loadAnalytics();
   if(target==='system'&&!currentSystem)await loadSystemStatus();
   if(target==='security')await Promise.allSettled([refreshSession(),loadSecurityLog()]);
@@ -564,6 +624,7 @@ $('#operator-github-login')?.addEventListener('click',event=>{if(event.currentTa
 document.querySelectorAll('[data-days]').forEach(btn=>btn.addEventListener('click',async()=>{document.querySelectorAll('[data-days]').forEach(x=>{const active=x===btn;x.classList.toggle('active',active);x.setAttribute('aria-pressed',String(active))});currentDays=btn.dataset.days==='all'?'all':(Number(btn.dataset.days)||7);await loadAnalytics()}));
 $$('[data-operator-tab]').forEach((btn,index)=>{btn.tabIndex=index===0?0:-1;btn.addEventListener('click',()=>void activateOperatorTab(btn.dataset.operatorTab));btn.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const tabs=$$('[data-operator-tab]');let next=event.key==='Home'?0:event.key==='End'?tabs.length-1:Math.max(0,tabs.indexOf(btn)+(event.key==='ArrowRight'?1:-1));if(event.key==='ArrowLeft'&&tabs.indexOf(btn)===0)next=tabs.length-1;if(event.key==='ArrowRight'&&tabs.indexOf(btn)===tabs.length-1)next=0;tabs[next]?.focus();void activateOperatorTab(tabs[next]?.dataset.operatorTab)})});
 $$('[data-operator-quick-tab]').forEach(button=>button.addEventListener('click',()=>void activateOperatorTab(button.dataset.operatorQuickTab)));
+$('[data-history-audit-run]')?.addEventListener('click',()=>void loadHistoryVerification());
 $('[data-operator-content-sync]')?.addEventListener('click',async event=>{const button=event.currentTarget;button.disabled=true;try{await activateOperatorTab('contents');const module=await operatorContentsModule();await module.runOfficialSync()}finally{button.disabled=false}});
 $('#operator-export-json')?.addEventListener('click',exportAnalyticsJson);$('#operator-export-csv')?.addEventListener('click',exportAnalyticsCsv);
 $('#operator-feedback-refresh')?.addEventListener('click',loadFeedback);
