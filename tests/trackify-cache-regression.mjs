@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { buildTrackifyCache, historyToFreshCache, incrementalFrom } from '../scripts/update-trackify-soop-cache.mjs';
+const updater=fs.readFileSync(new URL('../scripts/update-trackify-soop-cache.mjs',import.meta.url),'utf8');
 
 assert.equal(typeof buildTrackifyCache, 'function', 'Trackify cache builder should be exported');
 assert.equal(typeof historyToFreshCache, 'function', 'Trackify API history adapter should be exported');
@@ -39,5 +41,7 @@ const outage = buildTrackifyCache(next, { stats: null, sessions: [] }, new Date(
 assert.equal(outage.stats.followerCount, 29783, 'temporary Trackify failure must not erase the last good stats');
 assert.equal(outage.sessions.length, 2, 'temporary Trackify failure must not erase historical sessions');
 assert.equal(outage.capturedAt, next.capturedAt, 'outage must preserve the last successful capture time');
+assert.match(updater,/Trackify unavailable; preserving cached data/);
+assert.match(updater,/if\(\(Array\.isArray\(previous\.sessions\)&&previous\.sessions\.length\)\|\|previous\.stats\)/);
 
 console.log('Trackify cache regression test passed');
