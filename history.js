@@ -129,20 +129,73 @@
   }
 
   function isPreparation(label=''){
-    return /설명회|1차 입주자 발표|\b모집\b|신청|면접|지원 영상|신청자 살펴보기|추가 운영자 모집/.test(String(label))
+    return /설명회|입주자 발표|모집|신청|면접|지원 영상|신청자 살펴보기|추가 운영자 모집/.test(String(label))
       && !/패러블 입사 발표/.test(String(label));
   }
 
+  function simpleDecision(item={}){
+    const text=String(item.label||'').trim();
+    const kind=item.kind||inferKind(text);
+
+    if(!text||item.detailOnly) return {include:false,type:'',reason:'detail-only'};
+    if(/구독플러스/.test(text)) return {include:false,type:'',reason:'subscription-plus'};
+    if(isPreparation(text)) return {include:false,type:'',reason:'preparation'};
+
+    if(item.end&&item.end!==item.start){
+      return {
+        include:true,
+        type:kind==='마인크래프트'?'서버·마크':kind==='대회'?'대회':kind==='주최'?'주최':'장기 콘텐츠',
+        reason:'multi-day'
+      };
+    }
+
+    if(kind==='마인크래프트') return {include:true,type:'서버·마크',reason:'minecraft'};
+    if(kind==='대회') return {include:true,type:'대회',reason:'competition'};
+    if(kind==='주최') return {include:true,type:'주최',reason:'hosted'};
+
+    if(/\bw\.|\bvs\b|합방|배그|아르마|오버워치|옵치|언레일드|경찰과 도둑|스모오라|세바버|왁업|수련회|체력공유|술먹방|현실 낚시|현실합방|크루대전|랜드|랜버워치|벽킬내기|엔더런|원정대/i.test(text)){
+      return {include:true,type:kind==='게임'?'합방·게임':'합방·이벤트',reason:'collab-event'};
+    }
+
+    if(/입사 발표|결성|해체|크루 리빌딩|SOOP 스트리머 대상/.test(text)){
+      return {include:true,type:'활동 변화',reason:'milestone'};
+    }
+
+    if(/노래자랑|춘타클|춘이괜|친해지길 바래|버튜버 죄와 벌/.test(text)){
+      return {include:true,type:kind==='타로'?'타로':'콘텐츠',reason:'signature-content'};
+    }
+
+    return {include:false,type:'',reason:'detail'};
+  }
+
   function isMajorSheetEvent(item={}){
-    const text=String(item.label||'');
-    if(isPreparation(text)) return false;
-    if(item.end&&item.end!==item.start) return true;
-    return /서버|월드|마병대|레오펠|퍼켓몬|맹든링|픽크타|대회|F1|입사|결성|해체|대상|구독플러스|노래자랑|크루 리빌딩|춘타클/.test(text);
+    return simpleDecision({...item,kind:item.kind||inferKind(item.label)}).include;
   }
 
   function isFeatured(label=''){
     return /레오펠|패러블 입사|결성|마병대|SOOP 스트리머 대상|홍창의 숲|그냥서버|싸이감성 노래자랑|사자회 해체/.test(String(label))
       && !/설명회|입주자 발표|모집/.test(String(label));
+  }
+
+  function simpleTypeLabel(row={}){
+    return simpleDecision(row).type||({
+      '마인크래프트':'서버·마크',
+      '대회':'대회',
+      '주최':'주최',
+      '타로':'타로',
+      '게임':'게임',
+      '방송':'방송'
+    }[row.kind]||'콘텐츠');
+  }
+
+  function simpleYearSummary(rows=[]){
+    const counts=new Map();
+    rows.forEach(row=>{
+      const type=simpleTypeLabel(row);
+      counts.set(type,(counts.get(type)||0)+1);
+    });
+    const top=[...counts.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,2);
+    return top.map(([type,count])=>`${type} ${count}`).join(' · ');
   }
 
   function currentKstDate(){
@@ -157,11 +210,12 @@
     let state;
     if(item.start>today) state='예정';
     else if(item.end&&item.start<=today&&item.end>=today) state='진행';
+    const kind=inferKind(label);
     return {
       ...item,
       label,
-      kind:inferKind(label),
-      major:isMajorSheetEvent({...item,label}),
+      kind,
+      major:isMajorSheetEvent({...item,label,kind}),
       featured:isFeatured(label),
       ...(state?{status:state}:{}),
       sources:['google-sheet'],
@@ -306,7 +360,8 @@
     return records().filter(row=>{
       const year=Number(String(row.start).slice(0,4));
       if(year<2025) return !row.detailOnly;
-      return !row.detailOnly&&(row.major||row.featured||row.supplemental||row.status==='예정');
+      if(row.supplemental) return !/구독플러스/.test(String(row.label||''));
+      return simpleDecision(row).include;
     });
   }
 
