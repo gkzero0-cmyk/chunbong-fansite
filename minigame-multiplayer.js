@@ -8,8 +8,9 @@
     const data=await safeJson(response);
     if(!response.ok){
       if(response.status===409&&data.error==='room_busy'&&attempt<4){
-        const retryAfter=Math.max(80,Math.min(500,Number(data.retryAfterMs)||120));
-        await new Promise(resolve=>setTimeout(resolve,retryAfter+attempt*60));
+        const retryAfter=Math.max(100,Math.min(700,Number(data.retryAfterMs)||180));
+        const jitter=Math.floor(Math.random()*90);
+        await new Promise(resolve=>setTimeout(resolve,retryAfter+attempt*70+jitter));
         return post(payload,attempt+1);
       }
       const error=new Error(data.error||'multiplayer_request_failed');error.code=data.error||'multiplayer_request_failed';error.status=response.status;throw error;
