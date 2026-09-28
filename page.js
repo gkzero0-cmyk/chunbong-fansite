@@ -255,18 +255,23 @@
 
     const resolveServiceWorkerVersion = async () => {
       const fallback='runtime-v33';
-      const controller=new AbortController();
-      const timer=setTimeout(()=>controller.abort(),1400);
       try {
-        const response=await fetch('/api/version',{headers:{accept:'application/json'},cache:'no-store',signal:controller.signal});
-        if(!response.ok)return fallback;
-        const payload=await response.json();
+        let payload=null;
+        if(window.ChunbongCache){
+          payload=await window.ChunbongCache.fetchJson('version','/api/version',{ttl:5*60*1000,staleIfError:true,backoffMs:60000});
+        }else{
+          const controller=new AbortController();
+          const timer=setTimeout(()=>controller.abort(),1400);
+          try{
+            const response=await fetch('/api/version',{headers:{accept:'application/json'},signal:controller.signal});
+            if(!response.ok)return fallback;
+            payload=await response.json();
+          }finally{clearTimeout(timer)}
+        }
         const raw=String(payload?.sha||payload?.deployed||payload?.mainSha||'').trim();
         return raw?raw.replace(/[^a-zA-Z0-9._-]/g,'-').slice(0,40):fallback;
       } catch (_) {
         return fallback;
-      } finally {
-        clearTimeout(timer);
       }
     };
 
