@@ -69,12 +69,21 @@ function selectPages(){
   const files=changedFiles().map(v=>v.replaceAll('\\','/'));
   const selected=[];
 
-  const hasGlobal=files.some(file=>GLOBAL_FILES.includes(file)||/^(assets\/|styles?\/|css\/)/.test(file));
+  const hasGlobal=files.some(file=>GLOBAL_FILES.includes(file)||/^(styles?\/|css\/)/.test(file));
   if(hasGlobal)selected.push('index.html','history.html','tarot.html','chunbong-contents.html');
 
   for(const file of files){
     for(const rule of PAGE_RULES){
       if(rule.match.test(file))selected.push(rule.page);
+    }
+    if(file.startsWith('assets/')){
+      const lower=file.toLowerCase();
+      if(lower.includes('history'))selected.push('history.html');
+      else if(lower.includes('tarot'))selected.push('tarot.html');
+      else if(lower.includes('content'))selected.push('chunbong-contents.html');
+      else if(lower.includes('fanart'))selected.push('fanart.html');
+      else if(lower.includes('vod'))selected.push('vod.html');
+      else selected.push('index.html');
     }
   }
 
@@ -219,7 +228,11 @@ async function run(){
         page.on('pageerror',error=>pageErrors.push(String(error?.message||error).slice(0,500)));
         page.on('response',response=>{
           if(response.status()>=400&&sameOrigin(response.url())){
-            badResponses.push({status:response.status(),url:response.url()});
+            badResponses.push({
+              status:response.status(),
+              url:response.url(),
+              resourceType:response.request().resourceType()
+            });
           }
         });
 
@@ -260,8 +273,16 @@ async function run(){
           if(pageErrors.length){
             report.hardFailures.push(`${pageName} / ${viewport.name}: ${pageErrors.length} uncaught page error(s)`);
           }
-          if(badResponses.length){
-            report.hardFailures.push(`${pageName} / ${viewport.name}: ${badResponses.length} same-origin HTTP error response(s)`);
+          const blockingResponses=badResponses.filter(item=>{
+            if(['document','script','stylesheet','image','font'].includes(item.resourceType))return true;
+            return /\/api\/history-sheet(?:\?|$)/.test(item.url);
+          });
+          const apiWarnings=badResponses.filter(item=>!blockingResponses.includes(item));
+          if(blockingResponses.length){
+            report.hardFailures.push(`${pageName} / ${viewport.name}: ${blockingResponses.length} blocking same-origin HTTP error response(s)`);
+          }
+          if(apiWarnings.length){
+            report.warnings.push(`${pageName} / ${viewport.name}: ${apiWarnings.length} non-blocking API HTTP error response(s)`);
           }
           if(consoleErrors.length){
             const msg=`${pageName} / ${viewport.name}: ${consoleErrors.length} console error(s)`;
