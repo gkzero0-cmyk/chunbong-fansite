@@ -624,3 +624,12 @@ body[data-page="operator"]{background:radial-gradient(circle at 80% 0,color-mix(
   .operator-history-audit-summary span{text-align:left}
   .operator-history-audit-results article{grid-template-columns:1fr}
 }
+
+
+/* Broadcast-history quality metrics v4 */
+.operator-history-audit-summary{display:grid;gap:8px}
+.operator-history-audit-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;width:100%}
+.operator-history-audit-metrics span{display:grid;gap:2px;padding:8px 9px;border:1px solid color-mix(in srgb,var(--op-border) 75%,transparent);border-radius:9px;background:color-mix(in srgb,var(--op-card) 45%,transparent);color:var(--op-muted);font-size:8px}
+.operator-history-audit-metrics b{color:var(--op-primary);font-size:13px}
+.operator-history-audit-summary>small{color:var(--op-muted);font-size:8px}
+@media(max-width:680px){.operator-history-audit-metrics{grid-template-columns:1fr}}
