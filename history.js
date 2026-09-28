@@ -74,6 +74,13 @@
     {test:/^킹콩서버$/i,kind:'마인크래프트',role:'조교'},
     {test:/^돌발서버$/i,kind:'마인크래프트',role:'운영자'},
 
+    {test:/^더켓몬 민원아저씨$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'픽셀몬 서버'},
+    {test:/^퍼켓몬(?:\s+w\.\s*조통박치기)?$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'픽셀몬 서버'},
+    {test:/^모징어게임$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 대형 콘텐츠'},
+    {test:/^청더일레븐(?:\s+w\.\s*춘밥즈)?$/i,kind:'대회',role:'참가',importance:'core',type:'마크 대회'},
+    {test:/^염병서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^챈나룽 서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^밍친서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
     {test:/^챈나의 경찰과 도둑(?:\s*2)?$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 일일 콘텐츠'},
     {test:/^야구자의 왁업$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 콘텐츠'},
     {test:/^해리의 RE병대$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 콘텐츠'},
@@ -315,7 +322,7 @@
     if(/VR쳇|VRChat|VRC|세바버/.test(text)) return 'VRC';
     if(/노래자랑|상영회|행사/.test(text)) return '콘텐츠';
     if(/입사|인터뷰/.test(text)) return '방송';
-    if(/마병대|레오펠|퍼켓몬|해초마을|맹든링|픽크타|오함마|수미랜드|원블럭|다이아|엔더런|왁업/.test(text)) return '마인크래프트';
+    if(/마병대|레오펠|퍼켓몬|더켓몬|모징어게임|청더일레븐|염병서버|챈나룽|밍친서버|해초마을|맹든링|픽크타|오함마|수미랜드|원블럭|다이아|엔더런|왁업/.test(text)) return '마인크래프트';
     return '콘텐츠';
   }
 
@@ -687,7 +694,7 @@
     }
 
     root.innerHTML=`<section class="history-simple" aria-label="간단 방송 이력">
-      <div class="history-simple-note"><strong>검증된 참여 이력</strong><span>실제 참여가 확인된 서버·마크·게임·VRC·대회와 직접 주최 콘텐츠·활동 변화를 중심으로 표시합니다. 연기·신청·준비·세부 이벤트와 분류가 불확실한 기록은 상세 보기에서만 확인합니다.</span></div>
+      <div class="history-simple-note"><strong>검증된 참여 이력</strong><span>스프레드시트 기록을 SOOP·공개 자료와 교차 확인해 게임 종류와 역할이 확인된 서버·마크·게임·VRC·대회만 표시합니다. 연기·신청·준비·세부 이벤트와 분류가 불확실한 기록은 상세 보기에서만 확인합니다.</span></div>
       ${renderYearFilters(years,'simple',simpleYear)}
       <div class="history-simple-list">
         ${years.map(year=>`<section class="history-simple-year-section" data-simple-year="${year}" ${simpleYear!=='all'&&simpleYear!==year?'hidden':''}>
