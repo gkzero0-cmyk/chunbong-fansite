@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const memory=new Map(),inflight=new Map(),cooldowns=new Map(),CACHE_PREFIX='chunbong-cache-v2:';
-const shouldPersist=key=>{key=String(key);return key.startsWith('content:')||key.startsWith('notice-detail:')||key.startsWith('fanart-detail:')||key==='changelog-summary'};
+const shouldPersist=key=>{key=String(key);return key.startsWith('content:')||key.startsWith('notice-detail:')||key.startsWith('fanart-detail:')||key==='changelog-summary'||key==='version'};
 const read=key=>{const cached=memory.get(key);if(cached)return cached;if(!shouldPersist(key))return null;try{const stored=sessionStorage.getItem(CACHE_PREFIX+key);if(!stored)return null;const row=JSON.parse(stored);if(!row||typeof row.at!=='number'||!('value'in row))return null;memory.set(key,row);return row}catch{return null}};
 const write=(key,value)=>{const row={at:Date.now(),value};memory.set(key,row);if(shouldPersist(key))try{sessionStorage.setItem(CACHE_PREFIX+key,JSON.stringify(row))}catch{}return value};
 const clear=key=>{memory.delete(key);cooldowns.delete(key);if(shouldPersist(key))try{sessionStorage.removeItem(CACHE_PREFIX+key)}catch{}};
