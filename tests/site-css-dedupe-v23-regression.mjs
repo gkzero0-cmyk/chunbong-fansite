@@ -16,7 +16,7 @@ assert.equal((operator.match(/\.operator-feedback-filters input\{grid-column:1\/
 
 assert.ok(Buffer.byteLength(mobile,'utf8')<76000,'mobile-site.css must stay below 76KB source budget');
 assert.ok(Buffer.byteLength(contents,'utf8')<70000,'chunbong-contents.css must stay below 70KB source budget');
-assert.ok(Buffer.byteLength(operator,'utf8')<83500,'operator.css must stay below 83.5KB source budget after the deployment-status banner');
+assert.ok(Buffer.byteLength(operator,'utf8')<86000,'operator.css must stay below 86KB source budget after the deployment-status and resource-budget panels');
 
 // deployment-sync:v23
 console.log('site CSS dedupe v23 regression passed');
