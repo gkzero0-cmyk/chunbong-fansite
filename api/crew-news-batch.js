@@ -404,7 +404,8 @@ module.exports = async function handler(req, res) {
   }
 
   const authenticated = results.some(item => item && item.authenticated === true);
-  if(forceRefresh || authenticated || failures.length>0 || auxiliaryFailures.length>0)setBatchNoStore(res);
+  if(forceRefresh || authenticated)setBatchNoStore(res);
+  else if(failures.length>0 || auxiliaryFailures.length>0)setBatchPublicCache(res,{browser:60,cdn:300,stale:21600});
   else setBatchPublicCache(res,{browser:300,cdn:3600,stale:21600});
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
