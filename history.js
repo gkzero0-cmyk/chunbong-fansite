@@ -395,7 +395,6 @@
     return records().filter(row=>{
       const year=Number(String(row.start).slice(0,4));
       if(year<2025) return !row.detailOnly;
-      if(row.supplemental) return !/구독플러스/.test(String(row.label||''));
       return simpleDecision(row).include;
     });
   }
