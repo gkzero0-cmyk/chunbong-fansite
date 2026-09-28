@@ -105,6 +105,9 @@ assert.match(operatorCss,/operator-history-audit-results/,'history audit result 
 assert.match(operatorJs,/historyArchiveMatch/,'history audit must compare content archive representatives');
 assert.match(operatorJs,/대표 이미지 지정 없음/,'history audit must flag missing representative images');
 assert.match(operatorJs,/operator-history-audit-metrics/,'history audit must render quality metrics');
+assert.match(operatorHtml,/history-data\.js\?v=6/,'operator history audit must load legacy records');
+assert.match(operatorJs,/상세 요약 없음/,'history audit must flag missing detailed summaries');
+assert.match(operatorJs,/window\.CHUNBONG_HISTORY_RECORDS/,'history audit must include pre-2025 legacy records');
 assert.match(operatorCss,/operator-history-audit-metrics/,'history quality metric styles missing');
 assert.match(operatorJs,/\$\$\('\[data-operator-tab\]'\)\.forEach/,'operator tab binding must iterate a NodeList');
 assert.doesNotMatch(operatorJs,/(^|\n)\$\('\[data-operator-tab\]'\)\.forEach/,'operator tab binding must not call forEach on querySelector result');
