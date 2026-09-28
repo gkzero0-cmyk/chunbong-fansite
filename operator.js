@@ -372,6 +372,7 @@ function healthLabel(ok){return ok?'<span class="operator-health ok">● 정상<
 function budgetLabel(mode){
   if(mode==='limited')return'<span class="operator-health bad">● 제한 모드</span>';
   if(mode==='saver')return'<span class="operator-health warn">● 절약 모드</span>';
+  if(mode==='idle')return'<span class="operator-health">● 보호 준비</span>';
   return'<span class="operator-health ok">● 정상 모드</span>';
 }
 function redisMemoryLabel(storage={}){
