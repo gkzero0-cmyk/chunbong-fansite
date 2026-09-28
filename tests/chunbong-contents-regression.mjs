@@ -87,3 +87,6 @@ assert.match(css,/\.archive-tabs\{position:sticky/,'detail tabs should stay acce
 
 for(const token of ['data-archive-history','CONTENT HISTORY']) assert.ok(html.includes(token)||js.includes(token),token);
 assert.match(css,/archive-history-years/,'content history styling missing');
+
+assert.match(js,/관련 방송 이력 보기/,'content detail must link back to broadcast history');
+assert.match(js,/history\.html\?q=/,'content-to-history link must pass a searchable title query');
