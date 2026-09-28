@@ -1,0 +1,112 @@
+{
+  "capturedAt": "2026-09-28T06:49:01.666Z",
+  "source": "production-ranking-api",
+  "games": {
+    "chunbak": {
+      "classic": [
+        {
+          "rank": 1,
+          "nickname": "하늘",
+          "score": 135850,
+          "maxLevel": 11,
+          "achievedAt": "2026-09-23T17:34:18.055Z"
+        },
+        {
+          "rank": 2,
+          "nickname": "테스트",
+          "score": 105040,
+          "maxLevel": 11,
+          "achievedAt": "2026-09-24T10:58:28.973Z"
+        },
+        {
+          "rank": 3,
+          "nickname": "주아",
+          "score": 35550,
+          "maxLevel": 9,
+          "achievedAt": "2026-09-17T09:25:53.138Z"
+        },
+        {
+          "rank": 4,
+          "nickname": "장춘배",
+          "score": 32060,
+          "maxLevel": 9,
+          "achievedAt": "2026-09-18T13:29:44.165Z"
+        },
+        {
+          "rank": 5,
+          "nickname": "치매노인",
+          "score": 20420,
+          "maxLevel": 8,
+          "achievedAt": "2026-09-18T13:26:41.879Z"
+        }
+      ]
+    },
+    "chungwagame": {
+      "classic": [
+        {
+          "rank": 1,
+          "nickname": "테스트",
+          "score": 1814,
+          "maxCombo": 36,
+          "cleared": 140,
+          "achievedAt": "2026-09-19T20:32:26.445Z"
+        },
+        {
+          "rank": 2,
+          "nickname": "주아",
+          "score": 151,
+          "maxCombo": 5,
+          "cleared": 85,
+          "achievedAt": "2026-09-19T09:17:42.407Z"
+        }
+      ]
+    },
+    "chuncortile": {
+      "classic": [
+        {
+          "rank": 1,
+          "nickname": "주아",
+          "score": 193,
+          "maxCombo": 36,
+          "misses": 1,
+          "achievedAt": "2026-09-19T09:50:29.842Z"
+        },
+        {
+          "rank": 2,
+          "nickname": "Desert",
+          "score": 180,
+          "maxCombo": 53,
+          "misses": 0,
+          "achievedAt": "2026-09-20T04:45:08.697Z"
+        },
+        {
+          "rank": 3,
+          "nickname": "테스트",
+          "score": 122,
+          "maxCombo": 32,
+          "misses": 0,
+          "achievedAt": "2026-09-21T08:52:35.956Z"
+        },
+        {
+          "rank": 4,
+          "nickname": "하늘",
+          "score": 115,
+          "maxCombo": 9,
+          "misses": 1,
+          "achievedAt": "2026-09-24T02:40:45.895Z"
+        }
+      ]
+    },
+    "chuntris": {
+      "classic:normal": [],
+      "classic:hard": [],
+      "classic:extreme": [],
+      "sprint40:normal": [],
+      "sprint40:hard": [],
+      "sprint40:extreme": [],
+      "score180:normal": [],
+      "score180:hard": [],
+      "score180:extreme": []
+    }
+  }
+}
