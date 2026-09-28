@@ -13,7 +13,7 @@
 
   async function fetchJson(key, url, ttl) {
     if (window.ChunbongCache) {
-      return window.ChunbongCache.fetchJson(key, url, { ttl, force:true });
+      return window.ChunbongCache.fetchJson(key, url, { ttl, staleIfError:true, backoffMs:60000 });
     }
     const response = await fetch(url, { headers:{ accept:'application/json' }, cache:'no-store' });
     if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -39,7 +39,7 @@
   async function refresh() {
     let livePayload = null;
     try {
-      livePayload = await fetchJson('home:smart-live','/api/content?type=live',30000);
+      livePayload = await fetchJson('home:smart-live','/api/content?type=live',60000);
     } catch (_) {}
 
     if (livePayload?.live === true) {
@@ -54,7 +54,7 @@
     }
 
     try {
-      const vodPayload = await fetchJson('home:smart-vod','/api/content?type=vod',120000);
+      const vodPayload = await fetchJson('home:smart-vod','/api/content?type=vod',300000);
       const latest = Array.isArray(vodPayload?.items) ? vodPayload.items.find(item => isHttp(item?.link)) : null;
       if (latest) {
         apply({
@@ -70,15 +70,31 @@
     apply({ live:false, href:STATION_URL, actionText:'SOOP 방송국' });
   }
 
-  void refresh();
+  let timer=null,running=false,lastLive=false;
+  const schedule=delay=>{
+    if(timer)window.clearTimeout(timer);
+    timer=window.setTimeout(run,delay);
+  };
+  async function run(){
+    if(running)return;
+    if(document.visibilityState!=='visible'){schedule(120000);return;}
+    running=true;
+    try{
+      await refresh();
+      lastLive=card.dataset.broadcastState==='live';
+    }finally{
+      running=false;
+      schedule(lastLive?30000:120000);
+    }
+  }
 
-  let timer = window.setInterval(refresh, 60000);
-  window.addEventListener('pagehide', () => {
-    if (timer) window.clearInterval(timer);
-    timer = null;
-  }, { once:true });
-  window.addEventListener('focus', refresh);
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') void refresh();
+  void run();
+  window.addEventListener('pagehide',()=>{
+    if(timer)window.clearTimeout(timer);
+    timer=null;
+  },{once:true});
+  window.addEventListener('focus',()=>{if(document.visibilityState==='visible')void run()});
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible')void run();
   });
 })();
