@@ -122,7 +122,7 @@ const pendingApi=Array.isArray(window.__ChunbongApiNetworkQueue)?window.__Chunbo
 for(const target of pendingApi)recordApiNetwork(target,1);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){activeTick();visibleAt=0;reportWebVitals();void flush({beacon:true})}else visibleAt=performance.now()});
 window.addEventListener('pagehide',()=>{reportWebVitals();void flush({beacon:true})});
-setInterval(()=>{if(document.visibilityState==='visible'){activeTick();void flush()}},300000);
+setInterval(()=>{if(document.visibilityState==='visible'){activeTick();void flush()}},120000);
 setTimeout(flush,1200);
 const pending=Array.isArray(window.__ChunbongAnalyticsQueue)?window.__ChunbongAnalyticsQueue.splice(0):[];
 for(const event of pending){if(event&&typeof event==='object'&&event.type)add(event)}
