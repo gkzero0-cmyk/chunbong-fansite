@@ -277,6 +277,7 @@ async function handler(req,res) {
   if(type==='operator-logout-all') return operatorCenter.handleLogoutAll(req,res);
   if(type==='chunbong-contents') return contentArchive.handlePublicList(req,res);
   if(type==='chunbong-content-index') return contentArchive.handlePublicIndex(req,res);
+  if(type==='chunbong-content-home') return contentArchive.handlePublicHome(req,res);
   if(type==='chunbong-content') return contentArchive.handlePublicDetail(req,res);
   if(type==='content-archive-auto-sync') return contentArchive.handlePublicAutoSync(req,res);
   if(type==='notion-guide-image') return contentArchive.handleNotionGuideImage(req,res);
@@ -319,6 +320,14 @@ async function handler(req,res) {
     res.setHeader('Cache-Control','public, max-age=300, stale-while-revalidate=1800');
     res.setHeader('CDN-Cache-Control','public, max-age=1800, stale-while-revalidate=3600');
     res.setHeader('Vercel-CDN-Cache-Control','public, max-age=3600, stale-while-revalidate=21600');
+  }else if(type==='live'){
+    res.setHeader('Cache-Control','public, max-age=15, s-maxage=45, stale-while-revalidate=120');
+  }else if(['schedule','notice','activity'].includes(type)){
+    res.setHeader('Cache-Control','public, max-age=120, s-maxage=600, stale-while-revalidate=3600');
+  }else if(['vod','clips','youtube'].includes(type)){
+    res.setHeader('Cache-Control','public, max-age=300, s-maxage=1200, stale-while-revalidate=21600');
+  }else if(type==='data'){
+    res.setHeader('Cache-Control','public, max-age=120, s-maxage=600, stale-while-revalidate=3600');
   }else{
     res.setHeader('Cache-Control','s-maxage=180, stale-while-revalidate=600');
   }
