@@ -256,6 +256,7 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'method_not_allowed' });
 
   const requestUrl = new URL(req.url || '/', 'https://chunbong.local');
+  const forceRefresh = requestUrl.searchParams.get('refresh') === '1';
   const stations = safeStations(requestUrl.searchParams.get('stations') || '');
   if (!stations.length) return res.status(400).json({ error: 'invalid_stations' });
 
@@ -278,6 +279,7 @@ module.exports = async function handler(req, res) {
       start_date: startDate,
       end_date: endDate
     });
+    if (forceRefresh) params.set('refresh', '1');
     const url = base + '/api/crew-news?' + params.toString();
     try {
       const { response, body } = await fetchJson(url, headers);
@@ -296,6 +298,7 @@ module.exports = async function handler(req, res) {
           start_date: startDate,
           end_date: endDate
         });
+        if (forceRefresh) extraParams.set('refresh', '1');
         try {
           const extraFetch = await fetchJson(base + '/api/crew-news?' + extraParams.toString(), headers);
           if (extraFetch.response.ok && extraFetch.body && extraFetch.body.ok === true) {
@@ -389,7 +392,10 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  res.setHeader('Cache-Control', 'no-store');
+  const authenticated = results.some(item => item && item.authenticated === true);
+  res.setHeader('Cache-Control', (forceRefresh || authenticated)
+    ? 'no-store, max-age=0'
+    : 'public, max-age=300, s-maxage=3600, stale-while-revalidate=21600');
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
