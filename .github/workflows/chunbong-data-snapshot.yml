@@ -40,15 +40,17 @@ jobs:
         run: node scripts/update-chunbong-data.mjs
       - name: Refresh SOOP favorite history
         run: node scripts/update-soop-follower-history.mjs
+      - name: Refresh last-known-good snapshot
+        run: node scripts/update-last-known-good.mjs
       - name: Commit changed history
         run: |
-          if git diff --quiet -- data/trackify-soop-cache.json data/soop-follower-history.json data/youtube-engagement-cache.json data/chunbong-data-history.json; then
+          if git diff --quiet -- data/trackify-soop-cache.json data/soop-follower-history.json data/youtube-engagement-cache.json data/chunbong-data-history.json data/last-known-good.json; then
             echo 'No snapshot change'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/trackify-soop-cache.json data/soop-follower-history.json data/youtube-engagement-cache.json data/chunbong-data-history.json
+          git add data/trackify-soop-cache.json data/soop-follower-history.json data/youtube-engagement-cache.json data/chunbong-data-history.json data/last-known-good.json
           git commit -m 'data: update Chunbong daily snapshot'
           git pull --rebase origin main || true
           git push
