@@ -438,7 +438,7 @@ async function loadSystemStatus(){
   const endpoints=Array.isArray(data.endpoints)?data.endpoints:[];
   $('#operator-endpoint-health').innerHTML=endpoints.length?endpoints.map(row=>`<div><span>${escapeHtml(row.label||row.path||'API')} <small>${fmt(row.ms)}ms</small></span><span class="operator-endpoint-result ${row.ok?'ok':'bad'}">${row.ok?'HTTP '+fmt(row.status):row.status?'HTTP '+fmt(row.status):'응답 실패'}</span></div>`).join(''):'<p class="operator-empty">API 상태를 확인하지 못했습니다.</p>';
   const multiplayer=data.multiplayer||{};
-  const quota=data.quota||{},quotaSignals=Array.isArray(quota.signals)?quota.signals:[];
+  const quota=data.quota||{},quotaSignals=Array.isArray(quota.signals)?quota.signals:[],quotaEvents=Array.isArray(quota.recentEvents)?quota.recentEvents:[];
   const budget=data.resourceBudget||{},mode=budget.mode||'saving';
   const budgetMode=$('#system-budget-mode');
   if(budgetMode){budgetMode.textContent=mode==='limit'?'● 제한 모드':'● 절약 모드';budgetMode.className='operator-health '+(mode==='limit'?'bad':'ok')}
@@ -468,6 +468,7 @@ async function loadSystemStatus(){
     ['마지막 정상 데이터',protections.lastGoodSnapshot],
     ['크루 소식 캐시',protections.crewNewsCache],
     ['랭킹 제한 완화',protections.rankingGracefulFallback],
+    ['24시간 제한 이벤트 '+fmt(quotaEvents.length)+'건',quotaEvents.length===0],
     ['화면 검증',protections.visualCheck==='playwright']
   ];
   const quotaRows=quotaSignals.map(row=>[
