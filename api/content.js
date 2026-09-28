@@ -24,6 +24,14 @@ const soopMetricHistory = require('../data/soop-follower-history.json');
 const { buildEngagementRankings } = require('../lib/youtube-engagement');
 const fetchSoopLive = fetchChunbongData.fetchSoopLive;
 
+const publicFetchInflight=new Map();
+async function singleFlight(key,loader){
+  if(publicFetchInflight.has(key))return publicFetchInflight.get(key);
+  const promise=Promise.resolve().then(loader).finally(()=>publicFetchInflight.delete(key));
+  publicFetchInflight.set(key,promise);
+  return promise;
+}
+
 function compactCategory(row = {}) {
   return {
     name: row.name,
@@ -346,17 +354,17 @@ async function handler(req,res) {
     res.setHeader('Vercel-CDN-Cache-Control','public, max-age=180, stale-while-revalidate=600');
   }
   try {
-    if(type==='vod'){const items=await fetchVod();return res.status(200).json({items,source:type,fallback:!items.length});}
-    if(type==='notice'){const items=await fetchNotice();return res.status(200).json({items,source:type,fallback:!items.length});}
-    if(type==='notice-detail'){const id=String(requestUrl.searchParams.get('id')||'');const item=id==='203015477'?await fetchScheduleDetail(id):await fetchNoticeDetail(id);return res.status(200).json({item,source:type,fallback:!item?.content&&!item?.html&&!item?.images?.length});}
-    if(type==='clips'){const groups=await fetchClips();return res.status(200).json({items:groups.items,groups:{catch:groups.catch,clip:groups.clip},source:type,fallback:!groups.items.length});}
-    if(type==='fanart'){const items=await fetchFanart();return res.status(200).json({items,source:type,fallback:!items.length});}
-    if(type==='fanart-detail'){const id=String(requestUrl.searchParams.get('id')||'');const item=await fetchFanartDetail(id);return res.status(200).json({item,source:type,fallback:!item?.images?.length});}
-    if(type==='youtube'){const groups=await fetchYoutube();return res.status(200).json({items:groups.items,groups:{videos:groups.videos,shorts:groups.shorts},source:type,fallback:!groups.items.length});}
-    if(type==='schedule'){const items=await fetchSchedule();return res.status(200).json({items,source:type,fallback:!items.length});}
-    if(type==='catch-detail'){const id=String(requestUrl.searchParams.get('id')||'');const item=await fetchCatchDetail(id);return res.status(200).json({item,source:type,fallback:!item?.stream});}
-    if(type==='activity'){const payload=await fetchActivity();return res.status(200).json({...payload,source:type,fallback:!payload.items.length});}
-    if(type==='data'){const payload=compactDataPayload(await fetchChunbongData());return res.status(200).json(payload);}
+    if(type==='vod'){const items=await singleFlight('vod',fetchVod);return res.status(200).json({items,source:type,fallback:!items.length});}
+    if(type==='notice'){const items=await singleFlight('notice',fetchNotice);return res.status(200).json({items,source:type,fallback:!items.length});}
+    if(type==='notice-detail'){const id=String(requestUrl.searchParams.get('id')||'');const item=await singleFlight('notice-detail:'+id,()=>id==='203015477'?fetchScheduleDetail(id):fetchNoticeDetail(id));return res.status(200).json({item,source:type,fallback:!item?.content&&!item?.html&&!item?.images?.length});}
+    if(type==='clips'){const groups=await singleFlight('clips',fetchClips);return res.status(200).json({items:groups.items,groups:{catch:groups.catch,clip:groups.clip},source:type,fallback:!groups.items.length});}
+    if(type==='fanart'){const items=await singleFlight('fanart',fetchFanart);return res.status(200).json({items,source:type,fallback:!items.length});}
+    if(type==='fanart-detail'){const id=String(requestUrl.searchParams.get('id')||'');const item=await singleFlight('fanart-detail:'+id,()=>fetchFanartDetail(id));return res.status(200).json({item,source:type,fallback:!item?.images?.length});}
+    if(type==='youtube'){const groups=await singleFlight('youtube',fetchYoutube);return res.status(200).json({items:groups.items,groups:{videos:groups.videos,shorts:groups.shorts},source:type,fallback:!groups.items.length});}
+    if(type==='schedule'){const items=await singleFlight('schedule',fetchSchedule);return res.status(200).json({items,source:type,fallback:!items.length});}
+    if(type==='catch-detail'){const id=String(requestUrl.searchParams.get('id')||'');const item=await singleFlight('catch-detail:'+id,()=>fetchCatchDetail(id));return res.status(200).json({item,source:type,fallback:!item?.stream});}
+    if(type==='activity'){const payload=await singleFlight('activity',fetchActivity);return res.status(200).json({...payload,source:type,fallback:!payload.items.length});}
+    if(type==='data'){const payload=compactDataPayload(await singleFlight('data',fetchChunbongData));return res.status(200).json(payload);}
     return res.status(400).json({error:'unknown content type'});
   } catch(error){return res.status(200).json({items:[],source:type,fallback:true,reason:error.message});}
 }
