@@ -218,7 +218,7 @@
       message(errorMessage(error),true);
     }finally{refreshInFlight=false;}
   }
-  function startPolling(){if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(refresh,1000);void refresh();}
+  function startPolling(){if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(refresh,1300);void refresh();}
   async function finishLocal(){
     if(localFinished)return;
     localFinished=true;
@@ -246,7 +246,7 @@
       }catch(error){message(errorMessage(error),true);}
       finally{progressInFlight=false;}
     };
-    progressTimer=setInterval(sync,1000);void sync();
+    progressTimer=setInterval(sync,1400);void sync();
   }
   function handleRoom(room){
     if(!room)return;
