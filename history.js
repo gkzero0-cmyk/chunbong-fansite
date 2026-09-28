@@ -32,32 +32,50 @@
   let contentIndexLoaded=false;
   let contentIndexLoading=null;
 
-  const kindOrder=['마인크래프트','주최','대회','게임','타로','활동','방송','콘텐츠'];
+  const kindOrder=['마인크래프트','대회','게임','타로','콘텐츠','활동','방송'];
 
-  // Names alone are not always enough to identify a server or the importance of a record.
-  // Keep verified exceptions here, while generic inference handles obvious names.
+  // Category answers "what kind of content was this?" while role answers
+  // "what did Chunbong do in it?". Importance controls only the simple view.
   const HISTORY_RECORD_RULES=[
     {test:/^춘이괜$/i,importance:'normal'},
     {test:/^읍더스게이트\s*3$/i,importance:'normal'},
     {test:/^현실합방\s*w\.\s*스노$/i,importance:'normal'},
     {test:/^서버개발 방송$/i,kind:'방송',importance:'normal'},
     {test:/구독플러스/i,kind:'방송',importance:'normal'},
-    {test:/^레오펠\s*2\s*무기한 연기$/i,kind:'주최',importance:'core',type:'주최'},
-    {test:/^레오펠(?:\s*:?\s*.*)?$/i,kind:'주최'},
-    {test:/^그냥서버(?:\s*:?\s*.*)?$/i,kind:'주최'},
-    {test:/^춘타클(?:\s*.*)?$/i,kind:'타로'},
-    {test:/^처니랜드\s*쪼이팀\s*뻐꾸기병$/i,kind:'대회',importance:'core',type:'대회'},
-    {test:/^버추얼 종합대회 시즌3\s*:\s*넥버워치 중계$/i,kind:'대회',importance:'core',type:'대회·중계'},
 
-    {test:/^홍창의 숲$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
-    {test:/^린코레일\s*2$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
-    {test:/^꾸다방\s*2\.5$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
-    {test:/^감블러의 놀이터$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
-    {test:/^또오냥의 조까치수련회\s*2$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
+    {test:/^레오펠\s*2\s*무기한 연기$/i,kind:'마인크래프트',role:'주최',importance:'core',type:'서버·마크'},
+    {test:/^레오펠(?:\s*:?\s*.*)?$/i,kind:'마인크래프트',role:'주최·운영'},
+    {test:/^그냥서버(?:\s*:?\s*.*)?$/i,kind:'마인크래프트',role:'주최·운영'},
+    {test:/싸이감성 노래자랑/i,kind:'콘텐츠',role:'주최',importance:'core',type:'콘텐츠'},
+    {test:/^춘타클(?:\s*.*)?$/i,kind:'타로',role:'진행',importance:'core',type:'타로'},
 
-    {test:/^GTA 좀비서버/i,kind:'게임',importance:'core',type:'게임 서버'},
-    {test:/^여우도시$/i,kind:'게임',importance:'core',type:'게임 서버'},
-    {test:/^고래시티$/i,kind:'게임',importance:'core',type:'게임 서버'}
+    {test:/^처니랜드\s*쪼이팀\s*뻐꾸기병$/i,kind:'대회',role:'참가',importance:'core',type:'대회'},
+    {test:/^버추얼 종합대회 시즌3\s*:\s*넥버워치 중계$/i,kind:'대회',role:'중계진',importance:'core',type:'대회·중계'},
+    {test:/^김멘탈의 랜버워치 대회 3등$/i,kind:'대회',role:'참가',importance:'core',type:'대회'},
+
+    {test:/^홍창의 숲$/i,kind:'마인크래프트',role:'수장',importance:'core',type:'서버·마크'},
+    {test:/^하루살이 서버$/i,kind:'마인크래프트',role:'운영자'},
+    {test:/^충동서버$/i,kind:'마인크래프트',role:'운영자'},
+    {test:/^린코레일\s*2$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^픽크타\s*2$/i,kind:'마인크래프트',role:'수장'},
+    {test:/^꾸다방\s*2\.5$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^감블러의 놀이터$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^또오냥의 조까치수련회\s*2$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^마병대\s*3$/i,kind:'마인크래프트',role:'교육교관'},
+    {test:/^마병대\s*4$/i,kind:'마인크래프트',role:'행정관'},
+    {test:/^오함마\s*3/i,kind:'마인크래프트',role:'수장'},
+    {test:/^킹콩서버$/i,kind:'마인크래프트',role:'조교'},
+    {test:/^돌발서버$/i,kind:'마인크래프트',role:'운영자'},
+
+    {test:/^GTA 좀비서버/i,kind:'게임',role:'참가',importance:'core',type:'게임 서버'},
+    {test:/^여우도시$/i,kind:'게임',role:'경찰',importance:'core',type:'게임 서버'},
+    {test:/^고래시티$/i,kind:'게임',role:'경찰',importance:'core',type:'게임 서버'},
+
+    {test:/패러블 입사 발표/i,kind:'활동',role:'소속',importance:'core',type:'활동 변화'},
+    {test:/사자컴퍼니 결성/i,kind:'활동',role:'결성',importance:'core',type:'활동 변화'},
+    {test:/춘동아리 결성/i,kind:'활동',role:'결성',importance:'core',type:'활동 변화'},
+    {test:/사자회 해체/i,kind:'활동',importance:'core',type:'활동 변화'},
+    {test:/크루 리빌딩/i,kind:'활동',importance:'core',type:'활동 변화'}
   ];
 
   function recordRule(label=''){
@@ -156,10 +174,44 @@
     if(/대회|F1|CK|와튜버|스모오라|크루대전/.test(text)) return '대회';
     if(/GTA|배그|배틀 그라운드|오버워치|옵치|WOW|스트리트 파이터|아르마|파블로프|언레일드|경찰과 도둑|버워치/.test(text)) return '게임';
     if(/입사 발표|결성|해체|크루 리빌딩|SOOP 스트리머 대상/.test(text)) return '활동';
-    if(/노래자랑/.test(text)) return '주최';
+    if(/노래자랑|상영회|행사/.test(text)) return '콘텐츠';
     if(/입사|인터뷰/.test(text)) return '방송';
     if(/서버|마병대|레오펠|퍼켓몬|해초마을|맹든링|픽크타|담월드|오함마|수미랜드|원블럭|다이아/.test(text)) return '마인크래프트';
     return '콘텐츠';
+  }
+
+  function normalizeKind(kind,label=''){
+    if(kind==='주최') return inferKind(label);
+    if(kind==='중계') return /대회|버워치|배그|게임/.test(String(label))?'대회':'콘텐츠';
+    return kind||inferKind(label);
+  }
+
+  function inferRole(label='',kind=''){
+    const text=String(label);
+    const override=recordRule(text);
+    if(override?.role) return override.role;
+    if(/주최|개최/.test(text)) return '주최';
+    if(/운영자/.test(text)) return '운영자';
+    if(/행정관/.test(text)) return '행정관';
+    if(/교육교관/.test(text)) return '교육교관';
+    if(/조교/.test(text)) return '조교';
+    if(/수장/.test(text)) return '수장';
+    if(/경찰/.test(text)) return '경찰';
+    if(/중계/.test(text)&&kind==='대회') return '중계진';
+    if(['마인크래프트','게임','대회'].includes(kind)) return '참가';
+    return '';
+  }
+
+  function displayKind(kind=''){
+    return ({
+      '마인크래프트':'마인크래프트',
+      '대회':'대회',
+      '게임':'게임',
+      '타로':'타로',
+      '콘텐츠':'콘텐츠',
+      '활동':'활동',
+      '방송':'방송'
+    })[kind]||kind||'콘텐츠';
   }
 
   function isPreparation(label=''){
@@ -170,35 +222,36 @@
   function simpleDecision(item={}){
     const text=String(item.label||'').trim();
     const override=recordRule(text);
-    const kind=override?.kind||item.kind||inferKind(text);
+    const kind=normalizeKind(override?.kind||item.kind,text);
+    const role=override?.role||item.role||inferRole(text,kind);
 
-    if(!text||item.detailOnly) return {include:false,type:'',importance:'normal',reason:'detail-only'};
-    if(isPreparation(text)) return {include:false,type:'',importance:'normal',reason:'preparation'};
-    if(override?.importance==='normal') return {include:false,type:'',importance:'normal',reason:'curated-normal'};
+    if(!text||item.detailOnly) return {include:false,type:'',importance:'normal',role,reason:'detail-only'};
+    if(isPreparation(text)) return {include:false,type:'',importance:'normal',role,reason:'preparation'};
+    if(override?.importance==='normal') return {include:false,type:'',importance:'normal',role,reason:'curated-normal'};
     if(override?.importance==='core') return {
       include:true,
-      type:override.type||(kind==='마인크래프트'?'서버·마크':kind==='게임'?'게임 서버':kind),
+      type:override.type||(kind==='마인크래프트'?'서버·마크':kind==='대회'?'대회':kind==='활동'?'활동 변화':displayKind(kind)),
       importance:'core',
+      role,
       reason:'curated-core'
     };
 
-    if(/입사 발표|결성|해체|크루 리빌딩|SOOP 스트리머 대상/.test(text)){
-      return {include:true,type:'활동 변화',importance:'core',reason:'milestone'};
+    if(kind==='활동'){
+      return {include:true,type:'활동 변화',importance:'core',role,reason:'milestone'};
     }
-
-    if(kind==='마인크래프트') return {include:true,type:'서버·마크',importance:'core',reason:'minecraft'};
-    if(kind==='대회') return {include:true,type:'대회',importance:'core',reason:'competition'};
-    if(kind==='주최') return {include:true,type:'주최',importance:'core',reason:'hosted'};
+    if(kind==='마인크래프트') return {include:true,type:'서버·마크',importance:'core',role,reason:'minecraft'};
+    if(kind==='대회') return {include:true,type:'대회',importance:'core',role,reason:'competition'};
+    if(role&&/주최|운영/.test(role)) return {include:true,type:displayKind(kind),importance:'core',role,reason:'hosted'};
 
     if(/배그|배틀 그라운드|아르마|오버워치|옵치|버워치|언레일드|경찰과 도둑|스모오라|세바버|왁업|랜버워치/i.test(text)){
-      return {include:true,type:'합방·게임',importance:'core',reason:'official-game-event'};
+      return {include:true,type:'게임 이벤트',importance:'core',role:role||'참가',reason:'official-game-event'};
     }
 
     if(/노래자랑|춘타클/.test(text)){
-      return {include:true,type:kind==='타로'?'타로':'콘텐츠',importance:'core',reason:'signature-content'};
+      return {include:true,type:kind==='타로'?'타로':'콘텐츠',importance:'core',role,reason:'signature-content'};
     }
 
-    return {include:false,type:'',importance:'normal',reason:'detail'};
+    return {include:false,type:'',importance:'normal',role,reason:'detail'};
   }
 
   function isMajorSheetEvent(item={}){
@@ -212,25 +265,21 @@
 
   function simpleTypeLabel(row={}){
     const override=recordRule(row.label);
-    return override?.type||simpleDecision(row).type||({
+    const kind=normalizeKind(override?.kind||row.kind,row.label);
+    return override?.type||simpleDecision({...row,kind}).type||({
       '마인크래프트':'서버·마크',
       '대회':'대회',
-      '주최':'주최',
       '타로':'타로',
       '게임':'게임',
       '활동':'활동 변화',
-      '방송':'방송'
-    }[row.kind]||'콘텐츠');
+      '방송':'방송',
+      '콘텐츠':'콘텐츠'
+    }[kind]||'콘텐츠');
   }
 
-  function simpleYearSummary(rows=[]){
-    const counts=new Map();
-    rows.forEach(row=>{
-      const type=simpleTypeLabel(row);
-      counts.set(type,(counts.get(type)||0)+1);
-    });
-    const top=[...counts.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,2);
-    return top.map(([type,count])=>`${type} ${count}`).join(' · ');
+  function simpleRoleLabel(row={}){
+    const role=row.role||inferRole(row.label,normalizeKind(row.kind,row.label));
+    return role&&role!=='참가'?role:'';
   }
 
   function currentKstDate(){
@@ -246,11 +295,13 @@
     if(item.start>today) state='예정';
     else if(item.end&&item.start<=today&&item.end>=today) state='진행';
     const kind=inferKind(label);
-    const selection=simpleDecision({...item,label,kind});
+    const role=inferRole(label,kind);
+    const selection=simpleDecision({...item,label,kind,role});
     return {
       ...item,
       label,
       kind,
+      role,
       importance:selection.importance,
       major:selection.include,
       featured:isFeatured(label),
@@ -294,7 +345,11 @@
 
     return dedupe(rows)
       .filter(row=>/^\d{4}-\d{2}-\d{2}$/.test(String(row?.start||'')))
-      .map(row=>({...row,kind:row.kind||inferKind(row.label)}))
+      .map(row=>{
+        const kind=normalizeKind(row.kind,row.label);
+        const role=row.role||inferRole(row.label,kind);
+        return {...row,kind,role};
+      })
       .sort((a,b)=>String(b.start).localeCompare(String(a.start))||String(b.end||'').localeCompare(String(a.end||'')));
   }
 
@@ -424,6 +479,30 @@
     </div>`;
   }
 
+  function renderMonthJumpBars(groups,years){
+    return `<div class="history-month-jump-wrap" aria-label="월 바로가기">
+      ${years.map(year=>{
+        const months=Object.keys(groupByMonth(groups[year]||[])).sort((a,b)=>Number(a)-Number(b));
+        return `<div class="history-month-jumps" data-month-jump-year="${year}" ${detailYear===year?'':'hidden'}>
+          <span>${year} 월 이동</span>
+          <div>${months.map(month=>`<button type="button" data-jump-month="${year}-${month}">${Number(month)}월</button>`).join('')}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  function bindMonthJumps(){
+    root.querySelectorAll('[data-jump-month]').forEach(button=>{
+      button.addEventListener('click',()=>{
+        const key=button.dataset.jumpMonth;
+        const block=root.querySelector(`[data-history-month-block][data-month-key="${key}"]`);
+        if(!block) return;
+        block.open=true;
+        block.scrollIntoView({behavior:'smooth',block:'start'});
+      });
+    });
+  }
+
   function renderKindFilters(rows){
     const available=kindOrder.filter(kind=>rows.some(row=>row.kind===kind));
     return `<div class="history-kind-filters" aria-label="콘텐츠 유형 필터">
@@ -471,14 +550,14 @@
       ${renderYearFilters(years,'simple',simpleYear)}
       <div class="history-simple-list">
         ${years.map(year=>`<section class="history-simple-year-section" data-simple-year="${year}" ${simpleYear!=='all'&&simpleYear!==year?'hidden':''}>
-          <header class="history-simple-year-head"><div><strong>${year}</strong><span>${groups[year].length}개 핵심 이력 <em class="history-simple-year-breakdown">${esc(simpleYearSummary(groups[year]))}</em></span></div>${yearSource(year)}</header>
+          <header class="history-simple-year-head"><div><strong>${year}</strong><span>${groups[year].length}개 핵심 이력</span></div>${yearSource(year)}</header>
           <div class="history-simple-table-head" aria-hidden="true"><span>날짜 / 기간</span><span>내용</span><span>유형</span></div>
           <div class="history-simple-year-list">
             ${groups[year].map(row=>{
               const id=recordId(row);
               return `<article class="history-simple-row ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" tabindex="0" role="link" data-open-record="${id}" aria-label="${esc(row.label)} 상세 기록 보기">
                 <time class="history-simple-date" datetime="${esc(row.start)}">${esc(compactDate(row))}</time>
-                <p class="history-simple-content"><span>${esc(row.label)}</span>${statusBadge(row)}<span class="history-row-arrow" aria-hidden="true">→</span></p>
+                <p class="history-simple-content"><span>${esc(row.label)}</span>${simpleRoleLabel(row)?`<em class="history-simple-role">${esc(simpleRoleLabel(row))}</em>`:''}${statusBadge(row)}<span class="history-row-arrow" aria-hidden="true">→</span></p>
                 <span class="history-simple-type">${esc(simpleTypeLabel(row))}</span>
               </article>`;
             }).join('')}
@@ -498,7 +577,7 @@
   }
 
   function detailBaseSearchText(row){
-    return [row.label,row.kind,row.detail,row.start,row.end]
+    return [row.label,row.kind,row.role,row.detail,row.start,row.end]
       .filter(Boolean).join(' ').toLowerCase();
   }
 
@@ -508,6 +587,17 @@
 
   function detailSearchText(row){
     return [detailBaseSearchText(row),detailChildSearchText(row)].filter(Boolean).join(' ');
+  }
+
+  function detailMatchReason(row,query=''){
+    const q=String(query).trim().toLowerCase();
+    if(!q) return '';
+    if(String(row.label||'').toLowerCase().includes(q)) return '제목 일치';
+    if(String(row.role||'').toLowerCase().includes(q)) return '역할 일치';
+    if(String(row.detail||'').toLowerCase().includes(q)) return '설명 일치';
+    if(detailChildSearchText(row).includes(q)) return '세부 기록 일치';
+    if(String(row.kind||'').toLowerCase().includes(q)) return '유형 일치';
+    return '';
   }
 
   function highlightHtml(value='',query=''){
@@ -543,13 +633,30 @@
     root.querySelectorAll('[data-history-detail-item]').forEach(item=>{
       const yearMatch=detailYear==='all'||item.dataset.year===detailYear;
       const kindMatch=detailKind==='all'||item.dataset.kind===detailKind;
-      const baseMatch=!query||String(item.dataset.searchBase||'').includes(query);
+      const titleMatch=!query||String(item.dataset.searchTitle||'').includes(query);
+      const roleMatch=Boolean(query)&&String(item.dataset.searchRole||'').includes(query);
+      const descriptionMatch=Boolean(query)&&String(item.dataset.searchDescription||'').includes(query);
+      const kindTextMatch=Boolean(query)&&String(item.dataset.kind||'').toLowerCase().includes(query);
       const detailMatch=Boolean(query)&&String(item.dataset.searchDetail||'').includes(query);
-      const textMatch=baseMatch||detailMatch;
+      const dateMatch=Boolean(query)&&String(item.dataset.searchDates||'').includes(query);
+      const textMatch=!query||titleMatch||roleMatch||descriptionMatch||kindTextMatch||detailMatch||dateMatch;
       const visible=yearMatch&&kindMatch&&textMatch;
       item.hidden=!visible;
+
       const matchBadge=item.querySelector('[data-search-match]');
-      if(matchBadge) matchBadge.hidden=!(visible&&query&&!baseMatch&&detailMatch);
+      if(matchBadge){
+        let reason='';
+        if(query){
+          if(titleMatch) reason='제목 일치';
+          else if(roleMatch) reason='역할 일치';
+          else if(descriptionMatch) reason='설명 일치';
+          else if(detailMatch) reason='세부 기록 일치';
+          else if(kindTextMatch) reason='유형 일치';
+          else if(dateMatch) reason='날짜 일치';
+        }
+        matchBadge.textContent=reason;
+        matchBadge.hidden=!(visible&&reason);
+      }
       if(visible) visibleCount+=1;
     });
 
@@ -575,6 +682,24 @@
     if(count) count.textContent=`${visibleCount}개 기록`;
     const empty=root.querySelector('[data-history-search-empty]');
     if(empty) empty.hidden=visibleCount!==0;
+
+    root.querySelectorAll('[data-month-jump-year]').forEach(bar=>{
+      bar.hidden=detailYear==='all'||bar.dataset.monthJumpYear!==detailYear;
+      bar.querySelectorAll('[data-jump-month]').forEach(button=>{
+        const block=root.querySelector(`[data-history-month-block][data-month-key="${button.dataset.jumpMonth}"]`);
+        button.hidden=Boolean(block?.hidden);
+      });
+    });
+
+    const active=root.querySelector('[data-history-active-summary]');
+    if(active){
+      const parts=[];
+      if(detailYear!=='all') parts.push(detailYear);
+      if(detailKind!=='all') parts.push(detailKind);
+      if(detailQuery.trim()) parts.push(`“${detailQuery.trim()}”`);
+      active.textContent=parts.length?`${parts.join(' · ')} · ${visibleCount}개`:'';
+      active.hidden=!parts.length;
+    }
 
     applyHighlights();
   }
@@ -752,6 +877,7 @@
       });
     });
 
+    bindMonthJumps();
     applyDetailFilters();
   }
 
@@ -790,7 +916,9 @@
           ${renderKindFilters(rows)}
         </div>
         ${renderYearFilters(years,'detail',detailYear)}
-        <small class="history-search-note" data-history-search-note>검색은 제목·설명과 불러온 세부 기록을 함께 확인합니다.</small>
+        ${renderMonthJumpBars(groups,years)}
+        <div class="history-active-summary" data-history-active-summary hidden></div>
+        <small class="history-search-note" data-history-search-note>검색은 제목·역할·설명과 불러온 세부 기록까지 함께 확인합니다.</small>
       </div>
 
       <div class="history-search-empty" data-history-search-empty hidden><strong>검색 결과가 없습니다.</strong><span>검색어, 유형 또는 연도 필터를 바꿔보세요.</span></div>
@@ -813,13 +941,14 @@
                     const search=detailSearchText(row);
                     const searchBase=detailBaseSearchText(row);
                     const searchDetail=detailChildSearchText(row);
+                    const role=row.role||'';
                     const content=contentHref(row);
                     const calendar=calendarHref(row);
                     const calendarLabel=row.end&&row.end!==row.start?'시작일 기록':'캘린더';
                     const actionLinks=`${content?`<a href="${esc(content)}">콘텐츠</a>`:''}${calendar?`<a href="${esc(calendar)}">${calendarLabel}</a>`:''}<button type="button" data-copy-record="${id}" aria-label="${esc(row.label)} 기록 링크 복사">링크</button>`;
                     const canLoad=detailTerms(row).length>0&&Number(year)>=2025&&!rowMonthsLoaded(row);
                     const compact=!row.featured&&!row.detail&&!children.length&&!canLoad;
-                    return `<article id="${id}" class="history-timeline-item ${compact?'is-compact':''} ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" data-history-detail-item data-year="${year}" data-kind="${esc(row.kind||'콘텐츠')}" data-search="${esc(search)}" data-search-base="${esc(searchBase)}" data-search-detail="${esc(searchDetail)}">
+                    return `<article id="${id}" class="history-timeline-item ${compact?'is-compact':''} ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" data-history-detail-item data-year="${year}" data-kind="${esc(row.kind||'콘텐츠')}" data-search="${esc(search)}" data-search-base="${esc(searchBase)}" data-search-title="${esc(String(row.label||'').toLowerCase())}" data-search-role="${esc(String(role).toLowerCase())}" data-search-description="${esc(String(row.detail||'').toLowerCase())}" data-search-dates="${esc([row.start,row.end].filter(Boolean).join(' ').toLowerCase())}" data-search-detail="${esc(searchDetail)}">
                       <div class="history-timeline-date">${esc(displayDate(row))}</div>
                       <div class="history-timeline-card">
                         <div class="history-record-head">
@@ -827,7 +956,14 @@
                           <div class="history-record-actions">${actionLinks}</div>
                           <details class="history-record-more"><summary>관련 보기</summary><div>${actionLinks}</div></details>
                         </div>
-                        <div class="history-timeline-meta"><span>${esc(row.kind||'방송')}</span>${row.featured?'<b>주요 이력</b>':''}${statusBadge(row)}${sourceBadges(row)}<span class="history-search-match" data-search-match hidden>세부 기록 일치</span></div>
+                        <div class="history-timeline-meta">
+                          <span class="history-meta-kind">${esc(displayKind(row.kind||'콘텐츠'))}</span>
+                          ${role?`<span class="history-meta-role">${esc(role)}</span>`:''}
+                          ${row.featured?'<b class="history-meta-featured">주요 이력</b>':''}
+                          ${statusBadge(row)}
+                          ${sourceBadges(row)}
+                          <span class="history-search-match" data-search-match hidden></span>
+                        </div>
                         ${row.detail?`<p data-highlight data-raw="${esc(row.detail)}">${esc(row.detail)}</p>`:''}
                         ${children.length?`<details class="history-event-details"><summary>세부 방송 기록 ${children.length}개 보기 <span>⌄</span></summary><ol>${children.map(item=>`<li><time>${esc(item.end?displayDate({start:item.date,end:item.end}):fmt(item.date))}</time><span data-highlight data-raw="${esc(item.label)}">${esc(item.label)}</span></li>`).join('')}</ol></details>`:canLoad?`<button type="button" class="history-load-details" data-load-sub-events="${id}">세부 방송 기록 불러오기</button>`:''}
                       </div>
@@ -997,6 +1133,6 @@
     }
   });
 
-  window.__CHUNBONG_HISTORY_HELPERS__={records,displayDate,compactDate,renderSimple,renderDetail,setView,loadLiveSheets,recordId,inferKind,simpleDecision,simpleTypeLabel};
+  window.__CHUNBONG_HISTORY_HELPERS__={records,displayDate,compactDate,renderSimple,renderDetail,setView,loadLiveSheets,recordId,inferKind,inferRole,simpleDecision,simpleTypeLabel};
   void initialize();
 })();
