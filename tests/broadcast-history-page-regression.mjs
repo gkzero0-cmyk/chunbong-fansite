@@ -39,6 +39,14 @@ assert.match(js, /function recordSummary\(/, 'detail cards must use archive or v
 assert.match(js, /요양타운 · 이세갱 2인자[^\n]*GTA 서버/, '2024 요양타운 must be classified as GTA');
 assert.match(js, /로나월드 2\\.5 리부트 참여[^\n]*서버·마크/, '로나월드 2.5 리부트 must stay Minecraft');
 assert.match(css, /history-series-links/, 'related-series navigation styles must exist');
+assert.match(js, /function yearParticipationStats\(/, 'simple view must calculate annual participation counts');
+assert.match(js, /마크 서버/, 'annual participation summary must distinguish Minecraft servers');
+assert.match(js, /GTA 서버/, 'annual participation summary must distinguish GTA servers');
+assert.match(js, /history-year-participation/, 'simple view must render annual participation summary');
+assert.match(js, /data-simple-jump-month/, 'simple view must expose month jump controls');
+assert.match(css, /history-year-participation/, 'annual participation summary styles must exist');
+assert.match(css, /history-simple-month-jumps/, 'simple month-jump styles must exist');
+assert.match(js, /initialParams\.get\('q'\)/, 'history detail view must accept archive search query links');
 assert.match(css, /history-event-stage-list/, 'grouped detail stage styles must exist');
 assert.match(js, /normalizeMediaUrl/, 'history media URLs must normalize protocol-relative image URLs');
 assert.match(js, /bestScore>=135/, 'VOD representative images must require a strong content match');
