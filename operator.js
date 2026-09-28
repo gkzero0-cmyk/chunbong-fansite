@@ -369,6 +369,11 @@ async function updateSelectedFeedback({statusValue,memoValue,priorityValue,tagsV
   selectedFeedback=data.item;feedbackItems=feedbackItems.map(x=>x.id===selectedFeedback.id?selectedFeedback:x);renderFeedbackSummary();renderFeedbackList();renderFeedbackDetail();renderOperatorAttention();await loadAnalytics();
 }
 function healthLabel(ok){return ok?'<span class="operator-health ok">● 정상</span>':'<span class="operator-health bad">● 확인 필요</span>'}
+function budgetLabel(mode){
+  if(mode==='limited')return'<span class="operator-health bad">● 제한 모드</span>';
+  if(mode==='saver')return'<span class="operator-health warn">● 절약 모드</span>';
+  return'<span class="operator-health ok">● 정상 모드</span>';
+}
 function redisMemoryLabel(storage={}){
   if(storage.usedMemoryHuman){
     const max=storage.maxMemoryHuman?' / '+storage.maxMemoryHuman:'';
@@ -412,12 +417,19 @@ function renderChangelogHealth(changelog={}){
 }
 async function loadSystemStatus(){
   const data=await json(API+'operator-system-status');currentSystem=data;
-  const dep=data.deployment||{},storage=data.storage||{},services=data.services||{},traffic=data.traffic||{};
+  const dep=data.deployment||{},storage=data.storage||{},services=data.services||{},traffic=data.traffic||{},budget=data.budget||{};
   $('#system-production').innerHTML=dep.sha?'<span class="operator-health ok">● READY</span>':'<span class="operator-health bad">● 확인 필요</span>';$('#system-production-meta').textContent=(dep.environment||'-')+' · '+shortSha(dep.sha);
   const internalOnlySync=dep.synced===true&&dep.internalOnlyGap&&dep.exactSynced===false;
   $('#system-sync').innerHTML=dep.synced===true?(internalOnlySync?'<span class="operator-health ok">● 사이트 코드 동기화</span>':'<span class="operator-health ok">● 동기화</span>'):dep.synced===false?'<span class="operator-health warn">● 코드 배포 지연</span>':'<span class="operator-health warn">● 확인 불가</span>';$('#system-sync-meta').textContent=shortSha(dep.sha)+' / '+shortSha(dep.mainSha)+(internalOnlySync?' · CI/테스트 변경만 생략':'');
   $('#system-storage').innerHTML=healthLabel(Boolean(storage.redisOk));$('#system-storage-meta').textContent=storage.redisConfigured?'Redis/KV 연결 '+(storage.redisOk?'정상':'확인 필요'):'저장소 설정 없음';
   $('#system-push').innerHTML=healthLabel(Boolean(services.push));$('#system-push-meta').textContent=services.push?'VAPID 준비됨':'Push 설정 확인 필요';
+  $('#system-budget').innerHTML=budgetLabel(budget.mode);
+  $('#system-budget-meta').textContent=budget.mode==='limited'?'한도 감지 · 자동 backoff 적용':budget.mode==='saver'?'오류 증가 · 절약 정책 강화':'기본 절약 정책 적용 중';
+  const budgetRows=Array.isArray(budget.services)?budget.services:[];
+  $('#operator-budget-health').innerHTML=budgetRows.length?budgetRows.map(row=>`<div><span>${escapeHtml(row.label||row.name||'외부 서비스')} <small>${escapeHtml(row.protection||'')}</small></span>${budgetLabel(row.mode)}</div>`).join(''):'<p class="operator-empty">현재 런타임의 사용량 보호 상태를 아직 수집하지 못했습니다.</p>';
+  $('#system-budget-since').textContent=budget.sampledSince?new Date(budget.sampledSince).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})+'부터':'현재 런타임';
+  $('#system-budget-summary').textContent=budget.mode==='limited'?'제한 감지 · 핵심 기능 우선 보호':budget.mode==='saver'?'절약 모드 · 캐시와 backoff 강화':'정상 모드 · 기본 절약 정책 동작 중';
+  $('#system-budget-note').textContent=budget.note||'공급자 공식 사용량과 별개로, 현재 런타임에서 감지한 보호 상태입니다.';
   $('#system-active').textContent=fmt(traffic.activeNow);$('#system-visitors').textContent=fmt(traffic.visitors);$('#system-sessions').textContent=fmt(traffic.sessions);$('#system-pageviews').textContent=fmt(traffic.pageviews);
   $('#system-sha').textContent=shortSha(dep.sha);$('#system-main-sha').textContent=shortSha(dep.mainSha);$('#system-url').textContent=dep.url||'-';
   $('#system-vercel-status').textContent=dep.rateLimited?'배포 제한 · '+(dep.vercel?.description||'rate limited'):dep.vercel?.description||dep.vercel?.state||'상태 정보 없음';
