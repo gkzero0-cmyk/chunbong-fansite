@@ -13,12 +13,18 @@ for(const token of [
   "pushSubscriptionStore:'redis-hash-v2'",
   "pushFallbackMinutes:60",
   "soopTelemetryMinutes:10",
-  "notionFallbackMinutes:180"
+  "soopOfflineExtendedMinutes:60",
+  "youtubeIncrementalDiscovery:true",
+  "youtubeDailyRecentLimit:30",
+  "youtubeStaleRefreshLimit:20",
+  "notionFallbackMinutes:360"
 ]) assert.ok(api.includes(token),token+' missing');
 
 assert.match(ui,/아카이브 메타 캐시/);
 assert.match(ui,/Push 저장/);
-assert.match(ui,/SOOP 수집/);
+assert.match(ui,/SOOP LIVE 확인/);
+assert.match(ui,/SOOP OFF 확장수집/);
+assert.match(ui,/YouTube 증분 탐색/);
 assert.match(ui,/Notion 백업/);
 assert.match(ui,/이미지 CDN 캐시/);
 
