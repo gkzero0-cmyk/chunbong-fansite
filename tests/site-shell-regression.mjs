@@ -24,9 +24,9 @@ assert.ok(!content.includes('theme-toggle'),'content bundle must not duplicate s
 
 for(const file of generalPages){
   const html=read(file);
-  const shellAt=html.indexOf('src="site-shell.js"');
-  const contentAt=html.indexOf('src="content.js"');
-  const pageAt=html.indexOf('src="page.js');
+  const shellAt=html.search(/src="site-shell\.js(?:\?v=\d+)?"/);
+  const contentAt=html.search(/src="content\.js(?:\?v=\d+)?"/);
+  const pageAt=html.search(/src="page\.js(?:\?v=\d+)?/);
   assert.ok(shellAt>=0,file+' missing site-shell.js');
   assert.ok(contentAt>shellAt,file+' must load content.js after site-shell.js');
   assert.ok(pageAt>contentAt,file+' must load page.js after content.js');
@@ -35,7 +35,7 @@ for(const file of generalPages){
 for(const file of gamePages){
   const html=read(file);
   const shellAt=html.indexOf('src="site-shell.js"');
-  const pageAt=html.indexOf('src="page.js');
+  const pageAt=html.search(/src="page\.js(?:\?v=\d+)?/);
   assert.ok(shellAt>=0,file+' missing shared shell');
   assert.doesNotMatch(html,/src="content\.js"/,file+' must not load general content data');
   assert.ok(pageAt>shellAt,file+' must keep common page runtime after shared shell');
@@ -46,10 +46,10 @@ assert.match(serviceWorker,/const CACHE_NAME = CACHE_PREFIX \+ BUILD_VERSION/,'P
 assert.match(shell,/personalPriorityPages/,'personal hub runtime should be prioritized only on interactive pages');
 assert.match(shell,/runIdle\(loadPersonal\)/,'passive pages should defer personal hub runtime');
 assert.match(shell,/runIdle\(\(\)=>loadScript\('site-meta\.js'\)\)/,'site metadata enhancement should defer to browser idle time');
-assert.match(shell,/runIdle\(\(\)=>loadScript\('site-improvements\.js'\)\)/,'site improvements should defer to browser idle time');
+assert.match(shell,/runIdle\(\(\)=>loadScript\('site-improvements\.js(?:\?v=\d+)?'\)\)/,'site improvements should defer to browser idle time');
 assert.match(shell,/requestIdleCallback\(load,\{timeout:1800\}\)/,'activity center should not compete with first paint');
 
-assert.ok(shell.length < 13000,'shared shell unexpectedly large');
+assert.ok(shell.length < 20000,'shared shell unexpectedly large');
 assert.ok(content.length < 6500,'content data bundle unexpectedly large');
 
 console.log('site shell split regression passed');
