@@ -526,14 +526,14 @@
       ${renderYearFilters(years,'simple',simpleYear)}
       <div class="history-simple-list">
         ${years.map(year=>`<section class="history-simple-year-section" data-simple-year="${year}" ${simpleYear!=='all'&&simpleYear!==year?'hidden':''}>
-          <header class="history-simple-year-head"><div><strong>${year}</strong><span>${groups[year].length}개 핵심 이력 <em class="history-simple-year-breakdown">${esc(simpleYearSummary(groups[year]))}</em></span></div>${yearSource(year)}</header>
+          <header class="history-simple-year-head"><div><strong>${year}</strong><span>${groups[year].length}개 핵심 이력</span></div>${yearSource(year)}</header>
           <div class="history-simple-table-head" aria-hidden="true"><span>날짜 / 기간</span><span>내용</span><span>유형</span></div>
           <div class="history-simple-year-list">
             ${groups[year].map(row=>{
               const id=recordId(row);
               return `<article class="history-simple-row ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" tabindex="0" role="link" data-open-record="${id}" aria-label="${esc(row.label)} 상세 기록 보기">
                 <time class="history-simple-date" datetime="${esc(row.start)}">${esc(compactDate(row))}</time>
-                <p class="history-simple-content"><span>${esc(row.label)}</span>${statusBadge(row)}<span class="history-row-arrow" aria-hidden="true">→</span></p>
+                <p class="history-simple-content"><span>${esc(row.label)}</span>${simpleRoleLabel(row)?`<em class="history-simple-role">${esc(simpleRoleLabel(row))}</em>`:''}${statusBadge(row)}<span class="history-row-arrow" aria-hidden="true">→</span></p>
                 <span class="history-simple-type">${esc(simpleTypeLabel(row))}</span>
               </article>`;
             }).join('')}
@@ -553,7 +553,7 @@
   }
 
   function detailBaseSearchText(row){
-    return [row.label,row.kind,row.detail,row.start,row.end]
+    return [row.label,row.kind,row.role,row.detail,row.start,row.end]
       .filter(Boolean).join(' ').toLowerCase();
   }
 
@@ -563,6 +563,17 @@
 
   function detailSearchText(row){
     return [detailBaseSearchText(row),detailChildSearchText(row)].filter(Boolean).join(' ');
+  }
+
+  function detailMatchReason(row,query=''){
+    const q=String(query).trim().toLowerCase();
+    if(!q) return '';
+    if(String(row.label||'').toLowerCase().includes(q)) return '제목 일치';
+    if(String(row.role||'').toLowerCase().includes(q)) return '역할 일치';
+    if(String(row.detail||'').toLowerCase().includes(q)) return '설명 일치';
+    if(detailChildSearchText(row).includes(q)) return '세부 기록 일치';
+    if(String(row.kind||'').toLowerCase().includes(q)) return '유형 일치';
+    return '';
   }
 
   function highlightHtml(value='',query=''){
@@ -604,7 +615,11 @@
       const visible=yearMatch&&kindMatch&&textMatch;
       item.hidden=!visible;
       const matchBadge=item.querySelector('[data-search-match]');
-      if(matchBadge) matchBadge.hidden=!(visible&&query&&!baseMatch&&detailMatch);
+      if(matchBadge){
+        const reason=query?String(item.dataset.matchReason||''):'';
+        matchBadge.textContent=reason;
+        matchBadge.hidden=!(visible&&reason);
+      }
       if(visible) visibleCount+=1;
     });
 
