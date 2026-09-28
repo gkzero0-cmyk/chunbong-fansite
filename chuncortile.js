@@ -337,7 +337,7 @@
     try{
       const response=await fetch(RANKING_ENDPOINT,{headers:{accept:'application/json'}});
       if(!response.ok)throw new Error('ranking');
-      const payload=await response.json();renderRanking(payload.entries||[]);e.rankingStatus.textContent=payload.entries?.length?'현재 TOP 10':'아직 등록된 기록이 없어요.';return payload.entries||[];
+      const payload=await response.json();if(payload.unavailable){e.rankingStatus.textContent='랭킹 서버 사용량 제한으로 잠시 확인할 수 없어요.';return[];}renderRanking(payload.entries||[]);e.rankingStatus.textContent=payload.entries?.length?'현재 TOP 10':'아직 등록된 기록이 없어요.';return payload.entries||[];
     }catch{e.rankingStatus.textContent='랭킹을 불러오지 못했습니다.';return[];}
   }
   function openRanking(){
