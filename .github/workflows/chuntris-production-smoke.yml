@@ -21,6 +21,10 @@ on:
       - '.github/workflows/chuntris-production-smoke.yml'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   production-smoke:
     runs-on: ubuntu-latest
