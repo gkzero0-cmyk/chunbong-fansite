@@ -12,6 +12,10 @@ on:
       - 'tarot-hero-banner.css'
       - '.github/workflows/home-dday-production-smoke.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   smoke:
     runs-on: ubuntu-latest
@@ -21,6 +25,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Stop early on Vercel build-rate-limit
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .github/scripts/vercel-rate-limit-fast-fail.mjs
 
       - name: Wait for current home D-day production
         env:
