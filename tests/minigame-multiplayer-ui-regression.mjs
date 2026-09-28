@@ -18,7 +18,7 @@ assert.match(runtime,/root\.ChuntrisApp=\{start,startMultiplayer,/);
 
 assert.match(common,/type=minigame-multiplayer/);
 assert.match(common,/data\.retryAfterMs/,'multiplayer client must honor server contention retry timing');
-assert.match(common,/retryAfter\+attempt\*60/,'multiplayer contention retries must back off progressively');
+assert.match(common,/retryAfter\+attempt\*70\+jitter/,'multiplayer contention retries must back off progressively with jitter');
 assert.match(common,/function seededRandom\(seed\)/);
 assert.match(common,/roomInviteUrl/);
 assert.match(common,/async create\(nickname,mode,difficulty\)/);
@@ -29,8 +29,8 @@ for(const difficulty of ['normal','hard','extreme'])assert.match(multiplayer,new
 assert.doesNotMatch(multiplayer,/data-mp-chuntris-mode="hard"/,'hard is now difficulty, not multiplayer mode');
 assert.match(multiplayer,/client\.create\(normalizeName\(\),selectedMode,selectedDifficulty\)/);
 assert.match(multiplayer,/App\.startMultiplayer\?\.\(room\.seed,room\.mode,room\.difficulty\|\|'normal'\)/);
-assert.match(multiplayer,/setInterval\(refresh,1000\)/);
-assert.match(multiplayer,/setInterval\(send,1000\)/);
+assert.match(multiplayer,/setInterval\(refresh,1300\)/);
+assert.match(multiplayer,/setInterval\(send,1400\)/);
 assert.match(multiplayer,/refreshInFlight/,'multiplayer polling must not overlap slow network reads');
 assert.match(multiplayer,/progressInFlight/,'multiplayer progress writes must not overlap');
 assert.match(multiplayer,/data-mp-rematch/);
