@@ -153,7 +153,7 @@
     if(kind==='대회') return {include:true,type:'대회',reason:'competition'};
     if(kind==='주최') return {include:true,type:'주최',reason:'hosted'};
 
-    if(/\bw\.|\bvs\b|합방|배그|아르마|오버워치|옵치|언레일드|경찰과 도둑|스모오라|세바버|왁업|수련회|체력공유|술먹방|현실 낚시|현실합방|크루대전|랜드|랜버워치|벽킬내기|엔더런|원정대/i.test(text)){
+    if(/\bw\.|\bvs\b|합방|배그|배틀 그라운드|아르마|오버워치|옵치|버워치|언레일드|경찰과 도둑|스모오라|세바버|왁업|수련회|체력공유|술먹방|현실 낚시|현실합방|크루대전|랜드|벽킬내기|엔더런|원정대/i.test(text)){
       return {include:true,type:kind==='게임'?'합방·게임':'합방·이벤트',reason:'collab-event'};
     }
 
@@ -836,7 +836,7 @@
     });
     if(viewTitle) viewTitle.textContent=currentView==='simple'?'핵심 방송 이력':'탐색 가능한 상세 방송 이력';
     if(viewDesc) viewDesc.textContent=currentView==='simple'
-      ?'연도별 핵심 사건을 빠르게 훑고 원하는 기록을 눌러 상세로 이동합니다.'
+      ?'장기 콘텐츠·공식 합방/대회·주최·활동 변화를 중심으로 빠르게 확인합니다.'
       :'검색·유형·연도 필터와 월별 접기를 이용해 원하는 기록을 찾습니다.';
     document.body.dataset.historyView=currentView;
     if(guide) guide.hidden=currentView==='simple';
