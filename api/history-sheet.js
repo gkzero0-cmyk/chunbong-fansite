@@ -158,9 +158,8 @@ async function fetchSheet(config){
 module.exports=async function handler(req,res){
   const key=String(req.query&&req.query.sheet||'2026');
   try{
-    const sheets=await availableSheets();
-
     if(key==='months'){
+      const sheets=await availableSheets();
       const requestedYear=Number(req.query&&req.query.year||2026);
       const configs=Object.entries(sheets)
         .map(([sheetKey,config])=>({...config,key:sheetKey}))
@@ -183,8 +182,12 @@ module.exports=async function handler(req,res){
       });
     }
 
-    const config=sheets[key];
-    if(!config) return res.status(400).json({ok:false,error:'invalid_sheet',allowed:Object.keys(sheets)});
+    let config=STATIC_SHEETS[key];
+    if(!config){
+      const sheets=await availableSheets();
+      config=sheets[key];
+      if(!config) return res.status(400).json({ok:false,error:'invalid_sheet',allowed:Object.keys(sheets)});
+    }
     const result=await fetchSheet({...config,key});
     res.setHeader('Cache-Control','s-maxage=300, stale-while-revalidate=1800');
     return res.status(200).json({ok:true,...result,fetchedAt:new Date().toISOString()});
