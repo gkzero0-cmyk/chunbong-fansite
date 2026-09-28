@@ -6,6 +6,7 @@ const pageRuntime=read('chunbong-contents.js');
 const archiveApi=read('lib/chunbong-content-archive-api.js');
 const workflow=read('.github/workflows/push-dispatch.yml');
 const operator=read('operator-contents.js');
+const autoIngest=read('lib/chunbong-content-auto-ingest.js');
 
 assert.doesNotMatch(pageRuntime,/refreshAfterAutoSync/,'public archive page must not trigger collection after rendering');
 assert.doesNotMatch(pageRuntime,/content-archive-auto-sync/,'public archive runtime must not POST to the archive sync endpoint');
@@ -21,5 +22,10 @@ assert.doesNotMatch(syncHandler,/sameSite\?false/,'same-origin visitors must not
 assert.match(workflow,/ARCHIVE_SYNC_URL: https:\/\/chunbong-fansite\.vercel\.app\/api\/content\?type=content-archive-auto-sync/,'scheduled archive sync must remain wired');
 assert.match(workflow,/Authorization: Bearer \$token/,'scheduled archive sync must send its OIDC token');
 assert.match(operator,/operator-content-auto-sync/,'owner manual archive sync must remain available');
+assert.match(autoIngest,/INCREMENTAL_VIDEO_PAGES=2/);
+assert.match(autoIngest,/INCREMENTAL_POST_PAGES=3/);
+assert.match(autoIngest,/INCREMENTAL_YOUTUBE_PAGES=2/);
+assert.match(autoIngest,/stopId:prior\?\.soop\?\.vod/,'incremental SOOP scans must stop at checkpoints');
+assert.match(autoIngest,/mode:full\?'full':'incremental'/,'scan diagnostics must expose request budget mode');
 
 console.log('public archive sync decoupling regression passed');
