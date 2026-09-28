@@ -191,6 +191,12 @@
     const match=contentMatch(row);
     return match?.id?`/contents/${encodeURIComponent(match.id)}`:'';
   }
+  function recordSummary(row={}){
+    const direct=String(row.detail||'').trim();
+    if(direct) return direct;
+    const archive=contentMatch(row);
+    return String(archive?.summary||'').trim();
+  }
   function calendarHref(row={}){
     const date=String(row.start||'').slice(0,10);
     return /^\d{4}-\d{2}-\d{2}$/.test(date)?`data.html?view=calendar&date=${encodeURIComponent(date)}#soop`:'';
@@ -510,6 +516,21 @@
     return `${pick('year')}-${pick('month')}-${pick('day')}`;
   }
 
+  function fallbackEnrichment(item={}){
+    const itemLabel=normalizeLabel(item.label||'');
+    const itemStart=String(item.start||'');
+    let best=null,bestScore=0;
+    for(const row of fallback){
+      if(String(row.start||'').slice(0,4)!==itemStart.slice(0,4)) continue;
+      const rowLabel=normalizeLabel(row.label||'');
+      let score=0;
+      if(itemLabel===rowLabel) score=200;
+      else if(itemLabel&&rowLabel&&(itemLabel.includes(rowLabel)||rowLabel.includes(itemLabel))) score=110;
+      if(itemStart&&row.start===itemStart) score+=60;
+      if(score>bestScore){best=row;bestScore=score;}
+    }
+    return bestScore>=110?best:null;
+  }
   function enrichSheetRecord(item){
     const label=publicLabel(item.label);
     const today=currentKstDate();
@@ -519,6 +540,8 @@
     const kind=inferKind(label);
     const role=inferRole(label,kind);
     const selection=simpleDecision({...item,label,kind,role});
+    const legacy=fallbackEnrichment({...item,label});
+    const sources=['google-sheet',...(Array.isArray(legacy?.sources)?legacy.sources:[])];
     return {
       ...item,
       label,
@@ -527,8 +550,9 @@
       importance:selection.importance,
       major:selection.include,
       featured:isFeatured(label),
+      ...(legacy?.detail?{detail:legacy.detail}:{}),
       ...(state?{status:state}:{}),
-      sources:['google-sheet'],
+      sources:[...new Set(sources)],
       sheet:true
     };
   }
@@ -828,7 +852,7 @@
   }
 
   function detailBaseSearchText(row){
-    return [row.label,row.kind,row.role,row.detail,row.start,row.end]
+    return [row.label,row.kind,row.role,recordSummary(row),row.start,row.end]
       .filter(Boolean).join(' ').toLowerCase();
   }
 
@@ -845,7 +869,7 @@
     if(!q) return '';
     if(String(row.label||'').toLowerCase().includes(q)) return '제목 일치';
     if(String(row.role||'').toLowerCase().includes(q)) return '역할 일치';
-    if(String(row.detail||'').toLowerCase().includes(q)) return '설명 일치';
+    if(recordSummary(row).toLowerCase().includes(q)) return '설명 일치';
     if(detailChildSearchText(row).includes(q)) return '세부 기록 일치';
     if(String(row.kind||'').toLowerCase().includes(q)) return '유형 일치';
     return '';
@@ -1243,7 +1267,8 @@
                     const actionLinks=`${content?`<a href="${esc(content)}">콘텐츠</a>`:''}${calendar?`<a href="${esc(calendar)}">${calendarLabel}</a>`:''}<button type="button" data-copy-record="${id}" aria-label="${esc(row.label)} 기록 링크 복사">링크</button>`;
                     const canLoad=detailTerms(row).length>0&&Number(year)>=2025&&!rowMonthsLoaded(row);
                     const mediaHtml=renderRecordMedia(row);
-                    const compact=!row.featured&&!row.detail&&!children.length&&!canLoad&&!mediaHtml;
+                    const summary=recordSummary(row);
+                    const compact=!row.featured&&!summary&&!children.length&&!canLoad&&!mediaHtml;
                     const highlights=children.slice(0,3);
                     return `<article id="${id}" class="history-timeline-item ${compact?'is-compact':''} ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" data-history-detail-item data-year="${year}" data-kind="${esc(row.kind||'콘텐츠')}" data-search="${esc(search)}" data-search-base="${esc(searchBase)}" data-search-title="${esc(String(row.label||'').toLowerCase())}" data-search-role="${esc(String(role).toLowerCase())}" data-search-description="${esc(String(row.detail||'').toLowerCase())}" data-search-dates="${esc([row.start,row.end].filter(Boolean).join(' ').toLowerCase())}" data-search-detail="${esc(searchDetail)}">
                       <div class="history-timeline-date">${esc(displayDate(row))}</div>
@@ -1263,7 +1288,7 @@
                             ${sourceBadges(row)}
                             <span class="history-search-match" data-search-match hidden></span>
                           </div>
-                          ${row.detail?`<section class="history-record-summary"><span>방송 요약</span><p data-highlight data-raw="${esc(row.detail)}">${esc(row.detail)}</p></section>`:''}
+                          ${summary?`<section class="history-record-summary"><span>방송 요약</span><p data-highlight data-raw="${esc(summary)}">${esc(summary)}</p></section>`:''}
                           ${renderSeriesLinks(row,rows)}
                           ${highlights.length?`<section class="history-record-highlights"><div class="history-record-section-title"><span>주요 진행 기록</span><b>${children.length}개</b></div><ol>${highlights.map(item=>`<li><time>${esc(item.end?displayDate({start:item.date,end:item.end}):fmt(item.date))}</time><span data-highlight data-raw="${esc(item.label)}">${esc(item.label)}</span></li>`).join('')}</ol></section>`:''}
                           ${children.length>3?`<details class="history-event-details"><summary>전체 세부 방송 기록 ${children.length}개 보기 <span>⌄</span></summary><div class="history-event-stage-list">${renderGroupedSubEvents(children)}</div></details>`:children.length?'':canLoad?`<button type="button" class="history-load-details" data-load-sub-events="${id}">세부 방송 기록 불러오기</button>`:''}
