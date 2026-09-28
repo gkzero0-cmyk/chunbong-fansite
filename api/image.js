@@ -53,9 +53,9 @@ module.exports = async function handler(req, res) {
     const contentType = response.headers.get('content-type') || '';
     if (!/^image\//i.test(contentType)) return res.status(415).send('upstream is not image');
     res.setHeader('Content-Type', contentType);
-    res.setHeader('Cache-Control','public, max-age=3600, stale-while-revalidate=604800');
-    res.setHeader('CDN-Cache-Control','public, max-age=86400, stale-while-revalidate=604800');
-    res.setHeader('Vercel-CDN-Cache-Control','public, max-age=86400, stale-while-revalidate=604800');
+    res.setHeader('Cache-Control','public, max-age=21600, stale-while-revalidate=604800');
+    res.setHeader('CDN-Cache-Control','public, max-age=604800, stale-while-revalidate=2592000');
+    res.setHeader('Vercel-CDN-Cache-Control','public, max-age=604800, stale-while-revalidate=2592000');
     return res.status(200).send(Buffer.from(await response.arrayBuffer()));
   } catch (_) {
     return res.status(502).send('image proxy error');
