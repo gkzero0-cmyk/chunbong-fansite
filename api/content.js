@@ -276,6 +276,7 @@ async function handler(req,res) {
   if(type==='operator-logout') return operatorCenter.handleLogout(req,res);
   if(type==='operator-logout-all') return operatorCenter.handleLogoutAll(req,res);
   if(type==='chunbong-contents') return contentArchive.handlePublicList(req,res);
+  if(type==='chunbong-content-index') return contentArchive.handlePublicIndex(req,res);
   if(type==='chunbong-content') return contentArchive.handlePublicDetail(req,res);
   if(type==='content-archive-auto-sync') return contentArchive.handlePublicAutoSync(req,res);
   if(type==='notion-guide-image') return contentArchive.handleNotionGuideImage(req,res);
