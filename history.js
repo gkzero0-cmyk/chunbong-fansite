@@ -616,6 +616,34 @@
       .sort((a,b)=>String(a.date).localeCompare(String(b.date)));
   }
 
+  function childStage(item={}){
+    const text=String(item.label||'');
+    if(/신청|지원(?:\s*영상)?|모집/.test(text)) return '지원·신청';
+    if(/면접|테스트|오디션|심사/.test(text)) return '선발 과정';
+    if(/합격|발표|선정|입주/.test(text)) return '결과';
+    if(/졸업|종료|마지막|폐막|마무리/.test(text)) return '마무리';
+    return '활동';
+  }
+
+  function groupedSubEvents(children=[]){
+    const order=['지원·신청','선발 과정','결과','활동','마무리'];
+    const groups=new Map();
+    for(const item of children){
+      const stage=childStage(item);
+      if(!groups.has(stage)) groups.set(stage,[]);
+      groups.get(stage).push(item);
+    }
+    return order.filter(stage=>groups.has(stage)).map(stage=>({stage,items:groups.get(stage)}));
+  }
+
+  function renderGroupedSubEvents(children=[]){
+    return groupedSubEvents(children).map(group=>`
+      <section class="history-event-stage">
+        <h4><span>${esc(group.stage)}</span><b>${group.items.length}</b></h4>
+        <ol>${group.items.map(item=>`<li><time>${esc(item.end?displayDate({start:item.date,end:item.end}):fmt(item.date))}</time><span data-highlight data-raw="${esc(item.label)}">${esc(item.label)}</span></li>`).join('')}</ol>
+      </section>`).join('');
+  }
+
   function monthsInWindow(row={}){
     const window=detailWindow(row);
     if(!/^\d{4}-\d{2}-\d{2}$/.test(window.start)||!/^\d{4}-\d{2}-\d{2}$/.test(window.end)) return [];
@@ -1160,7 +1188,7 @@
                           </div>
                           ${row.detail?`<section class="history-record-summary"><span>방송 요약</span><p data-highlight data-raw="${esc(row.detail)}">${esc(row.detail)}</p></section>`:''}
                           ${highlights.length?`<section class="history-record-highlights"><div class="history-record-section-title"><span>주요 진행 기록</span><b>${children.length}개</b></div><ol>${highlights.map(item=>`<li><time>${esc(item.end?displayDate({start:item.date,end:item.end}):fmt(item.date))}</time><span data-highlight data-raw="${esc(item.label)}">${esc(item.label)}</span></li>`).join('')}</ol></section>`:''}
-                          ${children.length>3?`<details class="history-event-details"><summary>전체 세부 방송 기록 ${children.length}개 보기 <span>⌄</span></summary><ol>${children.map(item=>`<li><time>${esc(item.end?displayDate({start:item.date,end:item.end}):fmt(item.date))}</time><span data-highlight data-raw="${esc(item.label)}">${esc(item.label)}</span></li>`).join('')}</ol></details>`:children.length?'':canLoad?`<button type="button" class="history-load-details" data-load-sub-events="${id}">세부 방송 기록 불러오기</button>`:''}
+                          ${children.length>3?`<details class="history-event-details"><summary>전체 세부 방송 기록 ${children.length}개 보기 <span>⌄</span></summary><div class="history-event-stage-list">${renderGroupedSubEvents(children)}</div></details>`:children.length?'':canLoad?`<button type="button" class="history-load-details" data-load-sub-events="${id}">세부 방송 기록 불러오기</button>`:''}
                         </div>
                       </div>
                     </article>`;
