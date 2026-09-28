@@ -256,6 +256,35 @@
         }
       ],
       "measurement": "fan-site-sampled-5m"
+    },
+    {
+      "id": "2026-09-28T04:38:11.000Z",
+      "broadcastId": "",
+      "startedAt": "2026-09-28T04:38:11.000Z",
+      "endedAt": "2026-09-28T20:13:48.423Z",
+      "date": "2026-09-28",
+      "durationMinutes": 936,
+      "averageViewers": 115,
+      "maxViewers": 168,
+      "viewerSampleCount": 6,
+      "followerStart": 30999,
+      "followerEnd": 31035,
+      "followerDelta": 36,
+      "fanclubStart": 7826,
+      "fanclubEnd": 7826,
+      "fanclubDelta": 0,
+      "title": "마병대 4 행정관 중령님이 오신다고..?",
+      "categories": [
+        {
+          "id": "40017",
+          "name": "마인크래프트",
+          "minutes": 60,
+          "sampleCount": 6,
+          "averageViewers": 115,
+          "maxViewers": 168
+        }
+      ],
+      "measurement": "fan-site-sampled-5m"
     }
   ]
 }
