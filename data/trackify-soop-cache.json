@@ -1,43 +1,43 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-27T06:27:38.985Z",
+  "capturedAt": "2026-09-28T06:31:53.021Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 30923,
-    "fanclubCount": 7813,
+    "followerCount": 30979,
+    "fanclubCount": 7826,
     "subscriberCount": 61,
     "supporterCount": 25,
-    "averageViewers": 83,
-    "maxViewers": 489,
-    "airtimeMinutes": 14247,
-    "viewershipHours": 19736,
-    "cumulativeUpCount": 81555,
-    "totalAirtimeMinutes": 629149,
-    "monthlyStarCount": 115467,
-    "starsPerHour": 486,
-    "monthlySupporterCount": 376,
-    "monthlyChatCount": 59041,
+    "averageViewers": 88,
+    "maxViewers": 524,
+    "airtimeMinutes": 15300,
+    "viewershipHours": 22383,
+    "cumulativeUpCount": 81783,
+    "totalAirtimeMinutes": 630032,
+    "monthlyStarCount": 120007,
+    "starsPerHour": 471,
+    "monthlySupporterCount": 424,
+    "monthlyChatCount": 62947,
     "monthlyMuteCount": 6,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-09-26T11:51:51",
+    "latestBroadcastDate": "2026-09-27T14:25:17",
     "categories": [
       {
         "name": "버추얼",
         "minutes": 11750,
         "streamCount": 28,
-        "sharePercent": 59.3
+        "sharePercent": 58.2
       },
       {
         "name": "마인크래프트",
-        "minutes": 6330,
-        "streamCount": 10,
-        "sharePercent": 31.9
+        "minutes": 7278,
+        "streamCount": 12,
+        "sharePercent": 36
       },
       {
         "name": "오버워치",
-        "minutes": 1176,
-        "streamCount": 4,
-        "sharePercent": 5.9
+        "minutes": 592,
+        "streamCount": 3,
+        "sharePercent": 2.9
       },
       {
         "name": "PUBG: 배틀그라운드",
@@ -11987,6 +11987,74 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/297390031"
+    },
+    {
+      "id": "trackify-297414965",
+      "broadcastId": "297414965",
+      "date": "2026-09-27",
+      "startedAt": "2026-09-27T14:25:17+09:00",
+      "endedAt": "2026-09-28T06:04:57+09:00",
+      "durationMinutes": 940,
+      "averageViewers": 162,
+      "maxViewers": 524,
+      "viewerSampleCount": 188,
+      "uniqueViewers": null,
+      "starCount": 2577,
+      "supporterCount": 22,
+      "chatCount": 3473,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "마병대4 행정관 오늘은 잘하자 애들아.",
+      "categories": [
+        {
+          "id": "00040017",
+          "name": "마인크래프트",
+          "minutes": 940,
+          "sampleCount": 188,
+          "averageViewers": 162,
+          "maxViewers": 524
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297414965"
+    },
+    {
+      "id": "trackify-297436657",
+      "broadcastId": "297436657",
+      "date": "2026-09-28",
+      "startedAt": "2026-09-28T13:29:34+09:00",
+      "endedAt": "2026-09-28T13:37:33+09:00",
+      "durationMinutes": 8,
+      "averageViewers": 54,
+      "maxViewers": 85,
+      "viewerSampleCount": 2,
+      "uniqueViewers": null,
+      "starCount": 100,
+      "supporterCount": 1,
+      "chatCount": 49,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "마병대 4 행정관 마지막 이야기",
+      "categories": [
+        {
+          "id": "00040017",
+          "name": "마인크래프트",
+          "minutes": 8,
+          "sampleCount": 2,
+          "averageViewers": 54,
+          "maxViewers": 85
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297436657"
     }
   ]
 }
