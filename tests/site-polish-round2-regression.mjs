@@ -26,7 +26,8 @@ assert.doesNotMatch(youtube, /data-youtube-count="shorts">0</, 'shorts count mus
 assert.match(youtube, /data-youtube-count="videos" aria-live="polite">…</);
 assert.match(versionApi, /VERCEL_GIT_COMMIT_SHA/, 'version endpoint must expose deployment commit');
 assert.match(versionApi, /DEPLOY_COMMIT_SHA/, 'version endpoint must support prebuilt deployment commit');
-assert.match(versionApi, /no-store/, 'version endpoint must not be cached');
+assert.match(versionApi, /Cache-Control','public, max-age=60, stale-while-revalidate=1800'/, 'version endpoint should use a short browser cache');
+assert.match(versionApi, /Vercel-CDN-Cache-Control','public, max-age=300, stale-while-revalidate=1800'/, 'version endpoint should use a bounded CDN cache');
 assert.match(workflow, /api\/version/, 'production sync workflow must query version endpoint');
 assert.match(workflow, /git rev-parse HEAD/, 'production sync workflow must compare against checked-out main');
 assert.match(recoveryWorkflow, /vercel@59\.19\.1 build --prod/, 'recovery must build locally');
