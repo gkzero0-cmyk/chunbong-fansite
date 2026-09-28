@@ -23,8 +23,9 @@
 
   async function loadContent(type, force = false) {
     try {
+      const ttlByType={vod:20*60*1000,clips:20*60*1000,youtube:20*60*1000,notice:10*60*1000,fanart:15*60*1000,schedule:10*60*1000};
       const payload = window.ChunbongCache
-        ? await window.ChunbongCache.fetchJson('content:'+type, API_ENDPOINTS[type], { ttl: 3 * 60 * 1000, force })
+        ? await window.ChunbongCache.fetchJson('content:'+type, API_ENDPOINTS[type], { ttl: ttlByType[type]||10*60*1000, force, staleIfError:true })
         : await (async()=>{const response=await fetch(API_ENDPOINTS[type],{headers:{accept:'application/json'}});if(!response.ok)throw new Error(`HTTP ${response.status}`);return response.json()})();
       return payload && typeof payload === 'object' ? payload : { items: [], fallback: true, reason: 'invalid response' };
     } catch (error) {
