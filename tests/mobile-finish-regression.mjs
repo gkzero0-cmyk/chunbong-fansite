@@ -33,7 +33,7 @@ assert.ok(push.includes("push:vapid:v1"),'managed VAPID Redis key missing');
 assert.ok(push.includes('authorizedGitHubOidc'),'GitHub OIDC dispatch authorization missing');
 assert.ok(push.includes("push:dispatch-lock:v1"),'push dispatch lock missing');
 assert.ok(telemetryWorkflow.includes("cron: '2,12,22,32,42,52 * * * *'"),'10-minute SOOP telemetry schedule missing');
-assert.ok(pushWorkflow.includes("cron: '4,19,34,49 * * * *'"),'15-minute push fallback schedule missing');
+assert.ok(pushWorkflow.includes("cron: '4 * * * *'"),'hourly push fallback schedule missing');
 assert.ok(pushWorkflow.includes('id-token: write')&&telemetryWorkflow.includes('id-token: write'),'GitHub OIDC permission missing');
 assert.ok(pushWorkflow.includes('chunbong-fansite-push')&&telemetryWorkflow.includes('chunbong-fansite-push'),'Push OIDC audience missing');
 assert.ok(pushWorkflow.includes('/api/content?type=push-dispatch')&&telemetryWorkflow.includes('/api/content?type=push-dispatch'),'Push workflows must reuse the content API');
