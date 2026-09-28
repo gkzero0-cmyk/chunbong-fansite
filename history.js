@@ -303,7 +303,7 @@
     const visual=media.link
       ?`<a class="history-record-media-link" href="${esc(media.link)}" ${internalLink?'':'target="_blank" rel="noreferrer"'} aria-label="${esc(media.title||row.label)} ${internalLink?'콘텐츠':'다시보기'} 열기">${image}</a>`
       :image;
-    return `<figure class="history-record-media">${visual}<figcaption><span>${esc(media.source)}</span>${media.link?'<b>다시보기 ↗</b>':''}</figcaption></figure>`;
+    return `<figure class="history-record-media">${visual}<figcaption><span>${esc(media.source)}</span>${media.link?`<b>${internalLink?'콘텐츠':'다시보기'} ↗</b>`:''}</figcaption></figure>`;
   }
 
   async function ensureContentIndex(){
@@ -727,6 +727,18 @@
     return '';
   }
 
+  function renderRelatedResources(row={},id=''){
+    const links=[];
+    const content=contentHref(row);
+    const calendar=calendarHref(row);
+    const media=recordMedia(row);
+    if(content) links.push(`<a href="${esc(content)}">춘봉 콘텐츠</a>`);
+    if(media?.link&&!String(media.link).startsWith('/')) links.push(`<a href="${esc(media.link)}" target="_blank" rel="noreferrer">다시보기 ↗</a>`);
+    if(calendar) links.push(`<a href="${esc(calendar)}">방송 캘린더</a>`);
+    links.push(`<a href="${SOURCE_URL}" target="_blank" rel="noreferrer">SOOP 원본 ↗</a>`);
+    if(id) links.push(`<button type="button" data-copy-record="${esc(id)}">기록 링크 복사</button>`);
+    return `<section class="history-related-resources"><span>관련 자료</span><div>${links.join('')}</div></section>`;
+  }
   function detailWindow(row={}){
     const label=String(row.label||'');
     if(/마병대\s*4|마병대4/.test(label)) return {start:'2026-09-07',end:row.end||row.start};
@@ -1397,6 +1409,7 @@
                           </div>
                           ${summary?`<section class="history-record-summary"><span>방송 요약</span><p data-highlight data-raw="${esc(summary)}">${esc(summary)}</p></section>`:''}
                           ${renderSeriesLinks(row,rows)}
+                          ${renderRelatedResources(row,id)}
                           ${highlights.length?`<section class="history-record-highlights"><div class="history-record-section-title"><span>주요 진행 기록</span><b>${children.length}개</b></div><ol>${highlights.map(item=>`<li><time>${esc(item.end?displayDate({start:item.date,end:item.end}):fmt(item.date))}</time><span data-highlight data-raw="${esc(item.label)}">${esc(item.label)}</span></li>`).join('')}</ol></section>`:''}
                           ${children.length>3?`<details class="history-event-details"><summary>전체 세부 방송 기록 ${children.length}개 보기 <span>⌄</span></summary><div class="history-event-stage-list">${renderGroupedSubEvents(children)}</div></details>`:children.length?'':canLoad?`<button type="button" class="history-load-details" data-load-sub-events="${id}">세부 방송 기록 불러오기</button>`:''}
                         </div>
