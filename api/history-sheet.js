@@ -43,15 +43,27 @@ function iso(year,month,day){
   return [year,String(month).padStart(2,'0'),String(day).padStart(2,'0')].join('-');
 }
 
+function extractImageUrl(value=''){
+  const text=String(value||'').trim();
+  if(!text) return '';
+  const urls=text.match(/https?:\/\/[^\s"'<>]+/gi)||[];
+  return urls.find(url=>
+    /\.(?:avif|webp|png|jpe?g|gif)(?:[?#]|$)/i.test(url)
+    || /(?:googleusercontent|ggpht|ytimg|sooplive|afreecatv|cloudfront)\./i.test(url)
+  )||'';
+}
+
 function parseAnnual(rows,year){
   const items=[];
   for(const row of rows){
+    const rowImage=row.map(extractImageUrl).find(Boolean)||'';
     for(const raw of row){
       const value=String(raw||'').trim();
+      if(extractImageUrl(value)===value) continue;
       const match=value.match(/^(\d{1,2})\/(\d{1,2})(?:\s*-\s*(\d{1,2})\/(\d{1,2}))?\s+(.+)$/);
       if(!match) continue;
       const sm=Number(match[1]),sd=Number(match[2]),em=match[3]?Number(match[3]):null,ed=match[4]?Number(match[4]):null;
-      const item={start:iso(year,sm,sd),label:match[5].trim(),raw:value};
+      const item={start:iso(year,sm,sd),label:match[5].trim(),raw:value,...(rowImage?{thumb:rowImage,imageSource:'sheet'}:{})};
       if(em&&ed){
         const endYear=em<sm?year+1:year;
         item.end=iso(endYear,em,ed);
@@ -65,9 +77,11 @@ function parseAnnual(rows,year){
 function parseMonth(rows,year){
   const items=[];let currentDate='',currentRange=null;
   for(const row of rows){
+    const rowImage=row.map(extractImageUrl).find(Boolean)||'';
     for(const raw of row){
       const value=String(raw||'').trim();
       if(!value) continue;
+      if(extractImageUrl(value)===value) continue;
       const date=value.match(/^(\d{1,2})월\s*(\d{1,2})일$/);
       if(date){currentDate=iso(year,Number(date[1]),Number(date[2]));currentRange=null;continue;}
       const range=value.match(/^(\d{1,2})\/(\d{1,2})\s*[~-]\s*(\d{1,2})\/(\d{1,2})$/)
@@ -78,7 +92,7 @@ function parseMonth(rows,year){
         continue;
       }
       if(!currentDate||/춘봉 방송 기록$/.test(value)||/^\d+월 춘봉 방송 기록$/.test(value)) continue;
-      items.push({date:currentRange?.date||currentDate,...(currentRange?.end?{end:currentRange.end}:{}),label:value});
+      items.push({date:currentRange?.date||currentDate,...(currentRange?.end?{end:currentRange.end}:{}),label:value,...(rowImage?{thumb:rowImage,imageSource:'sheet'}:{})});
     }
   }
   return items;
