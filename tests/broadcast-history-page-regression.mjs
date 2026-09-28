@@ -35,6 +35,13 @@ assert.match(js, /고세구의 세바버[^\n]*VRC/, '세바버 must be classifie
 assert.match(js, /레오펠\\s\*2\\s\*무기한 연기[^\n]*importance:'normal'/, 'Leopel 2 postponement must stay out of simple history');
 assert.match(js, /퍼켓몬\\s\*UP전쟁[^\n]*importance:'normal'/, 'Pokemon UP war must stay out of simple history');
 assert.match(js, /2025 SOOP 스트리머 대상 참여/, 'award entry must explicitly say participation');
+assert.match(js, /더켓몬 민원아저씨[^\n]*픽셀몬 서버/, '더켓몬 must be classified as a Minecraft Pixelmon server');
+assert.match(js, /퍼켓몬[^\n]*픽셀몬 서버/, '퍼켓몬 must be classified as a Minecraft Pixelmon server');
+assert.match(js, /모징어게임[^\n]*마크 대형 콘텐츠/, '모징어게임 must be classified as a Minecraft large collaboration');
+assert.match(js, /청더일레븐[^\n]*마크 대회/, '청더일레븐 must be classified as a Minecraft competition');
+assert.match(js, /염병서버[^\n]*서버·마크/, '염병서버 must be classified as Minecraft');
+assert.match(js, /챈나룽 서버[^\n]*서버·마크/, '챈나룽 must be classified as Minecraft');
+assert.match(js, /밍친서버[^\n]*서버·마크/, '밍친서버 must be classified as Minecraft');
 assert.match(js, /주요 진행 기록/, 'detail view must surface a compact broadcast highlight summary');
 assert.match(sheetApi, /extractImageUrl/, 'history sheet API must preserve image URLs exposed by published sheets');
 assert.match(sheetApi, /imageSource:'sheet'/, 'spreadsheet images must be tagged as sheet media');
