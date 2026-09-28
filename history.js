@@ -685,6 +685,10 @@
 
     root.querySelectorAll('[data-month-jump-year]').forEach(bar=>{
       bar.hidden=detailYear==='all'||bar.dataset.monthJumpYear!==detailYear;
+      bar.querySelectorAll('[data-jump-month]').forEach(button=>{
+        const block=root.querySelector(`[data-history-month-block][data-month-key="${button.dataset.jumpMonth}"]`);
+        button.hidden=Boolean(block?.hidden);
+      });
     });
 
     const active=root.querySelector('[data-history-active-summary]');
@@ -1129,6 +1133,6 @@
     }
   });
 
-  window.__CHUNBONG_HISTORY_HELPERS__={records,displayDate,compactDate,renderSimple,renderDetail,setView,loadLiveSheets,recordId,inferKind,simpleDecision,simpleTypeLabel};
+  window.__CHUNBONG_HISTORY_HELPERS__={records,displayDate,compactDate,renderSimple,renderDetail,setView,loadLiveSheets,recordId,inferKind,inferRole,simpleDecision,simpleTypeLabel};
   void initialize();
 })();
