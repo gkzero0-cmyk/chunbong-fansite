@@ -506,8 +506,57 @@
   }
 
   function simpleRoleLabel(row={}){
-    const role=row.role||inferRole(row.label,normalizeKind(row.kind,row.label));
-    return role&&role!=='참가'?role:'';
+    const role=String(row.role||inferRole(row.label,normalizeKind(row.kind,row.label))||'').trim();
+    if(!role||role==='참가') return '';
+    if(/주최.*운영|운영.*주최/.test(role)) return '주최·운영';
+    if(/운영자|운영/.test(role)) return '운영';
+    if(/교육교관|교관/.test(role)) return '교관';
+    if(/중계/.test(role)) return '중계';
+    if(/수장|부두목|2인자/.test(role)) return '리더';
+    if(/개최|주최/.test(role)) return '주최';
+    return role;
+  }
+
+  function participationBucket(row={}){
+    const taxonomy=taxonomyFor(row);
+    const platform=taxonomy.platform;
+    const format=taxonomy.format;
+    if(platform==='마인크래프트'){
+      if(format==='서버') return '마크 서버';
+      if(format==='대회') return '마크 대회';
+      return '마크 콘텐츠';
+    }
+    if(platform==='GTA') return 'GTA 서버';
+    if(platform==='팰월드') return '팰월드 서버';
+    if(platform==='좀보이드') return '좀보이드 서버';
+    if(platform==='VRC') return 'VRC 콘텐츠';
+    if(format==='대회') return '대회';
+    if(platform==='타로'||format==='타로') return '타로 콘텐츠';
+    if(platform==='콘텐츠'||format==='콘텐츠'||format==='행사') return '주요 콘텐츠';
+    return '';
+  }
+
+  function yearParticipationStats(rows=[]){
+    const counts=new Map();
+    for(const row of rows){
+      const bucket=participationBucket(row);
+      if(!bucket) continue;
+      counts.set(bucket,(counts.get(bucket)||0)+1);
+    }
+    const order=['마크 서버','마크 콘텐츠','마크 대회','GTA 서버','팰월드 서버','좀보이드 서버','VRC 콘텐츠','대회','타로 콘텐츠','주요 콘텐츠'];
+    return order.filter(label=>counts.has(label)).map(label=>({label,count:counts.get(label)}));
+  }
+
+  function renderYearParticipationStats(rows=[]){
+    const stats=yearParticipationStats(rows);
+    if(!stats.length) return '';
+    return `<div class="history-year-participation" aria-label="연도별 콘텐츠 참가 횟수"><span class="history-year-participation-label">활동 요약</span><div>${stats.map(item=>`<span><b>${esc(item.label)}</b><em>${item.count}회</em></span>`).join('')}</div></div>`;
+  }
+
+  function renderSimpleMonthJumps(rows=[],year=''){
+    const months=[...new Set(rows.map(row=>String(row.start||'').slice(5,7)).filter(month=>/^\d{2}$/.test(month)))].sort((a,b)=>Number(a)-Number(b));
+    if(months.length<2) return '';
+    return `<nav class="history-simple-month-jumps" aria-label="${esc(year)}년 월 바로가기"><span>월 이동</span><div>${months.map(month=>`<button type="button" data-simple-jump-month="${esc(year)}-${month}">${Number(month)}월</button>`).join('')}</div></nav>`;
   }
 
   function currentKstDate(){
@@ -826,11 +875,13 @@
       <div class="history-simple-list">
         ${years.map(year=>`<section class="history-simple-year-section" data-simple-year="${year}" ${simpleYear!=='all'&&simpleYear!==year?'hidden':''}>
           <header class="history-simple-year-head"><div><strong>${year}</strong><span>${groups[year].length}개 핵심 이력</span></div>${yearSource(year)}</header>
+          ${renderYearParticipationStats(groups[year])}
+          ${renderSimpleMonthJumps(groups[year],year)}
           <div class="history-simple-table-head" aria-hidden="true"><span>날짜 / 기간</span><span>내용</span><span>유형</span></div>
           <div class="history-simple-year-list">
             ${groups[year].map(row=>{
               const id=recordId(row);
-              return `<article class="history-simple-row ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" tabindex="0" role="link" data-open-record="${id}" aria-label="${esc(row.label)} 상세 기록 보기">
+              return `<article class="history-simple-row ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" tabindex="0" role="link" data-open-record="${id}" data-simple-month="${esc(String(row.start||'').slice(0,7))}" aria-label="${esc(row.label)} 상세 기록 보기">
                 <time class="history-simple-date" datetime="${esc(row.start)}">${esc(compactDate(row))}</time>
                 <p class="history-simple-content"><span>${esc(row.label)}</span>${simpleRoleLabel(row)?`<em class="history-simple-role">${esc(simpleRoleLabel(row))}</em>`:''}${statusBadge(row)}<span class="history-row-arrow" aria-hidden="true">→</span></p>
                 <span class="history-simple-type">${esc(simpleTypeLabel(row))}</span>
@@ -844,6 +895,13 @@
 
     root.querySelector('[data-open-detail]')?.addEventListener('click',()=>setView('detail'));
     bindSimpleRows();
+    root.querySelectorAll('[data-simple-jump-month]').forEach(button=>{
+      button.addEventListener('click',()=>{
+        const key=button.dataset.simpleJumpMonth||'';
+        const target=root.querySelector(`[data-simple-month="${key}"]`);
+        target?.scrollIntoView({behavior:'smooth',block:'center'});
+      });
+    });
     bindYearFilters('simple',year=>{
       simpleYear=year;
       root.querySelectorAll('[data-year-filter-scope="simple"] [data-history-year]').forEach(button=>button.classList.toggle('is-active',button.dataset.historyYear===year));
@@ -852,7 +910,7 @@
   }
 
   function detailBaseSearchText(row){
-    return [row.label,row.kind,row.role,recordSummary(row),row.start,row.end]
+    return [row.label,row.kind,row.role,taxonomyLabel(row),taxonomyFor(row).platform,taxonomyFor(row).format,recordSummary(row),row.start,row.end]
       .filter(Boolean).join(' ').toLowerCase();
   }
 
