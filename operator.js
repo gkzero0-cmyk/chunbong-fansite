@@ -556,31 +556,67 @@ function historyAuditReason(label=''){
 function isVerifiedHistoryLabel(label=''){
   return HISTORY_VERIFIED_PATTERNS.some(pattern=>pattern.test(String(label||'').trim()));
 }
+function normalizeHistoryAuditLabel(value=''){
+  return String(value||'').toLowerCase().replace(/[\s:·<>\-_.]/g,'');
+}
+function historyArchiveMatch(row={},indexItems=[]){
+  const label=normalizeHistoryAuditLabel(row.label);
+  if(!label)return null;
+  let best=null,bestScore=0;
+  for(const item of indexItems){
+    const names=[item?.title,...(Array.isArray(item?.aliases)?item.aliases:[])].filter(Boolean);
+    for(const name of names){
+      const normalized=normalizeHistoryAuditLabel(name);
+      if(normalized.length<3)continue;
+      let score=0;
+      if(label===normalized)score=200+normalized.length;
+      else if(label.includes(normalized))score=100+normalized.length;
+      else if(normalized.includes(label)&&label.length>=5)score=70+label.length;
+      if(score>bestScore){best=item;bestScore=score;}
+    }
+  }
+  return bestScore>=80?best:null;
+}
 async function loadHistoryVerification(){
   const card=$('[data-history-audit-card]'),summary=$('[data-history-audit-summary]'),results=$('[data-history-audit-results]'),button=$('[data-history-audit-run]');
   if(!card||!summary||!results)return;
   if(button)button.disabled=true;
-  summary.innerHTML='<strong>검증 중</strong><span>2025~2026 연간 방송 이력을 비교하고 있습니다.</span>';
+  summary.innerHTML='<strong>검증 중</strong><span>2025~2026 방송 이력의 분류와 대표 이미지를 함께 확인하고 있습니다.</span>';
   try{
-    const [y2025,y2026]=await Promise.all([
+    const [y2025,y2026,indexPayload]=await Promise.all([
       json('/api/history-sheet?sheet=2025'),
-      json('/api/history-sheet?sheet=2026')
+      json('/api/history-sheet?sheet=2026'),
+      json('/api/content?type=chunbong-content-index')
     ]);
+    const indexItems=Array.isArray(indexPayload?.items)?indexPayload.items:[];
     const rows=[
       ...(Array.isArray(y2025?.items)?y2025.items.map(item=>({...item,year:2025})):[]),
       ...(Array.isArray(y2026?.items)?y2026.items.map(item=>({...item,year:2026})):[])
     ];
-    const issues=rows
-      .filter(row=>historyAuditCandidate(row.label)&&!isVerifiedHistoryLabel(row.label))
-      .map(row=>({...row,reason:historyAuditReason(row.label)}));
-    summary.innerHTML=issues.length
-      ?`<strong>${fmt(issues.length)}개 확인 필요</strong><span>검증 규칙에 아직 고정되지 않은 서버·대회성 기록입니다.</span>`
-      :'<strong>확인 필요 0개</strong><span>현재 2025~2026 주요 서버·대회 기록은 검증 규칙에 포함되어 있습니다.</span>';
+    const majorRows=rows.filter(row=>historyAuditCandidate(row.label));
+    const issueMap=new Map();
+    const addIssue=(row,reason)=>{
+      const key=[row.start||'',row.label||''].join('|');
+      const current=issueMap.get(key)||{...row,reasons:[]};
+      if(!current.reasons.includes(reason))current.reasons.push(reason);
+      issueMap.set(key,current);
+    };
+    for(const row of majorRows){
+      if(!isVerifiedHistoryLabel(row.label))addIssue(row,historyAuditReason(row.label));
+      const archive=historyArchiveMatch(row,indexItems);
+      const hasArchiveHero=Boolean(archive?.heroImage?.src);
+      const hasSheetImage=Boolean(row.thumb||row.image||row.imageUrl);
+      if(!hasArchiveHero&&!hasSheetImage)addIssue(row,'대표 이미지 지정 없음');
+    }
+    const issues=[...issueMap.values()];
+    const classificationCount=issues.filter(row=>row.reasons.some(reason=>reason!=='대표 이미지 지정 없음')).length;
+    const imageCount=issues.filter(row=>row.reasons.includes('대표 이미지 지정 없음')).length;
+    summary.innerHTML=`<div class="operator-history-audit-metrics"><span><b>${fmt(classificationCount)}</b>분류 확인</span><span><b>${fmt(imageCount)}</b>대표 이미지 없음</span><span><b>${fmt(majorRows.length)}</b>주요 기록 점검</span></div><small>${issues.length?'확인 필요한 항목만 아래에 표시합니다.':'현재 주요 기록에 추가 확인 항목이 없습니다.'}</small>`;
     results.innerHTML=issues.length
-      ?issues.slice(0,30).map(row=>`<article><time>${escapeHtml(row.start||'')}</time><div><strong>${escapeHtml(row.label)}</strong><span>${escapeHtml(row.reason)} · ${row.year}년</span></div><a href="history.html#history-${escapeHtml(String(row.start||''))}" target="_blank" rel="noopener">이력 보기 ↗</a></article>`).join('')
+      ?issues.slice(0,40).map(row=>`<article><time>${escapeHtml(row.start||'')}</time><div><strong>${escapeHtml(row.label)}</strong><span>${escapeHtml(row.reasons.join(' · '))} · ${row.year}년</span></div><a href="history.html" target="_blank" rel="noopener">이력 보기 ↗</a></article>`).join('')
       :'<p class="operator-empty">추가로 확인할 주요 방송 이력이 없습니다.</p>';
   }catch(error){
-    summary.innerHTML='<strong>검증 실패</strong><span>스프레드시트 자료를 불러오지 못했습니다.</span>';
+    summary.innerHTML='<strong>검증 실패</strong><span>스프레드시트 또는 콘텐츠 아카이브를 불러오지 못했습니다.</span>';
     results.innerHTML='<p class="operator-empty">잠시 뒤 다시 실행해 주세요.</p>';
   }finally{
     if(button)button.disabled=false;
