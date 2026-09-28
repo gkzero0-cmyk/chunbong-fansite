@@ -605,10 +605,11 @@
     const roles=yearRoleStats(rows);
     if(!stats.length&&!roles.length) return '';
     return `<div class="history-year-activity-summary">
-      <div class="history-year-participation" aria-label="${esc(year)}년 콘텐츠 참가 횟수">
-        <div class="history-year-participation-head"><span class="history-year-participation-label">활동 요약</span><small>콘텐츠 1건 = 1회 · 신청·면접·준비 기록 제외</small></div>
+      <div class="history-year-participation" aria-label="${esc(year)}년 콘텐츠 활동 횟수">
+        <div class="history-year-participation-head"><span class="history-year-participation-label">활동 요약</span><small>콘텐츠 1건 = 1회 · 주최·운영도 1건 · 신청·면접·설명회 제외</small></div>
         <div>${stats.map(item=>`<button type="button" data-simple-bucket="${esc(item.label)}" aria-pressed="false"><b>${esc(item.label)}</b><em>${item.count}회</em></button>`).join('')}</div>
       </div>
+      <div class="history-simple-filter-state" data-simple-filter-state hidden><span></span><button type="button" data-simple-clear-bucket>전체 보기</button></div>
       ${roles.length?`<div class="history-year-role-summary" aria-label="${esc(year)}년 역할 요약"><span>역할</span><div>${roles.map(item=>`<em><b>${esc(item.label)}</b>${item.count}회</em>`).join('')}</div></div>`:''}
     </div>`;
   }
@@ -950,7 +951,7 @@
     }
 
     root.innerHTML=`<section class="history-simple" aria-label="간단 방송 이력">
-      <div class="history-simple-note"><strong>검증된 참여 이력</strong><span>스프레드시트 기록을 SOOP·공개 자료와 교차 확인해 게임 종류와 역할이 확인된 서버·마크·게임·VRC·대회만 표시합니다. 연기·신청·준비·세부 이벤트와 분류가 불확실한 기록은 상세 보기에서만 확인합니다.</span></div>
+      <div class="history-simple-note"><strong>검증된 참여 이력</strong><span>서버는 장기 운영형 월드, 대회는 공식 경쟁 형식이 확인된 기록만 분리합니다. 단발 게임 방송은 게임 콘텐츠로 표시하고, 신청·면접·설명회·내부 CK처럼 근거가 약한 기록은 간단 보기에서 제외합니다.</span></div>
       ${renderYearFilters(years,'simple',simpleYear)}
       ${renderYearComparison(groups,years)}
       <div class="history-simple-list">
@@ -964,8 +965,8 @@
               const id=recordId(row);
               return `<article class="history-simple-row ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" tabindex="0" role="link" data-open-record="${id}" data-simple-month="${esc(String(row.start||'').slice(0,7))}" data-simple-bucket="${esc(participationBucket(row))}" aria-label="${esc(row.label)} 상세 기록 보기">
                 <time class="history-simple-date" datetime="${esc(row.start)}">${esc(compactDate(row))}</time>
-                <p class="history-simple-content"><span>${esc(row.label)}</span>${simpleRoleLabel(row)?`<em class="history-simple-role">${esc(simpleRoleLabel(row))}</em>`:''}${statusBadge(row)}<span class="history-row-arrow" aria-hidden="true">→</span></p>
-                <span class="history-simple-type">${esc(simpleTypeLabel(row))}</span>
+                <p class="history-simple-content"><span>${esc(row.label)}</span>${simpleRoleLabel(row)?`<em class="history-simple-role">${esc(simpleRoleLabel(row))}</em>`:''}${statusBadge(row)}</p>
+                <span class="history-simple-type" data-simple-type="${esc(simpleTypeLabel(row))}">${esc(simpleTypeLabel(row))}</span>
               </article>`;
             }).join('')}
           </div>
@@ -976,17 +977,38 @@
 
     root.querySelector('[data-open-detail]')?.addEventListener('click',()=>setView('detail'));
     bindSimpleRows();
-    root.querySelectorAll('[data-simple-bucket]').forEach(button=>{
-      if(!button.matches('button')) return;
+    const clearSimpleBucket=section=>{
+      if(!section) return;
+      section.querySelectorAll('button[data-simple-bucket]').forEach(other=>{other.setAttribute('aria-pressed','false');other.classList.remove('is-active');});
+      section.querySelectorAll('.history-simple-row').forEach(row=>{row.hidden=false;});
+      const state=section.querySelector('[data-simple-filter-state]');
+      if(state){state.hidden=true;state.querySelector('span').textContent='';}
+    };
+    root.querySelectorAll('button[data-simple-bucket]').forEach(button=>{
       button.addEventListener('click',()=>{
         const section=button.closest('[data-simple-year]');
         if(!section) return;
         const bucket=button.dataset.simpleBucket||'';
         const wasActive=button.getAttribute('aria-pressed')==='true';
-        section.querySelectorAll('button[data-simple-bucket]').forEach(other=>{other.setAttribute('aria-pressed','false');other.classList.remove('is-active');});
-        section.querySelectorAll('.history-simple-row').forEach(row=>{row.hidden=!wasActive&&row.dataset.simpleBucket!==bucket;});
-        if(!wasActive){button.setAttribute('aria-pressed','true');button.classList.add('is-active');}
+        clearSimpleBucket(section);
+        if(wasActive) return;
+        button.setAttribute('aria-pressed','true');
+        button.classList.add('is-active');
+        let visible=0;
+        section.querySelectorAll('.history-simple-row').forEach(row=>{
+          const show=row.dataset.simpleBucket===bucket;
+          row.hidden=!show;
+          if(show) visible+=1;
+        });
+        const state=section.querySelector('[data-simple-filter-state]');
+        if(state){
+          state.hidden=false;
+          state.querySelector('span').textContent=`필터: ${bucket} · ${visible}개`;
+        }
       });
+    });
+    root.querySelectorAll('[data-simple-clear-bucket]').forEach(button=>{
+      button.addEventListener('click',()=>clearSimpleBucket(button.closest('[data-simple-year]')));
     });
 
     root.querySelectorAll('[data-simple-jump-month]').forEach(button=>{
