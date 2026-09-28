@@ -32,8 +32,8 @@ assert.match(adapter,/room\.startAt\+120000/,'race end must derive from server s
 assert.match(adapter,/seededRandom\(seed\)/,'score races must start from the shared room seed');
 assert.match(adapter,/refreshInFlight/,'multiplayer refresh must prevent overlapping requests');
 assert.match(adapter,/progressInFlight/,'multiplayer progress sync must prevent overlapping requests');
-assert.match(adapter,/setInterval\(refresh,1000\)/,'room polling should use a lighter one-second cadence');
-assert.match(adapter,/setInterval\(sync,1000\)/,'progress sync should use a lighter one-second cadence');
+assert.match(adapter,/setInterval\(refresh,1300\)/,'room polling should use a staggered cadence');
+assert.match(adapter,/setInterval\(sync,1400\)/,'progress sync should use a staggered cadence');
 assert.match(api,/room\.mode==='score120'/,'server needs score-race completion semantics');
 assert.match(api,/room\.players\.every\(item=>item\.finished\)/,'score race must wait for both players');
 assert.match(api,/aScore>bScore\?a\.id:b\.id/,'score race winner must be chosen by score');
