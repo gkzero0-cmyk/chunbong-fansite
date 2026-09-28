@@ -6,6 +6,8 @@ const image=fs.readFileSync(new URL('../api/image.js',import.meta.url),'utf8');
 
 assert.match(shared,/const jsonResponseCache=new Map\(\)/);
 assert.match(shared,/JSON_RESPONSE_CACHE_MS=60\*1000/);
+assert.match(shared,/JSON_RESPONSE_STALE_MS=6\*60\*60\*1000/);
+assert.match(shared,/cached&&Date\.now\(\)-cached\.at<JSON_RESPONSE_STALE_MS/);
 assert.match(shared,/Date\.now\(\)-cached\.at<JSON_RESPONSE_CACHE_MS/);
 assert.match(shared,/jsonResponseCache\.size>64/);
 
