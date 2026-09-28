@@ -462,16 +462,17 @@
   async function loadRanking() {
     setRankingStatus('랭킹 불러오는 중…');
     try {
-      const response = await fetch(`${RANKING_ENDPOINT}&mode=classic`, { headers:{ accept:'application/json' } });
-      if (!response.ok) throw new Error(`ranking ${response.status}`);
-      const payload = await response.json();
+      const url=`${RANKING_ENDPOINT}&mode=classic`,key='ranking:chunbak:classic';
+      const payload=window.ChunbongCache
+        ?await window.ChunbongCache.fetchJson(key,url,{ttl:300000,staleIfError:true,backoffMs:300000})
+        :await fetch(url,{headers:{accept:'application/json'}}).then(async response=>{if(!response.ok)throw new Error(`ranking ${response.status}`);return response.json()});
       if (payload.unavailable) {
         setRankingStatus('랭킹 서버 사용량 제한으로 잠시 확인할 수 없습니다.');
         return;
       }
       rankingEntries = Array.isArray(payload.entries) ? payload.entries : [];
       renderRankings();
-      setRankingStatus(rankingEntries.length ? '전체 최고 기록' : '아직 등록된 기록이 없습니다.');
+      setRankingStatus(payload.snapshot?'최근 정상 랭킹':rankingEntries.length ? '전체 최고 기록' : '아직 등록된 기록이 없습니다.');
     } catch (_) {
       setRankingStatus('랭킹을 불러올 수 없습니다');
     }
