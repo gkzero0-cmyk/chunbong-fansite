@@ -5,6 +5,15 @@ import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 
 const INTERNAL_PREFIXES=['.github/','tests/','docs/','scripts/'];
+const GENERATED_DATA_PATHS=new Set([
+  'data/chunbong-data-history.json',
+  'data/trackify-soop-cache.json',
+  'data/soop-follower-history.json',
+  'data/youtube-engagement-cache.json',
+  'data/soop-external-history.json',
+  'data/soop-sessions.json',
+  'data/last-known-good.json'
+]);
 const INTERNAL_ROOT_FILES=new Set([
   '.editorconfig',
   '.gitignore',
@@ -17,7 +26,7 @@ const INTERNAL_ROOT_FILES=new Set([
 export function isInternalPath(file=''){
   const value=String(file||'').replaceAll('\\','/').replace(/^\.\//,'');
   if(!value)return false;
-  if(INTERNAL_ROOT_FILES.has(value))return true;
+  if(INTERNAL_ROOT_FILES.has(value)||GENERATED_DATA_PATHS.has(value))return true;
   if(/^README(?:\.[^/]+)?$/i.test(value))return true;
   return INTERNAL_PREFIXES.some(prefix=>value.startsWith(prefix));
 }
@@ -65,7 +74,7 @@ export function main(){
   }
 
   if(shouldIgnoreFiles(files)){
-    console.log('Only internal CI/test/docs files changed; skip Vercel build.');
+    console.log('Only internal or generated data files changed; skip Vercel build.');
     for(const file of files)console.log(`- ${file}`);
     process.exit(0);
   }
@@ -74,5 +83,7 @@ export function main(){
   for(const file of files)console.log(`- ${file}`);
   process.exit(1);
 }
+
+export { GENERATED_DATA_PATHS };
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)main();
