@@ -437,6 +437,7 @@ async function loadSystemStatus(){
   $('#operator-service-health').innerHTML=serviceRows.map(([label,ok])=>`<div><span>${label}</span>${healthLabel(Boolean(ok))}</div>`).join('');
   const endpoints=Array.isArray(data.endpoints)?data.endpoints:[];
   $('#operator-endpoint-health').innerHTML=endpoints.length?endpoints.map(row=>`<div><span>${escapeHtml(row.label||row.path||'API')} <small>${fmt(row.ms)}ms</small></span><span class="operator-endpoint-result ${row.ok?'ok':'bad'}">${row.ok?'HTTP '+fmt(row.status):row.status?'HTTP '+fmt(row.status):'응답 실패'}</span></div>`).join(''):'<p class="operator-empty">API 상태를 확인하지 못했습니다.</p>';
+  const multiplayer=data.multiplayer||{};
   const budget=data.resourceBudget||{},mode=budget.mode||'saving';
   const budgetMode=$('#system-budget-mode');
   if(budgetMode){budgetMode.textContent=mode==='limit'?'● 제한 모드':'● 절약 모드';budgetMode.className='operator-health '+(mode==='limit'?'bad':'ok')}
@@ -455,6 +456,10 @@ async function loadSystemStatus(){
     ['Push 백업 '+fmt(protections.pushFallbackMinutes||0)+'분',Number(protections.pushFallbackMinutes)>0],
     ['SOOP 수집 '+fmt(protections.soopTelemetryMinutes||0)+'분',Number(protections.soopTelemetryMinutes)>0],
     ['Notion 백업 '+fmt(protections.notionFallbackMinutes||0)+'분',Number(protections.notionFallbackMinutes)>0],
+    ['멀티플레이 대기 polling '+fmt(multiplayer.backgroundPollSeconds||0)+'초',Number(multiplayer.backgroundPollSeconds)>=5],
+    ['멀티플레이 room_busy '+fmt(multiplayer.roomBusy||0)+'회',Number(multiplayer.roomBusy||0)===0],
+    ['멀티플레이 lock 재시도 '+fmt(multiplayer.lockRetries||0)+'회',Number(multiplayer.lockRetries||0)<20],
+    ['멀티플레이 Redis circuit '+(Number(multiplayer.redisCircuitOpenUntil||0)>Date.now()?'열림':'정상'),Number(multiplayer.redisCircuitOpenUntil||0)<=Date.now()],
     ['마지막 정상 데이터',protections.lastGoodSnapshot],
     ['크루 소식 캐시',protections.crewNewsCache],
     ['랭킹 제한 완화',protections.rankingGracefulFallback],
