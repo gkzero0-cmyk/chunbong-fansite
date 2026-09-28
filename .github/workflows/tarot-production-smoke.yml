@@ -15,6 +15,10 @@ on:
       - 'api/tarot-reading.js'
       - '.github/workflows/tarot-production-smoke.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   production-smoke:
     runs-on: ubuntu-latest
