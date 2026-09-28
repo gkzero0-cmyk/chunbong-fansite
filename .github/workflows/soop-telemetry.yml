@@ -2,8 +2,14 @@ name: SOOP telemetry
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '2-57/5 * * * *'
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/soop-telemetry.yml'
+      - 'scripts/collect-soop-telemetry.mjs'
+      - 'lib/push-notifications-api.js'
 
 permissions:
   contents: write

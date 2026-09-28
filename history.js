@@ -2,6 +2,7 @@
   'use strict';
 
   const SOURCE_URL='https://www.sooplive.com/station/chunbongtv/post/202862381';
+  const SOURCE_DETAIL_API='/api/content?type=notice-detail&id=202862381';
   const root=document.getElementById('history-content');
   const status=document.getElementById('history-sync-status');
   const guide=document.querySelector('[data-history-guide]');
@@ -31,6 +32,9 @@
   let contentIndex=[];
   let contentIndexLoaded=false;
   let contentIndexLoading=null;
+  let sourcePost=null;
+  let sourcePostLoadedAt=0;
+  let sourcePostLoading=null;
 
   const kindOrder=['마인크래프트','대회','게임','타로','콘텐츠','활동','방송'];
 
@@ -156,6 +160,36 @@
       .catch(()=>{contentIndexLoaded=true;return [];})
       .finally(()=>{contentIndexLoading=null;});
     return contentIndexLoading;
+  }
+
+  function renderSourcePost(){
+    const host=document.querySelector('[data-history-guide] .history-guide-body');
+    if(!host||!sourcePost?.html)return;
+    let panel=host.querySelector('[data-history-source-preview]');
+    if(!panel){
+      panel=document.createElement('details');
+      panel.className='history-source-preview';
+      panel.dataset.historySourcePreview='1';
+      host.appendChild(panel);
+    }
+    panel.innerHTML=`<summary><strong>SOOP 원본 내용</strong><span>공식 방송 이력 게시글</span></summary><div class="history-source-body">${sourcePost.html}</div><div class="history-document-foot"><span>${esc(sourcePost.date||'')}</span><a class="inline-link" href="${SOURCE_URL}" target="_blank" rel="noreferrer">SOOP 원본에서 보기 ↗</a></div>`;
+  }
+
+  async function loadSourcePost({force=false}={}){
+    if(sourcePostLoading)return sourcePostLoading;
+    if(!force&&sourcePost&&Date.now()-sourcePostLoadedAt<5*60*1000)return sourcePost;
+    sourcePostLoading=loadJson(SOURCE_DETAIL_API)
+      .then(payload=>{
+        const item=payload?.item;
+        if(!item?.html)throw new Error('source_post_empty');
+        sourcePost={...item};
+        sourcePostLoadedAt=Date.now();
+        renderSourcePost();
+        return sourcePost;
+      })
+      .catch(()=>sourcePost)
+      .finally(()=>{sourcePostLoading=null;});
+    return sourcePostLoading;
   }
 
   function monthCacheKey(year,month){
@@ -1098,6 +1132,7 @@
   }
 
   async function initialize(){
+    void loadSourcePost();
     const cached=readAnnualCache();
     if(cached){
       liveAnnual=cached.items.map(enrichSheetRecord);
@@ -1135,4 +1170,5 @@
 
   window.__CHUNBONG_HISTORY_HELPERS__={records,displayDate,compactDate,renderSimple,renderDetail,setView,loadLiveSheets,recordId,inferKind,inferRole,simpleDecision,simpleTypeLabel};
   void initialize();
+  setInterval(()=>{if(document.visibilityState==='visible')void loadSourcePost({force:true});},5*60*1000);
 })();
