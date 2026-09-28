@@ -1,3 +1,85 @@
+
+;(()=>{
+  'use strict';
+  if(typeof window==='undefined'||typeof window.fetch!=='function'||window.__chunbongBudgetFetchInstalled)return;
+  window.__chunbongBudgetFetchInstalled=true;
+  const nativeFetch=window.fetch.bind(window);
+  const inflight=new Map(),memory=new Map();
+  const STORAGE_PREFIX='chunbong:last-good:v1:';
+  const now=()=>Date.now();
+  function policy(input,init={}){
+    const method=String(init?.method||'GET').toUpperCase();
+    if(method!=='GET')return null;
+    let url;try{url=new URL(typeof input==='string'?input:input?.url,location.href)}catch{return null}
+    if(url.origin!==location.origin)return null;
+    if(url.searchParams.get('refresh')==='1')return null;
+    const path=url.pathname,type=url.searchParams.get('type')||'';
+    if(path==='/api/version')return{memoryMs:60000,snapshotMs:60*60*1000};
+    if(path==='/api/history-sheet')return{memoryMs:5*60*1000,snapshotMs:24*60*60*1000};
+    if(path==='/api/crew-news')return{memoryMs:60000,snapshotMs:6*60*60*1000};
+    if(path==='/api/crew-news-batch')return{memoryMs:5*60*1000,snapshotMs:6*60*60*1000};
+    if(path==='/api/content'&&type==='chunbong-content-index')return{memoryMs:5*60*1000,snapshotMs:24*60*60*1000};
+    if(path==='/api/content'&&/(?:^|-)ranking$/.test(type))return{memoryMs:60000,snapshotMs:24*60*60*1000};
+    return null;
+  }
+  function keyFor(input){
+    try{const u=new URL(typeof input==='string'?input:input?.url,location.href);u.hash='';return u.pathname+u.search}catch{return''}
+  }
+  function responseFrom(record,marker){
+    return new Response(record.body,{status:200,headers:{'content-type':record.contentType||'application/json','x-chunbong-cache':marker}});
+  }
+  function readSnapshot(key,maxAge){
+    try{
+      const raw=localStorage.getItem(STORAGE_PREFIX+key);if(!raw)return null;
+      const row=JSON.parse(raw);
+      if(!row?.body||now()-Number(row.savedAt||0)>maxAge){localStorage.removeItem(STORAGE_PREFIX+key);return null}
+      return row;
+    }catch{return null}
+  }
+  function writeSnapshot(key,body,contentType){
+    try{
+      if(body.length>250000)return;
+      localStorage.setItem(STORAGE_PREFIX+key,JSON.stringify({body,contentType,savedAt:now()}));
+    }catch{}
+  }
+  window.fetch=async function budgetFetch(input,init){
+    const p=policy(input,init);if(!p)return nativeFetch(input,init);
+    const key=keyFor(input);if(!key)return nativeFetch(input,init);
+    const cached=memory.get(key);
+    if(cached&&cached.expiresAt>now())return responseFrom(cached,'memory');
+    if(inflight.has(key)){
+      try{const row=await inflight.get(key);return responseFrom(row,'dedupe')}catch{}
+    }
+    const task=(async()=>{
+      try{
+        const response=await nativeFetch(input,init);
+        const body=await response.clone().text();
+        let unavailable=false;
+        if(response.ok&&/application\/json/i.test(response.headers.get('content-type')||'')){
+          try{unavailable=JSON.parse(body)?.unavailable===true}catch{}
+        }
+        if(response.ok&&!unavailable){
+          const row={body,contentType:response.headers.get('content-type')||'application/json',expiresAt:now()+p.memoryMs};
+          memory.set(key,row);writeSnapshot(key,body,row.contentType);return row;
+        }
+        if(unavailable||response.status>=500){
+          const snap=readSnapshot(key,p.snapshotMs);if(snap)return{...snap,expiresAt:now()+Math.min(p.memoryMs,60000)};
+        }
+        return{body,contentType:response.headers.get('content-type')||'application/json',expiresAt:now()+Math.min(p.memoryMs,15000),status:response.status};
+      }catch(error){
+        const snap=readSnapshot(key,p.snapshotMs);if(snap)return{...snap,expiresAt:now()+Math.min(p.memoryMs,60000)};
+        throw error;
+      }
+    })();
+    inflight.set(key,task);
+    try{
+      const row=await task;
+      if(row.status&&row.status!==200)return new Response(row.body,{status:row.status,headers:{'content-type':row.contentType}});
+      if(!memory.has(key)&&row.body)memory.set(key,row);
+      return responseFrom(row,row.savedAt?'snapshot':'network');
+    }finally{inflight.delete(key)}
+  };
+})();
 (()=>{'use strict';
 const memory=new Map(),CACHE_PREFIX='chunbong-cache-v2:';
 const shouldPersist=key=>{key=String(key);return key.startsWith('content:')||key.startsWith('notice-detail:')||key.startsWith('fanart-detail:')||key==='changelog-summary'};
