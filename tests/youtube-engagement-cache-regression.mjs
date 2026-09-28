@@ -32,5 +32,7 @@ assert.match(updater, /mergeEngagementCache/);
 assert.match(updater, /previous\.items/);
 assert.match(updater, /fresh\.items/);
 assert.match(updater, /JSON\.stringify/);
+assert.match(updater, /YouTube discovery unavailable; preserving/);
+assert.match(updater, /if\(previous\.items\.length\)/);
 
 console.log('YouTube engagement cache updater regression test passed');
