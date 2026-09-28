@@ -22,6 +22,10 @@ on:
       - 'data/soop-follower-history.json'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   smoke:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
@@ -34,6 +38,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Stop early on Vercel build-rate-limit
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .github/scripts/vercel-rate-limit-fast-fail.mjs
       - name: Wait for Vercel production
         run: sleep 35
       - name: Verify production SOOP dashboard
