@@ -71,7 +71,8 @@ function parseMonth(rows,year){
       if(!value) continue;
       const date=value.match(/^(\d{1,2})월\s*(\d{1,2})일$/);
       if(date){currentDate=iso(year,Number(date[1]),Number(date[2]));rowRange=null;continue;}
-      const range=value.match(/^(\d{1,2})\/(\d{1,2})\s*-\s*(\d{1,2})\/(\d{1,2})$/);
+      const range=value.match(/^(\d{1,2})\/(\d{1,2})\s*[~-]\s*(\d{1,2})\/(\d{1,2})$/)
+        || value.match(/^(\d{1,2})월\s*(\d{1,2})일\s*[~-]\s*(\d{1,2})월\s*(\d{1,2})일$/);
       if(range){
         const sm=Number(range[1]),sd=Number(range[2]),em=Number(range[3]),ed=Number(range[4]);
         rowRange={date:iso(year,sm,sd),end:iso(em<sm?year+1:year,em,ed)};
