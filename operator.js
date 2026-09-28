@@ -447,6 +447,13 @@ async function loadSystemStatus(){
   const protections=budget.protections||{};
   const protectionRows=[
     ['중복 요청 합치기',protections.requestDedupe],
+    ['콘텐츠 단일 요청 공유',protections.publicContentSingleFlight],
+    ['외부 JSON 캐시 '+fmt(protections.upstreamJsonCacheSeconds||0)+'초',Number(protections.upstreamJsonCacheSeconds)>0],
+    ['이미지 CDN 캐시 '+fmt(Math.round((protections.imageProxyCdnCacheSeconds||0)/86400))+'일',Number(protections.imageProxyCdnCacheSeconds)>0],
+    ['Push 저장 '+String(protections.pushSubscriptionStore||'-'),protections.pushSubscriptionStore==='redis-hash-v2'],
+    ['Push 백업 '+fmt(protections.pushFallbackMinutes||0)+'분',Number(protections.pushFallbackMinutes)>0],
+    ['SOOP 수집 '+fmt(protections.soopTelemetryMinutes||0)+'분',Number(protections.soopTelemetryMinutes)>0],
+    ['Notion 백업 '+fmt(protections.notionFallbackMinutes||0)+'분',Number(protections.notionFallbackMinutes)>0],
     ['마지막 정상 데이터',protections.lastGoodSnapshot],
     ['크루 소식 캐시',protections.crewNewsCache],
     ['랭킹 제한 완화',protections.rankingGracefulFallback],
