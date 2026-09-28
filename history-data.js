@@ -210,7 +210,7 @@ window.CHUNBONG_HISTORY_RECORDS = Object.freeze([
     sources:["activity-history","server-history"]
   },
   {
-    start:"2026-04-28", label:"싸이감성 노래자랑 개최", kind:"주최", featured:true,
+    start:"2026-04-28", label:"싸이감성 노래자랑 2회", kind:"콘텐츠", featured:true,
     sources:["activity-history","broadcast-record"]
   },
   {
@@ -228,7 +228,7 @@ window.CHUNBONG_HISTORY_RECORDS = Object.freeze([
     sources:["server-history","public-broadcast-record","self-activity-list"]
   },
   {
-    start:"2026-07-11", label:"춘타클(춘봉 타로 클래스) 시작", kind:"타로", featured:true,
+    start:"2026-07-11", label:"춘타클(춘봉 타로 클래스) 시작", kind:"VRC", featured:true,
     detail:"스트리머 대상 타로 클래스 시리즈를 시작했습니다.",
     sources:["soop-record","content-archive"]
   },
@@ -258,7 +258,7 @@ window.CHUNBONG_HISTORY_RECORDS = Object.freeze([
     sources:["google-sheet"]
   },
   {
-    start:"2026-09-14", label:"춘타클 제5회 · 마지막 수업", kind:"타로", featured:true,
+    start:"2026-09-14", label:"춘타클 제5회 · 마지막 수업", kind:"VRC", featured:true,
     detail:"Google Sheet 9월 14일 기록에 ‘춘타클 제5회 - 마지막 수업’으로 명시되어 있습니다.",
     sources:["google-sheet","content-archive"]
   },
