@@ -292,7 +292,9 @@ async function handler(req,res) {
   if(type==='operator-content-source-meta') return contentArchive.handleOperatorSourceMeta(req,res);
   if(type==='operator-content-archive-delete') return contentArchive.handleOperatorDelete(req,res);
   if(type==='live'){
-    res.setHeader('Cache-Control','public, max-age=15, s-maxage=45, stale-while-revalidate=120');
+    res.setHeader('Cache-Control','public, max-age=15, stale-while-revalidate=120');
+    res.setHeader('CDN-Cache-Control','public, max-age=45, stale-while-revalidate=120');
+    res.setHeader('Vercel-CDN-Cache-Control','public, max-age=45, stale-while-revalidate=120');
     try{
       const state=await fetchSoopLive();
       return res.status(200).json({
@@ -312,6 +314,8 @@ async function handler(req,res) {
   const forceRefresh=requestUrl.searchParams.get('refresh')==='1';
   if(forceRefresh){
     res.setHeader('Cache-Control','no-store, max-age=0');
+    res.setHeader('CDN-Cache-Control','no-store');
+    res.setHeader('Vercel-CDN-Cache-Control','no-store');
   }else if(type==='fanart'){
     res.setHeader('Cache-Control','public, max-age=60, stale-while-revalidate=900');
     res.setHeader('CDN-Cache-Control','public, max-age=1800, stale-while-revalidate=21600');
@@ -323,15 +327,23 @@ async function handler(req,res) {
   }else if(type==='live'){
     res.setHeader('Cache-Control','public, max-age=15, s-maxage=45, stale-while-revalidate=120');
   }else if(['schedule','notice','activity'].includes(type)){
-    res.setHeader('Cache-Control','public, max-age=120, s-maxage=600, stale-while-revalidate=3600');
+    res.setHeader('Cache-Control','public, max-age=120, stale-while-revalidate=3600');
+    res.setHeader('CDN-Cache-Control','public, max-age=600, stale-while-revalidate=3600');
+    res.setHeader('Vercel-CDN-Cache-Control','public, max-age=600, stale-while-revalidate=3600');
   }else if(['vod','clips','youtube'].includes(type)){
-    res.setHeader('Cache-Control','public, max-age=300, s-maxage=1200, stale-while-revalidate=21600');
+    res.setHeader('Cache-Control','public, max-age=300, stale-while-revalidate=21600');
+    res.setHeader('CDN-Cache-Control','public, max-age=1200, stale-while-revalidate=21600');
+    res.setHeader('Vercel-CDN-Cache-Control','public, max-age=1200, stale-while-revalidate=21600');
   }else if(['notice-detail','catch-detail'].includes(type)){
-    res.setHeader('Cache-Control','public, max-age=300, s-maxage=1800, stale-while-revalidate=21600');
+    res.setHeader('Cache-Control','public, max-age=300, stale-while-revalidate=21600');
+    res.setHeader('CDN-Cache-Control','public, max-age=1800, stale-while-revalidate=21600');
+    res.setHeader('Vercel-CDN-Cache-Control','public, max-age=1800, stale-while-revalidate=21600');
   }else if(type==='data'){
     res.setHeader('Cache-Control','public, max-age=120, s-maxage=600, stale-while-revalidate=3600');
   }else{
-    res.setHeader('Cache-Control','s-maxage=180, stale-while-revalidate=600');
+    res.setHeader('Cache-Control','public, max-age=60, stale-while-revalidate=600');
+    res.setHeader('CDN-Cache-Control','public, max-age=180, stale-while-revalidate=600');
+    res.setHeader('Vercel-CDN-Cache-Control','public, max-age=180, stale-while-revalidate=600');
   }
   try {
     if(type==='vod'){const items=await fetchVod();return res.status(200).json({items,source:type,fallback:!items.length});}
