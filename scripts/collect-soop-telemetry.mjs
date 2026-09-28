@@ -93,16 +93,32 @@ function writeJson(file, value) {
   fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-async function collectPublicSample(now = new Date()) {
+async function collectPublicSample(now = new Date(), previousState = {}) {
   const capturedAt = now.toISOString();
-  const [liveResult, profileResult, externalResult] = await Promise.allSettled([fetchSoopLive(), fetchSoopChannelProfile(), fetchExternalSoopStats()]);
-  const live = liveResult.status === 'fulfilled'
-    ? liveResult.value
+  const liveResult = await Promise.allSettled([fetchSoopLive()]);
+  const live = liveResult[0]?.status === 'fulfilled'
+    ? liveResult[0].value
     : { live: null, title: '', startedAt: '', viewerCount: null, categoryId: '', categoryName: '', followerCount: null, fanclubCount: null };
-  const profile = profileResult.status === 'fulfilled'
-    ? profileResult.value
-    : { followerCount: null, fanclubCount: null, categoryId: '', categoryName: '' };
-  const external = externalResult.status === 'fulfilled' ? externalResult.value : {};
+
+  const previousProfile = previousState?.lastProfile || null;
+  const previousProfileAt = Date.parse(previousProfile?.capturedAt || '');
+  const profileDue = !Number.isFinite(previousProfileAt) || now.getTime() - previousProfileAt >= 60 * 60 * 1000;
+  const collectExtended = live.live === true || profileDue;
+
+  let profile = {
+    followerCount: numberOrNull(previousProfile?.followerCount),
+    fanclubCount: numberOrNull(previousProfile?.fanclubCount),
+    categoryId: '',
+    categoryName: ''
+  };
+  let external = {};
+
+  if (collectExtended) {
+    const [profileResult, externalResult] = await Promise.allSettled([fetchSoopChannelProfile(), fetchExternalSoopStats()]);
+    if (profileResult.status === 'fulfilled') profile = profileResult.value;
+    if (externalResult.status === 'fulfilled') external = externalResult.value;
+  }
+
   const merged = mergeSoopMetricSources(live, profile, external);
   return normalizeSample({
     ...live,
@@ -121,7 +137,7 @@ async function main() {
   const finalOutput = process.env.SOOP_FINAL_SESSION_PATH || path.join(path.dirname(output), 'soop-final-session.json');
   const sampleOutput = process.env.SOOP_SAMPLE_PATH || '';
   const previous = readJson(input, { version: 1, session: null, lastProfile: null });
-  const sample = await collectPublicSample();
+  const sample = await collectPublicSample(new Date(), previous);
   const result = advanceTelemetry(previous, sample);
   writeJson(output, result.state);
   writeJson(finalOutput, result.finalizedSession);
@@ -131,6 +147,7 @@ async function main() {
   console.log(`SOOP_TELEMETRY_FOLLOWERS=${sample.followerCount ?? ''}`);
   console.log(`SOOP_TELEMETRY_FANCLUB=${sample.fanclubCount ?? ''}`);
   console.log(`SOOP_TELEMETRY_FINALIZED=${result.finalizedSession ? 1 : 0}`);
+  console.log(`SOOP_TELEMETRY_PROFILE_MODE=${sample.live === true ? 'live' : 'adaptive'}`);
 }
 
 const entry = process.argv[1] ? pathToFileURL(path.resolve(process.argv[1])).href : '';
