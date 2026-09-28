@@ -18,8 +18,16 @@ const device=()=>{const w=Math.min(innerWidth,screen.width||innerWidth);return w
 const pwa=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const theme=()=>document.documentElement.dataset.theme==='light'?'light':'dark';
 const page=()=>location.pathname||'/';
+const BUDGET_PAUSE_KEY='chunbong:analytics:budget-pause:v1';
+let budgetPausedUntil=0;
+try{budgetPausedUntil=Number(localStorage.getItem(BUDGET_PAUSE_KEY)||0)||0}catch{}
+const analyticsPaused=()=>budgetPausedUntil>Date.now();
+function pauseAnalytics(seconds=21600){
+ budgetPausedUntil=Date.now()+Math.max(300,Number(seconds)||21600)*1000;
+ try{localStorage.setItem(BUDGET_PAUSE_KEY,String(budgetPausedUntil))}catch{}
+}
 let queue=[],visibleAt=document.visibilityState==='visible'?performance.now():0,activePending=0,sending=false;
-function add(event){queue.push({...event,page:page()});if(queue.length>=8)flush()}
+function add(event){if(analyticsPaused())return;queue.push({...event,page:page()});if(queue.length>=8)flush()}
 function activeTick(){
  if(!visibleAt)return;
  const now=performance.now(),delta=Math.max(0,now-visibleAt);visibleAt=now;activePending+=delta;
@@ -31,12 +39,20 @@ function flushApiNetworkCounts(){
  apiNetworkCounts.clear();
 }
 async function flush({beacon=false}={}){
+ if(analyticsPaused()){queue.length=0;activePending=0;apiNetworkCounts.clear();return}
  activeTick();if(activePending>=120000){queue.push({type:'active_time',page:page(),activeMs:Math.round(activePending)});activePending=0}
  flushApiNetworkCounts();
  if(!queue.length||sending)return;
  const events=queue.splice(0,20),payload=JSON.stringify({visitorId,sessionId,events});
  if(beacon&&navigator.sendBeacon){try{navigator.sendBeacon(ENDPOINT,new Blob([payload],{type:'application/json'}));return}catch{}}
- sending=true;try{await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:payload,keepalive:true})}catch{}finally{sending=false;if(queue.length)setTimeout(flush,500)}
+ sending=true;
+ try{
+  const response=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:payload,keepalive:true});
+  if(response.status===202){
+   const data=await response.json().catch(()=>null);
+   if(data&&data.degraded)pauseAnalytics(data.retryAfterSeconds);
+  }
+ }catch{}finally{sending=false;if(queue.length&&!analyticsPaused())setTimeout(flush,500)}
 }
 add({type:'page_view',device:device(),pwa:pwa(),theme:theme(),visitorState});
 function reportNavigationTiming(){
