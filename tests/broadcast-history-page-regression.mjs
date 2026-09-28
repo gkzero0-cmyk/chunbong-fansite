@@ -25,6 +25,11 @@ assert.match(js, /\/api\/content\?type=vod/, 'detail view must use VOD data as a
 assert.match(js, /function recordMedia\(/, 'detail view must resolve representative media per history record');
 assert.match(js, /스프레드시트/, 'spreadsheet media must be preferred when available');
 assert.match(js, /history-record-media/, 'detail view must render a representative image region');
+assert.match(js, /function childStage\(/, 'detail view must classify sub-events into stages');
+assert.match(js, /지원·신청/, 'detail stage grouping must include application stage');
+assert.match(js, /선발 과정/, 'detail stage grouping must include selection stage');
+assert.match(js, /history-event-stage/, 'detail view must render grouped stage sections');
+assert.match(css, /history-event-stage-list/, 'grouped detail stage styles must exist');
 assert.match(js, /normalizeMediaUrl/, 'history media URLs must normalize protocol-relative image URLs');
 assert.match(js, /bestScore>=135/, 'VOD representative images must require a strong content match');
 assert.match(js, /curated-detail-only/, 'simple/detail inclusion must support explicit curated visibility');
