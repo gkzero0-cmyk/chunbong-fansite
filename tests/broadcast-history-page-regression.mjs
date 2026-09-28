@@ -46,6 +46,13 @@ assert.match(js, /history-year-participation/, 'simple view must render annual p
 assert.match(js, /data-simple-jump-month/, 'simple view must expose month jump controls');
 assert.match(css, /history-year-participation/, 'annual participation summary styles must exist');
 assert.match(css, /history-simple-month-jumps/, 'simple month-jump styles must exist');
+assert.match(js, /data-simple-bucket/, 'annual activity summary buckets must be clickable filters');
+assert.match(js, /function yearRoleStats\(/, 'annual role summary must be calculated');
+assert.match(js, /function renderYearComparison\(/, 'simple view must provide an annual comparison section');
+assert.match(js, /history-related-resources/, 'detail cards must consolidate related resource links');
+assert.match(css, /history-year-role-summary/, 'annual role summary styles must exist');
+assert.match(css, /history-year-compare/, 'annual comparison styles must exist');
+assert.match(css, /history-related-resources/, 'related-resource section styles must exist');
 assert.match(js, /initialParams\.get\('q'\)/, 'history detail view must accept archive search query links');
 assert.match(css, /history-event-stage-list/, 'grouped detail stage styles must exist');
 assert.match(js, /normalizeMediaUrl/, 'history media URLs must normalize protocol-relative image URLs');
