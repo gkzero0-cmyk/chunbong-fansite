@@ -8,6 +8,7 @@ on:
       - 'scripts/update-trackify-soop-cache.mjs'
       - 'scripts/update-soop-follower-history.mjs'
       - 'scripts/update-youtube-engagement-cache.mjs'
+      - 'scripts/update-last-known-good.mjs'
       - 'lib/soop-external.js'
       - 'lib/soop-follower-history.js'
       - 'lib/youtube-engagement.js'
