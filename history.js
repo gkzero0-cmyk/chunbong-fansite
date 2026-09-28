@@ -32,32 +32,50 @@
   let contentIndexLoaded=false;
   let contentIndexLoading=null;
 
-  const kindOrder=['마인크래프트','주최','대회','게임','타로','활동','방송','콘텐츠'];
+  const kindOrder=['마인크래프트','대회','게임','타로','콘텐츠','활동','방송'];
 
-  // Names alone are not always enough to identify a server or the importance of a record.
-  // Keep verified exceptions here, while generic inference handles obvious names.
+  // Category answers "what kind of content was this?" while role answers
+  // "what did Chunbong do in it?". Importance controls only the simple view.
   const HISTORY_RECORD_RULES=[
     {test:/^춘이괜$/i,importance:'normal'},
     {test:/^읍더스게이트\s*3$/i,importance:'normal'},
     {test:/^현실합방\s*w\.\s*스노$/i,importance:'normal'},
     {test:/^서버개발 방송$/i,kind:'방송',importance:'normal'},
     {test:/구독플러스/i,kind:'방송',importance:'normal'},
-    {test:/^레오펠\s*2\s*무기한 연기$/i,kind:'주최',importance:'core',type:'주최'},
-    {test:/^레오펠(?:\s*:?\s*.*)?$/i,kind:'주최'},
-    {test:/^그냥서버(?:\s*:?\s*.*)?$/i,kind:'주최'},
-    {test:/^춘타클(?:\s*.*)?$/i,kind:'타로'},
-    {test:/^처니랜드\s*쪼이팀\s*뻐꾸기병$/i,kind:'대회',importance:'core',type:'대회'},
-    {test:/^버추얼 종합대회 시즌3\s*:\s*넥버워치 중계$/i,kind:'대회',importance:'core',type:'대회·중계'},
 
-    {test:/^홍창의 숲$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
-    {test:/^린코레일\s*2$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
-    {test:/^꾸다방\s*2\.5$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
-    {test:/^감블러의 놀이터$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
-    {test:/^또오냥의 조까치수련회\s*2$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
+    {test:/^레오펠\s*2\s*무기한 연기$/i,kind:'마인크래프트',role:'주최',importance:'core',type:'서버·마크'},
+    {test:/^레오펠(?:\s*:?\s*.*)?$/i,kind:'마인크래프트',role:'주최·운영'},
+    {test:/^그냥서버(?:\s*:?\s*.*)?$/i,kind:'마인크래프트',role:'주최·운영'},
+    {test:/싸이감성 노래자랑/i,kind:'콘텐츠',role:'주최',importance:'core',type:'콘텐츠'},
+    {test:/^춘타클(?:\s*.*)?$/i,kind:'타로',role:'진행',importance:'core',type:'타로'},
 
-    {test:/^GTA 좀비서버/i,kind:'게임',importance:'core',type:'게임 서버'},
-    {test:/^여우도시$/i,kind:'게임',importance:'core',type:'게임 서버'},
-    {test:/^고래시티$/i,kind:'게임',importance:'core',type:'게임 서버'}
+    {test:/^처니랜드\s*쪼이팀\s*뻐꾸기병$/i,kind:'대회',role:'참가',importance:'core',type:'대회'},
+    {test:/^버추얼 종합대회 시즌3\s*:\s*넥버워치 중계$/i,kind:'대회',role:'중계진',importance:'core',type:'대회·중계'},
+    {test:/^김멘탈의 랜버워치 대회 3등$/i,kind:'대회',role:'참가',importance:'core',type:'대회'},
+
+    {test:/^홍창의 숲$/i,kind:'마인크래프트',role:'수장',importance:'core',type:'서버·마크'},
+    {test:/^하루살이 서버$/i,kind:'마인크래프트',role:'운영자'},
+    {test:/^충동서버$/i,kind:'마인크래프트',role:'운영자'},
+    {test:/^린코레일\s*2$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^픽크타\s*2$/i,kind:'마인크래프트',role:'수장'},
+    {test:/^꾸다방\s*2\.5$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^감블러의 놀이터$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^또오냥의 조까치수련회\s*2$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^마병대\s*3$/i,kind:'마인크래프트',role:'교육교관'},
+    {test:/^마병대\s*4$/i,kind:'마인크래프트',role:'행정관'},
+    {test:/^오함마\s*3/i,kind:'마인크래프트',role:'수장'},
+    {test:/^킹콩서버$/i,kind:'마인크래프트',role:'조교'},
+    {test:/^돌발서버$/i,kind:'마인크래프트',role:'운영자'},
+
+    {test:/^GTA 좀비서버/i,kind:'게임',role:'참가',importance:'core',type:'게임 서버'},
+    {test:/^여우도시$/i,kind:'게임',role:'경찰',importance:'core',type:'게임 서버'},
+    {test:/^고래시티$/i,kind:'게임',role:'경찰',importance:'core',type:'게임 서버'},
+
+    {test:/패러블 입사 발표/i,kind:'활동',role:'소속',importance:'core',type:'활동 변화'},
+    {test:/사자컴퍼니 결성/i,kind:'활동',role:'결성',importance:'core',type:'활동 변화'},
+    {test:/춘동아리 결성/i,kind:'활동',role:'결성',importance:'core',type:'활동 변화'},
+    {test:/사자회 해체/i,kind:'활동',importance:'core',type:'활동 변화'},
+    {test:/크루 리빌딩/i,kind:'활동',importance:'core',type:'활동 변화'}
   ];
 
   function recordRule(label=''){
@@ -156,10 +174,44 @@
     if(/대회|F1|CK|와튜버|스모오라|크루대전/.test(text)) return '대회';
     if(/GTA|배그|배틀 그라운드|오버워치|옵치|WOW|스트리트 파이터|아르마|파블로프|언레일드|경찰과 도둑|버워치/.test(text)) return '게임';
     if(/입사 발표|결성|해체|크루 리빌딩|SOOP 스트리머 대상/.test(text)) return '활동';
-    if(/노래자랑/.test(text)) return '주최';
+    if(/노래자랑|상영회|행사/.test(text)) return '콘텐츠';
     if(/입사|인터뷰/.test(text)) return '방송';
     if(/서버|마병대|레오펠|퍼켓몬|해초마을|맹든링|픽크타|담월드|오함마|수미랜드|원블럭|다이아/.test(text)) return '마인크래프트';
     return '콘텐츠';
+  }
+
+  function normalizeKind(kind,label=''){
+    if(kind==='주최') return inferKind(label);
+    if(kind==='중계') return /대회|버워치|배그|게임/.test(String(label))?'대회':'콘텐츠';
+    return kind||inferKind(label);
+  }
+
+  function inferRole(label='',kind=''){
+    const text=String(label);
+    const override=recordRule(text);
+    if(override?.role) return override.role;
+    if(/주최|개최/.test(text)) return '주최';
+    if(/운영자/.test(text)) return '운영자';
+    if(/행정관/.test(text)) return '행정관';
+    if(/교육교관/.test(text)) return '교육교관';
+    if(/조교/.test(text)) return '조교';
+    if(/수장/.test(text)) return '수장';
+    if(/경찰/.test(text)) return '경찰';
+    if(/중계/.test(text)&&kind==='대회') return '중계진';
+    if(['마인크래프트','게임','대회'].includes(kind)) return '참가';
+    return '';
+  }
+
+  function displayKind(kind=''){
+    return ({
+      '마인크래프트':'마인크래프트',
+      '대회':'대회',
+      '게임':'게임',
+      '타로':'타로',
+      '콘텐츠':'콘텐츠',
+      '활동':'활동',
+      '방송':'방송'
+    })[kind]||kind||'콘텐츠';
   }
 
   function isPreparation(label=''){
