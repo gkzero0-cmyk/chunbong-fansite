@@ -40,7 +40,7 @@
   let vodMediaLoaded=false;
   let vodMediaLoading=null;
 
-  const kindOrder=['마인크래프트','게임','VRC','대회','타로','콘텐츠','활동','방송'];
+  const kindOrder=['마인크래프트','게임','VRC','타로','콘텐츠','활동','방송'];
 
   // Category answers "what kind of content was this?" while role answers
   // "what did Chunbong do in it?". Importance controls only the simple view.
@@ -52,16 +52,16 @@
     {test:/구독플러스/i,kind:'방송',importance:'normal'},
 
     {test:/^레오펠\s*2\s*무기한 연기$/i,kind:'활동',simple:false,importance:'normal',type:'프로젝트 상태'},
-    {test:/^레오펠(?:\s*:?\s*.*)?$/i,kind:'마인크래프트',role:'주최·운영',importance:'core',type:'마크 서버'},
-    {test:/^그냥서버(?:\s*:?\s*.*)?$/i,kind:'마인크래프트',role:'주최·운영',importance:'core',type:'마크 서버'},
-    {test:/싸이감성 노래자랑/i,kind:'콘텐츠',role:'주최',importance:'core',type:'콘텐츠'},
-    {test:/^춘타클(?:\s*.*)?$/i,kind:'타로',role:'진행',importance:'core',type:'타로'},
+    {test:/^레오펠(?:\s*:?\s*.*)?$/i,kind:'마인크래프트',role:'주최·운영',hosted:true,importance:'core',type:'마크 서버'},
+    {test:/^그냥서버(?:\s*:?\s*.*)?$/i,kind:'마인크래프트',role:'주최·운영',hosted:true,importance:'core',type:'마크 서버'},
+    {test:/싸이감성 노래자랑/i,kind:'콘텐츠',role:'주최',hosted:true,importance:'core',type:'노래 콘텐츠'},
+    {test:/^춘타클(?:\s*.*)?$/i,kind:'VRC',role:'진행',hosted:true,importance:'core',type:'VRC 콘텐츠'},
 
     {test:/^감롤\s*CK\s*정글\s*참여$/i,kind:'콘텐츠',role:'참가',simple:false,importance:'normal',type:'내부 게임 콘텐츠'},
     {test:/^춘동아리\s*CK$/i,kind:'콘텐츠',role:'참가',simple:false,importance:'normal',type:'내부 게임 콘텐츠'},
-    {test:/^처니랜드\s*쪼이팀\s*뻐꾸기병$/i,kind:'대회',role:'참가',importance:'core',type:'대회'},
-    {test:/^버추얼 종합대회 시즌3\s*:\s*넥버워치 중계$/i,kind:'대회',role:'중계진',importance:'core',type:'대회·중계'},
-    {test:/^김멘탈의 랜버워치 대회 3등$/i,kind:'대회',role:'참가',importance:'core',type:'대회'},
+    {test:/^처니랜드\s*쪼이팀\s*뻐꾸기병$/i,kind:'게임',role:'참가',importance:'core',type:'배그 콘텐츠'},
+    {test:/^버추얼 종합대회 시즌3\s*:\s*넥버워치 중계$/i,kind:'게임',role:'중계진',importance:'core',type:'오버워치 콘텐츠'},
+    {test:/^김멘탈의 랜버워치 대회 3등$/i,kind:'게임',role:'참가',importance:'core',type:'오버워치 콘텐츠'},
 
     {test:/^홍창의 숲$/i,kind:'마인크래프트',role:'수장',importance:'core',type:'마크 서버'},
     {test:/^하루살이 서버$/i,kind:'마인크래프트',role:'운영자',importance:'core',type:'마크 서버'},
@@ -82,7 +82,7 @@
     {test:/^더켓몬 민원아저씨$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^퍼켓몬(?:\s+w\.\s*조통박치기)?$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^모징어게임$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 대형 콘텐츠'},
-    {test:/^청더일레븐(?:\s+w\.\s*춘밥즈)?$/i,kind:'대회',role:'참가',simple:true,importance:'core',type:'마크 콘텐츠 · 대회',simpleTags:['마크 콘텐츠','대회']},
+    {test:/^청더일레븐(?:\s+w\.\s*춘밥즈)?$/i,kind:'마인크래프트',role:'참가',simple:true,importance:'core',type:'마크 콘텐츠'},
     {test:/^염병서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^챈나룽 서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^밍친서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
@@ -95,7 +95,7 @@
     {test:/^다이아랜딩 서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^두둥투어 서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^하요리 서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
-    {test:/^춘동아리 다이아서버$/i,kind:'마인크래프트',role:'주최·운영',importance:'core',type:'마크 서버'},
+    {test:/^춘동아리 다이아서버$/i,kind:'마인크래프트',role:'주최·운영',hosted:true,importance:'core',type:'마크 서버'},
     {test:/^수미랜드 다이아서버$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
     {test:/^사자회 원블럭$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 콘텐츠'},
     {test:/^해초마을\s*2$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 서버'},
@@ -137,9 +137,10 @@
     return HISTORY_RECORD_RULES.find(rule=>rule.test.test(text))||null;
   }
 
-  function publicLabel(label=''){
+  function publicLabel(label='',start=''){
     const text=String(label||'').trim();
     if(/^2025 SOOP 스트리머 대상$/i.test(text)) return '2025 SOOP 스트리머 대상 참여';
+    if(String(start||'').slice(0,10)==='2026-04-28'&&/^싸이감성 노래자랑(?: 개최)?$/i.test(text)) return '싸이감성 노래자랑 2회';
     return text;
   }
 
@@ -401,7 +402,7 @@
     const override=recordRule(text);
     if(override?.kind) return override.kind;
     if(/타로|사주|신점/.test(text)) return '타로';
-    if(isFormalCompetition(text)) return '대회';
+    if(isFormalCompetition(text)&&gamePlatform(text)!=='게임') return '게임';
     if(/GTA|배그|배틀 그라운드|오버워치|옵치|WOW|스트리트 파이터|아르마|파블로프|언레일드|버워치|좀보이드|팰월드/.test(text)) return '게임';
     if(/입사 발표|결성|해체|크루 리빌딩|SOOP 스트리머 대상/.test(text)) return '활동';
     if(/VR쳇|VRChat|VRC|세바버/.test(text)) return 'VRC';
@@ -413,7 +414,8 @@
 
   function normalizeKind(kind,label=''){
     if(kind==='주최') return inferKind(label);
-    if(kind==='중계') return /대회|버워치|배그|게임/.test(String(label))?'대회':'콘텐츠';
+    if(kind==='중계') return /버워치|배그|게임|대회/.test(String(label))?'게임':'콘텐츠';
+    if(kind==='대회') return gamePlatform(label)==='게임'?'콘텐츠':'게임';
     return kind||inferKind(label);
   }
 
@@ -428,8 +430,8 @@
     if(/조교/.test(text)) return '조교';
     if(/수장/.test(text)) return '수장';
     // 직책은 콘텐츠 제목의 단어로 추론하지 않는다. 경찰은 여우도시/고래시티처럼 검증된 규칙에서만 부여한다.
-    if(/중계/.test(text)&&kind==='대회') return '중계진';
-    if(['마인크래프트','게임','대회'].includes(kind)) return '참가';
+    if(/중계/.test(text)&&['게임','대회'].includes(kind)) return '중계진';
+    if(['마인크래프트','게임'].includes(kind)) return '참가';
     return '';
   }
 
@@ -459,7 +461,6 @@
     else if(/팰월드/.test(type)) platform='팰월드';
     else if(kind==='게임') platform=gamePlatform(row.label,type);
     if(/서버/.test(type)) format='서버';
-    else if(/대회/.test(type)||kind==='대회') format='대회';
     else if(/일일/.test(type)) format='일일 콘텐츠';
     else if(/행사/.test(type)) format='행사';
     else if(/활동 변화|프로젝트 상태/.test(type)) format='활동';
@@ -493,7 +494,7 @@
     if(override?.importance==='normal') return {include:false,type:'',importance:'normal',role,reason:'curated-normal'};
     if(override?.importance==='core') return {
       include:true,
-      type:override.type||(kind==='마인크래프트'?'서버·마크':kind==='대회'?'대회':kind==='활동'?'활동 변화':displayKind(kind)),
+      type:override.type||(kind==='마인크래프트'?'마크 콘텐츠':kind==='활동'?'활동 변화':displayKind(kind)),
       importance:'core',
       role,
       reason:'curated-core'
@@ -502,15 +503,17 @@
     if(kind==='활동'){
       return {include:true,type:'활동 변화',importance:'core',role,reason:'milestone'};
     }
-    if(kind==='대회') return {include:true,type:'대회',importance:'core',role,reason:'competition'};
     if(role&&/주최|운영/.test(role)) return {include:true,type:displayKind(kind),importance:'core',role,reason:'hosted'};
 
     if(/배그|배틀\s*그라운드|아르마|오버워치|옵치|버워치|언레일드|스모오라|랜버워치|와튜버|파블로프/i.test(text)){
       return {include:true,type:`${gamePlatform(text)} 콘텐츠`,importance:'core',role:role||'참가',reason:'game-content'};
     }
 
-    if(/노래자랑|춘타클/.test(text)){
-      return {include:true,type:kind==='타로'?'타로':'콘텐츠',importance:'core',role,reason:'signature-content'};
+    if(/노래자랑/.test(text)){
+      return {include:true,type:'노래 콘텐츠',importance:'core',role,reason:'signature-content'};
+    }
+    if(/춘타클/.test(text)){
+      return {include:true,type:'VRC 콘텐츠',importance:'core',role,reason:'signature-content'};
     }
 
     return {include:false,type:'',importance:'normal',role,reason:'detail'};
@@ -526,22 +529,23 @@
   }
 
   function simpleTypeLabel(row={}){
+    const override=recordRule(row.label);
+    if(override?.type==='노래 콘텐츠') return '노래 콘텐츠';
     const taxonomy=taxonomyFor(row);
     const {platform,format}=taxonomy;
-    if(platform==='마인크래프트') return format==='서버'?'마크 서버':format==='대회'?'마크 대회':'마크 콘텐츠';
+    if(platform==='마인크래프트') return format==='서버'?'마크 서버':'마크 콘텐츠';
     if(platform==='GTA'&&format==='서버') return 'GTA 서버';
     if(platform==='팰월드'&&format==='서버') return '팰월드 서버';
     if(platform==='좀보이드'&&format==='서버') return '좀보이드 서버';
     if(platform==='VRC') return 'VRC 콘텐츠';
     if(platform==='배틀그라운드') return '배그 콘텐츠';
     if(['아르마','언레일드','오버워치','스트리트 파이터','파블로프 VR','WOW'].includes(platform)) return `${platform} 콘텐츠`;
-    if(format==='대회') return '대회';
+    if(platform==='타로'||format==='타로') return '타로 콘텐츠';
+    if(platform==='콘텐츠') return override?.type||'기타 콘텐츠';
     return taxonomyLabel(row);
   }
 
   function simpleTypeLabels(row={}){
-    const override=recordRule(row.label);
-    if(Array.isArray(override?.simpleTags)&&override.simpleTags.length) return [...new Set(override.simpleTags.filter(Boolean))];
     const label=simpleTypeLabel(row);
     return label?[label]:[];
   }
@@ -559,25 +563,12 @@
   }
 
   function participationBuckets(row={}){
-    const override=recordRule(row.label);
-    if(Array.isArray(override?.simpleTags)&&override.simpleTags.length) return [...new Set(override.simpleTags.filter(Boolean))];
-    const taxonomy=taxonomyFor(row);
-    const platform=taxonomy.platform;
-    const format=taxonomy.format;
-    if(platform==='마인크래프트'){
-      if(format==='서버') return ['마크 서버'];
-      if(format==='대회') return ['마크 대회'];
-      return ['마크 콘텐츠'];
-    }
-    if(platform==='GTA') return ['GTA 서버'];
-    if(platform==='팰월드') return ['팰월드 서버'];
-    if(platform==='좀보이드') return ['좀보이드 서버'];
-    if(platform==='VRC') return ['VRC 콘텐츠'];
-    if(['배틀그라운드','아르마','언레일드','오버워치','스트리트 파이터','파블로프 VR','WOW','게임'].includes(platform)&&format==='콘텐츠') return ['게임 콘텐츠'];
-    if(format==='대회') return ['대회'];
-    if(platform==='타로'||format==='타로') return ['타로 콘텐츠'];
-    if(platform==='콘텐츠'||format==='콘텐츠'||format==='행사') return ['주요 콘텐츠'];
-    return [];
+    const label=simpleTypeLabel(row);
+    return label?[label]:[];
+  }
+
+  function isHostedContent(row={}){
+    return recordRule(row.label)?.hosted===true;
   }
 
   function participationBucket(row={}){
@@ -592,7 +583,7 @@
         counts.set(bucket,(counts.get(bucket)||0)+1);
       }
     }
-    const order=['마크 서버','마크 콘텐츠','마크 대회','GTA 서버','팰월드 서버','좀보이드 서버','VRC 콘텐츠','게임 콘텐츠','대회','타로 콘텐츠','주요 콘텐츠'];
+    const order=['마크 서버','마크 콘텐츠','GTA 서버','팰월드 서버','좀보이드 서버','VRC 콘텐츠','배그 콘텐츠','오버워치 콘텐츠','아르마 콘텐츠','언레일드 콘텐츠','스트리트 파이터 콘텐츠','파블로프 VR 콘텐츠','WOW 콘텐츠','타로 콘텐츠','노래 콘텐츠','기타 콘텐츠'];
     return order.filter(label=>counts.has(label)).map(label=>({label,count:counts.get(label)}));
   }
 
@@ -618,12 +609,14 @@
   function renderYearParticipationStats(rows=[],year=''){
     const stats=yearParticipationStats(rows);
     const roles=yearRoleStats(rows);
-    if(!stats.length&&!roles.length) return '';
+    const hostedCount=rows.filter(isHostedContent).length;
+    if(!stats.length&&!roles.length&&!hostedCount) return '';
     return `<div class="history-year-activity-summary">
       <div class="history-year-participation" aria-label="${esc(year)}년 콘텐츠 활동 횟수">
-        <div class="history-year-participation-head"><span class="history-year-participation-label">활동 요약</span><small>콘텐츠 1건 = 1회 · 신청·면접·설명회 제외 · 복합 콘텐츠는 해당 유형에 각각 집계</small></div>
+        <div class="history-year-participation-head"><span class="history-year-participation-label">활동 요약</span><small>콘텐츠 1건 = 1회 · 신청·면접·설명회 제외 · 대표 유형 1개로 집계</small></div>
         <div>${stats.map(item=>`<button type="button" data-simple-bucket="${esc(item.label)}" aria-pressed="false"><b>${esc(item.label)}</b><em>${item.count}회</em></button>`).join('')}</div>
       </div>
+      ${hostedCount?`<div class="history-hosted-filter"><span>춘봉 주최</span><button type="button" data-simple-hosted-filter aria-pressed="false"><b>주최 콘텐츠</b><em>${hostedCount}회</em></button></div>`:''}
       <div class="history-simple-filter-state" data-simple-filter-state hidden><span></span><button type="button" data-simple-clear-bucket>전체 보기</button></div>
       ${roles.length?`<div class="history-year-role-summary" aria-label="${esc(year)}년 역할 요약"><span>역할</span><div>${roles.map(item=>`<em><b>${esc(item.label)}</b>${item.count}회</em>`).join('')}</div></div>`:''}
     </div>`;
@@ -665,7 +658,7 @@
     return bestScore>=110?best:null;
   }
   function enrichSheetRecord(item){
-    const label=publicLabel(item.label);
+    const label=publicLabel(item.label,item.start);
     const today=currentKstDate();
     let state;
     if(item.start>today) state='예정';
@@ -725,7 +718,7 @@
     return dedupe(rows)
       .filter(row=>/^\d{4}-\d{2}-\d{2}$/.test(String(row?.start||'')))
       .map(row=>{
-        const label=publicLabel(row.label);
+        const label=publicLabel(row.label,row.start);
         const kind=normalizeKind(row.kind,label);
         const role=row.role||inferRole(label,kind);
         return {...row,label,kind,role};
@@ -978,7 +971,7 @@
           <div class="history-simple-year-list">
             ${groups[year].map(row=>{
               const id=recordId(row);
-              return `<article class="history-simple-row ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" tabindex="0" role="link" data-open-record="${id}" data-simple-month="${esc(String(row.start||'').slice(0,7))}" data-simple-buckets="${esc(participationBuckets(row).join('|'))}" aria-label="${esc(row.label)} 상세 기록 보기">
+              return `<article class="history-simple-row ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" tabindex="0" role="link" data-open-record="${id}" data-simple-month="${esc(String(row.start||'').slice(0,7))}" data-simple-buckets="${esc(participationBuckets(row).join('|'))}" data-simple-hosted="${isHostedContent(row)?'true':'false'}" aria-label="${esc(row.label)} 상세 기록 보기">
                 <time class="history-simple-date" datetime="${esc(row.start)}">${esc(compactDate(row))}</time>
                 <p class="history-simple-content"><span>${esc(row.label)}</span>${simpleRoleLabel(row)?`<em class="history-simple-role">${esc(simpleRoleLabel(row))}</em>`:''}${statusBadge(row)}</p>
                 <span class="history-simple-types">${simpleTypeLabels(row).map(type=>`<span class="history-simple-type" data-simple-type="${esc(type)}">${esc(type)}</span>`).join('')}</span>
@@ -994,7 +987,7 @@
     bindSimpleRows();
     const clearSimpleBucket=section=>{
       if(!section) return;
-      section.querySelectorAll('button[data-simple-bucket]').forEach(other=>{other.setAttribute('aria-pressed','false');other.classList.remove('is-active');});
+      section.querySelectorAll('button[data-simple-bucket],button[data-simple-hosted-filter]').forEach(other=>{other.setAttribute('aria-pressed','false');other.classList.remove('is-active');});
       section.querySelectorAll('.history-simple-row').forEach(row=>{row.hidden=false;});
       const state=section.querySelector('[data-simple-filter-state]');
       if(state){state.hidden=true;state.querySelector('span').textContent='';}
@@ -1024,6 +1017,28 @@
     });
     root.querySelectorAll('[data-simple-clear-bucket]').forEach(button=>{
       button.addEventListener('click',()=>clearSimpleBucket(button.closest('[data-simple-year]')));
+    });
+    root.querySelectorAll('[data-simple-hosted-filter]').forEach(button=>{
+      button.addEventListener('click',()=>{
+        const section=button.closest('[data-simple-year]');
+        if(!section) return;
+        const wasActive=button.getAttribute('aria-pressed')==='true';
+        clearSimpleBucket(section);
+        if(wasActive) return;
+        button.setAttribute('aria-pressed','true');
+        button.classList.add('is-active');
+        let visible=0;
+        section.querySelectorAll('.history-simple-row').forEach(row=>{
+          const show=row.dataset.simpleHosted==='true';
+          row.hidden=!show;
+          if(show) visible+=1;
+        });
+        const state=section.querySelector('[data-simple-filter-state]');
+        if(state){
+          state.hidden=false;
+          state.querySelector('span').textContent=`필터: 주최 콘텐츠 · ${visible}개`;
+        }
+      });
     });
 
     root.querySelectorAll('[data-simple-jump-month]').forEach(button=>{
