@@ -457,6 +457,7 @@ async function loadSystemStatus(){
     ['SOOP 수집 '+fmt(protections.soopTelemetryMinutes||0)+'분',Number(protections.soopTelemetryMinutes)>0],
     ['Notion 백업 '+fmt(protections.notionFallbackMinutes||0)+'분',Number(protections.notionFallbackMinutes)>0],
     ['멀티플레이 대기 polling '+fmt(multiplayer.backgroundPollSeconds||0)+'초',Number(multiplayer.backgroundPollSeconds)>=5],
+    ['멀티플레이 delta sync '+fmt(Math.round((multiplayer.progressHeartbeatMilliseconds||0)/1000))+'초 heartbeat',multiplayer.progressDeltaSync===true],
     ['멀티플레이 room_busy '+fmt(multiplayer.roomBusy||0)+'회',Number(multiplayer.roomBusy||0)===0],
     ['멀티플레이 lock 재시도 '+fmt(multiplayer.lockRetries||0)+'회',Number(multiplayer.lockRetries||0)<20],
     ['멀티플레이 Redis circuit '+(Number(multiplayer.redisCircuitOpenUntil||0)>Date.now()?'열림':'정상'),Number(multiplayer.redisCircuitOpenUntil||0)<=Date.now()],
