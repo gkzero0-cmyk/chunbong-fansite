@@ -139,7 +139,7 @@
   async function ensureContentIndex(){
     if(contentIndexLoaded) return contentIndex;
     if(contentIndexLoading) return contentIndexLoading;
-    contentIndexLoading=loadJson('/api/content?type=chunbong-contents')
+    contentIndexLoading=loadJson('/api/content?type=chunbong-content-index')
       .then(payload=>{
         contentIndex=(Array.isArray(payload?.items)?payload.items:[])
           .filter(item=>item?.id&&item?.title)
