@@ -3,6 +3,11 @@ name: Production version sync
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '.github/**'
+      - 'tests/**'
+      - 'docs/**'
+      - '**/*.md'
   workflow_dispatch:
 
 permissions:
