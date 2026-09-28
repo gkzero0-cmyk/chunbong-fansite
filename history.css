@@ -988,3 +988,273 @@ body[data-history-view="simple"] .history-layout{display:block}.history-guide[hi
   .history-year-compare-grid{grid-template-columns:1fr}
   .history-related-resources a,.history-related-resources button{min-height:36px;padding:7px 10px}
 }
+
+
+/* Simple-history readability and taxonomy layout v24 */
+.history-simple-year-section{
+  background:linear-gradient(180deg,rgba(255,255,255,.012),transparent 180px);
+}
+.history-year-activity-summary{
+  margin:12px 16px 8px;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:14px;
+  background:rgba(255,255,255,.018);
+  overflow:hidden;
+}
+.history-year-participation{
+  margin:0;
+  padding:12px 13px 10px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+}
+.history-year-participation-head{
+  margin-bottom:9px;
+}
+.history-year-participation-head small{
+  max-width:520px;
+  text-align:right;
+}
+.history-year-participation>div:last-child{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+.history-year-participation button{
+  min-height:32px;
+  padding:5px 10px;
+  border-radius:9px;
+  background:rgba(255,255,255,.028);
+}
+.history-year-participation button b{
+  font-size:.69rem;
+  letter-spacing:-.01em;
+}
+.history-year-participation button em{
+  min-width:24px;
+  padding-left:5px;
+  border-left:1px solid rgba(255,255,255,.1);
+  font-variant-numeric:tabular-nums;
+}
+.history-simple-filter-state{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:0 12px 9px;
+  padding:8px 10px;
+  border:1px solid rgba(255,138,69,.18);
+  border-radius:9px;
+  background:rgba(255,107,24,.055);
+}
+.history-simple-filter-state[hidden]{display:none}
+.history-simple-filter-state span{
+  color:#ffad79;
+  font-size:.68rem;
+  font-weight:850;
+}
+.history-simple-filter-state button{
+  appearance:none;
+  min-height:28px;
+  padding:4px 8px;
+  border:1px solid rgba(255,138,69,.24);
+  border-radius:8px;
+  background:transparent;
+  color:rgba(255,255,255,.68);
+  font:inherit;
+  font-size:.64rem;
+  font-weight:850;
+  cursor:pointer;
+}
+.history-year-role-summary{
+  padding:8px 13px 11px;
+  border-top:1px solid rgba(255,255,255,.055);
+}
+.history-simple-month-jumps{
+  margin:0 16px 11px;
+  padding:8px 10px;
+  border:1px solid rgba(255,255,255,.055);
+  border-radius:11px;
+  background:rgba(255,255,255,.012);
+}
+.history-simple-month-jumps>div{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+}
+.history-simple-month-jumps button{
+  min-width:42px;
+  min-height:31px;
+  padding:4px 9px;
+  border-radius:8px;
+  background:rgba(255,255,255,.025);
+}
+.history-simple-table-head,
+.history-simple-row{
+  grid-template-columns:minmax(112px,160px) minmax(0,1fr) minmax(116px,154px);
+  gap:16px;
+}
+.history-simple-table-head{
+  padding:9px 18px;
+}
+.history-simple-row{
+  min-height:58px;
+  padding:13px 18px;
+  align-items:center;
+}
+.history-simple-date{
+  align-self:center;
+  white-space:nowrap;
+}
+.history-simple-content{
+  min-width:0;
+  gap:7px;
+  line-height:1.45;
+}
+.history-simple-content>span:first-child{
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+.history-simple-type{
+  justify-self:start;
+  max-width:100%;
+  min-height:26px;
+  padding:4px 8px;
+  white-space:normal;
+  line-height:1.25;
+  text-align:left;
+}
+.history-simple-type[data-simple-type="마크 서버"]{
+  border-color:rgba(91,168,255,.18);
+  background:rgba(91,168,255,.055);
+  color:rgba(169,210,255,.72);
+}
+.history-simple-type[data-simple-type="GTA 서버"],
+.history-simple-type[data-simple-type="팰월드 서버"],
+.history-simple-type[data-simple-type="좀보이드 서버"]{
+  border-color:rgba(104,191,164,.18);
+  background:rgba(104,191,164,.05);
+  color:rgba(166,222,204,.72);
+}
+.history-simple-type[data-simple-type="대회"],
+.history-simple-type[data-simple-type="마크 대회"]{
+  border-color:rgba(255,174,94,.2);
+  background:rgba(255,174,94,.055);
+  color:rgba(255,195,137,.76);
+}
+.history-simple-role{
+  flex:none;
+}
+.history-row-arrow{
+  display:none!important;
+}
+[data-theme="light"] .history-year-activity-summary{
+  border-color:#eadfd7;
+  background:#fbf8f5;
+}
+[data-theme="light"] .history-year-participation{
+  background:transparent;
+}
+[data-theme="light"] .history-simple-filter-state{
+  border-color:#ebc8ae;
+  background:#fff4eb;
+}
+[data-theme="light"] .history-simple-filter-state span{color:#a64b17}
+[data-theme="light"] .history-simple-filter-state button{
+  border-color:#e7c2a7;
+  color:#78675c;
+}
+[data-theme="light"] .history-year-role-summary{
+  border-color:#eadfd7;
+}
+[data-theme="light"] .history-simple-month-jumps{
+  border-color:#eadfd7;
+  background:#fbf8f5;
+}
+[data-theme="light"] .history-simple-type[data-simple-type="마크 서버"]{
+  border-color:#d6e5f5;
+  background:#f3f8fd;
+  color:#476b8e;
+}
+[data-theme="light"] .history-simple-type[data-simple-type="GTA 서버"],
+[data-theme="light"] .history-simple-type[data-simple-type="팰월드 서버"],
+[data-theme="light"] .history-simple-type[data-simple-type="좀보이드 서버"]{
+  border-color:#d4e8e1;
+  background:#f1f8f5;
+  color:#4e7468;
+}
+@media(max-width:900px){
+  .history-simple-table-head,
+  .history-simple-row{
+    grid-template-columns:minmax(96px,130px) minmax(0,1fr) minmax(104px,132px);
+    gap:12px;
+  }
+  .history-simple-row{padding-left:14px;padding-right:14px}
+  .history-simple-table-head{padding-left:14px;padding-right:14px}
+}
+@media(max-width:700px){
+  .history-year-activity-summary{margin:9px 10px 7px}
+  .history-year-participation{padding:10px}
+  .history-year-participation-head small{text-align:left}
+  .history-year-participation>div:last-child{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    width:100%;
+  }
+  .history-year-participation button{
+    justify-content:space-between;
+    width:100%;
+    min-height:36px;
+    border-radius:9px;
+  }
+  .history-year-role-summary{padding:8px 10px 10px}
+  .history-simple-filter-state{margin:0 9px 8px}
+  .history-simple-month-jumps{
+    margin:0 10px 9px;
+    padding:8px;
+    overflow:hidden;
+  }
+  .history-simple-month-jumps>div{
+    width:100%;
+    overflow-x:auto;
+    flex-wrap:nowrap;
+    scrollbar-width:none;
+    padding-bottom:2px;
+  }
+  .history-simple-month-jumps>div::-webkit-scrollbar{display:none}
+  .history-simple-month-jumps button{flex:none;min-height:36px}
+  .history-simple-table-head{display:none}
+  .history-simple-row{
+    grid-template-columns:72px minmax(0,1fr);
+    grid-template-areas:
+      "date content"
+      ". type";
+    gap:5px 10px;
+    min-height:0;
+    padding:13px 12px;
+  }
+  .history-simple-date{
+    grid-area:date;
+    align-self:start;
+    padding-top:2px;
+    font-size:.75rem;
+  }
+  .history-simple-content{
+    grid-area:content;
+    align-self:start;
+    font-size:.88rem;
+    line-height:1.45;
+  }
+  .history-simple-type{
+    grid-area:type;
+    justify-self:start;
+    align-self:start;
+    min-height:23px;
+    padding:3px 7px;
+    font-size:.63rem;
+  }
+}
+@media(max-width:420px){
+  .history-year-participation>div:last-child{grid-template-columns:1fr}
+  .history-simple-row{grid-template-columns:64px minmax(0,1fr);gap:5px 8px}
+}
