@@ -29,7 +29,8 @@ assert.match(api,/const menuTotal=Object\.values\(menus\)/,'menu total aggregati
 assert.match(api,/const featureTotal=Object\.values\(features\)/,'feature total aggregation missing');
 assert.match(api,/topMenus:(?:compareRows\()?topRows\(menus,10\)/,'menu ranking response missing');
 assert.match(api,/menuTotal/,'menu total response missing');
-assert.match(api,/topFeatures:(?:compareRows\()?topRows\(features,14\)/,'feature ranking response missing');
+assert.match(api,/const userFeatures=Object\.fromEntries\(Object\.entries\(features\)\.filter/,'internal API network metrics must be separated from user features');
+assert.match(api,/topFeatures:compareRows\(topRows\(userFeatures,14\)/,'feature ranking response missing');
 assert.match(api,/featureTotal/,'feature total response missing');
 
 assert.match(css,/Operator Center 1\.3/,'operator center 1.3 style block missing');
