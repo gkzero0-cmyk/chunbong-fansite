@@ -393,7 +393,7 @@ module.exports = async function handler(req, res) {
   }
 
   const authenticated = results.some(item => item && item.authenticated === true);
-  res.setHeader('Cache-Control', (forceRefresh || authenticated)
+  res.setHeader('Cache-Control', (forceRefresh || authenticated || failures.length>0 || auxiliaryFailures.length>0)
     ? 'no-store, max-age=0'
     : 'public, max-age=300, s-maxage=3600, stale-while-revalidate=21600');
   return res.status(failures.length === results.length ? 502 : 200).json({
