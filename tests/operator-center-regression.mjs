@@ -109,6 +109,11 @@ assert.match(operatorHtml,/history-data\.js\?v=6/,'operator history audit must l
 assert.match(operatorJs,/상세 요약 없음/,'history audit must flag missing detailed summaries');
 assert.match(operatorJs,/window\.CHUNBONG_HISTORY_RECORDS/,'history audit must include pre-2025 legacy records');
 assert.match(operatorCss,/operator-history-audit-metrics/,'history quality metric styles missing');
+assert.match(operatorJs,/operator-history-year-quality/,'operator center must render yearly verification rates');
+assert.match(operatorJs,/분류 완료/,'operator center must show classification completion rate');
+assert.match(operatorJs,/대표 이미지/,'operator center must show representative-image completion rate');
+assert.match(operatorJs,/상세 요약/,'operator center must show summary completion rate');
+assert.match(operatorCss,/operator-history-year-quality/,'yearly verification rate styles missing');
 assert.match(operatorJs,/\$\$\('\[data-operator-tab\]'\)\.forEach/,'operator tab binding must iterate a NodeList');
 assert.doesNotMatch(operatorJs,/(^|\n)\$\('\[data-operator-tab\]'\)\.forEach/,'operator tab binding must not call forEach on querySelector result');
 assert.match(operatorJs,/\$\$\('\[data-operator-panel\]'\)\.forEach/,'operator panel switching must iterate a NodeList');
