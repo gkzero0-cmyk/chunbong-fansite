@@ -745,3 +745,91 @@ body[data-history-view="simple"] .history-layout{display:block}.history-guide[hi
   .history-series-links{padding:9px}
   .history-series-links button{min-height:36px;padding:7px 10px}
 }
+
+
+/* Simple-view annual activity summary + month navigation v22 */
+.history-year-participation{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:10px;
+  align-items:start;
+  margin:9px 0 10px;
+  padding:10px 12px;
+  border:1px solid rgba(255,255,255,.065);
+  border-radius:12px;
+  background:rgba(255,255,255,.018);
+}
+.history-year-participation-label{
+  padding-top:4px;
+  color:rgba(255,255,255,.42);
+  font-size:.63rem;
+  font-weight:900;
+  letter-spacing:.06em;
+  white-space:nowrap;
+}
+.history-year-participation>div{display:flex;flex-wrap:wrap;gap:6px}
+.history-year-participation>div>span{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:28px;
+  padding:4px 8px;
+  border:1px solid rgba(255,255,255,.075);
+  border-radius:999px;
+  background:rgba(255,255,255,.025);
+}
+.history-year-participation b{color:rgba(255,255,255,.68);font-size:.67rem}
+.history-year-participation em{color:#ffad79;font-size:.67rem;font-style:normal;font-weight:900}
+.history-simple-month-jumps{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin:0 0 9px;
+  padding:6px 8px;
+}
+.history-simple-month-jumps>span{
+  color:rgba(255,255,255,.38);
+  font-size:.62rem;
+  font-weight:850;
+  white-space:nowrap;
+}
+.history-simple-month-jumps>div{display:flex;flex-wrap:wrap;gap:4px}
+.history-simple-month-jumps button{
+  appearance:none;
+  min-height:29px;
+  padding:4px 8px;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:8px;
+  background:transparent;
+  color:rgba(255,255,255,.54);
+  font:inherit;
+  font-size:.65rem;
+  font-weight:800;
+  cursor:pointer;
+}
+.history-simple-month-jumps button:hover,
+.history-simple-month-jumps button:focus-visible{
+  border-color:rgba(255,145,79,.4);
+  background:rgba(255,107,24,.08);
+  color:#ffb080;
+}
+[data-theme="light"] .history-year-participation{
+  border-color:#eadfd7;
+  background:#fbf7f4;
+}
+[data-theme="light"] .history-year-participation-label{color:#8c7e75}
+[data-theme="light"] .history-year-participation>div>span{border-color:#e6dad2;background:#fff}
+[data-theme="light"] .history-year-participation b{color:#6f625a}
+[data-theme="light"] .history-year-participation em{color:#a64b17}
+[data-theme="light"] .history-simple-month-jumps>span{color:#918178}
+[data-theme="light"] .history-simple-month-jumps button{border-color:#e7dcd4;color:#796c64}
+[data-theme="light"] .history-simple-month-jumps button:hover,
+[data-theme="light"] .history-simple-month-jumps button:focus-visible{background:#fff0e4;color:#a64b17}
+@media(max-width:700px){
+  .history-year-participation{grid-template-columns:1fr;gap:6px;padding:9px}
+  .history-year-participation-label{padding:0}
+  .history-year-participation>div{gap:5px}
+  .history-year-participation>div>span{min-height:27px}
+  .history-simple-month-jumps{align-items:flex-start;flex-direction:column;gap:5px;padding:5px 4px}
+  .history-simple-month-jumps button{min-height:36px;padding:6px 9px}
+}
