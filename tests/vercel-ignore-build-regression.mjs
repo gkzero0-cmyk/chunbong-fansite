@@ -12,6 +12,11 @@ for(const path of [
   'tests/site-regression.mjs',
   'docs/notes.md',
   'scripts/update-trackify-soop-cache.mjs',
+  'data/chunbong-data-history.json',
+  'data/trackify-soop-cache.json',
+  'data/soop-follower-history.json',
+  'data/youtube-engagement-cache.json',
+  'data/last-known-good.json',
   'README.md',
   '.gitignore'
 ]){
@@ -34,6 +39,7 @@ for(const path of [
 
 assert.equal(shouldIgnoreFiles(['.github/workflows/a.yml','tests/a.mjs']),true);
 assert.equal(shouldIgnoreFiles(['README.md','docs/a.md']),true);
+assert.equal(shouldIgnoreFiles(['data/chunbong-data-history.json','data/last-known-good.json']),true);
 assert.equal(shouldIgnoreFiles(['tests/a.mjs','index.html']),false);
 assert.equal(shouldIgnoreFiles([]),false,'empty diff must continue deployment safely');
 
