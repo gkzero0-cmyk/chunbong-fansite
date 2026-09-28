@@ -508,22 +508,27 @@
 
   async function loadYearMonthsForSearch(year){
     const numeric=Number(year);
-    if(!Number.isFinite(numeric)||searchBundleLoadedYears.has(numeric)) return;
-    searchBundleLoadedYears.add(numeric);
-    try{
-      const payload=await loadJson(`/api/history-sheet?sheet=months&year=${numeric}`);
-      const grouped=new Map();
-      for(const item of Array.isArray(payload?.items)?payload.items:[]){
-        const month=Number(item.month||String(item.date||'').slice(5,7));
-        if(!month) continue;
-        const key=monthCacheKey(numeric,month);
-        if(!grouped.has(key)) grouped.set(key,[]);
-        grouped.get(key).push(item);
-      }
-      for(const [key,items] of grouped) monthlyCache.set(key,items);
-    }catch(_error){
-      searchBundleLoadedYears.delete(numeric);
-    }
+    if(!Number.isFinite(numeric)||searchIndexLoadedYears.has(numeric)) return;
+    if(searchIndexLoading.has(numeric)) return searchIndexLoading.get(numeric);
+    const promise=loadJson(`/api/history-sheet?sheet=search-index&year=${numeric}`)
+      .then(payload=>{
+        const grouped=new Map();
+        for(const item of Array.isArray(payload?.items)?payload.items:[]){
+          const month=Number(item.month||String(item.date||'').slice(5,7));
+          if(!month) continue;
+          const key=monthCacheKey(numeric,month);
+          if(!grouped.has(key)) grouped.set(key,[]);
+          grouped.get(key).push(item);
+        }
+        for(const [key,items] of grouped){
+          if(!monthlyCache.has(key)) monthlyCache.set(key,items);
+        }
+        searchIndexLoadedYears.add(numeric);
+      })
+      .catch(()=>{})
+      .finally(()=>searchIndexLoading.delete(numeric));
+    searchIndexLoading.set(numeric,promise);
+    return promise;
   }
 
   async function ensureDeepSearch(){
