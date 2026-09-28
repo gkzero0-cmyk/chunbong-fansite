@@ -633,3 +633,22 @@ body[data-page="operator"]{background:radial-gradient(circle at 80% 0,color-mix(
 .operator-history-audit-metrics b{color:var(--op-primary);font-size:13px}
 .operator-history-audit-summary>small{color:var(--op-muted);font-size:8px}
 @media(max-width:680px){.operator-history-audit-metrics{grid-template-columns:1fr}}
+
+
+.operator-history-year-quality{display:grid;gap:6px}
+.operator-history-year-quality>span{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:7px 9px;
+  border:1px solid color-mix(in srgb,var(--op-border) 72%,transparent);
+  border-radius:9px;
+  background:color-mix(in srgb,var(--op-card) 35%,transparent);
+}
+.operator-history-year-quality b{font-size:10px;color:var(--op-primary)}
+.operator-history-year-quality em{font-size:8px;font-style:normal;color:var(--op-muted);text-align:right}
+@media(max-width:680px){
+  .operator-history-year-quality>span{align-items:flex-start;flex-direction:column}
+  .operator-history-year-quality em{text-align:left}
+}
