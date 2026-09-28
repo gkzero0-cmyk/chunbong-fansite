@@ -118,3 +118,55 @@ The operator content center shows:
 - checkpoint early-stop count,
 - unchanged Notion skip count,
 - full vs incremental-checkpoint scan mode.
+
+
+## Public content request budgets
+
+Public `/api/content` reads use freshness-specific budgets instead of one shared short TTL.
+
+- LIVE: browser ~45 seconds, CDN 45 seconds
+- Schedule / notice / activity: browser 10 minutes, CDN 10 minutes
+- VOD / clips / YouTube: browser 20 minutes, CDN 20 minutes
+- Fanart list: browser 15 minutes
+- Data/statistics: browser 10 minutes, CDN 10 minutes
+- Notice/Catch detail: browser 30 minutes, CDN 30 minutes
+- Fanart detail: browser 60 minutes
+- Content archive index/home preview: browser 10 minutes, CDN 30 minutes
+
+The home page no longer downloads statistics and the content archive preview immediately. Quick statistics and the archive preview are loaded only when their sections approach the viewport. The archive preview uses a dedicated three-item compact payload rather than the full archive list.
+
+LIVE status polling also pauses while the tab is hidden. A live broadcast may refresh more frequently; offline state is throttled more aggressively and reuses cached VOD data.
+
+## Adaptive collector cadence
+
+The automatic archive collector uses a 30-minute base interval.
+
+When consecutive syncs produce no material changes:
+- first unchanged run: next check after 60 minutes,
+- second and later unchanged runs: next check after up to 120 minutes.
+
+A real content change resets the interval to the 30-minute base. Forced/manual repair syncs bypass adaptive backoff.
+
+## NamuWiki conditional refresh
+
+NamuWiki guide sources now use the same change-first principle as Notion.
+
+- Previous ETag / Last-Modified values are sent when available.
+- HTTP 304 reuses the existing guide without reparsing or media work.
+- If the server returns 200, the structured title/section/text/image metadata is fingerprinted.
+- An unchanged fingerprint reuses stored reference sections.
+- Image probing and permanent-media work occur only after a meaningful document change.
+
+The operator content center reports unchanged Notion and NamuWiki skips separately.
+
+## Sampled API type visibility
+
+To identify which public content types still cause real network traffic without introducing a new monitoring request:
+
+- 10% of visitors are selected deterministically.
+- Actual `/api/content` network calls are accumulated in memory by type.
+- Counts are attached to the existing five-minute analytics batch.
+- No extra analytics HTTP request is created for this feature.
+- The operator resource-budget card shows the sampled relative counts.
+
+These numbers are diagnostic samples, not Vercel billing totals.

@@ -32,6 +32,13 @@
     if(!response.ok) throw new Error('HTTP '+response.status);
     return response.json();
   }
+  const whenVisible=(node,task,{rootMargin='500px'}={})=>{
+    if(!node||typeof IntersectionObserver!=='function'){void task();return}
+    let started=false;
+    const run=()=>{if(started)return;started=true;observer.disconnect();void task()};
+    const observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting))run()},{rootMargin,threshold:0.01});
+    observer.observe(node);
+  };
   const minutesText=value=>{const total=Math.max(0,Math.round(Number(value)||0)),h=Math.floor(total/60),m=total%60;return h?(h+'시간'+(m?' '+m+'분':'')):(m+'분')};
   const archiveCategoryLabel=value=>({minecraft:'마인크래프트',song:'노래대회',broadcast:'방송 기획','class-event':'클래스 · 이벤트',other:'기타'}[value]||'콘텐츠');
   const archiveDateText=item=>{
@@ -86,7 +93,7 @@
   renderChallenge();
   document.addEventListener('chunbong:personal-updated',renderChallenge);
   async function load(){
-    const [liveResult,scheduleResult,activityResult,dataResult,archiveResult]=await Promise.allSettled([get('live'),get('schedule'),get('activity'),get('data'),get('chunbong-contents')]);
+    const [liveResult,scheduleResult,activityResult]=await Promise.allSettled([get('live'),get('schedule'),get('activity')]);
     const live=liveResult.status==='fulfilled'&&liveResult.value?.live===true?liveResult.value:null;
     if(live){
       const viewers=Number.isFinite(Number(live.viewerCount))&&Number(live.viewerCount)>0?Number(live.viewerCount).toLocaleString('ko-KR')+'명 시청 중':'지금 방송 중';
@@ -112,8 +119,12 @@
       setCard(noticeRoot,{label:'LATEST NOTICE',title:'최근 소식을 불러오지 못했습니다.',desc:'공지 페이지에서 확인해 주세요.',href:'notice.html'});
       setCard(mediaRoot,{label:'LATEST MEDIA',title:'최근 콘텐츠를 불러오지 못했습니다.',desc:'다시보기·핫클립·유튜브에서 확인해 주세요.',href:'vod.html'});
     }
-    if(dataResult.status==='fulfilled')renderQuickStats(dataResult.value);
-    if(archiveResult.status==='fulfilled')renderArchivePreview(archiveResult.value);else renderArchivePreview({items:[]});
+    whenVisible(statsRoot,async()=>{
+      try{renderQuickStats(await get('data'))}catch{}
+    });
+    whenVisible(archiveRoot,async()=>{
+      try{renderArchivePreview(await get('chunbong-content-home'))}catch{renderArchivePreview({items:[]})}
+    },{rootMargin:'650px'});
   }
   void load();
 })();

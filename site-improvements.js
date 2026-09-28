@@ -420,7 +420,7 @@
     document.head.appendChild(script);
   };
   const start=()=>{
-    const run=()=>{loadScript('site-analytics.js');loadScript('feedback-widget.js')};
+    const run=()=>{loadScript('site-analytics.js?v=2');loadScript('feedback-widget.js')};
     if('requestIdleCallback' in window)window.requestIdleCallback(run,{timeout:2500});
     else setTimeout(run,900);
   };

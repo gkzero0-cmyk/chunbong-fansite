@@ -18,12 +18,36 @@
     if(path==='/api/history-sheet')return{memoryMs:5*60*1000,snapshotMs:24*60*60*1000};
     if(path==='/api/crew-news')return{memoryMs:60000,snapshotMs:6*60*60*1000};
     if(path==='/api/crew-news-batch')return{memoryMs:5*60*1000,snapshotMs:6*60*60*1000};
-    if(path==='/api/content'&&type==='chunbong-content-index')return{memoryMs:5*60*1000,snapshotMs:24*60*60*1000};
-    if(path==='/api/content'&&/(?:^|-)ranking$/.test(type))return{memoryMs:60000,snapshotMs:24*60*60*1000};
+    if(path==='/api/content'){
+      if(type==='live')return{memoryMs:45*1000,snapshotMs:5*60*1000};
+      if(['schedule','notice','activity'].includes(type))return{memoryMs:10*60*1000,snapshotMs:12*60*60*1000};
+      if(['vod','clips','youtube'].includes(type))return{memoryMs:20*60*1000,snapshotMs:24*60*60*1000};
+      if(['notice-detail','catch-detail'].includes(type))return{memoryMs:30*60*1000,snapshotMs:24*60*60*1000};
+      if(type==='fanart')return{memoryMs:15*60*1000,snapshotMs:12*60*60*1000};
+      if(type==='fanart-detail')return{memoryMs:60*60*1000,snapshotMs:24*60*60*1000};
+      if(type==='data')return{memoryMs:10*60*1000,snapshotMs:24*60*60*1000};
+      if(['chunbong-contents','chunbong-content-index','chunbong-content-home'].includes(type))return{memoryMs:10*60*1000,snapshotMs:24*60*60*1000};
+      if(type==='changelog-history')return{memoryMs:10*60*1000,snapshotMs:24*60*60*1000};
+      if(/(?:^|-)ranking$/.test(type))return{memoryMs:60000,snapshotMs:24*60*60*1000};
+    }
     return null;
   }
   function keyFor(input){
     try{const u=new URL(typeof input==='string'?input:input?.url,location.href);u.hash='';return u.pathname+u.search}catch{return''}
+  }
+  function noteApiNetwork(input){
+    try{
+      const u=new URL(typeof input==='string'?input:input?.url,location.href);
+      if(u.origin!==location.origin||u.pathname!=='/api/content')return;
+      const type=String(u.searchParams.get('type')||'').slice(0,60);
+      if(!type||type==='site-analytics-event'||type.startsWith('operator-'))return;
+      if(window.ChunbongAnalytics?.track)window.ChunbongAnalytics.track('api_network',type,{count:1});
+      else{
+        window.__ChunbongApiNetworkQueue=Array.isArray(window.__ChunbongApiNetworkQueue)?window.__ChunbongApiNetworkQueue:[];
+        window.__ChunbongApiNetworkQueue.push(type);
+        if(window.__ChunbongApiNetworkQueue.length>80)window.__ChunbongApiNetworkQueue.splice(0,window.__ChunbongApiNetworkQueue.length-80);
+      }
+    }catch{}
   }
   function responseFrom(record,marker){
     return new Response(record.body,{status:200,headers:{'content-type':record.contentType||'application/json','x-chunbong-cache':marker}});
@@ -36,14 +60,31 @@
       return row;
     }catch{return null}
   }
+  function pruneSnapshots(){
+    try{
+      const rows=[];
+      for(let i=0;i<localStorage.length;i++){
+        const key=localStorage.key(i);if(!key?.startsWith(STORAGE_PREFIX))continue;
+        try{const row=JSON.parse(localStorage.getItem(key)||'{}');rows.push({key,savedAt:Number(row.savedAt)||0,size:(localStorage.getItem(key)||'').length})}catch{localStorage.removeItem(key)}
+      }
+      rows.sort((a,b)=>b.savedAt-a.savedAt);
+      let total=0;
+      rows.forEach((row,index)=>{
+        total+=row.size;
+        if(index>=24||total>1200000||now()-row.savedAt>7*24*60*60*1000)localStorage.removeItem(row.key);
+      });
+    }catch{}
+  }
   function writeSnapshot(key,body,contentType){
     try{
       if(body.length>250000)return;
       localStorage.setItem(STORAGE_PREFIX+key,JSON.stringify({body,contentType,savedAt:now()}));
+      pruneSnapshots();
     }catch{}
   }
+  pruneSnapshots();
   window.fetch=async function budgetFetch(input,init){
-    const p=policy(input,init);if(!p)return nativeFetch(input,init);
+    const p=policy(input,init);if(!p){noteApiNetwork(input);return nativeFetch(input,init)};
     const key=keyFor(input);if(!key)return nativeFetch(input,init);
     const cached=memory.get(key);
     if(cached&&cached.expiresAt>now())return responseFrom(cached,'memory');
@@ -52,6 +93,7 @@
     }
     const task=(async()=>{
       try{
+        noteApiNetwork(input);
         const response=await nativeFetch(input,init);
         const body=await response.clone().text();
         let unavailable=false;
@@ -88,7 +130,7 @@ const write=(key,value)=>{const row={at:Date.now(),value};memory.set(key,row);if
 const clear=key=>{memory.delete(key);if(shouldPersist(key))try{sessionStorage.removeItem(CACHE_PREFIX+key)}catch{}};
 window.ChunbongCache={get(key,ttl=180000){const row=read(key);if(!row)return null;if(Date.now()-Number(row.at||0)>=ttl){clear(key);return null}return row.value},peek(key){const row=read(key);return row?row.value:null},set:write,clear,async fetchJson(key,url,{ttl=180000,force=false,headers={accept:'application/json'},staleIfError=false}={}){const stale=staleIfError?this.peek(key):null;if(!force){const cached=this.get(key,ttl);if(cached)return cached}try{const response=await fetch(url,{headers});if(!response.ok)throw new Error('HTTP '+response.status);return write(key,await response.json())}catch(error){if(staleIfError&&stale)return stale;throw error}}};
 const d=document,loadStyle=(h,k)=>{if(d.querySelector('link['+k+']'))return;const n=d.createElement('link');n.rel='stylesheet';n.href=h;n.setAttribute(k,'true');d.head.appendChild(n)},loadScript=s=>{if(d.querySelector('script[src="'+s+'"]'))return;const n=d.createElement('script');n.src=s;n.defer=1;d.head.appendChild(n)},runIdle=f=>'requestIdleCallback'in window?requestIdleCallback(f,{timeout:1800}):setTimeout(f,650);
-loadScript('site-health.js');runIdle(()=>loadScript('site-improvements.js'));
+loadScript('site-health.js');runIdle(()=>loadScript('site-improvements.js?v=2'));
 const personalPriorityPages='|home|myhub|tarot|',loadPersonal=()=>{loadStyle('personal-hub.css','data-personal-hub-styles');loadScript('personal-hub.js')},page=d.body.dataset.page||'';
 personalPriorityPages.includes('|'+page+'|')?loadPersonal():runIdle(loadPersonal);runIdle(()=>loadScript('site-meta.js'));
 })();

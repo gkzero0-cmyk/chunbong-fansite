@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="theme.css" data-theme-styles>
   <link rel="stylesheet" href="site-design-system.css">
-  <link rel="stylesheet" href="operator.css">
+  <link rel="stylesheet" href="operator.css?v=2">
 </head>
 <body data-page="operator">
 <a class="operator-skip-link" href="#main-content">본문 바로가기</a>
@@ -449,6 +449,10 @@
             <div><span>Redis 보호</span><b id="system-budget-redis">-</b></div>
           </div>
           <div id="system-budget-protections" class="operator-service-health"></div>
+          <div class="operator-api-budget">
+            <div><strong>API 네트워크 표본</strong><span>방문자 10% · 실제 네트워크 요청만 집계</span></div>
+            <div id="system-budget-api-types" class="operator-api-budget-list"><p class="operator-empty">표본을 수집하고 있습니다.</p></div>
+          </div>
           <p id="system-budget-isolation" class="operator-usage-note"></p>
         </article>
         <article class="operator-card operator-usage-card">
@@ -476,6 +480,6 @@
     </section>
   </section>
 </main>
-<script type="module" src="operator.js"></script>
+<script type="module" src="operator.js?v=2"></script>
 </body>
 </html>
