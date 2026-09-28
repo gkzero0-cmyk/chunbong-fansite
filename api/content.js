@@ -326,6 +326,8 @@ async function handler(req,res) {
     res.setHeader('Cache-Control','public, max-age=120, s-maxage=600, stale-while-revalidate=3600');
   }else if(['vod','clips','youtube'].includes(type)){
     res.setHeader('Cache-Control','public, max-age=300, s-maxage=1200, stale-while-revalidate=21600');
+  }else if(['notice-detail','catch-detail'].includes(type)){
+    res.setHeader('Cache-Control','public, max-age=300, s-maxage=1800, stale-while-revalidate=21600');
   }else if(type==='data'){
     res.setHeader('Cache-Control','public, max-age=120, s-maxage=600, stale-while-revalidate=3600');
   }else{
