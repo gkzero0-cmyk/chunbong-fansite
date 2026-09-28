@@ -54,3 +54,36 @@ The visual workflow:
 - caches Playwright/npm downloads,
 - keeps artifacts for 7 days,
 - has no nightly schedule.
+
+
+## Adaptive budget and last-good fallback
+
+The browser installs a small same-origin GET coordinator from `site-shell.js`.
+
+For selected public endpoints it:
+- merges identical in-flight requests,
+- reuses a short in-memory response window,
+- stores a bounded last-good JSON snapshot in localStorage,
+- falls back to that snapshot on network/5xx failures,
+- prefers a last-good ranking snapshot over an `unavailable:true` response when one is still fresh.
+
+Covered endpoints include version, history-sheet, crew-news, crew-news-batch, compact content index, and public ranking reads. Forced refresh requests (`refresh=1`) bypass this layer.
+
+Server-side warm-instance snapshots are also kept for:
+- public crew-news results (up to 6 hours),
+- ranking reads (up to 24 hours).
+
+These are opportunistic fallbacks only; CDN caching remains the primary shared cache.
+
+## Operator resource budget view
+
+The operator system panel exposes the protection state:
+- saving vs limit mode,
+- Redis circuit state,
+- analytics sample rate,
+- analytics retention window,
+- dashboard polling cadence,
+- request dedupe / last-good / crew cache / ranking fallback / Playwright checks,
+- whether optional feature-specific Redis stores are configured.
+
+This view is intentionally descriptive. It does not invent Vercel or Redis quota percentages when the provider does not expose exact usage to the runtime.

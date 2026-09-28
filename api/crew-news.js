@@ -251,6 +251,12 @@ function normalizePost(row, station, menuByNo, req) {
   };
 }
 
+const LAST_GOOD_TTL_MS=6*60*60*1000;
+const lastGood=new Map();
+function snapshotKey({station,page,perPage,keyword,startDate,endDate}){return [station,page,perPage,keyword,startDate,endDate].join('|')}
+function rememberLastGood(key,payload){lastGood.set(key,{at:Date.now(),payload});if(lastGood.size>80){const oldest=[...lastGood.entries()].sort((a,b)=>a[1].at-b[1].at)[0]?.[0];if(oldest)lastGood.delete(oldest)}}
+function readLastGood(key){const row=lastGood.get(key);if(!row||Date.now()-row.at>LAST_GOOD_TTL_MS){if(row)lastGood.delete(key);return null}return row}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'method_not_allowed' });
 
@@ -264,6 +270,7 @@ module.exports = async function handler(req, res) {
   const keyword = safeText(requestUrl.searchParams.get('keyword') || '', 120);
   const startDate = safeText(requestUrl.searchParams.get('start_date') || '', 32);
   const endDate = safeText(requestUrl.searchParams.get('end_date') || '', 32);
+  const cacheKey=snapshotKey({station,page,perPage,keyword,startDate,endDate});
 
   const cookie = safeText(process.env.SOOP_CREW_COOKIE || process.env.SOOP_COOKIE || '', 12000);
   const headers = {
@@ -294,7 +301,7 @@ module.exports = async function handler(req, res) {
     res.setHeader('Cache-Control', (cookie || forceRefresh)
       ? 'no-store, max-age=0'
       : 'public, max-age=60, s-maxage=600, stale-while-revalidate=3600');
-    return res.status(200).json({
+    const payload={
       ok: true,
       station,
       authenticated: Boolean(cookie),
@@ -316,8 +323,15 @@ module.exports = async function handler(req, res) {
             : []
         }))
       } : {})
-    });
+    };
+    if(!cookie&&!forceRefresh&&!debug)rememberLastGood(cacheKey,payload);
+    return res.status(200).json(payload);
   } catch (error) {
+    const snapshot=!cookie&&!forceRefresh?readLastGood(cacheKey):null;
+    if(snapshot){
+      res.setHeader('Cache-Control','public, max-age=60, s-maxage=300, stale-while-revalidate=21600');
+      return res.status(200).json({...snapshot.payload,stale:true,snapshotAt:new Date(snapshot.at).toISOString()});
+    }
     res.setHeader('Cache-Control', 'no-store');
     return res.status(502).json({
       ok: false,

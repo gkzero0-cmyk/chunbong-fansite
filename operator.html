@@ -440,6 +440,17 @@
           <header><h2>운영 상태 변경 이력</h2><span>상태가 바뀐 시점만 기록</span></header>
           <div id="operator-health-history" class="operator-event-list"><p class="operator-empty">상태 이력을 불러오고 있습니다.</p></div>
         </article>
+        <article class="operator-card operator-budget-card">
+          <header><div><h2>외부 사용량 보호</h2><small>한도 소진 전 절약 · 제한 시 자동 완화</small></div><strong id="system-budget-mode" class="operator-health warn">확인 중</strong></header>
+          <div class="operator-budget-grid">
+            <div><span>분석 표본</span><b id="system-budget-sample">-</b></div>
+            <div><span>분석 보존</span><b id="system-budget-retention">-</b></div>
+            <div><span>자동 갱신</span><b id="system-budget-polling">-</b></div>
+            <div><span>Redis 보호</span><b id="system-budget-redis">-</b></div>
+          </div>
+          <div id="system-budget-protections" class="operator-service-health"></div>
+          <p id="system-budget-isolation" class="operator-usage-note"></p>
+        </article>
         <article class="operator-card operator-usage-card">
           <header><h2>Vercel 사용량</h2><a href="https://vercel.com/gkzero0-9465/chunbong-fansite" target="_blank" rel="noopener">Vercel 열기 ↗</a></header>
           <p>Fast Data Transfer, Edge Requests, Functions 실행량 같은 Vercel 상세 사용량은 숫자를 추정하지 않습니다. 전용 Usage 연동이 없는 동안에는 Vercel 대시보드의 공식 수치를 확인합니다.</p>
