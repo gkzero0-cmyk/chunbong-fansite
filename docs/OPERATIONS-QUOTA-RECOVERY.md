@@ -104,6 +104,17 @@ GitHub Actions의 Public load smoke는 수동 실행 전용입니다.
 
 이 테스트는 평소 자동 실행하지 않습니다.
 
+### 기준값 · 2026-09-29 KST
+
+기본 동시 요청 3개 × 2라운드로 측정한 첫 기준값입니다.
+
+- / : p95 193ms · 오류 0
+- /api/version : p95 58ms · 오류 0
+- /api/content?type=data : p95 55ms · 오류 0
+- /api/content?type=chunbong-content-home : p95 292ms · 오류 0
+
+향후 같은 테스트에서 p95가 크게 상승하거나 오류가 발생하면 최근 배포·외부 API·Redis 상태를 함께 확인합니다.
+
 ## 8. 문제 발생 시 판단 순서
 
 1. 공개 사이트가 정상 열리는지 확인
