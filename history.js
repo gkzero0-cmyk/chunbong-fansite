@@ -42,11 +42,12 @@
     {test:/^현실합방\s*w\.\s*스노$/i,importance:'normal'},
     {test:/^서버개발 방송$/i,kind:'방송',importance:'normal'},
     {test:/구독플러스/i,kind:'방송',importance:'normal'},
-    {test:/중계$/i,kind:'방송',importance:'normal'},
     {test:/^레오펠\s*2\s*무기한 연기$/i,kind:'주최',importance:'core',type:'주최'},
     {test:/^레오펠(?:\s*:?\s*.*)?$/i,kind:'주최'},
     {test:/^그냥서버(?:\s*:?\s*.*)?$/i,kind:'주최'},
     {test:/^춘타클(?:\s*.*)?$/i,kind:'타로'},
+    {test:/^처니랜드\s*쪼이팀\s*뻐꾸기병$/i,kind:'대회',importance:'core',type:'대회'},
+    {test:/^버추얼 종합대회 시즌3\s*:\s*넥버워치 중계$/i,kind:'대회',importance:'core',type:'대회·중계'},
 
     {test:/^홍창의 숲$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
     {test:/^린코레일\s*2$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
