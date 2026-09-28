@@ -25,6 +25,12 @@ assert.match(js, /\/api\/content\?type=vod/, 'detail view must use VOD data as a
 assert.match(js, /function recordMedia\(/, 'detail view must resolve representative media per history record');
 assert.match(js, /스프레드시트/, 'spreadsheet media must be preferred when available');
 assert.match(js, /history-record-media/, 'detail view must render a representative image region');
+assert.match(js, /normalizeMediaUrl/, 'history media URLs must normalize protocol-relative image URLs');
+assert.match(js, /bestScore>=135/, 'VOD representative images must require a strong content match');
+assert.match(js, /curated-detail-only/, 'simple/detail inclusion must support explicit curated visibility');
+assert.match(js, /function taxonomyFor\(/, 'history records must expose a separated platform/content taxonomy');
+assert.match(js, /taxonomy\.platform.*taxonomy\.format/s, 'simple labels must combine platform and content format');
+assert.match(js, /history-record-media'\)\?\.setAttribute\('hidden'/, 'failed representative images must collapse instead of showing broken alt text');
 assert.match(js, /챈나의 경찰과 도둑/, 'police-and-thief content must have an explicit classification rule');
 assert.match(js, /마크 일일 콘텐츠/, 'police-and-thief content must be classified as a Minecraft daily content');
 assert.match(js, /야구자의 왁업/, '왁업 must have an explicit Minecraft rule');
