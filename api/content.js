@@ -21,8 +21,18 @@ const operatorCenter=require('../lib/operator-center-api');
 const contentArchive=require('../lib/chunbong-content-archive-api');
 const youtubeEngagementCache = require('../data/youtube-engagement-cache.json');
 const soopMetricHistory = require('../data/soop-follower-history.json');
+const fs=require('node:fs');
+const path=require('node:path');
 const { buildEngagementRankings } = require('../lib/youtube-engagement');
 const fetchSoopLive = fetchChunbongData.fetchSoopLive;
+
+function recoveryStaticData(){
+  try{
+    const file=path.join(process.cwd(),'data','last-known-good.json');
+    const parsed=JSON.parse(fs.readFileSync(file,'utf8'));
+    return parsed?.data&&typeof parsed.data==='object'?parsed.data:null;
+  }catch{return null}
+}
 
 const publicFetchInflight=new Map();
 async function singleFlight(key,loader){
@@ -279,6 +289,7 @@ async function handler(req,res) {
   if(type==='operator-feedback') return operatorCenter.handleOperatorFeedback(req,res);
   if(type==='operator-feedback-update') return operatorCenter.handleOperatorFeedbackUpdate(req,res);
   if(type==='operator-system-status') return operatorCenter.handleOperatorSystemStatus(req,res);
+  if(type==='operator-recovery-mode') return operatorCenter.handleOperatorRecoveryMode(req,res);
   if(type==='operator-security-log') return operatorCenter.handleOperatorSecurityLog(req,res);
   if(type==='operator-session-revoke') return operatorCenter.handleOperatorSessionRevoke(req,res);
   if(type==='operator-logout') return operatorCenter.handleLogout(req,res);
@@ -364,7 +375,17 @@ async function handler(req,res) {
     if(type==='schedule'){const items=await singleFlight('schedule',fetchSchedule);return res.status(200).json({items,source:type,fallback:!items.length});}
     if(type==='catch-detail'){const id=String(requestUrl.searchParams.get('id')||'');const item=await singleFlight('catch-detail:'+id,()=>fetchCatchDetail(id));return res.status(200).json({item,source:type,fallback:!item?.stream});}
     if(type==='activity'){const payload=await singleFlight('activity',fetchActivity);return res.status(200).json({...payload,source:type,fallback:!payload.items.length});}
-    if(type==='data'){const payload=compactDataPayload(await singleFlight('data',fetchChunbongData));return res.status(200).json(payload);}
+    if(type==='data'){
+      const raw=await singleFlight('data',fetchChunbongData);
+      const recovery=await operatorCenter._internals.recoveryMode().catch(()=>false);
+      const backup=recovery?recoveryStaticData():null;
+      const payload=compactDataPayload(raw,{
+        youtubeEngagementCache:backup?.['data/youtube-engagement-cache.json']||youtubeEngagementCache,
+        soopMetricHistory:backup?.['data/soop-follower-history.json']||soopMetricHistory
+      });
+      if(recovery)payload.recoveryMode='last-known-good';
+      return res.status(200).json(payload);
+    }
     return res.status(400).json({error:'unknown content type'});
   } catch(error){return res.status(200).json({items:[],source:type,fallback:true,reason:error.message});}
 }
