@@ -35,11 +35,13 @@ window.CHUNBONG_HISTORY_RECORDS = Object.freeze([
     sources:["activity-history","profile-history"]
   },
   {
-    start:"2024-01-31", label:"베스트 BJ 선정", kind:"방송",
+    start:"2024-01-31", label:"베스트 BJ 선정", kind:"활동",
+    detail:"아프리카TV(SOOP) 활동 초기인 2024년 1월 베스트 BJ로 선정된 기록입니다.",
     sources:["soop-history","activity-history"]
   },
   {
     start:"2024-02-14", label:"마카오톡 내부 콘텐츠 ‘마딴섬’ 참여", kind:"마인크래프트",
+    detail:"마인크래프트 서버 마카오톡에서 진행된 내부 일일 콘텐츠 ‘마딴섬’에 참여했습니다.",
     sources:["activity-history","soop-history"]
   },
   {
@@ -83,8 +85,8 @@ window.CHUNBONG_HISTORY_RECORDS = Object.freeze([
     sources:["server-history","activity-history"]
   },
   {
-    start:"2024-10-17", end:"2024-10-28", label:"요양타운 · 이세갱 2인자", kind:"마인크래프트",
-    detail:"요양타운에 참여해 이세갱의 부두목/2인자로 활동했습니다.",
+    start:"2024-10-17", end:"2024-10-28", label:"요양타운 · 이세갱 2인자", kind:"게임",
+    detail:"GTA 인생모드 스트리머 서버 요양타운에 참여해 이세갱의 부두목/2인자로 활동했습니다.",
     sources:["activity-history","server-history","group-history"]
   },
   {
