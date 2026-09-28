@@ -431,24 +431,25 @@
     }
 
     root.innerHTML=`<section class="history-simple" aria-label="간단 방송 이력">
-      <div class="history-simple-note"><strong>핵심 이력만 보기</strong><span>대표적인 방송 활동과 콘텐츠만 추려 보여줍니다. 행을 누르면 같은 기록의 상세 위치로 이동합니다.</span></div>
+      <div class="history-simple-note"><strong>핵심 이력 기준</strong><span>장기 콘텐츠 · 서버/마크 · 공식 합방/대회 · 주최 콘텐츠 · 활동 변화를 중심으로 표시합니다. 모집·면접·신청·준비 과정은 상세 보기에서 확인할 수 있습니다.</span></div>
       ${renderYearFilters(years,'simple',simpleYear)}
       <div class="history-simple-list">
         ${years.map(year=>`<section class="history-simple-year-section" data-simple-year="${year}" ${simpleYear!=='all'&&simpleYear!==year?'hidden':''}>
-          <header class="history-simple-year-head"><div><strong>${year}</strong><span>${groups[year].length}개 핵심 이력</span></div>${yearSource(year)}</header>
-          <div class="history-simple-table-head" aria-hidden="true"><span>날짜 / 기간</span><span>내용</span></div>
+          <header class="history-simple-year-head"><div><strong>${year}</strong><span>${groups[year].length}개 핵심 이력 <em class="history-simple-year-breakdown">${esc(simpleYearSummary(groups[year]))}</em></span></div>${yearSource(year)}</header>
+          <div class="history-simple-table-head" aria-hidden="true"><span>날짜 / 기간</span><span>내용</span><span>유형</span></div>
           <div class="history-simple-year-list">
             ${groups[year].map(row=>{
               const id=recordId(row);
               return `<article class="history-simple-row ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" tabindex="0" role="link" data-open-record="${id}" aria-label="${esc(row.label)} 상세 기록 보기">
                 <time class="history-simple-date" datetime="${esc(row.start)}">${esc(compactDate(row))}</time>
                 <p class="history-simple-content"><span>${esc(row.label)}</span>${statusBadge(row)}<span class="history-row-arrow" aria-hidden="true">→</span></p>
+                <span class="history-simple-type">${esc(simpleTypeLabel(row))}</span>
               </article>`;
             }).join('')}
           </div>
         </section>`).join('')}
       </div>
-      <footer class="history-simple-foot"><span>${liveReady?'최신 기록 반영됨':'검증 기록 표시 중'} · 핵심 이력 ${rows.length}개</span><button type="button" class="history-detail-link" data-open-detail>상세 기록 전체 보기 →</button></footer>
+      <footer class="history-simple-foot"><span>간단 보기 ${rows.length}개 · 준비 과정과 전체 기록은 상세 보기에서 확인</span><button type="button" class="history-detail-link" data-open-detail>상세 기록 전체 보기 →</button></footer>
     </section>`;
 
     root.querySelector('[data-open-detail]')?.addEventListener('click',()=>setView('detail'));
@@ -460,10 +461,17 @@
     });
   }
 
-  function detailSearchText(row){
-    const children=subEvents(row);
-    return [row.label,row.kind,row.detail,row.start,row.end,...children.map(item=>item.label)]
+  function detailBaseSearchText(row){
+    return [row.label,row.kind,row.detail,row.start,row.end]
       .filter(Boolean).join(' ').toLowerCase();
+  }
+
+  function detailChildSearchText(row){
+    return subEvents(row).map(item=>item.label).filter(Boolean).join(' ').toLowerCase();
+  }
+
+  function detailSearchText(row){
+    return [detailBaseSearchText(row),detailChildSearchText(row)].filter(Boolean).join(' ');
   }
 
   function highlightHtml(value='',query=''){
@@ -499,9 +507,13 @@
     root.querySelectorAll('[data-history-detail-item]').forEach(item=>{
       const yearMatch=detailYear==='all'||item.dataset.year===detailYear;
       const kindMatch=detailKind==='all'||item.dataset.kind===detailKind;
-      const textMatch=!query||String(item.dataset.search||'').includes(query);
+      const baseMatch=!query||String(item.dataset.searchBase||'').includes(query);
+      const detailMatch=Boolean(query)&&String(item.dataset.searchDetail||'').includes(query);
+      const textMatch=baseMatch||detailMatch;
       const visible=yearMatch&&kindMatch&&textMatch;
       item.hidden=!visible;
+      const matchBadge=item.querySelector('[data-search-match]');
+      if(matchBadge) matchBadge.hidden=!(visible&&query&&!baseMatch&&detailMatch);
       if(visible) visibleCount+=1;
     });
 
@@ -763,13 +775,15 @@
                     const children=subEvents(row);
                     const id=recordId(row);
                     const search=detailSearchText(row);
+                    const searchBase=detailBaseSearchText(row);
+                    const searchDetail=detailChildSearchText(row);
                     const content=contentHref(row);
                     const calendar=calendarHref(row);
                     const calendarLabel=row.end&&row.end!==row.start?'시작일 기록':'캘린더';
                     const actionLinks=`${content?`<a href="${esc(content)}">콘텐츠</a>`:''}${calendar?`<a href="${esc(calendar)}">${calendarLabel}</a>`:''}<button type="button" data-copy-record="${id}" aria-label="${esc(row.label)} 기록 링크 복사">링크</button>`;
                     const canLoad=detailTerms(row).length>0&&Number(year)>=2025&&!rowMonthsLoaded(row);
                     const compact=!row.featured&&!row.detail&&!children.length&&!canLoad;
-                    return `<article id="${id}" class="history-timeline-item ${compact?'is-compact':''} ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" data-history-detail-item data-year="${year}" data-kind="${esc(row.kind||'콘텐츠')}" data-search="${esc(search)}">
+                    return `<article id="${id}" class="history-timeline-item ${compact?'is-compact':''} ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" data-history-detail-item data-year="${year}" data-kind="${esc(row.kind||'콘텐츠')}" data-search="${esc(search)}" data-search-base="${esc(searchBase)}" data-search-detail="${esc(searchDetail)}">
                       <div class="history-timeline-date">${esc(displayDate(row))}</div>
                       <div class="history-timeline-card">
                         <div class="history-record-head">
@@ -777,7 +791,7 @@
                           <div class="history-record-actions">${actionLinks}</div>
                           <details class="history-record-more"><summary>관련 보기</summary><div>${actionLinks}</div></details>
                         </div>
-                        <div class="history-timeline-meta"><span>${esc(row.kind||'방송')}</span>${row.featured?'<b>주요 이력</b>':''}${statusBadge(row)}${sourceBadges(row)}</div>
+                        <div class="history-timeline-meta"><span>${esc(row.kind||'방송')}</span>${row.featured?'<b>주요 이력</b>':''}${statusBadge(row)}${sourceBadges(row)}<span class="history-search-match" data-search-match hidden>세부 기록 일치</span></div>
                         ${row.detail?`<p data-highlight data-raw="${esc(row.detail)}">${esc(row.detail)}</p>`:''}
                         ${children.length?`<details class="history-event-details"><summary>세부 방송 기록 ${children.length}개 보기 <span>⌄</span></summary><ol>${children.map(item=>`<li><time>${esc(item.end?displayDate({start:item.date,end:item.end}):fmt(item.date))}</time><span data-highlight data-raw="${esc(item.label)}">${esc(item.label)}</span></li>`).join('')}</ol></details>`:canLoad?`<button type="button" class="history-load-details" data-load-sub-events="${id}">세부 방송 기록 불러오기</button>`:''}
                       </div>
