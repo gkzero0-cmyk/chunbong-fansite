@@ -17,7 +17,9 @@ for(const token of [
   "youtubeIncrementalDiscovery:true",
   "youtubeDailyRecentLimit:30",
   "youtubeStaleRefreshLimit:20",
-  "notionFallbackMinutes:360"
+  "notionFallbackMinutes:360",
+  "validatedDailySnapshot:true",
+  "providerOutagePreservesCache:true"
 ]) assert.ok(api.includes(token),token+' missing');
 
 assert.match(ui,/아카이브 메타 캐시/);
@@ -35,5 +37,7 @@ assert.match(api,/quotaEventMemory=\[\]/);
 assert.match(api,/recentQuotaEvents/);
 assert.match(api,/retryAfterSeconds=\(name==='redis_service_limit'\|\|name==='redis_circuit_open'\)\?43200:21600/);
 assert.match(ui,/24시간 제한 이벤트/);
+assert.match(ui,/일일 검증 복구본/);
+assert.match(ui,/외부 장애 캐시 보존/);
 
 console.log('operator resource budget visibility regression passed');
