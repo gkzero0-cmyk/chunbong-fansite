@@ -130,7 +130,7 @@ const write=(key,value)=>{const row={at:Date.now(),value};memory.set(key,row);if
 const clear=key=>{memory.delete(key);if(shouldPersist(key))try{sessionStorage.removeItem(CACHE_PREFIX+key)}catch{}};
 window.ChunbongCache={get(key,ttl=180000){const row=read(key);if(!row)return null;if(Date.now()-Number(row.at||0)>=ttl){clear(key);return null}return row.value},peek(key){const row=read(key);return row?row.value:null},set:write,clear,async fetchJson(key,url,{ttl=180000,force=false,headers={accept:'application/json'},staleIfError=false}={}){const stale=staleIfError?this.peek(key):null;if(!force){const cached=this.get(key,ttl);if(cached)return cached}try{const response=await fetch(url,{headers});if(!response.ok)throw new Error('HTTP '+response.status);return write(key,await response.json())}catch(error){if(staleIfError&&stale)return stale;throw error}}};
 const d=document,loadStyle=(h,k)=>{if(d.querySelector('link['+k+']'))return;const n=d.createElement('link');n.rel='stylesheet';n.href=h;n.setAttribute(k,'true');d.head.appendChild(n)},loadScript=s=>{if(d.querySelector('script[src="'+s+'"]'))return;const n=d.createElement('script');n.src=s;n.defer=1;d.head.appendChild(n)},runIdle=f=>'requestIdleCallback'in window?requestIdleCallback(f,{timeout:1800}):setTimeout(f,650);
-loadScript('site-health.js');runIdle(()=>loadScript('site-improvements.js'));
+loadScript('site-health.js');runIdle(()=>loadScript('site-improvements.js?v=2'));
 const personalPriorityPages='|home|myhub|tarot|',loadPersonal=()=>{loadStyle('personal-hub.css','data-personal-hub-styles');loadScript('personal-hub.js')},page=d.body.dataset.page||'';
 personalPriorityPages.includes('|'+page+'|')?loadPersonal():runIdle(loadPersonal);runIdle(()=>loadScript('site-meta.js'));
 })();
