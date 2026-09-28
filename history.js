@@ -42,6 +42,8 @@
     {test:/^현실합방\s*w\.\s*스노$/i,importance:'normal'},
     {test:/^서버개발 방송$/i,kind:'방송',importance:'normal'},
     {test:/구독플러스/i,kind:'방송',importance:'normal'},
+    {test:/중계$/i,kind:'방송',importance:'normal'},
+    {test:/^레오펠\s*2\s*무기한 연기$/i,kind:'주최',importance:'core',type:'주최'},
 
     {test:/^홍창의 숲$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
     {test:/^린코레일\s*2$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
@@ -147,7 +149,7 @@
     const override=recordRule(text);
     if(override?.kind) return override.kind;
     if(/타로|사주|신점/.test(text)) return '타로';
-    if(/대회|F1|CK|와튜버|랜드|스모오라|크루대전/.test(text)) return '대회';
+    if(/대회|F1|CK|와튜버|스모오라|크루대전/.test(text)) return '대회';
     if(/GTA|배그|배틀 그라운드|오버워치|옵치|WOW|스트리트 파이터|아르마|파블로프|언레일드|경찰과 도둑|버워치/.test(text)) return '게임';
     if(/노래자랑|사자컴퍼니 결성|춘동아리 결성/.test(text)) return '주최';
     if(/입사|SOOP 스트리머 대상|크루 리빌딩|사자회 해체/.test(text)) return '방송';
