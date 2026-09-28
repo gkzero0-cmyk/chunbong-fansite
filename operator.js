@@ -466,6 +466,8 @@ async function loadSystemStatus(){
     ['멀티플레이 lock 재시도 '+fmt(multiplayer.lockRetries||0)+'회',Number(multiplayer.lockRetries||0)<20],
     ['멀티플레이 Redis circuit '+(Number(multiplayer.redisCircuitOpenUntil||0)>Date.now()?'열림':'정상'),Number(multiplayer.redisCircuitOpenUntil||0)<=Date.now()],
     ['마지막 정상 데이터',protections.lastGoodSnapshot],
+    ['일일 검증 복구본',protections.validatedDailySnapshot],
+    ['외부 장애 캐시 보존',protections.providerOutagePreservesCache],
     ['크루 소식 캐시',protections.crewNewsCache],
     ['랭킹 제한 완화',protections.rankingGracefulFallback],
     ['24시간 제한 이벤트 '+fmt(quotaEvents.length)+'건',quotaEvents.length===0],
