@@ -14,16 +14,27 @@
     ?'detail'
     :(localStorage.getItem('chunbong-history-view')==='detail'?'detail':'simple');
   let liveAnnual=[];
-  let liveMonths=[];
   let liveReady=false;
   let liveFetchedAt='';
   let simpleYear='all';
   let detailYear='all';
   let detailKind='all';
   let detailQuery='';
+  let detailFiltersOpen=false;
+  let simpleScrollY=0;
+  let searchTimer=0;
   const monthOpenState=new Map();
+  const monthlyCache=new Map();
+  const monthLoading=new Map();
+  const searchBundleLoadedYears=new Set();
 
   const kindOrder=['마인크래프트','주최','타로','대회','방송','게임','콘텐츠'];
+  const CONTENT_LINK_RULES=[
+    {test:/적자생존/,id:'justserver-survival'},
+    {test:/머니게임/,id:'justserver-moneygame'},
+    {test:/춘타클/,id:'chuntacle-2026'},
+    {test:/레오펠/,id:'leopel'}
+  ];
 
   const esc=(value='')=>String(value)
     .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
@@ -44,6 +55,27 @@
 
   function recordId(row={}){
     return `history-${String(row.start||'date')}-${stableHash(`${row.start||''}|${row.end||''}|${row.label||''}`)}`;
+  }
+
+  function contentHref(row={}){
+    const label=String(row.label||'');
+    if(/싸이감성/.test(label)) return row.start==='2024-05-19'?'/contents/psy-emotion-song-contest-1':'/contents/psy-emotion-song-contest-2';
+    if(/^그냥서버(?:\s*:)?\s*$/.test(label)||(/그냥서버/.test(label)&&!/머니게임|적자생존/.test(label))) return '/contents/justserver-diamond';
+    const rule=CONTENT_LINK_RULES.find(item=>item.test.test(label));
+    return rule?`/contents/${rule.id}`:'';
+  }
+
+  function calendarHref(row={}){
+    const date=String(row.start||'').slice(0,10);
+    return /^\d{4}-\d{2}-\d{2}$/.test(date)?`data.html?view=calendar&date=${encodeURIComponent(date)}#soop`:'';
+  }
+
+  function monthCacheKey(year,month){
+    return `${Number(year)}-${String(Number(month)).padStart(2,'0')}`;
+  }
+
+  function allMonthItems(){
+    return [...monthlyCache.values()].flat();
   }
 
   function inferKind(label=''){
@@ -175,10 +207,8 @@
     return sources.length>=2?'<span class="history-verified">교차 확인</span>':'';
   }
 
-  function yearSource(year){
-    return Number(year)>=2025
-      ?'<span class="history-year-source is-sheet">Google Sheet 기준 · 자동 갱신</span>'
-      :'<span class="history-year-source">SOOP · 공개 자료 교차 검증</span>';
+  function yearSource(){
+    return '';
   }
 
   function detailWindow(row={}){
@@ -208,10 +238,29 @@
   function subEvents(row={}){
     const terms=detailTerms(row);
     if(!terms.length) return [];
-    return liveMonths
+    return allMonthItems()
       .filter(item=>inRange(item.date,row)&&terms.some(term=>String(item.label||'').includes(term)))
       .filter((item,index,array)=>array.findIndex(other=>other.date===item.date&&other.end===item.end&&other.label===item.label)===index)
       .sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  }
+
+  function monthsInWindow(row={}){
+    const window=detailWindow(row);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(window.start)||!/^\d{4}-\d{2}-\d{2}$/.test(window.end)) return [];
+    const [sy,sm]=window.start.split('-').map(Number);
+    const [ey,em]=window.end.split('-').map(Number);
+    const result=[];
+    let year=sy,month=sm,guard=0;
+    while((year<ey||(year===ey&&month<=em))&&guard<24){
+      result.push({year,month,key:monthCacheKey(year,month)});
+      month+=1;if(month===13){month=1;year+=1;}guard+=1;
+    }
+    return result;
+  }
+
+  function rowMonthsLoaded(row={}){
+    const months=monthsInWindow(row);
+    return months.length>0&&months.every(month=>monthlyCache.has(month.key));
   }
 
   function simpleRows(){
@@ -260,6 +309,7 @@
   }
 
   function openDetailRecord(id){
+    simpleScrollY=window.scrollY||0;
     currentView='detail';
     localStorage.setItem('chunbong-history-view','detail');
     history.replaceState(null,'',`#${id}`);
@@ -287,7 +337,7 @@
     }
 
     root.innerHTML=`<section class="history-simple" aria-label="간단 방송 이력">
-      <div class="history-simple-note"><strong>핵심 이력만 보기</strong><span>2025년 이후는 <b>Google Sheet ‘춘봉 다시보기’</b> 날짜·기간을 우선하고 준비 과정은 상세 보기로 분리합니다. 행을 누르면 같은 기록의 상세 위치로 이동합니다.</span></div>
+      <div class="history-simple-note"><strong>핵심 이력만 보기</strong><span>대표적인 방송 활동과 콘텐츠만 추려 보여줍니다. 행을 누르면 같은 기록의 상세 위치로 이동합니다.</span></div>
       ${renderYearFilters(years,'simple',simpleYear)}
       <div class="history-simple-list">
         ${years.map(year=>`<section class="history-simple-year-section" data-simple-year="${year}" ${simpleYear!=='all'&&simpleYear!==year?'hidden':''}>
@@ -304,7 +354,7 @@
           </div>
         </section>`).join('')}
       </div>
-      <footer class="history-simple-foot"><span>${liveReady?'Google Sheet 자동 갱신':'검증 스냅샷 기준'} · 핵심 이력 ${rows.length}개</span><button type="button" class="history-detail-link" data-open-detail>상세 기록 전체 보기 →</button></footer>
+      <footer class="history-simple-foot"><span>${liveReady?'최신 기록 반영됨':'검증 기록 표시 중'} · 핵심 이력 ${rows.length}개</span><button type="button" class="history-detail-link" data-open-detail>상세 기록 전체 보기 →</button></footer>
     </section>`;
 
     root.querySelector('[data-open-detail]')?.addEventListener('click',()=>setView('detail'));
@@ -387,6 +437,70 @@
     applyHighlights();
   }
 
+  async function loadMonth(year,month){
+    const key=monthCacheKey(year,month);
+    if(monthlyCache.has(key)) return monthlyCache.get(key);
+    if(monthLoading.has(key)) return monthLoading.get(key);
+    const promise=loadJson(`/api/history-sheet?sheet=month&year=${year}&month=${month}`)
+      .then(payload=>{
+        const items=Array.isArray(payload?.items)?payload.items:[];
+        monthlyCache.set(key,items.map(item=>({...item,month:Number(month)})));
+        return monthlyCache.get(key);
+      })
+      .catch(()=>{
+        monthlyCache.set(key,[]);
+        return [];
+      })
+      .finally(()=>monthLoading.delete(key));
+    monthLoading.set(key,promise);
+    return promise;
+  }
+
+  async function loadMonthsForRow(row={}){
+    const months=monthsInWindow(row);
+    if(!months.length) return;
+    await Promise.all(months.map(item=>loadMonth(item.year,item.month)));
+    if(currentView==='detail'){
+      const id=recordId(row);
+      renderDetail();
+      requestAnimationFrame(()=>scrollToRecord(id,false));
+    }
+  }
+
+  async function loadYearMonthsForSearch(year){
+    const numeric=Number(year);
+    if(!Number.isFinite(numeric)||searchBundleLoadedYears.has(numeric)) return;
+    searchBundleLoadedYears.add(numeric);
+    try{
+      const payload=await loadJson(`/api/history-sheet?sheet=months&year=${numeric}`);
+      const grouped=new Map();
+      for(const item of Array.isArray(payload?.items)?payload.items:[]){
+        const month=Number(item.month||String(item.date||'').slice(5,7));
+        if(!month) continue;
+        const key=monthCacheKey(numeric,month);
+        if(!grouped.has(key)) grouped.set(key,[]);
+        grouped.get(key).push(item);
+      }
+      for(const [key,items] of grouped) monthlyCache.set(key,items);
+    }catch(_error){
+      searchBundleLoadedYears.delete(numeric);
+    }
+  }
+
+  async function ensureDeepSearch(){
+    const query=detailQuery.trim();
+    if(query.length<2) return;
+    const years=detailYear==='all'?[2026,2025]:[Number(detailYear)];
+    const note=root.querySelector('[data-history-search-note]');
+    if(note) note.textContent='세부 방송 기록까지 찾는 중…';
+    await Promise.all(years.map(loadYearMonthsForSearch));
+    if(currentView==='detail'&&detailQuery.trim()===query){
+      renderDetail();
+      const next=root.querySelector('[data-history-search]');
+      if(next){next.focus();next.setSelectionRange(next.value.length,next.value.length);}
+    }
+  }
+
   function copyRecordLink(id,button){
     const url=new URL(location.href);
     url.hash=id;
@@ -406,12 +520,16 @@
   function bindDetailControls(){
     const input=root.querySelector('[data-history-search]');
     const clear=root.querySelector('[data-history-search-clear]');
+    const filterToggle=root.querySelector('[data-history-filter-toggle]');
+    const filterPanel=root.querySelector('[data-history-filter-panel]');
 
     if(input){
       input.value=detailQuery;
       input.addEventListener('input',()=>{
         detailQuery=input.value;
         applyDetailFilters();
+        clearTimeout(searchTimer);
+        if(detailQuery.trim().length>=2) searchTimer=setTimeout(()=>void ensureDeepSearch(),420);
       });
       input.addEventListener('keydown',event=>{
         if(event.key==='Escape'&&input.value){
@@ -429,21 +547,54 @@
       applyDetailFilters();
     });
 
+    filterToggle?.addEventListener('click',()=>{
+      detailFiltersOpen=!detailFiltersOpen;
+      filterToggle.setAttribute('aria-expanded',String(detailFiltersOpen));
+      filterPanel?.classList.toggle('is-collapsed',!detailFiltersOpen);
+    });
+
     bindYearFilters('detail',year=>{
       detailYear=year;
       applyDetailFilters();
+      if(detailQuery.trim().length>=2) void ensureDeepSearch();
     });
 
     root.querySelectorAll('[data-history-kind]').forEach(button=>{
       button.addEventListener('click',()=>{
         detailKind=button.dataset.historyKind||'all';
+        detailFiltersOpen=detailKind!=='all'||detailFiltersOpen;
         applyDetailFilters();
       });
     });
 
+    root.querySelector('[data-history-kind-reset]')?.addEventListener('click',()=>{
+      detailKind='all';
+      applyDetailFilters();
+    });
+
     root.querySelectorAll('[data-history-month-block]').forEach(block=>{
+      const loadOpenMonth=()=>{
+        if(!block.open) return;
+        const year=Number(block.dataset.year),month=Number(block.dataset.month);
+        if(year>=2025&&!monthlyCache.has(monthCacheKey(year,month))){
+          void loadMonth(year,month).then(()=>{if(currentView==='detail') renderDetail();});
+        }
+      };
       block.addEventListener('toggle',()=>{
         if(!detailQuery&&detailYear==='all'&&detailKind==='all') monthOpenState.set(block.dataset.monthKey,block.open);
+        loadOpenMonth();
+      });
+      loadOpenMonth();
+    });
+
+    root.querySelectorAll('[data-load-sub-events]').forEach(button=>{
+      button.addEventListener('click',()=>{
+        const id=button.dataset.loadSubEvents;
+        const row=records().find(item=>recordId(item)===id);
+        if(!row) return;
+        button.disabled=true;
+        button.textContent='세부 기록 불러오는 중…';
+        void loadMonthsForRow(row);
       });
     });
 
@@ -465,13 +616,14 @@
       const target=records().find(row=>recordId(row)===hash);
       if(target&&target.start.slice(0,4)===year&&target.start.slice(5,7)===month) return true;
     }
-    return yearIndex===0&&monthIndex<3;
+    return yearIndex===0&&monthIndex<1;
   }
 
   function renderDetail(){
     const rows=records();
     const groups=groupByYear(rows);
     const years=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
+    const activeFilterCount=detailKind==='all'?0:1;
 
     root.innerHTML=`<section class="history-curated-detail">
       <div class="history-detail-controls">
@@ -481,10 +633,17 @@
             <input type="search" data-history-search placeholder="레오펠, 마병대, 행정관 검색" aria-label="방송 이력 검색" autocomplete="off">
             <button type="button" data-history-search-clear aria-label="검색어 지우기">×</button>
           </label>
+          <button type="button" class="history-filter-toggle ${activeFilterCount?'is-active':''}" data-history-filter-toggle aria-expanded="${detailFiltersOpen}">
+            필터${activeFilterCount?` · ${esc(detailKind)}`:''}
+          </button>
           <span class="history-results-count" data-history-results-count>${rows.length}개 기록</span>
         </div>
-        ${renderKindFilters(rows)}
+        <div class="history-filter-panel ${detailFiltersOpen?'':'is-collapsed'}" data-history-filter-panel>
+          <div class="history-filter-panel-head"><strong>콘텐츠 유형</strong><button type="button" data-history-kind-reset>초기화</button></div>
+          ${renderKindFilters(rows)}
+        </div>
         ${renderYearFilters(years,'detail',detailYear)}
+        <small class="history-search-note" data-history-search-note>검색은 제목·설명과 불러온 세부 기록을 함께 확인합니다.</small>
       </div>
 
       <div class="history-search-empty" data-history-search-empty hidden><strong>검색 결과가 없습니다.</strong><span>검색어, 유형 또는 연도 필터를 바꿔보세요.</span></div>
@@ -493,28 +652,36 @@
         const months=groupByMonth(groups[year]);
         const monthKeys=Object.keys(months).sort((a,b)=>b.localeCompare(a));
         return `<section class="history-year-block" data-history-year-block data-year="${year}">
-          <header class="history-year-header"><div class="history-year-title"><span>${year}</span><div><h2>${year}년 방송 이력</h2>${yearSource(year)}</div></div><small>${groups[year].length}개 기록</small></header>
+          <header class="history-year-header"><div class="history-year-title"><span>${year}</span><div><h2>${year}년 방송 이력</h2></div></div><small>${groups[year].length}개 기록</small></header>
           <div class="history-months">
             ${monthKeys.map((month,monthIndex)=>{
               const monthKey=`${year}-${month}`;
               const open=shouldOpenMonth(year,month,yearIndex,monthIndex);
-              return `<details class="history-month-block" data-history-month-block data-month-key="${monthKey}" ${open?'open':''}>
+              return `<details class="history-month-block" data-history-month-block data-month-key="${monthKey}" data-year="${year}" data-month="${Number(month)}" ${open?'open':''}>
                 <summary class="history-month-head"><div><strong>${Number(month)}월</strong><span>${months[month].length}개 기록</span></div><span class="history-month-chevron" aria-hidden="true">⌄</span></summary>
                 <div class="history-timeline">
                   ${months[month].map(row=>{
                     const children=subEvents(row);
                     const id=recordId(row);
                     const search=detailSearchText(row);
-                    return `<article id="${id}" class="history-timeline-item ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" data-history-detail-item data-year="${year}" data-kind="${esc(row.kind||'콘텐츠')}" data-search="${esc(search)}">
+                    const content=contentHref(row);
+                    const calendar=calendarHref(row);
+                    const canLoad=detailTerms(row).length>0&&Number(year)>=2025&&!rowMonthsLoaded(row);
+                    const compact=!row.featured&&!row.detail&&!children.length&&!canLoad;
+                    return `<article id="${id}" class="history-timeline-item ${compact?'is-compact':''} ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" data-history-detail-item data-year="${year}" data-kind="${esc(row.kind||'콘텐츠')}" data-search="${esc(search)}">
                       <div class="history-timeline-date">${esc(displayDate(row))}</div>
                       <div class="history-timeline-card">
                         <div class="history-record-head">
                           <h3 data-highlight data-raw="${esc(row.label)}">${esc(row.label)}</h3>
-                          <button type="button" class="history-record-link" data-copy-record="${id}" aria-label="${esc(row.label)} 기록 링크 복사">링크</button>
+                          <div class="history-record-actions">
+                            ${content?`<a href="${esc(content)}">콘텐츠</a>`:''}
+                            ${calendar?`<a href="${esc(calendar)}">캘린더</a>`:''}
+                            <button type="button" data-copy-record="${id}" aria-label="${esc(row.label)} 기록 링크 복사">링크</button>
+                          </div>
                         </div>
                         <div class="history-timeline-meta"><span>${esc(row.kind||'방송')}</span>${row.featured?'<b>주요 이력</b>':''}${statusBadge(row)}${sourceBadges(row)}</div>
                         ${row.detail?`<p data-highlight data-raw="${esc(row.detail)}">${esc(row.detail)}</p>`:''}
-                        ${children.length?`<details class="history-event-details"><summary>세부 방송 기록 ${children.length}개 보기 <span>⌄</span></summary><ol>${children.map(item=>`<li><time>${esc(item.end?displayDate({start:item.date,end:item.end}):fmt(item.date))}</time><span data-highlight data-raw="${esc(item.label)}">${esc(item.label)}</span></li>`).join('')}</ol></details>`:''}
+                        ${children.length?`<details class="history-event-details"><summary>세부 방송 기록 ${children.length}개 보기 <span>⌄</span></summary><ol>${children.map(item=>`<li><time>${esc(item.end?displayDate({start:item.date,end:item.end}):fmt(item.date))}</time><span data-highlight data-raw="${esc(item.label)}">${esc(item.label)}</span></li>`).join('')}</ol></details>`:canLoad?`<button type="button" class="history-load-details" data-load-sub-events="${id}">세부 방송 기록 불러오기</button>`:''}
                       </div>
                     </article>`;
                   }).join('')}
@@ -525,7 +692,7 @@
         </section>`;
       }).join('')}
 
-      <footer class="history-curated-source"><strong>데이터 기준</strong><p>2025년 이후 날짜·기간은 Google Sheet를 우선하고, SOOP 공식 기록·방송국·공개 자료는 역할과 설명 보강 및 교차 확인에 사용합니다. 월별 시트가 추가되면 세부 기록도 자동으로 연결하도록 구성했습니다.</p><a class="btn btn-ghost" href="${SOURCE_URL}" target="_blank" rel="noreferrer">SOOP 방송 이력 원본 ↗</a></footer>
+      <footer class="history-curated-source"><strong>데이터 기준</strong><p>2025년 이후는 지속 갱신되는 방송 기록을 우선하고, SOOP 공식 기록·방송국·공개 자료로 역할과 설명을 보강합니다. 세부 방송 기록은 필요한 경우에만 불러와 초기 로딩을 가볍게 유지합니다.</p><a class="btn btn-ghost" href="${SOURCE_URL}" target="_blank" rel="noreferrer">SOOP 방송 이력 원본 ↗</a></footer>
     </section>`;
 
     bindDetailControls();
@@ -569,20 +736,18 @@
     updateViewUI();
 
     if(status){
-      const suffix=liveFetchedAt
-        ?new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(liveFetchedAt))+' KST'
-        :'';
-      status.textContent=liveReady
-        ?`Google Sheet 자동 갱신 · 2025~2026 최신 기록${suffix?' · '+suffix:''}`
-        :'검증 스냅샷 표시 중 · Google Sheet 연결 확인 중';
+      status.textContent=liveReady?'최신 기록 반영됨':'검증 기록 표시 중 · 최신 기록 확인 중';
     }
   }
 
   function setView(view){
-    currentView=view==='detail'?'detail':'simple';
+    const next=view==='detail'?'detail':'simple';
+    if(currentView==='simple'&&next==='detail') simpleScrollY=window.scrollY||0;
+    currentView=next;
     localStorage.setItem('chunbong-history-view',currentView);
     if(currentView==='simple'&&location.hash.startsWith('#history-')) history.replaceState(null,'',location.pathname+location.search);
     render();
+    if(currentView==='simple'&&simpleScrollY>0) requestAnimationFrame(()=>window.scrollTo({top:simpleScrollY,behavior:'auto'}));
   }
 
   function recordSignature(rows){
@@ -598,11 +763,9 @@
   async function loadLiveSheets(){
     try{
       const before=recordSignature(records());
-      const [y2025,y2026,m2025,m2026]=await Promise.all([
+      const [y2025,y2026]=await Promise.all([
         loadJson('/api/history-sheet?sheet=2025'),
-        loadJson('/api/history-sheet?sheet=2026'),
-        loadJson('/api/history-sheet?sheet=months&year=2025'),
-        loadJson('/api/history-sheet?sheet=months&year=2026')
+        loadJson('/api/history-sheet?sheet=2026')
       ]);
 
       if(!y2025.ok||!y2026.ok||!Array.isArray(y2025.items)||!Array.isArray(y2026.items)||y2025.items.length<30||y2026.items.length<40){
@@ -610,24 +773,15 @@
       }
 
       liveAnnual=[...y2025.items,...y2026.items].map(enrichSheetRecord);
-      liveMonths=[
-        ...(Array.isArray(m2025.items)?m2025.items:[]),
-        ...(Array.isArray(m2026.items)?m2026.items:[])
-      ];
       liveFetchedAt=y2026.fetchedAt||y2025.fetchedAt||'';
       liveReady=true;
 
       const after=recordSignature(records());
       if(after!==before||currentView==='detail') render();
-      else if(status){
-        const suffix=liveFetchedAt
-          ?new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(liveFetchedAt))+' KST'
-          :'';
-        status.textContent=`Google Sheet 자동 갱신 · 2025~2026 최신 기록${suffix?' · '+suffix:''}`;
-      }
+      else if(status) status.textContent='최신 기록 반영됨';
     }catch(_error){
       liveReady=false;
-      if(status) status.textContent='검증 스냅샷 표시 중 · Google Sheet 연결 지연';
+      if(status) status.textContent='검증 기록 표시 중 · 최신 기록 연결 지연';
     }
   }
 

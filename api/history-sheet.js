@@ -159,6 +159,40 @@ async function fetchSheet(config){
 module.exports=async function handler(req,res){
   const key=String(req.query&&req.query.sheet||'2026');
   try{
+    if(key==='month-index'){
+      const requestedYear=Number(req.query&&req.query.year||2026);
+      const sheets=await availableSheets();
+      const months=Object.entries(sheets)
+        .map(([sheetKey,config])=>({...config,key:sheetKey}))
+        .filter(config=>config.type==='month'&&config.year===requestedYear)
+        .sort((a,b)=>(a.month||0)-(b.month||0))
+        .map(config=>({key:config.key,title:config.title,year:config.year,month:config.month}));
+      res.setHeader('Cache-Control','s-maxage=1800, stale-while-revalidate=21600');
+      return res.status(200).json({ok:true,key:'month-index',year:requestedYear,months});
+    }
+
+    if(key==='month'){
+      const requestedYear=Number(req.query&&req.query.year||2026);
+      const requestedMonth=Number(req.query&&req.query.month||0);
+      if(!requestedYear||requestedMonth<1||requestedMonth>12){
+        return res.status(400).json({ok:false,error:'invalid_month'});
+      }
+      const shortYear=String(requestedYear).slice(-2);
+      const monthKey=`${shortYear}.${requestedMonth}`;
+      let config=STATIC_SHEETS[monthKey];
+      if(!config){
+        const sheets=await availableSheets();
+        config=sheets[monthKey];
+      }
+      if(!config){
+        res.setHeader('Cache-Control','s-maxage=1800, stale-while-revalidate=21600');
+        return res.status(200).json({ok:true,key:monthKey,type:'month',year:requestedYear,month:requestedMonth,itemCount:0,items:[],missing:true});
+      }
+      const result=await fetchSheet({...config,key:monthKey});
+      res.setHeader('Cache-Control','s-maxage=900, stale-while-revalidate=3600');
+      return res.status(200).json({ok:true,...result,fetchedAt:new Date().toISOString()});
+    }
+
     if(key==='months'){
       const sheets=await availableSheets();
       const requestedYear=Number(req.query&&req.query.year||2026);
