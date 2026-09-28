@@ -114,6 +114,10 @@ assert.match(operatorJs,/분류 완료/,'operator center must show classificatio
 assert.match(operatorJs,/대표 이미지/,'operator center must show representative-image completion rate');
 assert.match(operatorJs,/상세 요약/,'operator center must show summary completion rate');
 assert.match(operatorCss,/operator-history-year-quality/,'yearly verification rate styles missing');
+assert.match(operatorJs,/issuePriority/, 'operator history audit must prioritize fixes');
+assert.match(operatorJs,/분류 우선/, 'classification problems must be surfaced first');
+assert.match(operatorJs,/history\.html\?q=/, 'audit items must deep-link into filtered history detail');
+assert.match(operatorCss,/operator-history-priority/, 'prioritized history fix styles missing');
 assert.match(operatorJs,/\$\$\('\[data-operator-tab\]'\)\.forEach/,'operator tab binding must iterate a NodeList');
 assert.doesNotMatch(operatorJs,/(^|\n)\$\('\[data-operator-tab\]'\)\.forEach/,'operator tab binding must not call forEach on querySelector result');
 assert.match(operatorJs,/\$\$\('\[data-operator-panel\]'\)\.forEach/,'operator panel switching must iterate a NodeList');
