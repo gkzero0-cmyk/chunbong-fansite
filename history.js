@@ -222,35 +222,36 @@
   function simpleDecision(item={}){
     const text=String(item.label||'').trim();
     const override=recordRule(text);
-    const kind=override?.kind||item.kind||inferKind(text);
+    const kind=normalizeKind(override?.kind||item.kind,text);
+    const role=override?.role||item.role||inferRole(text,kind);
 
-    if(!text||item.detailOnly) return {include:false,type:'',importance:'normal',reason:'detail-only'};
-    if(isPreparation(text)) return {include:false,type:'',importance:'normal',reason:'preparation'};
-    if(override?.importance==='normal') return {include:false,type:'',importance:'normal',reason:'curated-normal'};
+    if(!text||item.detailOnly) return {include:false,type:'',importance:'normal',role,reason:'detail-only'};
+    if(isPreparation(text)) return {include:false,type:'',importance:'normal',role,reason:'preparation'};
+    if(override?.importance==='normal') return {include:false,type:'',importance:'normal',role,reason:'curated-normal'};
     if(override?.importance==='core') return {
       include:true,
-      type:override.type||(kind==='마인크래프트'?'서버·마크':kind==='게임'?'게임 서버':kind),
+      type:override.type||(kind==='마인크래프트'?'서버·마크':kind==='대회'?'대회':kind==='활동'?'활동 변화':displayKind(kind)),
       importance:'core',
+      role,
       reason:'curated-core'
     };
 
-    if(/입사 발표|결성|해체|크루 리빌딩|SOOP 스트리머 대상/.test(text)){
-      return {include:true,type:'활동 변화',importance:'core',reason:'milestone'};
+    if(kind==='활동'){
+      return {include:true,type:'활동 변화',importance:'core',role,reason:'milestone'};
     }
-
-    if(kind==='마인크래프트') return {include:true,type:'서버·마크',importance:'core',reason:'minecraft'};
-    if(kind==='대회') return {include:true,type:'대회',importance:'core',reason:'competition'};
-    if(kind==='주최') return {include:true,type:'주최',importance:'core',reason:'hosted'};
+    if(kind==='마인크래프트') return {include:true,type:'서버·마크',importance:'core',role,reason:'minecraft'};
+    if(kind==='대회') return {include:true,type:'대회',importance:'core',role,reason:'competition'};
+    if(role&&/주최|운영/.test(role)) return {include:true,type:displayKind(kind),importance:'core',role,reason:'hosted'};
 
     if(/배그|배틀 그라운드|아르마|오버워치|옵치|버워치|언레일드|경찰과 도둑|스모오라|세바버|왁업|랜버워치/i.test(text)){
-      return {include:true,type:'합방·게임',importance:'core',reason:'official-game-event'};
+      return {include:true,type:'게임 이벤트',importance:'core',role:role||'참가',reason:'official-game-event'};
     }
 
     if(/노래자랑|춘타클/.test(text)){
-      return {include:true,type:kind==='타로'?'타로':'콘텐츠',importance:'core',reason:'signature-content'};
+      return {include:true,type:kind==='타로'?'타로':'콘텐츠',importance:'core',role,reason:'signature-content'};
     }
 
-    return {include:false,type:'',importance:'normal',reason:'detail'};
+    return {include:false,type:'',importance:'normal',role,reason:'detail'};
   }
 
   function isMajorSheetEvent(item={}){
@@ -264,25 +265,21 @@
 
   function simpleTypeLabel(row={}){
     const override=recordRule(row.label);
-    return override?.type||simpleDecision(row).type||({
+    const kind=normalizeKind(override?.kind||row.kind,row.label);
+    return override?.type||simpleDecision({...row,kind}).type||({
       '마인크래프트':'서버·마크',
       '대회':'대회',
-      '주최':'주최',
       '타로':'타로',
       '게임':'게임',
       '활동':'활동 변화',
-      '방송':'방송'
-    }[row.kind]||'콘텐츠');
+      '방송':'방송',
+      '콘텐츠':'콘텐츠'
+    }[kind]||'콘텐츠');
   }
 
-  function simpleYearSummary(rows=[]){
-    const counts=new Map();
-    rows.forEach(row=>{
-      const type=simpleTypeLabel(row);
-      counts.set(type,(counts.get(type)||0)+1);
-    });
-    const top=[...counts.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,2);
-    return top.map(([type,count])=>`${type} ${count}`).join(' · ');
+  function simpleRoleLabel(row={}){
+    const role=row.role||inferRole(row.label,normalizeKind(row.kind,row.label));
+    return role&&role!=='참가'?role:'';
   }
 
   function currentKstDate(){
@@ -298,11 +295,13 @@
     if(item.start>today) state='예정';
     else if(item.end&&item.start<=today&&item.end>=today) state='진행';
     const kind=inferKind(label);
-    const selection=simpleDecision({...item,label,kind});
+    const role=inferRole(label,kind);
+    const selection=simpleDecision({...item,label,kind,role});
     return {
       ...item,
       label,
       kind,
+      role,
       importance:selection.importance,
       major:selection.include,
       featured:isFeatured(label),
@@ -346,7 +345,11 @@
 
     return dedupe(rows)
       .filter(row=>/^\d{4}-\d{2}-\d{2}$/.test(String(row?.start||'')))
-      .map(row=>({...row,kind:row.kind||inferKind(row.label)}))
+      .map(row=>{
+        const kind=normalizeKind(row.kind,row.label);
+        const role=row.role||inferRole(row.label,kind);
+        return {...row,kind,role};
+      })
       .sort((a,b)=>String(b.start).localeCompare(String(a.start))||String(b.end||'').localeCompare(String(a.end||'')));
   }
 
