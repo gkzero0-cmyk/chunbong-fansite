@@ -7,15 +7,23 @@ const SOOP_IMAGE_HOSTS = new Set([
   'res.sooplive.co.kr',
   'vodimg.sooplive.com',
   'vodimg.sooplive.co.kr',
+  'videoimg.sooplive.com',
+  'videoimg.sooplive.co.kr',
   'liveimg.sooplive.com',
   'liveimg.sooplive.co.kr',
   'stimg.afreecatv.com',
   'liveimg.afreecatv.com'
 ]);
 
+function normalizeImageUrl(url='') {
+  const value=String(url||'').trim();
+  if(value.startsWith('//')) return 'https:'+value;
+  return value;
+}
+
 function sourceType(url) {
   try {
-    const parsed = new URL(url);
+    const parsed = new URL(normalizeImageUrl(url));
     const host = parsed.hostname.toLowerCase();
     if (parsed.protocol !== 'https:') return '';
     if (
@@ -36,7 +44,8 @@ function allowed(url) {
 
 module.exports = async function handler(req, res) {
   const requestUrl = new URL(req.url || '/', 'https://chunbong.local');
-  const url = requestUrl.searchParams.get('url') || '';
+  const rawUrl = requestUrl.searchParams.get('url') || '';
+  const url = normalizeImageUrl(rawUrl);
   const type = sourceType(url);
   if (!url || !type) return res.status(400).send('invalid image url');
   try {
@@ -62,4 +71,4 @@ module.exports = async function handler(req, res) {
   }
 };
 
-module.exports._internals = { allowed, sourceType, SOOP_IMAGE_HOSTS };
+module.exports._internals = { allowed, sourceType, normalizeImageUrl, SOOP_IMAGE_HOSTS };
