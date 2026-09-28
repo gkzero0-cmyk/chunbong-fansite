@@ -106,6 +106,18 @@
     {test:/^담월드(?:2)?(?:\s+w\..*)?$/i,kind:'게임',role:'참가',importance:'core',type:'팰월드 서버'},
     {test:/^고세구의 세바버$/i,kind:'VRC',role:'참가',importance:'core',type:'VRC 콘텐츠'},
 
+    {test:/^마카오톡 참여$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^마카오톡 내부 콘텐츠 ‘마딴섬’ 참여$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'마크 일일 콘텐츠'},
+    {test:/^포켓꾸 · 춘물상 활동$/i,kind:'마인크래프트',role:'운영',importance:'core',type:'서버·마크'},
+    {test:/^랜드마꾸 · 춘밭 운영$/i,kind:'마인크래프트',role:'운영',importance:'core',type:'서버·마크'},
+    {test:/^후추 다이아 서버 참여·클리어$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^별농일기 참여$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^클로배 서버 참여$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
+    {test:/^마카오톡 1\.5 · 악오중대 길드원$/i,kind:'마인크래프트',role:'길드원',importance:'core',type:'서버·마크'},
+    {test:/^마카오톡 1\.75 · 리제로 길드 수장$/i,kind:'마인크래프트',role:'수장',importance:'core',type:'서버·마크'},
+    {test:/^요양타운 · 이세갱 2인자$/i,kind:'게임',role:'부두목',importance:'core',type:'GTA 서버'},
+    {test:/^코창서버 · 북해빙궁 문파원$/i,kind:'마인크래프트',role:'문파원',importance:'core',type:'서버·마크'},
+    {test:/^로나월드 2\.5 리부트 참여$/i,kind:'마인크래프트',role:'참가',importance:'core',type:'서버·마크'},
     {test:/^퍼켓몬\s*UP전쟁$/i,kind:'콘텐츠',simple:false,importance:'normal',type:'세부 이벤트'},
 
     {test:/^2025 SOOP 스트리머 대상(?: 참여)?$/i,kind:'활동',role:'참가',importance:'core',type:'공식 행사'},
