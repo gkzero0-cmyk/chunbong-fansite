@@ -501,5 +501,5 @@ $('#operator-security-refresh')?.addEventListener('click',()=>void loadSecurityL
 logout.addEventListener('click',async()=>{await json(API+'operator-logout',{method:'POST'});try{localStorage.removeItem('chunbong:operator:access-hint:v1')}catch(_){}session=null;showLogin()});
 $('#operator-logout-all')?.addEventListener('click',async()=>{if(!confirm('모든 기기에서 운영자 로그인을 해제할까요?'))return;await json(API+'operator-logout-all',{method:'POST'});try{localStorage.removeItem('chunbong:operator:access-hint:v1')}catch(_){}session=null;showLogin();status.textContent='모든 기기의 운영자 세션을 해제했습니다.'});
 await loadAuthAvailability();await setupFirebaseEmail();await boot();
-setInterval(()=>{if(!dashboard.hidden){void loadAnalytics();if(!document.querySelector('[data-operator-panel="system"]')?.hidden)void loadSystemStatus()}},60000);
+setInterval(()=>{if(document.visibilityState==='visible'&&!dashboard.hidden){void loadAnalytics();if(!document.querySelector('[data-operator-panel="system"]')?.hidden)void loadSystemStatus()}},300000);
 })().catch(error=>{console.error('[operator-center]',error);});
