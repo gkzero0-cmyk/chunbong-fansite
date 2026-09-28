@@ -218,7 +218,8 @@
       message(errorMessage(error),true);
     }finally{refreshInFlight=false;}
   }
-  function startPolling(){if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(refresh,1300);void refresh();}
+  function pollingDelay(){return document.hidden?5000:1300;}
+  function startPolling(){if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(refresh,pollingDelay());void refresh();}
   async function finishLocal(){
     if(localFinished)return;
     localFinished=true;
@@ -317,5 +318,6 @@
     const saved=JSON.parse(localStorage.getItem(config.sessionKey)||'null');
     if(saved?.code&&saved?.token&&!invite){client.restore(saved.code,saved.token);open();startPolling();message('이전 멀티플레이 방을 다시 연결하는 중…');}
   }catch{}
+  document.addEventListener('visibilitychange',()=>{if(client.code)startPolling();});
   root.addEventListener('beforeunload',stopTimers);
 })(typeof globalThis!=='undefined'?globalThis:window);
