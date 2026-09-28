@@ -27,5 +27,9 @@ assert.match(ui,/SOOP OFF 확장수집/);
 assert.match(ui,/YouTube 증분 탐색/);
 assert.match(ui,/Notion 백업/);
 assert.match(ui,/이미지 CDN 캐시/);
+assert.match(api,/quotaSignals=\[/);
+assert.match(api,/automaticSaving:quotaLevel!=='normal'/);
+assert.match(ui,/quotaSignals/);
+assert.match(ui,/level==='limit'\?'제한':level==='warn'\?'절약':'정상'/);
 
 console.log('operator resource budget visibility regression passed');
