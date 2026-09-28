@@ -181,7 +181,7 @@
     sourcePostLoading=loadJson(SOURCE_DETAIL_API)
       .then(payload=>{
         const item=payload?.item;
-        if(!item?.html)throw new Error('source_post_empty');
+        if(!item||!item.html)throw new Error('source_post_empty');
         sourcePost={...item};
         sourcePostLoadedAt=Date.now();
         renderSourcePost();
