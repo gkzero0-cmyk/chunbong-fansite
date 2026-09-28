@@ -14,7 +14,8 @@ assert.match(html, /202862381/, 'history page must link to the designated SOOP s
 assert.match(html, /history\.js/, 'history page must load its dedicated runtime');
 assert.match(html, /id=["']history-content["']/, 'history page must expose a render target');
 
-assert.match(js, /\/api\/content\?type=notice-detail&id=202862381/, 'history runtime must sync from SOOP post 202862381 through the existing detail API');
+assert.match(js, /SOURCE_DETAIL_API='\/api\/content\?type=notice-detail&id=202862381'/, 'history runtime must define the designated SOOP detail endpoint');
+assert.match(js, /loadJson\(SOURCE_DETAIL_API\)/, 'history runtime must sync from the designated SOOP detail endpoint');
 assert.match(js, /item\.html/, 'history runtime must render the sanitized source post HTML');
 assert.match(js, /5\s*\*\s*60\s*\*\s*1000|300000/, 'history runtime must periodically refresh the source');
 assert.match(js, /SOOP 원본|원본에서 보기/, 'history runtime must preserve an obvious path back to the SOOP source');
