@@ -16,7 +16,8 @@
   });
   const openButton=document.querySelector('[data-chuntris-multiplayer]');if(!openButton)return;
 
-  let pollTimer=0,progressTimer=0,startedRound=0,lastRoom=null,terminalSent='',startTimer=0,clockOffset=0,refreshInFlight=false,progressInFlight=false;
+  let pollTimer=0,progressTimer=0,startedRound=0,lastRoom=null,terminalSent='',startTimer=0,clockOffset=0,refreshInFlight=false,progressInFlight=false,lastProgressSignature='',lastProgressSentAt=0;
+  const PROGRESS_HEARTBEAT_MS=5000;
   let selectedMode=localStorage.getItem(MODE_KEY);if(!MODES[selectedMode])selectedMode='sprint40';
   let selectedDifficulty=localStorage.getItem(DIFFICULTY_KEY);if(!DIFFICULTIES[selectedDifficulty])selectedDifficulty='normal';
 
@@ -120,7 +121,7 @@
     if(!room)return;clockOffset=Number(room.serverNow||Date.now())-Date.now();
     if(room.state==='countdown'&&room.startAt&&room.round!==startedRound){
       if(startTimer)clearTimeout(startTimer);const delay=Math.max(0,room.startAt-serverNow());
-      startTimer=setTimeout(()=>{if(startedRound===room.round)return;startedRound=room.round;terminalSent='';App.startMultiplayer?.(room.seed,room.mode,room.difficulty||'normal');close();startProgress(room);},delay);
+      startTimer=setTimeout(()=>{if(startedRound===room.round)return;startedRound=room.round;terminalSent='';lastProgressSignature='';lastProgressSentAt=0;App.startMultiplayer?.(room.seed,room.mode,room.difficulty||'normal');close();startProgress(room);},delay);
     }
     if(room.state==='finished'){if(progressTimer){clearInterval(progressTimer);progressTimer=0;}open();render(room);}
     if(room.state==='waiting'&&startedRound===room.round){startedRound=0;hud.hidden=true;}
@@ -134,8 +135,11 @@
       if((status==='completed'||status==='gameover')&&terminalSent===status)return;
       const elapsed=Math.max(snap.elapsedMs,serverNow()-(room.startAt||serverNow()));
       const payload={lines:snap.lines,score:snap.score,timeMs:room.mode==='score180'?Math.min(180000,elapsed):elapsed,status};
+      const signature=[payload.lines,payload.score,payload.status].join('|');
+      const terminal=status!=='playing';
+      if(!terminal&&signature===lastProgressSignature&&Date.now()-lastProgressSentAt<PROGRESS_HEARTBEAT_MS)return;
       progressInFlight=true;
-      try{const data=await client.progress(payload);render(data.room);handleRoom(data.room);if(status!=='playing')terminalSent=status;}catch(error){message(errorMessage(error),true);}finally{progressInFlight=false;}
+      try{const data=await client.progress(payload);lastProgressSignature=signature;lastProgressSentAt=Date.now();render(data.room);handleRoom(data.room);if(status!=='playing')terminalSent=status;}catch(error){message(errorMessage(error),true);}finally{progressInFlight=false;}
     };
     progressTimer=setInterval(send,1400);void send();
   }
