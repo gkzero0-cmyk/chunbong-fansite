@@ -14,16 +14,27 @@
     ?'detail'
     :(localStorage.getItem('chunbong-history-view')==='detail'?'detail':'simple');
   let liveAnnual=[];
-  let liveMonths=[];
   let liveReady=false;
   let liveFetchedAt='';
   let simpleYear='all';
   let detailYear='all';
   let detailKind='all';
   let detailQuery='';
+  let detailFiltersOpen=false;
+  let simpleScrollY=0;
+  let searchTimer=0;
   const monthOpenState=new Map();
+  const monthlyCache=new Map();
+  const monthLoading=new Map();
+  const searchBundleLoadedYears=new Set();
 
   const kindOrder=['마인크래프트','주최','타로','대회','방송','게임','콘텐츠'];
+  const CONTENT_LINK_RULES=[
+    {test:/적자생존/,id:'justserver-survival'},
+    {test:/머니게임/,id:'justserver-moneygame'},
+    {test:/춘타클/,id:'chuntacle-2026'},
+    {test:/레오펠/,id:'leopel'}
+  ];
 
   const esc=(value='')=>String(value)
     .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
@@ -44,6 +55,27 @@
 
   function recordId(row={}){
     return `history-${String(row.start||'date')}-${stableHash(`${row.start||''}|${row.end||''}|${row.label||''}`)}`;
+  }
+
+  function contentHref(row={}){
+    const label=String(row.label||'');
+    if(/싸이감성/.test(label)) return row.start==='2024-05-19'?'/contents/psy-emotion-song-contest-1':'/contents/psy-emotion-song-contest-2';
+    if(/^그냥서버(?:\s*:)?\s*$/.test(label)||(/그냥서버/.test(label)&&!/머니게임|적자생존/.test(label))) return '/contents/justserver-diamond';
+    const rule=CONTENT_LINK_RULES.find(item=>item.test.test(label));
+    return rule?`/contents/${rule.id}`:'';
+  }
+
+  function calendarHref(row={}){
+    const date=String(row.start||'').slice(0,10);
+    return /^\d{4}-\d{2}-\d{2}$/.test(date)?`data.html?view=calendar&date=${encodeURIComponent(date)}#soop`:'';
+  }
+
+  function monthCacheKey(year,month){
+    return `${Number(year)}-${String(Number(month)).padStart(2,'0')}`;
+  }
+
+  function allMonthItems(){
+    return [...monthlyCache.values()].flat();
   }
 
   function inferKind(label=''){
@@ -175,10 +207,8 @@
     return sources.length>=2?'<span class="history-verified">교차 확인</span>':'';
   }
 
-  function yearSource(year){
-    return Number(year)>=2025
-      ?'<span class="history-year-source is-sheet">Google Sheet 기준 · 자동 갱신</span>'
-      :'<span class="history-year-source">SOOP · 공개 자료 교차 검증</span>';
+  function yearSource(){
+    return '';
   }
 
   function detailWindow(row={}){
@@ -208,10 +238,29 @@
   function subEvents(row={}){
     const terms=detailTerms(row);
     if(!terms.length) return [];
-    return liveMonths
+    return allMonthItems()
       .filter(item=>inRange(item.date,row)&&terms.some(term=>String(item.label||'').includes(term)))
       .filter((item,index,array)=>array.findIndex(other=>other.date===item.date&&other.end===item.end&&other.label===item.label)===index)
       .sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  }
+
+  function monthsInWindow(row={}){
+    const window=detailWindow(row);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(window.start)||!/^\d{4}-\d{2}-\d{2}$/.test(window.end)) return [];
+    const [sy,sm]=window.start.split('-').map(Number);
+    const [ey,em]=window.end.split('-').map(Number);
+    const result=[];
+    let year=sy,month=sm,guard=0;
+    while((year<ey||(year===ey&&month<=em))&&guard<24){
+      result.push({year,month,key:monthCacheKey(year,month)});
+      month+=1;if(month===13){month=1;year+=1;}guard+=1;
+    }
+    return result;
+  }
+
+  function rowMonthsLoaded(row={}){
+    const months=monthsInWindow(row);
+    return months.length>0&&months.every(month=>monthlyCache.has(month.key));
   }
 
   function simpleRows(){
