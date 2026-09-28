@@ -26,15 +26,13 @@
   const monthOpenState=new Map();
   const monthlyCache=new Map();
   const monthLoading=new Map();
-  const searchBundleLoadedYears=new Set();
+  const searchIndexLoadedYears=new Set();
+  const searchIndexLoading=new Map();
+  let contentIndex=[];
+  let contentIndexLoaded=false;
+  let contentIndexLoading=null;
 
   const kindOrder=['마인크래프트','주최','타로','대회','방송','게임','콘텐츠'];
-  const CONTENT_LINK_RULES=[
-    {test:/적자생존/,id:'justserver-survival'},
-    {test:/머니게임/,id:'justserver-moneygame'},
-    {test:/춘타클/,id:'chuntacle-2026'},
-    {test:/레오펠/,id:'leopel'}
-  ];
 
   const esc=(value='')=>String(value)
     .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
@@ -58,16 +56,57 @@
   }
 
   function contentHref(row={}){
-    const label=String(row.label||'');
-    if(/싸이감성/.test(label)) return row.start==='2024-05-19'?'/contents/psy-emotion-song-contest-1':'/contents/psy-emotion-song-contest-2';
-    if(/^그냥서버(?:\s*:)?\s*$/.test(label)||(/그냥서버/.test(label)&&!/머니게임|적자생존/.test(label))) return '/contents/justserver-diamond';
-    const rule=CONTENT_LINK_RULES.find(item=>item.test.test(label));
-    return rule?`/contents/${rule.id}`:'';
+    if(!contentIndex.length) return '';
+    const labelNorm=normalizeLabel(row.label||'');
+    if(!labelNorm) return '';
+    let best=null,bestScore=0;
+    for(const item of contentIndex){
+      const names=[item.title,...(Array.isArray(item.aliases)?item.aliases:[])].filter(Boolean);
+      let score=0;
+      for(const name of names){
+        const nameNorm=normalizeLabel(name);
+        if(nameNorm.length<3) continue;
+        if(labelNorm===nameNorm) score=Math.max(score,200+nameNorm.length);
+        else if(labelNorm.includes(nameNorm)) score=Math.max(score,100+nameNorm.length);
+        else if(nameNorm.includes(labelNorm)&&labelNorm.length>=5) score=Math.max(score,70+labelNorm.length);
+      }
+      if(!score) continue;
+      const rowStart=String(row.start||'');
+      const itemStart=String(item.startDate||item.start||'');
+      if(rowStart&&itemStart){
+        if(rowStart===itemStart) score+=30;
+        else if(rowStart.slice(0,4)===itemStart.slice(0,4)) score+=5;
+      }
+      if(score>bestScore){best=item;bestScore=score;}
+    }
+    return best?.id?`/contents/${encodeURIComponent(best.id)}`:'';
   }
 
   function calendarHref(row={}){
     const date=String(row.start||'').slice(0,10);
     return /^\d{4}-\d{2}-\d{2}$/.test(date)?`data.html?view=calendar&date=${encodeURIComponent(date)}#soop`:'';
+  }
+
+  async function ensureContentIndex(){
+    if(contentIndexLoaded) return contentIndex;
+    if(contentIndexLoading) return contentIndexLoading;
+    contentIndexLoading=loadJson('/api/content?type=chunbong-contents')
+      .then(payload=>{
+        contentIndex=(Array.isArray(payload?.items)?payload.items:[])
+          .filter(item=>item?.id&&item?.title)
+          .map(item=>({
+            id:String(item.id),
+            title:String(item.title),
+            aliases:Array.isArray(item.aliases)?item.aliases.map(String):[],
+            startDate:String(item.startDate||''),
+            endDate:String(item.endDate||'')
+          }));
+        contentIndexLoaded=true;
+        return contentIndex;
+      })
+      .catch(()=>{contentIndexLoaded=true;return [];})
+      .finally(()=>{contentIndexLoading=null;});
+    return contentIndexLoading;
   }
 
   function monthCacheKey(year,month){
@@ -469,22 +508,27 @@
 
   async function loadYearMonthsForSearch(year){
     const numeric=Number(year);
-    if(!Number.isFinite(numeric)||searchBundleLoadedYears.has(numeric)) return;
-    searchBundleLoadedYears.add(numeric);
-    try{
-      const payload=await loadJson(`/api/history-sheet?sheet=months&year=${numeric}`);
-      const grouped=new Map();
-      for(const item of Array.isArray(payload?.items)?payload.items:[]){
-        const month=Number(item.month||String(item.date||'').slice(5,7));
-        if(!month) continue;
-        const key=monthCacheKey(numeric,month);
-        if(!grouped.has(key)) grouped.set(key,[]);
-        grouped.get(key).push(item);
-      }
-      for(const [key,items] of grouped) monthlyCache.set(key,items);
-    }catch(_error){
-      searchBundleLoadedYears.delete(numeric);
-    }
+    if(!Number.isFinite(numeric)||searchIndexLoadedYears.has(numeric)) return;
+    if(searchIndexLoading.has(numeric)) return searchIndexLoading.get(numeric);
+    const promise=loadJson(`/api/history-sheet?sheet=search-index&year=${numeric}`)
+      .then(payload=>{
+        const grouped=new Map();
+        for(const item of Array.isArray(payload?.items)?payload.items:[]){
+          const month=Number(item.month||String(item.date||'').slice(5,7));
+          if(!month) continue;
+          const key=monthCacheKey(numeric,month);
+          if(!grouped.has(key)) grouped.set(key,[]);
+          grouped.get(key).push(item);
+        }
+        for(const [key,items] of grouped){
+          if(!monthlyCache.has(key)) monthlyCache.set(key,items);
+        }
+        searchIndexLoadedYears.add(numeric);
+      })
+      .catch(()=>{})
+      .finally(()=>searchIndexLoading.delete(numeric));
+    searchIndexLoading.set(numeric,promise);
+    return promise;
   }
 
   async function ensureDeepSearch(){
@@ -666,6 +710,8 @@
                     const search=detailSearchText(row);
                     const content=contentHref(row);
                     const calendar=calendarHref(row);
+                    const calendarLabel=row.end&&row.end!==row.start?'시작일 기록':'캘린더';
+                    const actionLinks=`${content?`<a href="${esc(content)}">콘텐츠</a>`:''}${calendar?`<a href="${esc(calendar)}">${calendarLabel}</a>`:''}<button type="button" data-copy-record="${id}" aria-label="${esc(row.label)} 기록 링크 복사">링크</button>`;
                     const canLoad=detailTerms(row).length>0&&Number(year)>=2025&&!rowMonthsLoaded(row);
                     const compact=!row.featured&&!row.detail&&!children.length&&!canLoad;
                     return `<article id="${id}" class="history-timeline-item ${compact?'is-compact':''} ${row.featured?'is-featured':''} ${row.status==='예정'?'is-planned':''}" data-history-detail-item data-year="${year}" data-kind="${esc(row.kind||'콘텐츠')}" data-search="${esc(search)}">
@@ -673,11 +719,8 @@
                       <div class="history-timeline-card">
                         <div class="history-record-head">
                           <h3 data-highlight data-raw="${esc(row.label)}">${esc(row.label)}</h3>
-                          <div class="history-record-actions">
-                            ${content?`<a href="${esc(content)}">콘텐츠</a>`:''}
-                            ${calendar?`<a href="${esc(calendar)}">캘린더</a>`:''}
-                            <button type="button" data-copy-record="${id}" aria-label="${esc(row.label)} 기록 링크 복사">링크</button>
-                          </div>
+                          <div class="history-record-actions">${actionLinks}</div>
+                          <details class="history-record-more"><summary>관련 보기</summary><div>${actionLinks}</div></details>
                         </div>
                         <div class="history-timeline-meta"><span>${esc(row.kind||'방송')}</span>${row.featured?'<b>주요 이력</b>':''}${statusBadge(row)}${sourceBadges(row)}</div>
                         ${row.detail?`<p data-highlight data-raw="${esc(row.detail)}">${esc(row.detail)}</p>`:''}
@@ -736,7 +779,7 @@
     updateViewUI();
 
     if(status){
-      status.textContent=liveReady?'최신 기록 반영됨':'검증 기록 표시 중 · 최신 기록 확인 중';
+      status.textContent=liveReady?'':'최신 기록 확인 중';
     }
   }
 
@@ -747,7 +790,29 @@
     localStorage.setItem('chunbong-history-view',currentView);
     if(currentView==='simple'&&location.hash.startsWith('#history-')) history.replaceState(null,'',location.pathname+location.search);
     render();
+    if(currentView==='detail'&&!contentIndexLoaded){
+      void ensureContentIndex().then(()=>{if(currentView==='detail') renderDetail();});
+    }
     if(currentView==='simple'&&simpleScrollY>0) requestAnimationFrame(()=>window.scrollTo({top:simpleScrollY,behavior:'auto'}));
+  }
+
+  function readAnnualCache(){
+    try{
+      const cached=JSON.parse(sessionStorage.getItem('chunbong-history-annual-v1')||'null');
+      if(!cached||!Array.isArray(cached.items)||cached.items.length<50) return null;
+      if(Date.now()-Number(cached.savedAt||0)>10*60*1000) return null;
+      return cached;
+    }catch(_error){return null;}
+  }
+
+  function writeAnnualCache(items,fetchedAt){
+    try{
+      sessionStorage.setItem('chunbong-history-annual-v1',JSON.stringify({
+        savedAt:Date.now(),
+        fetchedAt:fetchedAt||'',
+        items
+      }));
+    }catch(_error){}
   }
 
   function recordSignature(rows){
@@ -760,7 +825,7 @@
     return response.json();
   }
 
-  async function loadLiveSheets(){
+  async function loadLiveSheets({renderOnSuccess=true}={}){
     try{
       const before=recordSignature(records());
       const [y2025,y2026]=await Promise.all([
@@ -772,17 +837,49 @@
         throw new Error('sheet_data_incomplete');
       }
 
-      liveAnnual=[...y2025.items,...y2026.items].map(enrichSheetRecord);
+      const freshItems=[...y2025.items,...y2026.items];
+      liveAnnual=freshItems.map(enrichSheetRecord);
       liveFetchedAt=y2026.fetchedAt||y2025.fetchedAt||'';
       liveReady=true;
+      writeAnnualCache(freshItems,liveFetchedAt);
 
       const after=recordSignature(records());
-      if(after!==before||currentView==='detail') render();
-      else if(status) status.textContent='최신 기록 반영됨';
+      if(renderOnSuccess&&(after!==before||currentView==='detail')) render();
+      else if(status) status.textContent='';
+      return true;
     }catch(_error){
-      liveReady=false;
-      if(status) status.textContent='검증 기록 표시 중 · 최신 기록 연결 지연';
+      if(!liveReady){
+        liveReady=false;
+        if(status) status.textContent='최신 기록 연결이 지연되고 있습니다';
+      }
+      return false;
     }
+  }
+
+  async function initialize(){
+    const cached=readAnnualCache();
+    if(cached){
+      liveAnnual=cached.items.map(enrichSheetRecord);
+      liveFetchedAt=cached.fetchedAt||'';
+      liveReady=true;
+      if(currentView==='detail') await ensureContentIndex();
+      render();
+      void loadLiveSheets({renderOnSuccess:true});
+      return;
+    }
+
+    let fallbackRendered=false;
+    const fallbackTimer=setTimeout(()=>{
+      fallbackRendered=true;
+      render();
+    },420);
+
+    const tasks=[loadLiveSheets({renderOnSuccess:false})];
+    if(currentView==='detail') tasks.push(ensureContentIndex());
+    await Promise.allSettled(tasks);
+    clearTimeout(fallbackTimer);
+    render();
+    if(fallbackRendered&&status&&liveReady) status.textContent='';
   }
 
   viewButtons.forEach(button=>button.addEventListener('click',()=>setView(button.dataset.historyView)));
@@ -791,10 +888,10 @@
       currentView='detail';
       localStorage.setItem('chunbong-history-view','detail');
       render();
+      if(!contentIndexLoaded) void ensureContentIndex().then(()=>{if(currentView==='detail') renderDetail();});
     }
   });
 
   window.__CHUNBONG_HISTORY_HELPERS__={records,displayDate,compactDate,renderSimple,renderDetail,setView,loadLiveSheets,recordId};
-  render();
-  loadLiveSheets();
+  void initialize();
 })();
