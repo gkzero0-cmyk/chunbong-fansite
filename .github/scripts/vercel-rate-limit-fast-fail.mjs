@@ -68,6 +68,28 @@ function stopForRateLimit(status={},prefix='Current commit'){
   process.exit(42);
 }
 
+async function productionRuntimeSynced(){
+  const url=process.env.PRODUCTION_VERSION_URL||'https://chunbong-fansite.vercel.app/api/version';
+  try{
+    const response=await fetch(url+(url.includes('?')?'&':'?')+'_ts='+Date.now(),{
+      headers:{accept:'application/json','cache-control':'no-cache','user-agent':'chunbong-production-smoke'},
+      signal:AbortSignal.timeout(12000)
+    });
+    if(!response.ok)return false;
+    const payload=await response.json();
+    const deployed=String(payload?.sha||'');
+    return payload?.runtimeSynced===true||payload?.synced===true||Boolean(sha&&deployed===sha);
+  }catch(error){
+    console.log('Production runtime preflight unavailable: '+error.message);
+    return false;
+  }
+}
+
+if(await productionRuntimeSynced()){
+  console.log('Production runtime is already synced; skip Vercel rate-limit status scan.');
+  process.exit(0);
+}
+
 let historyChecked=false;
 for(let attempt=1;attempt<=attempts;attempt+=1){
   try{

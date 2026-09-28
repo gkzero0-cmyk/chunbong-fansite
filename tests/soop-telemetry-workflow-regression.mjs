@@ -4,7 +4,7 @@ import fs from 'node:fs';
 const workflowPath = new URL('../.github/workflows/soop-telemetry.yml', import.meta.url);
 assert.ok(fs.existsSync(workflowPath), 'SOOP telemetry workflow must exist');
 const workflow = fs.readFileSync(workflowPath, 'utf8');
-assert.match(workflow, /cron:\s*['"]2-57\/5 \* \* \* \*['"]/, 'SOOP telemetry should use the staggered 5-minute cadence');
+assert.match(workflow, /cron:\s*['"]2,7,12,17,22,27,32,37,42,47,52,57 \* \* \* \*['"]/, 'SOOP telemetry should use the explicit staggered 5-minute cadence');
 assert.match(workflow, /Reuse telemetry sample for push and archive checks/, 'telemetry should reuse the collected sample for push');
 assert.match(workflow, /SOOP_SAMPLE_PATH=\/tmp\/soop-sample\.json/, 'telemetry sample handoff file missing');
 assert.match(workflow, /permissions:\s*[\s\S]*contents:\s*write/);
