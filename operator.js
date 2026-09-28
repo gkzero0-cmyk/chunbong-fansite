@@ -614,10 +614,25 @@ async function loadHistoryVerification(){
       if(!hasSummary)addIssue(row,'상세 요약 없음');
     }
     const issues=[...issueMap.values()];
-    const classificationCount=issues.filter(row=>row.reasons.some(reason=>reason!=='대표 이미지 지정 없음')).length;
+    const classificationReasons=new Set(['게임 종류 확인','콘텐츠 형태 확인','간단 보기 포함 기준 확인']);
+    const classificationCount=issues.filter(row=>row.reasons.some(reason=>classificationReasons.has(reason))).length;
     const imageCount=issues.filter(row=>row.reasons.includes('대표 이미지 지정 없음')).length;
     const summaryCount=issues.filter(row=>row.reasons.includes('상세 요약 없음')).length;
-    summary.innerHTML=`<div class="operator-history-audit-metrics"><span><b>${fmt(classificationCount)}</b>분류 확인</span><span><b>${fmt(imageCount)}</b>대표 이미지 없음</span><span><b>${fmt(summaryCount)}</b>상세 요약 없음</span><span><b>${fmt(majorRows.length)}</b>주요 기록 점검</span></div><small>${issues.length?'확인 필요한 항목만 아래에 표시합니다.':'현재 주요 기록에 추가 확인 항목이 없습니다.'}</small>`;
+    const total=Math.max(majorRows.length,1);
+    const pct=count=>Math.max(0,Math.round((total-count)/total*100));
+    const yearQuality=[...new Set(majorRows.map(row=>String(row.year||String(row.start||'').slice(0,4))).filter(Boolean))].sort((a,b)=>b.localeCompare(a)).map(year=>{
+      const yearRows=majorRows.filter(row=>String(row.year||String(row.start||'').slice(0,4))===year);
+      const yearKeys=new Set(yearRows.map(row=>[row.start||'',row.label||''].join('|')));
+      const yearIssues=issues.filter(row=>yearKeys.has([row.start||'',row.label||''].join('|')));
+      const denom=Math.max(yearRows.length,1);
+      const countReason=predicate=>yearIssues.filter(predicate).length;
+      const classificationMissing=countReason(row=>row.reasons.some(reason=>classificationReasons.has(reason)));
+      const imageMissing=countReason(row=>row.reasons.includes('대표 이미지 지정 없음'));
+      const summaryMissing=countReason(row=>row.reasons.includes('상세 요약 없음'));
+      const rate=missing=>Math.max(0,Math.round((denom-missing)/denom*100));
+      return {year,total:yearRows.length,classification:rate(classificationMissing),image:rate(imageMissing),summary:rate(summaryMissing)};
+    });
+    summary.innerHTML=`<div class="operator-history-audit-metrics"><span><b>${pct(classificationCount)}%</b>분류 완료</span><span><b>${pct(imageCount)}%</b>대표 이미지</span><span><b>${pct(summaryCount)}%</b>상세 요약</span><span><b>${fmt(majorRows.length)}</b>주요 기록 점검</span></div><div class="operator-history-year-quality">${yearQuality.map(row=>`<span><b>${escapeHtml(row.year)}</b><em>분류 ${row.classification}% · 이미지 ${row.image}% · 요약 ${row.summary}%</em></span>`).join('')}</div><small>${issues.length?'확인 필요한 항목만 아래에 표시합니다.':'현재 주요 기록에 추가 확인 항목이 없습니다.'}</small>`;
     results.innerHTML=issues.length
       ?issues.slice(0,40).map(row=>`<article><time>${escapeHtml(row.start||'')}</time><div><strong>${escapeHtml(row.label)}</strong><span>${escapeHtml(row.reasons.join(' · '))} · ${row.year}년</span></div><a href="history.html" target="_blank" rel="noopener">이력 보기 ↗</a></article>`).join('')
       :'<p class="operator-empty">추가로 확인할 주요 방송 이력이 없습니다.</p>';
