@@ -1,0 +1,153 @@
+name: Visual production check
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "*.html"
+      - "*.js"
+      - "*.css"
+      - "api/**"
+      - "assets/**"
+      - ".github/workflows/visual-production-check.yml"
+      - ".github/scripts/visual-production-check.mjs"
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "URL to inspect"
+        required: false
+        default: "https://chunbong-fansite.vercel.app"
+        type: string
+      pages:
+        description: "Comma-separated pages, e.g. history.html,tarot.html (blank = auto)"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+  statuses: read
+
+concurrency:
+  group: visual-production-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PLAYWRIGHT_VERSION: "1.55.0"
+  DEFAULT_VISUAL_BASE_URL: "https://chunbong-fansite.vercel.app"
+
+jobs:
+  visual-check:
+    name: Desktop + mobile visual check
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Wait for Vercel production when needed
+        id: vercel
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" != "push" ]]; then
+            echo "run_visual=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          files="$(git diff --name-only HEAD^ HEAD || true)"
+          if [[ -n "$files" ]] && ! echo "$files" | grep -Ev '^\.github/' >/dev/null; then
+            echo "Deployment-relevant files changed; waiting for Vercel status."
+          else
+            echo "Only visual-check/CI files changed; testing current Production without waiting for a new Vercel build."
+            echo "run_visual=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          for attempt in $(seq 1 36); do
+            state="$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/status" --jq '[.statuses[] | select(.context == "Vercel")][0].state // ""' 2>/dev/null || true)"
+
+            if [[ "$state" == "success" ]]; then
+              echo "Vercel Production status: success"
+              echo "run_visual=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            if [[ "$state" == "failure" || "$state" == "error" ]]; then
+              echo "Vercel deployment did not succeed; skip visual validation for this commit."
+              {
+                echo "## Visual production check"
+                echo
+                echo "⚠️ Vercel status is **$state**, so screenshot validation was skipped instead of checking an older Production build."
+              } >> "$GITHUB_STEP_SUMMARY"
+              echo "run_visual=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            echo "Waiting for Vercel... attempt $attempt/36 (state: ${state:-pending})"
+            sleep 5
+          done
+
+          echo "Vercel status did not become successful within 3 minutes; skip to avoid validating stale Production."
+          {
+            echo "## Visual production check"
+            echo
+            echo "⚠️ Vercel did not report a successful Production deployment within 3 minutes. Visual validation was skipped to avoid a false pass."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "run_visual=false" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node.js
+        if: steps.vercel.outputs.run_visual == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Cache Chromium
+        if: steps.vercel.outputs.run_visual == 'true'
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-chromium-${{ env.PLAYWRIGHT_VERSION }}
+
+      - name: Install Playwright
+        if: steps.vercel.outputs.run_visual == 'true'
+        shell: bash
+        run: |
+          npm install --no-save --package-lock=false "playwright@${PLAYWRIGHT_VERSION}"
+          npx playwright install --with-deps chromium
+
+      - name: Inspect Production
+        if: steps.vercel.outputs.run_visual == 'true'
+        env:
+          VISUAL_BASE_URL: ${{ github.event.inputs.base_url || 'https://chunbong-fansite.vercel.app' }}
+          VISUAL_PAGES: ${{ github.event.inputs.pages || '' }}
+          VISUAL_BEFORE_SHA: ${{ github.event.before || '' }}
+          VISUAL_PAGE_LIMIT: "4"
+          VISUAL_FAIL_ON_CONSOLE: "0"
+        run: node .github/scripts/visual-production-check.mjs
+
+      - name: Add report to job summary
+        if: always() && steps.vercel.outputs.run_visual == 'true'
+        shell: bash
+        run: |
+          if [[ -f artifacts/visual-check/summary.md ]]; then
+            cat artifacts/visual-check/summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload screenshots and report
+        if: always() && steps.vercel.outputs.run_visual == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-production-${{ github.run_number }}
+          path: artifacts/visual-check/
+          if-no-files-found: ignore
+          retention-days: 7
+          compression-level: 6
