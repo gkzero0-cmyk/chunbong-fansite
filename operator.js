@@ -278,6 +278,15 @@ function renderPeriodSummary(data={}){
 }
 async function loadAnalytics(){
   const data=await json(API+'operator-analytics&days='+currentDays);currentAnalytics=data;
+  const apiRoot=$('#system-budget-api-types');
+  if(apiRoot){
+    const rows=Array.isArray(data.apiNetwork?.rows)?data.apiNetwork.rows:[];
+    const max=Math.max(1,...rows.map(row=>Number(row.sampledCount)||0));
+    apiRoot.innerHTML=rows.length?rows.slice(0,8).map(row=>{
+      const count=Number(row.sampledCount)||0,pct=Math.max(4,Math.round(count/max*100));
+      return '<div class="operator-api-budget-row"><span>'+escapeHtml(row.type||'unknown')+'</span><i><b style="width:'+pct+'%"></b></i><strong>'+fmt(count)+'</strong></div>';
+    }).join(''):'<p class="operator-empty">아직 API 네트워크 표본이 없습니다.</p>';
+  }
   $('#metric-active').textContent=fmt(data.activeNow);$('#metric-visitors').textContent=fmt(data.visitors);$('#metric-sessions').textContent=fmt(data.sessions);
   $('#metric-average-daily').textContent=fmt(data.averageDailyVisitors);$('#metric-pageviews').textContent=fmt(data.pageviews);$('#metric-duration').textContent=shortTime(data.averageActiveSeconds);
   $('#metric-new').textContent=fmt(data.newVisitors);$('#metric-returning').textContent=fmt(data.returningVisits);
