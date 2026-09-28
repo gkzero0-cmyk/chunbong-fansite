@@ -37,10 +37,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Install Playwright Chromium
-        run: |
-          npm install --no-save --no-package-lock playwright@1.55.0
-          npx playwright install --with-deps chromium
+      - name: Install Playwright package
+        run: npm install --no-save --no-package-lock playwright@1.55.0
+      - name: Cache Playwright Chromium
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-chromium-1.55.0
+      - name: Install Chromium system dependencies
+        run: npx playwright install-deps chromium
+      - name: Install Chromium browser
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install chromium
       - name: Start local site
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/mobile-site-http.log 2>&1 &
