@@ -236,5 +236,6 @@ assert.match(autoSource,/fetchAllChannelItems\('videos'/,'ChunbongTV videos shou
 assert.match(autoSource,/fetchAllChannelItems\('shorts'/,'ChunbongTV Shorts should use full channel pagination');
 assert.match(autoSource,/user_id.*SOOP_ID/s,'SOOP board discovery should keep broadcaster-authored posts');
 assert.match(autoSource,/full-channel-history/,'operator force sync should retain full-history coverage');
-assert.match(autoSource,/recent-channel-pages/,'scheduled sync should use incremental recent-page coverage');
+assert.match(autoSource,/recent-until-last-seen/,'scheduled sync should use checkpoint-based recent coverage');
+assert.match(autoSource,/incremental-checkpoint/,'scheduled sync should stop at persisted checkpoints');
 
