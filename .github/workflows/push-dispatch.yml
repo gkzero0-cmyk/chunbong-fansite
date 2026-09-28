@@ -1,6 +1,9 @@
 name: Background push dispatch
 
 on:
+  schedule:
+    # Low-frequency safety net if the primary SOOP telemetry schedule is delayed.
+    - cron: '4-49/15 * * * *'
   workflow_dispatch:
 
 permissions:
