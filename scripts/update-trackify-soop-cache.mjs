@@ -58,9 +58,20 @@ function readCache() {
   catch (_) { return { version: 1, capturedAt: '', stats: null, sessions: [] }; }
 }
 
+function incrementalFrom(previous = {}, now = new Date()) {
+  const latest = (Array.isArray(previous?.sessions) ? previous.sessions : [])
+    .map(session => Date.parse(session?.startedAt || session?.date || ''))
+    .filter(Number.isFinite)
+    .sort((a,b)=>b-a)[0];
+  if (!Number.isFinite(latest)) return '';
+  const overlap = new Date(latest - 2 * 86400000);
+  return overlap.toISOString().slice(0, 10);
+}
+
 async function main() {
   const previous = readCache();
-  const history = await fetchTrackifySoopHistory({ maxBroadcasts: 900, maxPages: 30, pageSize: 30 });
+  const from = incrementalFrom(previous, new Date());
+  const history = await fetchTrackifySoopHistory({ from: from || undefined, maxBroadcasts: 120, maxPages: 4, pageSize: 30 });
   const fresh = historyToFreshCache(history);
   const next = buildTrackifyCache(previous, fresh, new Date());
 
@@ -75,6 +86,7 @@ async function main() {
   console.log(`TRACKIFY_NEW_SESSIONS=${history.sessions?.length || 0}`);
   console.log(`TRACKIFY_CACHED_SESSIONS=${next.sessions.length}`);
   console.log(`TRACKIFY_FETCH_ERRORS=${history.errors?.length || 0}`);
+  console.log(`TRACKIFY_INCREMENTAL_FROM=${from || 'bootstrap'}`);
 }
 
 const entry = process.argv[1] ? pathToFileURL(path.resolve(process.argv[1])).href : '';
