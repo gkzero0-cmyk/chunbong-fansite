@@ -479,9 +479,9 @@ async function loadSystemStatus(){
     row.level==='ok',
     row.level
   ]);
-  if($('#system-recovery-status'))$('#system-recovery-status').textContent=recovery.active?'last-known-good 사용 중':'현재 데이터 사용 중';
+  if($('#system-recovery-status'))$('#system-recovery-status').textContent=!recovery.available?'복구본 생성 대기':recovery.active?'last-known-good 사용 중':'현재 데이터 사용 중';
   const recoveryButton=$('#operator-recovery-toggle');
-  if(recoveryButton){recoveryButton.textContent=recovery.active?'현재 데이터로 복귀':'last-known-good 사용';recoveryButton.dataset.active=recovery.active?'1':'0'}
+  if(recoveryButton){recoveryButton.textContent=recovery.active?'현재 데이터로 복귀':'last-known-good 사용';recoveryButton.dataset.active=recovery.active?'1':'0';recoveryButton.disabled=!recovery.available}
   if($('#system-quota-history'))$('#system-quota-history').innerHTML=quotaHistory.length?quotaHistory.slice(-14).reverse().map(row=>`<div><span>${escapeHtml(row.day||'-')}</span><b>${fmt(row.total||0)}건</b></div>`).join(''):'<p class="operator-empty">최근 저장된 제한 이벤트가 없습니다.</p>';
   if($('#system-budget-protections'))$('#system-budget-protections').innerHTML=[
     ...quotaRows.map(([label,ok,level])=>`<div><span>${escapeHtml(label)}</span><span class="operator-health ${level==='limit'?'bad':level==='warn'?'warn':'ok'}">${level==='limit'?'제한':level==='warn'?'절약':'정상'}</span></div>`),
