@@ -257,13 +257,19 @@
   }
 
   function recordMedia(row={}){
+    const archive=contentMatch(row);
+    if(archive?.heroImage?.src) return {
+      url:archive.heroImage.src,
+      source:'콘텐츠 대표 이미지',
+      link:archive.id?`/contents/${encodeURIComponent(archive.id)}`:'',
+      title:archive.heroImage.alt||archive.title||row.label||''
+    };
     const sheet=spreadsheetImage(row);
     if(sheet) return {url:sheet,source:'스프레드시트',link:'',title:row.label||''};
     const vod=vodMatch(row);
     if(vod?.thumb) return {url:vod.thumb,source:'다시보기 썸네일',link:vod.link||'',title:vod.title||row.label||''};
     return null;
   }
-
   function renderRecordMedia(row={}){
     const media=recordMedia(row);
     if(!media) return '';
