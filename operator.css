@@ -591,3 +591,14 @@ body[data-page="operator"]{background:radial-gradient(circle at 80% 0,color-mix(
 .operator-budget-card .operator-service-health{margin-top:8px}
 .operator-budget-card .operator-usage-note{margin-top:12px}
 @media(max-width:680px){.operator-budget-grid{grid-template-columns:1fr 1fr}}
+
+.operator-api-budget{margin-top:14px;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--op-border) 75%,transparent)}
+.operator-api-budget>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.operator-api-budget>div:first-child strong{font-size:12px}.operator-api-budget>div:first-child span{color:var(--op-muted);font-size:10px}
+.operator-api-budget-list{display:grid;gap:6px}
+.operator-api-budget-row{display:grid;grid-template-columns:minmax(90px,1.2fr) minmax(80px,2fr) 46px;align-items:center;gap:8px;font-size:10px}
+.operator-api-budget-row>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--op-text)}
+.operator-api-budget-row>i{height:6px;border-radius:999px;overflow:hidden;background:color-mix(in srgb,var(--op-border) 65%,transparent)}
+.operator-api-budget-row>i>b{display:block;height:100%;border-radius:inherit;background:var(--op-accent)}
+.operator-api-budget-row>strong{text-align:right;color:var(--op-muted);font-size:10px}
+@media(max-width:680px){.operator-api-budget>div:first-child{align-items:flex-start;flex-direction:column;gap:2px}.operator-api-budget-row{grid-template-columns:92px minmax(60px,1fr) 38px}}
