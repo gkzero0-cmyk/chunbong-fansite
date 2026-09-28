@@ -309,6 +309,7 @@
   }
 
   function openDetailRecord(id){
+    simpleScrollY=window.scrollY||0;
     currentView='detail';
     localStorage.setItem('chunbong-history-view','detail');
     history.replaceState(null,'',`#${id}`);
@@ -336,7 +337,7 @@
     }
 
     root.innerHTML=`<section class="history-simple" aria-label="간단 방송 이력">
-      <div class="history-simple-note"><strong>핵심 이력만 보기</strong><span>2025년 이후는 <b>Google Sheet ‘춘봉 다시보기’</b> 날짜·기간을 우선하고 준비 과정은 상세 보기로 분리합니다. 행을 누르면 같은 기록의 상세 위치로 이동합니다.</span></div>
+      <div class="history-simple-note"><strong>핵심 이력만 보기</strong><span>대표적인 방송 활동과 콘텐츠만 추려 보여줍니다. 행을 누르면 같은 기록의 상세 위치로 이동합니다.</span></div>
       ${renderYearFilters(years,'simple',simpleYear)}
       <div class="history-simple-list">
         ${years.map(year=>`<section class="history-simple-year-section" data-simple-year="${year}" ${simpleYear!=='all'&&simpleYear!==year?'hidden':''}>
@@ -353,7 +354,7 @@
           </div>
         </section>`).join('')}
       </div>
-      <footer class="history-simple-foot"><span>${liveReady?'Google Sheet 자동 갱신':'검증 스냅샷 기준'} · 핵심 이력 ${rows.length}개</span><button type="button" class="history-detail-link" data-open-detail>상세 기록 전체 보기 →</button></footer>
+      <footer class="history-simple-foot"><span>${liveReady?'최신 기록 반영됨':'검증 기록 표시 중'} · 핵심 이력 ${rows.length}개</span><button type="button" class="history-detail-link" data-open-detail>상세 기록 전체 보기 →</button></footer>
     </section>`;
 
     root.querySelector('[data-open-detail]')?.addEventListener('click',()=>setView('detail'));
