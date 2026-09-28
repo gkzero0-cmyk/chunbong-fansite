@@ -6,11 +6,13 @@ const VISITOR_KEY='chunbong:analytics:visitor:v1',FIRST_KEY='chunbong:analytics:
 const uuid=()=>crypto.randomUUID?.()||('a'+Date.now().toString(36)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2));
 function stored(store,key,make){try{let v=store.getItem(key);if(!v){v=make();store.setItem(key,v)}return v}catch{return make()}}
 const visitorId=stored(localStorage,VISITOR_KEY,uuid),sessionId=stored(sessionStorage,SESSION_KEY,uuid);
-const PERF_SAMPLE_RATE=.2;
+const PERF_SAMPLE_RATE=.2,API_SAMPLE_RATE=.1;
+const visitorBucket=(()=>{let hash=0;for(let i=0;i<visitorId.length;i++)hash=(hash*31+visitorId.charCodeAt(i))>>>0;return hash%1000})();
 const perfSample=(()=>{
- let hash=0;for(let i=0;i<visitorId.length;i++)hash=(hash*31+visitorId.charCodeAt(i))>>>0;
- return (hash%1000)<PERF_SAMPLE_RATE*1000;
+ return visitorBucket<PERF_SAMPLE_RATE*1000;
 })();
+const apiSample=visitorBucket<API_SAMPLE_RATE*1000;
+const apiNetworkCounts=new Map();
 let visitorState='returning';try{if(!localStorage.getItem(FIRST_KEY)){localStorage.setItem(FIRST_KEY,String(Date.now()));visitorState='new'}}catch{}
 const device=()=>{const w=Math.min(innerWidth,screen.width||innerWidth);return w<=760?'mobile':w<=1100?'tablet':'desktop'};
 const pwa=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
@@ -23,8 +25,14 @@ function activeTick(){
  const now=performance.now(),delta=Math.max(0,now-visibleAt);visibleAt=now;activePending+=delta;
  while(activePending>=300000){add({type:'active_time',activeMs:300000});activePending-=300000}
 }
+function flushApiNetworkCounts(){
+ if(!apiSample||!apiNetworkCounts.size)return;
+ for(const [target,count] of apiNetworkCounts)queue.push({type:'api_network',target,count:Math.max(1,Math.min(100,Math.round(count)))});
+ apiNetworkCounts.clear();
+}
 async function flush({beacon=false}={}){
  activeTick();if(activePending>=1000){queue.push({type:'active_time',page:page(),activeMs:Math.round(activePending)});activePending=0}
+ flushApiNetworkCounts();
  if(!queue.length||sending)return;
  const events=queue.splice(0,20),payload=JSON.stringify({visitorId,sessionId,events});
  if(beacon&&navigator.sendBeacon){try{navigator.sendBeacon(ENDPOINT,new Blob([payload],{type:'application/json'}));return}catch{}}
@@ -105,11 +113,21 @@ document.addEventListener('chunbong:game-start',event=>add({type:'game_start',ta
 document.addEventListener('chunbong:game-finish',event=>add({type:'game_finish',target:String(event.detail?.game||document.body.dataset.game||'game').slice(0,80)}));
 document.addEventListener('chunbong:tarot-start',()=>add({type:'tarot_start'}));
 document.addEventListener('chunbong:tarot-result',()=>add({type:'tarot_result'}));
+function recordApiNetwork(target='',count=1){
+ if(!apiSample)return;
+ const key=String(target||'').slice(0,60);if(!key)return;
+ apiNetworkCounts.set(key,(apiNetworkCounts.get(key)||0)+Math.max(1,Math.min(20,Number(count)||1)));
+}
+const pendingApi=Array.isArray(window.__ChunbongApiNetworkQueue)?window.__ChunbongApiNetworkQueue.splice(0):[];
+for(const target of pendingApi)recordApiNetwork(target,1);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){activeTick();visibleAt=0;reportWebVitals();void flush({beacon:true})}else visibleAt=performance.now()});
 window.addEventListener('pagehide',()=>{reportWebVitals();void flush({beacon:true})});
 setInterval(()=>{if(document.visibilityState==='visible'){activeTick();void flush()}},300000);
 setTimeout(flush,1200);
 const pending=Array.isArray(window.__ChunbongAnalyticsQueue)?window.__ChunbongAnalyticsQueue.splice(0):[];
 for(const event of pending){if(event&&typeof event==='object'&&event.type)add(event)}
-window.ChunbongAnalytics={track:(type,target='',extra={})=>add({type,target,...(extra&&typeof extra==='object'?extra:{})})};
+window.ChunbongAnalytics={track:(type,target='',extra={})=>{
+ if(type==='api_network'){recordApiNetwork(target,extra?.count||1);return}
+ add({type,target,...(extra&&typeof extra==='object'?extra:{})})
+}};
 })();
