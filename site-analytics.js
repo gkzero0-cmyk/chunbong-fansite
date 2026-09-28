@@ -6,6 +6,11 @@ const VISITOR_KEY='chunbong:analytics:visitor:v1',FIRST_KEY='chunbong:analytics:
 const uuid=()=>crypto.randomUUID?.()||('a'+Date.now().toString(36)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2));
 function stored(store,key,make){try{let v=store.getItem(key);if(!v){v=make();store.setItem(key,v)}return v}catch{return make()}}
 const visitorId=stored(localStorage,VISITOR_KEY,uuid),sessionId=stored(sessionStorage,SESSION_KEY,uuid);
+const PERF_SAMPLE_RATE=.2;
+const perfSample=(()=>{
+ let hash=0;for(let i=0;i<visitorId.length;i++)hash=(hash*31+visitorId.charCodeAt(i))>>>0;
+ return (hash%1000)<PERF_SAMPLE_RATE*1000;
+})();
 let visitorState='returning';try{if(!localStorage.getItem(FIRST_KEY)){localStorage.setItem(FIRST_KEY,String(Date.now()));visitorState='new'}}catch{}
 const device=()=>{const w=Math.min(innerWidth,screen.width||innerWidth);return w<=760?'mobile':w<=1100?'tablet':'desktop'};
 const pwa=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
@@ -16,7 +21,7 @@ function add(event){queue.push({...event,page:page()});if(queue.length>=8)flush(
 function activeTick(){
  if(!visibleAt)return;
  const now=performance.now(),delta=Math.max(0,now-visibleAt);visibleAt=now;activePending+=delta;
- while(activePending>=120000){add({type:'active_time',activeMs:120000});activePending-=120000}
+ while(activePending>=300000){add({type:'active_time',activeMs:300000});activePending-=300000}
 }
 async function flush({beacon=false}={}){
  activeTick();if(activePending>=1000){queue.push({type:'active_time',page:page(),activeMs:Math.round(activePending)});activePending=0}
@@ -27,6 +32,7 @@ async function flush({beacon=false}={}){
 }
 add({type:'page_view',device:device(),pwa:pwa(),theme:theme(),visitorState});
 function reportNavigationTiming(){
+ if(!perfSample)return;
  const entry=performance.getEntriesByType?.('navigation')?.[0];
  const ms=Math.round(Number(entry?.domContentLoadedEventEnd||entry?.duration||0));
  if(ms>0&&ms<=15000)add({type:'navigation_timing',durationMs:ms});
@@ -36,7 +42,7 @@ else window.addEventListener('load',()=>setTimeout(reportNavigationTiming,0),{on
 
 const vitalState={lcp:0,cls:0,clsWindow:0,clsWindowStart:0,clsWindowLast:0,inp:new Map(),supported:{lcp:false,cls:false,inp:false},sent:false};
 function observeWebVitals(){
- if(typeof PerformanceObserver!=='function')return;
+ if(!perfSample||typeof PerformanceObserver!=='function')return;
  const supported=PerformanceObserver.supportedEntryTypes||[];
  if(supported.includes('largest-contentful-paint')){
   vitalState.supported.lcp=true;
@@ -62,7 +68,7 @@ function observeWebVitals(){
  }
 }
 function reportWebVitals(){
- if(vitalState.sent)return;vitalState.sent=true;
+ if(vitalState.sent||!perfSample)return;vitalState.sent=true;
  if(vitalState.supported.lcp&&vitalState.lcp>0)add({type:'web_vital',metric:'lcp',value:Math.round(vitalState.lcp)});
  if(vitalState.supported.cls)add({type:'web_vital',metric:'cls',value:Math.round(vitalState.cls*10000)/10000});
  if(vitalState.supported.inp&&vitalState.inp.size){
@@ -101,7 +107,7 @@ document.addEventListener('chunbong:tarot-start',()=>add({type:'tarot_start'}));
 document.addEventListener('chunbong:tarot-result',()=>add({type:'tarot_result'}));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){activeTick();visibleAt=0;reportWebVitals();void flush({beacon:true})}else visibleAt=performance.now()});
 window.addEventListener('pagehide',()=>{reportWebVitals();void flush({beacon:true})});
-setInterval(()=>{if(document.visibilityState==='visible'){activeTick();void flush()}},120000);
+setInterval(()=>{if(document.visibilityState==='visible'){activeTick();void flush()}},300000);
 setTimeout(flush,1200);
 const pending=Array.isArray(window.__ChunbongAnalyticsQueue)?window.__ChunbongAnalyticsQueue.splice(0):[];
 for(const event of pending){if(event&&typeof event==='object'&&event.type)add(event)}
