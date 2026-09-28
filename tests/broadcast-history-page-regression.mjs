@@ -42,6 +42,8 @@ assert.match(js, /청더일레븐[^\n]*마크 대회/, '청더일레븐 must be 
 assert.match(js, /염병서버[^\n]*서버·마크/, '염병서버 must be classified as Minecraft');
 assert.match(js, /챈나룽 서버[^\n]*서버·마크/, '챈나룽 must be classified as Minecraft');
 assert.match(js, /밍친서버[^\n]*서버·마크/, '밍친서버 must be classified as Minecraft');
+assert.match(js, /원조 다이아게임[^\n]*서버·마크/, '원조 다이아게임 must be classified as Minecraft');
+assert.match(js, /니즈 좀비서버[^\n]*서버·마크/, '니즈 좀비서버 must be classified as Minecraft, not Zomboid');
 assert.match(js, /주요 진행 기록/, 'detail view must surface a compact broadcast highlight summary');
 assert.match(sheetApi, /extractImageUrl/, 'history sheet API must preserve image URLs exposed by published sheets');
 assert.match(sheetApi, /imageSource:'sheet'/, 'spreadsheet images must be tagged as sheet media');
