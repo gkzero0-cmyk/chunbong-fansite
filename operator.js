@@ -480,7 +480,7 @@ async function setupFirebaseEmail(){
 }
 let operatorContentsModulePromise=null,operatorContentsPromise=null;
 function operatorContentsModule(){
-  if(!operatorContentsModulePromise)operatorContentsModulePromise=import('./operator-contents.js');
+  if(!operatorContentsModulePromise)operatorContentsModulePromise=import('./operator-contents.js?v=2');
   return operatorContentsModulePromise;
 }
 function loadOperatorContents(){
