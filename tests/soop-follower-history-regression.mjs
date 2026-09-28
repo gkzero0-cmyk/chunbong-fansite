@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const history = require('../lib/soop-follower-history.js');
 const updater = fs.readFileSync(new URL('../scripts/update-soop-follower-history.mjs', import.meta.url), 'utf8');
+const { monthsForRefresh } = await import('../scripts/update-soop-follower-history.mjs');
 
 const points = history.extractTrackifyFollowerPoints({
   history: [
@@ -65,5 +66,6 @@ assert.deepEqual(snapshotRows.map(item => [item.date, item.soop.followerCount ??
 ]);
 
 assert.ok(updater.includes("url.searchParams.set('metrics', 'favorite,fanclub')"), 'history updater must fetch exact Trackify favorite and fanclub trends together');
+assert.deepEqual(monthsForRefresh([{date:'2025-09-10'},{date:'2025-10-10'},{date:'2026-08-10'}],new Date('2026-09-20T00:00:00Z')),['2025-11','2025-12','2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08','2026-09']);
 
 console.log('SOOP follower + fanclub history regression test passed');
