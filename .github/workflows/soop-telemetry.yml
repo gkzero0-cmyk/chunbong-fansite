@@ -2,7 +2,7 @@ name: SOOP telemetry
 
 on:
   schedule:
-    - cron: '2,7,12,17,22,27,32,37,42,47,52,57 * * * *'
+    - cron: '2,12,22,32,42,52 * * * *'
   workflow_dispatch:
   push:
     branches: [main]
@@ -83,7 +83,7 @@ jobs:
           echo
 
           minute="$(date -u +%M)"
-          if [[ "$EVENT_NAME" == "workflow_dispatch" || "$minute" == "00" || "$minute" == "30" ]]; then
+          if [[ "$EVENT_NAME" == "workflow_dispatch" || "$minute" == "02" || "$minute" == "32" ]]; then
             curl -fsS --retry 1 --retry-delay 2 --max-time 55 \
               -X POST \
               -H "Authorization: Bearer $token" \
