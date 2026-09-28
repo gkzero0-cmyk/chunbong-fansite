@@ -13,7 +13,7 @@
 
   async function fetchJson(key, url, ttl) {
     if (window.ChunbongCache) {
-      return window.ChunbongCache.fetchJson(key, url, { ttl, force:true });
+      return window.ChunbongCache.fetchJson(key, url, { ttl, force:false, staleIfError:true });
     }
     const response = await fetch(url, { headers:{ accept:'application/json' }, cache:'no-store' });
     if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -36,13 +36,20 @@
     card.title = accessibleTitle;
   }
 
-  async function refresh() {
+  let lastRefreshAt=0;
+  let lastKnownLive=false;
+  async function refresh({force=false}={}) {
+    if(document.visibilityState==='hidden')return;
+    const minGap=lastKnownLive?40000:120000;
+    if(!force&&Date.now()-lastRefreshAt<minGap)return;
+    lastRefreshAt=Date.now();
     let livePayload = null;
     try {
       livePayload = await fetchJson('home:smart-live','/api/content?type=live',30000);
     } catch (_) {}
 
     if (livePayload?.live === true) {
+      lastKnownLive=true;
       const href = isHttp(livePayload.source) ? livePayload.source : LIVE_URL;
       apply({
         live:true,
@@ -53,6 +60,7 @@
       return;
     }
 
+    lastKnownLive=false;
     try {
       const vodPayload = await fetchJson('home:smart-vod','/api/content?type=vod',120000);
       const latest = Array.isArray(vodPayload?.items) ? vodPayload.items.find(item => isHttp(item?.link)) : null;
@@ -70,14 +78,14 @@
     apply({ live:false, href:STATION_URL, actionText:'SOOP 방송국' });
   }
 
-  void refresh();
+  void refresh({force:true});
 
-  let timer = window.setInterval(refresh, 60000);
+  let timer = window.setInterval(()=>void refresh(), 60000);
   window.addEventListener('pagehide', () => {
     if (timer) window.clearInterval(timer);
     timer = null;
   }, { once:true });
-  window.addEventListener('focus', refresh);
+  window.addEventListener('focus', ()=>void refresh());
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') void refresh();
   });
