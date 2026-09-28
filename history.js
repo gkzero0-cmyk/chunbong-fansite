@@ -573,15 +573,18 @@
     });
 
     root.querySelectorAll('[data-history-month-block]').forEach(block=>{
+      const loadOpenMonth=()=>{
+        if(!block.open) return;
+        const year=Number(block.dataset.year),month=Number(block.dataset.month);
+        if(year>=2025&&!monthlyCache.has(monthCacheKey(year,month))){
+          void loadMonth(year,month).then(()=>{if(currentView==='detail') renderDetail();});
+        }
+      };
       block.addEventListener('toggle',()=>{
         if(!detailQuery&&detailYear==='all'&&detailKind==='all') monthOpenState.set(block.dataset.monthKey,block.open);
-        if(block.open){
-          const year=Number(block.dataset.year),month=Number(block.dataset.month);
-          if(year>=2025&&!monthlyCache.has(monthCacheKey(year,month))){
-            void loadMonth(year,month).then(()=>{if(currentView==='detail') renderDetail();});
-          }
-        }
+        loadOpenMonth();
       });
+      loadOpenMonth();
     });
 
     root.querySelectorAll('[data-load-sub-events]').forEach(button=>{
@@ -733,20 +736,18 @@
     updateViewUI();
 
     if(status){
-      const suffix=liveFetchedAt
-        ?new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(liveFetchedAt))+' KST'
-        :'';
-      status.textContent=liveReady
-        ?`Google Sheet 자동 갱신 · 2025~2026 최신 기록${suffix?' · '+suffix:''}`
-        :'검증 스냅샷 표시 중 · Google Sheet 연결 확인 중';
+      status.textContent=liveReady?'최신 기록 반영됨':'검증 기록 표시 중 · 최신 기록 확인 중';
     }
   }
 
   function setView(view){
-    currentView=view==='detail'?'detail':'simple';
+    const next=view==='detail'?'detail':'simple';
+    if(currentView==='simple'&&next==='detail') simpleScrollY=window.scrollY||0;
+    currentView=next;
     localStorage.setItem('chunbong-history-view',currentView);
     if(currentView==='simple'&&location.hash.startsWith('#history-')) history.replaceState(null,'',location.pathname+location.search);
     render();
+    if(currentView==='simple'&&simpleScrollY>0) requestAnimationFrame(()=>window.scrollTo({top:simpleScrollY,behavior:'auto'}));
   }
 
   function recordSignature(rows){
@@ -762,11 +763,9 @@
   async function loadLiveSheets(){
     try{
       const before=recordSignature(records());
-      const [y2025,y2026,m2025,m2026]=await Promise.all([
+      const [y2025,y2026]=await Promise.all([
         loadJson('/api/history-sheet?sheet=2025'),
-        loadJson('/api/history-sheet?sheet=2026'),
-        loadJson('/api/history-sheet?sheet=months&year=2025'),
-        loadJson('/api/history-sheet?sheet=months&year=2026')
+        loadJson('/api/history-sheet?sheet=2026')
       ]);
 
       if(!y2025.ok||!y2026.ok||!Array.isArray(y2025.items)||!Array.isArray(y2026.items)||y2025.items.length<30||y2026.items.length<40){
@@ -774,24 +773,15 @@
       }
 
       liveAnnual=[...y2025.items,...y2026.items].map(enrichSheetRecord);
-      liveMonths=[
-        ...(Array.isArray(m2025.items)?m2025.items:[]),
-        ...(Array.isArray(m2026.items)?m2026.items:[])
-      ];
       liveFetchedAt=y2026.fetchedAt||y2025.fetchedAt||'';
       liveReady=true;
 
       const after=recordSignature(records());
       if(after!==before||currentView==='detail') render();
-      else if(status){
-        const suffix=liveFetchedAt
-          ?new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(liveFetchedAt))+' KST'
-          :'';
-        status.textContent=`Google Sheet 자동 갱신 · 2025~2026 최신 기록${suffix?' · '+suffix:''}`;
-      }
+      else if(status) status.textContent='최신 기록 반영됨';
     }catch(_error){
       liveReady=false;
-      if(status) status.textContent='검증 스냅샷 표시 중 · Google Sheet 연결 지연';
+      if(status) status.textContent='검증 기록 표시 중 · 최신 기록 연결 지연';
     }
   }
 
