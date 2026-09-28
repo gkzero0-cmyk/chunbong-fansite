@@ -35,6 +35,9 @@ assert.match(adapter,/progressInFlight/,'multiplayer progress sync must prevent 
 assert.match(adapter,/function pollingDelay\(\)\{return document\.hidden\?5000:1300;\}/,'background tabs should reduce polling');
 assert.match(adapter,/setInterval\(refresh,pollingDelay\(\)\)/,'room polling should use adaptive cadence');
 assert.match(adapter,/setInterval\(sync,1400\)/,'progress sync should use a staggered cadence');
+assert.match(adapter,/PROGRESS_HEARTBEAT_MS=5000/,'unchanged score-race progress should use a heartbeat');
+assert.match(adapter,/signature=\[payload\.score,payload\.lines,payload\.status\]\.join\('\|'\)/);
+assert.match(adapter,/signature===lastProgressSignature&&Date\.now\(\)-lastProgressSentAt<PROGRESS_HEARTBEAT_MS/);
 assert.match(api,/room\.mode==='score120'/,'server needs score-race completion semantics');
 assert.match(api,/room\.players\.every\(item=>item\.finished\)/,'score race must wait for both players');
 assert.match(api,/aScore>bScore\?a\.id:b\.id/,'score race winner must be chosen by score');
