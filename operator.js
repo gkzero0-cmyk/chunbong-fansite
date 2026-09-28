@@ -448,6 +448,7 @@ async function loadSystemStatus(){
   const protectionRows=[
     ['중복 요청 합치기',protections.requestDedupe],
     ['콘텐츠 단일 요청 공유',protections.publicContentSingleFlight],
+    ['아카이브 메타 캐시 '+fmt(protections.archiveSourceMetaCacheSeconds||0)+'초',protections.archiveSourceMetaSingleFlight&&Number(protections.archiveSourceMetaCacheSeconds)>0],
     ['외부 JSON 캐시 '+fmt(protections.upstreamJsonCacheSeconds||0)+'초',Number(protections.upstreamJsonCacheSeconds)>0],
     ['이미지 CDN 캐시 '+fmt(Math.round((protections.imageProxyCdnCacheSeconds||0)/86400))+'일',Number(protections.imageProxyCdnCacheSeconds)>0],
     ['Push 저장 '+String(protections.pushSubscriptionStore||'-'),protections.pushSubscriptionStore==='redis-hash-v2'],
