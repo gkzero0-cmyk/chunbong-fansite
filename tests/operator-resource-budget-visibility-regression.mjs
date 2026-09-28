@@ -31,5 +31,9 @@ assert.match(api,/quotaSignals=\[/);
 assert.match(api,/automaticSaving:quotaLevel!=='normal'/);
 assert.match(ui,/quotaSignals/);
 assert.match(ui,/level==='limit'\?'제한':level==='warn'\?'절약':'정상'/);
+assert.match(api,/quotaEventMemory=\[\]/);
+assert.match(api,/recentQuotaEvents/);
+assert.match(api,/retryAfterSeconds=\(name==='redis_service_limit'\|\|name==='redis_circuit_open'\)\?43200:21600/);
+assert.match(ui,/24시간 제한 이벤트/);
 
 console.log('operator resource budget visibility regression passed');
