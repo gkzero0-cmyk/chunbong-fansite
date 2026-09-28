@@ -611,3 +611,23 @@ button.archive-series-poster{cursor:zoom-in}
 [data-theme="light"] .archive-guide-image-fallback{background:#fff8f3}
 @media(max-width:900px){.archive-guide-images.is-triple{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.archive-guide-images.is-triple{grid-template-columns:1fr}}
+
+
+.archive-detail-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.archive-detail-actions a{
+  display:inline-flex;
+  align-items:center;
+  min-height:38px;
+  padding:0 12px;
+  border:1px solid color-mix(in srgb,var(--page-accent,#f2a65a) 38%,#2d2d2d);
+  border-radius:10px;
+  background:color-mix(in srgb,var(--page-accent,#f2a65a) 8%,#111);
+  color:var(--page-accent,#f2a65a);
+  font-size:11px;
+  font-weight:850;
+  text-decoration:none;
+}
+.archive-detail-actions a:hover,.archive-detail-actions a:focus-visible{
+  border-color:color-mix(in srgb,var(--page-accent,#f2a65a) 65%,#2d2d2d);
+  background:color-mix(in srgb,var(--page-accent,#f2a65a) 14%,#111);
+}
