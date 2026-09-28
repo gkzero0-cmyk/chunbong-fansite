@@ -34,6 +34,31 @@
 
   const kindOrder=['마인크래프트','주최','타로','대회','방송','게임','콘텐츠'];
 
+  // Names alone are not always enough to identify a server or the importance of a record.
+  // Keep verified exceptions here, while generic inference handles obvious names.
+  const HISTORY_RECORD_RULES=[
+    {test:/^춘이괜$/i,importance:'normal'},
+    {test:/^읍더스게이트\s*3$/i,importance:'normal'},
+    {test:/^현실합방\s*w\.\s*스노$/i,importance:'normal'},
+    {test:/^서버개발 방송$/i,kind:'방송',importance:'normal'},
+    {test:/구독플러스/i,kind:'방송',importance:'normal'},
+
+    {test:/^홍창의 숲$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
+    {test:/^린코레일\s*2$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
+    {test:/^꾸다방\s*2\.5$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
+    {test:/^감블러의 놀이터$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
+    {test:/^또오냥의 조까치수련회\s*2$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
+
+    {test:/^GTA 좀비서버/i,kind:'게임',importance:'core',type:'게임 서버'},
+    {test:/^여우도시$/i,kind:'게임',importance:'core',type:'게임 서버'},
+    {test:/^고래시티$/i,kind:'게임',importance:'core',type:'게임 서버'}
+  ];
+
+  function recordRule(label=''){
+    const text=String(label||'').trim();
+    return HISTORY_RECORD_RULES.find(rule=>rule.test.test(text))||null;
+  }
+
   const esc=(value='')=>String(value)
     .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
     .replaceAll('"','&quot;').replaceAll("'",'&#039;');
@@ -119,11 +144,13 @@
 
   function inferKind(label=''){
     const text=String(label);
+    const override=recordRule(text);
+    if(override?.kind) return override.kind;
     if(/타로|사주|신점/.test(text)) return '타로';
     if(/대회|F1|CK|와튜버|랜드|스모오라|크루대전/.test(text)) return '대회';
-    if(/GTA|배그|오버워치|옵치|WOW|스트리트 파이터|아르마|파블로프|언레일드|경찰과 도둑/.test(text)) return '게임';
-    if(/노래자랑|설명회|사자컴퍼니 결성|춘동아리 결성|서버개발/.test(text)) return '주최';
-    if(/입사|구독플러스|SOOP 스트리머 대상|크루 리빌딩|사자회 해체/.test(text)) return '방송';
+    if(/GTA|배그|배틀 그라운드|오버워치|옵치|WOW|스트리트 파이터|아르마|파블로프|언레일드|경찰과 도둑|버워치/.test(text)) return '게임';
+    if(/노래자랑|사자컴퍼니 결성|춘동아리 결성/.test(text)) return '주최';
+    if(/입사|SOOP 스트리머 대상|크루 리빌딩|사자회 해체/.test(text)) return '방송';
     if(/서버|마병대|레오펠|퍼켓몬|해초마을|맹든링|픽크타|담월드|오함마|수미랜드|원블럭|다이아/.test(text)) return '마인크래프트';
     return '콘텐츠';
   }
@@ -135,37 +162,36 @@
 
   function simpleDecision(item={}){
     const text=String(item.label||'').trim();
-    const kind=item.kind||inferKind(text);
+    const override=recordRule(text);
+    const kind=override?.kind||item.kind||inferKind(text);
 
-    if(!text||item.detailOnly) return {include:false,type:'',reason:'detail-only'};
-    if(/구독플러스/.test(text)) return {include:false,type:'',reason:'subscription-plus'};
-    if(isPreparation(text)) return {include:false,type:'',reason:'preparation'};
+    if(!text||item.detailOnly) return {include:false,type:'',importance:'normal',reason:'detail-only'};
+    if(isPreparation(text)) return {include:false,type:'',importance:'normal',reason:'preparation'};
+    if(override?.importance==='normal') return {include:false,type:'',importance:'normal',reason:'curated-normal'};
+    if(override?.importance==='core') return {
+      include:true,
+      type:override.type||(kind==='마인크래프트'?'서버·마크':kind==='게임'?'게임 서버':kind),
+      importance:'core',
+      reason:'curated-core'
+    };
 
-    if(item.end&&item.end!==item.start){
-      return {
-        include:true,
-        type:kind==='마인크래프트'?'서버·마크':kind==='대회'?'대회':kind==='주최'?'주최':'장기 콘텐츠',
-        reason:'multi-day'
-      };
-    }
+    if(kind==='마인크래프트') return {include:true,type:'서버·마크',importance:'core',reason:'minecraft'};
+    if(kind==='대회') return {include:true,type:'대회',importance:'core',reason:'competition'};
+    if(kind==='주최') return {include:true,type:'주최',importance:'core',reason:'hosted'};
 
-    if(kind==='마인크래프트') return {include:true,type:'서버·마크',reason:'minecraft'};
-    if(kind==='대회') return {include:true,type:'대회',reason:'competition'};
-    if(kind==='주최') return {include:true,type:'주최',reason:'hosted'};
-
-    if(/\bw\.|\bvs\b|합방|배그|배틀 그라운드|아르마|오버워치|옵치|버워치|언레일드|경찰과 도둑|스모오라|세바버|왁업|수련회|체력공유|술먹방|현실 낚시|현실합방|크루대전|랜드|벽킬내기|엔더런|원정대/i.test(text)){
-      return {include:true,type:kind==='게임'?'합방·게임':'합방·이벤트',reason:'collab-event'};
+    if(/배그|배틀 그라운드|아르마|오버워치|옵치|버워치|언레일드|경찰과 도둑|스모오라|세바버|왁업|랜버워치/i.test(text)){
+      return {include:true,type:'합방·게임',importance:'core',reason:'official-game-event'};
     }
 
     if(/입사 발표|결성|해체|크루 리빌딩|SOOP 스트리머 대상/.test(text)){
-      return {include:true,type:'활동 변화',reason:'milestone'};
+      return {include:true,type:'활동 변화',importance:'core',reason:'milestone'};
     }
 
-    if(/노래자랑|춘타클|춘이괜|친해지길 바래|버튜버 죄와 벌/.test(text)){
-      return {include:true,type:kind==='타로'?'타로':'콘텐츠',reason:'signature-content'};
+    if(/노래자랑|춘타클/.test(text)){
+      return {include:true,type:kind==='타로'?'타로':'콘텐츠',importance:'core',reason:'signature-content'};
     }
 
-    return {include:false,type:'',reason:'detail'};
+    return {include:false,type:'',importance:'normal',reason:'detail'};
   }
 
   function isMajorSheetEvent(item={}){
@@ -178,7 +204,8 @@
   }
 
   function simpleTypeLabel(row={}){
-    return simpleDecision(row).type||({
+    const override=recordRule(row.label);
+    return override?.type||simpleDecision(row).type||({
       '마인크래프트':'서버·마크',
       '대회':'대회',
       '주최':'주최',
@@ -211,11 +238,13 @@
     if(item.start>today) state='예정';
     else if(item.end&&item.start<=today&&item.end>=today) state='진행';
     const kind=inferKind(label);
+    const selection=simpleDecision({...item,label,kind});
     return {
       ...item,
       label,
       kind,
-      major:isMajorSheetEvent({...item,label,kind}),
+      importance:selection.importance,
+      major:selection.include,
       featured:isFeatured(label),
       ...(state?{status:state}:{}),
       sources:['google-sheet'],
@@ -431,7 +460,7 @@
     }
 
     root.innerHTML=`<section class="history-simple" aria-label="간단 방송 이력">
-      <div class="history-simple-note"><strong>핵심 이력 기준</strong><span>장기 콘텐츠 · 서버/마크 · 공식 합방/대회 · 주최 콘텐츠 · 활동 변화를 중심으로 표시합니다. 모집·면접·신청·준비 과정은 상세 보기에서 확인할 수 있습니다.</span></div>
+      <div class="history-simple-note"><strong>핵심 이력 기준</strong><span>서버·마크 · 공식 대회/게임 이벤트 · 직접 주최 콘텐츠 · 크루/소속 등 활동 변화를 중심으로 표시합니다. 일반 합방·개인 콘텐츠·준비 과정은 상세 보기에서 확인할 수 있습니다.</span></div>
       ${renderYearFilters(years,'simple',simpleYear)}
       <div class="history-simple-list">
         ${years.map(year=>`<section class="history-simple-year-section" data-simple-year="${year}" ${simpleYear!=='all'&&simpleYear!==year?'hidden':''}>
@@ -836,7 +865,7 @@
     });
     if(viewTitle) viewTitle.textContent=currentView==='simple'?'핵심 방송 이력':'탐색 가능한 상세 방송 이력';
     if(viewDesc) viewDesc.textContent=currentView==='simple'
-      ?'장기 콘텐츠·공식 합방/대회·주최·활동 변화를 중심으로 빠르게 확인합니다.'
+      ?'서버·마크, 공식 대회/게임 이벤트, 주최 콘텐츠와 활동 변화를 중심으로 확인합니다.'
       :'검색·유형·연도 필터와 월별 접기를 이용해 원하는 기록을 찾습니다.';
     document.body.dataset.historyView=currentView;
     if(guide) guide.hidden=currentView==='simple';
