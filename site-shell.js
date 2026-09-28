@@ -18,8 +18,16 @@
     if(path==='/api/history-sheet')return{memoryMs:5*60*1000,snapshotMs:24*60*60*1000};
     if(path==='/api/crew-news')return{memoryMs:60000,snapshotMs:6*60*60*1000};
     if(path==='/api/crew-news-batch')return{memoryMs:5*60*1000,snapshotMs:6*60*60*1000};
-    if(path==='/api/content'&&type==='chunbong-content-index')return{memoryMs:5*60*1000,snapshotMs:24*60*60*1000};
-    if(path==='/api/content'&&/(?:^|-)ranking$/.test(type))return{memoryMs:60000,snapshotMs:24*60*60*1000};
+    if(path==='/api/content'){
+      if(type==='live')return{memoryMs:45*1000,snapshotMs:5*60*1000};
+      if(['schedule','notice','activity'].includes(type))return{memoryMs:10*60*1000,snapshotMs:12*60*60*1000};
+      if(['vod','clips','youtube'].includes(type))return{memoryMs:20*60*1000,snapshotMs:24*60*60*1000};
+      if(type==='fanart')return{memoryMs:15*60*1000,snapshotMs:12*60*60*1000};
+      if(type==='data')return{memoryMs:10*60*1000,snapshotMs:24*60*60*1000};
+      if(type==='chunbong-contents'||type==='chunbong-content-index')return{memoryMs:10*60*1000,snapshotMs:24*60*60*1000};
+      if(type==='changelog-history')return{memoryMs:10*60*1000,snapshotMs:24*60*60*1000};
+      if(/(?:^|-)ranking$/.test(type))return{memoryMs:60000,snapshotMs:24*60*60*1000};
+    }
     return null;
   }
   function keyFor(input){
@@ -36,12 +44,29 @@
       return row;
     }catch{return null}
   }
+  function pruneSnapshots(){
+    try{
+      const rows=[];
+      for(let i=0;i<localStorage.length;i++){
+        const key=localStorage.key(i);if(!key?.startsWith(STORAGE_PREFIX))continue;
+        try{const row=JSON.parse(localStorage.getItem(key)||'{}');rows.push({key,savedAt:Number(row.savedAt)||0,size:(localStorage.getItem(key)||'').length})}catch{localStorage.removeItem(key)}
+      }
+      rows.sort((a,b)=>b.savedAt-a.savedAt);
+      let total=0;
+      rows.forEach((row,index)=>{
+        total+=row.size;
+        if(index>=24||total>1200000||now()-row.savedAt>7*24*60*60*1000)localStorage.removeItem(row.key);
+      });
+    }catch{}
+  }
   function writeSnapshot(key,body,contentType){
     try{
       if(body.length>250000)return;
       localStorage.setItem(STORAGE_PREFIX+key,JSON.stringify({body,contentType,savedAt:now()}));
+      pruneSnapshots();
     }catch{}
   }
+  pruneSnapshots();
   window.fetch=async function budgetFetch(input,init){
     const p=policy(input,init);if(!p)return nativeFetch(input,init);
     const key=keyFor(input);if(!key)return nativeFetch(input,init);
