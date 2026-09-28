@@ -29,6 +29,12 @@ assert.match(js, /function childStage\(/, 'detail view must classify sub-events 
 assert.match(js, /지원·신청/, 'detail stage grouping must include application stage');
 assert.match(js, /선발 과정/, 'detail stage grouping must include selection stage');
 assert.match(js, /history-event-stage/, 'detail view must render grouped stage sections');
+assert.match(js, /function seriesKey\(/, 'related-series grouping helper must exist');
+assert.match(js, /history-series-links/, 'related-series navigation must exist');
+assert.match(js, /contentMatch\(row\)/, 'history must reuse content archive matches');
+assert.match(js, /콘텐츠 대표 이미지/, 'content archive hero must have priority as representative media');
+assert.match(js, /taxonomyLabel\(row\)/, 'detail cards must display separated taxonomy labels');
+assert.match(css, /history-series-links/, 'related-series navigation styles must exist');
 assert.match(css, /history-event-stage-list/, 'grouped detail stage styles must exist');
 assert.match(js, /normalizeMediaUrl/, 'history media URLs must normalize protocol-relative image URLs');
 assert.match(js, /bestScore>=135/, 'VOD representative images must require a strong content match');
