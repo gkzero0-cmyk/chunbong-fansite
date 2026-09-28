@@ -97,11 +97,13 @@ body[data-history-view="simple"] .history-layout{display:block}.history-guide[hi
 .history-simple-year-head>div{display:flex;align-items:baseline;gap:10px}
 .history-simple-year-head strong{font-size:1.22rem;line-height:1;color:#ff8a45;letter-spacing:-.035em}
 .history-simple-year-head>div>span{font-size:.76rem;color:rgba(255,255,255,.58)}
-.history-simple-table-head,.history-simple-row{display:grid;grid-template-columns:minmax(118px,170px) minmax(0,1fr);gap:18px;align-items:start}
+.history-simple-year-breakdown{margin-left:8px;font-style:normal;color:rgba(255,255,255,.38);font-weight:700}
+.history-simple-table-head,.history-simple-row{display:grid;grid-template-columns:minmax(118px,170px) minmax(0,1fr) 90px;gap:18px;align-items:start}
 .history-simple-table-head{padding:9px 20px;background:rgba(255,255,255,.022);border-bottom:1px solid rgba(255,255,255,.055);font-size:.7rem;font-weight:850;letter-spacing:.04em;color:rgba(255,255,255,.46)}
 .history-simple-row{padding:16px 20px}
 .history-simple-date{font-size:.86rem;color:rgba(255,255,255,.76);font-variant-numeric:tabular-nums;letter-spacing:.01em}
 .history-simple-content{font-size:.95rem;color:rgba(255,255,255,.94)}
+.history-simple-type{justify-self:end;align-self:center;display:inline-flex;align-items:center;min-height:24px;padding:3px 8px;border:1px solid rgba(255,255,255,.075);border-radius:999px;background:rgba(255,255,255,.028);color:rgba(255,255,255,.5);font-size:.68rem;font-weight:800;white-space:nowrap}
 .history-simple-row.is-featured{box-shadow:inset 3px 0 0 rgba(255,107,24,.68)}
 .history-simple-row.is-planned{box-shadow:inset 3px 0 0 rgba(255,157,46,.72)}
 .history-simple-foot{border-radius:0 0 22px 22px}
@@ -161,8 +163,8 @@ body[data-history-view="simple"] .history-layout{display:block}.history-guide[hi
 .history-month-block:first-child{border-top:0}
 .history-month-block>summary{list-style:none;cursor:pointer}
 .history-month-block>summary::-webkit-details-marker{display:none}
-.history-month-head{min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 22px;background:linear-gradient(90deg,rgba(255,107,24,.055),transparent);transition:background .16s}
-.history-month-head:hover{background:linear-gradient(90deg,rgba(255,107,24,.09),transparent)}
+.history-month-head{min-height:50px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 22px 10px 19px;border-left:3px solid rgba(255,123,45,.42);background:linear-gradient(90deg,rgba(255,107,24,.085),rgba(255,107,24,.025) 48%,transparent);transition:background .16s,border-color .16s}
+.history-month-head:hover{border-left-color:rgba(255,138,69,.85);background:linear-gradient(90deg,rgba(255,107,24,.13),rgba(255,107,24,.035) 52%,transparent)}
 .history-month-head>div{display:flex;align-items:baseline;gap:8px}
 .history-month-head strong{font-size:.92rem;color:#ff9a5d}
 .history-month-head span{font-size:.72rem;color:rgba(255,255,255,.5)}
@@ -180,6 +182,7 @@ body[data-history-view="simple"] .history-layout{display:block}.history-guide[hi
 .history-timeline-meta{margin-top:7px;flex-wrap:wrap}
 .history-timeline-item.is-compact .history-timeline-meta{margin-top:5px}
 .history-timeline-meta span,.history-timeline-meta b{font-size:.7rem}
+.history-search-match{border:1px solid rgba(255,157,46,.28)!important;background:rgba(255,157,46,.08)!important;color:#ffb77f!important}
 .history-timeline-card p{font-size:.86rem;color:rgba(255,255,255,.75);line-height:1.72}
 .history-timeline-item.is-featured .history-timeline-card{padding:14px 16px 15px}
 .history-verified{color:rgba(255,255,255,.62)}
@@ -216,6 +219,8 @@ body[data-history-view="simple"] .history-layout{display:block}.history-guide[hi
 [data-theme="light"] .history-simple-year-head,[data-theme="light"] .history-year-header{background:rgba(255,255,255,.965);border-color:#eadfd7}
 [data-theme="light"] .history-simple-year-head>div>span,[data-theme="light"] .history-month-head span,[data-theme="light"] .history-results-count{color:#786b63}
 [data-theme="light"] .history-simple-table-head{background:#fbf7f4;border-color:#eee4dd;color:#84766d}
+[data-theme="light"] .history-simple-year-breakdown{color:#9a8c82}
+[data-theme="light"] .history-simple-type{background:#f8f3ef;border-color:#e9ddd5;color:#766a62}
 [data-theme="light"] .history-year-filters{background:rgba(255,255,255,.95)}
 
 [data-theme="light"] #history-sync-status{color:#7a6d65}
@@ -243,8 +248,9 @@ body[data-history-view="simple"] .history-layout{display:block}.history-guide[hi
 [data-theme="light"] .history-search-empty strong{color:#342e2a}
 [data-theme="light"] .history-year-header{background:rgba(255,255,255,.965);border-color:#eadfd7}
 [data-theme="light"] .history-month-block{border-color:#eee4dd}
-[data-theme="light"] .history-month-head{background:linear-gradient(90deg,#fff4ec,transparent)}
-[data-theme="light"] .history-month-head:hover{background:linear-gradient(90deg,#fff0e4,transparent)}
+[data-theme="light"] .history-month-head{border-left-color:#efb087;background:linear-gradient(90deg,#fff1e6,#fff8f3 50%,transparent)}
+[data-theme="light"] .history-month-head:hover{border-left-color:#e98b4e;background:linear-gradient(90deg,#ffead9,#fff7f1 52%,transparent)}
+[data-theme="light"] .history-search-match{border-color:#efc7a8!important;background:#fff3e9!important;color:#a64d19!important}
 [data-theme="light"] .history-month-chevron{color:#8a7b72!important}
 [data-theme="light"] .history-timeline-card h3{color:#2d2825}
 [data-theme="light"] .history-timeline-card p,[data-theme="light"] .history-event-details li span{color:#5c514b}
@@ -267,9 +273,11 @@ body[data-history-view="simple"] .history-layout{display:block}.history-guide[hi
   .history-simple-year-head strong{font-size:1.08rem}
   .history-simple-year-head>div>span{font-size:.72rem}
   .history-simple-table-head{display:none}
-  .history-simple-row{grid-template-columns:86px minmax(0,1fr);gap:10px;padding:14px}
-  .history-simple-date{grid-column:auto;font-size:.82rem;line-height:1.55;color:#ffad7d}
-  .history-simple-content{grid-column:auto;font-size:.94rem;line-height:1.55}
+  .history-simple-row{grid-template-columns:86px minmax(0,1fr);gap:4px 10px;padding:14px}
+  .history-simple-date{grid-column:1;grid-row:1 / span 2;font-size:.82rem;line-height:1.55;color:#ffad7d}
+  .history-simple-content{grid-column:2;font-size:.94rem;line-height:1.55}
+  .history-simple-type{grid-column:2;justify-self:start;min-height:22px;margin-top:-1px;padding:2px 7px;font-size:.64rem}
+  .history-simple-year-breakdown{display:none}
 
   .history-guide-compact>summary{grid-template-columns:auto auto 1fr auto;min-height:48px;padding:9px 11px}
   .history-guide-compact>summary>span:not(.history-guide-badge){font-size:.73rem}
