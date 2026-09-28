@@ -91,8 +91,9 @@ transientLockFailures=20;
 const contentionBusy=await invoke({body:{action:'ready',code:rematch.code,token:rematch.p1,ready:false}});
 assert.equal(contentionBusy.statusCode,409,'persistent room contention should remain retryable');
 assert.equal(contentionBusy.body.error,'room_busy');
-assert.equal(contentionBusy.body.retryAfterMs,180);
+assert.equal(contentionBusy.body.retryAfterMs,240);
 assert.equal(contentionBusy.headers['retry-after'],'1');
+assert.equal(handler._internals.LOCK_ATTEMPTS,18,'server lock retry budget should absorb short Redis contention');
 global.setTimeout=originalSetTimeout;
 
 const invalidToken=await invoke({body:{action:'ready',code:rematch.code,token:'wrong',ready:true}});assert.equal(invalidToken.statusCode,403);
