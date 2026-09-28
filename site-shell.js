@@ -35,6 +35,20 @@
   function keyFor(input){
     try{const u=new URL(typeof input==='string'?input:input?.url,location.href);u.hash='';return u.pathname+u.search}catch{return''}
   }
+  function noteApiNetwork(input){
+    try{
+      const u=new URL(typeof input==='string'?input:input?.url,location.href);
+      if(u.origin!==location.origin||u.pathname!=='/api/content')return;
+      const type=String(u.searchParams.get('type')||'').slice(0,60);
+      if(!type||type==='site-analytics-event'||type.startsWith('operator-'))return;
+      if(window.ChunbongAnalytics?.track)window.ChunbongAnalytics.track('api_network',type,{count:1});
+      else{
+        window.__ChunbongApiNetworkQueue=Array.isArray(window.__ChunbongApiNetworkQueue)?window.__ChunbongApiNetworkQueue:[];
+        window.__ChunbongApiNetworkQueue.push(type);
+        if(window.__ChunbongApiNetworkQueue.length>80)window.__ChunbongApiNetworkQueue.splice(0,window.__ChunbongApiNetworkQueue.length-80);
+      }
+    }catch{}
+  }
   function responseFrom(record,marker){
     return new Response(record.body,{status:200,headers:{'content-type':record.contentType||'application/json','x-chunbong-cache':marker}});
   }
@@ -70,7 +84,7 @@
   }
   pruneSnapshots();
   window.fetch=async function budgetFetch(input,init){
-    const p=policy(input,init);if(!p)return nativeFetch(input,init);
+    const p=policy(input,init);if(!p){noteApiNetwork(input);return nativeFetch(input,init)};
     const key=keyFor(input);if(!key)return nativeFetch(input,init);
     const cached=memory.get(key);
     if(cached&&cached.expiresAt>now())return responseFrom(cached,'memory');
@@ -79,6 +93,7 @@
     }
     const task=(async()=>{
       try{
+        noteApiNetwork(input);
         const response=await nativeFetch(input,init);
         const body=await response.clone().text();
         let unavailable=false;
