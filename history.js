@@ -44,6 +44,9 @@
     {test:/구독플러스/i,kind:'방송',importance:'normal'},
     {test:/중계$/i,kind:'방송',importance:'normal'},
     {test:/^레오펠\s*2\s*무기한 연기$/i,kind:'주최',importance:'core',type:'주최'},
+    {test:/^레오펠(?:\s*:?\s*.*)?$/i,kind:'주최'},
+    {test:/^그냥서버(?:\s*:?\s*.*)?$/i,kind:'주최'},
+    {test:/^춘타클(?:\s*.*)?$/i,kind:'타로'},
 
     {test:/^홍창의 숲$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
     {test:/^린코레일\s*2$/i,kind:'마인크래프트',importance:'core',type:'서버·마크'},
@@ -177,16 +180,16 @@
       reason:'curated-core'
     };
 
+    if(/입사 발표|결성|해체|크루 리빌딩|SOOP 스트리머 대상/.test(text)){
+      return {include:true,type:'활동 변화',importance:'core',reason:'milestone'};
+    }
+
     if(kind==='마인크래프트') return {include:true,type:'서버·마크',importance:'core',reason:'minecraft'};
     if(kind==='대회') return {include:true,type:'대회',importance:'core',reason:'competition'};
     if(kind==='주최') return {include:true,type:'주최',importance:'core',reason:'hosted'};
 
     if(/배그|배틀 그라운드|아르마|오버워치|옵치|버워치|언레일드|경찰과 도둑|스모오라|세바버|왁업|랜버워치/i.test(text)){
       return {include:true,type:'합방·게임',importance:'core',reason:'official-game-event'};
-    }
-
-    if(/입사 발표|결성|해체|크루 리빌딩|SOOP 스트리머 대상/.test(text)){
-      return {include:true,type:'활동 변화',importance:'core',reason:'milestone'};
     }
 
     if(/노래자랑|춘타클/.test(text)){
@@ -992,6 +995,6 @@
     }
   });
 
-  window.__CHUNBONG_HISTORY_HELPERS__={records,displayDate,compactDate,renderSimple,renderDetail,setView,loadLiveSheets,recordId};
+  window.__CHUNBONG_HISTORY_HELPERS__={records,displayDate,compactDate,renderSimple,renderDetail,setView,loadLiveSheets,recordId,inferKind,simpleDecision,simpleTypeLabel};
   void initialize();
 })();
