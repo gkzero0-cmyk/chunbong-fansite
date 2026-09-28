@@ -252,6 +252,17 @@ async function mapLimit(items, limit, mapper) {
   return results;
 }
 
+function setBatchPublicCache(res,{browser=300,cdn=3600,stale=21600}={}){
+  res.setHeader('Cache-Control',`public, max-age=${browser}, stale-while-revalidate=${stale}`);
+  res.setHeader('CDN-Cache-Control',`public, max-age=${cdn}, stale-while-revalidate=${stale}`);
+  res.setHeader('Vercel-CDN-Cache-Control',`public, max-age=${cdn}, stale-while-revalidate=${stale}`);
+}
+function setBatchNoStore(res){
+  res.setHeader('Cache-Control','no-store, max-age=0');
+  res.setHeader('CDN-Cache-Control','no-store');
+  res.setHeader('Vercel-CDN-Cache-Control','no-store');
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'method_not_allowed' });
 
@@ -378,7 +389,7 @@ module.exports = async function handler(req, res) {
   // 후보가 비었는데 일부 방송국/보조 검색이 실패했다면 "소식 없음"이 아니라 조회 실패다.
   // 200 + 빈 후보를 반환하면 Apps Script가 기존 정상 소식을 지울 수 있으므로 오류 응답으로 보존시킨다.
   if (crew && !selected && (failures.length > 0 || auxiliaryFailures.length > 0)) {
-    res.setHeader('Cache-Control', 'no-store');
+    setBatchNoStore(res);
     return res.status(503).json({
       ok: false,
       complete: false,
@@ -393,9 +404,8 @@ module.exports = async function handler(req, res) {
   }
 
   const authenticated = results.some(item => item && item.authenticated === true);
-  res.setHeader('Cache-Control', (forceRefresh || authenticated || failures.length>0 || auxiliaryFailures.length>0)
-    ? 'no-store, max-age=0'
-    : 'public, max-age=300, s-maxage=3600, stale-while-revalidate=21600');
+  if(forceRefresh || authenticated || failures.length>0 || auxiliaryFailures.length>0)setBatchNoStore(res);
+  else setBatchPublicCache(res,{browser:300,cdn:3600,stale:21600});
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,

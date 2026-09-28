@@ -257,6 +257,17 @@ function snapshotKey({station,page,perPage,keyword,startDate,endDate}){return [s
 function rememberLastGood(key,payload){lastGood.set(key,{at:Date.now(),payload});if(lastGood.size>80){const oldest=[...lastGood.entries()].sort((a,b)=>a[1].at-b[1].at)[0]?.[0];if(oldest)lastGood.delete(oldest)}}
 function readLastGood(key){const row=lastGood.get(key);if(!row||Date.now()-row.at>LAST_GOOD_TTL_MS){if(row)lastGood.delete(key);return null}return row}
 
+function setPublicCache(res,{browser=60,cdn=600,stale=3600}={}){
+  res.setHeader('Cache-Control',`public, max-age=${browser}, stale-while-revalidate=${stale}`);
+  res.setHeader('CDN-Cache-Control',`public, max-age=${cdn}, stale-while-revalidate=${stale}`);
+  res.setHeader('Vercel-CDN-Cache-Control',`public, max-age=${cdn}, stale-while-revalidate=${stale}`);
+}
+function setNoStore(res){
+  res.setHeader('Cache-Control','no-store, max-age=0');
+  res.setHeader('CDN-Cache-Control','no-store');
+  res.setHeader('Vercel-CDN-Cache-Control','no-store');
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'method_not_allowed' });
 
@@ -298,9 +309,8 @@ module.exports = async function handler(req, res) {
     const rows = Array.isArray(result.data && result.data.data) ? result.data.data : [];
     const posts = rows.map(row => normalizePost(row, station, menu.byNo, req));
     const debug = requestUrl.searchParams.get('debug') === '1';
-    res.setHeader('Cache-Control', (cookie || forceRefresh)
-      ? 'no-store, max-age=0'
-      : 'public, max-age=60, s-maxage=600, stale-while-revalidate=3600');
+    if(cookie || forceRefresh)setNoStore(res);
+    else setPublicCache(res,{browser:60,cdn:600,stale:3600});
     const payload={
       ok: true,
       station,
@@ -329,10 +339,10 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     const snapshot=!cookie&&!forceRefresh?readLastGood(cacheKey):null;
     if(snapshot){
-      res.setHeader('Cache-Control','public, max-age=60, s-maxage=300, stale-while-revalidate=21600');
+      setPublicCache(res,{browser:60,cdn:300,stale:21600});
       return res.status(200).json({...snapshot.payload,stale:true,snapshotAt:new Date(snapshot.at).toISOString()});
     }
-    res.setHeader('Cache-Control', 'no-store');
+    setNoStore(res);
     return res.status(502).json({
       ok: false,
       error: 'soop_board_unavailable',
