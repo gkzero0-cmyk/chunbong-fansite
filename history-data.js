@@ -1,13 +1,13 @@
 window.CHUNBONG_HISTORY_META = Object.freeze({
   verifiedAt: "2026-09-28",
   googleSheetModifiedAt: "2026-09-28 07:12 KST",
-  rule: "SOOP 공식 기록과 방송국/방송 제목을 우선하고, 공개 아카이브·나무위키 원문·FM코리아는 교차 확인용으로 사용합니다. 기간은 시작/종료가 확인된 경우에만 범위로 표시합니다.",
+  rule: "2025년 이후는 Google Sheet 연간 춘봉 다시보기의 날짜·기간을 우선하고, SOOP 공식 기록·방송국·공개 자료는 역할과 설명을 보강하는 교차 확인용으로 사용합니다. 2024년 이전은 기존 공식/공개 자료 검증 기록을 유지합니다.",
   sourceStatus: {
     soop: "checked",
     station: "checked",
     namuwiki: "checked",
     fmkorea: "checked_auxiliary",
-    googleSheet: "checked_raw_csv"
+    googleSheet: "live_primary_2025_plus"
   }
 });
 
