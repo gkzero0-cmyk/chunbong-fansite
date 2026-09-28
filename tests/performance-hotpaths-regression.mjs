@@ -43,7 +43,9 @@ assert.match(chunbak,/if \(!frameId && playing\)/,'Chunbak should not render con
 
 assert.match(multiplayer,/refreshInFlight/,'multiplayer polling must prevent overlapping refresh requests');
 assert.match(multiplayer,/progressInFlight/,'multiplayer progress updates must prevent overlap');
-assert.match(multiplayer,/setInterval\(refresh,1000\)/,'multiplayer room polling should be throttled');
-assert.match(multiplayer,/setInterval\(sync,1000\)/,'multiplayer progress updates should be throttled');
+assert.match(multiplayer,/setInterval\(refresh,pollingDelay\(\)\)/,'multiplayer room polling should use adaptive throttling');
+assert.match(multiplayer,/document\.hidden\?5000:1300/,'background multiplayer polling should slow to five seconds');
+assert.match(multiplayer,/setInterval\(sync,1400\)/,'multiplayer progress updates should be throttled');
+assert.match(multiplayer,/PROGRESS_HEARTBEAT_MS=5000/,'unchanged multiplayer progress should avoid constant writes');
 
 console.log('performance hotpaths regression passed');
