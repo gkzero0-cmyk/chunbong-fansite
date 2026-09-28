@@ -192,6 +192,33 @@ module.exports=async function handler(req,res){
       return res.status(200).json({ok:true,...result,fetchedAt:new Date().toISOString()});
     }
 
+    if(key==='search-index'){
+      const requestedYear=Number(req.query&&req.query.year||2026);
+      const sheets=await availableSheets();
+      const configs=Object.entries(sheets)
+        .map(([sheetKey,config])=>({...config,key:sheetKey}))
+        .filter(config=>config.type==='month'&&config.year===requestedYear)
+        .sort((a,b)=>(a.month||0)-(b.month||0));
+      const settled=await Promise.allSettled(configs.map(fetchSheet));
+      const items=settled.flatMap((result,index)=>{
+        if(result.status!=='fulfilled') return [];
+        const month=configs[index]?.month||null;
+        return result.value.items.map(item=>({
+          date:item.date,
+          ...(item.end?{end:item.end}:{}),
+          label:item.label,
+          month
+        }));
+      });
+      res.setHeader('Cache-Control','s-maxage=1800, stale-while-revalidate=21600');
+      return res.status(200).json({
+        ok:true,key:'search-index',year:requestedYear,
+        fetchedAt:new Date().toISOString(),
+        itemCount:items.length,
+        items
+      });
+    }
+
     if(key==='months'){
       const sheets=await availableSheets();
       const requestedYear=Number(req.query&&req.query.year||2026);
