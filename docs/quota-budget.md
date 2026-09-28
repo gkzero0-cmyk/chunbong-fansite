@@ -87,3 +87,34 @@ The operator system panel exposes the protection state:
 - whether optional feature-specific Redis stores are configured.
 
 This view is intentionally descriptive. It does not invent Vercel or Redis quota percentages when the provider does not expose exact usage to the runtime.
+
+
+## Incremental automatic collection
+
+Official archive collection uses persistent checkpoints instead of repeatedly walking the same recent pages.
+
+SOOP:
+- VOD, Catch, Clip, and station posts each remember the newest successful item ID.
+- Incremental scans still fetch page 1 to detect new items.
+- As soon as the previous checkpoint ID appears, deeper paging stops.
+- A forced/manual full sync ignores checkpoints.
+
+YouTube:
+- Videos and Shorts keep separate newest-item checkpoints.
+- The first tab page is always checked for new uploads.
+- Continuation paging stops when the last-seen video ID is found.
+- Full sync remains available for explicit repair/backfill work.
+
+Notion:
+1. The public page request uses the previous ETag / Last-Modified when available.
+2. HTTP 304 skips Notion record-map and media work completely.
+3. If HTTP 200 is returned, a lightweight root record-map fingerprint is compared.
+4. An unchanged fingerprint reuses the existing structured guide.
+5. Only changed documents run the recursive page scan, signed-file URL requests, image probes, and permanent media processing.
+
+The first run after this optimization seeds checkpoints/fingerprints. Savings become largest from the following scheduled run onward.
+
+The operator content center shows:
+- checkpoint early-stop count,
+- unchanged Notion skip count,
+- full vs incremental-checkpoint scan mode.
