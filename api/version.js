@@ -43,7 +43,9 @@ async function runtimeSyncState(sha,mainSha){
 }
 
 module.exports = async function handler(req, res) {
-  res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=1800');
+  res.setHeader('Cache-Control','public, max-age=60, stale-while-revalidate=300');
+  res.setHeader('CDN-Cache-Control','public, max-age=300, stale-while-revalidate=1800, stale-if-error=86400');
+  res.setHeader('Vercel-CDN-Cache-Control','public, max-age=300, stale-while-revalidate=1800, stale-if-error=86400');
   const sha=process.env.VERCEL_GIT_COMMIT_SHA || process.env.DEPLOY_COMMIT_SHA || '';
   const mainSha=await latestMainSha();
   const sync=await runtimeSyncState(sha,mainSha);
