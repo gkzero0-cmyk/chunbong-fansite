@@ -580,3 +580,14 @@ body[data-page="operator"]{background:radial-gradient(circle at 80% 0,color-mix(
 .operator-deployment-banner[data-state="bad"]{border-color:color-mix(in srgb,var(--op-bad) 48%,var(--op-border));background:linear-gradient(135deg,color-mix(in srgb,var(--op-bad) 8%,var(--op-card)),var(--op-card-2))}
 .operator-deployment-banner[data-state="bad"] strong{color:var(--op-bad)}
 @media(max-width:640px){.operator-deployment-banner{grid-template-columns:1fr}.operator-deployment-banner>button{width:100%}}
+
+.operator-budget-card header{align-items:flex-start}
+.operator-budget-card header>div{display:grid;gap:3px}
+.operator-budget-card header small{color:var(--op-muted);font-size:10px}
+.operator-budget-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:14px 0}
+.operator-budget-grid div{padding:12px;border:1px solid color-mix(in srgb,var(--op-border) 75%,transparent);border-radius:12px;background:var(--op-card-2)}
+.operator-budget-grid span{display:block;color:var(--op-muted);font-size:10px}
+.operator-budget-grid b{display:block;margin-top:5px;color:var(--op-primary);font-size:15px}
+.operator-budget-card .operator-service-health{margin-top:8px}
+.operator-budget-card .operator-usage-note{margin-top:12px}
+@media(max-width:680px){.operator-budget-grid{grid-template-columns:1fr 1fr}}
