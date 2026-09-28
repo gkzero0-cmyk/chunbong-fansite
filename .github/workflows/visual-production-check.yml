@@ -109,12 +109,14 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Cache Chromium
+      - name: Cache Playwright and npm downloads
         if: steps.vercel.outputs.run_visual == 'true'
         id: playwright-cache
         uses: actions/cache@v4
         with:
-          path: ~/.cache/ms-playwright
+          path: |
+            ~/.cache/ms-playwright
+            ~/.npm
           key: ${{ runner.os }}-playwright-chromium-${{ env.PLAYWRIGHT_VERSION }}
 
       - name: Install Playwright
