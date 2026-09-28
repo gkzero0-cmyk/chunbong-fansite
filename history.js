@@ -32,7 +32,7 @@
   let contentIndexLoaded=false;
   let contentIndexLoading=null;
 
-  const kindOrder=['마인크래프트','주최','타로','대회','방송','게임','콘텐츠'];
+  const kindOrder=['마인크래프트','주최','대회','게임','타로','활동','방송','콘텐츠'];
 
   // Names alone are not always enough to identify a server or the importance of a record.
   // Keep verified exceptions here, while generic inference handles obvious names.
@@ -155,8 +155,9 @@
     if(/타로|사주|신점/.test(text)) return '타로';
     if(/대회|F1|CK|와튜버|스모오라|크루대전/.test(text)) return '대회';
     if(/GTA|배그|배틀 그라운드|오버워치|옵치|WOW|스트리트 파이터|아르마|파블로프|언레일드|경찰과 도둑|버워치/.test(text)) return '게임';
-    if(/노래자랑|사자컴퍼니 결성|춘동아리 결성/.test(text)) return '주최';
-    if(/입사|SOOP 스트리머 대상|크루 리빌딩|사자회 해체/.test(text)) return '방송';
+    if(/입사 발표|결성|해체|크루 리빌딩|SOOP 스트리머 대상/.test(text)) return '활동';
+    if(/노래자랑/.test(text)) return '주최';
+    if(/입사|인터뷰/.test(text)) return '방송';
     if(/서버|마병대|레오펠|퍼켓몬|해초마을|맹든링|픽크타|담월드|오함마|수미랜드|원블럭|다이아/.test(text)) return '마인크래프트';
     return '콘텐츠';
   }
@@ -217,6 +218,7 @@
       '주최':'주최',
       '타로':'타로',
       '게임':'게임',
+      '활동':'활동 변화',
       '방송':'방송'
     }[row.kind]||'콘텐츠');
   }
