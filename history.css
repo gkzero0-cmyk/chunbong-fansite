@@ -682,3 +682,66 @@ body[data-history-view="simple"] .history-layout{display:block}.history-guide[hi
 [data-theme="light"] .history-event-stage time{color:#8d7e74}
 [data-theme="light"] .history-event-stage li span{color:#655950}
 @media(max-width:700px){.history-event-stage li{grid-template-columns:82px minmax(0,1fr);gap:8px}.history-event-stage{padding:8px}}
+
+
+/* Related series + detail hierarchy v20 */
+.history-series-links{
+  display:grid;
+  gap:7px;
+  margin-top:11px;
+  padding:10px 11px;
+  border:1px solid rgba(255,255,255,.065);
+  border-radius:11px;
+  background:rgba(255,255,255,.018);
+}
+.history-series-links>span{
+  color:rgba(255,255,255,.42);
+  font-size:.64rem;
+  font-weight:900;
+  letter-spacing:.06em;
+}
+.history-series-links>div{display:flex;flex-wrap:wrap;gap:6px}
+.history-series-links button{
+  appearance:none;
+  min-height:30px;
+  padding:5px 9px;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:999px;
+  background:rgba(255,255,255,.025);
+  color:rgba(255,255,255,.7);
+  font:inherit;
+  font-size:.69rem;
+  font-weight:800;
+  cursor:pointer;
+}
+.history-series-links button:hover,
+.history-series-links button:focus-visible{
+  border-color:rgba(255,145,79,.48);
+  background:rgba(255,107,24,.09);
+  color:#ffb080;
+}
+.history-record-body>.history-timeline-meta{margin-top:2px}
+.history-record-body>.history-record-summary,
+.history-record-body>.history-series-links,
+.history-record-body>.history-record-highlights,
+.history-record-body>.history-event-details{scroll-margin-top:90px}
+[data-theme="light"] .history-series-links{
+  border-color:#eadfd7;
+  background:#fbf7f4;
+}
+[data-theme="light"] .history-series-links>span{color:#8b7d74}
+[data-theme="light"] .history-series-links button{
+  border-color:#e3d7cf;
+  background:#fff;
+  color:#6e625a;
+}
+[data-theme="light"] .history-series-links button:hover,
+[data-theme="light"] .history-series-links button:focus-visible{
+  border-color:#e8ad85;
+  background:#fff0e4;
+  color:#a64b17;
+}
+@media(max-width:700px){
+  .history-series-links{padding:9px}
+  .history-series-links button{min-height:36px;padding:7px 10px}
+}
