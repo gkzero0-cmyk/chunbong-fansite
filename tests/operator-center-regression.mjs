@@ -102,6 +102,10 @@ assert.match(operatorJs,/function loadHistoryVerification\(/,'broadcast history 
 assert.match(operatorJs,/HISTORY_VERIFIED_PATTERNS/,'verified history patterns missing');
 assert.match(operatorJs,/historyAuditCandidate/,'history audit candidate detection missing');
 assert.match(operatorCss,/operator-history-audit-results/,'history audit result styles missing');
+assert.match(operatorJs,/historyArchiveMatch/,'history audit must compare content archive representatives');
+assert.match(operatorJs,/대표 이미지 지정 없음/,'history audit must flag missing representative images');
+assert.match(operatorJs,/operator-history-audit-metrics/,'history audit must render quality metrics');
+assert.match(operatorCss,/operator-history-audit-metrics/,'history quality metric styles missing');
 assert.match(operatorJs,/\$\$\('\[data-operator-tab\]'\)\.forEach/,'operator tab binding must iterate a NodeList');
 assert.doesNotMatch(operatorJs,/(^|\n)\$\('\[data-operator-tab\]'\)\.forEach/,'operator tab binding must not call forEach on querySelector result');
 assert.match(operatorJs,/\$\$\('\[data-operator-panel\]'\)\.forEach/,'operator panel switching must iterate a NodeList');
