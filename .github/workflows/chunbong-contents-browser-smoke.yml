@@ -16,6 +16,10 @@ on:
       - 'api/content.js'
       - 'tests/chunbong-contents-browser-smoke.mjs'
       - '.github/workflows/chunbong-contents-browser-smoke.yml'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   browser-smoke:
     runs-on: ubuntu-latest
