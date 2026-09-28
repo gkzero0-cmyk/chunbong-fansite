@@ -60,6 +60,14 @@ assert.match(js, /춘동아리\\s\*CK[^\n]*simple:false/, 'internal CK record mu
 assert.match(js, /포켓꾸 · 춘물상 활동[^\n]*role:'참가'/, 'Pocketggu activity must not imply server operator role');
 assert.match(js, /랜드마꾸 · 춘밭 운영[^\n]*role:'참가'/, 'Landmaku activity must not imply server operator role');
 assert.match(js, /function isFormalCompetition\(/, 'competition classification must use an explicit criterion');
+assert.match(js, /그 날의 그림자[^\n]*simple:true[^\n]*마크 콘텐츠/, '그 날의 그림자 must appear in simple history as Minecraft content');
+assert.match(js, /마병대\\s\*3[^\n]*simple:true[^\n]*마크 서버/, '마병대3 must appear in simple history as Minecraft server');
+assert.match(js, /마병대\\s\*4[^\n]*simple:true[^\n]*마크 서버/, '마병대4 must appear in simple history as Minecraft server');
+assert.match(js, /청더일레븐[^\n]*simpleTags:\['마크 콘텐츠','대회'\]/, '청더일레븐 must preserve both Minecraft-content and tournament tags');
+assert.match(js, /function simpleTypeLabels\(/, 'simple history must support multiple visible type tags');
+assert.match(js, /function participationBuckets\(/, 'annual participation stats must support overlapping content types');
+assert.match(js, /복합 콘텐츠는 해당 유형에 각각 집계/, 'annual summary must explain overlapping multi-tag counts');
+assert.match(css, /history-simple-types/, 'multi-tag simple history styles must exist');
 assert.doesNotMatch(js, /if\(\/대회\|F1\|CK\|와튜버\|스모오라\|크루대전/, 'CK and internal game labels must not be blanket-classified as tournaments');
 assert.match(js, /게임 콘텐츠/, 'annual summary must separate game content from competitions');
 assert.doesNotMatch(js, /history-row-arrow" aria-hidden/, 'simple rows must not render an arrow next to the type column');
