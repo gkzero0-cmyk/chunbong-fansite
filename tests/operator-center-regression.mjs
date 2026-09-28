@@ -82,7 +82,7 @@ assert.match(operatorHtml,/system-redis-memory/,'Redis memory UI missing');
 assert.match(operatorHtml,/operator-endpoint-health/,'public endpoint health UI missing');
 assert.match(operatorHtml,/Vercel 사용량/,'Vercel usage guidance missing');
 assert.match(operatorHtml,/operator\.css/);
-assert.match(operatorHtml,/type="module" src="operator\.js"/);
+assert.match(operatorHtml,/type="module" src="operator\.js(?:\?v=\d+)?"/);
 
 assert.match(operatorJs,/operator-auth-config/);
 assert.match(operatorJs,/loadAuthAvailability/,'operator auth readiness UI missing');
