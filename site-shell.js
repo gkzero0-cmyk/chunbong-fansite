@@ -24,7 +24,7 @@
       if(['vod','clips','youtube'].includes(type))return{memoryMs:20*60*1000,snapshotMs:24*60*60*1000};
       if(type==='fanart')return{memoryMs:15*60*1000,snapshotMs:12*60*60*1000};
       if(type==='data')return{memoryMs:10*60*1000,snapshotMs:24*60*60*1000};
-      if(type==='chunbong-contents'||type==='chunbong-content-index')return{memoryMs:10*60*1000,snapshotMs:24*60*60*1000};
+      if(['chunbong-contents','chunbong-content-index','chunbong-content-home'].includes(type))return{memoryMs:10*60*1000,snapshotMs:24*60*60*1000};
       if(type==='changelog-history')return{memoryMs:10*60*1000,snapshotMs:24*60*60*1000};
       if(/(?:^|-)ranking$/.test(type))return{memoryMs:60000,snapshotMs:24*60*60*1000};
     }
