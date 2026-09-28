@@ -28,13 +28,13 @@ for (const [name,source,html] of [
   assert.match(source,/const HUD_FRAME_MS=50;/,`${name} must throttle HUD writes on both desktop and mobile`);
   assert.match(source,/visibilitychange/,`${name} must pause when the tab is hidden`);
   assert.match(source,/document\.hidden&&running&&!paused/,`${name} hidden-tab pause guard missing`);
-  assert.match(html,/\.js\?v=25"/,`${name} optimized JS must be cache-busted`);
+  assert.match(html,/\.js\?v=26"/,`${name} optimized JS must be cache-busted`);
   assert.doesNotThrow(()=>new Function(source),`${name} JS syntax must remain valid`);
 }
 
 assert.match(chunbak,/visibilitychange/,'춘박게임 must stop the physics loop when the tab is hidden');
 assert.match(chunbak,/document\.hidden && gameState === 'playing'/,'춘박게임 hidden-tab guard missing');
-assert.match(chunbakHtml,/chunbak\.js\?v=24/,'춘박게임 optimized JS must be cache-busted');
+assert.match(chunbakHtml,/chunbak\.js\?v=25/,'춘박게임 optimized JS must be cache-busted');
 assert.doesNotThrow(()=>new Function(chunbak),'춘박게임 JS syntax must remain valid');
 assert.doesNotThrow(()=>new Function(fanartJs),'fanart JS syntax must remain valid');
 
