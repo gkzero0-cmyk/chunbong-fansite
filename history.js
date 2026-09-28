@@ -49,12 +49,14 @@
   }
 
   function verifiedBadge(record = {}) {
-    const count = Array.isArray(record.sources) ? record.sources.length : 0;
-    return count >= 2 ? '<span class="history-verified">교차 확인</span>' : '';
+    const sources = Array.isArray(record.sources) ? record.sources : [];
+    const sheet = sources.includes('google-sheet') ? '<span class="history-verified is-sheet">Google Sheet</span>' : '';
+    const cross = sources.length >= 2 ? '<span class="history-verified">교차 확인</span>' : '';
+    return sheet + cross;
   }
 
   function renderSimple() {
-    const rows = records();
+    const rows = records().filter(row => !row.detailOnly);
     const years = [...new Set(rows.map(row => row.start.slice(0, 4)))];
     if (!rows.length) {
       root.innerHTML = '<div class="history-simple-empty"><strong>표시할 방송 이력이 없습니다.</strong><p>검증된 기록을 준비하고 있습니다.</p></div>';
@@ -165,7 +167,7 @@
     updateViewUI();
     if (status) {
       const count = records().length;
-      status.textContent = `마지막 검증 ${String(meta.verifiedAt || '2026-09-28').replaceAll('-', '.')} · ${count}개 기록`;
+      status.textContent = `마지막 검증 ${String(meta.verifiedAt || '2026-09-28').replaceAll('-', '.')} · Google Sheet 포함 · ${count}개 기록`;
     }
   }
 

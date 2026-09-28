@@ -31,3 +31,6 @@ body[data-history-view="simple"] .history-layout{display:block}.history-guide[hi
 [data-theme="light"] .history-detail-note>div{background:#fff;border-color:#eadfd7}[data-theme="light"] .history-verified{background:#f4eee9;border-color:#e7dcd3;color:#75685f}
 @media(max-width:850px){.history-detail-note{grid-template-columns:1fr}.history-detail-note>div{padding:12px 14px}}
 @media(max-width:700px){.history-simple-note{align-items:flex-start;flex-direction:column;gap:4px;padding:12px 16px}.history-simple-row.is-planned{border-left-width:3px}.history-simple-content{align-items:flex-start}}
+
+.history-verified.is-sheet{border-color:rgba(66,133,244,.28);background:rgba(66,133,244,.09);color:#9bbcff}
+[data-theme="light"] .history-verified.is-sheet{border-color:#c8d9fb;background:#eef4ff;color:#3f6fbd}
