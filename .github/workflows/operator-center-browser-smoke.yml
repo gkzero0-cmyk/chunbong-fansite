@@ -12,6 +12,10 @@ on:
       - 'feedback-widget.js'
       - 'feedback-widget.css'
       - '.github/workflows/operator-center-browser-smoke.yml'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   browser-smoke:
     runs-on: ubuntu-latest
