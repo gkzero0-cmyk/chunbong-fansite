@@ -296,13 +296,31 @@ async function invokeCrewNews(req, params) {
   return{status:statusCode,body};
 }
 
+function imageSourceFor(post) {
+  if (!post) return 'none';
+  if (post.imageUrl) return 'post';
+  if (post.fallbackImageUrl) return String(post.fallbackImageSource || 'fallback');
+  return 'none';
+}
+
+function applyFallbackImage(post) {
+  if (!post || post.imageUrl || !post.fallbackImageUrl) return post;
+  return {
+    ...post,
+    imageUrl: post.fallbackImageUrl,
+    sheetImageUrl: post.fallbackSheetImageUrl || post.fallbackImageUrl,
+    imageSource: String(post.fallbackImageSource || 'fallback')
+  };
+}
+
 function stableFingerprint(post) {
   if (!post) return '';
   const parts = [
     String(post.id || ''),
     String(post.displaySummary || post.strictActivity || ''),
     String(post.activityDate || String(post.publishedAt || '').slice(0, 10)),
-    String(post.imageUrl || '')
+    String(post.imageUrl || post.fallbackImageUrl || ''),
+    imageSourceFor(post)
   ];
   // FNV-1a: Apps Script가 긴 문자열을 비교하지 않아도 되는 짧고 안정적인 변경 키.
   let hash = 2166136261;
@@ -440,6 +458,7 @@ module.exports = async function handler(req, res) {
       return Number(Boolean(b.isCrewLeader)) - Number(Boolean(a.isCrewLeader));
     });
     selected = candidates[0] || null;
+    if (selected) selected = applyFallbackImage(selected);
 
     // 외부 검색이 일시적으로 빈 결과를 반환하더라도 검증된 마지막 대표 소식을
     // "허용 후보 없음"으로 오판해 시트에서 지우지 않도록 안전 폴백을 사용한다.
@@ -474,7 +493,7 @@ module.exports = async function handler(req, res) {
       ok: false,
       complete: false,
       error: 'crew_news_incomplete',
-      policyVersion: 'representative-v6.8-server',
+      policyVersion: 'representative-v6.9-server',
       strictCrew: crew,
       requested: stations.length,
       failed: failures.length,
@@ -490,7 +509,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
-    policyVersion: 'representative-v6.8-server',
+    policyVersion: 'representative-v6.9-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
@@ -509,6 +528,7 @@ module.exports = async function handler(req, res) {
       activityDate: selected.activityDate || String(selected.publishedAt || '').slice(0, 10),
       imageUrl: selected.imageUrl || '',
       sheetImageUrl: selected.sheetImageUrl || '',
+      imageSource: selected.imageSource || imageSourceFor(selected),
       fingerprint: stableFingerprint(selected),
       representativeTier: selected.representativeTier,
       isCrewLeader: selected.isCrewLeader
@@ -527,5 +547,7 @@ module.exports._internals = {
   resolveActivityDate,
   activityPublishedAt,
   stableFingerprint,
+  imageSourceFor,
+  applyFallbackImage,
   mergePosts
 };
