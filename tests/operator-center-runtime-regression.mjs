@@ -62,6 +62,23 @@ const signed=await operator._internals.signToken({purpose:'session',owner:true,e
 const verified=await operator._internals.verifyToken(signed,'session');
 assert.equal(verified?.owner,true,'signed operator session must work without Redis when GitHub secret is configured');
 
+const now=Date.now();
+const sessionToken=await operator._internals.signToken({
+  purpose:'session',owner:true,provider:'github',githubId:322299248,
+  jti:'runtime-session-1234567890',epoch:1,iat:now,exp:now+60000
+});
+const sessionRes=response();
+await operator.handleSession({
+  method:'GET',
+  headers:{host:'localhost',cookie:'cb_operator_session='+encodeURIComponent(sessionToken)},
+  url:'/api/content?type=operator-session'
+},sessionRes);
+assert.equal(sessionRes.statusCode,200,'operator session endpoint must stay available without Redis');
+assert.equal(sessionRes.body?.authenticated,true);
+assert.equal(sessionRes.body?.activeSessions,1);
+assert.equal(sessionRes.body?.sessions?.[0]?.current,true);
+assert.equal(sessionRes.body?.sessions?.[0]?.provider,'github');
+
 for(const [key,value] of Object.entries(savedEnv)){
   if(value===undefined)delete process.env[key];
   else process.env[key]=value;
