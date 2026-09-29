@@ -37,6 +37,8 @@ assert.match(api,/code_challenge_method','S256'/,'GitHub PKCE challenge missing'
 assert.match(api,/code_verifier:verifier/,'GitHub PKCE verifier missing');
 assert.match(api,/AUTH_EPOCH_KEY/,'operator session revocation epoch missing');
 assert.match(api,/SESSION_INDEX/,'operator active session index missing');
+assert.match(api,/storageDegraded/,'operator session must expose degraded storage without failing auth');
+assert.match(api,/existing\?\.owner\)return redirect\(res,'\/operator\.html\?auth=success'\)/,'duplicate GitHub callback should preserve an existing owner session');
 assert.match(api,/set\('scope','read:user'\)/,'GitHub OAuth must request only the minimum profile scope');
 assert.doesNotMatch(api,/read:user user:email/,'GitHub OAuth must not request email scope');
 assert.match(api,/api\.github\.com\/user/,'GitHub identity verification missing');
