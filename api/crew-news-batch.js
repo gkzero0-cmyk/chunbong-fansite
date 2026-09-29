@@ -23,20 +23,23 @@ const MANUAL_SUMMARY = Object.freeze({
   '강씨세가': { '207358053': '1주년' },
   '진드기': { '207893749': '히어로 레드 웰컴 진드기' },
   'ZZAM지트': { '207641333': '소울체인드 합방' },
-  '자라섬': { '208189099': 'VRC 윷놀이' }
+  '자라섬': { '208189099': 'VRC 윷놀이' },
+  '천타버스': { '208075141': '추석특집' }
 });
 
 const MANUAL_DISPLAY_SUMMARY = Object.freeze({
   '조적단': { '207589893': '배그 킬내기 일정 조율' },
   '진드기': { '207893749': '히어로 레드 웰컴 진드기' },
   'ZZAM지트': { '207641333': '소울체인드 합방' },
-  '자라섬': { '208189099': 'VRC 윷놀이' }
+  '자라섬': { '208189099': 'VRC 윷놀이' },
+  '천타버스': { '208075141': '추석특집' }
 });
 
 // 동일한 크루 활동을 여러 멤버가 공통 공지한 경우, 내용 정확성이 같은 후보 중
 // 크루 전체를 가장 잘 보여주는 대표 이미지가 확인된 게시글을 우선한다.
 const REPRESENTATIVE_MEDIA_PRIORITY = Object.freeze({
-  '자라섬': { '208189099': 1 }
+  '자라섬': { '208189099': 1 },
+  '천타버스': { '208075141': 100 }
 });
 
 // 여러 크루원이 같은 일정을 공지해 상대 날짜/기간 표현만 남은 경우의 검증된 실제 시작일.
@@ -46,6 +49,10 @@ const MANUAL_ACTIVITY_DATE = Object.freeze({
     '208412493': '2026-09-30',
     '208395133': '2026-09-30'
   }
+});
+
+const REQUIRED_REPRESENTATIVE = Object.freeze({
+  '천타버스': { id:'208075141', station:'243000' }
 });
 
 const EXTRA_SEARCHES = Object.freeze({
@@ -544,7 +551,15 @@ module.exports = async function handler(req, res) {
       if (time) return time;
       return Number(Boolean(b.isCrewLeader)) - Number(Boolean(a.isCrewLeader));
     });
-    selected = candidates[0] || null;
+    const required = REQUIRED_REPRESENTATIVE[crew];
+    selected = required
+      ? candidates.find(post => String(post.id) === required.id && String(post._station) === required.station) || null
+      : candidates[0] || null;
+    if (required && !selected) {
+      const leaderResult = results.find(result => result && result.ok && result.station === required.station);
+      const rawRequired = leaderResult && (leaderResult.posts || []).find(post => String(post.id) === required.id);
+      if (rawRequired) selected = {...rawRequired,_station:required.station};
+    }
     if (selected && !selected.imageUrl) {
       const orderedStations = [
         ...new Set([
@@ -590,7 +605,7 @@ module.exports = async function handler(req, res) {
       ok: false,
       complete: false,
       error: 'crew_news_incomplete',
-      policyVersion: 'representative-v6.11-server',
+      policyVersion: 'representative-v6.12-server',
       strictCrew: crew,
       requested: stations.length,
       failed: failures.length,
@@ -606,7 +621,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
-    policyVersion: 'representative-v6.11-server',
+    policyVersion: 'representative-v6.12-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
