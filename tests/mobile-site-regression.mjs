@@ -67,3 +67,5 @@ assert.match(css,/body\.feedback-open \.pwa-app-tabbar/,'feedback modal must dis
 new Function(js);
 
 console.log('Mobile site regression passed');
+
+assert.match(mobileCss,/\.pwa-dashboard-head>a\{[^}]*min-height:36px/,'mobile home dashboard record link must have a touch-safe target');
