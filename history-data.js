@@ -263,7 +263,7 @@ window.CHUNBONG_HISTORY_RECORDS = Object.freeze([
     sources:["google-sheet","content-archive"]
   },
   {
-    start:"2026-09-19", label:"그냥서버 : 적자생존 서버 설명회", kind:"주최", detailOnly:true,
+    start:"2026-09-19", label:"그냥서버 : 적자생존 서버 설명회", kind:"마인크래프트", detailOnly:true,
     detail:"Google Sheet와 춘봉 공개 방송 제목에서 9월 19일 서버 설명회가 교차 확인됩니다.",
     sources:["google-sheet","station-stream-title"]
   },
