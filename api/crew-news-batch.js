@@ -261,6 +261,7 @@ function strictCrewPost(post, crew, station) {
     title: compatibilityTitle,
     publishedAt: eventPublishedAt,
     sourcePublishedAt: post.publishedAt,
+    activityDate: resolvedActivityDate || String(post.publishedAt || '').slice(0, 10),
     contents: crew + ' ' + summary + '\n' + body,
     strictCrew: crew,
     strictActivity: summary,
@@ -487,6 +488,10 @@ module.exports = async function handler(req, res) {
       summary: selected.strictActivity,
       displaySummary: selected.displaySummary || selected.strictActivity,
       publishedAt: selected.publishedAt,
+      sourcePublishedAt: selected.sourcePublishedAt || selected.publishedAt,
+      activityDate: selected.activityDate || String(selected.publishedAt || '').slice(0, 10),
+      imageUrl: selected.imageUrl || '',
+      sheetImageUrl: selected.sheetImageUrl || '',
       representativeTier: selected.representativeTier,
       isCrewLeader: selected.isCrewLeader
     } : null,
