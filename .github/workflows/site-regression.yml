@@ -124,13 +124,858 @@ jobs:
         run: node tests/history-predeploy-audit-regression.mjs
       - name: Run broadcast history page regression
         run: node tests/broadcast-history-page-regression.mjs
-      - name: Run all regression tests
-        run: |
-          set -e
-          count=0
-          for file in tests/*.mjs; do
-            echo "==> $file"
-            node "$file"
-            count=$((count + 1))
-          done
-          echo "REGRESSION_TEST_FILES=$count"
+      - name: Test 1/285 00-site-header-visual-state-regression.mjs
+        if: always()
+        run: node tests/00-site-header-visual-state-regression.mjs
+      - name: Test 2/285 00-soop-play-html-live-regression.mjs
+        if: always()
+        run: node tests/00-soop-play-html-live-regression.mjs
+      - name: Test 3/285 000-pwa-cache-version-consistency.mjs
+        if: always()
+        run: node tests/000-pwa-cache-version-consistency.mjs
+      - name: Test 4/285 01-home-category-palette-regression.mjs
+        if: always()
+        run: node tests/01-home-category-palette-regression.mjs
+      - name: Test 5/285 accessibility-final-regression.mjs
+        if: always()
+        run: node tests/accessibility-final-regression.mjs
+      - name: Test 6/285 activity-center-regression.mjs
+        if: always()
+        run: node tests/activity-center-regression.mjs
+      - name: Test 7/285 analytics-redis-budget-regression.mjs
+        if: always()
+        run: node tests/analytics-redis-budget-regression.mjs
+      - name: Test 8/285 archive-source-meta-cache-regression.mjs
+        if: always()
+        run: node tests/archive-source-meta-cache-regression.mjs
+      - name: Test 9/285 broadcast-history-page-regression.mjs
+        if: always()
+        run: node tests/broadcast-history-page-regression.mjs
+      - name: Test 10/285 catch-page-source-regression.mjs
+        if: always()
+        run: node tests/catch-page-source-regression.mjs
+      - name: Test 11/285 catch-playback-schedule-removal-regression.mjs
+        if: always()
+        run: node tests/catch-playback-schedule-removal-regression.mjs
+      - name: Test 12/285 changelog-auto-summary-regression.mjs
+        if: always()
+        run: node tests/changelog-auto-summary-regression.mjs
+      - name: Test 13/285 changelog-history-api-regression.mjs
+        if: always()
+        run: node tests/changelog-history-api-regression.mjs
+      - name: Test 14/285 changelog-regression.mjs
+        if: always()
+        run: node tests/changelog-regression.mjs
+      - name: Test 15/285 chunbak-a-danger-tracker-regression.mjs
+        if: always()
+        run: node tests/chunbak-a-danger-tracker-regression.mjs
+      - name: Test 16/285 chunbak-asset-gate-regression.mjs
+        if: always()
+        run: node tests/chunbak-asset-gate-regression.mjs
+      - name: Test 17/285 chunbak-asset-vendor-regression.mjs
+        if: always()
+        run: node tests/chunbak-asset-vendor-regression.mjs
+      - name: Test 18/285 chunbak-assets-regression.mjs
+        if: always()
+        run: node tests/chunbak-assets-regression.mjs
+      - name: Test 19/285 chunbak-audio-regression.mjs
+        if: always()
+        run: node tests/chunbak-audio-regression.mjs
+      - name: Test 20/285 chunbak-effects-regression.mjs
+        if: always()
+        run: node tests/chunbak-effects-regression.mjs
+      - name: Test 21/285 chunbak-game-core-regression.mjs
+        if: always()
+        run: node tests/chunbak-game-core-regression.mjs
+      - name: Test 22/285 chunbak-immersive-postgame-integration-regression.mjs
+        if: always()
+        run: node tests/chunbak-immersive-postgame-integration-regression.mjs
+      - name: Test 23/285 chunbak-immersive-state-regression.mjs
+        if: always()
+        run: node tests/chunbak-immersive-state-regression.mjs
+      - name: Test 24/285 chunbak-pause-timing-regression.mjs
+        if: always()
+        run: node tests/chunbak-pause-timing-regression.mjs
+      - name: Test 25/285 chunbak-postgame-ranking-ui-regression.mjs
+        if: always()
+        run: node tests/chunbak-postgame-ranking-ui-regression.mjs
+      - name: Test 26/285 chunbak-production-smoke-source-regression.mjs
+        if: always()
+        run: node tests/chunbak-production-smoke-source-regression.mjs
+      - name: Test 27/285 chunbak-ranking-api-regression.mjs
+        if: always()
+        run: node tests/chunbak-ranking-api-regression.mjs
+      - name: Test 28/285 chunbak-ranking-core-regression.mjs
+        if: always()
+        run: node tests/chunbak-ranking-core-regression.mjs
+      - name: Test 29/285 chunbak-ranking-function-budget-regression.mjs
+        if: always()
+        run: node tests/chunbak-ranking-function-budget-regression.mjs
+      - name: Test 30/285 chunbak-ranking-ui-regression.mjs
+        if: always()
+        run: node tests/chunbak-ranking-ui-regression.mjs
+      - name: Test 31/285 chunbak-responsive-regression.mjs
+        if: always()
+        run: node tests/chunbak-responsive-regression.mjs
+      - name: Test 32/285 chunbak-runtime-source-regression.mjs
+        if: always()
+        run: node tests/chunbak-runtime-source-regression.mjs
+      - name: Test 33/285 chunbak-ui-regression.mjs
+        if: always()
+        run: node tests/chunbak-ui-regression.mjs
+      - name: Test 34/285 chunbong-contents-browser-smoke.mjs
+        if: always()
+        run: node tests/chunbong-contents-browser-smoke.mjs
+      - name: Test 35/285 chunbong-contents-data-regression.mjs
+        if: always()
+        run: node tests/chunbong-contents-data-regression.mjs
+      - name: Test 36/285 chunbong-contents-operator-regression.mjs
+        if: always()
+        run: node tests/chunbong-contents-operator-regression.mjs
+      - name: Test 37/285 chunbong-contents-regression.mjs
+        if: always()
+        run: node tests/chunbong-contents-regression.mjs
+      - name: Test 38/285 chunbong-data-api-regression.mjs
+        if: always()
+        run: node tests/chunbong-data-api-regression.mjs
+      - name: Test 39/285 chunbong-data-consistency-fix-regression.mjs
+        if: always()
+        run: node tests/chunbong-data-consistency-fix-regression.mjs
+      - name: Test 40/285 chunbong-data-snapshot-order-regression.mjs
+        if: always()
+        run: node tests/chunbong-data-snapshot-order-regression.mjs
+      - name: Test 41/285 chunbong-data-snapshot-regression.mjs
+        if: always()
+        run: node tests/chunbong-data-snapshot-regression.mjs
+      - name: Test 42/285 chunbong-data-ui-regression.mjs
+        if: always()
+        run: node tests/chunbong-data-ui-regression.mjs
+      - name: Test 43/285 chunbong-data-youtube-engagement-regression.mjs
+        if: always()
+        run: node tests/chunbong-data-youtube-engagement-regression.mjs
+      - name: Test 44/285 chuncortile-core-regression.mjs
+        if: always()
+        run: node tests/chuncortile-core-regression.mjs
+      - name: Test 45/285 chuncortile-multiplayer-ui-regression.mjs
+        if: always()
+        run: node tests/chuncortile-multiplayer-ui-regression.mjs
+      - name: Test 46/285 chuncortile-ranking-regression.mjs
+        if: always()
+        run: node tests/chuncortile-ranking-regression.mjs
+      - name: Test 47/285 chuncortile-static-regression.mjs
+        if: always()
+        run: node tests/chuncortile-static-regression.mjs
+      - name: Test 48/285 chungwagame-grid-visibility-regression.mjs
+        if: always()
+        run: node tests/chungwagame-grid-visibility-regression.mjs
+      - name: Test 49/285 chungwagame-postgame-ranking-ui-regression.mjs
+        if: always()
+        run: node tests/chungwagame-postgame-ranking-ui-regression.mjs
+      - name: Test 50/285 chungwagame-ranking-api-regression.mjs
+        if: always()
+        run: node tests/chungwagame-ranking-api-regression.mjs
+      - name: Test 51/285 chungwagame-ranking-core-regression.mjs
+        if: always()
+        run: node tests/chungwagame-ranking-core-regression.mjs
+      - name: Test 52/285 chungwagame-static.test.mjs
+        if: always()
+        run: node tests/chungwagame-static.test.mjs
+      - name: Test 53/285 chuntris-assets-regression.mjs
+        if: always()
+        run: node tests/chuntris-assets-regression.mjs
+      - name: Test 54/285 chuntris-audio-effects-regression.mjs
+        if: always()
+        run: node tests/chuntris-audio-effects-regression.mjs
+      - name: Test 55/285 chuntris-audio-regression.mjs
+        if: always()
+        run: node tests/chuntris-audio-regression.mjs
+      - name: Test 56/285 chuntris-chunbak-board-start-ui-regression.mjs
+        if: always()
+        run: node tests/chuntris-chunbak-board-start-ui-regression.mjs
+      - name: Test 57/285 chuntris-ci-regression.mjs
+        if: always()
+        run: node tests/chuntris-ci-regression.mjs
+      - name: Test 58/285 chuntris-effects-regression.mjs
+        if: always()
+        run: node tests/chuntris-effects-regression.mjs
+      - name: Test 59/285 chuntris-engine-controls-regression.mjs
+        if: always()
+        run: node tests/chuntris-engine-controls-regression.mjs
+      - name: Test 60/285 chuntris-engine-core-regression.mjs
+        if: always()
+        run: node tests/chuntris-engine-core-regression.mjs
+      - name: Test 61/285 chuntris-engine-scoring-regression.mjs
+        if: always()
+        run: node tests/chuntris-engine-scoring-regression.mjs
+      - name: Test 62/285 chuntris-flow-regression.mjs
+        if: always()
+        run: node tests/chuntris-flow-regression.mjs
+      - name: Test 63/285 chuntris-fullscreen-layout.mjs
+        if: always()
+        run: node tests/chuntris-fullscreen-layout.mjs
+      - name: Test 64/285 chuntris-immersive-ui-regression.mjs
+        if: always()
+        run: node tests/chuntris-immersive-ui-regression.mjs
+      - name: Test 65/285 chuntris-inline-play-regression.mjs
+        if: always()
+        run: node tests/chuntris-inline-play-regression.mjs
+      - name: Test 66/285 chuntris-modal-pause-regression.mjs
+        if: always()
+        run: node tests/chuntris-modal-pause-regression.mjs
+      - name: Test 67/285 chuntris-navigation-regression.mjs
+        if: always()
+        run: node tests/chuntris-navigation-regression.mjs
+      - name: Test 68/285 chuntris-postgame-ranking-ui-regression.mjs
+        if: always()
+        run: node tests/chuntris-postgame-ranking-ui-regression.mjs
+      - name: Test 69/285 chuntris-production-smoke-source-regression.mjs
+        if: always()
+        run: node tests/chuntris-production-smoke-source-regression.mjs
+      - name: Test 70/285 chuntris-ranking-api-regression.mjs
+        if: always()
+        run: node tests/chuntris-ranking-api-regression.mjs
+      - name: Test 71/285 chuntris-ranking-core-regression.mjs
+        if: always()
+        run: node tests/chuntris-ranking-core-regression.mjs
+      - name: Test 72/285 chuntris-ranking-function-budget-regression.mjs
+        if: always()
+        run: node tests/chuntris-ranking-function-budget-regression.mjs
+      - name: Test 73/285 chuntris-ranking-ui-regression.mjs
+        if: always()
+        run: node tests/chuntris-ranking-ui-regression.mjs
+      - name: Test 74/285 chuntris-responsive-quality-regression.mjs
+        if: always()
+        run: node tests/chuntris-responsive-quality-regression.mjs
+      - name: Test 75/285 chuntris-runtime-regression.mjs
+        if: always()
+        run: node tests/chuntris-runtime-regression.mjs
+      - name: Test 76/285 chuntris-short-height-regression.mjs
+        if: always()
+        run: node tests/chuntris-short-height-regression.mjs
+      - name: Test 77/285 chuntris-ui-regression.mjs
+        if: always()
+        run: node tests/chuntris-ui-regression.mjs
+      - name: Test 78/285 ci-main-regression-dedupe.mjs
+        if: always()
+        run: node tests/ci-main-regression-dedupe.mjs
+      - name: Test 79/285 ci-runtime-consistency-audit.mjs
+        if: always()
+        run: node tests/ci-runtime-consistency-audit.mjs
+      - name: Test 80/285 clips-hero-banner-regression.mjs
+        if: always()
+        run: node tests/clips-hero-banner-regression.mjs
+      - name: Test 81/285 content-archive-full-output-audit.mjs
+        if: always()
+        run: node tests/content-archive-full-output-audit.mjs
+      - name: Test 82/285 content-archive-promote-workflow-regression.mjs
+        if: always()
+        run: node tests/content-archive-promote-workflow-regression.mjs
+      - name: Test 83/285 content-archive-public-sync-regression.mjs
+        if: always()
+        run: node tests/content-archive-public-sync-regression.mjs
+      - name: Test 84/285 content-knowledge-archive.mjs
+        if: always()
+        run: node tests/content-knowledge-archive.mjs
+      - name: Test 85/285 content-regression.mjs
+        if: always()
+        run: node tests/content-regression.mjs
+      - name: Test 86/285 content-request-coalescing-regression.mjs
+        if: always()
+        run: node tests/content-request-coalescing-regression.mjs
+      - name: Test 87/285 content-source-media-regression.mjs
+        if: always()
+        run: node tests/content-source-media-regression.mjs
+      - name: Test 88/285 daily-fortune-crystal-spin-regression.mjs
+        if: always()
+        run: node tests/daily-fortune-crystal-spin-regression.mjs
+      - name: Test 89/285 daily-fortune-css-budget-regression.mjs
+        if: always()
+        run: node tests/daily-fortune-css-budget-regression.mjs
+      - name: Test 90/285 daily-fortune-foil-sticker-regression.mjs
+        if: always()
+        run: node tests/daily-fortune-foil-sticker-regression.mjs
+      - name: Test 91/285 daily-fortune-micro-foil-regression.mjs
+        if: always()
+        run: node tests/daily-fortune-micro-foil-regression.mjs
+      - name: Test 92/285 daily-fortune-regression.mjs
+        if: always()
+        run: node tests/daily-fortune-regression.mjs
+      - name: Test 93/285 data-api-compact-counts-regression.mjs
+        if: always()
+        run: node tests/data-api-compact-counts-regression.mjs
+      - name: Test 94/285 data-calendar-month-switch-regression.mjs
+        if: always()
+        run: node tests/data-calendar-month-switch-regression.mjs
+      - name: Test 95/285 data-calendar-monthly-counts-regression.mjs
+        if: always()
+        run: node tests/data-calendar-monthly-counts-regression.mjs
+      - name: Test 96/285 data-dashboard-instant-load-regression.mjs
+        if: always()
+        run: node tests/data-dashboard-instant-load-regression.mjs
+      - name: Test 97/285 data-dashboard-period-selector-v2-regression.mjs
+        if: always()
+        run: node tests/data-dashboard-period-selector-v2-regression.mjs
+      - name: Test 98/285 data-dashboard-soop-periods-regression.mjs
+        if: always()
+        run: node tests/data-dashboard-soop-periods-regression.mjs
+      - name: Test 99/285 data-dashboard-trackify-ux-regression.mjs
+        if: always()
+        run: node tests/data-dashboard-trackify-ux-regression.mjs
+      - name: Test 100/285 data-dashboard-ui-reliability-regression.mjs
+        if: always()
+        run: node tests/data-dashboard-ui-reliability-regression.mjs
+      - name: Test 101/285 data-enhancements-observer-regression.mjs
+        if: always()
+        run: node tests/data-enhancements-observer-regression.mjs
+      - name: Test 102/285 data-hero-banner-regression.mjs
+        if: always()
+        run: node tests/data-hero-banner-regression.mjs
+      - name: Test 103/285 data-soop-display-regression.mjs
+        if: always()
+        run: node tests/data-soop-display-regression.mjs
+      - name: Test 104/285 data-youtube-engagement-ui-regression.mjs
+        if: always()
+        run: node tests/data-youtube-engagement-ui-regression.mjs
+      - name: Test 105/285 deployment-candidate-guard.mjs
+        if: always()
+        run: node tests/deployment-candidate-guard.mjs
+      - name: Test 106/285 deployment-runtime-sync-regression.mjs
+        if: always()
+        run: node tests/deployment-runtime-sync-regression.mjs
+      - name: Test 107/285 deployment-safety-regression.mjs
+        if: always()
+        run: node tests/deployment-safety-regression.mjs
+      - name: Test 108/285 external-cache-budget-regression.mjs
+        if: always()
+        run: node tests/external-cache-budget-regression.mjs
+      - name: Test 109/285 external-stale-fallback-fault-regression.mjs
+        if: always()
+        run: node tests/external-stale-fallback-fault-regression.mjs
+      - name: Test 110/285 fan-hub-daily-utility-regression.mjs
+        if: always()
+        run: node tests/fan-hub-daily-utility-regression.mjs
+      - name: Test 111/285 fan-hub-improvements-regression.mjs
+        if: always()
+        run: node tests/fan-hub-improvements-regression.mjs
+      - name: Test 112/285 fanart-gallery-regression.mjs
+        if: always()
+        run: node tests/fanart-gallery-regression.mjs
+      - name: Test 113/285 fanart-hero-banner-regression.mjs
+        if: always()
+        run: node tests/fanart-hero-banner-regression.mjs
+      - name: Test 114/285 fansite-runtime-improvement-regression.mjs
+        if: always()
+        run: node tests/fansite-runtime-improvement-regression.mjs
+      - name: Test 115/285 history-hero-banner-regression.mjs
+        if: always()
+        run: node tests/history-hero-banner-regression.mjs
+      - name: Test 116/285 history-predeploy-audit-regression.mjs
+        if: always()
+        run: node tests/history-predeploy-audit-regression.mjs
+      - name: Test 117/285 home-channel-buttons-regression.mjs
+        if: always()
+        run: node tests/home-channel-buttons-regression.mjs
+      - name: Test 118/285 home-dday-links-regression.mjs
+        if: always()
+        run: node tests/home-dday-links-regression.mjs
+      - name: Test 119/285 home-nav-order-regression.mjs
+        if: always()
+        run: node tests/home-nav-order-regression.mjs
+      - name: Test 120/285 image-quality-preservation-regression.mjs
+        if: always()
+        run: node tests/image-quality-preservation-regression.mjs
+      - name: Test 121/285 live-overrides-regression.mjs
+        if: always()
+        run: node tests/live-overrides-regression.mjs
+      - name: Test 122/285 live-preview-routing-regression.mjs
+        if: always()
+        run: node tests/live-preview-routing-regression.mjs
+      - name: Test 123/285 live-schedule-notice-catch-regression.mjs
+        if: always()
+        run: node tests/live-schedule-notice-catch-regression.mjs
+      - name: Test 124/285 media-notice-schedule-regression.mjs
+        if: always()
+        run: node tests/media-notice-schedule-regression.mjs
+      - name: Test 125/285 minigame-layout-followup-regression.mjs
+        if: always()
+        run: node tests/minigame-layout-followup-regression.mjs
+      - name: Test 126/285 minigame-layout-tiles-landscape-regression.mjs
+        if: always()
+        run: node tests/minigame-layout-tiles-landscape-regression.mjs
+      - name: Test 127/285 minigame-multiplayer-api-regression.mjs
+        if: always()
+        run: node tests/minigame-multiplayer-api-regression.mjs
+      - name: Test 128/285 minigame-multiplayer-ui-regression.mjs
+        if: always()
+        run: node tests/minigame-multiplayer-ui-regression.mjs
+      - name: Test 129/285 minigame-navigation-and-chuntris-restart-regression.mjs
+        if: always()
+        run: node tests/minigame-navigation-and-chuntris-restart-regression.mjs
+      - name: Test 130/285 minigame-production-asset-verification-regression.mjs
+        if: always()
+        run: node tests/minigame-production-asset-verification-regression.mjs
+      - name: Test 131/285 minigame-profile-regression.mjs
+        if: always()
+        run: node tests/minigame-profile-regression.mjs
+      - name: Test 132/285 minigame-score-race-multiplayer-regression.mjs
+        if: always()
+        run: node tests/minigame-score-race-multiplayer-regression.mjs
+      - name: Test 133/285 minigames-hero-regression.mjs
+        if: always()
+        run: node tests/minigames-hero-regression.mjs
+      - name: Test 134/285 minigames-navigation-regression.mjs
+        if: always()
+        run: node tests/minigames-navigation-regression.mjs
+      - name: Test 135/285 mobile-app-shell-v2-regression.mjs
+        if: always()
+        run: node tests/mobile-app-shell-v2-regression.mjs
+      - name: Test 136/285 mobile-finish-regression.mjs
+        if: always()
+        run: node tests/mobile-finish-regression.mjs
+      - name: Test 137/285 mobile-header-autohide-regression.mjs
+        if: always()
+        run: node tests/mobile-header-autohide-regression.mjs
+      - name: Test 138/285 mobile-header-single-row-regression.mjs
+        if: always()
+        run: node tests/mobile-header-single-row-regression.mjs
+      - name: Test 139/285 mobile-minigames-regression.mjs
+        if: always()
+        run: node tests/mobile-minigames-regression.mjs
+      - name: Test 140/285 mobile-pwa-wave1-regression.mjs
+        if: always()
+        run: node tests/mobile-pwa-wave1-regression.mjs
+      - name: Test 141/285 mobile-site-regression.mjs
+        if: always()
+        run: node tests/mobile-site-regression.mjs
+      - name: Test 142/285 mobile-wave2-regression.mjs
+        if: always()
+        run: node tests/mobile-wave2-regression.mjs
+      - name: Test 143/285 multipage-smoke.mjs
+        if: always()
+        run: node tests/multipage-smoke.mjs
+      - name: Test 144/285 namuwiki-guide-image-proxy-regression.mjs
+        if: always()
+        run: node tests/namuwiki-guide-image-proxy-regression.mjs
+      - name: Test 145/285 navigation-performance-regression.mjs
+        if: always()
+        run: node tests/navigation-performance-regression.mjs
+      - name: Test 146/285 notice-board-schedule-live-regression.mjs
+        if: always()
+        run: node tests/notice-board-schedule-live-regression.mjs
+      - name: Test 147/285 notice-detail-regression.mjs
+        if: always()
+        run: node tests/notice-detail-regression.mjs
+      - name: Test 148/285 notice-hero-banner-regression.mjs
+        if: always()
+        run: node tests/notice-hero-banner-regression.mjs
+      - name: Test 149/285 notice-schedule-enhancements-regression.mjs
+        if: always()
+        run: node tests/notice-schedule-enhancements-regression.mjs
+      - name: Test 150/285 notice-single-board-regression.mjs
+        if: always()
+        run: node tests/notice-single-board-regression.mjs
+      - name: Test 151/285 notion-guide-image-proxy-regression.mjs
+        if: always()
+        run: node tests/notion-guide-image-proxy-regression.mjs
+      - name: Test 152/285 operator-center-1-2-regression.mjs
+        if: always()
+        run: node tests/operator-center-1-2-regression.mjs
+      - name: Test 153/285 operator-center-1-3-regression.mjs
+        if: always()
+        run: node tests/operator-center-1-3-regression.mjs
+      - name: Test 154/285 operator-center-1-4-regression.mjs
+        if: always()
+        run: node tests/operator-center-1-4-regression.mjs
+      - name: Test 155/285 operator-center-1-5-regression.mjs
+        if: always()
+        run: node tests/operator-center-1-5-regression.mjs
+      - name: Test 156/285 operator-center-1-6-regression.mjs
+        if: always()
+        run: node tests/operator-center-1-6-regression.mjs
+      - name: Test 157/285 operator-center-1-7-regression.mjs
+        if: always()
+        run: node tests/operator-center-1-7-regression.mjs
+      - name: Test 158/285 operator-center-1-8-regression.mjs
+        if: always()
+        run: node tests/operator-center-1-8-regression.mjs
+      - name: Test 159/285 operator-center-1-9-regression.mjs
+        if: always()
+        run: node tests/operator-center-1-9-regression.mjs
+      - name: Test 160/285 operator-center-regression.mjs
+        if: always()
+        run: node tests/operator-center-regression.mjs
+      - name: Test 161/285 operator-center-runtime-regression.mjs
+        if: always()
+        run: node tests/operator-center-runtime-regression.mjs
+      - name: Test 162/285 operator-content-archive-ux-regression.mjs
+        if: always()
+        run: node tests/operator-content-archive-ux-regression.mjs
+      - name: Test 163/285 operator-multiplayer-diagnostics-regression.mjs
+        if: always()
+        run: node tests/operator-multiplayer-diagnostics-regression.mjs
+      - name: Test 164/285 operator-redis-diagnostic-safety-regression.mjs
+        if: always()
+        run: node tests/operator-redis-diagnostic-safety-regression.mjs
+      - name: Test 165/285 operator-resource-budget-visibility-regression.mjs
+        if: always()
+        run: node tests/operator-resource-budget-visibility-regression.mjs
+      - name: Test 166/285 operator-session-redis-budget-regression.mjs
+        if: always()
+        run: node tests/operator-session-redis-budget-regression.mjs
+      - name: Test 167/285 page-runtime-split-regression.mjs
+        if: always()
+        run: node tests/page-runtime-split-regression.mjs
+      - name: Test 168/285 performance-hotpaths-regression.mjs
+        if: always()
+        run: node tests/performance-hotpaths-regression.mjs
+      - name: Test 169/285 performance-v24-regression.mjs
+        if: always()
+        run: node tests/performance-v24-regression.mjs
+      - name: Test 170/285 personal-hub-regression.mjs
+        if: always()
+        run: node tests/personal-hub-regression.mjs
+      - name: Test 171/285 postdeploy-smoke-contract.mjs
+        if: always()
+        run: node tests/postdeploy-smoke-contract.mjs
+      - name: Test 172/285 predeploy-browser-accessibility.mjs
+        if: always()
+        run: node tests/predeploy-browser-accessibility.mjs
+      - name: Test 173/285 predeploy-browser-quality.mjs
+        if: always()
+        run: node tests/predeploy-browser-quality.mjs
+      - name: Test 174/285 predeploy-loading-theme-gate.mjs
+        if: always()
+        run: node tests/predeploy-loading-theme-gate.mjs
+      - name: Test 175/285 predeploy-pwa-integrity-gate.mjs
+        if: always()
+        run: node tests/predeploy-pwa-integrity-gate.mjs
+      - name: Test 176/285 predeploy-repository-integrity.mjs
+        if: always()
+        run: node tests/predeploy-repository-integrity.mjs
+      - name: Test 177/285 predeploy-static-quality-gate.mjs
+        if: always()
+        run: node tests/predeploy-static-quality-gate.mjs
+      - name: Test 178/285 production-asset-verification-regression.mjs
+        if: always()
+        run: node tests/production-asset-verification-regression.mjs
+      - name: Test 179/285 production-auto-retry-regression.mjs
+        if: always()
+        run: node tests/production-auto-retry-regression.mjs
+      - name: Test 180/285 production-git-auto-retry-regression.mjs
+        if: always()
+        run: node tests/production-git-auto-retry-regression.mjs
+      - name: Test 181/285 production-rate-limit-fast-fail-regression.mjs
+        if: always()
+        run: node tests/production-rate-limit-fast-fail-regression.mjs
+      - name: Test 182/285 production-readonly-smoke-spec.mjs
+        if: always()
+        run: node tests/production-readonly-smoke-spec.mjs
+      - name: Test 183/285 production-smoke-ci-regression.mjs
+        if: always()
+        run: node tests/production-smoke-ci-regression.mjs
+      - name: Test 184/285 push-dispatch-oidc-regression.mjs
+        if: always()
+        run: node tests/push-dispatch-oidc-regression.mjs
+      - name: Test 185/285 push-redis-budget-regression.mjs
+        if: always()
+        run: node tests/push-redis-budget-regression.mjs
+      - name: Test 186/285 pwa-cache-consistency-regression.mjs
+        if: always()
+        run: node tests/pwa-cache-consistency-regression.mjs
+      - name: Test 187/285 pwa-name-regression.mjs
+        if: always()
+        run: node tests/pwa-name-regression.mjs
+      - name: Test 188/285 pwa-offline-wave1-regression.mjs
+        if: always()
+        run: node tests/pwa-offline-wave1-regression.mjs
+      - name: Test 189/285 pwa-regression.mjs
+        if: always()
+        run: node tests/pwa-regression.mjs
+      - name: Test 190/285 recent-update-browser-audit.mjs
+        if: always()
+        run: node tests/recent-update-browser-audit.mjs
+      - name: Test 191/285 recovery-mode-quota-history-regression.mjs
+        if: always()
+        run: node tests/recovery-mode-quota-history-regression.mjs
+      - name: Test 192/285 recovery-mode-rehearsal-regression.mjs
+        if: always()
+        run: node tests/recovery-mode-rehearsal-regression.mjs
+      - name: Test 193/285 redirect-loop-regression.mjs
+        if: always()
+        run: node tests/redirect-loop-regression.mjs
+      - name: Test 194/285 redis-env-pair-regression.mjs
+        if: always()
+        run: node tests/redis-env-pair-regression.mjs
+      - name: Test 195/285 repository-cleanliness-guard.mjs
+        if: always()
+        run: node tests/repository-cleanliness-guard.mjs
+      - name: Test 196/285 schedule-hero-banner-regression.mjs
+        if: always()
+        run: node tests/schedule-hero-banner-regression.mjs
+      - name: Test 197/285 schedule-live-refresh-regression.mjs
+        if: always()
+        run: node tests/schedule-live-refresh-regression.mjs
+      - name: Test 198/285 schedule-navigation-recent-session-metrics-regression.mjs
+        if: always()
+        run: node tests/schedule-navigation-recent-session-metrics-regression.mjs
+      - name: Test 199/285 score-game-viewport-fit-regression.mjs
+        if: always()
+        run: node tests/score-game-viewport-fit-regression.mjs
+      - name: Test 200/285 seo-canonical-regression.mjs
+        if: always()
+        run: node tests/seo-canonical-regression.mjs
+      - name: Test 201/285 site-css-dedupe-v23-regression.mjs
+        if: always()
+        run: node tests/site-css-dedupe-v23-regression.mjs
+      - name: Test 202/285 site-design-system-regression.mjs
+        if: always()
+        run: node tests/site-design-system-regression.mjs
+      - name: Test 203/285 site-page-accent-regression.mjs
+        if: always()
+        run: node tests/site-page-accent-regression.mjs
+      - name: Test 204/285 site-polish-regression.mjs
+        if: always()
+        run: node tests/site-polish-regression.mjs
+      - name: Test 205/285 site-polish-round2-regression.mjs
+        if: always()
+        run: node tests/site-polish-round2-regression.mjs
+      - name: Test 206/285 site-quality-followup-regression.mjs
+        if: always()
+        run: node tests/site-quality-followup-regression.mjs
+      - name: Test 207/285 site-quality-regression.mjs
+        if: always()
+        run: node tests/site-quality-regression.mjs
+      - name: Test 208/285 site-search-home-regression.mjs
+        if: always()
+        run: node tests/site-search-home-regression.mjs
+      - name: Test 209/285 site-shell-regression.mjs
+        if: always()
+        run: node tests/site-shell-regression.mjs
+      - name: Test 210/285 site-smoke.mjs
+        if: always()
+        run: node tests/site-smoke.mjs
+      - name: Test 211/285 site-structure-performance-v21-regression.mjs
+        if: always()
+        run: node tests/site-structure-performance-v21-regression.mjs
+      - name: Test 212/285 site-structure-performance-v22-regression.mjs
+        if: always()
+        run: node tests/site-structure-performance-v22-regression.mjs
+      - name: Test 213/285 site-text-contrast-regression.mjs
+        if: always()
+        run: node tests/site-text-contrast-regression.mjs
+      - name: Test 214/285 site-update-smoke.mjs
+        if: always()
+        run: node tests/site-update-smoke.mjs
+      - name: Test 215/285 sitewide-visual-system-regression.mjs
+        if: always()
+        run: node tests/sitewide-visual-system-regression.mjs
+      - name: Test 216/285 soop-adaptive-telemetry-budget-regression.mjs
+        if: always()
+        run: node tests/soop-adaptive-telemetry-budget-regression.mjs
+      - name: Test 217/285 soop-analytics-regression.mjs
+        if: always()
+        run: node tests/soop-analytics-regression.mjs
+      - name: Test 218/285 soop-content-compaction-regression.mjs
+        if: always()
+        run: node tests/soop-content-compaction-regression.mjs
+      - name: Test 219/285 soop-dashboard-smoke-snapshot-trigger-regression.mjs
+        if: always()
+        run: node tests/soop-dashboard-smoke-snapshot-trigger-regression.mjs
+      - name: Test 220/285 soop-dashboard-smoke-v3-regression.mjs
+        if: always()
+        run: node tests/soop-dashboard-smoke-v3-regression.mjs
+      - name: Test 221/285 soop-external-backfill-regression.mjs
+        if: always()
+        run: node tests/soop-external-backfill-regression.mjs
+      - name: Test 222/285 soop-external-sources-regression.mjs
+        if: always()
+        run: node tests/soop-external-sources-regression.mjs
+      - name: Test 223/285 soop-favorite-collector-regression.mjs
+        if: always()
+        run: node tests/soop-favorite-collector-regression.mjs
+      - name: Test 224/285 soop-follower-history-regression.mjs
+        if: always()
+        run: node tests/soop-follower-history-regression.mjs
+      - name: Test 225/285 soop-live-category-periods-regression.mjs
+        if: always()
+        run: node tests/soop-live-category-periods-regression.mjs
+      - name: Test 226/285 soop-live-state-regression.mjs
+        if: always()
+        run: node tests/soop-live-state-regression.mjs
+      - name: Test 227/285 soop-strict-schedule-catch-regression.mjs
+        if: always()
+        run: node tests/soop-strict-schedule-catch-regression.mjs
+      - name: Test 228/285 soop-telemetry-regression.mjs
+        if: always()
+        run: node tests/soop-telemetry-regression.mjs
+      - name: Test 229/285 soop-telemetry-workflow-regression.mjs
+        if: always()
+        run: node tests/soop-telemetry-workflow-regression.mjs
+      - name: Test 230/285 tarot-00-vector-composite-regression.mjs
+        if: always()
+        run: node tests/tarot-00-vector-composite-regression.mjs
+      - name: Test 231/285 tarot-01-vector-production-smoke-regression.mjs
+        if: always()
+        run: node tests/tarot-01-vector-production-smoke-regression.mjs
+      - name: Test 232/285 tarot-ai-api-regression.mjs
+        if: always()
+        run: node tests/tarot-ai-api-regression.mjs
+      - name: Test 233/285 tarot-assets-regression.mjs
+        if: always()
+        run: node tests/tarot-assets-regression.mjs
+      - name: Test 234/285 tarot-card-sfx-volume-regression.mjs
+        if: always()
+        run: node tests/tarot-card-sfx-volume-regression.mjs
+      - name: Test 235/285 tarot-clarity-numbered-backs-regression.mjs
+        if: always()
+        run: node tests/tarot-clarity-numbered-backs-regression.mjs
+      - name: Test 236/285 tarot-crop-optimization-regression.mjs
+        if: always()
+        run: node tests/tarot-crop-optimization-regression.mjs
+      - name: Test 237/285 tarot-css-bundle-regression.mjs
+        if: always()
+        run: node tests/tarot-css-bundle-regression.mjs
+      - name: Test 238/285 tarot-dead-css-cleanup-regression.mjs
+        if: always()
+        run: node tests/tarot-dead-css-cleanup-regression.mjs
+      - name: Test 239/285 tarot-effects-audio-regression.mjs
+        if: always()
+        run: node tests/tarot-effects-audio-regression.mjs
+      - name: Test 240/285 tarot-expanded-api-regression.mjs
+        if: always()
+        run: node tests/tarot-expanded-api-regression.mjs
+      - name: Test 241/285 tarot-expanded-data-regression.mjs
+        if: always()
+        run: node tests/tarot-expanded-data-regression.mjs
+      - name: Test 242/285 tarot-expanded-integration-regression.mjs
+        if: always()
+        run: node tests/tarot-expanded-integration-regression.mjs
+      - name: Test 243/285 tarot-expanded-ui-regression.mjs
+        if: always()
+        run: node tests/tarot-expanded-ui-regression.mjs
+      - name: Test 244/285 tarot-hero-banner-regression.mjs
+        if: always()
+        run: node tests/tarot-hero-banner-regression.mjs
+      - name: Test 245/285 tarot-js-bundle-regression.mjs
+        if: always()
+        run: node tests/tarot-js-bundle-regression.mjs
+      - name: Test 246/285 tarot-korean-particle-regression.mjs
+        if: always()
+        run: node tests/tarot-korean-particle-regression.mjs
+      - name: Test 247/285 tarot-local-free-ui-regression.mjs
+        if: always()
+        run: node tests/tarot-local-free-ui-regression.mjs
+      - name: Test 248/285 tarot-luxury-foil-zoom-regression.mjs
+        if: always()
+        run: node tests/tarot-luxury-foil-zoom-regression.mjs
+      - name: Test 249/285 tarot-mobile-quick-browser.mjs
+        if: always()
+        run: node tests/tarot-mobile-quick-browser.mjs
+      - name: Test 250/285 tarot-natural-consultant-copy-regression.mjs
+        if: always()
+        run: node tests/tarot-natural-consultant-copy-regression.mjs
+      - name: Test 251/285 tarot-obsolete-assets-regression.mjs
+        if: always()
+        run: node tests/tarot-obsolete-assets-regression.mjs
+      - name: Test 252/285 tarot-production-smoke-selector-regression.mjs
+        if: always()
+        run: node tests/tarot-production-smoke-selector-regression.mjs
+      - name: Test 253/285 tarot-regression.mjs
+        if: always()
+        run: node tests/tarot-regression.mjs
+      - name: Test 254/285 tarot-reselect-quality-regression.mjs
+        if: always()
+        run: node tests/tarot-reselect-quality-regression.mjs
+      - name: Test 255/285 tarot-selection-fortune-frame-regression.mjs
+        if: always()
+        run: node tests/tarot-selection-fortune-frame-regression.mjs
+      - name: Test 256/285 tarot-selection-modes-regression.mjs
+        if: always()
+        run: node tests/tarot-selection-modes-regression.mjs
+      - name: Test 257/285 tarot-sfx-v2-regression.mjs
+        if: always()
+        run: node tests/tarot-sfx-v2-regression.mjs
+      - name: Test 258/285 tarot-topic-journal-my-header-regression.mjs
+        if: always()
+        run: node tests/tarot-topic-journal-my-header-regression.mjs
+      - name: Test 259/285 tarot-topic-spread-reading-v3-regression.mjs
+        if: always()
+        run: node tests/tarot-topic-spread-reading-v3-regression.mjs
+      - name: Test 260/285 tarot-uploaded-original-art-regression.mjs
+        if: always()
+        run: node tests/tarot-uploaded-original-art-regression.mjs
+      - name: Test 261/285 theme-toggle-regression.mjs
+        if: always()
+        run: node tests/theme-toggle-regression.mjs
+      - name: Test 262/285 timeline-removal-regression.mjs
+        if: always()
+        run: node tests/timeline-removal-regression.mjs
+      - name: Test 263/285 trackify-cache-regression.mjs
+        if: always()
+        run: node tests/trackify-cache-regression.mjs
+      - name: Test 264/285 trackify-history-regression.mjs
+        if: always()
+        run: node tests/trackify-history-regression.mjs
+      - name: Test 265/285 trackify-summary-regression.mjs
+        if: always()
+        run: node tests/trackify-summary-regression.mjs
+      - name: Test 266/285 unused-oidc-dependency-regression.mjs
+        if: always()
+        run: node tests/unused-oidc-dependency-regression.mjs
+      - name: Test 267/285 ux-simplification-regression.mjs
+        if: always()
+        run: node tests/ux-simplification-regression.mjs
+      - name: Test 268/285 vercel-function-count-regression.mjs
+        if: always()
+        run: node tests/vercel-function-count-regression.mjs
+      - name: Test 269/285 vercel-hobby-recovery-regression.mjs
+        if: always()
+        run: node tests/vercel-hobby-recovery-regression.mjs
+      - name: Test 270/285 vercel-ignore-build-regression.mjs
+        if: always()
+        run: node tests/vercel-ignore-build-regression.mjs
+      - name: Test 271/285 vercel-node-runtime-regression.mjs
+        if: always()
+        run: node tests/vercel-node-runtime-regression.mjs
+      - name: Test 272/285 vercel-preview-guard-regression.mjs
+        if: always()
+        run: node tests/vercel-preview-guard-regression.mjs
+      - name: Test 273/285 vercel-preview-workflow-guard-regression.mjs
+        if: always()
+        run: node tests/vercel-preview-workflow-guard-regression.mjs
+      - name: Test 274/285 visual-layout-audit.mjs
+        if: always()
+        run: node tests/visual-layout-audit.mjs
+      - name: Test 275/285 vod-hero-banner-regression.mjs
+        if: always()
+        run: node tests/vod-hero-banner-regression.mjs
+      - name: Test 276/285 whatwg-request-query-regression.mjs
+        if: always()
+        run: node tests/whatwg-request-query-regression.mjs
+      - name: Test 277/285 workflow-permission-audit.mjs
+        if: always()
+        run: node tests/workflow-permission-audit.mjs
+      - name: Test 278/285 workflow-routing-regression.mjs
+        if: always()
+        run: node tests/workflow-routing-regression.mjs
+      - name: Test 279/285 youtube-data-regression.mjs
+        if: always()
+        run: node tests/youtube-data-regression.mjs
+      - name: Test 280/285 youtube-engagement-cache-regression.mjs
+        if: always()
+        run: node tests/youtube-engagement-cache-regression.mjs
+      - name: Test 281/285 youtube-engagement-fetch-regression.mjs
+        if: always()
+        run: node tests/youtube-engagement-fetch-regression.mjs
+      - name: Test 282/285 youtube-engagement-regression.mjs
+        if: always()
+        run: node tests/youtube-engagement-regression.mjs
+      - name: Test 283/285 youtube-engagement-workflow-regression.mjs
+        if: always()
+        run: node tests/youtube-engagement-workflow-regression.mjs
+      - name: Test 284/285 youtube-fanart-regression.mjs
+        if: always()
+        run: node tests/youtube-fanart-regression.mjs
+      - name: Test 285/285 youtube-hero-banner-regression.mjs
+        if: always()
+        run: node tests/youtube-hero-banner-regression.mjs
