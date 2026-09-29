@@ -386,10 +386,9 @@ async function mobileSchedule(browser){
       assert.equal(await strip.locator('[data-schedule-day]').count(),7,'mobile week selector must show exactly seven fitted days');
       const stripOverflow=await strip.evaluate(el=>el.scrollWidth-el.clientWidth);
       assert.ok(stripOverflow<=1,'7-day schedule selector must not require horizontal scrolling');
-      const actions=page.locator('.schedule-card-actions');
-      await actions.first().waitFor({state:'visible'});
-      assert.ok(await actions.first().locator('[data-schedule-calendar]').count(),'calendar add button missing');
-      assert.ok(await actions.first().locator('[data-schedule-share]').count(),'schedule share button missing');
+      const firstCard=page.locator('.schedule-card').first();
+      await firstCard.waitFor({state:'visible'});
+      assert.ok(await firstCard.locator('.inline-link').count(),'schedule source link missing');
       await page.locator('#schedule-view-calendar').click();
       await page.waitForTimeout(100);
       const calendar=page.locator('.schedule-calendar-scroll');
