@@ -60,7 +60,7 @@ window.CHUNBONG_HISTORY_RECORDS = Object.freeze([
     sources:["activity-history","self-activity-list"]
   },
   {
-    start:"2024-05-19", label:"제1회 싸이감성 노래자랑 개최", kind:"주최", featured:true,
+    start:"2024-05-19", label:"제1회 싸이감성 노래자랑 개최", kind:"콘텐츠", featured:true,
     detail:"춘봉이 주최한 싸이감성 노래자랑 1회. SOOP 다시보기 기록 기준으로 5월 19일로 정리합니다.",
     sources:["soop-vod","content-archive"]
   },
@@ -116,7 +116,7 @@ window.CHUNBONG_HISTORY_RECORDS = Object.freeze([
     sources:["activity-history","server-history","self-activity-list"]
   },
   {
-    start:"2025-06-05", end:"2025-07-06", label:"레오펠 : 사자의 노래 주최", kind:"주최", featured:true,
+    start:"2025-06-05", end:"2025-07-06", label:"레오펠 : 사자의 노래 주최", kind:"마인크래프트", featured:true,
     detail:"SOOP·치지직·YouTube 3개 플랫폼 통합 마인크래프트 서버 ‘레오펠’을 총괄 기획·주최했습니다.",
     sources:["soop-pick","server-history","fmkorea"]
   },
@@ -147,7 +147,7 @@ window.CHUNBONG_HISTORY_RECORDS = Object.freeze([
     sources:["activity-history"]
   },
   {
-    start:"2025-09-29", label:"레귤러원 F1 25 대회 참가", kind:"대회",
+    start:"2025-09-29", label:"레귤러원 F1 25 대회 참가", kind:"게임",
     sources:["activity-history"]
   },
   {
@@ -197,7 +197,7 @@ window.CHUNBONG_HISTORY_RECORDS = Object.freeze([
     sources:["activity-history","server-history","self-activity-list"]
   },
   {
-    start:"2026-04-09", end:"2026-04-16", label:"그냥서버 : 다이아 개최", kind:"주최", featured:true,
+    start:"2026-04-09", end:"2026-04-16", label:"그냥서버 : 다이아 개최", kind:"마인크래프트", featured:true,
     detail:"춘봉이 주최한 첫 ‘그냥서버’ 다이아 서버를 운영했습니다.",
     sources:["activity-history","server-history","self-activity-list"]
   },
@@ -223,7 +223,7 @@ window.CHUNBONG_HISTORY_RECORDS = Object.freeze([
     sources:["activity-history","self-activity-list"]
   },
   {
-    start:"2026-06-24", end:"2026-07-15", label:"그냥서버 : 머니게임 주최", kind:"주최", featured:true,
+    start:"2026-06-24", end:"2026-07-15", label:"그냥서버 : 머니게임 주최", kind:"마인크래프트", featured:true,
     detail:"두 번째 그냥서버 ‘머니게임’을 주최·운영했습니다.",
     sources:["server-history","public-broadcast-record","self-activity-list"]
   },
@@ -248,7 +248,7 @@ window.CHUNBONG_HISTORY_RECORDS = Object.freeze([
     sources:["google-sheet"]
   },
   {
-    start:"2026-09-09", label:"버추얼 종합대회 시즌3 : 넥버워치 중계", kind:"중계", detailOnly:true,
+    start:"2026-09-09", label:"버추얼 종합대회 시즌3 : 넥버워치 중계", kind:"게임", detailOnly:true,
     detail:"Google Sheet와 공개 방송 기록에서 같은 날짜와 방송명이 교차 확인됩니다.",
     sources:["google-sheet","public-broadcast-record"]
   },
@@ -283,7 +283,7 @@ window.CHUNBONG_HISTORY_RECORDS = Object.freeze([
     sources:["google-sheet","station-stream-title","public-broadcast-record"]
   },
   {
-    start:"2026-09-30", end:"2026-10-21", label:"그냥서버 : 적자생존 개최 예정", kind:"주최", status:"예정", featured:true,
+    start:"2026-09-30", end:"2026-10-21", label:"그냥서버 : 적자생존 개최 예정", kind:"마인크래프트", status:"예정", featured:true,
     detail:"9월 12일 조기 모집 마감, 9월 14~16일 신청자 확인·작업, 9월 19일 서버 설명회가 Google Sheet에 이어져 기록되어 있으며 9월 30일 오픈 일정으로 정리합니다.",
     sources:["google-sheet","station-stream-title","server-schedule"]
   }
