@@ -393,13 +393,35 @@ async function findVodFallbackUncached(post, stations, req) {
   let best = null;
   for (const station of stations.slice(0, 8)) {
     try {
-      const params = new URLSearchParams({station,mode:'vods',vod_type:'review',per_page:'12'});
-      const {status, body:data} = await invokeCrewNews(req, params);
-      if (status < 200 || status >= 300 || !data || data.ok !== true) continue;
-      for (const vod of Array.isArray(data.vods) ? data.vods : []) {
-        const score = vodMatchScore(post, vod);
-        if (score < 0 || (best && best.score >= score)) continue;
-        best = {score, vod, station};
+      // 최근 N개 고정이 아니라 대표 활동일에 도달할 때까지만 필요한 페이지만 탐색한다.
+      // 각 페이지는 CDN 캐시되므로 오래된 활동도 찾되 불필요한 전체 VOD 스캔은 피한다.
+      const targetDate = post.activityDate || dateOnly(post.publishedAt);
+      const maxPages = 6;
+      for (let page = 1; page <= maxPages; page += 1) {
+        const params = new URLSearchParams({
+          station, mode:'vods', vod_type:'review', page:String(page), per_page:'12'
+        });
+        const {status, body:data} = await invokeCrewNews(req, params);
+        if (status < 200 || status >= 300 || !data || data.ok !== true) break;
+        const vods = Array.isArray(data.vods) ? data.vods : [];
+        if (!vods.length) break;
+
+        let oldestDate = '';
+        for (const vod of vods) {
+          const vodDate = dateOnly(vod.publishedAt);
+          if (vodDate && (!oldestDate || vodDate < oldestDate)) oldestDate = vodDate;
+          const score = vodMatchScore(post, vod);
+          if (score < 0 || (best && best.score >= score)) continue;
+          best = {score, vod, station};
+        }
+
+        if (best && best.score >= 14) break;
+        // 정렬이 최신순이므로 목표일보다 충분히 과거까지 내려갔다면 더 볼 필요가 없다.
+        if (targetDate && oldestDate) {
+          const cutoff = new Date(Date.parse(targetDate + 'T00:00:00+09:00') - 86400000);
+          if (Date.parse(oldestDate + 'T00:00:00+09:00') < cutoff.getTime()) break;
+        }
+        if (vods.length < 12) break;
       }
       if (best && best.score >= 14) break;
     } catch (_) {}
@@ -660,7 +682,7 @@ module.exports = async function handler(req, res) {
       ok: false,
       complete: false,
       error: 'crew_news_incomplete',
-      policyVersion: 'representative-v6.19-server',
+      policyVersion: 'representative-v6.20-server',
       strictCrew: crew,
       requested: stations.length,
       failed: failures.length,
@@ -676,7 +698,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
-    policyVersion: 'representative-v6.19-server',
+    policyVersion: 'representative-v6.20-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
