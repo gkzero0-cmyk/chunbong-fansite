@@ -51,10 +51,6 @@ const MANUAL_ACTIVITY_DATE = Object.freeze({
   }
 });
 
-const REQUIRED_REPRESENTATIVE = Object.freeze({
-  '천타버스': { id:'208075141', station:'243000' }
-});
-
 const EXTRA_SEARCHES = Object.freeze({
   'ZZAM지트': [{ station: 'zzamta0310', keyword: '소울' }]
 });
@@ -234,7 +230,12 @@ function strictCrewPost(post, crew, station) {
   const override = MANUAL_SUMMARY[crew] && MANUAL_SUMMARY[crew][id] || '';
   if (!override && /방셀|당첨자|당첨\s*안내|보상|경품|상품|배송|배달|전달\s*완료|수령|정산/i.test(sourceTitle)) return null;
 
-  const activity = override || detectActivity(sourceTitle + '\n' + body) || (leader && boardCrew && /특집/i.test(sourceTitle) ? '추석특집' : '');
+  const activityText = sourceTitle + '\n' + body;
+  const detectedActivity = detectActivity(activityText);
+  const conditionalOrAspirational = /(?:하고\s*싶|가고\s*싶|해보고\s*싶|되면|된다면|성공하면|달성하면|목표\s*달성|공약|도와\s*달|도와주|부탁|희망|바라|예정\s*희망)/i.test(activityText);
+  const confirmedSchedule = /(?:확정|진행|합니다|해요|할\s*예정|하기로|일정|오늘|내일|모레|\d{1,2}\s*월\s*\d{1,2}\s*일|\d{1,2}[\/.]\d{1,2})/i.test(activityText);
+  const contextualActivity = conditionalOrAspirational && !confirmedSchedule ? '' : detectedActivity;
+  const activity = override || contextualActivity || (leader && boardCrew && /특집/i.test(sourceTitle) ? '추석특집' : '');
 
   if (!activity) return null;
 
@@ -551,15 +552,7 @@ module.exports = async function handler(req, res) {
       if (time) return time;
       return Number(Boolean(b.isCrewLeader)) - Number(Boolean(a.isCrewLeader));
     });
-    const required = REQUIRED_REPRESENTATIVE[crew];
-    selected = required
-      ? candidates.find(post => String(post.id) === required.id && String(post._station) === required.station) || null
-      : candidates[0] || null;
-    if (required && !selected) {
-      const leaderResult = results.find(result => result && result.ok && result.station === required.station);
-      const rawRequired = leaderResult && (leaderResult.posts || []).find(post => String(post.id) === required.id);
-      if (rawRequired) selected = {...rawRequired,_station:required.station};
-    }
+    selected = candidates[0] || null;
     if (selected && !selected.imageUrl) {
       const orderedStations = [
         ...new Set([
@@ -605,7 +598,7 @@ module.exports = async function handler(req, res) {
       ok: false,
       complete: false,
       error: 'crew_news_incomplete',
-      policyVersion: 'representative-v6.12-server',
+      policyVersion: 'representative-v6.13-server',
       strictCrew: crew,
       requested: stations.length,
       failed: failures.length,
@@ -621,7 +614,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
-    policyVersion: 'representative-v6.12-server',
+    policyVersion: 'representative-v6.13-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
