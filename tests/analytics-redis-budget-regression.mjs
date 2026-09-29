@@ -6,6 +6,16 @@ const api=fs.readFileSync(new URL('../lib/operator-center-api.js',import.meta.ur
 assert.match(client,/activePending>=120000/);
 assert.match(client,/\},120000\);/);
 assert.doesNotMatch(client,/activePending>=15000/);
+assert.match(client,/DEFERRED_KEY='chunbong:analytics:deferred:v1'/,'analytics deferred buffer key missing');
+assert.match(client,/DEFERRED_TTL_MS=48\*60\*60\*1000/,'analytics deferred buffer must expire after 48 hours');
+assert.match(client,/DEFERRED_MAX_EVENTS=120/,'analytics deferred buffer must stay bounded');
+assert.match(client,/DEFERRED_MAX_BATCHES=12/,'analytics deferred batch count must stay bounded');
+assert.match(client,/deferEvents\(events,payloadSessionId\)/,'202 degraded analytics must be retained locally');
+assert.match(client,/if\(queue\.length\)deferEvents\(queue\.splice\(0\),sessionId\)/,'paused analytics queue must move into local deferred storage');
+assert.match(client,/removeDeferred\(deferred\.id\)/,'deferred analytics must clear only after a successful replay');
+assert.match(client,/occurredAt/,'analytics events must carry their original occurrence time');
+assert.match(client,/search_query'\|\|type==='search_result_click/,'deferred search events need local privacy filtering');
+assert.doesNotMatch(client,/analyticsPaused\(\)\)\{queue\.length=0/,'budget pause must not discard queued analytics');
 assert.match(api,/hasPageView=events\.some/);
 assert.match(api,/if\(hasPageView\)commands\.push/);
 assert.match(api,/Math\.min\(300000,Math\.round\(Number\(event\.activeMs\)/);
@@ -20,3 +30,8 @@ assert.doesNotMatch(ingest,/allKeys\./,'analytics ingestion must not duplicate e
 assert.doesNotMatch(ingest,/analyticsKeys\('all'\)/,'analytics ingestion must be daily-key only');
 assert.doesNotMatch(ingest,/ZREMRANGEBYSCORE',ACTIVE_KEY/,'active-user pruning should happen on operator reads, not every analytics write');
 assert.match(api,/const aggregateDates=all\?recordedDates:requestedDates;/,'all-time analytics must aggregate from daily keys');
+assert.match(api,/ANALYTICS_DELAY_MAX_MS=48\*60\*60\*1000/,'server delayed-event acceptance window missing');
+assert.match(api,/analyticsEventTimestamp/,'server delayed-event timestamp normalization missing');
+assert.match(api,/pageViewDays=new Map\(\)/,'deferred page views must preserve original day buckets');
+assert.match(api,/occurredAt>=nowMs-5\*60\*1000/,'old replayed activity must not appear as active now');
+assert.match(api,/\['ZADD',ANALYTICS_DAYS_KEY,occurredAt,day\]/,'analytics day index must use original event time');
