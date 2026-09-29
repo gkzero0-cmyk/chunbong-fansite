@@ -11,5 +11,10 @@ assert.match(source,/now-cached\.at<SESSION_VALIDATION_CACHE_MS/);
 assert.match(source,/sessionValidationMemory\.delete\(id\)/);
 assert.match(source,/sessionValidationMemory\.clear\(\)/);
 assert.match(source,/authEpochMemory=\{at:Date\.now\(\),value:/);
+assert.match(source,/stableAuthSecret\(\)/);
+assert.match(source,/SESSION_SECRET_DERIVATION/);
+assert.match(source,/redisTemporarilyUnavailable/);
+assert.match(source,/signed session fallback/);
+assert.match(source,/githubPkceVerifier/);
 
 console.log('operator session Redis budget regression passed');
