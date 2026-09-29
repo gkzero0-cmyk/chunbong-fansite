@@ -79,7 +79,7 @@ assert.doesNotMatch(js, /'대회','타로 콘텐츠','주요 콘텐츠'/, 'annua
 assert.match(js, /대표 유형 1개로 집계/, 'annual summary must explain single representative-type counting');
 assert.match(css, /history-simple-types/, 'multi-tag simple history styles must exist');
 assert.doesNotMatch(js, /if\(\/대회\|F1\|CK\|와튜버\|스모오라\|크루대전/, 'CK and internal game labels must not be blanket-classified as tournaments');
-assert.match(js, /게임 콘텐츠/, 'annual summary must separate game content from competitions');
+assert.doesNotMatch(js, /return \['게임 콘텐츠'\]/, 'annual summary must prefer named game/platform types over a generic game-content bucket');
 assert.doesNotMatch(js, /history-row-arrow" aria-hidden/, 'simple rows must not render an arrow next to the type column');
 assert.match(css, /grid-template-areas:[\s\S]*"date content"[\s\S]*"\. type"/, 'mobile simple rows must move type labels below content');
 assert.match(css, /history-simple-filter-state/, 'active annual filter state must be visible and clearable');
