@@ -296,6 +296,59 @@ async function invokeCrewNews(req, params) {
   return{status:statusCode,body};
 }
 
+function activityTokens(post) {
+  return String(post && (post.displaySummary || post.strictActivity || post.summary || '') || '')
+    .toLowerCase().replace(/[^가-힣a-z0-9]+/g,' ').split(/\s+/).filter(token => token.length >= 2);
+}
+
+function dateOnly(value) {
+  const parsed = parseTime(value);
+  return parsed ? formatKstDate(new Date(parsed)) : '';
+}
+
+function vodMatchScore(post, vod) {
+  if (!post || !vod || !vod.imageUrl) return -1;
+  const activityDate = post.activityDate || dateOnly(post.publishedAt);
+  const vodDate = dateOnly(vod.publishedAt);
+  let score = 0;
+  if (activityDate && vodDate) {
+    const days = Math.abs(Date.parse(activityDate + 'T00:00:00+09:00') - Date.parse(vodDate + 'T00:00:00+09:00')) / 86400000;
+    if (days > 1) return -1;
+    score += days === 0 ? 5 : 2;
+  }
+  const title = String(vod.title || '').toLowerCase();
+  const hits = activityTokens(post).filter(token => title.includes(token)).length;
+  score += hits * 4;
+  return hits > 0 ? score : -1;
+}
+
+async function findVodFallback(post, stations, req) {
+  if (!post || post.imageUrl || !Array.isArray(stations) || !stations.length) return null;
+  const base = requestBase(req);
+  let best = null;
+  for (const station of stations.slice(0, 8)) {
+    try {
+      const url = `${base}/api/crew-news?station=${encodeURIComponent(station)}&mode=vods&vod_type=review&per_page=12`;
+      const response = await fetch(url, {headers:{Accept:'application/json'}});
+      if (!response.ok) continue;
+      const data = await response.json();
+      for (const vod of Array.isArray(data.vods) ? data.vods : []) {
+        const score = vodMatchScore(post, vod);
+        if (score < 0 || (best && best.score >= score)) continue;
+        best = {score, vod, station};
+      }
+      if (best && best.score >= 9) break;
+    } catch (_) {}
+  }
+  if (!best) return null;
+  return {
+    fallbackImageUrl: best.vod.imageUrl,
+    fallbackSheetImageUrl: best.vod.sheetImageUrl,
+    fallbackImageSource: best.station === stations[0] ? 'leader_vod' : 'member_vod',
+    fallbackVodUrl: best.vod.vodUrl || ''
+  };
+}
+
 function imageSourceFor(post) {
   if (!post) return 'none';
   if (post.imageUrl) return 'post';
@@ -458,6 +511,16 @@ module.exports = async function handler(req, res) {
       return Number(Boolean(b.isCrewLeader)) - Number(Boolean(a.isCrewLeader));
     });
     selected = candidates[0] || null;
+    if (selected && !selected.imageUrl) {
+      const orderedStations = [
+        ...new Set([
+          ...entries.filter(entry => entry.leader).map(entry => entry.station),
+          ...entries.map(entry => entry.station)
+        ].filter(Boolean))
+      ];
+      const fallback = await findVodFallback(selected, orderedStations, req);
+      if (fallback) selected = {...selected, ...fallback};
+    }
     if (selected) selected = applyFallbackImage(selected);
 
     // 외부 검색이 일시적으로 빈 결과를 반환하더라도 검증된 마지막 대표 소식을
@@ -493,7 +556,7 @@ module.exports = async function handler(req, res) {
       ok: false,
       complete: false,
       error: 'crew_news_incomplete',
-      policyVersion: 'representative-v6.9-server',
+      policyVersion: 'representative-v6.10-server',
       strictCrew: crew,
       requested: stations.length,
       failed: failures.length,
@@ -509,7 +572,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
-    policyVersion: 'representative-v6.9-server',
+    policyVersion: 'representative-v6.10-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
@@ -529,6 +592,7 @@ module.exports = async function handler(req, res) {
       imageUrl: selected.imageUrl || '',
       sheetImageUrl: selected.sheetImageUrl || '',
       imageSource: selected.imageSource || imageSourceFor(selected),
+      fallbackVodUrl: selected.fallbackVodUrl || '',
       fingerprint: stableFingerprint(selected),
       representativeTier: selected.representativeTier,
       isCrewLeader: selected.isCrewLeader
@@ -547,6 +611,9 @@ module.exports._internals = {
   resolveActivityDate,
   activityPublishedAt,
   stableFingerprint,
+  activityTokens,
+  vodMatchScore,
+  findVodFallback,
   imageSourceFor,
   applyFallbackImage,
   mergePosts
