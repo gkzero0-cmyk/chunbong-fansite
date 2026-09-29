@@ -8,6 +8,7 @@ const content=read('api/content.js');
 const operatorHtml=read('operator.html');
 const operatorJs=read('operator.js');
 const operatorCss=read('operator.css');
+const operatorHistoryAuditCss=read('operator-history-audit.css');
 const analytics=read('site-analytics.js');
 const feedback=read('feedback-widget.js');
 const feedbackCss=read('feedback-widget.css');
