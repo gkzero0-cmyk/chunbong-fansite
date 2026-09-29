@@ -322,16 +322,29 @@ function vodMatchScore(post, vod) {
   return hits > 0 ? score : -1;
 }
 
-async function findVodFallback(post, stations, req) {
+const VOD_FALLBACK_TTL_MS = 24 * 60 * 60 * 1000;
+const VOD_NEGATIVE_TTL_MS = 6 * 60 * 60 * 1000;
+const vodFallbackCache = new Map();
+const vodFallbackInflight = new Map();
+
+function vodFallbackKey(post, stations) {
+  return [String(post?.id || ''), String(post?.activityDate || ''), String(post?.displaySummary || post?.strictActivity || ''), ...(stations || [])].join('|');
+}
+function trimVodFallbackCache() {
+  if (vodFallbackCache.size <= 80) return;
+  const oldest = [...vodFallbackCache.entries()].sort((a,b)=>a[1].at-b[1].at).slice(0, vodFallbackCache.size-80);
+  for (const [key] of oldest) vodFallbackCache.delete(key);
+}
+
+async function findVodFallbackUncached(post, stations, req) {
   if (!post || post.imageUrl || !Array.isArray(stations) || !stations.length) return null;
   const base = requestBase(req);
   let best = null;
   for (const station of stations.slice(0, 8)) {
     try {
-      const url = `${base}/api/crew-news?station=${encodeURIComponent(station)}&mode=vods&vod_type=review&per_page=12`;
-      const response = await fetch(url, {headers:{Accept:'application/json'}});
-      if (!response.ok) continue;
-      const data = await response.json();
+      const params = new URLSearchParams({station,mode:'vods',vod_type:'review',per_page:'12'});
+      const {status, body:data} = await invokeCrewNews(req, params);
+      if (status < 200 || status >= 300 || !data || data.ok !== true) continue;
       for (const vod of Array.isArray(data.vods) ? data.vods : []) {
         const score = vodMatchScore(post, vod);
         if (score < 0 || (best && best.score >= score)) continue;
@@ -347,6 +360,27 @@ async function findVodFallback(post, stations, req) {
     fallbackImageSource: best.station === stations[0] ? 'leader_vod' : 'member_vod',
     fallbackVodUrl: best.vod.vodUrl || ''
   };
+}
+
+async function findVodFallback(post, stations, req) {
+  if (!post || post.imageUrl || !Array.isArray(stations) || !stations.length) return null;
+  const key = vodFallbackKey(post, stations);
+  const cached = vodFallbackCache.get(key);
+  if (cached) {
+    const ttl = cached.value ? VOD_FALLBACK_TTL_MS : VOD_NEGATIVE_TTL_MS;
+    if (Date.now() - cached.at < ttl) return cached.value;
+    vodFallbackCache.delete(key);
+  }
+  if (vodFallbackInflight.has(key)) return vodFallbackInflight.get(key);
+  const promise = findVodFallbackUncached(post, stations, req)
+    .then(value => {
+      vodFallbackCache.set(key,{at:Date.now(),value:value || null});
+      trimVodFallbackCache();
+      return value || null;
+    })
+    .finally(()=>vodFallbackInflight.delete(key));
+  vodFallbackInflight.set(key,promise);
+  return promise;
 }
 
 function imageSourceFor(post) {
@@ -514,8 +548,8 @@ module.exports = async function handler(req, res) {
     if (selected && !selected.imageUrl) {
       const orderedStations = [
         ...new Set([
-          ...entries.filter(entry => entry.leader).map(entry => entry.station),
-          ...entries.map(entry => entry.station)
+          LEADER_BY_CREW[crew],
+          ...stations
         ].filter(Boolean))
       ];
       const fallback = await findVodFallback(selected, orderedStations, req);
@@ -556,7 +590,7 @@ module.exports = async function handler(req, res) {
       ok: false,
       complete: false,
       error: 'crew_news_incomplete',
-      policyVersion: 'representative-v6.10-server',
+      policyVersion: 'representative-v6.11-server',
       strictCrew: crew,
       requested: stations.length,
       failed: failures.length,
@@ -572,7 +606,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
-    policyVersion: 'representative-v6.10-server',
+    policyVersion: 'representative-v6.11-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
@@ -614,6 +648,7 @@ module.exports._internals = {
   activityTokens,
   vodMatchScore,
   findVodFallback,
+  vodFallbackKey,
   imageSourceFor,
   applyFallbackImage,
   mergePosts
