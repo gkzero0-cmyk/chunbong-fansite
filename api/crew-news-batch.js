@@ -296,6 +296,23 @@ async function invokeCrewNews(req, params) {
   return{status:statusCode,body};
 }
 
+function stableFingerprint(post) {
+  if (!post) return '';
+  const parts = [
+    String(post.id || ''),
+    String(post.displaySummary || post.strictActivity || ''),
+    String(post.activityDate || String(post.publishedAt || '').slice(0, 10)),
+    String(post.imageUrl || '')
+  ];
+  // FNV-1a: Apps Script가 긴 문자열을 비교하지 않아도 되는 짧고 안정적인 변경 키.
+  let hash = 2166136261;
+  for (const ch of parts.join('\u001f')) {
+    hash ^= ch.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return 'fnv1a-' + (hash >>> 0).toString(16).padStart(8, '0');
+}
+
 function mergePosts(...lists) {
   const byId = new Map();
   for (const list of lists) {
@@ -492,6 +509,7 @@ module.exports = async function handler(req, res) {
       activityDate: selected.activityDate || String(selected.publishedAt || '').slice(0, 10),
       imageUrl: selected.imageUrl || '',
       sheetImageUrl: selected.sheetImageUrl || '',
+      fingerprint: stableFingerprint(selected),
       representativeTier: selected.representativeTier,
       isCrewLeader: selected.isCrewLeader
     } : null,
@@ -508,5 +526,6 @@ module.exports._internals = {
   parseTime,
   resolveActivityDate,
   activityPublishedAt,
+  stableFingerprint,
   mergePosts
 };
