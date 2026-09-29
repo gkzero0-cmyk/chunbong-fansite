@@ -19,6 +19,8 @@ const pwa=()=>matchMedia('(display-mode: standalone)').matches||navigator.standa
 const theme=()=>document.documentElement.dataset.theme==='light'?'light':'dark';
 const page=()=>location.pathname||'/';
 const BUDGET_PAUSE_KEY='chunbong:analytics:budget-pause:v1';
+const DEFERRED_KEY='chunbong:analytics:deferred:v1';
+const DEFERRED_TTL_MS=48*60*60*1000,DEFERRED_MAX_EVENTS=120,DEFERRED_MAX_BATCHES=12,DEFERRED_BATCH_SIZE=20;
 let budgetPausedUntil=0;
 try{budgetPausedUntil=Number(localStorage.getItem(BUDGET_PAUSE_KEY)||0)||0}catch{}
 const analyticsPaused=()=>budgetPausedUntil>Date.now();
@@ -26,8 +28,78 @@ function pauseAnalytics(seconds=21600){
  budgetPausedUntil=Date.now()+Math.max(300,Number(seconds)||21600)*1000;
  try{localStorage.setItem(BUDGET_PAUSE_KEY,String(budgetPausedUntil))}catch{}
 }
+function prepareEvent(event={}){
+ const occurredAt=Number(event.occurredAt);
+ return{...event,page:String(event.page||page()).slice(0,160),occurredAt:Number.isFinite(occurredAt)?occurredAt:Date.now()};
+}
+function deferredSafeEvent(event={}){
+ const row=prepareEvent(event),type=String(row.type||'').slice(0,32);
+ if(!type)return null;
+ const out={type,page:String(row.page||'/').slice(0,160),occurredAt:Math.round(Number(row.occurredAt)||Date.now())};
+ if(row.target!==undefined){
+  const target=String(row.target||'').slice(0,80);
+  if((type==='search_query'||type==='search_result_click')&&(/https?:\/\/|www\.|@/i.test(target)||/\d{7,}/.test(target)))return null;
+  out.target=target;
+ }
+ for(const key of ['device','theme','visitorState','metric','resultKind','resultLabel'])if(row[key]!==undefined)out[key]=String(row[key]).slice(0,key==='resultLabel'?80:40);
+ for(const key of ['activeMs','durationMs','value','resultCount','count'])if(Number.isFinite(Number(row[key])))out[key]=Number(row[key]);
+ if(row.pwa!==undefined)out.pwa=Boolean(row.pwa);
+ return out;
+}
+function readDeferred(){
+ try{
+  const parsed=JSON.parse(localStorage.getItem(DEFERRED_KEY)||'[]');
+  const cutoff=Date.now()-DEFERRED_TTL_MS,source=Array.isArray(parsed)?parsed:[];
+  const batches=source.map(batch=>{
+   const createdAt=Number(batch?.createdAt)||0,session=String(batch?.sessionId||'');
+   if(createdAt<cutoff||!/^[A-Za-z0-9_-]{12,96}$/.test(session))return null;
+   const events=(Array.isArray(batch?.events)?batch.events:[]).map(deferredSafeEvent).filter(Boolean).slice(0,DEFERRED_BATCH_SIZE);
+   return events.length?{id:String(batch?.id||uuid()),sessionId:session,createdAt,events}:null;
+  }).filter(Boolean).slice(-DEFERRED_MAX_BATCHES);
+  let total=batches.reduce((sum,batch)=>sum+batch.events.length,0);
+  while(total>DEFERRED_MAX_EVENTS&&batches.length){
+   const overflow=total-DEFERRED_MAX_EVENTS,first=batches[0];
+   if(first.events.length<=overflow){total-=first.events.length;batches.shift()}
+   else{first.events.splice(0,overflow);total-=overflow}
+  }
+  return batches;
+ }catch{return[]}
+}
+function writeDeferred(batches=[]){
+ try{
+  if(!batches.length)localStorage.removeItem(DEFERRED_KEY);
+  else localStorage.setItem(DEFERRED_KEY,JSON.stringify(batches));
+ }catch{}
+}
+function deferEvents(events=[],sourceSessionId=sessionId){
+ const safe=(Array.isArray(events)?events:[]).map(deferredSafeEvent).filter(Boolean);
+ if(!safe.length)return;
+ const batches=readDeferred();
+ while(safe.length){
+  const last=batches[batches.length-1],room=last&&last.sessionId===sourceSessionId?DEFERRED_BATCH_SIZE-last.events.length:0;
+  if(room>0)last.events.push(...safe.splice(0,room));
+  else batches.push({id:uuid(),sessionId:sourceSessionId,createdAt:Date.now(),events:safe.splice(0,DEFERRED_BATCH_SIZE)});
+ }
+ while(batches.length>DEFERRED_MAX_BATCHES)batches.shift();
+ let total=batches.reduce((sum,batch)=>sum+batch.events.length,0);
+ while(total>DEFERRED_MAX_EVENTS&&batches.length){
+  const overflow=total-DEFERRED_MAX_EVENTS,first=batches[0];
+  if(first.events.length<=overflow){total-=first.events.length;batches.shift()}
+  else{first.events.splice(0,overflow);total-=overflow}
+ }
+ writeDeferred(batches);
+}
+function removeDeferred(id){
+ const batches=readDeferred().filter(batch=>batch.id!==id);
+ writeDeferred(batches);
+}
 let queue=[],visibleAt=document.visibilityState==='visible'?performance.now():0,activePending=0,sending=false;
-function add(event){if(analyticsPaused())return;queue.push({...event,page:page()});if(queue.length>=8)flush()}
+function enqueue(event,{autoFlush=true}={}){
+ const row=prepareEvent(event);
+ if(analyticsPaused()){deferEvents([row],sessionId);return}
+ queue.push(row);if(autoFlush&&queue.length>=8)flush();
+}
+function add(event){enqueue(event)}
 function activeTick(){
  if(!visibleAt)return;
  const now=performance.now(),delta=Math.max(0,now-visibleAt);visibleAt=now;activePending+=delta;
@@ -35,24 +107,38 @@ function activeTick(){
 }
 function flushApiNetworkCounts(){
  if(!apiSample||!apiNetworkCounts.size)return;
- for(const [target,count] of apiNetworkCounts)queue.push({type:'api_network',target,count:Math.max(1,Math.min(100,Math.round(count)))});
+ for(const [target,count] of apiNetworkCounts)enqueue({type:'api_network',target,count:Math.max(1,Math.min(100,Math.round(count)))},{autoFlush:false});
  apiNetworkCounts.clear();
 }
 async function flush({beacon=false}={}){
- if(analyticsPaused()){queue.length=0;activePending=0;apiNetworkCounts.clear();return}
- activeTick();if(activePending>=120000){queue.push({type:'active_time',page:page(),activeMs:Math.round(activePending)});activePending=0}
+ activeTick();if(activePending>=120000){enqueue({type:'active_time',page:page(),activeMs:Math.round(activePending)},{autoFlush:false});activePending=0}
  flushApiNetworkCounts();
- if(!queue.length||sending)return;
- const events=queue.splice(0,20),payload=JSON.stringify({visitorId,sessionId,events});
+ if(analyticsPaused()){
+  if(queue.length)deferEvents(queue.splice(0),sessionId);
+  return;
+ }
+ if(sending)return;
+ const deferred=!beacon?readDeferred()[0]:null;
+ if(!deferred&&!queue.length)return;
+ const events=deferred?deferred.events.slice(0,DEFERRED_BATCH_SIZE):queue.splice(0,DEFERRED_BATCH_SIZE);
+ const payloadSessionId=deferred?.sessionId||sessionId,payload=JSON.stringify({visitorId,sessionId:payloadSessionId,events});
  if(beacon&&navigator.sendBeacon){try{navigator.sendBeacon(ENDPOINT,new Blob([payload],{type:'application/json'}));return}catch{}}
  sending=true;
  try{
   const response=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:payload,keepalive:true});
   if(response.status===202){
    const data=await response.json().catch(()=>null);
-   if(data&&data.degraded)pauseAnalytics(data.retryAfterSeconds);
-  }
- }catch{}finally{sending=false;if(queue.length&&!analyticsPaused())setTimeout(flush,500)}
+   if(!deferred)deferEvents(events,payloadSessionId);
+   pauseAnalytics(data?.retryAfterSeconds||21600);
+  }else if(response.ok){
+   if(deferred)removeDeferred(deferred.id);
+  }else if(!deferred)queue.unshift(...events);
+ }catch{
+  if(!deferred)queue.unshift(...events);
+ }finally{
+  sending=false;
+  if(!analyticsPaused()&&(queue.length||readDeferred().length))setTimeout(flush,500);
+ }
 }
 add({type:'page_view',device:device(),pwa:pwa(),theme:theme(),visitorState});
 function reportNavigationTiming(){

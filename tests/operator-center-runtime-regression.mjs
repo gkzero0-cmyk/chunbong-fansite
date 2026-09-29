@@ -7,6 +7,12 @@ const operator=require('../lib/operator-center-api.js');
 assert.equal(operator._internals.ownerEmail('gkzero0@gmail.com'),true,'registered owner email hash mismatch');
 assert.equal(operator._internals.ownerEmail('other@example.com'),false,'unregistered email must not pass owner allowlist');
 
+const analyticsNow=Date.now();
+assert.equal(operator._internals.analyticsEventTimestamp({occurredAt:analyticsNow-3600000},analyticsNow),analyticsNow-3600000,'valid deferred analytics timestamp should be preserved');
+assert.equal(operator._internals.analyticsEventTimestamp({occurredAt:analyticsNow-72*3600000},analyticsNow),analyticsNow-48*3600000,'stale deferred analytics must clamp to 48 hours');
+assert.equal(operator._internals.analyticsEventTimestamp({occurredAt:analyticsNow+3600000},analyticsNow),analyticsNow+5*60000,'future analytics timestamp must clamp to five minutes');
+assert.equal(operator._internals.analyticsEventTimestamp({},analyticsNow),analyticsNow,'legacy analytics without timestamp should use receive time');
+
 function response(){
   return {
     statusCode:200,headers:{},body:null,
