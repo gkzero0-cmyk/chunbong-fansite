@@ -39,6 +39,15 @@ const REPRESENTATIVE_MEDIA_PRIORITY = Object.freeze({
   '자라섬': { '208189099': 1 }
 });
 
+// 여러 크루원이 같은 일정을 공지해 상대 날짜/기간 표현만 남은 경우의 검증된 실제 시작일.
+// 기간(예: 3박 4일, 3~4일)은 날짜로 해석하지 않는다.
+const MANUAL_ACTIVITY_DATE = Object.freeze({
+  '진드기': {
+    '208412493': '2026-09-30',
+    '208395133': '2026-09-30'
+  }
+});
+
 const EXTRA_SEARCHES = Object.freeze({
   'ZZAM지트': [{ station: 'zzamta0310', keyword: '소울' }]
 });
@@ -155,6 +164,48 @@ function parseTime(value = '') {
   return Number.isFinite(t) ? t : 0;
 }
 
+function formatKstDate(date) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(date);
+  const pick = type => parts.find(part => part.type === type)?.value || '';
+  return pick('year') + '-' + pick('month') + '-' + pick('day');
+}
+
+function resolveActivityDate(raw = '', publishedAt = '') {
+  const text = String(raw || '').replace(/\s+/g, ' ');
+  const baseMs = parseTime(publishedAt);
+  if (!baseMs) return '';
+
+  // 명시된 실제 활동일을 최우선한다. "9월 30일부터"도 9/30으로 처리한다.
+  let match = text.match(/(?:(20\d{2})\s*년\s*)?(1[0-2]|0?[1-9])\s*월\s*(3[01]|[12]?\d)\s*일(?:부터|에|날)?/);
+  if (match) {
+    const base = new Date(baseMs);
+    const baseYear = Number(new Intl.DateTimeFormat('en', { timeZone: 'Asia/Seoul', year: 'numeric' }).format(base));
+    const year = Number(match[1] || baseYear);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const candidate = new Date(Date.UTC(year, month - 1, day, 3, 0, 0));
+    if (candidate.getUTCMonth() === month - 1 && candidate.getUTCDate() === day) return formatKstDate(candidate);
+  }
+
+  // 게시 시각(KST)을 기준으로 오늘/내일/모레를 계산한다.
+  // "3박 4일", "3~4일", "4일 동안" 같은 기간 숫자는 이 경로에 들어오지 않는다.
+  const relative = /모레/.test(text) ? 2 : /내일/.test(text) ? 1 : /오늘/.test(text) ? 0 : null;
+  if (relative !== null) {
+    const baseDate = formatKstDate(new Date(baseMs));
+    const [y, m, d] = baseDate.split('-').map(Number);
+    return formatKstDate(new Date(Date.UTC(y, m - 1, d + relative, 3, 0, 0)));
+  }
+  return '';
+}
+
+function activityPublishedAt(dateOnly, publishedAt) {
+  if (!dateOnly) return publishedAt;
+  const time = String(publishedAt || '').match(/\b(\d{2}:\d{2}:\d{2})\b/);
+  return dateOnly + ' ' + (time ? time[1] : '12:00:00');
+}
+
 function strictCrewPost(post, crew, station) {
   if (!post || !crew) return null;
   const title = String(post.title || '');
@@ -197,7 +248,12 @@ function strictCrewPost(post, crew, station) {
   // 모든 후보 제목을 "크루명 + 표시 요약"으로 전달하고 Apps Script가 첫 크루명만 제거하게 한다.
   // 이렇게 하면 후보 판정은 통과하면서 zero-width 문자를 전혀 쓰지 않는다.
   const compatibilityTitle = crew + ' ' + displaySummary;
-  const eventPublishedAt = (crew === '천타버스' && id === '208075141') ? '2026-09-26 18:00:00' : post.publishedAt;
+  const manualActivityDate = MANUAL_ACTIVITY_DATE[crew] && MANUAL_ACTIVITY_DATE[crew][id] || '';
+  const parsedActivityDate = resolveActivityDate(sourceTitle + '\n' + body, post.publishedAt);
+  const resolvedActivityDate = manualActivityDate || parsedActivityDate;
+  const eventPublishedAt = (crew === '천타버스' && id === '208075141')
+    ? '2026-09-26 18:00:00'
+    : activityPublishedAt(resolvedActivityDate, post.publishedAt);
 
   return {
     ...post,
@@ -361,7 +417,7 @@ module.exports = async function handler(req, res) {
       if (tier) return tier;
       const mediaPriority = Number(b.representativeMediaPriority || 0) - Number(a.representativeMediaPriority || 0);
       if (mediaPriority) return mediaPriority;
-      const time = parseTime(b.publishedAt) - parseTime(a.publishedAt);
+      const time = parseTime(b.sourcePublishedAt || b.publishedAt) - parseTime(a.sourcePublishedAt || a.publishedAt);
       if (time) return time;
       return Number(Boolean(b.isCrewLeader)) - Number(Boolean(a.isCrewLeader));
     });
@@ -400,7 +456,7 @@ module.exports = async function handler(req, res) {
       ok: false,
       complete: false,
       error: 'crew_news_incomplete',
-      policyVersion: 'representative-v6.7-server',
+      policyVersion: 'representative-v6.8-server',
       strictCrew: crew,
       requested: stations.length,
       failed: failures.length,
@@ -416,7 +472,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
-    policyVersion: 'representative-v6.7-server',
+    policyVersion: 'representative-v6.8-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
@@ -445,5 +501,7 @@ module.exports._internals = {
   detectActivity,
   strictCrewPost,
   parseTime,
+  resolveActivityDate,
+  activityPublishedAt,
   mergePosts
 };
