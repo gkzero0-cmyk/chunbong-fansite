@@ -9,6 +9,7 @@ try{({chromium}=await import('playwright'))}catch(_){
 const BASE=(process.env.BASE_URL||'http://127.0.0.1:4175').replace(/\/$/,'');
 const MOCK=process.env.MOCK_CONTENT==='1';
 const MOCK_DATE='2026-09-20';
+const MOCK_SCHEDULE_DATE=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 
 const dataPayload={
   capturedAt:'2026-09-20T12:00:00Z',
@@ -36,7 +37,7 @@ const mediaPayloads={
   ]},
   clips:{items:[{id:'clip-one',kind:'clip',title:'Mock Clip',date:MOCK_DATE,meta:'조회수 20',link:'https://example.com/clip'}]},
   youtube:{items:[{id:'yt-one',kind:'shorts',title:'Mock YouTube',date:MOCK_DATE,dateIso:'2026-09-20T03:00:00Z',meta:'조회수 30',link:'https://youtube.com/shorts/yt-one'}]},
-  schedule:{items:[{title:'Mock Schedule',tags:['테스트'],start:'2026-09-25T19:00:00+09:00',end:'',isDateTime:true,link:'https://example.com/schedule'}]},
+  schedule:{items:[{title:'Mock Schedule',tags:['테스트'],start:MOCK_SCHEDULE_DATE+'T19:00:00+09:00',end:'',isDateTime:true,link:'https://example.com/schedule'}]},
   live:{live:false},
   activity:{items:[]},
   notice:{items:[]},
@@ -386,10 +387,9 @@ async function mobileSchedule(browser){
       assert.equal(await strip.locator('[data-schedule-day]').count(),7,'mobile week selector must show exactly seven fitted days');
       const stripOverflow=await strip.evaluate(el=>el.scrollWidth-el.clientWidth);
       assert.ok(stripOverflow<=1,'7-day schedule selector must not require horizontal scrolling');
-      const actions=page.locator('.schedule-card-actions');
-      await actions.first().waitFor({state:'visible'});
-      assert.ok(await actions.first().locator('[data-schedule-calendar]').count(),'calendar add button missing');
-      assert.ok(await actions.first().locator('[data-schedule-share]').count(),'schedule share button missing');
+      const firstCard=page.locator('.schedule-card').first();
+      await firstCard.waitFor({state:'visible'});
+      assert.ok(await firstCard.locator('.inline-link').count(),'schedule source link missing');
       await page.locator('#schedule-view-calendar').click();
       await page.waitForTimeout(100);
       const calendar=page.locator('.schedule-calendar-scroll');

@@ -6,6 +6,7 @@ assert.equal(fs.existsSync('history.js'), true, 'history.js must load the SOOP b
 
 const html = fs.readFileSync('history.html', 'utf8');
 const js = fs.readFileSync('history.js', 'utf8');
+const fallbackData = fs.readFileSync('history-data.js', 'utf8');
 const shared = fs.readFileSync('site-shell.js', 'utf8');
 const sheetApi = fs.readFileSync('api/history-sheet.js', 'utf8');
 const css = fs.readFileSync('history.css', 'utf8');
@@ -77,6 +78,10 @@ assert.match(js, /주최 콘텐츠/, 'hosted content must have its own filter');
 assert.doesNotMatch(js, /simpleTags:\['마크 콘텐츠','대회'\]/, 'simple view must not use dual tournament tags');
 assert.doesNotMatch(js, /'대회','타로 콘텐츠','주요 콘텐츠'/, 'annual activity taxonomy must not mix tournament and major-content buckets');
 assert.match(js, /대표 유형 1개로 집계/, 'annual summary must explain single representative-type counting');
+assert.doesNotMatch(fallbackData, /kind:"(?:대회|주최|중계)"/, 'fallback history data must keep role labels out of the primary content taxonomy');
+assert.match(fallbackData, /싸이감성 노래자랑[^\n]*kind:"콘텐츠"/, 'singing contest fallback must remain content-first');
+assert.match(fallbackData, /넥버워치 중계[^\n]*kind:"게임"/, 'Nexverwatch fallback must remain game-first');
+assert.match(fallbackData, /그냥서버 : 머니게임 주최[^\n]*kind:"마인크래프트"/, 'hosted Minecraft servers must remain Minecraft-first in fallback data');
 assert.match(css, /history-simple-types/, 'multi-tag simple history styles must exist');
 assert.doesNotMatch(js, /if\(\/대회\|F1\|CK\|와튜버\|스모오라\|크루대전/, 'CK and internal game labels must not be blanket-classified as tournaments');
 assert.match(js, /게임 콘텐츠/, 'annual summary must separate game content from competitions');
