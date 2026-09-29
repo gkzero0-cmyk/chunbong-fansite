@@ -408,6 +408,19 @@ function applyFallbackImage(post) {
   };
 }
 
+function displayDateFor(post) {
+  const raw = String(post?.activityDate || post?.publishedAt || '').slice(0,10);
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return match ? String(Number(match[2])) + '/' + String(Number(match[3])) : '';
+}
+
+function finalDisplayText(post, crew) {
+  if (!post) return '';
+  const summary = String(post.displaySummary || post.strictActivity || '').trim();
+  const date = displayDateFor(post);
+  return [crew, '-', summary, date ? '(' + date + ')' : '', '📌'].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
+}
+
 function stableFingerprint(post) {
   if (!post) return '';
   const parts = [
@@ -598,7 +611,7 @@ module.exports = async function handler(req, res) {
       ok: false,
       complete: false,
       error: 'crew_news_incomplete',
-      policyVersion: 'representative-v6.13-server',
+      policyVersion: 'representative-v6.14-server',
       strictCrew: crew,
       requested: stations.length,
       failed: failures.length,
@@ -614,7 +627,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
-    policyVersion: 'representative-v6.13-server',
+    policyVersion: 'representative-v6.14-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
@@ -628,6 +641,8 @@ module.exports = async function handler(req, res) {
       postUrl: selected.postUrl,
       summary: selected.strictActivity,
       displaySummary: selected.displaySummary || selected.strictActivity,
+      displayDate: displayDateFor(selected),
+      displayText: finalDisplayText(selected, crew),
       publishedAt: selected.publishedAt,
       sourcePublishedAt: selected.sourcePublishedAt || selected.publishedAt,
       activityDate: selected.activityDate || String(selected.publishedAt || '').slice(0, 10),
@@ -653,6 +668,8 @@ module.exports._internals = {
   resolveActivityDate,
   activityPublishedAt,
   stableFingerprint,
+  displayDateFor,
+  finalDisplayText,
   activityTokens,
   vodMatchScore,
   findVodFallback,
