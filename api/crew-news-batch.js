@@ -233,8 +233,9 @@ function strictCrewPost(post, crew, station) {
   const activityText = sourceTitle + '\n' + body;
   const detectedActivity = detectActivity(activityText);
   const conditionalOrAspirational = /(?:하고\s*싶|가고\s*싶|해보고\s*싶|되면|된다면|성공하면|달성하면|목표\s*달성|공약|도와\s*달|도와주|부탁|희망|바라|예정\s*희망)/i.test(activityText);
-  const confirmedSchedule = /(?:확정|진행|합니다|해요|할\s*예정|하기로|일정|오늘|내일|모레|\d{1,2}\s*월\s*\d{1,2}\s*일|\d{1,2}[\/.]\d{1,2})/i.test(activityText);
-  const contextualActivity = conditionalOrAspirational && !confirmedSchedule ? '' : detectedActivity;
+  const confirmedSchedule = /(?:확정|진행(?:합니다|해요|예정|하기로)?|참여(?:합니다|해요|예정)?|합방(?:합니다|해요|예정)?|회의(?:합니다|해요|예정)?|여행(?:갑니다|가요|예정)?|할\s*예정|하기로|일정(?:은|이|:)?|오늘|내일|모레|\d{1,2}\s*월\s*\d{1,2}\s*일|\d{1,2}[\/.]\d{1,2})/i.test(activityText);
+  const downstreamOnly = /(?:후기|결과|정산|당첨|상품|경품|배송|수령|보상|감사합니다|잘\s*다녀왔)/i.test(activityText) && !confirmedSchedule;
+  const contextualActivity = (conditionalOrAspirational && !confirmedSchedule) || downstreamOnly ? '' : detectedActivity;
   const activity = override || contextualActivity || (leader && boardCrew && /특집/i.test(sourceTitle) ? '추석특집' : '');
 
   if (!activity) return null;
@@ -304,9 +305,15 @@ async function invokeCrewNews(req, params) {
   return{status:statusCode,body};
 }
 
+function semanticTokens(value) {
+  const stop = new Set(['크루','방송','오늘','내일','모레','예정','진행','공지','일정','특집','같이','함께']);
+  return [...new Set(String(value || '').toLowerCase()
+    .replace(/[^가-힣a-z0-9]+/g,' ').split(/\s+/)
+    .filter(token => token.length >= 2 && !stop.has(token)))];
+}
+
 function activityTokens(post) {
-  return String(post && (post.displaySummary || post.strictActivity || post.summary || '') || '')
-    .toLowerCase().replace(/[^가-힣a-z0-9]+/g,' ').split(/\s+/).filter(token => token.length >= 2);
+  return semanticTokens(post && (post.displaySummary || post.strictActivity || post.summary || ''));
 }
 
 function dateOnly(value) {
@@ -318,16 +325,23 @@ function vodMatchScore(post, vod) {
   if (!post || !vod || !vod.imageUrl) return -1;
   const activityDate = post.activityDate || dateOnly(post.publishedAt);
   const vodDate = dateOnly(vod.publishedAt);
-  let score = 0;
-  if (activityDate && vodDate) {
-    const days = Math.abs(Date.parse(activityDate + 'T00:00:00+09:00') - Date.parse(vodDate + 'T00:00:00+09:00')) / 86400000;
-    if (days > 1) return -1;
-    score += days === 0 ? 5 : 2;
-  }
+  if (!activityDate || !vodDate) return -1;
+  const days = Math.abs(Date.parse(activityDate + 'T00:00:00+09:00') - Date.parse(vodDate + 'T00:00:00+09:00')) / 86400000;
+  if (days > 1) return -1;
+
+  const activity = String(post.strictActivity || post.displaySummary || '').toLowerCase();
   const title = String(vod.title || '').toLowerCase();
-  const hits = activityTokens(post).filter(token => title.includes(token)).length;
-  score += hits * 4;
-  return hits > 0 ? score : -1;
+  const tokens = activityTokens(post);
+  const hits = tokens.filter(token => title.includes(token));
+  const exactActivity = activity.length >= 2 && title.includes(activity);
+  const distinctiveHit = hits.some(token => token.length >= 3);
+  // 날짜만 같은 VOD, 또는 '특집/방송' 같은 일반어만 맞는 VOD는 절대 이미지 후보로 쓰지 않는다.
+  if (!exactActivity && !distinctiveHit) return -1;
+
+  let score = days === 0 ? 6 : 2;
+  score += exactActivity ? 8 : 0;
+  score += hits.length * 4;
+  return score;
 }
 
 const VOD_FALLBACK_TTL_MS = 24 * 60 * 60 * 1000;
@@ -358,10 +372,10 @@ async function findVodFallbackUncached(post, stations, req) {
         if (score < 0 || (best && best.score >= score)) continue;
         best = {score, vod, station};
       }
-      if (best && best.score >= 9) break;
+      if (best && best.score >= 14) break;
     } catch (_) {}
   }
-  if (!best) return null;
+  if (!best || best.score < 10) return null;
   return {
     fallbackImageUrl: best.vod.imageUrl,
     fallbackSheetImageUrl: best.vod.sheetImageUrl,
@@ -611,7 +625,7 @@ module.exports = async function handler(req, res) {
       ok: false,
       complete: false,
       error: 'crew_news_incomplete',
-      policyVersion: 'representative-v6.14-server',
+      policyVersion: 'representative-v6.15-server',
       strictCrew: crew,
       requested: stations.length,
       failed: failures.length,
@@ -627,7 +641,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
-    policyVersion: 'representative-v6.14-server',
+    policyVersion: 'representative-v6.15-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
