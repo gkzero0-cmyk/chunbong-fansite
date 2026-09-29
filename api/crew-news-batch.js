@@ -682,7 +682,7 @@ module.exports = async function handler(req, res) {
       ok: false,
       complete: false,
       error: 'crew_news_incomplete',
-      policyVersion: 'representative-v6.20-server',
+      policyVersion: 'representative-v6.21-server',
       strictCrew: crew,
       requested: stations.length,
       failed: failures.length,
@@ -693,12 +693,14 @@ module.exports = async function handler(req, res) {
 
   const authenticated = results.some(item => item && item.authenticated === true);
   if(forceRefresh || authenticated)setBatchNoStore(res);
-  else if(failures.length>0 || auxiliaryFailures.length>0)setBatchPublicCache(res,{browser:60,cdn:300,stale:21600});
-  else setBatchPublicCache(res,{browser:300,cdn:3600,stale:21600});
+  else if(failures.length>0 || auxiliaryFailures.length>0)setBatchPublicCache(res,{browser:30,cdn:60,stale:120});
+  // Apps Script는 대표 소식의 최종 authority를 이 endpoint에서 받는다.
+  // 배포 직후 이전 정책 응답이 장시간 남지 않도록 batch 최종 응답은 짧게 캐시한다.
+  else setBatchPublicCache(res,{browser:30,cdn:60,stale:120});
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
-    policyVersion: 'representative-v6.20-server',
+    policyVersion: 'representative-v6.21-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
