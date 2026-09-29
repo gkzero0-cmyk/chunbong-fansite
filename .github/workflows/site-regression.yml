@@ -71,6 +71,9 @@ jobs:
           node --check site-analytics.js
           node --check feedback-widget.js
           node --check operator.js
+          node --check history-data.js
+          node --check history.js
+          node --check chunbong-contents.js
           node --check activity-center.js
           node --check daily-fortune.js
           node --check home-fortune-loader.js
