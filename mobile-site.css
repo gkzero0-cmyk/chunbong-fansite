@@ -1419,3 +1419,13 @@
     grid-column:auto!important;
   }
 }
+
+
+/* Mobile inline-link touch target guard */
+@media(max-width:760px){
+  body[data-page]:not([data-game]) .inline-link{
+    min-height:36px!important;
+    padding:7px 9px!important;
+    border-radius:9px!important;
+  }
+}
