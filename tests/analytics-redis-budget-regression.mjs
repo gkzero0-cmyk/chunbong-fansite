@@ -16,12 +16,12 @@ assert.match(client,/removeDeferred\(deferred\.id\)/,'deferred analytics must cl
 assert.match(client,/occurredAt/,'analytics events must carry their original occurrence time');
 assert.match(client,/search_query'\|\|type==='search_result_click/,'deferred search events need local privacy filtering');
 assert.doesNotMatch(client,/analyticsPaused\(\)\)\{queue\.length=0/,'budget pause must not discard queued analytics');
-assert.match(api,/hasPageView=events\.some/);
-assert.match(api,/if\(hasPageView\)commands\.push/);
+assert.match(api,/pageViewDays=new Map\(\)/);
+assert.match(api,/if\(type==='page_view'\)/);
 assert.match(api,/Math\.min\(300000,Math\.round\(Number\(event\.activeMs\)/);
-const baseStart=api.indexOf('const commands=[');
-const pageGate=api.indexOf('if(hasPageView)commands.push',baseStart);
-const visitorPf=api.indexOf("['PFADD',keys.visitors",baseStart);
+const baseStart=api.indexOf('const commands=[],pageViewDays=new Map()');
+const pageGate=api.indexOf("if(type==='page_view')",baseStart);
+const visitorPf=api.indexOf("['PFADD',keys.visitors",pageGate);
 assert.ok(baseStart>=0&&pageGate>baseStart&&visitorPf>pageGate);
 console.log('analytics Redis budget regression passed');
 
