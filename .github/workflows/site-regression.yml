@@ -120,6 +120,10 @@ jobs:
         run: |
           node scripts/build-tarot-css.mjs --check
           node scripts/build-tarot-js.mjs --check
+      - name: Run broadcast history predeploy audit
+        run: node tests/history-predeploy-audit-regression.mjs
+      - name: Run broadcast history page regression
+        run: node tests/broadcast-history-page-regression.mjs
       - name: Run all regression tests
         run: |
           set -e
