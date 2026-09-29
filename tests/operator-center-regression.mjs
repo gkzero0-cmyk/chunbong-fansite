@@ -118,7 +118,7 @@ assert.match(operatorHistoryAuditCss,/operator-history-year-quality/,'yearly ver
 assert.match(operatorJs,/issuePriority/, 'operator history audit must prioritize fixes');
 assert.match(operatorJs,/분류 우선/, 'classification problems must be surfaced first');
 assert.match(operatorJs,/history\.html\?q=/, 'audit items must deep-link into filtered history detail');
-assert.match(operatorCss,/operator-history-priority/, 'prioritized history fix styles missing');
+assert.match(operatorHistoryAuditCss,/operator-history-priority/, 'prioritized history fix styles missing');
 assert.match(operatorJs,/\$\$\('\[data-operator-tab\]'\)\.forEach/,'operator tab binding must iterate a NodeList');
 assert.doesNotMatch(operatorJs,/(^|\n)\$\('\[data-operator-tab\]'\)\.forEach/,'operator tab binding must not call forEach on querySelector result');
 assert.match(operatorJs,/\$\$\('\[data-operator-panel\]'\)\.forEach/,'operator panel switching must iterate a NodeList');
