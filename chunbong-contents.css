@@ -162,7 +162,7 @@ button.archive-series-poster{cursor:zoom-in}
 }
 @media(prefers-reduced-motion:reduce){.archive-series-skeleton{animation:none}}
 
-/* Archive stale-markup compatibility: old cached HTML used .reveal without a matching reveal runtime. */
+
 .archive-hero-copy.reveal,
 .archive-series-home.reveal,
 .archive-toolbar.reveal{
@@ -455,7 +455,7 @@ button.archive-series-poster{cursor:zoom-in}
 @media(max-width:900px){.archive-knowledge-overview{grid-template-columns:repeat(2,minmax(0,1fr))}.archive-flow{grid-template-columns:repeat(3,minmax(0,1fr))}.archive-knowledge-details{grid-template-columns:1fr}}
 @media(max-width:760px){.archive-knowledge{padding:15px}.archive-knowledge-head{display:block}.archive-knowledge-head>span{display:inline-flex;margin-top:10px}.archive-knowledge-overview{grid-template-columns:1fr 1fr}.archive-flow{grid-template-columns:1fr}.archive-flow li:not(:last-child):after{content:'↓';right:12px;top:auto;bottom:-11px;transform:none}.archive-system-chips{display:grid;grid-template-columns:1fr 1fr}}
 
-/* 2026-09-23 · Justserver detail titles: one-line, equal scale */
+
 .archive-detail-copy.is-justserver h1{
   max-width:100%;
   font-size:clamp(27px,3.4vw,46px);
