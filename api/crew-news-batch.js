@@ -209,6 +209,18 @@ function activityPublishedAt(dateOnly, publishedAt) {
   return dateOnly + ' ' + (time ? time[1] : '12:00:00');
 }
 
+function postExtractionQuality(post) {
+  const body = String(post?.contents || '').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+  const title = String(post?.originalTitle || post?.title || '').trim();
+  let score = 0;
+  if (title.length >= 2) score += 2;
+  if (body.length >= 12) score += 3;
+  if (post?.boardName) score += 1;
+  if (post?.author || post?.authorId) score += 1;
+  if (post?.publishedAt) score += 1;
+  return {score, bodyLength: body.length, complete: score >= 6};
+}
+
 function strictCrewPost(post, crew, station) {
   if (!post || !crew) return null;
   const title = String(post.title || '');
@@ -217,6 +229,7 @@ function strictCrewPost(post, crew, station) {
   const board = String(post.boardName || '');
   const accessType = String(post.accessType || '');
   const id = String(post.id || '');
+  const extraction = postExtractionQuality(post);
 
   if (accessType === 'favorite' || EXCLUDED_BOARD_RE.test(board)) return null;
 
@@ -279,7 +292,9 @@ function strictCrewPost(post, crew, station) {
     representativeTier,
     isCrewLeader: leader,
     isLeaderRepresentative: leaderRepresentative,
-    representativeMediaPriority: Number(REPRESENTATIVE_MEDIA_PRIORITY[crew] && REPRESENTATIVE_MEDIA_PRIORITY[crew][id] || 0)
+    representativeMediaPriority: Number(REPRESENTATIVE_MEDIA_PRIORITY[crew] && REPRESENTATIVE_MEDIA_PRIORITY[crew][id] || 0),
+    extractionQuality: extraction.score,
+    extractionComplete: extraction.complete
   };
 }
 
@@ -639,7 +654,7 @@ module.exports = async function handler(req, res) {
       ok: false,
       complete: false,
       error: 'crew_news_incomplete',
-      policyVersion: 'representative-v6.16-server',
+      policyVersion: 'representative-v6.17-server',
       strictCrew: crew,
       requested: stations.length,
       failed: failures.length,
@@ -655,7 +670,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
-    policyVersion: 'representative-v6.16-server',
+    policyVersion: 'representative-v6.17-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
@@ -669,6 +684,8 @@ module.exports = async function handler(req, res) {
       postUrl: selected.postUrl,
       summary: selected.strictActivity,
       displaySummary: selected.displaySummary || selected.strictActivity,
+      extractionQuality: selected.extractionQuality ?? null,
+      extractionComplete: selected.extractionComplete !== false,
       displayDate: displayDateFor(selected),
       displayText: finalDisplayText(selected, crew),
       publishedAt: selected.publishedAt,
@@ -689,6 +706,7 @@ module.exports = async function handler(req, res) {
 module.exports._internals = {
   safeStations,
   intParam,
+  postExtractionQuality,
   inferCrew,
   detectActivity,
   strictCrewPost,
