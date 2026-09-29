@@ -19,7 +19,10 @@ for(const token of [
   "youtubeStaleRefreshLimit:20",
   "notionFallbackMinutes:360",
   "validatedDailySnapshot:true",
-  "providerOutagePreservesCache:true"
+  "providerOutagePreservesCache:true",
+  "analyticsDeferredBufferHours:48",
+  "analyticsDeferredMaxEvents:120",
+  "analyticsReplayPreservesEventTime:true"
 ]) assert.ok(api.includes(token),token+' missing');
 
 assert.match(ui,/아카이브 메타 캐시/);
@@ -39,6 +42,8 @@ assert.match(api,/retryAfterSeconds=\(name==='redis_service_limit'\|\|name==='re
 assert.match(ui,/24시간 제한 이벤트/);
 assert.match(ui,/일일 검증 복구본/);
 assert.match(ui,/외부 장애 캐시 보존/);
+assert.match(ui,/분석 임시 보관/);
+assert.match(ui,/지연 분석 원래 시각 보존/);
 assert.match(api,/VERCEL_LIMIT_STATE_KEY='operator:vercel-limit-state:v1'/);
 assert.match(api,/vercel-rate-limit-recovered/);
 assert.match(ui,/system-quota-breakdown/);
