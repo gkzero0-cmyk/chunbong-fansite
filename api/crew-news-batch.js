@@ -609,6 +609,8 @@ module.exports = async function handler(req, res) {
       return Number(Boolean(b.isCrewLeader)) - Number(Boolean(a.isCrewLeader));
     });
     selected = candidates[0] || null;
+    // 대표 소식 선정은 VOD 조회와 분리한다. VOD/썸네일 보조 조회 실패가
+    // 이미 검증된 대표 소식 전체를 500으로 만들지 않도록 한다.
     if (selected && !selected.imageUrl) {
       const orderedStations = [
         ...new Set([
@@ -616,8 +618,12 @@ module.exports = async function handler(req, res) {
           ...stations
         ].filter(Boolean))
       ];
-      const fallback = await findVodFallback(selected, orderedStations, req);
-      if (fallback) selected = {...selected, ...fallback};
+      try {
+        const fallback = await findVodFallback(selected, orderedStations, req);
+        if (fallback) selected = {...selected, ...fallback};
+      } catch (_) {
+        // 이미지 보조 조회 실패는 비치명적이다. 대표 소식/기존 이미지는 그대로 유지한다.
+      }
     }
     if (selected) selected = applyFallbackImage(selected);
 
@@ -654,7 +660,7 @@ module.exports = async function handler(req, res) {
       ok: false,
       complete: false,
       error: 'crew_news_incomplete',
-      policyVersion: 'representative-v6.17-server',
+      policyVersion: 'representative-v6.18-server',
       strictCrew: crew,
       requested: stations.length,
       failed: failures.length,
@@ -670,7 +676,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
-    policyVersion: 'representative-v6.17-server',
+    policyVersion: 'representative-v6.18-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
