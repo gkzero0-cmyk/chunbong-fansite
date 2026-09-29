@@ -13,6 +13,9 @@ try{
    page.on('requestfailed',req=>{if(req.url().startsWith(BASE))failed.push(req.url())});
    await page.addInitScript(value=>localStorage.setItem('chunbong-theme',value),theme);
    await page.route('**/api/content?*',route=>route.fulfill({status:200,contentType:'application/json',body:'{"items":[],"fallback":true}'}));
+   await page.route('**/api/version',route=>route.fulfill({status:200,contentType:'application/json',body:'{"sha":"predeploy-local"}'}));
+   await page.route('**/api/history-sheet?*',route=>route.fulfill({status:200,contentType:'application/json',body:'{"items":[],"fallback":true}'}));
+   await page.route('**/api/crew-news*',route=>route.fulfill({status:200,contentType:'application/json',body:'{"items":[],"fallback":true}'}));
    await page.goto(BASE+'/'+file+'?_quality=1',{waitUntil:'domcontentloaded'});
    await page.waitForTimeout(300);
    const result=await page.evaluate(()=>{
