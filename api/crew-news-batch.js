@@ -335,11 +335,25 @@ function vodMatchScore(post, vod) {
   const hits = tokens.filter(token => title.includes(token));
   const exactActivity = activity.length >= 2 && title.includes(activity);
   const distinctiveHit = hits.some(token => token.length >= 3);
-  // 날짜만 같은 VOD, 또는 '특집/방송' 같은 일반어만 맞는 VOD는 절대 이미지 후보로 쓰지 않는다.
-  if (!exactActivity && !distinctiveHit) return -1;
+  const crewName = String(post.strictCrew || '').toLowerCase();
+  const crewHit = crewName.length >= 2 && title.includes(crewName);
+  const activityAliasHit = (
+    /러닝/.test(activity) && /러닝|달리기/.test(title)
+  ) || (
+    /여행/.test(activity) && /여행|엠티|\bmt\b/i.test(title)
+  ) || (
+    /회의/.test(activity) && /회의/.test(title)
+  ) || (
+    /윷놀이/.test(activity) && /윷놀이/.test(title)
+  );
+  // 날짜만 같은 VOD는 금지. 다만 '장지수용소 러닝' ↔ '장지수용소 버추얼 단체러닝'처럼
+  // 크루명 + 활동 핵심어가 함께 맞으면 문구가 완전히 같지 않아도 검증된 관련 VOD로 인정한다.
+  if (!exactActivity && !distinctiveHit && !(crewHit && activityAliasHit)) return -1;
 
   let score = days === 0 ? 6 : 2;
   score += exactActivity ? 8 : 0;
+  score += crewHit ? 4 : 0;
+  score += activityAliasHit ? 5 : 0;
   score += hits.length * 4;
   return score;
 }
@@ -625,7 +639,7 @@ module.exports = async function handler(req, res) {
       ok: false,
       complete: false,
       error: 'crew_news_incomplete',
-      policyVersion: 'representative-v6.15-server',
+      policyVersion: 'representative-v6.16-server',
       strictCrew: crew,
       requested: stations.length,
       failed: failures.length,
@@ -641,7 +655,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
-    policyVersion: 'representative-v6.15-server',
+    policyVersion: 'representative-v6.16-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
