@@ -24,7 +24,7 @@ const MANUAL_SUMMARY = Object.freeze({
   '진드기': { '207893749': '히어로 레드 웰컴 진드기' },
   'ZZAM지트': { '207641333': '소울체인드 합방' },
   '자라섬': { '208189099': 'VRC 윷놀이' },
-  '천타버스': { '208075141': '추석특집' }
+  '천타버스': { '208075141': '천타버스 추석특집' }
 });
 
 const MANUAL_DISPLAY_SUMMARY = Object.freeze({
@@ -660,7 +660,7 @@ module.exports = async function handler(req, res) {
       ok: false,
       complete: false,
       error: 'crew_news_incomplete',
-      policyVersion: 'representative-v6.18-server',
+      policyVersion: 'representative-v6.19-server',
       strictCrew: crew,
       requested: stations.length,
       failed: failures.length,
@@ -676,7 +676,7 @@ module.exports = async function handler(req, res) {
   return res.status(failures.length === results.length ? 502 : 200).json({
     ok: failures.length < results.length,
     complete: failures.length === 0 && auxiliaryFailures.length === 0,
-    policyVersion: 'representative-v6.18-server',
+    policyVersion: 'representative-v6.19-server',
     strictCrew: crew || '',
     keyword,
     requested: stations.length,
