@@ -4,6 +4,11 @@ const SOOP_BOARD_HOSTS = [
   'https://chapi.sooplive.com',
   'https://chapi.sooplive.co.kr'
 ];
+const SOOP_VOD_HOSTS = [
+  'https://chapi.sooplive.com',
+  'https://chapi.sooplive.co.kr'
+];
+
 const SOOP_MENU_HOSTS = [
   'https://api-channel.sooplive.com',
   'https://api-channel.sooplive.co.kr'
@@ -219,6 +224,33 @@ async function fetchMenu(station, headers) {
   }
 }
 
+function normalizeVod(row, station, req) {
+  const id = String(first(row, ['title_no','titleNo','no']) || '').replace(/\D/g, '');
+  const title = safeText(first(row, ['title_name','title','subject']), 500);
+  const publishedAt = safeText(first(row, ['reg_date','regDate','created_at','createdAt']), 80);
+  const candidates = collectImageUrls(row, []);
+  const rawThumb = absoluteHttps(first(row, ['thumb','thumbnail','thumb_url','thumbnail_url','image','image_url','title_img','vod_thumb']) || '');
+  const imageUrl = rawThumb || candidates[0] || '';
+  return {
+    id,
+    title,
+    publishedAt,
+    vodUrl: id ? `https://vod.sooplive.com/player/${id}` : '',
+    imageUrl,
+    sheetImageUrl: proxyImageUrl(req, imageUrl),
+    station
+  };
+}
+
+async function fetchVods(station, req, {type='review', page=1, perPage=12}={}) {
+  const safeType = /^(?:all|review|normal)$/.test(type) ? type : 'review';
+  const params = new URLSearchParams({page:String(page),per_page:String(perPage),orderby:'reg_date'});
+  const urls = SOOP_VOD_HOSTS.map(host => `${host}/api/${encodeURIComponent(station)}/vods/${safeType}?${params}`);
+  const result = await firstJson(urls, {Referer:`https://www.sooplive.com/station/${station}/vod/${safeType}`});
+  const rows = Array.isArray(result.data && result.data.data) ? result.data.data : [];
+  return rows.map(row => normalizeVod(row, station, req));
+}
+
 function proxyImageUrl(req, url) {
   if (!url) return '';
   const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim() || 'https';
@@ -273,8 +305,23 @@ module.exports = async function handler(req, res) {
 
   const requestUrl = new URL(req.url || '/', 'https://chunbong.local');
   const forceRefresh = requestUrl.searchParams.get('refresh') === '1';
+  const mode = requestUrl.searchParams.get('mode') || 'posts';
   const station = safeStation(requestUrl.searchParams.get('station') || '');
   if (!station) return res.status(400).json({ error: 'invalid_station' });
+
+  if (mode === 'vods') {
+    const vodType = safeText(requestUrl.searchParams.get('vod_type') || 'review', 16);
+    const vodPage = intParam(requestUrl.searchParams.get('page'), 1, 1, 20);
+    const vodPerPage = intParam(requestUrl.searchParams.get('per_page'), 12, 1, 30);
+    try {
+      const vods = await fetchVods(station, req, {type:vodType,page:vodPage,perPage:vodPerPage});
+      setPublicCache(res,{browser:300,cdn:3600,stale:21600});
+      return res.status(200).json({ok:true,station,mode:'vods',count:vods.length,vods});
+    } catch (error) {
+      setNoStore(res);
+      return res.status(502).json({ok:false,error:'soop_vod_unavailable',station});
+    }
+  }
 
   const page = intParam(requestUrl.searchParams.get('page'), 1, 1, 100);
   const perPage = intParam(requestUrl.searchParams.get('per_page'), 50, 1, 50);
@@ -360,5 +407,7 @@ module.exports._internals = {
   collectImageUrls,
   classifyAccess,
   normalizePost,
-  summarizeGenericPostTitle
+  summarizeGenericPostTitle,
+  normalizeVod,
+  fetchVods
 };
