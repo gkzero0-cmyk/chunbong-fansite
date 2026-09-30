@@ -120,4 +120,21 @@ function bind(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
 
+function installOperatorMobileTabUX(){
+  if(globalThis.__chunbongOperatorMobileTabUXV2)return;
+  globalThis.__chunbongOperatorMobileTabUXV2=true;
+  const mobile=()=>matchMedia('(max-width: 760px)').matches;
+  const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const center=button=>{
+    if(!mobile()||!button?.matches?.('[data-operator-tab]'))return;
+    button.scrollIntoView({behavior:reduced()?'auto':'smooth',block:'nearest',inline:'center'});
+  };
+  const centerActive=()=>center(document.querySelector('.operator-tabs [data-operator-tab][aria-selected="true"],.operator-tabs [data-operator-tab].active'));
+  document.querySelectorAll('[data-operator-tab]').forEach(button=>button.addEventListener('click',()=>queueMicrotask(()=>center(button))));
+  document.querySelectorAll('[data-operator-quick-tab]').forEach(button=>button.addEventListener('click',()=>queueMicrotask(centerActive)));
+  window.addEventListener('resize',()=>{if(mobile())queueMicrotask(centerActive)},{passive:true});
+  queueMicrotask(centerActive);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installOperatorMobileTabUX,{once:true});else installOperatorMobileTabUX();
+
 export{renderRedisDiagnostics,loadRedisDiagnostics};
