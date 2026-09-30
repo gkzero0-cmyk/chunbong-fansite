@@ -2,6 +2,9 @@
   "name": "chunbong-fansite",
   "version": "1.0.0",
   "private": true,
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
   "dependencies": {
     "web-push": "^3.6.7"
   },
