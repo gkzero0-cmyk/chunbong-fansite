@@ -54,11 +54,13 @@ assert.ok(survival,'survival source missing from seed');
 
 assert.equal(internals.guideHydrationPlan(diamond).some(row=>row.kind==='notion'),true,'diamond should self-hydrate from Notion when Redis guide rows are missing');
 assert.equal(internals.guideHydrationPlan(money).some(row=>row.kind==='notion'),true,'moneygame should self-hydrate from its hidden Notion source when Redis guide rows are missing');
-assert.equal(internals.guideHydrationPlan({...survival,sources:[...(survival.sources||[]),source]}).some(row=>row.kind==='official-wiki'),true,'survival should prefer the structured official wiki feed');
+assert.equal(internals.guideHydrationPlan(survival).some(row=>row.kind==='official-wiki'),true,'survival should map to the structured official wiki feed');
 
 const apiSource=fs.readFileSync(new URL('../lib/chunbong-content-archive-api.js',import.meta.url),'utf8');
+const adapterSource=fs.readFileSync(new URL('../lib/content-guide-sources.js',import.meta.url),'utf8');
 assert.match(apiSource,/await hydrateGuideForPublicItem\(/,'public detail must self-hydrate a guide when Redis-backed sections are unavailable');
 assert.match(apiSource,/refreshOfficialWikiGuides/,'scheduled archive sync must include official wiki guides');
-assert.match(apiSource,/public\/notion-assets\/index\.json|notion-assets\/index\.json/,'official wiki sync should consume the structured index, not scrape rendered HTML');
+assert.match(adapterSource,/notion-assets\/index\.json/,'official wiki sync should consume the structured index, not scrape rendered HTML');
+assert.doesNotMatch(adapterSource,/<main|querySelector|cheerio/i,'official wiki adapter must not scrape rendered HTML');
 
 console.log('content guide resilience regression: ok');
