@@ -38,10 +38,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git add lib/chunbong-content-archive-api.js .github/workflows/site-regression.yml
+          git add lib/chunbong-content-archive-api.js
           if git diff --cached --quiet; then exit 0; fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m 'fix: keep content guides available without Redis'
           git push origin HEAD:fix/content-guide-wiki-sync-20261001
-# rerun after restoring the verified moneygame legacy Notion source
