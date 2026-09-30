@@ -28,6 +28,8 @@ test('read-only mode never blocks normal logout or GET diagnostics',()=>{
   assert.match(source,/if\(method!=='GET'\)\{/,'write and GET paths must remain separated');
   const lockBody=source.match(/function applyWriteLocks\(active\)\{([\s\S]*?)\n\}/)?.[1]||'';
   assert.doesNotMatch(lockBody,/operator-redis-refresh/,'Redis detail refresh is a diagnostic GET and must remain available');
+  assert.match(lockBody,/data-revoke-session/,'the actual rendered session revoke control must be visually locked');
+  assert.doesNotMatch(lockBody,/data-session-revoke/,'stale session revoke selector must not return');
 });
 
 test('degraded write locks are reapplied to controls rendered after mode activation',()=>{
