@@ -44,3 +44,4 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m 'fix: keep content guides available without Redis'
           git push origin HEAD:fix/content-guide-wiki-sync-20261001
+# rerun after restoring the verified moneygame legacy Notion source
