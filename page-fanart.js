@@ -7,6 +7,7 @@
     errorState, bindRetry, setupReveal, requestedOpenId
   } = core;
   const itemKey=item=>String(item?.id||item?.link||item?.title||'');
+  const fanartMeta=item=>[String(item?.author||'').trim(),String(item?.date||'').trim()].filter(Boolean).join(' · ');
 
   async function renderFanartPage() {
     const grid = $('#fanart-grid');
@@ -24,13 +25,16 @@
       return;
     }
 
-    grid.innerHTML = items.map((item, index) => `
+    grid.innerHTML = items.map((item, index) => {
+      const meta=fanartMeta(item);
+      return `
       <button class="fanart-card reveal" type="button" data-fanart-index="${index}" data-fanart-id="${esc(item.id || '')}">
         <span class="fanart-image" data-fanart-thumb>
           ${item.thumb ? `<img src="${esc(proxiedImage(item.thumb))}" alt="${esc(item.title || '춘봉 팬아트')}" loading="lazy" decoding="async" fetchpriority="low">` : `<span class="fan-placeholder">${esc(item.symbol || '✦')}</span>`}
         </span>
-        <span class="fanart-copy"><strong>${esc(item.title || item.caption || '춘봉 팬아트')}</strong><small>${esc(item.author || 'CHUNBONG FAN ART')}${item.date ? ` · ${esc(item.date)}` : ''}</small></span>
-      </button>`).join('');
+        <span class="fanart-copy"><strong>${esc(item.title || item.caption || '춘봉 팬아트')}</strong>${meta?`<small>${esc(meta)}</small>`:''}</span>
+      </button>`;
+    }).join('');
 
     const detailUrl = id => `/api/content?type=fanart-detail&id=${encodeURIComponent(id)}`;
     const detailPayload = async id => {
@@ -96,7 +100,9 @@
       button.addEventListener('click', () => {
         const item = items[Number(button.dataset.fanartIndex)];
         modalTitle.textContent = item.title || item.caption || '춘봉 팬아트';
-        modalAuthor.textContent = item.author ? `by ${item.author}` : 'CHUNBONG FAN ART';
+        const author=String(item.author||'').trim();
+        modalAuthor.textContent = author ? `by ${author}` : '';
+        modalAuthor.hidden = !author;
         modalLink.href = item.link || data.sources?.fanart || '#';
         const hydrated = button.querySelector('[data-fanart-thumb] img')?.getAttribute('src') || '';
         if (item.thumb) {
@@ -115,7 +121,7 @@
         document.dispatchEvent(new CustomEvent('chunbong:fanart-selected',{detail:{
           id:itemKey(item),
           type:'fanart',title:String(item.title||item.caption||'춘봉 팬아트'),
-          meta:String(item.author||'CHUNBONG FAN ART'),href:'fanart.html?open='+encodeURIComponent(itemKey(item)),
+          meta:fanartMeta(item),href:'fanart.html?open='+encodeURIComponent(itemKey(item)),
           sourceHref:item.link||'',thumb:item.thumb||''
         }}));
       });
