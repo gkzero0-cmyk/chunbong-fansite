@@ -127,9 +127,9 @@ jobs:
             assert.match((await page.locator('#system-storage').textContent())||'',/저비용 모드/);
             assert.equal((await page.locator('#system-visitors').textContent())?.trim(),'42','shallow system status should reuse analytics snapshot instead of Redis');
             assert.match((await page.locator('#system-redis-keys').textContent())||'',/상세 확인/);
-            assert.equal((await page.locator('#system-redis-monthly-used').textContent())?.trim(),'327,412 / 500,000');
-            assert.equal((await page.locator('#system-redis-monthly-remaining').textContent())?.trim(),'172,588회');
-            assert.equal((await page.locator('#system-redis-monthly-pct').textContent())?.trim(),'65.5%');
+            assert.equal((await page.locator('#system-redis-monthly-used').textContent())?.trim(),'327,412회');
+            assert.equal((await page.locator('#system-redis-monthly-remaining').textContent())?.trim(),'정확 계산 불가');
+            assert.equal((await page.locator('#system-redis-monthly-pct').textContent())?.trim(),'계산 안 함');
             assert.equal(await page.locator('#operator-endpoint-health>div').count(),3,'Redis-zero system status should skip Push storage probe');
             await page.locator('#operator-redis-refresh').click();
             await page.waitForFunction(()=>document.querySelector('#system-storage')?.textContent?.includes('정상'));
