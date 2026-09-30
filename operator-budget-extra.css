@@ -14,3 +14,67 @@
   .operator-redis-usage-panel .operator-section-title-row{display:grid;gap:5px}
   .operator-redis-usage-panel .operator-section-title-row>span{text-align:left}
 }
+
+/* Operator mobile usability v2 */
+.operator-card,.operator-attention,.operator-period-summary,.operator-system-summary,.operator-redis-usage-panel{content-visibility:auto;contain-intrinsic-size:auto 240px}
+.operator-day small,.operator-feedback-meta dt,.operator-hour small,.operator-guide-grid small,.operator-event-row small,.operator-environment-row small,.operator-search-click-row>span,.operator-search-click-row small,.operator-image-audit-row small,.operator-image-audit-row>b,.operator-image-audit-ok small{font-size:max(11px,1em)}
+.operator-image-audit-row code{font-size:10px}
+@media(max-width:760px){
+  .operator-tabs{
+    overflow-x:auto;
+    white-space:nowrap;
+    scroll-snap-type:x proximity;
+    scroll-padding-inline:16px;
+    overscroll-behavior-inline:contain;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none
+  }
+  .operator-tabs::-webkit-scrollbar{display:none}
+  .operator-tabs button{
+    flex:0 0 auto;
+    min-height:44px;
+    padding-block:10px;
+    scroll-snap-align:center;
+    touch-action:manipulation
+  }
+  .operator-period button,
+  .operator-export-actions button,
+  .operator-system-summary button,
+  .operator-card header button,
+  .operator-section-title-row button,
+  .operator-budget-head-actions button,
+  .operator-auth-button,
+  .operator-email-row button,
+  #operator-logout,
+  #operator-logout-all{
+    min-height:44px!important;
+    touch-action:manipulation
+  }
+  .operator-period button{font-size:12px!important;padding:9px 7px!important}
+  .operator-metric-grid small,
+  .operator-metric-grid em,
+  .operator-redis-usage-panel .operator-section-title-row small,
+  .operator-redis-usage-panel .operator-section-title-row>span{font-size:11px}
+  .operator-day small,
+  .operator-feedback-meta dt,
+  .operator-hour small,
+  .operator-guide-grid small,
+  .operator-event-row small,
+  .operator-environment-row small,
+  .operator-search-click-row>span,
+  .operator-search-click-row small,
+  .operator-image-audit-row small,
+  .operator-image-audit-row>b,
+  .operator-image-audit-ok small{font-size:11px!important;line-height:1.45}
+  .operator-image-audit-row code{font-size:10px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .operator-page *,
+  .operator-page *::before,
+  .operator-page *::after{
+    scroll-behavior:auto!important;
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important
+  }
+}
