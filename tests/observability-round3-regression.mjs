@@ -31,6 +31,8 @@ assert.match(diagnostics,/관찰 기반 추정/,'Redis diagnostics should expose
 assert.match(diagnostics,/70/);
 assert.match(diagnostics,/85/);
 assert.match(diagnostics,/95/);
+assert.match(diagnostics,/수집기 신선도/);
+assert.match(diagnostics,/실사용자 오류/);
 
 assert.ok(exists('lib/operator-observability.js'),'warm-instance observability store should exist');
 const observability=read('lib/operator-observability.js');
@@ -51,9 +53,5 @@ assert.match(contentApi,/recordCollectorResult/,'content API should update colle
 const operatorApi=read('lib/operator-center-api.js');
 assert.match(operatorApi,/clientHealth/);
 assert.match(operatorApi,/collectorHealth/);
-
-const operatorUi=read('operator.js');
-assert.match(operatorUi,/수집기 신선도/);
-assert.match(operatorUi,/실사용자 오류/);
 
 console.log('observability round3 regression: ok');
