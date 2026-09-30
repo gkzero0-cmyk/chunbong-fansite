@@ -251,7 +251,7 @@ function renderOperatorAttention(){
   }
   const badEndpoints=endpoints.filter(row=>!row.ok);if(badEndpoints.length)rows.push({level:'bad',title:'API 응답 확인 필요',detail:badEndpoints.map(row=>row.label||row.path||'API').join(' · '),tab:'system'});
   const slow=endpoints.filter(row=>row.ok&&Number(row.ms)>=1500);if(slow.length)rows.push({level:'warn',title:'느린 API 감지',detail:slow.map(row=>(row.label||row.path||'API')+' '+fmt(row.ms)+'ms').join(' · '),tab:'system'});
-  if(currentSystem&&(!services.analytics||!services.feedback||!services.push))rows.push({level:'warn',title:'서비스 설정 확인',detail:[!services.analytics&&'실사용 분석',!services.feedback&&'피드백 저장',!services.push&&'Push'].filter(Boolean).join(' · '),tab:'system'});
+  if(currentSystem&&(!services.analytics||!services.feedback||services.push===false))rows.push({level:'warn',title:'서비스 설정 확인',detail:[!services.analytics&&'실사용 분석',!services.feedback&&'피드백 저장',services.push===false&&'Push'].filter(Boolean).join(' · '),tab:'system'});
   const unread=feedbackItems.filter(item=>item.status==='new').length||Number(currentAnalytics?.feedbackCounts?.new)||0;if(unread)rows.push({level:'info',title:'새 피드백 '+fmt(unread)+'건',detail:'확인하지 않은 사용자 의견이 있습니다.',tab:'feedback'});
   const highPriority=feedbackItems.filter(item=>item.priority==='high'&&!['done','archived'].includes(item.status)).length;if(highPriority)rows.push({level:'warn',title:'높은 우선순위 피드백 '+fmt(highPriority)+'건',detail:'완료되지 않은 높은 우선순위 의견이 있습니다.',tab:'feedback'});
   const duplicateFeedback=feedbackDuplicateSummary();if(duplicateFeedback.groupCount)rows.push({level:'info',title:'반복 피드백 '+fmt(duplicateFeedback.groupCount)+'묶음',detail:'유사 제보 '+fmt(duplicateFeedback.itemCount)+'건을 함께 확인할 수 있습니다.',tab:'feedback'});
@@ -414,7 +414,7 @@ async function updateSelectedFeedback({statusValue,memoValue,priorityValue,tagsV
   const data=await json(API+'operator-feedback-update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   selectedFeedback=data.item;feedbackItems=feedbackItems.map(x=>x.id===selectedFeedback.id?selectedFeedback:x);renderFeedbackSummary();renderFeedbackList();renderFeedbackDetail();renderOperatorAttention();await loadAnalytics();
 }
-function healthLabel(ok){return ok?'<span class="operator-health ok">● 정상</span>':'<span class="operator-health bad">● 확인 필요</span>'}
+function healthLabel(ok){if(ok===null||ok===undefined)return'<span class="operator-health warn">● 미조회</span>';return ok?'<span class="operator-health ok">● 정상</span>':'<span class="operator-health bad">● 확인 필요</span>'}
 function redisMemoryLabel(storage={}){
   if(storage.usedMemoryHuman){
     const max=storage.maxMemoryHuman?' / '+storage.maxMemoryHuman:'';
@@ -477,7 +477,7 @@ async function loadSystemStatus({storage:deepStorage=false}={}){
     else storageHealth.innerHTML='<span class="operator-health warn">● 설정 없음</span>';
   }
   $('#system-storage-meta').textContent=!storage.redisConfigured?'저장소 설정 없음':storage.limited?'Redis 제한 감지 · 운영자 센터는 계속 사용 가능':storage.liveChecked?(storage.redisOk?'수동 상세 확인 정상':'수동 상세 확인 실패'):'기본 화면은 Redis를 조회하지 않습니다.';
-  $('#system-push').innerHTML=services.push?'<span class="operator-health ok">● 준비됨</span>':'<span class="operator-health warn">● 상세 미조회</span>';$('#system-push-meta').textContent=services.push?'VAPID 준비됨':storage.liveChecked?'Push 설정 확인 필요':'Redis 절약을 위해 기본 화면에서는 저장형 Push 설정을 읽지 않습니다.';
+  $('#system-push').innerHTML=services.push===true?'<span class="operator-health ok">● 준비됨</span>':services.push===false?'<span class="operator-health bad">● 확인 필요</span>':'<span class="operator-health warn">● 상세 미조회</span>';$('#system-push-meta').textContent=services.push===true?'Realtime Redis의 VAPID 준비됨':services.push===false?'Realtime Redis의 Push 설정 확인 필요':'Redis 절약을 위해 기본 화면에서는 저장형 Push 설정을 읽지 않습니다.';
   $('#system-active').textContent=traffic.activeNow===null||traffic.activeNow===undefined?'-':fmt(traffic.activeNow);$('#system-visitors').textContent=traffic.visitors===null||traffic.visitors===undefined?'-':fmt(traffic.visitors);$('#system-sessions').textContent=traffic.sessions===null||traffic.sessions===undefined?'-':fmt(traffic.sessions);$('#system-pageviews').textContent=traffic.pageviews===null||traffic.pageviews===undefined?'-':fmt(traffic.pageviews);
   $('#system-sha').textContent=shortSha(dep.sha);$('#system-main-sha').textContent=shortSha(dep.mainSha);$('#system-url').textContent=dep.url||'-';
   $('#system-vercel-status').textContent=dep.rateLimited?'배포 제한 · '+(dep.vercel?.description||'rate limited'):dep.vercel?.description||dep.vercel?.state||'상태 정보 없음';
@@ -494,7 +494,7 @@ async function loadSystemStatus({storage:deepStorage=false}={}){
   if(usageDaily)usageDaily.textContent=redisUsage.dailyCommands===null||redisUsage.dailyCommands===undefined?'-':fmt(redisUsage.dailyCommands);
   if(usageStorage)usageStorage.textContent=bytesLabel(redisUsage.currentStorageBytes);
   const serviceRows=[['GitHub 운영자 인증',services.githubAuth],['이메일 운영자 인증',services.emailAuth],['Push 알림',services.push],['실사용 분석',services.analytics],['피드백 저장',services.feedback]];
-  $('#operator-service-health').innerHTML=serviceRows.map(([label,ok])=>`<div><span>${label}</span>${healthLabel(Boolean(ok))}</div>`).join('');
+  $('#operator-service-health').innerHTML=serviceRows.map(([label,ok])=>`<div><span>${label}</span>${healthLabel(ok)}</div>`).join('');
   const endpoints=Array.isArray(data.endpoints)?data.endpoints:[];
   $('#operator-endpoint-health').innerHTML=endpoints.length?endpoints.map(row=>`<div><span>${escapeHtml(row.label||row.path||'API')} <small>${fmt(row.ms)}ms</small></span><span class="operator-endpoint-result ${row.ok?'ok':'bad'}">${row.ok?'HTTP '+fmt(row.status):row.status?'HTTP '+fmt(row.status):'응답 실패'}</span></div>`).join(''):'<p class="operator-empty">API 상태를 확인하지 못했습니다.</p>';
   const multiplayer=data.multiplayer||{};
