@@ -36,6 +36,7 @@ assert.match(diagnostics,/관찰 기반 추정/,'Redis diagnostics should expose
 assert.match(diagnostics,/70/);
 assert.match(diagnostics,/85/);
 assert.match(diagnostics,/95/);
+assert.match(diagnostics,/Upstash Usage/,'official Upstash monthly source must remain visible alongside estimates');
 assert.match(diagnostics,/수집기 신선도/);
 assert.match(diagnostics,/실사용자 오류/);
 
@@ -51,6 +52,8 @@ const siteHealth=read('site-health.js');
 assert.match(siteHealth,/0\.02/,'client health sampling should stay at 2%');
 assert.match(siteHealth,/client-health/);
 assert.match(siteHealth,/keepalive|sendBeacon/);
+const shell=read('site-shell.js');
+assert.match(shell,/loadScript\(['"]site-health\.js['"]\)/,'shared site shell must actually load the client health sampler');
 
 const contentApi=read('api/content.js');
 assert.match(contentApi,/type==='client-health'/,'public client health ingestion route should exist');
