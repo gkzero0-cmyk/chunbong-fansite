@@ -59,7 +59,7 @@ for(const token of ['class="archive-hero-copy reveal"','class="archive-series-ho
 }
 
 const serviceWorker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');
-assert.ok(serviceWorker.includes("runtime-v33"),'service worker cache namespace should remain compatible');
+assert.ok(serviceWorker.includes("runtime-v34"),'service worker cache namespace should remain compatible');
 assert.ok(serviceWorker.includes("event.respondWith(networkFirst(request, event));"),'documents/scripts/styles should prefer network to avoid stale markup/style mismatches');
 assert.ok(!/self\.addEventListener\('install',[\s\S]*?await self\.skipWaiting\(\)/.test(serviceWorker),'new service worker should wait for explicit refresh activation instead of racing the update toast');
 assert.ok(serviceWorker.includes("event.data?.type === 'SKIP_WAITING'"),'service worker should still support explicit refresh activation');

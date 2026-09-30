@@ -3,6 +3,11 @@ name: Site regression
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - '.github/recovery/**'
+      - '.github/vercel-redeploy-*.txt'
   pull_request:
     branches: [main]
 

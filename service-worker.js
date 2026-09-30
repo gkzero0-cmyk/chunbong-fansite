@@ -1,6 +1,6 @@
 /* CHUNBONG_PWA v2 · deployment-aware cache */
 const CACHE_PREFIX = 'chunbong-pwa-';
-const FALLBACK_VERSION = 'runtime-v33';
+const FALLBACK_VERSION = 'runtime-v34';
 const requestedVersion = new URL(self.location.href).searchParams.get('v') || FALLBACK_VERSION;
 const BUILD_VERSION = String(requestedVersion).replace(/[^a-zA-Z0-9._-]/g,'-').slice(0,48) || FALLBACK_VERSION;
 const CACHE_NAME = CACHE_PREFIX + BUILD_VERSION;
@@ -14,10 +14,10 @@ const APP_SHELL = [
   '/site-design-system.css',
   '/site-quality.css',
   '/site-improvements.css',
-  '/mobile-site.css?v=3',
-  '/mobile-runtime-loader.js?v=1',
-  '/mobile-site.js?v=3',
-  '/page.js?v=2',
+  '/mobile-site.css',
+  '/mobile-runtime-loader.js',
+  '/mobile-site.js',
+  '/page.js',
   '/site-shell.js',
   '/site-meta.js',
   '/site-health.js',
@@ -67,9 +67,20 @@ async function networkFirst(request, event) {
   }
 }
 
+async function matchCanonicalAsset(cache, request) {
+  try {
+    const url = new URL(request.url);
+    if (!url.search) return null;
+    return await cache.match(url.pathname);
+  } catch {
+    return null;
+  }
+}
+
 async function boundedNetworkFirst(request, event, timeoutMs = 450) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
+  const canonicalCached = cached ? null : await matchCanonicalAsset(cache, request);
   const network = (async () => {
     try {
       const response = await fetch(request);
@@ -79,7 +90,7 @@ async function boundedNetworkFirst(request, event, timeoutMs = 450) {
       return null;
     }
   })();
-  if (!cached) return await network || Response.error();
+  if (!cached) return await network || canonicalCached || Response.error();
   const timeout = new Promise(resolve => setTimeout(() => resolve(cached), timeoutMs));
   const first = await Promise.race([network.then(response => response || cached), timeout]);
   event?.waitUntil(network);

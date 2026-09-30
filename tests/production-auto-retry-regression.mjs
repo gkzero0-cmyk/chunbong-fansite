@@ -32,7 +32,7 @@ assert.match(prebuilt,/RATE_LIMIT_CREATED_AT/,'prebuilt recovery must anchor its
 assert.match(prebuilt,/AGE_SECONDS.*86400/s,'prebuilt recovery must wait 24 hours after a deployment quota limit before uploading again');
 
 assert.match(sync,/GITHUB_EVENT_NAME.*schedule/s,'scheduled sync checks should be non-failing warnings while pending');
-assert.match(sw,/runtime-v33/,'PWA cache version must include the latest mobile app shell and alert assets');
+assert.match(sw,/runtime-v34/,'PWA cache version must include the latest mobile app shell and alert assets');
 assert.match(sw,/site-improvements\.js/,'PWA shell must cache shared improvement runtime');
 assert.match(sw,/site-improvements\.css/,'PWA shell must cache shared improvement styles');
 

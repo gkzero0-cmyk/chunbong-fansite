@@ -59,7 +59,7 @@ function degradedRetryLabel(value=''){
   return '다음 Redis 재시도 가능 시각: '+date.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+'.';
 }
 function applyWriteLocks(active){
-  const selectors=['#feedback-status','#feedback-priority','#feedback-memo-save','#operator-recovery-toggle','#operator-logout-all','#operator-redis-refresh','[data-session-revoke]'];
+  const selectors=['#feedback-status','#feedback-priority','#feedback-memo-save','#operator-recovery-toggle','#operator-logout-all','[data-revoke-session]'];
   document.querySelectorAll(selectors.join(',')).forEach(control=>{
     if(active){
       if(!control.dataset.redisWriteLocked){control.dataset.redisPreviousDisabled=control.disabled?'1':'0'}
@@ -69,6 +69,15 @@ function applyWriteLocks(active){
       if(control.title==='Redis 제한 보호 모드에서는 이 저장 작업을 잠시 사용할 수 없습니다.')control.removeAttribute('title');
     }
   });
+}
+function observeWriteLocks(){
+  if(globalThis.__chunbongOperatorRedisWriteLockObserverV1||typeof MutationObserver!=='function')return;
+  globalThis.__chunbongOperatorRedisWriteLockObserverV1=true;
+  const observer=new MutationObserver(records=>{
+    if(!redisDegradedState.active||!records.some(record=>record.addedNodes?.length))return;
+    queueMicrotask(()=>applyWriteLocks(redisDegradedState.active));
+  });
+  observer.observe(document.body,{childList:true,subtree:true});
 }
 function setRedisDegradedMode(active,{reason='',retryAt=''}={}){
   redisDegradedState={active:Boolean(active),reason:String(reason||''),retryAt:String(retryAt||'')};
@@ -92,7 +101,7 @@ async function inspectOperatorResponse(type,response){
   if(!response)return;
   try{
     const clone=response.clone(),data=await clone.json();
-    if(type==='operator-system-status'&&response.ok){setRedisDegradedMode(...(()=>{const state=budgetState(data);return[state.active,state]})());return}
+    if(type==='operator-system-status'&&response.ok){const state=budgetState(data);setRedisDegradedMode(state.active,state);return}
     const reason=String(data?.error||data?.reason||'');
     if(!response.ok&&(response.status===429||response.status===503)&&/redis_service_limit|redis_circuit_open|operator_storage_unavailable|service_limit/i.test(reason)){
       setRedisDegradedMode(true,{reason,retryAt:String(data?.retryAt||'')});
@@ -202,7 +211,7 @@ async function loadRedisDiagnostics({force=false}={}){
   }finally{loading=false;if(button)button.disabled=false}
 }
 function bind(){
-  panel();ensureDegradedBanner();applyWriteLocks(redisDegradedState.active);
+  panel();ensureDegradedBanner();observeWriteLocks();applyWriteLocks(redisDegradedState.active);
   document.querySelectorAll('[data-operator-tab]').forEach(button=>button.addEventListener('click',()=>{if(button.dataset.operatorTab==='system')queueMicrotask(()=>loadRedisDiagnostics())}));
   const system=$('[data-operator-panel="system"]');if(system&&!system.hidden)void loadRedisDiagnostics();
 }

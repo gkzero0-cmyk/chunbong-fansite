@@ -26,4 +26,13 @@ test('read-only mode never blocks normal logout or GET diagnostics',()=>{
   assert.doesNotMatch(source,/REDIS_DEPENDENT_MUTATIONS[^;]*operator-logout['"]/,'current-device logout must remain available');
   assert.match(source,/const method=requestMethod\(input,init\),type=operatorRequestType\(input\)/,'request method classification must remain explicit');
   assert.match(source,/if\(method!=='GET'\)\{/,'write and GET paths must remain separated');
+  const lockBody=source.match(/function applyWriteLocks\(active\)\{([\s\S]*?)\n\}/)?.[1]||'';
+  assert.doesNotMatch(lockBody,/operator-redis-refresh/,'Redis detail refresh is a diagnostic GET and must remain available');
+  assert.match(lockBody,/data-revoke-session/,'the actual rendered session revoke control must be visually locked');
+  assert.doesNotMatch(lockBody,/data-session-revoke/,'stale session revoke selector must not return');
+});
+
+test('degraded write locks are reapplied to controls rendered after mode activation',()=>{
+  assert.match(source,/MutationObserver/,'dynamic session controls need a mutation observer');
+  assert.match(source,/applyWriteLocks\(redisDegradedState\.active\)/,'new controls must inherit the current degraded lock state');
 });

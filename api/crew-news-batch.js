@@ -389,7 +389,6 @@ function trimVodFallbackCache() {
 
 async function findVodFallbackUncached(post, stations, req) {
   if (!post || post.imageUrl || !Array.isArray(stations) || !stations.length) return null;
-  const base = requestBase(req);
   let best = null;
   for (const station of stations.slice(0, 8)) {
     try {
