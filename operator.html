@@ -469,6 +469,19 @@
             </div>
             <p class="operator-usage-note"><strong>비용 보호 원칙</strong><span>사용량 실측은 Upstash Developer API를 사용해 Redis command를 추가로 소비하지 않습니다. 관리 API가 연결되지 않은 경우에는 숫자를 추정해서 단정하지 않고 Free 기준 한도만 표시합니다.</span></p>
           </section>
+          <section class="operator-redis-usage-panel" aria-label="Realtime Redis 월간 사용량">
+            <div class="operator-section-title-row"><div><strong>Realtime Redis 월간 사용량</strong><small id="system-realtime-redis-usage-source">별도 Upstash 계정 관리 API 연결 상태를 확인하고 있습니다.</small></div><span>Push · 랭킹 · 멀티플레이</span></div>
+            <div class="operator-budget-grid operator-redis-usage-grid">
+              <div><span>이번 달 사용</span><b id="system-realtime-redis-monthly-used">-</b></div>
+              <div><span>남은 양</span><b id="system-realtime-redis-monthly-remaining">-</b></div>
+              <div><span>사용률</span><b id="system-realtime-redis-monthly-pct">-</b></div>
+              <div><span>오늘 commands</span><b id="system-realtime-redis-daily-commands">-</b></div>
+              <div><span>월간 읽기</span><b id="system-realtime-redis-monthly-read">-</b></div>
+              <div><span>월간 쓰기</span><b id="system-realtime-redis-monthly-write">-</b></div>
+              <div><span>현재 저장량</span><b id="system-realtime-redis-current-storage">-</b></div>
+            </div>
+            <p class="operator-usage-note"><strong>별도 계정 실측</strong><span>REALTIME_UPSTASH_EMAIL / REALTIME_UPSTASH_API_KEY가 연결된 경우에만 Upstash Developer API 실측값을 표시합니다. 미연결 상태에서는 숫자를 추정하지 않습니다.</span></p>
+          </section>
           <div class="operator-budget-grid">
             <div><span>분석 표본</span><b id="system-budget-sample">-</b></div>
             <div><span>분석 보존</span><b id="system-budget-retention">-</b></div>
