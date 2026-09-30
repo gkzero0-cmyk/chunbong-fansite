@@ -42,9 +42,10 @@ jobs:
                curl -fsS -H 'cache-control: no-cache' "$BASE_URL/tarot.html?_smoke=$stamp" -o /tmp/tarot.html && \
                grep -q 'id="home-dday-trigger"' /tmp/index.html && \
                grep -q 'home-dday.js' /tmp/index.html && \
-               grep -q 'https://namu.wiki/w/%EC%B6%98%EB%B4%89' /tmp/index.html && \
+               grep -q 'https://www.sooplive.com/station/chunbongtv' /tmp/index.html && \
                grep -q 'Asia/Seoul' /tmp/home-dday.js && \
                grep -q 'tarot-hero-banner-link' /tmp/tarot.html && \
+               grep -q 'https://namu.wiki/w/%EC%B6%98%EB%B4%89' /tmp/tarot.html && \
                grep -q '%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%A8%B8%20%ED%83%80%EB%A1%9C%EC%83%81%EB%8B%B4%20%EB%AA%A9%EB%A1%9D' /tmp/tarot.html; then
               echo 'Current home D-day production is ready.'
               break
@@ -58,7 +59,7 @@ jobs:
           npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install --with-deps chromium
 
-      - name: Verify production D-day dialog and wiki links
+      - name: Verify production D-day dialog and tarot link
         env:
           BASE_URL: https://chunbong-fansite.vercel.app
         run: |
@@ -111,10 +112,10 @@ jobs:
               );
               await page.locator('[data-home-dday-close]').click();
 
-              const homeWiki=page.locator('.status-card-link');
-              assert.equal(await homeWiki.getAttribute('href'),'https://namu.wiki/w/%EC%B6%98%EB%B4%89');
-              assert.equal(await homeWiki.getAttribute('target'),'_blank');
-              assert.ok(await homeWiki.isVisible(),'home wiki card missing');
+              const homeStatus=page.locator('.status-card-link');
+              assert.match(await homeStatus.getAttribute('href')||'',/^https:\/\/www\.sooplive\.com\//);
+              assert.equal(await homeStatus.getAttribute('target'),'_blank');
+              assert.ok(await homeStatus.isVisible(),'home SOOP status card missing');
               assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'home horizontal overflow');
 
               await page.goto(`${process.env.BASE_URL}/tarot.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
