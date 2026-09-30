@@ -2,6 +2,11 @@ name: Apply operator Redis isolation patch
 
 on:
   workflow_dispatch:
+  push:
+    branches: [feat/operator-redis-isolation-migration-20260930]
+    paths:
+      - '.github/workflows/apply-operator-redis-isolation-patch.yml'
+      - 'scripts/apply-operator-redis-isolation-patch.mjs'
 
 permissions:
   contents: write
