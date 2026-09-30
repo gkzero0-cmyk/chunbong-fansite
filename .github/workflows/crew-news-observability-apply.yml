@@ -1,0 +1,43 @@
+name: Apply crew-news observability
+
+on:
+  push:
+    branches: [improve/observability-ci-round3-20261001]
+    paths:
+      - 'scripts/apply-crew-news-observability.mjs'
+      - '.github/workflows/crew-news-observability-apply.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: crew-news-observability-apply
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: improve/observability-ci-round3-20261001
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node scripts/apply-crew-news-observability.mjs
+      - run: |
+          node --check api/crew-news.js
+          node --check lib/operator-observability.js
+      - name: Commit crew-news product change
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add api/crew-news.js
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'feat: include crew-news in collector freshness'
+          git push origin HEAD:improve/observability-ci-round3-20261001
