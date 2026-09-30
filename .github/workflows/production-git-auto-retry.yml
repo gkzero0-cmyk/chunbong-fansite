@@ -28,6 +28,14 @@ jobs:
         with:
           node-version: '24'
 
+      - name: Restore guardian cooldown state
+        uses: actions/cache/restore@v4
+        with:
+          path: .guardian/production-state.json
+          key: production-guardian-state-${{ github.run_id }}
+          restore-keys: |
+            production-guardian-state-
+
       - name: Check production commit and Vercel cooldown
         id: sync
         env:
@@ -37,6 +45,7 @@ jobs:
           set -euo pipefail
           git fetch origin main --depth=1
           git reset --hard origin/main
+          mkdir -p .guardian
 
           EXPECTED="$(git rev-parse HEAD)"
           COMMIT_TS="$(git show -s --format=%ct HEAD)"
@@ -48,42 +57,15 @@ jobs:
           ACTUAL="$(printf '%s' "$BODY" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(JSON.parse(s).sha||'')}catch{}})")"
           RUNTIME_SYNCED="$(printf '%s' "$BODY" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{const p=JSON.parse(s);process.stdout.write(String(p.runtimeSynced===true||p.synced===true))}catch{}})")"
 
-          RATE_LIMIT_CREATED_AT="$(
-            node --input-type=module <<'NODE'
-          const headers = {
-            authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-            accept: 'application/vnd.github+json',
-            'x-github-api-version': '2022-11-28'
-          };
-          const repository = process.env.GITHUB_REPOSITORY;
-          // Thirty recent main commits is enough to cover the 26-hour cooldown scan window
-          // while avoiding up to 100 status API calls on every hourly guardian run.
-          const commitsResponse = await fetch(`https://api.github.com/repos/${repository}/commits?sha=main&per_page=30`, { headers });
-          if (!commitsResponse.ok) throw new Error(`commit lookup failed: ${commitsResponse.status}`);
-          const commits = await commitsResponse.json();
+          CACHED_RATE_LIMIT_AT="$(node -e "const fs=require('fs');try{const p=JSON.parse(fs.readFileSync('.guardian/production-state.json','utf8'));if(p.mode==='limited'&&p.rateLimitAt)process.stdout.write(String(p.rateLimitAt))}catch{}")"
+          STATUS_JSON="$(curl -fsSL --connect-timeout 8 --max-time 15 \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${EXPECTED}/status" || true)"
+          CURRENT_RATE_LIMIT_AT="$(printf '%s' "$STATUS_JSON" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{const p=JSON.parse(s);const row=(p.statuses||[]).find(x=>x.context==='Vercel'&&/rate limited/i.test(String(x.description||'')));if(row?.created_at)process.stdout.write(row.created_at)}catch{}})")"
 
-          const nowMs = Date.now();
-          const scanWindowMs = (86400 + 7200) * 1000;
-
-          let oldestRateLimitCreatedAt = '';
-          for (const commit of commits) {
-            const commitTime = Date.parse(commit?.commit?.committer?.date || commit?.commit?.author?.date || '');
-            if (Number.isFinite(commitTime) && nowMs - commitTime > scanWindowMs) break;
-            const statusResponse = await fetch(
-              `https://api.github.com/repos/${repository}/commits/${commit.sha}/status`,
-              { headers }
-            );
-            if (!statusResponse.ok) throw new Error(`status lookup failed: ${statusResponse.status}`);
-            const combined = await statusResponse.json();
-            const rateLimited = (combined.statuses || []).find(status =>
-              status.context === 'Vercel' &&
-              /rate limited/i.test(String(status.description || ''))
-            );
-            if (rateLimited?.created_at) oldestRateLimitCreatedAt = rateLimited.created_at;
-          }
-          if (oldestRateLimitCreatedAt) process.stdout.write(oldestRateLimitCreatedAt);
-          NODE
-          )"
+          RATE_LIMIT_CREATED_AT="$(CACHED_RATE_LIMIT_AT="$CACHED_RATE_LIMIT_AT" CURRENT_RATE_LIMIT_AT="$CURRENT_RATE_LIMIT_AT" node -e "const a=process.env.CACHED_RATE_LIMIT_AT||'',b=process.env.CURRENT_RATE_LIMIT_AT||'';const rows=[a,b].filter(Boolean).map(v=>({v,t:Date.parse(v)})).filter(x=>Number.isFinite(x.t)).sort((x,y)=>x.t-y.t);if(rows[0])process.stdout.write(rows[0].v)")"
 
           RATE_LIMIT_AGE_SECONDS=999999999
           if [[ -n "$RATE_LIMIT_CREATED_AT" ]]; then
@@ -95,22 +77,40 @@ jobs:
           echo "actual=${ACTUAL:-missing}"
           echo "runtime_synced=${RUNTIME_SYNCED:-unknown}"
           echo "main_age_seconds=$AGE_SECONDS"
+          echo "cached_rate_limit_at=${CACHED_RATE_LIMIT_AT:-none}"
+          echo "current_rate_limit_at=${CURRENT_RATE_LIMIT_AT:-none}"
           echo "cooldown_anchor_rate_limit_at=${RATE_LIMIT_CREATED_AT:-none}"
           echo "rate_limit_age_seconds=$RATE_LIMIT_AGE_SECONDS"
 
           if [[ "$ACTUAL" == "$EXPECTED" || "$RUNTIME_SYNCED" == "true" ]]; then
+            printf '{"mode":"synced","checkedAt":"%s","sha":"%s"}\n' "$(date -u +%FT%TZ)" "$EXPECTED" > .guardian/production-state.json
             echo "needs_retry=false" >> "$GITHUB_OUTPUT"
             echo "Production runtime is already synced; no deployment retry is needed."
-          elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
-            echo "needs_retry=true" >> "$GITHUB_OUTPUT"
-          elif [[ -n "$RATE_LIMIT_CREATED_AT" && "$RATE_LIMIT_AGE_SECONDS" -ge 86400 ]]; then
-            echo "needs_retry=true" >> "$GITHUB_OUTPUT"
-          elif [[ -z "$RATE_LIMIT_CREATED_AT" && "$AGE_SECONDS" -ge 72000 ]]; then
-            echo "needs_retry=true" >> "$GITHUB_OUTPUT"
           else
-            echo "needs_retry=false" >> "$GITHUB_OUTPUT"
-            echo "Production is pending, but the Vercel cooldown (or the fallback 20-hour no-status guard) has not elapsed; skip this scheduled retry."
+            if [[ -n "$RATE_LIMIT_CREATED_AT" ]]; then
+              RATE_LIMIT_CREATED_AT="$RATE_LIMIT_CREATED_AT" EXPECTED="$EXPECTED" node -e "const fs=require('fs');fs.writeFileSync('.guardian/production-state.json',JSON.stringify({mode:'limited',rateLimitAt:process.env.RATE_LIMIT_CREATED_AT,sha:process.env.EXPECTED,checkedAt:new Date().toISOString()}))"
+            else
+              EXPECTED="$EXPECTED" node -e "const fs=require('fs');fs.writeFileSync('.guardian/production-state.json',JSON.stringify({mode:'pending',sha:process.env.EXPECTED,checkedAt:new Date().toISOString()}))"
+            fi
+
+            if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+              echo "needs_retry=true" >> "$GITHUB_OUTPUT"
+            elif [[ -n "$RATE_LIMIT_CREATED_AT" && "$RATE_LIMIT_AGE_SECONDS" -ge 86400 ]]; then
+              echo "needs_retry=true" >> "$GITHUB_OUTPUT"
+            elif [[ -z "$RATE_LIMIT_CREATED_AT" && "$AGE_SECONDS" -ge 72000 ]]; then
+              echo "needs_retry=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "needs_retry=false" >> "$GITHUB_OUTPUT"
+              echo "Production is pending, but the Vercel cooldown (or the fallback 20-hour no-status guard) has not elapsed; skip this scheduled retry."
+            fi
           fi
+
+      - name: Save guardian cooldown state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .guardian/production-state.json
+          key: production-guardian-state-${{ github.run_id }}
 
       - name: Trigger a fresh Vercel Git deployment
         if: steps.sync.outputs.needs_retry == 'true'
