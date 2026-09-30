@@ -24,5 +24,6 @@ test('Redis-dependent operator mutations are blocked while degraded',()=>{
 
 test('read-only mode never blocks normal logout or GET diagnostics',()=>{
   assert.doesNotMatch(source,/REDIS_DEPENDENT_MUTATIONS[^;]*operator-logout['"]/,'current-device logout must remain available');
-  assert.match(source,/requestMethod\(input,init\)!=='GET'/,'GET optimization path must remain explicit');
+  assert.match(source,/const method=requestMethod\(input,init\),type=operatorRequestType\(input\)/,'request method classification must remain explicit');
+  assert.match(source,/if\(method!=='GET'\)\{/,'write and GET paths must remain separated');
 });
