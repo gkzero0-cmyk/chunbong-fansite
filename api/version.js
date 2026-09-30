@@ -1,4 +1,4 @@
-/* Production audit follow-up: distinguish exact Git commit sync from runtime-relevant sync. Dedicated operator Redis env cutover redeploy marker: 2026-09-30. */
+/* Production audit follow-up: distinguish exact Git commit sync from runtime-relevant sync. Dedicated operator Redis env cutover redeploy marker: 2026-09-30. Realtime Upstash telemetry env refresh: 2026-09-30. */
 const {compareDeploymentRuntime}=require('../lib/deployment-sync');
 
 let latestMainCache={sha:'',at:0};
