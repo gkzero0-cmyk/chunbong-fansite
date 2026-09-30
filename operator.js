@@ -485,19 +485,19 @@ async function loadSystemStatus({storage:deepStorage=false}={}){
   const commitRows=data.repository?.recentCommits||[],gap=deploymentGap(commitRows,dep.sha,dep.synced);$('#system-pending-commits').textContent=dep.synced===true?'0건':gap.known?fmt(gap.count)+'건':fmt(gap.count)+'건 이상';
   $('#system-repo-size').textContent=data.repository?.sizeKb?fmt(data.repository.sizeKb)+' KB':'-';$('#system-redis-keys').textContent=storage.keyCount===null||storage.keyCount===undefined?'상세 확인 시 표시':fmt(storage.keyCount)+'개';$('#system-redis-memory').textContent=redisMemoryLabel(storage);$('#system-analytics-days').textContent=storage.analyticsRecordedDays===null||storage.analyticsRecordedDays===undefined?'-':fmt(storage.analyticsRecordedDays)+'일';$('#system-feedback-total').textContent=storage.feedbackTotal===null||storage.feedbackTotal===undefined?'-':fmt(storage.feedbackTotal)+'개';$('#system-checked-at').textContent=new Date(data.checkedAt).toLocaleString('ko-KR');
   const usageUsed=$('#system-redis-monthly-used'),usageRemaining=$('#system-redis-monthly-remaining'),usagePct=$('#system-redis-monthly-pct'),usageSource=$('#system-redis-usage-source'),usageRead=$('#system-redis-monthly-read'),usageWrite=$('#system-redis-monthly-write'),usageDaily=$('#system-redis-daily-commands'),usageStorage=$('#system-redis-current-storage');
-  if(usageUsed)usageUsed.textContent=redisUsage.exact?fmt(redisUsage.used)+' / '+fmt(redisUsage.monthlyLimit):'실측 연결 대기';
-  if(usageRemaining)usageRemaining.textContent=redisUsage.exact?fmt(redisUsage.remaining)+'회':'Free 참고 '+fmt(redisUsage.monthlyLimit||500000)+'회';
-  if(usagePct){usagePct.textContent=redisUsage.exact?Number(redisUsage.usedPct).toFixed(1)+'%':'-';usagePct.className=redisUsage.exact&&Number(redisUsage.usedPct)>=95?'is-bad':redisUsage.exact&&Number(redisUsage.usedPct)>=75?'is-warn':redisUsage.exact?'is-ok':''}
-  if(usageSource)usageSource.textContent=redisUsage.exact?'Upstash 관리 API 실측 · Redis command 소모 없음':redisUsage.source==='developer_api_not_configured'?'Upstash Developer API 미연결 · Redis를 조회하지 않고 표시 중':'관리 API에서 실측값을 가져오지 못했습니다.';
+  if(usageUsed)usageUsed.textContent=redisUsage.exact?fmt(redisUsage.used)+'회':'실측 연결 대기';
+  if(usageRemaining)usageRemaining.textContent='정확 계산 불가';
+  if(usagePct){usagePct.textContent='계산 안 함';usagePct.className=''}
+  if(usageSource)usageSource.textContent=redisUsage.exact?'Upstash 관리 API 실측 · 월간 API 요청과 오늘 Redis command 분리 표시':redisUsage.source==='developer_api_not_configured'?'Upstash Developer API 미연결 · Redis를 조회하지 않고 표시 중':'관리 API에서 실측값을 가져오지 못했습니다.';
   if(usageRead)usageRead.textContent=redisUsage.reads===null||redisUsage.reads===undefined?'-':fmt(redisUsage.reads);
   if(usageWrite)usageWrite.textContent=redisUsage.writes===null||redisUsage.writes===undefined?'-':fmt(redisUsage.writes);
   if(usageDaily)usageDaily.textContent=redisUsage.dailyCommands===null||redisUsage.dailyCommands===undefined?'-':fmt(redisUsage.dailyCommands);
   if(usageStorage)usageStorage.textContent=bytesLabel(redisUsage.currentStorageBytes);
   const rtUsageUsed=$('#system-realtime-redis-monthly-used'),rtUsageRemaining=$('#system-realtime-redis-monthly-remaining'),rtUsagePct=$('#system-realtime-redis-monthly-pct'),rtUsageSource=$('#system-realtime-redis-usage-source'),rtUsageRead=$('#system-realtime-redis-monthly-read'),rtUsageWrite=$('#system-realtime-redis-monthly-write'),rtUsageDaily=$('#system-realtime-redis-daily-commands'),rtUsageStorage=$('#system-realtime-redis-current-storage');
-  if(rtUsageUsed)rtUsageUsed.textContent=realtimeRedisUsage.exact?fmt(realtimeRedisUsage.used)+' / '+fmt(realtimeRedisUsage.monthlyLimit):'실측 연결 대기';
-  if(rtUsageRemaining)rtUsageRemaining.textContent=realtimeRedisUsage.exact?fmt(realtimeRedisUsage.remaining)+'회':'-';
-  if(rtUsagePct){rtUsagePct.textContent=realtimeRedisUsage.exact?Number(realtimeRedisUsage.usedPct).toFixed(1)+'%':'-';rtUsagePct.className=realtimeRedisUsage.exact&&Number(realtimeRedisUsage.usedPct)>=95?'is-bad':realtimeRedisUsage.exact&&Number(realtimeRedisUsage.usedPct)>=75?'is-warn':realtimeRedisUsage.exact?'is-ok':''}
-  if(rtUsageSource)rtUsageSource.textContent=realtimeRedisUsage.exact?'별도 Upstash 관리 API 실측 · Redis command 소모 없음':realtimeRedisUsage.source==='developer_api_not_configured'?'실측 연결 대기 · Realtime Developer API 미연결':'Realtime 관리 API에서 실측값을 가져오지 못했습니다.';
+  if(rtUsageUsed)rtUsageUsed.textContent=realtimeRedisUsage.exact?fmt(realtimeRedisUsage.used)+'회':'실측 연결 대기';
+  if(rtUsageRemaining)rtUsageRemaining.textContent='정확 계산 불가';
+  if(rtUsagePct){rtUsagePct.textContent='계산 안 함';rtUsagePct.className=''}
+  if(rtUsageSource)rtUsageSource.textContent=realtimeRedisUsage.exact?'별도 Upstash 관리 API 실측 · 월간 API 요청과 오늘 Redis command 분리 표시':realtimeRedisUsage.source==='developer_api_not_configured'?'실측 연결 대기 · Realtime Developer API 미연결':'Realtime 관리 API에서 실측값을 가져오지 못했습니다.';
   if(rtUsageRead)rtUsageRead.textContent=realtimeRedisUsage.reads===null||realtimeRedisUsage.reads===undefined?'-':fmt(realtimeRedisUsage.reads);
   if(rtUsageWrite)rtUsageWrite.textContent=realtimeRedisUsage.writes===null||realtimeRedisUsage.writes===undefined?'-':fmt(realtimeRedisUsage.writes);
   if(rtUsageDaily)rtUsageDaily.textContent=realtimeRedisUsage.dailyCommands===null||realtimeRedisUsage.dailyCommands===undefined?'-':fmt(realtimeRedisUsage.dailyCommands);
