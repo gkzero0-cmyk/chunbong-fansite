@@ -119,7 +119,6 @@
     if(latest)latest.textContent=groups[0]?.date||'LATEST';
     if(count)count.textContent=total+'개의 주요 업데이트 · '+groups.length+'일 기록';
     if(status){
-      const automaticCount=groups.reduce((sum,group)=>sum+group.items.filter(item=>item?.auto).length,0);
       status.textContent='사용자에게 중요한 변경사항만 한글로 간단하게 정리했습니다.';
       status.className='changelog-sync-status is-live';
     }
@@ -147,8 +146,8 @@
 
   render();
 
-  // 수동 한글 요약을 먼저 보여준 뒤 GitHub main의 새 유효 변경사항만 자동으로 합칩니다.
-  const CHANGELOG_SYNC_INTERVAL_MS=60*1000;
+  // 자동 요약은 자주 변하지 않으므로 탭 복귀 때마다 서버를 치지 않고 10분 단위로 재검증합니다.
+  const CHANGELOG_SYNC_INTERVAL_MS=10*60*1000;
   let changelogSyncAt=0;
   let changelogSyncPromise=null;
 
@@ -163,7 +162,7 @@
       try{
         const since=String(checkpoint.throughTime||'').trim();
         const historyUrl='/api/content?type=changelog-history'+(since?'&since='+encodeURIComponent(since):'');
-        const response=await fetch(historyUrl,{headers:{accept:'application/json'},cache:'no-store'});
+        const response=await fetch(historyUrl,{headers:{accept:'application/json'}});
         if(!response.ok)throw new Error('changelog_history_unavailable');
         const payload=await response.json();
         const summarized=autoSummarizer?.summarizeSince
@@ -174,7 +173,7 @@
         render(latestKey);
       }catch(_){
         try{
-          const response=await fetch('/api/content?type=changelog-history&summary=1',{headers:{accept:'application/json'},cache:'no-store'});
+          const response=await fetch('/api/content?type=changelog-history&summary=1',{headers:{accept:'application/json'}});
           if(!response.ok)return;
           const payload=await response.json();
           const latestKey=payload.latest?.sha||payload.latest?.shortSha||'';
