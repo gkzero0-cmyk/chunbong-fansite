@@ -17,12 +17,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: improve/site-hardening-round2-20261001
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Align stale PWA revision assertions
+      - name: Restore current regressions and align PWA revision only
         run: |
-          grep -RIl 'runtime-v33' tests test | xargs -r sed -i 's/runtime-v33/runtime-v34/g'
+          git fetch origin main
+          git checkout origin/main -- tests/accessibility-final-regression.mjs tests/daily-fortune-regression.mjs tests/personal-hub-regression.mjs
+          sed -i 's/runtime-v33/runtime-v34/g' tests/accessibility-final-regression.mjs tests/daily-fortune-regression.mjs tests/personal-hub-regression.mjs
           if grep -RIn 'runtime-v33' tests test; then
             echo 'stale runtime-v33 assertion remains' >&2
             exit 1
@@ -36,11 +39,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add tests test
+          git add tests/accessibility-final-regression.mjs tests/daily-fortune-regression.mjs tests/personal-hub-regression.mjs
           git diff --cached --check
-          if git diff --cached --quiet; then
-            echo 'No stale revision assertions remained.'
-            exit 0
-          fi
           git commit -m 'test: align remaining PWA revision assertions'
           git push origin HEAD:improve/site-hardening-round2-20261001
