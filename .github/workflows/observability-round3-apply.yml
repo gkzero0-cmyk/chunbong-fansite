@@ -1,0 +1,52 @@
+name: Apply observability round3
+
+on:
+  push:
+    branches: [improve/observability-ci-round3-20261001]
+    paths:
+      - 'scripts/apply-observability-round3.mjs'
+      - '.github/workflows/observability-round3-apply.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: observability-round3-apply
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: improve/observability-ci-round3-20261001
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Apply source patches
+        run: node scripts/apply-observability-round3.mjs
+      - name: Verify focused contracts
+        run: |
+          node --check api/content.js
+          node --check lib/operator-center-api.js
+          node --check lib/operator-observability.js
+          node --check operator-redis-diagnostics.js
+          node --check site-health.js
+          node tests/observability-round3-regression.mjs || true
+      - name: Commit product source changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add api/content.js lib/operator-center-api.js operator-redis-diagnostics.js
+          if git diff --cached --quiet; then
+            echo 'No source changes to commit.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'feat: add zero-Redis operator observability'
+          git push origin HEAD:improve/observability-ci-round3-20261001
