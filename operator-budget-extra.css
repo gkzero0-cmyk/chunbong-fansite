@@ -17,7 +17,7 @@
 
 /* Operator mobile usability v2 */
 .operator-card,.operator-attention,.operator-period-summary,.operator-system-summary,.operator-redis-usage-panel{content-visibility:auto;contain-intrinsic-size:auto 240px}
-.operator-day small,.operator-feedback-meta dt,.operator-hour small,.operator-guide-grid small,.operator-event-row small,.operator-environment-row small,.operator-search-click-row>span,.operator-search-click-row small,.operator-image-audit-row small,.operator-image-audit-row>b,.operator-image-audit-ok small{font-size:max(11px,1em)}
+.operator-day small,.operator-feedback-meta dt,.operator-hour small,.operator-guide-grid small,.operator-event-row small,.operator-environment-row small,.operator-search-click-row>span,.operator-search-click-row small,.operator-image-audit-row small,.operator-image-audit-row>b,.operator-image-audit-ok small{font-size:11px}
 .operator-image-audit-row code{font-size:10px}
 @media(max-width:760px){
   .operator-tabs{
