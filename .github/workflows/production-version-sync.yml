@@ -52,8 +52,12 @@ jobs:
           ACTUAL="$(printf '%s' "$BODY" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const p=JSON.parse(s);process.stdout.write(p.sha||'')})")"
           RUNTIME_SYNCED="$(printf '%s' "$BODY" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const p=JSON.parse(s);process.stdout.write(String(p.runtimeSynced===true||p.synced===true))})")"
           echo "expected=${EXPECTED} actual=${ACTUAL:-missing} runtime_synced=${RUNTIME_SYNCED}"
-          if [ "$ACTUAL" = "$EXPECTED" ] || [ "$RUNTIME_SYNCED" = 'true' ]; then
-            echo 'Production runtime is synced.'
+          if [ "$ACTUAL" = "$EXPECTED" ]; then
+            echo 'Production commit exactly matches main.'
+            exit 0
+          fi
+          if [ "$RUNTIME_SYNCED" = 'true' ]; then
+            echo 'Production runtime is synced; only non-deployment files differ from main.'
             exit 0
           fi
           echo "::error::Production runtime changed after readiness gate. deployment=${ACTUAL:-missing} main=${EXPECTED}."
