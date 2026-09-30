@@ -5,12 +5,20 @@ const DEFERRED_BOOT_TYPES=new Map([
   ['operator-system-status','system'],
   ['operator-content-archive','contents']
 ]);
+const REDIS_DEPENDENT_MUTATIONS=new Set([
+  'operator-feedback-update',
+  'operator-recovery-mode',
+  'operator-session-revoke',
+  'operator-logout-all',
+  'push-dispatch'
+]);
 const $=(selector,root=document)=>root.querySelector(selector);
 const fmt=value=>new Intl.NumberFormat('ko-KR').format(Number(value)||0);
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const commandLabel={GET:'GET',MGET:'MGET',ZRANGE:'ZRANGE',ZREVRANGE:'ZREVRANGE',ZSCORE:'ZSCORE',ZCARD:'ZCARD',SMEMBERS:'SMEMBERS',HGET:'HGET',HGETALL:'HGETALL',SET:'SET',HSET:'HSET',HINCRBY:'HINCRBY',ZADD:'ZADD',ZREM:'ZREM',SADD:'SADD',SREM:'SREM',DEL:'DEL',EXISTS:'EXISTS'};
 const featureLabel={analytics:'분석',feedback:'피드백','auth-session':'인증·세션','operator-health':'운영 상태',push:'Push',ranking:'랭킹',multiplayer:'멀티플레이','content-archive':'콘텐츠 아카이브',other:'기타',unknown:'분류 대기'};
 const categoryLabel={read:'읽기',write:'쓰기',script:'스크립트',other:'기타'};
+let redisDegradedState={active:false,reason:'',retryAt:''};
 
 function requestUrl(input){
   try{return new URL(typeof input==='string'?input:input?.url||String(input||''),location.href)}catch{return null}
@@ -19,6 +27,80 @@ function requestMethod(input,init){return String(init?.method||input?.method||'G
 function operatorRequestType(input){
   const url=requestUrl(input);if(!url||url.origin!==location.origin||url.pathname!=='/api/content')return'';
   return String(url.searchParams.get('type')||'');
+}
+function installDegradedStyles(){
+  if($('#operator-redis-degraded-styles'))return;
+  const style=document.createElement('style');style.id='operator-redis-degraded-styles';
+  style.textContent=`
+    #operator-redis-limit-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:14px 0;padding:15px 17px;border:1px solid rgba(245,158,11,.38);border-radius:14px;background:rgba(245,158,11,.09)}
+    #operator-redis-limit-banner[hidden]{display:none}
+    #operator-redis-limit-banner>div{display:grid;gap:3px}#operator-redis-limit-banner small{font-weight:800;letter-spacing:.08em;color:#d97706}#operator-redis-limit-banner strong{font-size:15px}#operator-redis-limit-banner span{font-size:12px;opacity:.82;line-height:1.55}
+    #operator-redis-limit-banner button{white-space:nowrap}body[data-operator-redis-degraded="1"] [data-redis-write-locked="1"]{opacity:.55;cursor:not-allowed}
+    @media(max-width:760px){#operator-redis-limit-banner{align-items:flex-start;flex-direction:column}#operator-redis-limit-banner button{width:100%}}
+  `;
+  document.head.appendChild(style);
+}
+function ensureDegradedBanner(){
+  installDegradedStyles();
+  let banner=$('#operator-redis-limit-banner');if(banner)return banner;
+  const dashboard=$('#operator-dashboard');if(!dashboard)return null;
+  banner=document.createElement('section');banner.id='operator-redis-limit-banner';banner.hidden=true;banner.setAttribute('role','status');banner.setAttribute('aria-live','polite');
+  banner.innerHTML='<div><small>REDIS PROTECTION</small><strong>Redis 제한 보호 모드</strong><span data-redis-limit-detail>읽기와 진단은 계속 사용할 수 있고 Redis 저장 작업만 잠시 중지합니다.</span></div><button type="button" data-redis-limit-system>시스템 상태 보기</button>';
+  const anchor=$('#operator-deployment-banner',dashboard)||dashboard.firstElementChild;
+  if(anchor?.after)anchor.after(banner);else dashboard.prepend(banner);
+  $('[data-redis-limit-system]',banner)?.addEventListener('click',()=>{
+    const tab=$('[data-operator-tab="system"]');if(tab)tab.click();
+  });
+  return banner;
+}
+function degradedRetryLabel(value=''){
+  if(!value)return'자동 보호 회로가 복구 여부를 확인할 때까지 저장 작업을 보류합니다.';
+  const date=new Date(value);if(Number.isNaN(date.getTime()))return'자동 보호 회로가 복구 여부를 확인할 때까지 저장 작업을 보류합니다.';
+  return '다음 Redis 재시도 가능 시각: '+date.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+'.';
+}
+function applyWriteLocks(active){
+  const selectors=['#feedback-status','#feedback-priority','#feedback-memo-save','#operator-recovery-toggle','#operator-logout-all','#operator-redis-refresh','[data-session-revoke]'];
+  document.querySelectorAll(selectors.join(',')).forEach(control=>{
+    if(active){
+      if(!control.dataset.redisWriteLocked){control.dataset.redisPreviousDisabled=control.disabled?'1':'0'}
+      control.dataset.redisWriteLocked='1';control.disabled=true;control.title='Redis 제한 보호 모드에서는 이 저장 작업을 잠시 사용할 수 없습니다.';
+    }else if(control.dataset.redisWriteLocked==='1'){
+      control.disabled=control.dataset.redisPreviousDisabled==='1';delete control.dataset.redisWriteLocked;delete control.dataset.redisPreviousDisabled;
+      if(control.title==='Redis 제한 보호 모드에서는 이 저장 작업을 잠시 사용할 수 없습니다.')control.removeAttribute('title');
+    }
+  });
+}
+function setRedisDegradedMode(active,{reason='',retryAt=''}={}){
+  redisDegradedState={active:Boolean(active),reason:String(reason||''),retryAt:String(retryAt||'')};
+  globalThis.__chunbongOperatorRedisReadOnlyV1={...redisDegradedState};
+  document.body?.setAttribute('data-operator-redis-degraded',active?'1':'0');
+  const banner=ensureDegradedBanner();
+  if(banner){
+    banner.hidden=!active;
+    const detail=$('[data-redis-limit-detail]',banner);
+    if(detail)detail.textContent=active?'운영자 센터는 읽기·상태 확인·진단을 계속 제공합니다. 피드백 수정, 복구모드 전환, 세션 해제, 전체 로그아웃, Push 발송처럼 Redis 저장이 필요한 작업만 잠시 중지합니다. '+degradedRetryLabel(retryAt):'';
+  }
+  applyWriteLocks(Boolean(active));
+  document.dispatchEvent(new CustomEvent('chunbong:operator-redis-degraded',{detail:{...redisDegradedState}}));
+}
+function budgetState(data={}){
+  const budget=data?.resourceBudget||{};
+  const active=budget.redisCircuitOpen===true||budget.mode==='limit';
+  return{active,reason:active?'redis_limit':'',retryAt:String(budget.redisCircuitUntil||'')};
+}
+async function inspectOperatorResponse(type,response){
+  if(!response)return;
+  try{
+    const clone=response.clone(),data=await clone.json();
+    if(type==='operator-system-status'&&response.ok){setRedisDegradedMode(...(()=>{const state=budgetState(data);return[state.active,state]})());return}
+    const reason=String(data?.error||data?.reason||'');
+    if(!response.ok&&(response.status===429||response.status===503)&&/redis_service_limit|redis_circuit_open|operator_storage_unavailable|service_limit/i.test(reason)){
+      setRedisDegradedMode(true,{reason,retryAt:String(data?.retryAt||'')});
+    }
+  }catch{}
+}
+function readOnlyError(type){
+  const error=new Error('operator_read_only');error.name='OperatorReadOnlyError';error.code='operator_read_only';error.type=type;error.retryAt=redisDegradedState.retryAt;return error;
 }
 function installOperatorRequestOptimizer(){
   if(globalThis.__chunbongOperatorRequestOptimizerV1)return;
@@ -40,8 +122,12 @@ function installOperatorRequestOptimizer(){
     if(panel.dataset.operatorPanel)releasedTabs.add(panel.dataset.operatorPanel);
   }
   globalThis.fetch=async function optimizedOperatorFetch(input,init){
-    if(requestMethod(input,init)!=='GET')return originalFetch(input,init);
-    const type=operatorRequestType(input),requiredTab=DEFERRED_BOOT_TYPES.get(type);
+    const method=requestMethod(input,init),type=operatorRequestType(input);
+    if(method!=='GET'){
+      if(redisDegradedState.active&&REDIS_DEPENDENT_MUTATIONS.has(type))throw readOnlyError(type);
+      const response=await originalFetch(input,init);void inspectOperatorResponse(type,response);return response;
+    }
+    const requiredTab=DEFERRED_BOOT_TYPES.get(type);
     if(requiredTab&&!releasedTabs.has(requiredTab)){
       const error=new Error('operator_request_deferred');error.name='AbortError';throw error;
     }
@@ -51,11 +137,12 @@ function installOperatorRequestOptimizer(){
       if(securityLogPending)return(await securityLogPending).clone();
       securityLogPending=originalFetch(input,init).then(response=>{
         if(response.ok)securityLogCache={at:Date.now(),response:response.clone()};
+        void inspectOperatorResponse(type,response);
         return response.clone();
       }).finally(()=>{securityLogPending=null});
       return(await securityLogPending).clone();
     }
-    return originalFetch(input,init);
+    const response=await originalFetch(input,init);void inspectOperatorResponse(type,response);return response;
   };
 }
 installOperatorRequestOptimizer();
@@ -107,6 +194,7 @@ async function loadRedisDiagnostics({force=false}={}){
   try{
     const response=await fetch(API,{headers:{accept:'application/json'},cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);
     const data=await response.json(),snapshot=data.redisCommandDiagnostics;
+    const state=budgetState(data);setRedisDegradedMode(state.active,state);
     renderOperatorStoreState(data);
     if(snapshot){writeSnapshot(snapshot);renderRedisDiagnostics(snapshot,{cached:false})}
   }catch{
@@ -114,7 +202,7 @@ async function loadRedisDiagnostics({force=false}={}){
   }finally{loading=false;if(button)button.disabled=false}
 }
 function bind(){
-  panel();
+  panel();ensureDegradedBanner();applyWriteLocks(redisDegradedState.active);
   document.querySelectorAll('[data-operator-tab]').forEach(button=>button.addEventListener('click',()=>{if(button.dataset.operatorTab==='system')queueMicrotask(()=>loadRedisDiagnostics())}));
   const system=$('[data-operator-panel="system"]');if(system&&!system.hidden)void loadRedisDiagnostics();
 }
@@ -173,4 +261,4 @@ function installOperatorTabKeyboardUX(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installOperatorTabKeyboardUX,{once:true});else installOperatorTabKeyboardUX();
 
-export{renderRedisDiagnostics,loadRedisDiagnostics};
+export{renderRedisDiagnostics,loadRedisDiagnostics,setRedisDegradedMode};
