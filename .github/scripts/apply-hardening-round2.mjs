@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 
+// Round 2 hardening applies only scoped, test-covered source edits.
 const read=path=>fs.readFileSync(path,'utf8');
 const write=(path,value)=>fs.writeFileSync(path,value);
 const replaceOnce=(path,before,after,label)=>{
