@@ -33,7 +33,7 @@ jobs:
           done
           cat /tmp/minigames-hero.log
           exit 1
-      - name: Verify desktop right-side artwork and mobile stack
+      - name: Verify desktop artwork and compact mobile hero
         env:
           BASE_URL: http://127.0.0.1:4173
         run: |
@@ -62,10 +62,11 @@ jobs:
             const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
             await mobile.goto(process.env.BASE_URL+'/minigames.html',{waitUntil:'networkidle'});
             const mobileCopy=await mobile.locator('.minigames-hero-copy').boundingBox();
-            const mobileArt=await mobile.locator('.minigames-hero-art').boundingBox();
-            assert.ok(mobileCopy&&mobileArt,'mobile hero regions missing');
-            assert.ok(mobileArt.y>mobileCopy.y+mobileCopy.height-2,'mobile artwork must stack below hero copy');
-            assert.ok(mobileArt.x>=0&&mobileArt.x+mobileArt.width<=390,'mobile artwork clips horizontally');
+            const compactMode=await mobile.locator('body').evaluate(node=>node.classList.contains('mobile-tabbar-mode'));
+            const mobileArtVisible=await mobile.locator('.minigames-hero-art').isVisible();
+            assert.ok(mobileCopy,'mobile hero copy missing');
+            assert.equal(compactMode,true,'mobile compact navigation mode missing');
+            assert.equal(mobileArtVisible,false,'compact mobile mode must hide the large hero artwork');
             assert.ok(await mobile.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'minigames page has horizontal overflow');
             await mobile.close();
           } finally {
