@@ -35,37 +35,30 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Stop early on Vercel build-rate-limit
+      - name: Production readiness gate
+        id: production_gate
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: node .github/scripts/vercel-rate-limit-fast-fail.mjs
+        run: node .github/scripts/production-readiness-gate.mjs
 
       - name: Compare main and production commit
+        if: steps.production_gate.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
           EXPECTED="$(git rev-parse HEAD)"
           BASE='https://chunbong-fansite.vercel.app'
-          ACTUAL=''
-          for attempt in 1 2 3 4 5 6 7 8; do
-            BODY="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'cache-control: no-cache' "${BASE}/api/version?_ts=$(date +%s)" || true)"
-            ACTUAL="$(printf '%s' "$BODY" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(JSON.parse(s).sha||'')}catch{}})")"
-            RUNTIME_SYNCED="$(printf '%s' "$BODY" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{const p=JSON.parse(s);process.stdout.write(String(p.runtimeSynced===true||p.synced===true))}catch{}})")"
-            INTERNAL_ONLY="$(printf '%s' "$BODY" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{process.stdout.write(String(JSON.parse(s).internalOnlyGap===true))}catch{}})")"
-            echo "attempt=${attempt} expected=${EXPECTED} actual=${ACTUAL:-missing} runtime_synced=${RUNTIME_SYNCED:-unknown} internal_only=${INTERNAL_ONLY:-unknown}"
-            if [ "$ACTUAL" = "$EXPECTED" ]; then
-              echo 'Production commit exactly matches main.'
-              exit 0
-            fi
-            if [ "$RUNTIME_SYNCED" = 'true' ]; then
-              echo 'Production runtime is synced; only non-deployment files differ from main.'
-              exit 0
-            fi
-            sleep 15
-          done
-          if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
-            echo "::warning::Production commit ${ACTUAL:-missing} does not match main ${EXPECTED}. Scheduled check will not fail; the daily retry workflow handles redeploy attempts."
+          BODY="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'cache-control: no-cache' "${BASE}/api/version?_ts=$(date +%s)")"
+          ACTUAL="$(printf '%s' "$BODY" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const p=JSON.parse(s);process.stdout.write(p.sha||'')})")"
+          RUNTIME_SYNCED="$(printf '%s' "$BODY" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const p=JSON.parse(s);process.stdout.write(String(p.runtimeSynced===true||p.synced===true))})")"
+          echo "expected=${EXPECTED} actual=${ACTUAL:-missing} runtime_synced=${RUNTIME_SYNCED}"
+          if [ "$ACTUAL" = "$EXPECTED" ] || [ "$RUNTIME_SYNCED" = 'true' ]; then
+            echo 'Production runtime is synced.'
             exit 0
           fi
-          echo "::error::Production runtime is behind main. deployment=${ACTUAL:-missing} main=${EXPECTED}."
+          echo "::error::Production runtime changed after readiness gate. deployment=${ACTUAL:-missing} main=${EXPECTED}."
           exit 1
+
+      - name: Production blocked
+        if: steps.production_gate.outputs.blocked == 'true'
+        run: echo 'Production sync is waiting for the Vercel cooldown; no code failure is reported.'
