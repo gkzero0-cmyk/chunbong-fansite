@@ -6,7 +6,7 @@ const VISITOR_KEY='chunbong:analytics:visitor:v1',FIRST_KEY='chunbong:analytics:
 const uuid=()=>crypto.randomUUID?.()||('a'+Date.now().toString(36)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2));
 function stored(store,key,make){try{let v=store.getItem(key);if(!v){v=make();store.setItem(key,v)}return v}catch{return make()}}
 const visitorId=stored(localStorage,VISITOR_KEY,uuid),sessionId=stored(sessionStorage,SESSION_KEY,uuid);
-const PERF_SAMPLE_RATE=.2,API_SAMPLE_RATE=.1;
+const PERF_SAMPLE_RATE=.1,API_SAMPLE_RATE=.05;
 const visitorBucket=(()=>{let hash=0;for(let i=0;i<visitorId.length;i++)hash=(hash*31+visitorId.charCodeAt(i))>>>0;return hash%1000})();
 const perfSample=(()=>{
  return visitorBucket<PERF_SAMPLE_RATE*1000;
@@ -111,7 +111,7 @@ function flushApiNetworkCounts(){
  apiNetworkCounts.clear();
 }
 async function flush({beacon=false}={}){
- activeTick();if(activePending>=120000){enqueue({type:'active_time',page:page(),activeMs:Math.round(activePending)},{autoFlush:false});activePending=0}
+ activeTick();if(activePending>=300000){enqueue({type:'active_time',page:page(),activeMs:Math.round(activePending)},{autoFlush:false});activePending=0}
  flushApiNetworkCounts();
  if(analyticsPaused()){
   if(queue.length)deferEvents(queue.splice(0),sessionId);
@@ -224,7 +224,7 @@ const pendingApi=Array.isArray(window.__ChunbongApiNetworkQueue)?window.__Chunbo
 for(const target of pendingApi)recordApiNetwork(target,1);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){activeTick();visibleAt=0;reportWebVitals();void flush({beacon:true})}else visibleAt=performance.now()});
 window.addEventListener('pagehide',()=>{reportWebVitals();void flush({beacon:true})});
-setInterval(()=>{if(document.visibilityState==='visible'){activeTick();void flush()}},120000);
+setInterval(()=>{if(document.visibilityState==='visible'){activeTick();void flush()}},300000);
 setTimeout(flush,1200);
 const pending=Array.isArray(window.__ChunbongAnalyticsQueue)?window.__ChunbongAnalyticsQueue.splice(0):[];
 for(const event of pending){if(event&&typeof event==='object'&&event.type)add(event)}
