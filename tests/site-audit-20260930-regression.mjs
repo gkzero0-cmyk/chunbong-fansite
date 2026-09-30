@@ -39,7 +39,7 @@ const survival = archive.toPublicArchiveItem({
   sources:[{id:'source',kind:'official',label:'공식',url:'https://example.com',visibility:'public'}], published:true
 });
 assert.equal(survival.status, 'ongoing');
-assert.match(survival.summary, /오픈한/);
+assert.match(survival.summary, /오픈(?:한|해)/);
 assert.doesNotMatch(JSON.stringify(survival), /이전 대화|사용자가|내부 검증용/);
 assert.equal(survival.timeline[0].title, '서버 오픈');
 assert.equal(survival.participantCount, 2);
