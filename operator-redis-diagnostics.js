@@ -1,11 +1,65 @@
 const API='/api/content?type=operator-system-status';
 const SNAPSHOT_KEY='chunbong:operator:redis-diagnostics:v1';
+const SECURITY_LOG_CACHE_MS=5*60*1000;
+const DEFERRED_BOOT_TYPES=new Map([
+  ['operator-system-status','system'],
+  ['operator-content-archive','contents']
+]);
 const $=(selector,root=document)=>root.querySelector(selector);
 const fmt=value=>new Intl.NumberFormat('ko-KR').format(Number(value)||0);
-const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[char]));
 const commandLabel={GET:'GET',MGET:'MGET',ZRANGE:'ZRANGE',ZREVRANGE:'ZREVRANGE',ZSCORE:'ZSCORE',ZCARD:'ZCARD',SMEMBERS:'SMEMBERS',HGET:'HGET',HGETALL:'HGETALL',SET:'SET',HSET:'HSET',HINCRBY:'HINCRBY',ZADD:'ZADD',ZREM:'ZREM',SADD:'SADD',SREM:'SREM',DEL:'DEL',EXISTS:'EXISTS'};
 const featureLabel={analytics:'분석',feedback:'피드백','auth-session':'인증·세션','operator-health':'운영 상태',push:'Push',ranking:'랭킹',multiplayer:'멀티플레이','content-archive':'콘텐츠 아카이브',other:'기타',unknown:'분류 대기'};
 const categoryLabel={read:'읽기',write:'쓰기',script:'스크립트',other:'기타'};
+
+function requestUrl(input){
+  try{return new URL(typeof input==='string'?input:input?.url||String(input||''),location.href)}catch{return null}
+}
+function requestMethod(input,init){return String(init?.method||input?.method||'GET').toUpperCase()}
+function operatorRequestType(input){
+  const url=requestUrl(input);if(!url||url.origin!==location.origin||url.pathname!=='/api/content')return'';
+  return String(url.searchParams.get('type')||'');
+}
+function installOperatorRequestOptimizer(){
+  if(globalThis.__chunbongOperatorRequestOptimizerV1)return;
+  const originalFetch=globalThis.fetch?.bind(globalThis);if(typeof originalFetch!=='function')return;
+  globalThis.__chunbongOperatorRequestOptimizerV1=true;
+  const releasedTabs=new Set();
+  let securityLogCache=null,securityLogPending=null;
+  const releaseFromTarget=target=>{
+    const tab=target?.closest?.('[data-operator-tab],[data-operator-quick-tab],[data-operator-content-sync]');
+    if(!tab)return;
+    const name=tab.dataset.operatorTab||tab.dataset.operatorQuickTab||(tab.matches('[data-operator-content-sync]')?'contents':'');
+    if(name)releasedTabs.add(name);
+    if(target.closest?.('#operator-security-refresh'))securityLogCache=null;
+  };
+  document.addEventListener('click',event=>{
+    if(event.target?.closest?.('#operator-security-refresh'))securityLogCache=null;
+    releaseFromTarget(event.target);
+  },true);
+  for(const panel of document.querySelectorAll('[data-operator-panel]:not([hidden])')){
+    if(panel.dataset.operatorPanel)releasedTabs.add(panel.dataset.operatorPanel);
+  }
+  globalThis.fetch=async function optimizedOperatorFetch(input,init){
+    if(requestMethod(input,init)!=='GET')return originalFetch(input,init);
+    const type=operatorRequestType(input),requiredTab=DEFERRED_BOOT_TYPES.get(type);
+    if(requiredTab&&!releasedTabs.has(requiredTab)){
+      const error=new Error('operator_request_deferred');error.name='AbortError';throw error;
+    }
+    if(type==='operator-security-log'){
+      const now=Date.now(),cache=securityLogCache;
+      if(cache&&now-cache.at<SECURITY_LOG_CACHE_MS)return cache.response.clone();
+      if(securityLogPending)return(await securityLogPending).clone();
+      securityLogPending=originalFetch(input,init).then(response=>{
+        if(response.ok)securityLogCache={at:Date.now(),response:response.clone()};
+        return response.clone();
+      }).finally(()=>{securityLogPending=null});
+      return(await securityLogPending).clone();
+    }
+    return originalFetch(input,init);
+  };
+}
+installOperatorRequestOptimizer();
 
 function readSnapshot(){try{return JSON.parse(localStorage.getItem(SNAPSHOT_KEY)||'null')}catch{return null}}
 function writeSnapshot(value){try{localStorage.setItem(SNAPSHOT_KEY,JSON.stringify({at:Date.now(),value}))}catch{}}
