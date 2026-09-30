@@ -7,7 +7,7 @@ const DEFERRED_BOOT_TYPES=new Map([
 ]);
 const $=(selector,root=document)=>root.querySelector(selector);
 const fmt=value=>new Intl.NumberFormat('ko-KR').format(Number(value)||0);
-const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[char]));
+const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const commandLabel={GET:'GET',MGET:'MGET',ZRANGE:'ZRANGE',ZREVRANGE:'ZREVRANGE',ZSCORE:'ZSCORE',ZCARD:'ZCARD',SMEMBERS:'SMEMBERS',HGET:'HGET',HGETALL:'HGETALL',SET:'SET',HSET:'HSET',HINCRBY:'HINCRBY',ZADD:'ZADD',ZREM:'ZREM',SADD:'SADD',SREM:'SREM',DEL:'DEL',EXISTS:'EXISTS'};
 const featureLabel={analytics:'분석',feedback:'피드백','auth-session':'인증·세션','operator-health':'운영 상태',push:'Push',ranking:'랭킹',multiplayer:'멀티플레이','content-archive':'콘텐츠 아카이브',other:'기타',unknown:'분류 대기'};
 const categoryLabel={read:'읽기',write:'쓰기',script:'스크립트',other:'기타'};
@@ -31,7 +31,6 @@ function installOperatorRequestOptimizer(){
     if(!tab)return;
     const name=tab.dataset.operatorTab||tab.dataset.operatorQuickTab||(tab.matches('[data-operator-content-sync]')?'contents':'');
     if(name)releasedTabs.add(name);
-    if(target.closest?.('#operator-security-refresh'))securityLogCache=null;
   };
   document.addEventListener('click',event=>{
     if(event.target?.closest?.('#operator-security-refresh'))securityLogCache=null;
