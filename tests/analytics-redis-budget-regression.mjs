@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 
 const client=fs.readFileSync(new URL('../site-analytics.js',import.meta.url),'utf8');
 const api=fs.readFileSync(new URL('../lib/operator-center-api.js',import.meta.url),'utf8');
-assert.match(client,/activePending>=120000/);
-assert.match(client,/\},120000\);/);
-assert.doesNotMatch(client,/activePending>=15000/);
+assert.match(client,/activePending>=300000/);
+assert.match(client,/\},300000\);/);
+assert.doesNotMatch(client,/activePending>=120000/);
 assert.match(client,/DEFERRED_KEY='chunbong:analytics:deferred:v1'/,'analytics deferred buffer key missing');
+assert.match(client,/PERF_SAMPLE_RATE=\.1,API_SAMPLE_RATE=\.05/,'analytics sampling must stay in low-cost mode');
 assert.match(client,/DEFERRED_TTL_MS=48\*60\*60\*1000/,'analytics deferred buffer must expire after 48 hours');
 assert.match(client,/DEFERRED_MAX_EVENTS=120/,'analytics deferred buffer must stay bounded');
 assert.match(client,/DEFERRED_MAX_BATCHES=12/,'analytics deferred batch count must stay bounded');
@@ -16,6 +17,8 @@ assert.match(client,/removeDeferred\(deferred\.id\)/,'deferred analytics must cl
 assert.match(client,/occurredAt/,'analytics events must carry their original occurrence time');
 assert.match(client,/search_query'\|\|type==='search_result_click/,'deferred search events need local privacy filtering');
 assert.doesNotMatch(client,/analyticsPaused\(\)\)\{queue\.length=0/,'budget pause must not discard queued analytics');
+assert.match(api,/compactRedisCommands/,'analytics writes must compact duplicate hash increments');
+assert.match(api,/ANALYTICS_DETAIL_SAMPLE_RATE=0\.05/,'server detail sample must stay at five percent');
 assert.match(api,/pageViewDays=new Map\(\)/);
 assert.match(api,/if\(type==='page_view'\)/);
 assert.match(api,/Math\.min\(300000,Math\.round\(Number\(event\.activeMs\)/);
