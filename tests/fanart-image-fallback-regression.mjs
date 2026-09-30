@@ -4,6 +4,8 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const originalFetch = global.fetch;
 const requested = [];
+const listThumb = 'https://cafeptthumb-phinf.pstatic.net/example/list-art.jpg?type=w800';
+const htmlThumb = 'https://post-phinf.pstatic.net/MjAyNjA5MzA_test/html-art.jpg?type=w966';
 
 global.fetch = async url => {
   const href = String(url || '');
@@ -11,9 +13,20 @@ global.fetch = async url => {
   if (href.includes('cafe-articleapi/v3')) {
     return new Response('upstream error', { status: 500 });
   }
+  if (href.includes('cafe-boardlist-api/v1')) {
+    return Response.json({
+      result: {
+        articles: [{
+          articleId: 28908,
+          subject: 'list fallback art',
+          media: { thumbnailImageUrl: listThumb }
+        }]
+      }
+    });
+  }
   if (href.includes('m.cafe.naver.com')) {
     return new Response(
-      '<html><body><img data-src="https://post-phinf.pstatic.net/MjAyNjA5MzA_test/fanart.jpg?type=w966"></body></html>',
+      `<html><head><link rel="icon" href="https://ca-fe.pstatic.net/web-mobile/static/img/favicon.png"></head><body><img data-src="${htmlThumb}"></body></html>`,
       { status: 200, headers: { 'content-type': 'text/html; charset=utf-8' } }
     );
   }
@@ -22,12 +35,23 @@ global.fetch = async url => {
 
 try {
   const { fetchFanartDetail, extractImages } = require('../lib/fanart-detail.js');
-  const detail = await fetchFanartDetail('28908');
-  assert.equal(detail.images[0], 'https://post-phinf.pstatic.net/MjAyNjA5MzA_test/fanart.jpg?type=w966');
-  assert.ok(requested.some(url => url.includes('m.cafe.naver.com')), 'mobile cafe HTML fallback should be requested');
 
-  const extracted = extractImages('https://ssl.pstatic.net/static/cafe/app.js https://post-phinf.pstatic.net/example/art.jpg?type=w966');
-  assert.deepEqual(extracted, ['https://post-phinf.pstatic.net/example/art.jpg?type=w966']);
+  const detailFromList = await fetchFanartDetail('28908');
+  assert.equal(detailFromList.images[0], listThumb);
+  assert.equal(detailFromList.source, 'fanart-list');
+  assert.ok(!requested.some(url => url.includes('m.cafe.naver.com')), 'list thumbnail should prevent unnecessary HTML fallback');
+
+  const detailFromHtml = await fetchFanartDetail('28909');
+  assert.equal(detailFromHtml.images[0], htmlThumb);
+  assert.equal(detailFromHtml.source, 'public-html');
+  assert.ok(requested.some(url => url.includes('m.cafe.naver.com')), 'mobile cafe HTML fallback should still work when list has no matching article');
+
+  const extracted = extractImages([
+    '<img src="https://ca-fe.pstatic.net/web-mobile/static/img/favicon.png">',
+    '<img src="https://ssl.pstatic.net/static/cafe/logo.png">',
+    `<img data-src="${htmlThumb}">`
+  ].join(''));
+  assert.deepEqual(extracted, [htmlThumb]);
 
   const fetchFanart = require('../lib/content-api/fanart.js');
   assert.equal(typeof fetchFanart.normalize, 'function', 'fanart normalizer should be testable');
