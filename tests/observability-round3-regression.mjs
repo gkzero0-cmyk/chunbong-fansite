@@ -23,8 +23,13 @@ for (const file of [
 }
 
 const guardian=read('.github/workflows/production-git-auto-retry.yml');
-assert.match(guardian,/per_page=30/,'guardian should cap recent commit scanning at 30');
-assert.doesNotMatch(guardian,/per_page=100/,'guardian should not scan 100 commits every hour');
+assert.match(guardian,/actions\/cache\/restore@v4/,'guardian should restore its cooldown anchor instead of rescanning many commits');
+assert.match(guardian,/actions\/cache\/save@v4/,'guardian should persist the cooldown anchor across hourly runs');
+assert.match(guardian,/\.guardian\/production-state\.json/,'guardian should keep a small persisted cooldown state');
+assert.match(guardian,/CURRENT_RATE_LIMIT_AT/,'guardian should inspect only the current main commit for a fresh rate-limit signal');
+assert.match(guardian,/CACHED_RATE_LIMIT_AT/,'guardian should preserve the first observed rate-limit anchor across later commits');
+assert.doesNotMatch(guardian,/per_page=100/,'guardian should not scan 100 commit statuses every hour');
+assert.doesNotMatch(guardian,/commits\?sha=main&per_page=/,'guardian should avoid commit-history status scans entirely');
 
 const diagnostics=read('operator-redis-diagnostics.js');
 assert.match(diagnostics,/관찰 기반 추정/,'Redis diagnostics should expose an observed estimate when exact usage is unavailable');
