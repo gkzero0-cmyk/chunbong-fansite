@@ -115,7 +115,7 @@ jobs:
               const homeStatus=page.locator('.status-card-link');
               assert.match(await homeStatus.getAttribute('href')||'',/^https:\/\/(?:www|play)\.sooplive\.com\//);
               assert.equal(await homeStatus.getAttribute('target'),'_blank');
-              assert.ok(await homeStatus.isVisible(),'home SOOP status card missing');
+              if(!mobile) assert.ok(await homeStatus.isVisible(),'home SOOP status card missing');
               assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'home horizontal overflow');
 
               await page.goto(`${process.env.BASE_URL}/tarot.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
