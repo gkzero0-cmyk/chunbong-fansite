@@ -276,8 +276,22 @@ function renderPeriodSummary(data={}){
   const phrase=(name,value)=>value===null||value===undefined?`${name} 비교 데이터 없음`:`${name} ${Math.abs(Number(value)||0).toFixed(1)}% ${Number(value)>0?'증가':Number(value)<0?'감소':'변화 없음'}`;
   $('#operator-period-summary-text').textContent=`${compareLabel()} ${phrase('방문자',cmp.visitorsPct)}, ${phrase('페이지뷰',cmp.pageviewsPct)}입니다.${top?' 가장 많이 본 페이지는 '+friendlyKey(top.key)+'입니다.':''}`;
 }
-async function loadAnalytics(){
-  const data=await json(API+'operator-analytics&days='+currentDays);currentAnalytics=data;
+const ANALYTICS_SNAPSHOT_PREFIX='chunbong:operator:analytics-snapshot:v2:';
+const ANALYTICS_AUTO_REFRESH_MAX_AGE_MS=12*60*60*1000;
+function analyticsSnapshotKey(){return ANALYTICS_SNAPSHOT_PREFIX+String(currentDays)}
+function readAnalyticsSnapshot(){
+  try{
+    const parsed=JSON.parse(localStorage.getItem(analyticsSnapshotKey())||'null');
+    if(!parsed||!parsed.data||!Number(parsed.at))return null;
+    return parsed;
+  }catch{return null}
+}
+function writeAnalyticsSnapshot(data={},at=Date.now()){
+  try{localStorage.setItem(analyticsSnapshotKey(),JSON.stringify({at:Number(at)||Date.now(),data}))}catch{}
+}
+function renderAnalytics(data,meta={}){
+
+  currentAnalytics=data;
   const apiRoot=$('#system-budget-api-types');
   if(apiRoot){
     const rows=Array.isArray(data.apiNetwork?.rows)?data.apiNetwork.rows:[];
@@ -293,8 +307,31 @@ async function loadAnalytics(){
   renderDelta('#metric-visitors-delta',data.comparison?.visitorsPct);renderDelta('#metric-sessions-delta',data.comparison?.sessionsPct);renderDelta('#metric-pageviews-delta',data.comparison?.pageviewsPct);renderDelta('#metric-duration-delta',data.comparison?.averageActiveSecondsPct);
   renderPeriodSummary(data);renderPageRows(data.topPages||[],data.pageviews);renderMenuRows(data.topMenus||[],data.menuTotal);renderFeatureRows(data.topFeatures||[],data.featureTotal);renderEnvironmentRows(data.devices||[]);
   renderDaily(data.daily||[]);renderHourly(data.hourly||[]);renderFunnel(data.funnel||{});renderPerformance(data.performance||{});renderSearchInsights(data.search||{});
-  $('#operator-collection-note').textContent=data.collectionStartedAt?'실사용 분석 수집 시작: '+new Date(data.collectionStartedAt).toLocaleString('ko-KR'):'분석 데이터가 아직 수집되지 않았습니다.';
+  const note=$('#operator-collection-note'),stamp=meta.snapshotAt?new Date(meta.snapshotAt).toLocaleString('ko-KR'):null;
+  if(note)note.textContent=meta.stale&&stamp?'Redis 제한/절약 모드 · 마지막 정상 분석 '+stamp:stamp?'분석 스냅샷 '+stamp+(meta.cached?' · 브라우저 캐시 사용':' · 최신 조회'):data.collectionStartedAt?'실사용 분석 수집 시작: '+new Date(data.collectionStartedAt).toLocaleString('ko-KR'):'분석 데이터가 아직 수집되지 않았습니다.';
   const unread=Number(data.feedbackCounts?.new)||0,badge=$('#operator-feedback-badge');badge.textContent=unread;badge.hidden=!unread;renderOperatorAttention();
+
+}
+async function loadAnalytics({force=false}={}){
+  const snapshot=readAnalyticsSnapshot(),age=snapshot?Date.now()-Number(snapshot.at):Infinity;
+  if(snapshot&&!force){
+    renderAnalytics(snapshot.data,{snapshotAt:snapshot.at,cached:true,stale:age>ANALYTICS_AUTO_REFRESH_MAX_AGE_MS});
+    if(age<=ANALYTICS_AUTO_REFRESH_MAX_AGE_MS)return snapshot.data;
+  }
+  try{
+    const data=await json(API+'operator-analytics&days='+currentDays);
+    const sourceAt=Date.parse(data.cachedAt||'')||Date.now();
+    writeAnalyticsSnapshot(data,sourceAt);
+    renderAnalytics(data,{snapshotAt:sourceAt,cached:false,stale:Boolean(data.stale||data.storageDegraded)});
+    return data;
+  }catch(error){
+    if(snapshot){
+      renderAnalytics(snapshot.data,{snapshotAt:snapshot.at,cached:true,stale:true});
+      return snapshot.data;
+    }
+    const note=$('#operator-collection-note');if(note)note.textContent='Redis 제한으로 분석 데이터를 새로 읽을 수 없습니다. 마지막 정상 스냅샷이 생기면 이 화면에서 계속 확인할 수 있습니다.';
+    throw error;
+  }
 }
 function exportAnalyticsJson(){if(!currentAnalytics)return;download('chunbong-analytics-'+String(currentDays)+'d.json',JSON.stringify({exportedAt:new Date().toISOString(),period:currentDays,data:currentAnalytics},null,2),'application/json')}
 function exportAnalyticsCsv(){
