@@ -42,7 +42,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add operator-redis-diagnostics.js lib/operator-center-api.js operator.js service-worker.js page.js operator.html api/crew-news-batch.js .github/workflows/site-audit-tests.yml .github/workflows/site-regression.yml .github/workflows/operator-center-browser-smoke.yml
+          git add operator-redis-diagnostics.js lib/operator-center-api.js operator.js service-worker.js page.js operator.html api/crew-news-batch.js
           git diff --cached --check
           git commit -m 'fix: harden site resource isolation [hardening-applied]'
           git push origin HEAD:improve/site-hardening-round2-20261001
