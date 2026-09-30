@@ -1,0 +1,46 @@
+name: Apply content guide resilience patch
+
+on:
+  push:
+    branches: [fix/content-guide-wiki-sync-20261001]
+    paths:
+      - 'scripts/patch-content-guide-resilience.mjs'
+      - '.github/workflows/apply-content-guide-resilience.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-content-guide-resilience
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/content-guide-wiki-sync-20261001
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Apply scoped patch
+        run: node scripts/patch-content-guide-resilience.mjs
+      - name: Verify patched sources
+        run: |
+          node --check lib/content-guide-sources.js
+          node --check lib/chunbong-content-archive-api.js
+          node tests/content-guide-resilience-regression.mjs
+      - name: Commit product changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add lib/chunbong-content-archive-api.js .github/workflows/site-regression.yml
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix: keep content guides available without Redis'
+          git push origin HEAD:fix/content-guide-wiki-sync-20261001
