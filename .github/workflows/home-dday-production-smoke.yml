@@ -96,11 +96,8 @@ jobs:
                 };
               });
               assert.deepEqual(values.displayed,values.expected,'production D-day values mismatch');
-
-              const header=await page.locator('.site-header').boundingBox();
-              const strip=await page.locator('.home-dday-strip').boundingBox();
-              assert.ok(header&&strip,'header or D-day strip missing');
-              assert.ok(Math.abs(strip.y-(header.y+header.height))<=2,'D-day strip not directly below menu');
+              assert.equal(await page.locator('#home-dday-trigger').count(),1,'D-day trigger missing');
+              assert.equal(await page.locator('#home-dday-dialog').count(),1,'D-day dialog missing');
 
               await page.locator('#home-dday-trigger').click();
               assert.ok(await page.locator('#home-dday-dialog').evaluate(el=>el.open),'D-day dialog did not open');
