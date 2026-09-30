@@ -587,7 +587,7 @@ function renderSessions(){
   el.innerHTML=rows.length?rows.map(row=>`<article class="${row.current?'is-current':''}"><div><strong>${row.current?'현재 세션 · ':''}${escapeHtml(providerLabel(row.provider))}</strong><span>${row.createdAt?'로그인 '+new Date(row.createdAt).toLocaleString('ko-KR'):'기존 세션'}${row.lastSeen?' · 최근 활동 '+new Date(row.lastSeen).toLocaleString('ko-KR'):''} · 만료 ${new Date(row.expiresAt).toLocaleDateString('ko-KR')}</span></div>${row.current?'<b>현재 기기</b>':`<button type="button" data-revoke-session="${escapeHtml(row.id)}">세션 종료</button>`}</article>`).join(''):'<p class="operator-empty">세션 상세 정보가 아직 없습니다.</p>';
   el.querySelectorAll('[data-revoke-session]').forEach(button=>button.addEventListener('click',async()=>{if(!confirm('이 운영자 세션을 종료할까요?'))return;await json(API+'operator-session-revoke',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:button.dataset.revokeSession})});await refreshSession()}));
 }
-async function refreshSession(){session=await json(API+'operator-session');try{localStorage.setItem('chunbong:operator:access-hint:v1','1')}catch(_){}$('#security-provider').textContent=providerLabel(session.provider);$('#security-expires').textContent=new Date(session.expiresAt).toLocaleString('ko-KR');$('#security-sessions').textContent=fmt(session.activeSessions||1)+'개';$('#security-github').textContent=session.owner?.githubLogin||'gkzero0-cmyk';renderSessions();return session}
+async function refreshSession({details=false}={}){session=await json(API+'operator-session'+(details?'&details=1':''));try{localStorage.setItem('chunbong:operator:access-hint:v1','1')}catch(_){}$('#security-provider').textContent=providerLabel(session.provider);$('#security-expires').textContent=new Date(session.expiresAt).toLocaleString('ko-KR');$('#security-sessions').textContent=(session.storageDegraded?'현재 기기 · 저장소 제한':fmt(session.activeSessions||1)+'개');$('#security-github').textContent=session.owner?.githubLogin||'gkzero0-cmyk';renderSessions();return session}
 async function setupFirebaseEmail(){
  const form=$('#operator-email-form');form.addEventListener('submit',async e=>{e.preventDefault();const email=$('#operator-email').value.trim().toLowerCase();status.textContent='인증 메일 요청 중…';try{await json(API+'operator-email-start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});localStorage.setItem('chunbong:operator:email',email);status.textContent='등록된 운영자 계정이라면 인증 메일이 발송됩니다. 메일함을 확인해 주세요.'}catch(err){status.textContent=err.message==='email_auth_not_configured'?'이메일 인증 설정이 아직 완료되지 않았습니다.':'인증 요청을 처리하지 못했습니다.'}})
  if(new URLSearchParams(location.search).get('email')==='complete'){try{const config=await json(API+'operator-auth-config');if(!config.providers.email||!config.firebase)return;const email=localStorage.getItem('chunbong:operator:email')||prompt('인증 메일을 받은 주소를 입력하세요')||'';if(!email)return;const {initializeApp}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js');const {getAuth,isSignInWithEmailLink,signInWithEmailLink}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js');const app=initializeApp(config.firebase,'operator-email-complete');const auth=getAuth(app);if(!isSignInWithEmailLink(auth,location.href))throw new Error('invalid_link');const credential=await signInWithEmailLink(auth,email,location.href);const idToken=await credential.user.getIdToken();await json(API+'operator-email-complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken})});localStorage.removeItem('chunbong:operator:email');history.replaceState(null,'','/operator.html');await boot()}catch{status.textContent='이메일 인증 링크를 확인하지 못했습니다.'}}
@@ -737,13 +737,14 @@ async function activateOperatorTab(tab){
   $$('[data-operator-panel]').forEach(panel=>panel.hidden=panel.dataset.operatorPanel!==target);
   if(target==='contents'){await loadOperatorContents();const state=$('[data-history-audit-summary] strong')?.textContent||'';if(/검사 대기/.test(state))void loadHistoryVerification();}
   if((target==='performance'||target==='search')&&!currentAnalytics)await loadAnalytics();
+  if(target==='feedback'&&!feedbackItems.length)await loadFeedback().catch(()=>{const list=$('#operator-feedback-list');if(list)list.innerHTML='<p class="operator-empty">Redis 제한으로 새 피드백 목록을 읽을 수 없습니다.</p>'});
   if(target==='system'&&!currentSystem)await loadSystemStatus();
-  if(target==='security')await Promise.allSettled([refreshSession(),loadSecurityLog()]);
+  if(target==='security')await Promise.allSettled([refreshSession({details:true}),loadSecurityLog()]);
 }
 async function boot(){
   try{
     await refreshSession();showDashboard();
-    await Promise.allSettled([loadAnalytics(),loadFeedback(),loadSystemStatus(),loadArchiveHealth()]);
+    await Promise.allSettled([loadAnalytics(),loadSystemStatus(),loadArchiveHealth()]);
     renderOperatorAttention();
   }catch{showLogin()}
 }
@@ -756,12 +757,14 @@ $$('[data-operator-quick-tab]').forEach(button=>button.addEventListener('click',
 $('[data-history-audit-run]')?.addEventListener('click',()=>void loadHistoryVerification());
 $('[data-operator-content-sync]')?.addEventListener('click',async event=>{const button=event.currentTarget;button.disabled=true;try{await activateOperatorTab('contents');const module=await operatorContentsModule();await module.runOfficialSync()}finally{button.disabled=false}});
 $('#operator-export-json')?.addEventListener('click',exportAnalyticsJson);$('#operator-export-csv')?.addEventListener('click',exportAnalyticsCsv);
+$('#operator-analytics-refresh')?.addEventListener('click',async event=>{const button=event.currentTarget;button.disabled=true;try{await loadAnalytics({force:true})}finally{button.disabled=false}});
 $('#operator-feedback-refresh')?.addEventListener('click',loadFeedback);
 ['#operator-feedback-search','#operator-feedback-status-filter','#operator-feedback-category-filter','#operator-feedback-priority-filter','#operator-feedback-sort'].forEach(selector=>$(selector)?.addEventListener(selector.includes('search')?'input':'change',renderFeedbackList));
 $('#feedback-status')?.addEventListener('change',e=>void updateSelectedFeedback({statusValue:e.target.value}));
 $('#feedback-priority')?.addEventListener('change',e=>void updateSelectedFeedback({priorityValue:e.target.value}));
 $('#feedback-memo-save')?.addEventListener('click',()=>void updateSelectedFeedback({memoValue:$('#feedback-memo').value,tagsValue:$('#feedback-tags').value,relatedUpdateValue:$('#feedback-related-update').value,priorityValue:$('#feedback-priority').value}));
 $('#operator-system-refresh')?.addEventListener('click',()=>void loadSystemStatus());
+$('#operator-redis-refresh')?.addEventListener('click',async event=>{const button=event.currentTarget;button.disabled=true;try{await loadSystemStatus({storage:true})}finally{button.disabled=false}});
 $('#operator-recovery-toggle')?.addEventListener('click',async()=>{
   const button=$('#operator-recovery-toggle'),active=button?.dataset?.active==='1',next=!active;
   const message=next?'검증된 last-known-good 데이터로 전환할까요? 원본 파일은 변경하지 않습니다.':'현재 데이터 사용으로 복귀할까요?';
@@ -777,5 +780,5 @@ $('#operator-security-refresh')?.addEventListener('click',()=>void loadSecurityL
 logout.addEventListener('click',async()=>{await json(API+'operator-logout',{method:'POST'});try{localStorage.removeItem('chunbong:operator:access-hint:v1')}catch(_){}session=null;showLogin()});
 $('#operator-logout-all')?.addEventListener('click',async()=>{if(!confirm('모든 기기에서 운영자 로그인을 해제할까요?'))return;await json(API+'operator-logout-all',{method:'POST'});try{localStorage.removeItem('chunbong:operator:access-hint:v1')}catch(_){}session=null;showLogin();status.textContent='모든 기기의 운영자 세션을 해제했습니다.'});
 await loadAuthAvailability();await setupFirebaseEmail();await boot();
-setInterval(()=>{if(document.visibilityState==='visible'&&!dashboard.hidden){void loadAnalytics();if(!document.querySelector('[data-operator-panel="system"]')?.hidden)void loadSystemStatus()}},300000);
+// Deliberately no operator-center polling loop: Redis-heavy data refreshes only on cache expiry or explicit user action.
 })().catch(error=>{console.error('[operator-center]',error);});
