@@ -37,6 +37,7 @@
   function kpi() {}
 
   window.__CHUNBONG_SOOP_PERIOD_HELPERS__={buildRollingWeekOptions,filterDailyByWeek,availableMonthKeys,formatRollingWeekLabel,formatMonthLabel};
+  window.__CHUNBONG_DATA_BOOT_MANAGED__ = true;
 
   const load = src => new Promise((resolve,reject)=>{
     const script=document.createElement('script');
@@ -46,9 +47,11 @@
     document.body.appendChild(script);
   });
 
-  load('data-soop-periods-v3.js')
+  Promise.all([
+    load('data-soop-periods-v3.js'),
+    load('data-recent-session-metrics.js')
+  ])
     .then(()=>load('data-core.js'))
-    .then(()=>load('data-recent-session-metrics.js'))
     .catch(error=>console.error(error));
 })();
 
