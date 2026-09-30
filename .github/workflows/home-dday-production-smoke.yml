@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '22'
       - name: Stop early on Vercel build-rate-limit
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -74,7 +74,7 @@ jobs:
               const errors=[];
               page.on('pageerror',error=>errors.push(error.message));
 
-              await page.goto(`${process.env.BASE_URL}/index.html?_smoke=${Date.now()}`,{waitUntil:'networkidle'});
+              await page.goto(`${process.env.BASE_URL}/index.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded'});
               await page.waitForFunction(()=>Boolean(window.HomeBroadcastDday));
 
               const values=await page.evaluate(()=>{
