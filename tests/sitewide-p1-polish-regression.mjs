@@ -4,20 +4,22 @@ import assert from 'node:assert/strict';
 const read = path => fs.readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
 const mobileLoader = read('mobile-runtime-loader.js');
+const polishRuntime = read('sitewide-polish.js');
 const myhub = read('myhub.html');
 const personalHub = read('personal-hub.js');
 
+assert.ok(mobileLoader.length < 1800, 'mobile runtime loader must stay within the existing performance budget');
 assert.match(mobileLoader, /sitewide-mobile-polish\.css/, 'mobile sitewide polish stylesheet must be loaded');
-assert.match(mobileLoader, /ArrowRight/, 'public tablists must support ArrowRight');
-assert.match(mobileLoader, /ArrowLeft/, 'public tablists must support ArrowLeft');
-assert.match(mobileLoader, /Home/, 'public tablists must support Home');
-assert.match(mobileLoader, /End/, 'public tablists must support End');
-assert.match(mobileLoader, /tabindex/, 'public tabs must use roving tabindex');
-assert.match(mobileLoader, /archive-filter-toggle/, 'mobile content archive must expose a detailed-filter toggle');
-assert.match(mobileLoader, /archive-filter-advanced/, 'mobile content archive must group advanced filters');
+assert.match(mobileLoader, /sitewide-polish\.js/, 'sitewide polish runtime must be split from the tiny mobile loader');
+assert.match(polishRuntime, /ArrowRight/, 'public tablists must support ArrowRight');
+assert.match(polishRuntime, /ArrowLeft/, 'public tablists must support ArrowLeft');
+assert.match(polishRuntime, /Home/, 'public tablists must support Home');
+assert.match(polishRuntime, /End/, 'public tablists must support End');
+assert.match(polishRuntime, /tabindex/, 'public tabs must use roving tabindex');
+assert.match(polishRuntime, /archive-filter-toggle/, 'mobile content archive must expose a detailed-filter toggle');
+assert.match(polishRuntime, /archive-filter-advanced/, 'mobile content archive must group advanced filters');
 
-const polishCss = fs.existsSync(new URL('../sitewide-mobile-polish.css', import.meta.url))
-  ? read('sitewide-mobile-polish.css') : '';
+const polishCss = read('sitewide-mobile-polish.css');
 assert.match(polishCss, /\.data-calendar-controls button[^}]*min-width:\s*44px/s, 'data calendar controls must have 44px touch targets');
 assert.match(polishCss, /\.data-calendar-controls button[^}]*min-height:\s*44px/s, 'data calendar controls must have 44px touch targets');
 assert.match(polishCss, /\.data-measurement-badge/, 'data badges must receive mobile readability overrides');
