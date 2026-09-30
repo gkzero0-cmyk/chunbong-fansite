@@ -50,6 +50,14 @@
     min-height:44px!important;
     touch-action:manipulation
   }
+  .operator-feedback-filters input,
+  .operator-feedback-filters select,
+  .operator-feedback-detail select,
+  .operator-feedback-memo textarea{
+    min-height:44px!important;
+    touch-action:manipulation
+  }
+  .operator-feedback-memo textarea{min-height:96px!important}
   .operator-period button{font-size:12px!important;padding:9px 7px!important}
   .operator-metric-grid small,
   .operator-metric-grid em,

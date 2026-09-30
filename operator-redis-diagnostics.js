@@ -137,4 +137,40 @@ function installOperatorMobileTabUX(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installOperatorMobileTabUX,{once:true});else installOperatorMobileTabUX();
 
+function installOperatorTabKeyboardUX(){
+  if(globalThis.__chunbongOperatorTabKeyboardUXV1)return;
+  const tablist=document.querySelector('.operator-tabs[role="tablist"],.operator-tabs');
+  if(!tablist)return;
+  const tabs=[...tablist.querySelectorAll('[data-operator-tab]')];
+  if(!tabs.length)return;
+  globalThis.__chunbongOperatorTabKeyboardUXV1=true;
+  const sync=()=>{
+    const selected=tabs.find(tab=>tab.getAttribute('aria-selected')==='true'||tab.classList.contains('active'))||tabs[0];
+    tabs.forEach(tab=>tab.setAttribute('tabindex',tab===selected?'0':'-1'));
+    return selected;
+  };
+  const activate=tab=>{
+    if(!tab)return;
+    try{tab.focus({preventScroll:true})}catch{tab.focus()}
+    tab.click();
+    queueMicrotask(sync);
+  };
+  tablist.addEventListener('keydown',event=>{
+    const current=event.target?.closest?.('[data-operator-tab]');
+    const index=tabs.indexOf(current);
+    if(index<0)return;
+    let next=null;
+    if(event.key==='ArrowRight')next=tabs[(index+1)%tabs.length];
+    else if(event.key==='ArrowLeft')next=tabs[(index-1+tabs.length)%tabs.length];
+    else if(event.key==='Home')next=tabs[0];
+    else if(event.key==='End')next=tabs[tabs.length-1];
+    else return;
+    event.preventDefault();
+    activate(next);
+  });
+  tablist.addEventListener('click',()=>queueMicrotask(sync));
+  sync();
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installOperatorTabKeyboardUX,{once:true});else installOperatorTabKeyboardUX();
+
 export{renderRedisDiagnostics,loadRedisDiagnostics};
