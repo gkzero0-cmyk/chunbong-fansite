@@ -7,16 +7,9 @@ const path=require('node:path');
 
 const source=fs.readFileSync(path.join(__dirname,'..','api','crew-news-batch.js'),'utf8');
 
-function assertIdentifierDeclared(name){
-  const referenced=new RegExp(`\\b${name}\\b`).test(source);
-  if(!referenced)return;
-  const declared=new RegExp(`(?:function|const|let|var)\\s+${name}\\b`).test(source);
-  assert.equal(declared,true,`${name} is referenced by crew-news-batch.js but is not declared`);
-}
-
 test('crew-news VOD fallback does not retain known undefined helper regressions',()=>{
-  assertIdentifierDeclared('requestBase');
-  assertIdentifierDeclared('entries');
+  assert.doesNotMatch(source,/\brequestBase\s*\(/,'undefined requestBase helper call must not return');
+  assert.doesNotMatch(source,/(^|[^.\w])entries\b/m,'bare entries collection must not return without a local declaration');
 });
 
 test('crew-news keeps VOD fallback failures non-fatal for an already selected post',()=>{
