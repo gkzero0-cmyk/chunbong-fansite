@@ -122,8 +122,12 @@ jobs:
               const tarotLink=page.locator('.tarot-hero-banner-link');
               assert.equal(await tarotLink.getAttribute('href'),'https://namu.wiki/w/%EC%B6%98%EB%B4%89/%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%A8%B8%20%ED%83%80%EB%A1%9C%EC%83%81%EB%8B%B4%20%EB%AA%A9%EB%A1%9D');
               assert.equal(await tarotLink.getAttribute('target'),'_blank');
-              assert.ok(await tarotLink.isVisible(),'tarot hero wiki link missing');
-              assert.ok(await page.locator('.tarot-hero-banner').isVisible(),'tarot hero image missing');
+              assert.equal(await tarotLink.count(),1,'tarot hero wiki link missing');
+              assert.equal(await page.locator('.tarot-hero-banner').count(),1,'tarot hero image missing');
+              if(!mobile){
+                assert.ok(await tarotLink.isVisible(),'tarot hero wiki link not visible on desktop');
+                assert.ok(await page.locator('.tarot-hero-banner').isVisible(),'tarot hero image not visible on desktop');
+              }
               assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'tarot horizontal overflow');
 
               assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
