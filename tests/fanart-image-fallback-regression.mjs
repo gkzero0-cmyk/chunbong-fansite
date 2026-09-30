@@ -21,10 +21,13 @@ global.fetch = async url => {
 };
 
 try {
-  const { fetchFanartDetail } = require('../lib/fanart-detail.js');
+  const { fetchFanartDetail, extractImages } = require('../lib/fanart-detail.js');
   const detail = await fetchFanartDetail('28908');
   assert.equal(detail.images[0], 'https://post-phinf.pstatic.net/MjAyNjA5MzA_test/fanart.jpg?type=w966');
   assert.ok(requested.some(url => url.includes('m.cafe.naver.com')), 'mobile cafe HTML fallback should be requested');
+
+  const extracted = extractImages('https://ssl.pstatic.net/static/cafe/app.js https://post-phinf.pstatic.net/example/art.jpg?type=w966');
+  assert.deepEqual(extracted, ['https://post-phinf.pstatic.net/example/art.jpg?type=w966']);
 
   const fetchFanart = require('../lib/content-api/fanart.js');
   assert.equal(typeof fetchFanart.normalize, 'function', 'fanart normalizer should be testable');
