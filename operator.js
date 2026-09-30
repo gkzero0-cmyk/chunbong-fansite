@@ -465,7 +465,7 @@ function renderChangelogHealth(changelog={}){
 }
 async function loadSystemStatus({storage:deepStorage=false}={}){
   const data=await json(API+'operator-system-status'+(deepStorage?'&storage=1':''));currentSystem=data;
-  const dep=data.deployment||{},storage=data.storage||{},services=data.services||{},traffic=data.traffic||currentAnalytics||{},redisUsage=data.redisUsage||{};
+  const dep=data.deployment||{},storage=data.storage||{},services=data.services||{},traffic=data.traffic||currentAnalytics||{},redisUsage=data.redisUsage||{},realtimeRedisUsage=data.realtimeRedisUsage||{};
   $('#system-production').innerHTML=dep.sha?'<span class="operator-health ok">● READY</span>':'<span class="operator-health bad">● 확인 필요</span>';$('#system-production-meta').textContent=(dep.environment||'-')+' · '+shortSha(dep.sha);
   const internalOnlySync=dep.synced===true&&dep.internalOnlyGap&&dep.exactSynced===false;
   $('#system-sync').innerHTML=dep.synced===true?(internalOnlySync?'<span class="operator-health ok">● 사이트 코드 동기화</span>':'<span class="operator-health ok">● 동기화</span>'):dep.synced===false?'<span class="operator-health warn">● 코드 배포 지연</span>':'<span class="operator-health warn">● 확인 불가</span>';$('#system-sync-meta').textContent=shortSha(dep.sha)+' / '+shortSha(dep.mainSha)+(internalOnlySync?' · CI/테스트 변경만 생략':'');
@@ -493,6 +493,15 @@ async function loadSystemStatus({storage:deepStorage=false}={}){
   if(usageWrite)usageWrite.textContent=redisUsage.writes===null||redisUsage.writes===undefined?'-':fmt(redisUsage.writes);
   if(usageDaily)usageDaily.textContent=redisUsage.dailyCommands===null||redisUsage.dailyCommands===undefined?'-':fmt(redisUsage.dailyCommands);
   if(usageStorage)usageStorage.textContent=bytesLabel(redisUsage.currentStorageBytes);
+  const rtUsageUsed=$('#system-realtime-redis-monthly-used'),rtUsageRemaining=$('#system-realtime-redis-monthly-remaining'),rtUsagePct=$('#system-realtime-redis-monthly-pct'),rtUsageSource=$('#system-realtime-redis-usage-source'),rtUsageRead=$('#system-realtime-redis-monthly-read'),rtUsageWrite=$('#system-realtime-redis-monthly-write'),rtUsageDaily=$('#system-realtime-redis-daily-commands'),rtUsageStorage=$('#system-realtime-redis-current-storage');
+  if(rtUsageUsed)rtUsageUsed.textContent=realtimeRedisUsage.exact?fmt(realtimeRedisUsage.used)+' / '+fmt(realtimeRedisUsage.monthlyLimit):'실측 연결 대기';
+  if(rtUsageRemaining)rtUsageRemaining.textContent=realtimeRedisUsage.exact?fmt(realtimeRedisUsage.remaining)+'회':'-';
+  if(rtUsagePct){rtUsagePct.textContent=realtimeRedisUsage.exact?Number(realtimeRedisUsage.usedPct).toFixed(1)+'%':'-';rtUsagePct.className=realtimeRedisUsage.exact&&Number(realtimeRedisUsage.usedPct)>=95?'is-bad':realtimeRedisUsage.exact&&Number(realtimeRedisUsage.usedPct)>=75?'is-warn':realtimeRedisUsage.exact?'is-ok':''}
+  if(rtUsageSource)rtUsageSource.textContent=realtimeRedisUsage.exact?'별도 Upstash 관리 API 실측 · Redis command 소모 없음':realtimeRedisUsage.source==='developer_api_not_configured'?'실측 연결 대기 · Realtime Developer API 미연결':'Realtime 관리 API에서 실측값을 가져오지 못했습니다.';
+  if(rtUsageRead)rtUsageRead.textContent=realtimeRedisUsage.reads===null||realtimeRedisUsage.reads===undefined?'-':fmt(realtimeRedisUsage.reads);
+  if(rtUsageWrite)rtUsageWrite.textContent=realtimeRedisUsage.writes===null||realtimeRedisUsage.writes===undefined?'-':fmt(realtimeRedisUsage.writes);
+  if(rtUsageDaily)rtUsageDaily.textContent=realtimeRedisUsage.dailyCommands===null||realtimeRedisUsage.dailyCommands===undefined?'-':fmt(realtimeRedisUsage.dailyCommands);
+  if(rtUsageStorage)rtUsageStorage.textContent=bytesLabel(realtimeRedisUsage.currentStorageBytes);
   const serviceRows=[['GitHub 운영자 인증',services.githubAuth],['이메일 운영자 인증',services.emailAuth],['Push 알림',services.push],['실사용 분석',services.analytics],['피드백 저장',services.feedback]];
   $('#operator-service-health').innerHTML=serviceRows.map(([label,ok])=>`<div><span>${label}</span>${healthLabel(ok)}</div>`).join('');
   const endpoints=Array.isArray(data.endpoints)?data.endpoints:[];
