@@ -1,0 +1,120 @@
+@media(max-width:760px),(display-mode:standalone){
+  /* Shared mobile readability floor */
+  .data-error-note,
+  .data-platform-tab span,
+  .data-kpi small,
+  .data-kpi p,
+  .data-measurement-badge,
+  .data-chart-svg .chart-labels text,
+  .data-table-head span,
+  .data-detail-header,
+  .data-calendar-week,
+  .data-calendar-day span,
+  .data-calendar-day small,
+  .data-calendar-session span,
+  .data-category-copy span,
+  .data-category-row>small,
+  .data-session-card small,
+  .data-session-metrics span,
+  .data-top-copy small,
+  .data-recent-card small,
+  .data-recent-card span,
+  .data-source-strip>small,
+  .data-source-chip,
+  .archive-toolbar label>span,
+  .archive-chip,
+  .archive-card-meta,
+  .archive-summary-grid small,
+  .archive-gallery figcaption,
+  .archive-section-heading small,
+  .archive-subheading small,
+  .archive-section-heading>span,
+  .archive-record-strip small{
+    font-size:11px!important;
+    line-height:1.45;
+  }
+
+  /* Data dashboard touch targets */
+  .data-calendar-controls button{
+    min-width:44px;
+    min-height:44px;
+    width:44px;
+    height:44px;
+  }
+  .data-soop-view-tabs button,
+  .data-period-controls button,
+  .data-period-controls select,
+  .data-view-toggle button,
+  .data-platform-tab{
+    min-height:44px;
+  }
+  .data-detail-table{
+    overscroll-behavior-inline:contain;
+    scroll-snap-type:x proximity;
+    scrollbar-width:thin;
+  }
+  .data-detail-row{
+    font-size:12px;
+  }
+  .data-calendar-day{
+    min-height:72px;
+  }
+
+  /* Content archive progressive filters */
+  .archive-toolbar{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+  .archive-toolbar input,
+  .archive-toolbar select,
+  .archive-reset,
+  .archive-empty button,
+  .archive-tabs button,
+  .archive-lightbox-close{
+    min-height:44px;
+  }
+  .archive-lightbox-close{
+    min-width:44px;
+    width:44px;
+    height:44px;
+  }
+  .archive-filter-toggle{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:'title icon' 'copy icon';
+    align-items:center;
+    gap:2px 12px;
+    width:100%;
+    min-height:52px;
+    padding:9px 12px;
+    border:1px solid #333;
+    border-radius:12px;
+    background:#151515;
+    color:var(--text-primary,#f8f5f2);
+    text-align:left;
+    cursor:pointer;
+  }
+  .archive-filter-toggle>span{grid-area:title;font-size:13px;font-weight:900}
+  .archive-filter-toggle>small{grid-area:copy;color:var(--text-muted,#aaa29b);font-size:11px;line-height:1.35}
+  .archive-filter-toggle>b{grid-area:icon;font-size:20px;color:var(--page-accent,#f2a65a)}
+  .archive-filter-advanced{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+  .archive-filter-advanced[hidden]{display:none!important}
+  .archive-filter-advanced label{display:flex;flex-direction:column;gap:7px}
+
+  [data-theme="light"] .archive-filter-toggle{
+    background:#fffaf7;
+    border-color:#dfd4cc;
+    color:#1d1815;
+  }
+}
+
+@media(max-width:430px){
+  .data-calendar-day span,
+  .data-calendar-day small{font-size:11px!important}
+  .data-kpi{min-height:136px}
+}
