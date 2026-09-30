@@ -91,8 +91,45 @@
     return next;
   }
 
+  function normalizeLeopel(item={}){
+    if(String(item.id||'')!=='leopel')return item;
+    const next={...item,participantCount:311};
+    next.description=String(next.description||'').replace(
+      /공개 입주 발표 자료를 기준으로[\s\S]*?추가·미분류 인원으로 구분합니다\./,
+      '확인된 구조화 명단은 1차 SOOP 140명, 2차 SOOP 127명, 2차 치지직·YouTube 44명으로 총 311명입니다. 최종 참여자 기록 671명은 구조화 명단과 별도 집계로 구분합니다.'
+    );
+    const removedTitles=new Set(['확인된 입주 명단','추가 · 미분류','1차 입주','2차 입주','3차 입주','구조화 참가자']);
+    next.results=(Array.isArray(next.results)?next.results:[]).filter(row=>!removedTitles.has(String(row?.title||row?.label||'').trim()));
+    next.results=updateResult(next.results,'총 참여자','671명 · 최종 참여 기록');
+    next.results.splice(1,0,
+      {title:'구조화 참가자',value:'311명 · 1차 SOOP 140 + 2차 SOOP 127 + 2차 치지직·YouTube 44'},
+      {title:'1차 입주',value:'SOOP 140명'},
+      {title:'2차 입주',value:'SOOP 127명 + 치지직·YouTube 44명 · 합계 171명'}
+    );
+
+    const groups=Array.isArray(next.participantGroups)?next.participantGroups:[];
+    const canonicalGroups=groups.filter(row=>{
+      const count=Number(row?.count||row?.participants?.length||0);
+      const text=[row?.stage,row?.title,row?.platform,row?.note].filter(Boolean).join(' ');
+      if(count===140)return /1차/.test(text)&&/SOOP/i.test(text);
+      if(count===127)return /2차/.test(text)&&/SOOP/i.test(text);
+      if(count===44)return /2차/.test(text)&&/(치지직|YouTube)/i.test(text);
+      return false;
+    });
+    if(canonicalGroups.length>=3){
+      next.participantGroups=canonicalGroups;
+      const names=uniqueNames(canonicalGroups.flatMap(row=>Array.isArray(row?.participants)?row.participants:[]));
+      if(names.length)next.participants=names;
+      if(Array.isArray(next.participantProfiles)&&names.length){
+        const allowed=new Set(names);
+        next.participantProfiles=next.participantProfiles.filter(row=>allowed.has(String(row?.canonicalName||row?.displayName||'').trim()));
+      }
+    }
+    return next;
+  }
+
   function normalizeArchiveItem(raw={}){
-    let item=normalizeSurvival({...raw});
+    let item=normalizeLeopel(normalizeSurvival({...raw}));
     const explicit=Number(item.participantCount||0);
     if(!(explicit>0)){
       const derived=derivedParticipantCount(item);
@@ -108,5 +145,5 @@
     return payload;
   }
 
-  return{uniqueNames,derivedParticipantCount,normalizeSurvival,normalizeArchiveItem,normalizeArchivePayload};
+  return{uniqueNames,derivedParticipantCount,normalizeSurvival,normalizeLeopel,normalizeArchiveItem,normalizeArchivePayload};
 });
