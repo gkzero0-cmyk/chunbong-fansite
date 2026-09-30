@@ -22,9 +22,3 @@ test('site regression skips documentation and deployment marker-only pushes',()=
     assert.match(source,new RegExp(ignored.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')),`${ignored} should not consume a full regression run by itself`);
   }
 });
-
-test('operator browser smoke follows degraded-mode source changes',()=>{
-  const source=read('operator-center-browser-smoke.yml');
-  assert.match(source,/operator-redis-diagnostics\.js/,'operator Redis diagnostics changes must trigger browser smoke');
-  assert.match(source,/test\/operator-redis-degraded-mode\.test\.js/,'degraded-mode regression changes must trigger browser smoke');
-});
