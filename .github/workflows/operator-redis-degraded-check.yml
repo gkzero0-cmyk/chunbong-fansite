@@ -1,0 +1,24 @@
+name: Operator Redis degraded check
+
+on:
+  push:
+    branches:
+      - fix/operator-redis-degraded-mode-20261001
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Check diagnostics syntax
+        run: node --check operator-redis-diagnostics.js
+      - name: Run unit tests
+        run: node --test test/*.test.js
