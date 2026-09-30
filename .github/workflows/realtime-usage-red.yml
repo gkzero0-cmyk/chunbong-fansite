@@ -1,0 +1,20 @@
+name: Realtime usage RED check
+on:
+  push:
+    branches:
+      - feat/realtime-redis-usage-20260930
+    paths:
+      - .github/workflows/realtime-usage-red.yml
+permissions:
+  contents: read
+jobs:
+  red:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/realtime-redis-usage-20260930
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tests/realtime-redis-usage-regression.mjs
