@@ -576,8 +576,10 @@ async function loadSystemStatus({storage:deepStorage=false}={}){
     ...quotaRows.map(([label,ok,level])=>`<div><span>${escapeHtml(label)}</span><span class="operator-health ${level==='limit'?'bad':level==='warn'?'warn':'ok'}">${level==='limit'?'제한':level==='warn'?'절약':'정상'}</span></div>`),
     ...protectionRows.map(([label,ok])=>`<div><span>${label}</span>${healthLabel(Boolean(ok))}</div>`)
   ].join('');
-  const isolated=budget.isolatedStores||{},isolatedCount=Object.values(isolated).filter(Boolean).length;
-  if($('#system-budget-isolation'))$('#system-budget-isolation').innerHTML=`<strong>Redis 기능 격리</strong><span>${isolatedCount?fmt(isolatedCount)+'개 기능이 별도 저장소 사용 중':'현재는 공용 Redis 사용 · 필요 시 기능별 분리 가능'}</span>`;
+  const isolated=budget.isolatedStores||{},isolatedCount=Object.values(isolated).filter(Boolean).length,redisModes=budget.redisModes||{};
+  const redisModeLabel=value=>({dedicated:'전용','feature-dedicated':'전용','realtime-dedicated':'Realtime 전용','shared-kv':'공용 KV','shared-upstash':'공용 Upstash',none:'미연결'}[value]||'확인 필요');
+  const redisModeSummary=[['운영자',redisModes.operator],['랭킹',redisModes.ranking],['멀티플레이',redisModes.multiplayer],['Push',redisModes.push]].map(([label,mode])=>label+' '+redisModeLabel(mode)).join(' · ');
+  if($('#system-budget-isolation'))$('#system-budget-isolation').innerHTML=`<strong>Redis 기능 격리</strong><span>${escapeHtml(redisModeSummary)} · ${isolatedCount?fmt(isolatedCount)+'개 기능별 전용 저장소 연결':'전용 저장소 연결 대기'}</span>`;
   renderCommitHistory(commitRows,dep.sha,dep.synced);renderChangelogHealth(data.changelog||{});
   renderHealthHistory(data.health?.history||[]);renderDeploymentBanner();renderOperatorAttention();
 }
