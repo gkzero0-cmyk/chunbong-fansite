@@ -171,7 +171,7 @@ function panel(){
   root.id='system-redis-diagnostics';root.className='operator-card operator-redis-diagnostics';
   root.innerHTML=`<header><div><h2>Redis command 진단</h2><small>실시간 진단 표본 · 진단 자체 Redis command 0회</small></div><button id="operator-redis-diagnostics-refresh" type="button">표본 새로고침</button></header>
   <div class="operator-redis-diagnostic-summary"><div><span>관찰 command</span><b id="system-redis-diagnostics-total">-</b></div><div><span>관찰 요청</span><b id="system-redis-diagnostics-requests">-</b></div><div><span>표본 시작</span><b id="system-redis-diagnostics-started">-</b></div></div>
-  <div class="operator-grid-2 operator-redis-diagnostic-grid"><section class="operator-redis-diagnostic-note"><strong>전용 Operator Redis</strong><p id="system-operator-store-state">연결 대기 · native Upstash DB를 만든 뒤 기존 DB를 RDB Import하고 OPERATOR_REDIS 환경변수를 연결하세요.</p><small>기존 Vercel 관리형 Redis 데이터는 전환 확인 전까지 삭제하지 않습니다.</small></section><section><div class="operator-section-title-row"><strong>명령어별</strong><span>GET · ZRANGE · SMEMBERS 등</span></div><div id="system-redis-diagnostics-commands"></div></section><section><div class="operator-section-title-row"><strong>기능별</strong><span>키 prefix 기반 추정</span></div><div id="system-redis-diagnostics-features"></div></section><section><div class="operator-section-title-row"><strong>읽기/쓰기 비중</strong><span>command 종류 기준</span></div><div id="system-redis-diagnostics-categories"></div></section><section class="operator-redis-diagnostic-note"><strong>공식 월간 사용량</strong><p>현재 DB는 Vercel 관리형 Upstash라 Developer API 자동 실측이 지원되지 않습니다. 월간 commands와 잔여량은 <a href="https://console.upstash.com/redis" target="_blank" rel="noopener">Upstash Usage ↗</a>가 공식 기준입니다.</p><small>이 패널은 현재 warm API 인스턴스에서 관찰한 표본이며 월간 전체 사용량이 아닙니다.</small></section></div>`;
+  <div class="operator-grid-2 operator-redis-diagnostic-grid"><section class="operator-redis-diagnostic-note"><strong>전용 Operator Redis</strong><p id="system-operator-store-state">연결 대기 · native Upstash DB를 만든 뒤 기존 DB를 RDB Import하고 OPERATOR_REDIS 환경변수를 연결하세요.</p><small>기존 Vercel 관리형 Redis 데이터는 전환 확인 전까지 삭제하지 않습니다.</small></section><section><div class="operator-section-title-row"><strong>명령어별</strong><span>GET · ZRANGE · SMEMBERS 등</span></div><div id="system-redis-diagnostics-commands"></div></section><section><div class="operator-section-title-row"><strong>기능별</strong><span>키 prefix 기반 추정</span></div><div id="system-redis-diagnostics-features"></div></section><section><div class="operator-section-title-row"><strong>읽기/쓰기 비중</strong><span>command 종류 기준</span></div><div id="system-redis-diagnostics-categories"></div></section><section class="operator-redis-diagnostic-note"><strong>월간 Redis 사용량</strong><p id="system-redis-monthly-usage">실측 또는 관찰 기반 추정을 계산하는 중입니다.</p><small id="system-redis-monthly-thresholds">70% 주의 · 85% 경고 · 95% 위험</small></section><section><div class="operator-section-title-row"><strong>수집기 신선도</strong><span>warm-instance 표본 · Redis 0회</span></div><div id="system-collector-health"></div></section><section><div class="operator-section-title-row"><strong>실사용자 오류</strong><span>2% 익명 표본 · warm-instance 메모리</span></div><div id="system-client-health"></div></section></div>`;
   const grid=$('.operator-grid-2',system);if(grid)grid.appendChild(root);else system.appendChild(root);
   $('#operator-redis-diagnostics-refresh',root)?.addEventListener('click',()=>loadRedisDiagnostics({force:true}));
   return root;
@@ -182,6 +182,41 @@ function renderOperatorStoreState(data={}){
   node.textContent=connected?'연결됨 · 신규 운영자 데이터는 전용 native Upstash Redis에 저장됩니다.':'연결 대기 · 기존 DB를 새 native Upstash DB에 RDB Import한 뒤 OPERATOR_REDIS 환경변수를 연결하세요.';
   node.dataset.connected=connected?'1':'0';
 }
+function elapsedLabel(value=''){
+  const time=Date.parse(String(value||''));if(!Number.isFinite(time))return'-';
+  const minutes=Math.max(0,Math.round((Date.now()-time)/60000));
+  if(minutes<1)return'방금';if(minutes<60)return minutes+'분 전';if(minutes<1440)return Math.round(minutes/60)+'시간 전';return Math.round(minutes/1440)+'일 전';
+}
+function observedMonthlyUsage(snapshot={}){
+  const commands=Number(snapshot.observedCommands)||0,started=Date.parse(String(snapshot.startedAt||''));
+  if(!commands||!Number.isFinite(started))return null;
+  const elapsedHours=Math.max((Date.now()-started)/3600000,5/60);
+  return Math.max(commands,Math.round(commands/elapsedHours*24*30));
+}
+function redisUsageLevel(pct){const value=Number(pct)||0;return value>=95?'bad':value>=85?'warn':value>=70?'watch':'ok'}
+function renderMonthlyUsage(data={},snapshot={}){
+  const node=$('#system-redis-monthly-usage');if(!node)return;
+  const candidates=[data?.realtimeRedisUsage,data?.redisUsage];
+  const exact=candidates.find(row=>row?.exact===true&&Number.isFinite(Number(row.used)));
+  const limit=Math.max(1,Number(exact?.monthlyLimit)||Number(candidates.find(row=>Number(row?.monthlyLimit)>0)?.monthlyLimit)||500000);
+  const estimated=observedMonthlyUsage(snapshot),used=exact?Number(exact.used):estimated;
+  if(!Number.isFinite(used)){node.textContent='정확 실측 연결 대기 · warm-instance 표본이 쌓이면 관찰 기반 추정을 표시합니다.';node.dataset.level='ok';return}
+  const pct=Math.max(0,used/limit*100),remaining=Math.max(0,limit-used),level=redisUsageLevel(pct);
+  node.dataset.level=level;
+  node.textContent=(exact?'정확 실측':'관찰 기반 추정')+' · '+fmt(used)+' / '+fmt(limit)+' commands · '+pct.toFixed(1)+'% · 잔여 '+fmt(remaining);
+}
+function renderCollectorHealth(data={}){
+  const root=$('#system-collector-health');if(!root)return;const rows=Array.isArray(data?.collectorHealth?.items)?data.collectorHealth.items:[];
+  if(!rows.length){root.innerHTML='<p class="operator-empty">이 warm 인스턴스에서 아직 수집 요청 표본이 없습니다.</p>';return}
+  root.innerHTML=rows.map(row=>{const failures=Number(row.consecutiveFailures)||0,state=failures?'연속 실패 '+fmt(failures)+'회':row.fallback?'fallback':'정상';return '<div class="operator-redis-diagnostic-row"><span><b>'+esc(row.type)+'</b><small>'+esc(state)+' · 확인 '+esc(elapsedLabel(row.lastCheckedAt))+' · 최신 데이터 '+esc(elapsedLabel(row.lastDataAt))+'</small></span></div>'}).join('');
+}
+function renderClientHealth(data={}){
+  const root=$('#system-client-health');if(!root)return;const health=data?.clientHealth||{},rows=Array.isArray(health.samples)?health.samples:[];
+  if(!rows.length){root.innerHTML='<p class="operator-empty">2% 표본에서 아직 오류·지연이 관찰되지 않았습니다.</p>';return}
+  const summary='<p class="operator-empty">표본 '+fmt(health.count||0)+'건 · 오류 '+fmt(health.errors||0)+'건 · 지연 '+fmt(health.slow||0)+'건 · Redis 저장 0회</p>';
+  root.innerHTML=summary+rows.slice(0,8).map(row=>'<div class="operator-redis-diagnostic-row"><span><b>'+esc(row.page||'/')+'</b><small>'+esc(row.kind)+' · '+esc(row.message||'')+(row.durationMs?' · '+fmt(row.durationMs)+'ms':'')+' · '+esc(elapsedLabel(row.at))+'</small></span></div>').join('');
+}
+function renderSystemObservability(data={},snapshot={}){renderMonthlyUsage(data,snapshot);renderCollectorHealth(data);renderClientHealth(data)}
 function renderRedisDiagnostics(data={},meta={}){
   const root=panel();if(!root)return;
   const snapshot=data.redisCommandDiagnostics||data;
@@ -205,6 +240,7 @@ async function loadRedisDiagnostics({force=false}={}){
     const data=await response.json(),snapshot=data.redisCommandDiagnostics;
     const state=budgetState(data);setRedisDegradedMode(state.active,state);
     renderOperatorStoreState(data);
+    renderSystemObservability(data,snapshot||{});
     if(snapshot){writeSnapshot(snapshot);renderRedisDiagnostics(snapshot,{cached:false})}
   }catch{
     if(cached?.value)renderRedisDiagnostics(cached.value,{cached:true});
