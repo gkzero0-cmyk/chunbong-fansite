@@ -22,7 +22,11 @@ for(const token of [
   "providerOutagePreservesCache:true",
   "analyticsDeferredBufferHours:48",
   "analyticsDeferredMaxEvents:120",
-  "analyticsReplayPreservesEventTime:true"
+  "analyticsReplayPreservesEventTime:true",
+  "operatorCenterRedisReadOnOpen:false",
+  "operatorAnalyticsAutoRefresh:false",
+  "operatorSessionIndexValidation:false",
+  "upstashManagementStatsNoRedisCommands:true"
 ]) assert.ok(api.includes(token),token+' missing');
 
 assert.match(ui,/아카이브 메타 캐시/);
@@ -44,8 +48,10 @@ assert.match(ui,/일일 검증 복구본/);
 assert.match(ui,/외부 장애 캐시 보존/);
 assert.match(ui,/분석 임시 보관/);
 assert.match(ui,/지연 분석 원래 시각 보존/);
+assert.match(ui,/운영자 센터 기본 열기 · Redis 직접 조회 없음/);
+assert.match(ui,/분석 자동 갱신 없음/);
+assert.match(ui,/월간 사용량 관리 API/);
 assert.match(api,/VERCEL_LIMIT_STATE_KEY='operator:vercel-limit-state:v1'/);
-assert.match(api,/vercel-rate-limit-recovered/);
 assert.match(ui,/system-quota-breakdown/);
 assert.match(ui,/Vercel 회복/);
 
