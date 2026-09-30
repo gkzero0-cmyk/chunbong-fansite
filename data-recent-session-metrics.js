@@ -70,5 +70,5 @@
   installFetchTap();
   const root = $('#data-soop-sessions');
   if (root) new MutationObserver(() => scheduleApply()).observe(root, { childList: true, subtree: true });
-  prime();
+  if(!window.__CHUNBONG_DATA_BOOT_MANAGED__) prime();
 })();
