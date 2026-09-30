@@ -59,7 +59,7 @@ function degradedRetryLabel(value=''){
   return '다음 Redis 재시도 가능 시각: '+date.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+'.';
 }
 function applyWriteLocks(active){
-  const selectors=['#feedback-status','#feedback-priority','#feedback-memo-save','#operator-recovery-toggle','#operator-logout-all','[data-session-revoke]'];
+  const selectors=['#feedback-status','#feedback-priority','#feedback-memo-save','#operator-recovery-toggle','#operator-logout-all','[data-revoke-session]'];
   document.querySelectorAll(selectors.join(',')).forEach(control=>{
     if(active){
       if(!control.dataset.redisWriteLocked){control.dataset.redisPreviousDisabled=control.disabled?'1':'0'}
