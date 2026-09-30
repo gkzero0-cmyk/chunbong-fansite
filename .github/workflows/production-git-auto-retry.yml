@@ -56,7 +56,9 @@ jobs:
             'x-github-api-version': '2022-11-28'
           };
           const repository = process.env.GITHUB_REPOSITORY;
-          const commitsResponse = await fetch(`https://api.github.com/repos/${repository}/commits?sha=main&per_page=100`, { headers });
+          // Thirty recent main commits is enough to cover the 26-hour cooldown scan window
+          // while avoiding up to 100 status API calls on every hourly guardian run.
+          const commitsResponse = await fetch(`https://api.github.com/repos/${repository}/commits?sha=main&per_page=30`, { headers });
           if (!commitsResponse.ok) throw new Error(`commit lookup failed: ${commitsResponse.status}`);
           const commits = await commitsResponse.json();
 
