@@ -49,7 +49,7 @@ jobs:
           BASE_URL: https://chunbong-fansite.vercel.app
         run: |
           set -euo pipefail
-          for attempt in $(seq 1 24); do
+          for attempt in $(seq 1 60); do
             stamp=$(date +%s)
             if curl -fsS -H 'cache-control: no-cache' "$BASE_URL/activity-center.js?_smoke=$stamp" -o /tmp/activity-center.js && \
                curl -fsS -H 'cache-control: no-cache' "$BASE_URL/activity-center.css?_smoke=$stamp" -o /tmp/activity-center.css && \
@@ -83,44 +83,77 @@ jobs:
           node --input-type=module <<'EOF_NODE'
           import { chromium } from 'playwright';
           import assert from 'node:assert/strict';
+
           const browser=await chromium.launch({headless:true});
           try{
             for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
               const context=await browser.newContext({viewport,isMobile:viewport.width<=390,hasTouch:viewport.width<=390});
               const page=await context.newPage();
-              const errors=[];page.on('pageerror',error=>errors.push(error.message));
+              const errors=[];
+              page.on('pageerror',error=>errors.push(error.message));
               await page.goto(`${process.env.BASE_URL}/index.html?_activity_smoke=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:45000});
               await page.waitForSelector('.activity-bell',{state:'visible',timeout:30000});
               await page.waitForSelector('.theme-toggle',{state:'visible',timeout:30000});
               await page.waitForSelector('.changelog-button',{state:'visible',timeout:30000});
               await page.waitForFunction(()=>document.querySelector('.site-header')&&document.querySelector('.activity-center'));
-              assert.equal(await page.locator('.header-live[href*="sooplive.com"]').count(),0);
+
+              assert.equal(await page.locator('.header-live[href*="sooplive.com"]').count(),0,'SOOP header shortcut still visible');
+              assert.ok(await page.locator('.theme-toggle').isVisible(),'theme toggle missing');
+              assert.ok(await page.locator('.activity-bell').isVisible(),'activity bell missing');
               const headerOrder=await page.locator('.site-header').evaluate(el=>[...el.children].map(node=>node.className||node.tagName));
               const themeIndex=headerOrder.findIndex(value=>String(value).includes('theme-toggle'));
               const changelogIndex=headerOrder.findIndex(value=>String(value).includes('changelog-button'));
               const activityIndex=headerOrder.findIndex(value=>String(value).includes('activity-center'));
-              assert.ok(themeIndex>=0&&changelogIndex>themeIndex&&activityIndex>changelogIndex);
-              const response=await page.evaluate(async()=>{const r=await fetch('/api/content?type=activity',{headers:{accept:'application/json'}});return {status:r.status,payload:await r.json()}});
-              assert.equal(response.status,200);assert.ok(Array.isArray(response.payload.items)&&response.payload.items.length>0);
+              assert.ok(themeIndex>=0&&changelogIndex>themeIndex&&activityIndex>changelogIndex,'header controls must preserve theme → changelog → activity order even with MY entry');
+
+              const response=await page.evaluate(async()=>{
+                const r=await fetch('/api/content?type=activity',{headers:{accept:'application/json'}});
+                return {status:r.status,payload:await r.json()};
+              });
+              assert.equal(response.status,200);
+              assert.ok(Array.isArray(response.payload.items)&&response.payload.items.length>0,'production activity feed empty');
+
               const fortune=page.locator('#daily-fortune-dialog[open]');
-              if(await fortune.count()){const close=fortune.locator('[data-daily-fortune-close]');if(await close.count())await close.click();else await fortune.evaluate(node=>node.close());await fortune.waitFor({state:'hidden'});}
-              assert.equal(await page.locator('.activity-unread-dot').isVisible(),true);
-              await page.locator('.activity-bell').click();
-              assert.ok(await page.locator('.activity-panel').isVisible());
-              assert.equal(await page.locator('.activity-unread-dot').isVisible(),false);
-              assert.ok(await page.locator('.activity-item').count()>0);
-              const seen=await page.evaluate(()=>JSON.parse(localStorage.getItem('chunbong-activity-seen-v1')||'{}'));
-              assert.ok(Array.isArray(seen.ids)&&seen.ids.length>0);
-              if(viewport.width<=390){
-                const panel=await page.locator('.activity-panel').boundingBox();const bell=await page.locator('.activity-bell').boundingBox();
-                const header=await page.locator('.site-header').evaluate(el=>({scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}));
-                assert.ok(panel&&panel.x>=0&&panel.x+panel.width<=viewport.width&&panel.y>=0&&panel.y+panel.height<=viewport.height);
-                assert.ok(bell&&bell.x>=0&&bell.x+bell.width<=viewport.width);assert.ok(header.scrollWidth<=header.clientWidth+1);
+              if(await fortune.count()){
+                const fortuneClose=fortune.locator('[data-daily-fortune-close]');
+                if(await fortuneClose.count()) await fortuneClose.click();
+                else await fortune.evaluate(node=>node.close());
+                await fortune.waitFor({state:'hidden'});
               }
-              assert.deepEqual(errors,[]);
+
+              assert.equal(await page.locator('.activity-unread-dot').isVisible(),true,'fresh browser should show unread dot');
+              await page.locator('.activity-bell').click();
+              assert.ok(await page.locator('.activity-panel').isVisible(),'activity panel did not open');
+              assert.equal(await page.locator('.activity-unread-dot').isVisible(),false,'opening panel did not clear unread dot');
+              assert.ok(await page.locator('.activity-item').count()>0,'activity panel has no items');
+              const seen=await page.evaluate(()=>JSON.parse(localStorage.getItem('chunbong-activity-seen-v1')||'{}'));
+              assert.ok(Array.isArray(seen.ids)&&seen.ids.length>0,'seen activity IDs were not persisted');
+
+              if(viewport.width<=390){
+                const panel=await page.locator('.activity-panel').boundingBox();
+                const bell=await page.locator('.activity-bell').boundingBox();
+                const header=await page.locator('.site-header').evaluate(el=>({scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}));
+                const panelHost=await page.locator('.activity-panel').evaluate(el=>el.parentElement?.tagName);
+                assert.equal(panelHost,'BODY','mobile activity panel must be hosted by body while open');
+                assert.ok(panel&&panel.x>=0&&panel.x+panel.width<=viewport.width&&panel.y>=0&&panel.y+panel.height<=viewport.height,'mobile panel clips viewport');
+                assert.ok(bell&&bell.x>=0&&bell.x+bell.width<=viewport.width,'mobile bell clips viewport');
+                assert.ok(header.scrollWidth<=header.clientWidth+1,'activity controls overflow mobile header');
+              }
+
+              await page.goto(`${process.env.BASE_URL}/changelog.html?_smoke=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:45000});
+              await page.waitForSelector('.changelog-day');
+              const changelogDates=await page.locator('.changelog-day').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('data-changelog-date')).filter(Boolean));
+              assert.deepEqual(changelogDates,[...changelogDates].sort((a,b)=>b.localeCompare(a)),'production changelog must render newest date first');
+              assert.ok(changelogDates.includes('2026-09-20'),'production changelog must include the audited 2026-09-20 updates');
+              assert.ok(await page.getByText('팬사이트 사용성 개선: 홈·타로·데이터 간소화',{exact:true}).count(),'production changelog is missing the current UX improvement entry');
+              assert.equal(await page.locator('.changelog-button').getAttribute('aria-current'),'page','production changelog button is not active');
+
+              assert.deepEqual(errors,[],`page errors: ${errors.join(' | ')}`);
               await context.close();
             }
-          }finally{await browser.close();}
+          }finally{
+            await browser.close();
+          }
           EOF_NODE
 
       - name: Production blocked
