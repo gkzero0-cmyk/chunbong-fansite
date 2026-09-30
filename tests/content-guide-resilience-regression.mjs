@@ -44,16 +44,19 @@ assert.ok(rows.some(row=>row.title==='채광 시작'&&/곡괭이/.test(row.text)
 assert.ok(rows.some(row=>(row.images||[]).some(image=>/notion-assets\/mining\/hero\.webp/.test(image.src||''))),'wiki image assets should be preserved');
 assert.equal(rows.some(row=>/관리자|내부 설정/.test(`${row.title} ${row.text}`)),false,'ADMIN pages must not leak into public guide');
 
+const byId=id=>items.find(item=>item.id===id);
 const findBySource=id=>items.find(item=>(item.sources||[]).some(source=>source.id===id));
 const diamond=findBySource('source-diamond-notion');
-const money=findBySource('source-moneygame-notion');
-const survival=findBySource('source-survival-notion');
+const money=byId('justserver-moneygame');
+const survival=byId('justserver-survival');
 assert.ok(diamond,'diamond Notion source missing from seed');
-assert.ok(money,'moneygame Notion source missing from seed');
-assert.ok(survival,'survival source missing from seed');
+assert.ok(money,'moneygame content missing from seed');
+assert.ok(survival,'survival content missing from seed');
 
 assert.equal(internals.guideHydrationPlan(diamond).some(row=>row.kind==='notion'),true,'diamond should self-hydrate from Notion when Redis guide rows are missing');
-assert.equal(internals.guideHydrationPlan(money).some(row=>row.kind==='notion'),true,'moneygame should self-hydrate from its hidden Notion source when Redis guide rows are missing');
+const moneyPlan=internals.guideHydrationPlan(money);
+assert.equal(moneyPlan.some(row=>row.kind==='notion'),true,'moneygame should self-hydrate from its legacy Notion source when Redis guide rows are missing');
+assert.equal(moneyPlan.find(row=>row.kind==='notion')?.source?.url,'https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d','moneygame fallback must use the previously verified original Notion URL');
 assert.equal(internals.guideHydrationPlan(survival).some(row=>row.kind==='official-wiki'),true,'survival should map to the structured official wiki feed');
 
 const apiSource=fs.readFileSync(new URL('../lib/chunbong-content-archive-api.js',import.meta.url),'utf8');
