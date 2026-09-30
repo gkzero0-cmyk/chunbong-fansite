@@ -603,19 +603,3 @@ body[data-page="operator"]{background:radial-gradient(circle at 80% 0,color-mix(
 .operator-api-budget-row>strong{text-align:right;color:var(--op-muted);font-size:10px}
 @media(max-width:680px){.operator-api-budget>div:first-child{align-items:flex-start;flex-direction:column;gap:2px}.operator-api-budget-row{grid-template-columns:92px minmax(60px,1fr) 38px}}
 
-.operator-budget-head-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.operator-redis-usage-panel{display:grid;gap:12px;margin:2px 0 14px;padding:14px;border:1px solid color-mix(in srgb,var(--op-border) 85%,transparent);border-radius:14px;background:color-mix(in srgb,var(--op-card-2) 88%,transparent)}
-.operator-redis-usage-panel .operator-section-title-row{align-items:flex-start}
-.operator-redis-usage-panel .operator-section-title-row>div{display:grid;gap:3px}
-.operator-redis-usage-panel .operator-section-title-row strong{font-size:13px}
-.operator-redis-usage-panel .operator-section-title-row small{font-size:10px;color:var(--op-muted);line-height:1.45}
-.operator-redis-usage-panel .operator-section-title-row>span{font-size:10px;color:var(--op-meta);text-align:right}
-.operator-redis-usage-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-.operator-redis-usage-grid b.is-ok{color:var(--op-good)}.operator-redis-usage-grid b.is-warn{color:var(--op-warn)}.operator-redis-usage-grid b.is-bad{color:var(--op-bad)}
-@media(max-width:760px){
-  .operator-budget-head-actions{width:100%;justify-content:space-between}
-  .operator-budget-head-actions button{flex:1}
-  .operator-redis-usage-grid{grid-template-columns:1fr 1fr}
-  .operator-redis-usage-panel .operator-section-title-row{display:grid;gap:5px}
-  .operator-redis-usage-panel .operator-section-title-row>span{text-align:left}
-}
