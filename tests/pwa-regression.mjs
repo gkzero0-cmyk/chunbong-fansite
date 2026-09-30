@@ -59,8 +59,8 @@ assert.match(shell, /sessionStorage\.setItem/, 'shared cache should persist with
 assert.match(sw, /\/site-shell\.js/, 'PWA app shell must cache site-shell.js');
 assert.match(sw, /\/site-meta\.js/, 'PWA app shell must cache runtime metadata loaded by site-shell.js');
 assert.match(sw, /\/site-health\.js/, 'PWA app shell must cache runtime health checks loaded by site-shell.js');
-assert.match(sw, /\/mobile-runtime-loader\.js\?v=1/, 'PWA app shell must cache the tiny mobile runtime loader');
-assert.match(sw, /\/mobile-site\.js\?v=3/, 'PWA app shell must cache mobile-site.js');
+assert.match(sw, /\/mobile-runtime-loader\.js/, 'PWA app shell must cache the tiny mobile runtime loader canonically');
+assert.match(sw, /\/mobile-site\.js/, 'PWA app shell must cache mobile-site.js canonically');
 assert.doesNotMatch(sw, /\/personal-hub\.js/, 'personal hub should runtime-cache after first use instead of blocking PWA install');
 assert.doesNotMatch(sw, /\/chunbong-contents\.js/, 'content archive should not inflate the initial PWA install');
 assert.doesNotMatch(sw, /\/activity-center\.js/, 'activity center should runtime-cache after idle load');
