@@ -4,6 +4,7 @@
   const SAMPLE_KEY='chunbong-site-health-sample-v1';
   const MAX=30;
   const SAMPLE_RATE=0.02;
+  const ENDPOINT='/api/content?type=client-health';
   const read=()=>{try{return JSON.parse(sessionStorage.getItem(KEY)||'[]')}catch(_){return[]}};
   const write=rows=>{try{sessionStorage.setItem(KEY,JSON.stringify(rows.slice(-MAX)))}catch(_){}};
   const sanitize=value=>String(value||'unknown error')
@@ -26,7 +27,11 @@
     if(!sampled())return;
     const payload=JSON.stringify({kind,page:location.pathname,message:sanitize(message),device:device(),...extra});
     try{
-      void fetch('/api/content?type=client-health',{method:'POST',headers:{'Content-Type':'application/json'},body:payload,keepalive:true,credentials:'same-origin'}).catch(()=>{});
+      if(typeof navigator.sendBeacon==='function'){
+        navigator.sendBeacon(ENDPOINT,new Blob([payload],{type:'application/json'}));
+        return;
+      }
+      void fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:payload,keepalive:true,credentials:'same-origin'}).catch(()=>{});
     }catch(_){ }
   };
   const record=(type,message,extra={})=>{
