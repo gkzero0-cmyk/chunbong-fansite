@@ -17,7 +17,7 @@ test('survival guide provides compact searchable navigation and section disclosu
   assert.match(css,/\.official-guide-source-section/);
 });
 
-test('posts and sources reuse the fan-site notice card, keep body before attachments, and do not stop at image-only browser captures',()=>{
+test('posts and sources reuse the exact fan-site notice card, keep body before attachments, and do not stop at image-only browser captures',()=>{
   const js=read('content-page-enhancements.js');
   const css=read('content-page-enhancements.css');
   const manage=read('lib/chunbong-content-browser-import-manage.js');
@@ -25,12 +25,18 @@ test('posts and sources reuse the fan-site notice card, keep body before attachm
   assert.doesNotMatch(js,/createElement\(['"]dialog['"]\)/);
   assert.match(js,/notice-card/);
   assert.match(js,/notice-toggle/);
-  assert.match(js,/notice-body/);
+  assert.match(js,/notice-index/);
+  assert.match(js,/notice-main/);
+  assert.match(js,/notice-action/);
+  assert.match(js,/notice-state-label/);
+  assert.match(js,/notice-chevron/);
+  assert.match(js,/notice-body open/);
+  assert.match(js,/notice-detail/);
   assert.match(js,/notice-content/);
   assert.match(js,/sourcePreview=1/);
   assert.match(js,/sessionStorage/);
   assert.doesNotMatch(js,/cache:'force-cache'/);
-  assert.match(js,/body\.innerHTML=`\$\{content[\s\S]*\$\{images\}/);
+  assert.match(js,/detail\.innerHTML=`<div class="notice-content">\$\{content[\s\S]*\$\{images\}<\/div>/);
   assert.match(manage,/mergeSourcePreviews/);
   assert.match(manage,/if\(captured\?\.body\)/);
   assert.match(manage,/publicSoopPreview/);
