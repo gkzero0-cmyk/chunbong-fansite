@@ -71,13 +71,14 @@ assert.deepEqual(survivalPlan.map(row=>row.kind),['official-wiki'],'survival gui
 assert.equal((survival.sources||[]).some(row=>internals.isNotionSourceUrl?.(row?.url)||row?.id==='source-survival-notion'),false,'survival seed must not expose the legacy Notion source');
 assert.doesNotMatch(String(survival.description||''),/Notion/i,'survival public description must not advertise Notion as a source');
 assert.equal((survival.timeline||[]).some(row=>row?.sourceId==='source-survival-notion'),false,'survival timeline must not reference the removed Notion source');
+assert.doesNotMatch(JSON.stringify(survival),/Notion/i,'survival seed must not contain any user-visible Notion remnant');
 
 const staleSurvival={
   ...survival,
   notionSections:[{id:'legacy-notion',title:'예전 Notion 가이드',text:'삭제되어야 합니다.',provider:'notion'}],
   notionSyncedAt:'2026-09-30T00:00:00.000Z',
   sources:[...(survival.sources||[]),{id:'source-survival-notion',kind:'reference',label:'legacy notion',url:'https://example.notion.site/legacy',visibility:'public'}],
-  timeline:[...(survival.timeline||[]),{id:'legacy-date',title:'예전 일정',sourceId:'source-survival-notion'}]
+  timeline:[...(survival.timeline||[]),{id:'legacy-date',title:'예전 일정',sourceId:'source-survival-notion',note:'Notion 기준 일정'}]
 };
 const sanitized=internals.sanitizeSurvivalGuideItem(staleSurvival);
 assert.equal(Array.isArray(sanitized.notionSections)&&sanitized.notionSections.length>0,false,'stored survival Notion guide rows must be removed');
@@ -85,6 +86,7 @@ assert.equal('notionSyncedAt' in sanitized,false,'stored survival Notion sync me
 assert.equal((sanitized.sources||[]).some(row=>row?.id==='source-survival-notion'||internals.isNotionSourceUrl?.(row?.url)),false,'stored survival Notion sources must be removed');
 assert.equal((sanitized.timeline||[]).some(row=>row?.sourceId==='source-survival-notion'),false,'stored survival timeline references must be remapped away from Notion');
 assert.equal((sanitized.sources||[]).some(row=>row?.id==='source-survival-wiki'),true,'official survival wiki source must be present after sanitization');
+assert.doesNotMatch(JSON.stringify(sanitized),/Notion/i,'stored survival content must be scrubbed of legacy Notion wording');
 
 const apiSource=fs.readFileSync(new URL('../lib/chunbong-content-archive-api.js',import.meta.url),'utf8');
 const adapterSource=fs.readFileSync(new URL('../lib/content-guide-sources.js',import.meta.url),'utf8');
