@@ -19,22 +19,23 @@ function buildNotice(anchor){
   const existing=anchor.nextElementSibling;if(existing?.classList?.contains('archive-source-notice'))return existing;
   const fallbackTitle=anchor.querySelector('strong')?.textContent?.trim()||anchor.textContent.trim()||'자료 보기';
   const card=document.createElement('article');card.className='notice-card archive-source-notice';card.dataset.archiveSourceNotice='true';card.dataset.sourceUrl=anchor.href;
-  card.innerHTML=`<button type="button" class="notice-toggle" aria-expanded="true"><div class="notice-num">${sourceNumber(anchor)}</div><div class="notice-meta"><span data-source-notice-meta>POST</span><strong data-source-notice-title>${esc(fallbackTitle)}</strong></div><div class="notice-open" data-source-notice-open>본문 접기⌃</div></button><div class="notice-body"><div class="panel notice external-notice"><div class="notice-content" data-source-notice-content><div class="archive-source-notice-loading">게시글 본문을 불러오는 중입니다.</div></div></div></div>`;
+  card.innerHTML=`<button class="notice-toggle" type="button" aria-expanded="true"><span class="notice-index">${sourceNumber(anchor)}</span><span class="notice-main"><small data-source-notice-meta>POST</small><strong data-source-notice-title>${esc(fallbackTitle)}</strong></span><span class="notice-action"><span class="notice-state-label">본문 접기</span><span class="notice-chevron">⌃</span></span></button><div class="notice-body open"><div class="notice-detail" data-source-notice-detail><div class="notice-detail-loading">게시글 본문을 불러오는 중...</div></div></div>`;
   anchor.insertAdjacentElement('afterend',card);anchor.hidden=true;
-  const toggle=card.querySelector('.notice-toggle');toggle?.addEventListener('click',()=>{const collapsed=card.classList.toggle('is-collapsed');toggle.setAttribute('aria-expanded',String(!collapsed));const label=card.querySelector('[data-source-notice-open]');if(label)label.textContent=collapsed?'본문 펼치기⌄':'본문 접기⌃'});
+  const toggle=card.querySelector('.notice-toggle'),body=card.querySelector('.notice-body'),label=card.querySelector('.notice-state-label'),chevron=card.querySelector('.notice-chevron');
+  toggle?.addEventListener('click',()=>{const open=!body.classList.contains('open');body.classList.toggle('open',open);toggle.setAttribute('aria-expanded',String(open));if(label)label.textContent=open?'본문 접기':'본문 펼치기';if(chevron)chevron.textContent=open?'⌃':'⌄'});
   return card;
 }
 function renderPreview(card,preview,url,fallbackTitle='자료 보기'){
-  const title=preview?.title||fallbackTitle,date=formatDate(preview?.date||''),kind=sourceKindLabel(preview?.kind),content=bodyMarkup(preview?.body||''),images=imagesMarkup(preview?.images,title),body=card.querySelector('[data-source-notice-content]'),titleNode=card.querySelector('[data-source-notice-title]'),meta=card.querySelector('[data-source-notice-meta]');
+  const title=preview?.title||fallbackTitle,date=formatDate(preview?.date||''),kind=sourceKindLabel(preview?.kind),content=bodyMarkup(preview?.body||''),images=imagesMarkup(preview?.images,title),detail=card.querySelector('[data-source-notice-detail]'),titleNode=card.querySelector('[data-source-notice-title]'),meta=card.querySelector('[data-source-notice-meta]');
   if(titleNode)titleNode.textContent=title;if(meta)meta.textContent=date?`${kind} · ${date}`:kind;
-  if(body)body.innerHTML=`${content||'<div class="archive-source-notice-empty">이 자료는 팬사이트에 본문이 저장되어 있지 않아 확인 가능한 정보만 표시합니다.</div>'}${images}<a class="archive-source-notice-source" href="${esc(url)}" target="_blank" rel="noreferrer">SOOP 원문 보기 ↗</a>`;
+  if(detail)detail.innerHTML=`<div class="notice-content">${content||'<div class="archive-source-notice-empty">이 자료는 팬사이트에 본문이 저장되어 있지 않아 확인 가능한 정보만 표시합니다.</div>'}${images}</div><a class="inline-link archive-source-notice-source" href="${esc(url)}" target="_blank" rel="noreferrer">SOOP 원문 보기 ↗</a>`;
 }
 async function openNotice(anchor){
   const card=buildNotice(anchor),url=anchor.href,fallbackTitle=anchor.querySelector('strong')?.textContent?.trim()||anchor.textContent.trim()||'자료 보기';
   if(card.dataset.loaded==='true')return;
   card.dataset.loaded='loading';const preview=await fetchPreview(url);
   if(preview){renderPreview(card,preview,url,fallbackTitle);card.dataset.loaded='true';return}
-  const body=card.querySelector('[data-source-notice-content]');if(body)body.innerHTML=`<div class="archive-source-notice-empty">팬사이트 내부에서 본문을 불러오지 못했습니다.</div><a class="archive-source-notice-source" href="${esc(url)}" target="_blank" rel="noreferrer">원문 보기 ↗</a>`;card.dataset.loaded='error';
+  const detail=card.querySelector('[data-source-notice-detail]');if(detail)detail.innerHTML=`<div class="notice-detail-error"><strong>게시글 본문을 가져오지 못했습니다.</strong><p>팬사이트에 저장된 본문이나 공개 원문 응답이 없습니다.</p></div><a class="inline-link archive-source-notice-source" href="${esc(url)}" target="_blank" rel="noreferrer">원문 보기 ↗</a>`;card.dataset.loaded='error';
 }
 document.addEventListener('click',event=>{const anchor=event.target.closest?.('[data-archive-detail] a[href], [data-archive-panel] a[href]');if(!sourceEligible(anchor))return;event.preventDefault();event.stopPropagation();void openNotice(anchor)},true);
 addStyles();
