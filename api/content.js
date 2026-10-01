@@ -18,6 +18,7 @@ const handleMinigameMultiplayer = require('../lib/minigame-multiplayer-api');
 const handleChangelogHistory = require('../lib/changelog-history-api');
 const pushNotifications = require('../lib/push-notifications-api');
 const operatorCenter=require('../lib/operator-center-api');
+const operatorDashboard=require('../lib/operator-dashboard-api');
 const contentArchive=require('../lib/chunbong-content-archive-api');
 const browserImportManage=require('../lib/chunbong-content-browser-import-manage');
 const youtubeEngagementCache = require('../data/youtube-engagement-cache.json');
@@ -282,6 +283,7 @@ async function handler(req,res) {
   if(type==='feedback-submit') return operatorCenter.handleFeedbackSubmit(req,res);
   if(type==='operator-auth-config') return operatorCenter.handleAuthConfig(req,res);
   if(type==='operator-session') return operatorCenter.handleSession(req,res);
+  if(type==='operator-dashboard-markup') return operatorDashboard.handleOperatorDashboardMarkup(req,res);
   if(type==='operator-github-start') return operatorCenter.handleGithubStart(req,res);
   if(type==='operator-github-callback') return operatorCenter.handleGithubCallback(req,res);
   if(type==='operator-email-start') return operatorCenter.handleEmailStart(req,res);
