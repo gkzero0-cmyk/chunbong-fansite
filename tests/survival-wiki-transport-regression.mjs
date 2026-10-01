@@ -33,9 +33,9 @@ try{
   };
 
   const primary=await guideSources.fetchOfficialWikiIndex(source,{timeoutMs:1000,primaryTimeoutMs:50});
-  assert.deepEqual(primaryCalls,[officialIndex],'official custom domain must always be the first and canonical data source');
+  assert.deepEqual(primaryCalls,[officialIndex],'server1.wiki custom domain must always be queried first and remain the canonical data source');
   assert.equal(primary.url,officialIndex,'public source identity must remain the official custom-domain URL');
-  assert.equal(primary.transportUrl,officialIndex,'a successful official fetch must not be attributed to a transport mirror');
+  assert.equal(primary.transportUrl,officialIndex,'a successful official fetch must not be attributed to a transport fallback');
   assert.ok(guideSources.officialWikiGuideRows(primary.payload,source).some(row=>row.pageTitle==='채광'&&/광물/.test(row.text)));
 
   const fallbackCalls=[];
@@ -56,7 +56,7 @@ try{
   const started=Date.now();
   const fallback=await guideSources.fetchOfficialWikiIndex(source,{timeoutMs:1000,primaryTimeoutMs:25});
   const elapsed=Date.now()-started;
-  assert.deepEqual(fallbackCalls,[officialIndex,transportIndex],'transport fallback is allowed only after the official custom domain fails or times out');
+  assert.deepEqual(fallbackCalls,[officialIndex,transportIndex],'the Vercel hostname is delivery fallback only, after the official custom domain fails or times out');
   assert.ok(elapsed<500,'official-source timeout must be bounded so the serverless request still has time to recover');
   assert.equal(fallback.url,officialIndex,'canonical source identity must remain the official custom-domain URL even when delivery fallback is used');
   assert.equal(fallback.transportUrl,transportIndex,'diagnostics may record a delivery fallback without changing the official source of truth');
