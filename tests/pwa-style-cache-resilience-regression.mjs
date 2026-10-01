@@ -14,7 +14,7 @@ assert.match(swSource,/safeCachePut/,'cache writes must be isolated from network
 assert.match(themeSource,/stylesheet/i,'early theme bootstrap must install stylesheet failure recovery');
 assert.match(themeSource,/style-retry/,'stylesheet recovery must retry with a cache-bypass query exactly once');
 
-async function runStyleFetchWithBrokenCache(){
+async function runStyleFetchWithBrokenCache({openThrows=false}={}){
   const listeners=new Map();
   const coreCache={
     async match(){return null},
@@ -28,7 +28,10 @@ async function runStyleFetchWithBrokenCache(){
     URL,Request,Response,Headers,setTimeout,clearTimeout,Promise,console,
     fetch:async()=>new Response('body{color:red}',{status:200,headers:{'content-type':'text/css'}}),
     caches:{
-      async open(name){return /media/.test(name)?mediaCache:coreCache},
+      async open(name){
+        if(openThrows)throw new Error('CacheStorage unavailable');
+        return /media/.test(name)?mediaCache:coreCache;
+      },
       async keys(){return[]},
       async delete(){return true}
     },
@@ -66,5 +69,9 @@ async function runStyleFetchWithBrokenCache(){
 const response=await runStyleFetchWithBrokenCache();
 assert.equal(response.status,200,'a failed CacheStorage write must never turn a valid stylesheet network response into Response.error()');
 assert.match(await response.text(),/color:red/,'the original network stylesheet body must reach the page');
+
+const openFailureResponse=await runStyleFetchWithBrokenCache({openThrows:true});
+assert.equal(openFailureResponse.status,200,'a failed CacheStorage open must fall back to the network stylesheet');
+assert.match(await openFailureResponse.text(),/color:red/,'CacheStorage open failure must not blank the page styles');
 
 console.log('pwa style/cache resilience regression: ok');
