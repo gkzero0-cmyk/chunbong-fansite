@@ -18,20 +18,22 @@ test('survival guide provides compact searchable navigation and section disclosu
 });
 
 test('posts and sources can be inspected inside the fan site before opening the original',()=>{
-  const html=read('chunbong-contents.html');
-  const js=read('chunbong-contents.js');
-  assert.match(html,/data-archive-source-reader/);
-  assert.match(js,/data-archive-source-reader-open/);
-  assert.match(js,/팬사이트에서 보기/);
+  const js=read('content-page-enhancements.js');
+  const css=read('content-page-enhancements.css');
+  const loader=read('mobile-runtime-loader.js');
+  assert.match(js,/data-archive-source-reader/);
+  assert.match(js,/archive-source-list a/);
+  assert.match(js,/팬사이트 아카이브 자료/);
   assert.match(js,/원문 열기/);
+  assert.match(css,/\.archive-source-reader/);
+  assert.match(loader,/content-page-enhancements\.js\?v=1/);
 });
 
 test('content hero uses the supplied planning artwork without stretching mobile layout',()=>{
-  const html=read('chunbong-contents.html');
-  const css=read('chunbong-contents.css');
-  assert.match(html,/archive-hero-art/);
-  assert.match(html,/assets\/chunbong-contents\/content-planning-hero\.webp/);
+  const js=read('content-page-enhancements.js');
+  const css=read('content-page-enhancements.css');
+  assert.match(js,/archive-hero-art/);
+  assert.match(js,/data:image\/webp;base64/);
   assert.match(css,/\.archive-hero-art/);
   assert.match(css,/@media\(max-width:760px\)[\s\S]*archive-hero-art/);
-  assert.ok(fs.existsSync(path.join(process.cwd(),'assets/chunbong-contents/content-planning-hero.webp')));
 });
