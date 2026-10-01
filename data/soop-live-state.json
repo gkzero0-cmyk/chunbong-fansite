@@ -4,7 +4,7 @@
     "active": true,
     "sessionId": "2026-09-30T12:31:23.000Z",
     "startedAt": "2026-09-30T12:31:23.000Z",
-    "title": "그냥서버 2차입주 방송국 공지 참고해주세요",
+    "title": "그냥서버 2차입주 모집중입니다.",
     "samples": [
       {
         "capturedAt": "2026-09-30T13:40:25.745Z",
@@ -49,12 +49,23 @@
         "categoryName": "마인크래프트",
         "followerCount": 32093,
         "fanclubCount": 7921
+      },
+      {
+        "capturedAt": "2026-10-01T07:46:58.745Z",
+        "live": true,
+        "startedAt": "2026-10-01T04:24:11.000Z",
+        "title": "그냥서버 2차입주 모집중입니다.",
+        "viewerCount": 100,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 32438,
+        "fanclubCount": 7921
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-10-01T01:33:11.894Z",
-    "followerCount": 32093,
+    "capturedAt": "2026-10-01T07:46:58.745Z",
+    "followerCount": 32438,
     "fanclubCount": 7921
   }
 }
