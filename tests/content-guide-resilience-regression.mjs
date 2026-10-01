@@ -8,7 +8,7 @@ const internals=archive._internals||{};
 const seed=JSON.parse(fs.readFileSync(new URL('../data/chunbong-contents-seed.json',import.meta.url),'utf8'));
 const items=Array.isArray(seed)?seed:(seed.items||[]);
 
-for(const name of ['officialWikiGuideRows','guideHydrationPlan','hydrateGuideForPublicItem','refreshOfficialWikiGuides']){
+for(const name of ['officialWikiGuideRows','guideHydrationPlan','hydrateGuideForPublicItem','refreshOfficialWikiGuides','sanitizeSurvivalGuideItem']){
   assert.equal(typeof internals[name],'function',`${name} must exist`);
 }
 
@@ -66,7 +66,25 @@ assert.equal(internals.guideHydrationPlan(diamond).some(row=>row.kind==='notion'
 const moneyPlan=internals.guideHydrationPlan(money);
 assert.equal(moneyPlan.some(row=>row.kind==='notion'),true,'moneygame should self-hydrate from its legacy Notion source when Redis guide rows are missing');
 assert.equal(moneyPlan.find(row=>row.kind==='notion')?.source?.url,'https://app.notion.com/p/217d57d6a55c80d68958c2ce1762308d','moneygame fallback must use the previously verified original Notion URL');
-assert.equal(internals.guideHydrationPlan(survival).some(row=>row.kind==='official-wiki'),true,'survival should map to the structured official wiki feed');
+const survivalPlan=internals.guideHydrationPlan(survival);
+assert.deepEqual(survivalPlan.map(row=>row.kind),['official-wiki'],'survival guide hydration must use only the official wiki');
+assert.equal((survival.sources||[]).some(row=>internals.isNotionSourceUrl?.(row?.url)||row?.id==='source-survival-notion'),false,'survival seed must not expose the legacy Notion source');
+assert.doesNotMatch(String(survival.description||''),/Notion/i,'survival public description must not advertise Notion as a source');
+assert.equal((survival.timeline||[]).some(row=>row?.sourceId==='source-survival-notion'),false,'survival timeline must not reference the removed Notion source');
+
+const staleSurvival={
+  ...survival,
+  notionSections:[{id:'legacy-notion',title:'예전 Notion 가이드',text:'삭제되어야 합니다.',provider:'notion'}],
+  notionSyncedAt:'2026-09-30T00:00:00.000Z',
+  sources:[...(survival.sources||[]),{id:'source-survival-notion',kind:'reference',label:'legacy notion',url:'https://example.notion.site/legacy',visibility:'public'}],
+  timeline:[...(survival.timeline||[]),{id:'legacy-date',title:'예전 일정',sourceId:'source-survival-notion'}]
+};
+const sanitized=internals.sanitizeSurvivalGuideItem(staleSurvival);
+assert.equal(Array.isArray(sanitized.notionSections)&&sanitized.notionSections.length>0,false,'stored survival Notion guide rows must be removed');
+assert.equal('notionSyncedAt' in sanitized,false,'stored survival Notion sync metadata must be removed');
+assert.equal((sanitized.sources||[]).some(row=>row?.id==='source-survival-notion'||internals.isNotionSourceUrl?.(row?.url)),false,'stored survival Notion sources must be removed');
+assert.equal((sanitized.timeline||[]).some(row=>row?.sourceId==='source-survival-notion'),false,'stored survival timeline references must be remapped away from Notion');
+assert.equal((sanitized.sources||[]).some(row=>row?.id==='source-survival-wiki'),true,'official survival wiki source must be present after sanitization');
 
 const apiSource=fs.readFileSync(new URL('../lib/chunbong-content-archive-api.js',import.meta.url),'utf8');
 const adapterSource=fs.readFileSync(new URL('../lib/content-guide-sources.js',import.meta.url),'utf8');
