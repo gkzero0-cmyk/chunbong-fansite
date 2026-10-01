@@ -1,0 +1,47 @@
+name: Apply survival official wiki only
+
+on:
+  push:
+    branches: [fix/content-guide-wiki-sync-20261001]
+    paths:
+      - 'scripts/patch-survival-official-wiki-only.mjs'
+      - '.github/workflows/apply-survival-official-wiki-only.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-survival-official-wiki-only
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/content-guide-wiki-sync-20261001
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Apply scoped migration
+        run: node scripts/patch-survival-official-wiki-only.mjs
+      - name: Verify
+        run: |
+          node --check lib/content-guide-sources.js
+          node --check lib/chunbong-content-archive-api.js
+          node tests/content-guide-resilience-regression.mjs
+          node tests/content-guide-coverage-regression.mjs
+      - name: Commit product changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add lib/chunbong-content-archive-api.js data/chunbong-contents-seed.json
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix: use official wiki only for survival guide'
+          git push origin HEAD:fix/content-guide-wiki-sync-20261001
