@@ -17,32 +17,39 @@ test('survival guide provides compact searchable navigation and section disclosu
   assert.match(css,/\.official-guide-source-section/);
 });
 
-test('posts and sources show body before attachments and do not stop at image-only browser captures',()=>{
+test('posts and sources reuse the fan-site notice card, keep body before attachments, and do not stop at image-only browser captures',()=>{
   const js=read('content-page-enhancements.js');
   const css=read('content-page-enhancements.css');
   const manage=read('lib/chunbong-content-browser-import-manage.js');
   const loader=read('mobile-runtime-loader.js');
-  assert.match(js,/data-archive-source-reader/);
+  assert.doesNotMatch(js,/createElement\(['"]dialog['"]\)/);
+  assert.match(js,/notice-card/);
+  assert.match(js,/notice-toggle/);
+  assert.match(js,/notice-body/);
+  assert.match(js,/notice-content/);
   assert.match(js,/sourcePreview=1/);
   assert.match(js,/sessionStorage/);
   assert.doesNotMatch(js,/cache:'force-cache'/);
-  assert.match(js,/container\.innerHTML=`[\s\S]*archive-source-reader-meta[\s\S]*archive-source-reader-article[\s\S]*archive-source-reader-attachments/);
+  assert.match(js,/body\.innerHTML=`\$\{content[\s\S]*\$\{images\}/);
   assert.match(manage,/mergeSourcePreviews/);
   assert.match(manage,/if\(captured\?\.body\)/);
   assert.match(manage,/publicSoopPreview/);
-  assert.match(css,/\.archive-source-reader-body/);
-  assert.match(loader,/content-page-enhancements\.js\?v=4/);
+  assert.match(css,/\.archive-source-notice/);
+  assert.doesNotMatch(css,/\.archive-source-reader(?:\{|::)/);
+  assert.match(loader,/content-page-enhancements\.js\?v=5/);
 });
 
-test('content hero is a right-column direct webp with critical CSS loaded before paint',()=>{
+test('content hero shares the site hero contract, uses restored artwork, and nested routes resolve from root',()=>{
   const html=read('chunbong-contents.html');
   const css=read('content-page-enhancements.css');
-  assert.match(html,/content-page-enhancements\.css\?v=4/);
-  assert.match(html,/chunbong-content-planning-hero\.webp/);
-  assert.match(html,/width="720"[^>]*height="405"/);
+  assert.match(html,/<base href="\/">/);
+  assert.match(html,/<section class="page-hero archive-hero">/);
+  assert.match(html,/content-page-enhancements\.css\?v=5/);
+  assert.match(html,/e_gen_restore\/c_scale,w_1440\/f_auto,q_auto:best\/v1790884100\/chunbong-content-planning-hero\.webp/);
+  assert.match(html,/width="1440"[^>]*height="810"/);
   assert.doesNotMatch(html,/content-planning-hero\.svg/);
-  assert.match(css,/\.archive-hero-copy\{[^}]*grid-column:1/);
+  assert.match(css,/\.archive-hero \.archive-hero-inner\{[^}]*grid-template-columns:minmax\(0,\.82fr\) minmax\(420px,1fr\)/);
+  assert.match(css,/\.archive-hero-copy h1\{[^}]*84px/);
   assert.match(css,/\.archive-hero-art\{[^}]*grid-column:2/);
   assert.match(css,/aspect-ratio:16\/9/);
-  assert.match(css,/@media\(max-width:760px\)[\s\S]*archive-hero-art/);
 });
