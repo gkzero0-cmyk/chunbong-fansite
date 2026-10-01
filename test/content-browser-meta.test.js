@@ -6,7 +6,8 @@ const {
   isGenericSoopTitle,
   sanitizeSoopImages,
   inferSoopTitleFromBody,
-  mergeSoopBrowserMetadata
+  mergeSoopBrowserMetadata,
+  repairPublicArchiveItem
 }=require('../lib/chunbong-content-browser-meta');
 
 test('SOOP 기본 프로필/기본 SVG 이미지는 대표 이미지 후보에서 제외한다',()=>{
@@ -43,4 +44,28 @@ test('서버 메타와 브라우저 메타를 합칠 때 실제 제목/날짜/�
   assert.equal(merged.title,'그냥서버 적자생존 추가 입주 모집 공지');
   assert.equal(merged.date,'2026-10-01');
   assert.deepEqual(merged.images,['https://stimg.sooplive.com/NORMAL_BBS/3/24883333/recruit.png']);
+});
+
+test('이미 공개된 208562045도 공개 응답에서 제목과 잘못된 기본 썸네일을 보정한다',()=>{
+  const repaired=repairPublicArchiveItem({
+    id:'justserver-survival',
+    timeline:[{
+      id:'soop-auth-post-208562045',
+      type:'post',
+      title:'SOOP 로그인 제한 글 · 208562045',
+      url:'https://www.sooplive.com/station/chunbongtv/post/208562045',
+      thumbnail:'https://res.sooplive.com/images/svg/thumb_profile.svg',
+      sourceId:'source-soop-auth-208562045',
+      visibility:'public'
+    }],
+    sources:[{
+      id:'source-soop-auth-208562045',
+      label:'SOOP 로그인 제한 게시글 · 208562045',
+      url:'https://www.sooplive.com/station/chunbongtv/post/208562045',
+      visibility:'public'
+    }]
+  });
+  assert.equal(repaired.timeline[0].title,'그냥서버 적자생존 추가 입주 모집 공지');
+  assert.equal(repaired.timeline[0].thumbnail,'');
+  assert.equal(repaired.sources[0].label,'SOOP 로그인 제한 게시글 · 그냥서버 적자생존 추가 입주 모집 공지');
 });
