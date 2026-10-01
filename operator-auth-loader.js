@@ -30,8 +30,9 @@
     new MutationObserver(()=>{
       if(login.hidden)return;
       const dashboard=document.getElementById('operator-dashboard');
-      if(dashboard&&!dashboard.hidden)return;
-      if(dashboard&&dashboard.children.length)host.replaceChildren(ensureEmptyDashboard());
+      if(!dashboard||!dashboard.hidden||!dashboard.children.length)return;
+      dashboard.replaceChildren();
+      dashboard.hidden=true;
     }).observe(login,{attributes:true,attributeFilter:['hidden']});
   };
   const interceptEmailCompletion=()=>{
