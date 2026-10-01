@@ -31,7 +31,8 @@ const APP_SHELL = [
   '/site-health.js',
   '/site-improvements.js',
   '/content.js',
-  '/manifest.webmanifest'
+  '/manifest.webmanifest',
+  '/assets/chunbong-main.webp'
 ]
 const APP_SHELL_PATHS = new Set(APP_SHELL.map(asset => new URL(asset, self.location.origin).pathname));
 
