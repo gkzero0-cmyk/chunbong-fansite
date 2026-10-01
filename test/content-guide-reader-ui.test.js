@@ -17,29 +17,30 @@ test('survival guide provides compact searchable navigation and section disclosu
   assert.match(css,/\.official-guide-source-section/);
 });
 
-test('posts and sources load the captured body on demand inside the fan site',()=>{
+test('posts and sources load captured or public SOOP body text on demand inside the fan site',()=>{
   const js=read('content-page-enhancements.js');
   const css=read('content-page-enhancements.css');
-  const api=read('api/content.js');
+  const manage=read('lib/chunbong-content-browser-import-manage.js');
   const loader=read('mobile-runtime-loader.js');
   assert.match(js,/data-archive-source-reader/);
-  assert.match(js,/archive-source-list a/);
-  assert.match(js,/type=chunbong-content-source-preview/);
+  assert.match(js,/sourcePreview=1/);
   assert.match(js,/preview\.body/);
   assert.match(js,/preview\.images/);
   assert.match(js,/원문 열기/);
-  assert.match(api,/chunbong-content-source-preview/);
+  assert.match(manage,/buildPublicSourcePreview/);
+  assert.match(manage,/BROWSER_IMPORT_PREFIX/);
+  assert.match(manage,/fetchNoticeDetail/);
   assert.match(css,/\.archive-source-reader-body/);
   assert.match(loader,/content-page-enhancements\.js\?v=2/);
 });
 
-test('content hero uses a real static image in the right hero column instead of a data URI',()=>{
+test('content hero uses a cacheable static asset in the right hero column instead of a JS data URI',()=>{
   const html=read('chunbong-contents.html');
   const js=read('content-page-enhancements.js');
   const css=read('content-page-enhancements.css');
   assert.match(html,/archive-hero-copy[\s\S]*archive-hero-art/);
-  assert.match(html,/assets\/content-planning-hero\.webp/);
-  assert.match(html,/width="1000"[^>]*height="563"/);
+  assert.match(html,/assets\/content-planning-hero\.svg/);
+  assert.match(html,/width="480"[^>]*height="270"/);
   assert.doesNotMatch(js,/data:image\/webp;base64/);
   assert.match(css,/\.archive-hero-art/);
   assert.match(css,/aspect-ratio:16\/9/);
