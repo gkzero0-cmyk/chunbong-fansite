@@ -34,7 +34,7 @@ test('posts and sources load captured or public SOOP body text on demand inside 
   assert.match(loader,/content-page-enhancements\.js\?v=2/);
 });
 
-test('content hero uses a cacheable static asset in the right hero column instead of a JS data URI',()=>{
+test('content hero uses a cacheable static asset in a forced right hero column instead of a JS data URI',()=>{
   const html=read('chunbong-contents.html');
   const js=read('content-page-enhancements.js');
   const css=read('content-page-enhancements.css');
@@ -42,6 +42,7 @@ test('content hero uses a cacheable static asset in the right hero column instea
   assert.match(html,/assets\/content-planning-hero\.svg/);
   assert.match(html,/width="480"[^>]*height="270"/);
   assert.doesNotMatch(js,/data:image\/webp;base64/);
+  assert.match(css,/\.archive-hero \.archive-hero-inner\{[^}]*display:grid[^}]*grid-template-columns/);
   assert.match(css,/\.archive-hero-art/);
   assert.match(css,/aspect-ratio:16\/9/);
   assert.match(css,/@media\(max-width:760px\)[\s\S]*archive-hero-art/);
