@@ -25,6 +25,18 @@ test('runtime cache can fall back from versioned requests to canonical precache 
   assert.match(sw,/cache\.match\(request\)/,'exact versioned cache match must remain first');
 });
 
+test('style and script cache entries are MIME-validated before reuse',()=>{
+  assert.match(sw,/function\s+isValidStaticAssetResponse/,'service worker must validate static asset responses');
+  assert.match(sw,/text\/css/,'style validation must require CSS content type');
+  assert.match(sw,/(?:javascript|ecmascript)/,'script validation must require JavaScript content type');
+  assert.match(sw,/cache\.delete\(request\)/,'invalid exact cache entries must be removed');
+});
+
+test('app-shell install validates critical style and script responses before caching',()=>{
+  assert.match(sw,/precacheAppShell/,'app-shell install must use validated precache helper');
+  assert.match(sw,/isValidStaticAssetResponse\(request,\s*response\)/,'precache must reject wrong-MIME style or script responses');
+});
+
 test('page and service worker share the same fallback deployment version',()=>{
   const swVersion=sw.match(/FALLBACK_VERSION\s*=\s*['"]([^'"]+)['"]/)?.[1];
   const pageVersion=page.match(/const fallback=['"]([^'"]+)['"]/)?.[1];
