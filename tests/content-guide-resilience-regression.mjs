@@ -24,12 +24,13 @@ const sampleIndex={
   generatedAt:'2026-10-01T00:00:00.000Z',
   pages:[
     {
-      id:'guide-mining',title:'채광 가이드',slug:'mining',category:'GUIDE',order:10,
+      pageId:'3dad57d6a55c807d8738ee94e33d7b13',title:'채광 가이드',
       description:'광물을 채굴하는 방법',
       hero:'/notion-assets/mining/hero.webp',
       sections:[
-        {id:'intro',heading:'채광 시작',anchor:'intro',text:'곡괭이를 준비합니다.'},
-        {id:'ore',heading:'광물',anchor:'ore',text:'층별 광물을 확인합니다.'}
+        {heading:'채광 시작',anchor:'intro',text:'곡괭이를 준비합니다.'},
+        {heading:'야생에서 다양한 광물을 채광하여 판매할 수 있습니다.',anchor:'ore-sale',text:''},
+        {heading:'광물의 시세는 불규칙적으로 변동됩니다.',anchor:'ore-price',text:''}
       ]
     },
     {
@@ -39,8 +40,11 @@ const sampleIndex={
   ]
 };
 const rows=internals.officialWikiGuideRows(sampleIndex,source);
-assert.ok(rows.length>=2,'public wiki guide sections should be converted');
+assert.ok(rows.length>=3,'public wiki guide sections should be converted');
 assert.ok(rows.some(row=>row.title==='채광 시작'&&/곡괭이/.test(row.text)),'guide text should survive conversion');
+assert.ok(rows.some(row=>row.title==='야생에서 다양한 광물을 채광하여 판매할 수 있습니다.'),'heading-only wiki content must not be dropped');
+assert.ok(rows.some(row=>row.title==='광물의 시세는 불규칙적으로 변동됩니다.'),'all heading-only guide rules must remain visible');
+assert.ok(rows.some(row=>String(row.id||'').includes('3dad57d6a55c807d8738ee94e33d7b13')),'official wiki rows should use the stable pageId when available');
 assert.ok(rows.some(row=>(row.images||[]).some(image=>/notion-assets\/mining\/hero\.webp/.test(image.src||''))),'wiki image assets should be preserved');
 assert.equal(rows.some(row=>/관리자|내부 설정/.test(`${row.title} ${row.text}`)),false,'ADMIN pages must not leak into public guide');
 
