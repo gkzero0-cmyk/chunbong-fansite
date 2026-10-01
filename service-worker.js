@@ -32,7 +32,7 @@ const APP_SHELL = [
   '/site-improvements.js',
   '/content.js',
   '/manifest.webmanifest'
-];
+]
 const APP_SHELL_PATHS = new Set(APP_SHELL.map(asset => new URL(asset, self.location.origin).pathname));
 
 function keepAlive(event, promise) {
