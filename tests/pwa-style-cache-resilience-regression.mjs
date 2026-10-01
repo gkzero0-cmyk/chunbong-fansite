@@ -9,6 +9,7 @@ assert.match(swSource,/MEDIA_CACHE_PREFIX|MEDIA_CACHE_NAME/,'media/font cache mu
 assert.match(swSource,/pruneMediaCache/,'media cache must be bounded and pruned');
 assert.match(swSource,/MAX_MEDIA_ENTRIES/,'media cache must have an entry limit');
 assert.match(swSource,/MAX_MEDIA_AGE_MS/,'media cache must have an age limit');
+assert.match(swSource,/MAX_MEDIA_BYTES/,'media cache must have a byte budget');
 assert.match(swSource,/safeCachePut/,'cache writes must be isolated from network response delivery');
 assert.match(themeSource,/stylesheet/i,'early theme bootstrap must install stylesheet failure recovery');
 assert.match(themeSource,/style-retry/,'stylesheet recovery must retry with a cache-bypass query exactly once');
