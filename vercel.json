@@ -20,6 +20,11 @@
       "improve-*": false
     }
   },
+  "functions": {
+    "api/image.js": {
+      "includeFiles": "lib/operator-dashboard-source.html"
+    }
+  },
   "headers": [
     {
       "source": "/(.*).js",
