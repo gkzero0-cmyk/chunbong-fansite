@@ -2727,7 +2727,7 @@
       "endDate": "2026-10-21",
       "datePrecision": "day",
       "summary": "춘봉의 그냥서버 세 번째 시즌 ‘적자생존’. 2026년 9월 30일 오픈 예정으로 모집·신청·설명회·UP 랭킹 관련 공식 자료를 준비 단계부터 기록합니다.",
-      "description": "2026년 9월 30일 오픈 예정인 그냥서버 : 적자생존 기록입니다. 공개 Notion 기획 자료와 춘봉 SOOP 공식 게시글·설명회 VOD를 중심으로 모집 → 신청 → 합격자 안내 → 설명회 → 2차 입주 모집 → 서버 오픈 준비 흐름을 정리합니다. 애청자 공개 게시글은 공개 자료와 분리해 내부 검증용으로 보관하며, 세부 내용은 로그인된 브라우저 수집으로 확인될 때만 구조화합니다.",
+      "description": "2026년 9월 30일 오픈 예정인 그냥서버 : 적자생존 기록입니다. 적자생존 공식 위키와 춘봉 SOOP 공식 게시글·설명회 VOD를 중심으로 모집 → 신청 → 합격자 안내 → 설명회 → 2차 입주 모집 → 서버 오픈 준비 흐름을 정리합니다. 애청자 공개 게시글은 공개 자료와 분리해 내부 검증용으로 보관하며, 세부 내용은 로그인된 브라우저 수집으로 확인될 때만 구조화합니다.",
       "heroImage": {
         "src": "https://res.cloudinary.com/lyppgyei/image/upload/c_fill,g_auto,h_900,w_1600/f_webp/q_auto:best/v1790109594/chunbong-fansite/justserver/survival-source.webp",
         "alt": "그냥서버 : 적자생존 공식 모집 이미지 기반 16:9 대표 이미지",
@@ -3274,7 +3274,7 @@
           "datePrecision": "day",
           "url": "",
           "thumbnail": "",
-          "sourceId": "source-survival-notion",
+          "sourceId": "source-survival-wiki",
           "note": "이전 대화에서 제공된 Notion 일정 기준 예정 시작일입니다.",
           "visibility": "public"
         },
@@ -3370,7 +3370,7 @@
           "datePrecision": "day",
           "url": "",
           "thumbnail": "",
-          "sourceId": "source-survival-notion",
+          "sourceId": "source-survival-wiki",
           "note": "이전 대화에서 제공된 Notion 일정 기준 예정 종료일입니다.",
           "visibility": "public"
         },
@@ -3530,13 +3530,6 @@
           "visibility": "internal"
         },
         {
-          "id": "source-survival-notion",
-          "kind": "reference",
-          "label": "적자생존 관련 공개 Notion 자료",
-          "url": "https://daisy-grouse-ac0.notion.site/3dad57d6a55c80469f3de9730cb88975",
-          "visibility": "public"
-        },
-        {
           "id": "source-survival-streams",
           "kind": "reference",
           "label": "Streams Charts · 춘봉 방송 이력",
@@ -3548,6 +3541,13 @@
           "kind": "official",
           "label": "SOOP 방송국 · 적자생존 2차입주 모집공지",
           "url": "https://www.sooplive.com/station/chunbongtv/post/207564927",
+          "visibility": "public"
+        },
+        {
+          "id": "source-survival-wiki",
+          "kind": "reference",
+          "label": "그냥서버 적자생존 공식 위키",
+          "url": "https://server1.wiki.xn--9i1bk7xhlfi8hzzf.com/",
           "visibility": "public"
         }
       ],
