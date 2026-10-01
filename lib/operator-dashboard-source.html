@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#ff6b18">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>운영자 센터 | 춘봉 팬허브</title>
+  <script src="theme-init.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="theme.css" data-theme-styles>
+  <link rel="stylesheet" href="site-design-system.css">
+  <link rel="stylesheet" href="operator.css?v=8">
+<link rel="stylesheet" href="operator-history-audit.css?v=1">
+<link rel="stylesheet" href="operator-budget-extra.css?v=1">
+<link rel="stylesheet" href="operator-redis-diagnostics.css?v=1">
+</head>
+<body data-page="operator">
+<a class="operator-skip-link" href="#main-content">본문 바로가기</a>
+<main class="operator-page" id="main-content">
+  <header class="operator-topbar">
+    <a href="index.html" class="operator-back">← 팬사이트</a>
+    <div><small>CHUNBONG FAN HUB</small><strong>OPERATOR CENTER</strong></div>
+    <button id="operator-logout" type="button" hidden>로그아웃</button>
+  </header>
+
+  <section id="operator-login" class="operator-login-card">
+    <span class="operator-kicker">OWNER ONLY</span>
+    <h1>운영자 인증</h1>
+    <p>실사용 분석 데이터와 피드백 상세는 소유주 인증 후에만 확인할 수 있습니다. 인증이 완료되면 이 기기에서 최대 1년 동안 로그인 상태를 유지합니다.</p>
+    <a id="operator-github-login" class="operator-auth-button github" href="/api/operator/github/start?return=%2Foperator.html">GitHub로 인증</a>
+    <div class="operator-divider"><span>또는</span></div>
+    <form id="operator-email-form">
+      <label for="operator-email">이메일로 인증</label>
+      <div class="operator-email-row">
+        <input id="operator-email" type="email" autocomplete="email" placeholder="운영자 이메일" required>
+        <button type="submit">인증 메일 보내기</button>
+      </div>
+      <small>등록된 소유주 이메일로만 인증할 수 있습니다.</small>
+    </form>
+    <p id="operator-login-status" class="operator-status" aria-live="polite"></p>
+  </section>
+
+  <section id="operator-dashboard" class="operator-dashboard" hidden>
+    <div class="operator-heading">
+      <div><span class="operator-kicker">PRIVATE DASHBOARD</span><h1>운영자 센터</h1></div>
+      <div class="operator-heading-actions">
+        <div class="operator-period" role="group" aria-label="분석 기간">
+          <button type="button" data-days="1" aria-pressed="false">오늘</button>
+          <button type="button" data-days="7" class="active" aria-pressed="true">7일</button>
+          <button type="button" data-days="30" aria-pressed="false">30일</button><button type="button" data-days="all" aria-pressed="false">전체</button>
+        </div>
+        <div class="operator-export-actions">
+          <button type="button" id="operator-analytics-refresh">분석 새로고침</button>
+          <button type="button" id="operator-export-json">JSON</button>
+          <button type="button" id="operator-export-csv">CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <section id="operator-deployment-banner" class="operator-deployment-banner" data-state="loading" aria-live="polite">
+      <div><small>DEPLOYMENT STATUS</small><strong id="operator-deployment-banner-title">Production 상태 확인 중</strong><span id="operator-deployment-banner-detail">GitHub main과 실제 배포 버전을 비교하고 있습니다.</span></div>
+      <button type="button" data-operator-quick-tab="system">배포 상세 보기</button>
+    </section>
+
+    <nav class="operator-tabs" role="tablist" aria-label="운영자 메뉴">
+      <button id="operator-tab-overview" class="active" type="button" role="tab" aria-selected="true" aria-controls="operator-panel-overview" data-operator-tab="overview">개요</button>
+      <button id="operator-tab-contents" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-contents" data-operator-tab="contents">콘텐츠 아카이브</button>
+      <button id="operator-tab-performance" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-performance" data-operator-tab="performance">성능</button>
+      <button id="operator-tab-search" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-search" data-operator-tab="search">검색 분석</button>
+      <button id="operator-tab-feedback" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-feedback" data-operator-tab="feedback">피드백 <i id="operator-feedback-badge" hidden>0</i></button>
+      <button id="operator-tab-system" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-system" data-operator-tab="system">시스템 상태</button>
+      <button id="operator-tab-security" type="button" role="tab" aria-selected="false" aria-controls="operator-panel-security" data-operator-tab="security">보안</button>
+    </nav>
+
+    <section id="operator-panel-overview" role="tabpanel" aria-labelledby="operator-tab-overview" data-operator-panel="overview">
+      <p id="operator-collection-note" class="operator-collection-note"></p>
+      <section class="operator-attention" aria-labelledby="operator-attention-title" aria-live="polite">
+        <header><div><small>OPERATIONS AT A GLANCE</small><h2 id="operator-attention-title">지금 확인할 것</h2></div><span id="operator-attention-state">확인 중</span></header>
+        <div id="operator-attention-list" class="operator-attention-list"><p class="operator-empty">운영 상태를 확인하고 있습니다.</p></div>
+      </section>
+      <nav class="operator-quick-actions" aria-label="운영자 빠른 작업">
+        <button type="button" data-operator-quick-tab="contents"><span>콘텐츠 상태</span><small>누락 · 자동수집 확인</small></button>
+        <button type="button" data-operator-content-sync><span>공식 자료 동기화</span><small>SOOP · YouTube 지금 확인</small></button>
+        <button type="button" data-operator-quick-tab="performance"><span>성능 점검</span><small>LCP · INP · CLS</small></button>
+        <button type="button" data-operator-quick-tab="search"><span>검색 분석</span><small>검색어 · 0건 결과</small></button>
+        <button type="button" data-operator-quick-tab="system"><span>시스템 상태</span><small>배포 · API · 저장소</small></button>
+        <a href="changelog.html" target="_blank" rel="noopener"><span>업데이트 일지</span><small>공개 기록 확인 ↗</small></a>
+        <a href="index.html" target="_blank" rel="noopener"><span>팬사이트 열기</span><small>Production 화면 ↗</small></a>
+      </nav>
+      <section class="operator-period-summary" aria-labelledby="operator-period-summary-title">
+        <header><div><small>PERIOD INSIGHT</small><h2 id="operator-period-summary-title">최근 7일 요약</h2></div><span id="operator-period-compare-label">이전 7일 대비</span></header>
+        <p id="operator-period-summary-text">이용 흐름을 계산하고 있습니다.</p>
+      </section>
+      <div class="operator-metric-grid operator-metric-grid-wide">
+        <article class="is-live"><span>현재 활성</span><strong id="metric-active">-</strong><small>최근 5분</small></article>
+        <article><span>방문자</span><strong id="metric-visitors">-</strong><small>익명 고유 방문자</small><em id="metric-visitors-delta"></em></article>
+        <article><span>세션</span><strong id="metric-sessions">-</strong><small>브라우저 방문 세션</small><em id="metric-sessions-delta"></em></article>
+        <article><span>페이지뷰</span><strong id="metric-pageviews">-</strong><small>전체 페이지 조회</small><em id="metric-pageviews-delta"></em></article>
+        <article><span>평균 활동시간</span><strong id="metric-duration">-</strong><small>활성 탭 기준</small><em id="metric-duration-delta"></em></article>
+        <article><span>일평균 방문자</span><strong id="metric-average-daily">-</strong><small>선택 기간 일평균</small></article>
+        <article><span>신규 이용 페이지뷰</span><strong id="metric-new">-</strong><small>첫 방문 브라우저에서 발생</small></article>
+        <article><span>재방문 이용 페이지뷰</span><strong id="metric-returning">-</strong><small>기존 브라우저에서 발생</small></article>
+      </div>
+      <div class="operator-grid-2">
+        <article class="operator-card"><header><div><h2>페이지 이용 순위</h2><small>조회수 · 평균 활동시간 · 전체 페이지뷰 중 비중</small></div></header><ol id="operator-pages" class="operator-rank-list operator-page-rank-list"></ol></article>
+        <article class="operator-card"><header><div><h2>메뉴 이용 순위</h2><small>클릭 횟수 · 전체 메뉴 클릭 중 비중</small></div></header><ol id="operator-menus" class="operator-rank-list operator-menu-rank-list"></ol></article>
+        <article class="operator-card"><header><div><h2>기능 이용</h2><small>기능과 행동 단계를 분리해 표시 · 전체 기능 이용 중 비중</small></div></header><ol id="operator-features" class="operator-rank-list operator-feature-list"></ol></article>
+        <article class="operator-card"><header><div><h2>기기 · 이용 환경</h2><small>기기 · 실행 방식 · 테마를 서로 다른 기준으로 구분</small></div></header><div id="operator-devices" class="operator-environment-list"></div></article>
+      </div>
+      <div class="operator-grid-2 operator-insight-grid">
+        <article class="operator-card">
+          <header><div><h2 id="operator-daily-title">최근 7일 이용 추이</h2><small id="operator-daily-summary">일별 차이를 확인할 수 있습니다.</small></div><span class="operator-legend"><i class="is-pageview"></i>페이지뷰 <i class="is-visitor"></i>방문자</span></header>
+          <div id="operator-daily" class="operator-daily-chart" aria-label="기간별 이용 추이 차트"></div>
+        </article>
+        <article class="operator-card">
+          <header><div><h2>방문이 많은 시간대</h2><small id="operator-hourly-summary">가장 활발한 시간을 계산하고 있습니다.</small></div><span>KST · 페이지뷰</span></header>
+          <div id="operator-hourly" class="operator-hourly-chart" aria-label="시간대별 페이지뷰 차트"></div>
+        </article>
+      </div>
+      <article class="operator-card">
+        <header><h2>기능 이용 흐름</h2><span>시작 → 완료</span></header>
+        <div id="operator-funnel" class="operator-funnel"></div>
+      </article>
+    </section>
+
+    <section id="operator-panel-contents" role="tabpanel" aria-labelledby="operator-tab-contents" data-operator-panel="contents" hidden>
+      <div class="operator-system-summary operator-archive-summary" aria-label="춘봉 콘텐츠 관리 상태">
+        <button type="button" class="operator-health-card operator-health-action" data-archive-health-action="all"><span>전체 콘텐츠</span><strong id="archive-health-total">-</strong><small>전체 목록 보기</small></button>
+        <button type="button" class="operator-health-card operator-health-action" data-archive-health-action="issues"><span>콘텐츠 오류 · 누락</span><strong id="archive-health-issues">-</strong><small id="archive-health-issues-meta">수정할 콘텐츠 확인</small></button>
+        <button type="button" class="operator-health-card operator-health-action" data-archive-health-action="visual"><span>이미지 문제</span><strong id="archive-health-visual">-</strong><small id="archive-health-visual-meta">클릭하면 즉시 검사</small></button>
+        <button type="button" class="operator-health-card operator-health-action" data-archive-health-action="review"><span>연결 대기 자료</span><strong id="archive-health-candidates">-</strong><small id="archive-health-sync-meta">미연결 원문 + 자동 발견 후보</small></button>
+      </div>
+      <div class="operator-archive-load-state" data-archive-load-state hidden>
+        <div><strong data-archive-load-title>콘텐츠 아카이브를 불러오는 중</strong><span data-archive-load-detail>저장된 콘텐츠와 수집 자료 상태를 확인하고 있습니다.</span></div>
+        <button type="button" data-archive-load-retry hidden>다시 시도</button>
+      </div>
+      <article class="operator-card operator-archive-workflow">
+        <header><div><h2>오늘 처리할 일</h2><small>실제로 손봐야 하는 항목만 모았습니다. 내부 보관 완료 자료는 확인 필요 건수에서 제외합니다.</small></div><button type="button" data-archive-workflow-action="collector-settings">수집기 설정</button></header>
+        <div class="operator-archive-workflow-status" data-archive-workflow-status></div>
+        <div class="operator-archive-task-grid">
+          <button type="button" data-archive-workflow-action="issues"><b data-archive-task-count="issues">0</b><span><strong>콘텐츠 오류 · 누락</strong><small>문제가 있는 콘텐츠만 보기</small></span></button>
+          <button type="button" data-archive-workflow-action="collector"><b data-archive-task-count="collector">0</b><span><strong>연결 필요한 수집 원문</strong><small>SOOP·FM코리아 미연결 자료</small></span></button>
+          <button type="button" data-archive-workflow-action="candidates"><b data-archive-task-count="candidates">0</b><span><strong>자동 발견 후보</strong><small>기존 콘텐츠 연결 또는 관련 없음 처리</small></span></button>
+          <button type="button" data-archive-workflow-action="visual"><b data-archive-task-count="visual">0</b><span><strong>이미지 문제</strong><small>클릭하면 이미지 검사를 바로 시작</small></span></button>
+        </div>
+        <div class="operator-archive-quick-actions">
+          <button type="button" class="primary" data-archive-auto-fix><span>자동 보강 가능한 항목 일괄 처리</span><small><b data-archive-task-count="autofix">0</b>개 콘텐츠 · 결과는 임시 저장</small></button>
+          <button type="button" data-archive-workflow-action="editor"><span>선택 콘텐츠 편집기로 이동</span><small>직접 수정이 필요한 항목 처리</small></button>
+          <button type="button" data-archive-workflow-action="public"><span>팬사이트 실제 페이지 확인</span><small>현재 선택 콘텐츠의 공개 페이지 열기</small></button>
+        </div>
+        <div class="operator-archive-task-message" data-archive-task-message aria-live="polite"></div>
+      </article>
+      <article class="operator-card operator-collector-inbox-card" data-collector-inbox>
+        <header>
+          <div><h2>수집 원문함</h2><small>SOOP · FM코리아에서 실제로 수집된 원문입니다. 연결이 필요한 자료만 먼저 표시합니다.</small></div>
+          <div class="operator-collector-inbox-counts" aria-label="수집 자료 상태 요약">
+            <span>전체 <b data-collector-inbox-total>0건</b></span>
+            <span>연결 필요 <b data-collector-inbox-pending>0건</b></span>
+            <span>내부 보관 완료 <b data-collector-inbox-internal>0건</b></span>
+            <span>공개 연결 완료 <b data-collector-inbox-public>0건</b></span>
+          </div>
+        </header>
+        <div class="operator-collector-inbox-guide">
+          <strong>관리 흐름</strong>
+          <span><b>연결 필요</b> 자료만 먼저 처리하면 됩니다. <b>내부 보관 완료</b>는 정상 상태입니다. SOOP 로그인·애청자 제한 자료도 운영자가 외부 공개 권한을 확인한 경우 수동으로 공개 전환할 수 있습니다.</span>
+        </div>
+        <div class="operator-collector-inbox-tools">
+          <input type="search" data-collector-inbox-search placeholder="제목 · 작성자 · 연결 콘텐츠 검색" aria-label="수집 자료 검색">
+          <select data-collector-inbox-state aria-label="수집 자료 상태">
+            <option value="attention">연결 필요한 자료</option><option value="all">전체 상태</option><option value="unlinked">연결 필요</option><option value="internal">내부 보관 완료</option><option value="public">공개 연결 완료</option><option value="ignored">무시</option>
+          </select>
+          <select data-collector-inbox-source aria-label="수집 출처">
+            <option value="all">모든 출처</option><option value="soop">SOOP</option><option value="fmkorea">FM코리아</option>
+          </select>
+        </div>
+        <div class="operator-collector-inbox-message" data-collector-inbox-message></div>
+        <div class="operator-collector-inbox-list" data-collector-inbox-list><p class="operator-empty">수집 자료를 불러오고 있습니다.</p></div>
+      </article>
+      <article class="operator-card operator-image-audit-card" data-archive-image-audit-card>
+        <header>
+          <div><h2>이미지 상태 검사</h2><small>대표 이미지 · 갤러리 · 영상 썸네일을 실제로 불러와 깨짐·지연·대용량·대표 이미지 해상도를 확인합니다.</small></div>
+          <button type="button" data-archive-image-audit>검사 시작</button>
+        </header>
+        <div class="operator-image-audit-summary" data-archive-image-audit-state>
+          <strong>검사 대기</strong><span>자동으로 실행하지 않아 일반 사용자 트래픽과 운영자 페이지 성능에 영향을 주지 않습니다.</span>
+        </div>
+        <div class="operator-image-audit-results" data-archive-image-audit-results><p class="operator-empty">검사를 시작하면 확인이 필요한 이미지만 표시합니다.</p></div>
+      </article>
+      <article class="operator-card operator-history-audit-card" data-history-audit-card>
+        <header>
+          <div><h2>방송 이력 검증 필요</h2><small>2025~2026 스프레드시트 중 게임 종류·역할·간단 보기 기준을 다시 확인할 가능성이 높은 항목만 찾습니다.</small></div>
+          <button type="button" data-history-audit-run>검증</button>
+        </header>
+        <div class="operator-history-audit-summary" data-history-audit-summary>
+          <strong>검사 대기</strong><span>필요할 때만 실행해 외부 스프레드시트 요청을 최소화합니다.</span>
+        </div>
+        <div class="operator-history-audit-results" data-history-audit-results><p class="operator-empty">검증을 실행하면 확인이 필요한 방송 이력이 표시됩니다.</p></div>
+      </article>
+      <div class="operator-archive-layout">
+        <aside class="operator-card operator-archive-list-card">
+          <header><div><h2>춘봉 콘텐츠 목록</h2><small>왼쪽에서 콘텐츠를 선택하면 오른쪽에서 수정할 수 있습니다.</small></div><div class="operator-archive-head-actions"><button type="button" data-archive-auto-sync>자료 새로 확인</button><button type="button" data-archive-new>새 콘텐츠</button></div></header>
+          <div class="operator-archive-auto-state" data-archive-auto-state>공식 자료 자동 수집 상태를 확인하고 있습니다.</div>
+          <details class="operator-soop-helper operator-unified-collector" data-unified-collector open>
+            <summary><span>춘봉 콘텐츠 자동 수집기</span><b>한 번 설치</b></summary>
+            <div class="operator-soop-helper-body">
+              <p><strong>나무위키 + SOOP 공개/애청자/로그인 글 + FM코리아 공개글</strong>을 같은 브라우저 수집 큐로 처리합니다. SOOP 애청자 글은 자동 공개하고, 구독자 전용·비공개·기타 로그인 제한 글만 검토 대상으로 남깁니다. 로그인 아이디·비밀번호·쿠키·세션 토큰은 수집하거나 팬사이트 서버로 전송하지 않습니다.</p>
+              <div class="operator-collector-status" data-unified-collector-status>
+                <strong>자동 수집기 연결 대기</strong><span>설치 후 이 운영자 센터를 새로 열면 자동 연결됩니다.</span>
+              </div>
+              <div class="operator-soop-helper-actions">
+                <a href="/chunbong-content-collector.user.js" target="_blank" rel="noopener" data-collector-install>자동 수집기 설치 / 업데이트</a>
+                <button type="button" data-collector-watch-start>SOOP 상시 감시 시작</button>
+                <button type="button" data-collector-self-test>수집기 지금 점검</button>
+                <button type="button" data-collector-watch-stop>상시 감시 중지</button>
+                <button type="button" data-collector-run-namu>나무위키 대기 자료 자동 수집</button>
+                <button type="button" data-collector-backfill-soop>SOOP 전체 기록 1회 수집</button>
+                <button type="button" data-collector-open-soop>SOOP 신규 글 확인</button>
+                <button type="button" data-collector-open-fmk>FM코리아 공개글 확인</button>
+              </div>
+              <ol>
+                <li>Chrome의 userscript 관리자(Tampermonkey 등)에 위 스크립트를 <b>1회 설치</b>합니다.</li>
+                <li>나무위키는 운영자 센터의 대기 목록을 한 번에 열어 본문·<b>i.namu.wiki</b> 이미지를 자동 수집합니다.</li>
+                <li>SOOP은 최초에 <b>SOOP 전체 기록 1회 수집</b>을 실행하면 과거 게시판까지 순차적으로 훑습니다. 이후 <b>SOOP 상시 감시 시작</b>을 켜두면 백그라운드 탭이 약 5분 간격으로 신규 게시글을 확인합니다.</li>
+                <li>SOOP 일반 공개글과 <b>애청자 글은 자동 수집 → 자동 매칭 → 자동 공개</b>합니다. 구독자 전용·비공개·기타 로그인 제한 글은 내부 자료로 저장하고 운영자 확인 후에만 공개할 수 있습니다.</li>
+                <li>FM코리아는 <b>비로그인 상태에서도 열리는 공개 게시글만</b> 익명 재확인 후 수집합니다. 춘봉·레오펠·그냥서버·춘타클 등 관련 제목은 목록에서도 자동 감지합니다.</li>
+                <li>FM코리아 공개글은 매칭이 확실한 기존 콘텐츠에 <b>내부 검증 자료로 자동 연결</b>하고, 동일 글 번호는 중복 수집하지 않습니다. 팬사이트 공개 화면에는 FM코리아 출처명과 원문 링크를 표시하지 않습니다.</li>
+                <li>상태판은 <b>마지막 생존 신호 · 마지막 SOOP 확인 · 마지막 수집 · 마지막 서버 반영 · 최근 오류</b>를 보여줍니다. 문제가 의심되면 <b>수집기 지금 점검</b>으로 즉시 확인할 수 있습니다.</li>
+              </ol>
+            </div>
+          </details>
+          <details class="operator-soop-helper" data-soop-helper>
+            <summary><span>SOOP 로그인 글 수동 수집</span><b>자동 수집기 보조</b></summary>
+            <div class="operator-soop-helper-body">
+              <p>자동 수집기를 설치하지 않은 경우 사용하는 수동 방식입니다. 로그인된 SOOP 글에서 제목·작성일·본문·이미지만 읽고 인증정보는 읽거나 전송하지 않습니다. 애청자 글은 연결 시 자동 공개되며, 구독·비공개·기타 로그인 제한 글은 검토 상태로 남습니다.</p>
+              <div class="operator-soop-helper-actions">
+                <a href="#" data-soop-bookmarklet draggable="true">SOOP 글 수집</a>
+                <button type="button" data-soop-bookmarklet-copy>북마크 코드 복사</button>
+              </div>
+              <ol>
+                <li><b>SOOP 글 수집</b> 링크를 브라우저 북마크바로 끌어놓습니다.</li>
+                <li>애청자 공개글을 로그인된 상태로 연 뒤 그 북마크를 누릅니다.</li>
+                <li>운영자 센터로 돌아오면 수집 결과를 확인하고 기존 콘텐츠에 연결하거나 새 초안으로 만듭니다.</li>
+              </ol>
+              <div class="operator-soop-import" data-soop-import hidden>
+                <header><div><small data-soop-import-meta>SOOP 인증 브라우저 수집</small><strong data-soop-import-title>수집 결과</strong></div><button type="button" data-soop-import-dismiss>닫기</button></header>
+                <p data-soop-import-summary></p>
+                <div class="operator-soop-import-facts" data-soop-import-facts></div>
+                <label><span>연결할 콘텐츠</span><select data-soop-import-target><option value="">선택</option></select></label>
+                <div class="operator-soop-import-buttons">
+                  <button type="button" data-soop-import-connect>기존 콘텐츠에 연결</button>
+                  <button type="button" data-soop-import-draft>새 콘텐츠 초안</button>
+                </div>
+              </div>
+            </div>
+          </details>
+          <details class="operator-soop-helper operator-namu-helper" data-namu-helper>
+            <summary><span>나무위키 직접 수집 도우미</span><b>namu.wiki 원문만 사용</b></summary>
+            <div class="operator-soop-helper-body">
+              <p>서버에서 나무위키 접근이 차단된 경우 미러 사이트로 우회하지 않습니다. 브라우저에서 직접 연 <strong>namu.wiki</strong> 문서의 본문과 실제 <strong>i.namu.wiki</strong> 이미지만 읽어 춘봉 콘텐츠에 연결합니다. 로그인 정보·쿠키는 읽거나 전송하지 않습니다.</p>
+              <div class="operator-soop-helper-actions">
+                <a href="#" data-namu-bookmarklet draggable="true">나무위키 문서 수집</a>
+                <button type="button" data-namu-bookmarklet-copy>북마크 코드 복사</button>
+              </div>
+              <ol>
+                <li><b>나무위키 문서 수집</b> 링크를 브라우저 북마크바로 끌어놓습니다.</li>
+                <li><b>https://namu.wiki/</b>에서 연결할 문서를 연 뒤 그 북마크를 누릅니다.</li>
+                <li>문서 URL이 기존 출처와 같으면 자동 연결되고, 필요하면 콘텐츠를 직접 선택할 수 있습니다.</li>
+              </ol>
+              <div class="operator-soop-import" data-namu-import hidden>
+                <header><div><small data-namu-import-meta>namu.wiki 직접 수집</small><strong data-namu-import-title>수집 결과</strong></div><button type="button" data-namu-import-dismiss>닫기</button></header>
+                <p data-namu-import-summary></p>
+                <label><span>연결할 콘텐츠</span><select data-namu-import-target><option value="">자동 연결</option></select></label>
+                <div class="operator-soop-import-buttons">
+                  <button type="button" data-namu-import-connect>나무위키 원문 반영</button>
+                </div>
+              </div>
+            </div>
+          </details>
+          <details class="operator-archive-candidates" data-archive-candidates>
+            <summary><span>자동 발견 후보</span><b data-archive-candidate-count>0건</b></summary>
+            <div data-archive-candidate-list><p class="operator-empty">자동 발견 후보가 없습니다.</p></div>
+          </details>
+          <div class="operator-archive-list-tools">
+            <input class="operator-archive-search" type="search" data-archive-admin-search placeholder="콘텐츠명 · ID 검색" aria-label="콘텐츠 검색">
+            <select data-archive-admin-quality aria-label="자료 완성도 필터"><option value="all">전체 자료 상태</option><option value="issues">보강 필요</option><option value="complete">주요 누락 없음</option></select>
+          </div>
+          <div class="operator-archive-list" data-archive-admin-list><p class="operator-empty">콘텐츠를 불러오고 있습니다.</p></div>
+        </aside>
+        <article class="operator-card operator-archive-editor" data-archive-admin-editor>
+          <p class="operator-empty">콘텐츠를 선택하거나 새로 만드세요.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="operator-panel-performance" role="tabpanel" aria-labelledby="operator-tab-performance" data-operator-panel="performance" hidden>
+      <div class="operator-system-summary operator-performance-summary">
+        <article class="operator-health-card"><span>평균 페이지 표시</span><strong id="performance-average">-</strong><small>DOMContentLoaded 기준</small></article>
+        <article class="operator-health-card"><span>측정 표본</span><strong id="performance-samples">-</strong><small>익명 브라우저 측정</small></article>
+        <article class="operator-health-card"><span>가장 느린 페이지</span><strong id="performance-slowest">-</strong><small id="performance-slowest-meta">측정 대기 중</small></article>
+        <article class="operator-health-card"><span>체감 상태</span><strong id="performance-state">확인 중</strong><small id="performance-state-meta">배포 후 실제 사용자 데이터를 기준으로 판단합니다.</small></article>
+      </div>
+      <div class="operator-system-summary operator-vitals-summary" aria-label="실사용 Core Web Vitals">
+        <article class="operator-health-card"><span>LCP · 주요 콘텐츠 표시</span><strong id="performance-lcp">-</strong><small id="performance-lcp-meta">측정 대기 중</small></article>
+        <article class="operator-health-card"><span>INP · 상호작용 반응</span><strong id="performance-inp">-</strong><small id="performance-inp-meta">측정 대기 중</small></article>
+        <article class="operator-health-card"><span>CLS · 화면 흔들림</span><strong id="performance-cls">-</strong><small id="performance-cls-meta">측정 대기 중</small></article>
+      </div>
+      <div class="operator-grid-2">
+        <article class="operator-card">
+          <header><div><h2>페이지 표시 속도</h2><small>느린 페이지부터 · 평균값</small></div></header>
+          <ol id="operator-performance-pages" class="operator-rank-list operator-performance-list"></ol>
+        </article>
+        <article class="operator-card">
+          <header><div><h2>웹 바이탈 문제 페이지</h2><small>LCP · INP · CLS 중 나쁜 비율이 높은 순</small></div></header>
+          <ol id="operator-vitals-pages" class="operator-rank-list operator-performance-list"></ol>
+        </article>
+        <article class="operator-card operator-performance-guide">
+          <header><h2>읽는 방법</h2><span>실사용 브라우저 기준</span></header>
+          <div class="operator-guide-grid">
+            <div><b>DOM 표시</b><strong>≤ 500ms</strong><small>메뉴 이동이 즉시 느껴지는 구간</small></div>
+            <div><b>LCP</b><strong>≤ 2.5초</strong><small>주요 콘텐츠가 사용자에게 빠르게 보이는 권장 구간</small></div>
+            <div><b>INP</b><strong>≤ 200ms</strong><small>클릭·터치 뒤 화면 반응이 빠른 권장 구간</small></div>
+            <div><b>CLS</b><strong>≤ 0.10</strong><small>레이아웃이 거의 흔들리지 않는 권장 구간</small></div>
+          </div>
+          <p>개인 식별 정보 없이 페이지 경로와 브라우저 성능 값만 집계합니다. LCP·INP·CLS는 지원 브라우저의 실제 이용 표본 기준이며, 표본이 적을 때는 단일 기기나 네트워크 영향이 크게 보일 수 있습니다.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="operator-panel-search" role="tabpanel" aria-labelledby="operator-tab-search" data-operator-panel="search" hidden>
+      <div class="operator-system-summary operator-search-summary">
+        <article class="operator-health-card"><span>검색 실행</span><strong id="search-total">-</strong><small>두 글자 이상 검색어 기준</small></article>
+        <article class="operator-health-card"><span>결과 없음</span><strong id="search-zero-total">-</strong><small id="search-zero-meta">검색 데이터 대기 중</small></article>
+        <article class="operator-health-card"><span>결과 클릭</span><strong id="search-click-total">-</strong><small>검색 결과에서 콘텐츠 이동</small></article>
+        <article class="operator-health-card"><span>검색 → 클릭</span><strong id="search-click-rate">-</strong><small>검색 실행 대비 클릭 비율</small></article>
+      </div>
+      <div class="operator-grid-2 operator-search-grid">
+        <article class="operator-card">
+          <header><div><h2>많이 찾는 검색어</h2><small>선택 기간의 익명 집계 · 결과 없음 횟수 함께 표시</small></div></header>
+          <ol id="operator-search-queries" class="operator-rank-list operator-search-list"></ol>
+        </article>
+        <article class="operator-card">
+          <header><div><h2>검색 결과 0건</h2><small>콘텐츠 보강이나 검색 별칭 추가를 검토할 검색어</small></div></header>
+          <ol id="operator-search-zero" class="operator-rank-list operator-search-list"></ol>
+        </article>
+        <article class="operator-card operator-search-click-card">
+          <header><div><h2>검색 후 선택한 콘텐츠</h2><small>검색어 → 실제로 연 결과 · 상위 항목</small></div></header>
+          <div id="operator-search-clicks" class="operator-search-click-list"></div>
+        </article>
+        <article class="operator-card operator-search-privacy">
+          <header><h2>집계 기준</h2><span>Privacy by design</span></header>
+          <p>검색어는 방문자 ID와 연결하지 않고 횟수만 합산합니다. 이메일·URL·긴 숫자열처럼 개인 정보일 가능성이 높은 입력은 검색 분석에서 제외합니다.</p>
+          <div class="operator-usage-note"><strong>운영 활용</strong><span>검색 결과가 없는 단어는 콘텐츠 별칭·검색 키워드 보강 후보로, 많이 검색하고 클릭하는 항목은 자주 찾는 콘텐츠 판단 자료로 사용합니다.</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="operator-panel-feedback" role="tabpanel" aria-labelledby="operator-tab-feedback" data-operator-panel="feedback" hidden>
+      <div class="operator-system-summary operator-feedback-summary" aria-label="피드백 처리 현황">
+        <article class="operator-health-card"><span>새 피드백</span><strong id="feedback-summary-new">-</strong><small>아직 확인하지 않은 의견</small></article>
+        <article class="operator-health-card"><span>처리 중</span><strong id="feedback-summary-active">-</strong><small>확인 중 · 반영 예정</small></article>
+        <article class="operator-health-card"><span>높은 우선순위</span><strong id="feedback-summary-high">-</strong><small>완료·보관 제외</small></article>
+        <article class="operator-health-card"><span>반복 이슈</span><strong id="feedback-summary-duplicates">-</strong><small id="feedback-summary-duplicates-meta">유사 제보 분석 대기</small></article>
+      </div>
+      <div class="operator-feedback-layout">
+        <aside class="operator-card operator-feedback-list-card">
+          <header><h2>사용자 피드백</h2><button id="operator-feedback-refresh" type="button">새로고침</button></header>
+          <div class="operator-feedback-filters">
+            <input id="operator-feedback-search" type="search" placeholder="내용·닉네임·ID 검색" aria-label="피드백 검색">
+            <select id="operator-feedback-status-filter" aria-label="피드백 상태 필터"><option value="all">모든 상태</option><option value="new">새로 들어옴</option><option value="reviewing">확인 중</option><option value="planned">반영 예정</option><option value="done">완료</option><option value="archived">보관</option></select>
+            <select id="operator-feedback-category-filter" aria-label="피드백 종류 필터"><option value="all">모든 종류</option><option value="bug">버그 신고</option><option value="inconvenience">불편한 점</option><option value="feature">기능 제안</option><option value="design">디자인 의견</option><option value="content">콘텐츠 요청</option><option value="other">기타</option></select>
+            <select id="operator-feedback-priority-filter" aria-label="피드백 우선순위 필터"><option value="all">모든 우선순위</option><option value="high">높음</option><option value="normal">보통</option><option value="low">낮음</option></select>
+            <select id="operator-feedback-sort" aria-label="피드백 정렬"><option value="newest">최신순</option><option value="oldest">오래된순</option></select>
+          </div>
+          <div id="operator-feedback-list" class="operator-feedback-list"></div>
+        </aside>
+        <article class="operator-card operator-feedback-detail">
+          <div id="operator-feedback-empty"><h2>피드백을 선택하세요</h2><p>닉네임은 선택사항이며 입력하지 않은 경우 익명으로 표시됩니다.</p></div>
+          <div id="operator-feedback-content" hidden>
+            <div class="operator-feedback-detail-head"><div><span id="feedback-category"></span><h2 id="feedback-id"></h2></div><div class="operator-feedback-detail-controls"><select id="feedback-priority" aria-label="피드백 우선순위"><option value="high">높음</option><option value="normal">보통</option><option value="low">낮음</option></select><select id="feedback-status"><option value="new">새로 들어옴</option><option value="reviewing">확인 중</option><option value="planned">반영 예정</option><option value="done">완료</option><option value="archived">보관</option></select></div></div>
+            <p id="feedback-message" class="operator-feedback-message"></p>
+            <dl id="feedback-meta" class="operator-feedback-meta"></dl>
+            <section class="operator-feedback-similar">
+              <div class="operator-section-title-row"><h3>유사 피드백</h3><span id="feedback-similar-count">0건</span></div>
+              <div id="feedback-similar-list" class="operator-feedback-similar-list"><p class="operator-empty">비슷한 제보가 없습니다.</p></div>
+            </section>
+            <div class="operator-feedback-memo">
+              <label for="feedback-tags">태그 <small>쉼표로 구분 · 최대 8개</small></label>
+              <input id="feedback-tags" type="text" placeholder="예: 타로, 모바일, UI">
+              <label for="feedback-related-update">관련 업데이트</label>
+              <input id="feedback-related-update" type="text" placeholder="예: #238 · 2026-09-22 업데이트">
+              <label for="feedback-memo">운영자 메모</label>
+              <textarea id="feedback-memo" rows="5" placeholder="처리 내용, 확인할 사항 등을 기록하세요."></textarea>
+              <button id="feedback-memo-save" type="button">관리 정보 저장</button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+
+    <section id="operator-panel-system" role="tabpanel" aria-labelledby="operator-tab-system" data-operator-panel="system" hidden>
+      <div class="operator-system-summary">
+        <article class="operator-health-card"><span>Production</span><strong id="system-production">확인 중</strong><small id="system-production-meta">-</small></article>
+        <article class="operator-health-card"><span>Git 동기화</span><strong id="system-sync">확인 중</strong><small id="system-sync-meta">-</small></article>
+        <article class="operator-health-card"><span>Redis / KV</span><strong id="system-storage">확인 중</strong><small id="system-storage-meta">-</small></article>
+        <article class="operator-health-card"><span>Push 알림</span><strong id="system-push">확인 중</strong><small id="system-push-meta">-</small></article>
+      </div>
+      <div class="operator-grid-2">
+        <article class="operator-card">
+          <header><h2>오늘 트래픽</h2><button id="operator-system-refresh" type="button">새로고침</button></header>
+          <div class="operator-system-kpis"><div><span>활성</span><b id="system-active">-</b></div><div><span>방문자</span><b id="system-visitors">-</b></div><div><span>세션</span><b id="system-sessions">-</b></div><div><span>페이지뷰</span><b id="system-pageviews">-</b></div></div>
+        </article>
+        <article class="operator-card">
+          <header><h2>프로젝트 · 저장소</h2><span id="system-checked-at">-</span></header>
+          <dl class="operator-system-meta">
+            <div><dt>Production SHA</dt><dd id="system-sha">-</dd></div>
+            <div><dt>GitHub main SHA</dt><dd id="system-main-sha">-</dd></div>
+            <div><dt>Production 미반영 변경</dt><dd id="system-pending-commits">-</dd></div>
+            <div><dt>배포 URL</dt><dd id="system-url">-</dd></div>
+            <div><dt>Vercel 상태</dt><dd id="system-vercel-status">-</dd></div>
+            <div><dt>자동 재시도</dt><dd id="system-retry-at">-</dd></div>
+            <div><dt>Git 저장소 크기 <small>(참고)</small></dt><dd id="system-repo-size">-</dd></div>
+            <div><dt>Redis 키 수</dt><dd id="system-redis-keys">-</dd></div>
+            <div><dt>Redis 메모리</dt><dd id="system-redis-memory">-</dd></div>
+            <div><dt>분석 기록 일수</dt><dd id="system-analytics-days">-</dd></div>
+            <div><dt>저장된 피드백</dt><dd id="system-feedback-total">-</dd></div>
+          </dl>
+        </article>
+        <article class="operator-card">
+          <header><h2>주요 서비스 상태</h2><span>서버 측 설정 기준</span></header>
+          <div id="operator-service-health" class="operator-service-health"></div>
+        </article>
+        <article class="operator-card">
+          <header><h2>핵심 API 응답</h2><span>실제 서버 요청 · 최대 3.5초</span></header>
+          <div id="operator-endpoint-health" class="operator-service-health operator-endpoint-health"></div>
+        </article>
+        <article class="operator-card operator-commit-history-card">
+          <header><div><h2>최근 변경 이력</h2><small>GitHub main · 누가 언제 무엇을 변경했는지</small></div><a href="https://github.com/gkzero0-cmyk/chunbong-fansite/commits/main" target="_blank" rel="noopener">GitHub 열기 ↗</a></header>
+          <div id="operator-commit-history" class="operator-commit-history"><p class="operator-empty">최근 변경사항을 불러오고 있습니다.</p></div>
+        </article>
+        <article class="operator-card operator-changelog-health-card">
+          <header><div><h2>업데이트 일지 상태</h2><small>GitHub main에서 사용자용 변경사항 자동 기록</small></div><a href="changelog.html" target="_blank" rel="noopener">일지 열기 ↗</a></header>
+          <div class="operator-changelog-health" id="operator-changelog-health">
+            <strong>확인 중</strong><span>최근 공개 업데이트를 확인하고 있습니다.</span>
+          </div>
+          <dl class="operator-system-meta operator-changelog-meta">
+            <div><dt>최근 공개 업데이트</dt><dd id="system-changelog-title">-</dd></div>
+            <div><dt>기록 날짜</dt><dd id="system-changelog-date">-</dd></div>
+            <div><dt>기준 SHA</dt><dd id="system-changelog-sha">-</dd></div>
+          </dl>
+        </article>
+        <article class="operator-card operator-health-history-card">
+          <header><h2>운영 상태 변경 이력</h2><span>상태가 바뀐 시점만 기록</span></header>
+          <div id="operator-health-history" class="operator-event-list"><p class="operator-empty">상태 이력을 불러오고 있습니다.</p></div>
+        </article>
+        <article class="operator-card operator-budget-card">
+          <header><div><h2>외부 사용량 보호</h2><small>기본 운영자 화면은 Redis 직접 조회 없이 동작 · 상세 조회는 수동 실행</small></div><div class="operator-budget-head-actions"><strong id="system-budget-mode" class="operator-health warn">확인 중</strong><button id="operator-redis-refresh" type="button">Redis 상세 1회 조회</button></div></header>
+          <section class="operator-redis-usage-panel" aria-label="Redis 월간 사용량">
+            <div class="operator-section-title-row"><div><strong>Redis 월간 사용량</strong><small id="system-redis-usage-source">Upstash 관리 API 상태를 확인하고 있습니다.</small></div><span>Free 기준 월 500,000 commands</span></div>
+            <div class="operator-budget-grid operator-redis-usage-grid">
+              <div><span>월간 API 요청</span><b id="system-redis-monthly-used">-</b></div>
+              <div><span>잔여 command</span><b id="system-redis-monthly-remaining">정확 계산 불가</b></div>
+              <div><span>command 사용률</span><b id="system-redis-monthly-pct">계산 안 함</b></div>
+              <div><span>오늘 Redis commands</span><b id="system-redis-daily-commands">-</b></div>
+              <div><span>월간 읽기 요청</span><b id="system-redis-monthly-read">-</b></div>
+              <div><span>월간 쓰기 요청</span><b id="system-redis-monthly-write">-</b></div>
+              <div><span>현재 저장량</span><b id="system-redis-current-storage">-</b></div>
+            </div>
+            <p class="operator-usage-note"><strong>단위 안내</strong><span>Upstash Developer API의 월간 값은 API 요청(requests), 오늘 값은 Redis commands입니다. 월간 API 요청과 오늘 Redis command는 단위가 다릅니다. 따라서 월간 요청 수로 500,000-command 한도의 잔여량이나 사용률을 계산하지 않으며, 잔여 command는 정확 계산 불가로 표시합니다.</span></p>
+          </section>
+          <section class="operator-redis-usage-panel" aria-label="Realtime Redis 월간 사용량">
+            <div class="operator-section-title-row"><div><strong>Realtime Redis 월간 사용량</strong><small id="system-realtime-redis-usage-source">별도 Upstash 계정 관리 API 연결 상태를 확인하고 있습니다.</small></div><span>Push · 랭킹 · 멀티플레이</span></div>
+            <div class="operator-budget-grid operator-redis-usage-grid">
+              <div><span>월간 API 요청</span><b id="system-realtime-redis-monthly-used">-</b></div>
+              <div><span>잔여 command</span><b id="system-realtime-redis-monthly-remaining">정확 계산 불가</b></div>
+              <div><span>command 사용률</span><b id="system-realtime-redis-monthly-pct">계산 안 함</b></div>
+              <div><span>오늘 Redis commands</span><b id="system-realtime-redis-daily-commands">-</b></div>
+              <div><span>월간 읽기 요청</span><b id="system-realtime-redis-monthly-read">-</b></div>
+              <div><span>월간 쓰기 요청</span><b id="system-realtime-redis-monthly-write">-</b></div>
+              <div><span>현재 저장량</span><b id="system-realtime-redis-current-storage">-</b></div>
+            </div>
+            <p class="operator-usage-note"><strong>별도 계정 실측 · 단위 안내</strong><span>Realtime 계정도 월간 API 요청과 오늘 Redis commands를 별도로 표시합니다. 요청 수를 command 한도 사용량으로 환산하지 않으며 잔여 command는 정확 계산 불가로 표시합니다.</span></p>
+          </section>
+          <div class="operator-budget-grid">
+            <div><span>분석 표본</span><b id="system-budget-sample">-</b></div>
+            <div><span>분석 보존</span><b id="system-budget-retention">-</b></div>
+            <div><span>운영자 자동 갱신</span><b id="system-budget-polling">-</b></div>
+            <div><span>Redis 보호</span><b id="system-budget-redis">-</b></div>
+          </div>
+          <div id="system-budget-protections" class="operator-service-health"></div>
+          <div class="operator-api-budget">
+            <div><strong>API 네트워크 표본</strong><span>방문자 10% · 실제 네트워크 요청만 집계</span></div>
+            <div id="system-budget-api-types" class="operator-api-budget-list"><p class="operator-empty">표본을 수집하고 있습니다.</p></div>
+          </div>
+          <p id="system-budget-isolation" class="operator-usage-note"></p>
+          <div class="operator-usage-note">
+            <strong>복구 데이터 모드</strong>
+            <span id="system-recovery-status">현재 데이터 사용 중</span>
+            <button id="operator-recovery-toggle" type="button">last-known-good 사용</button>
+          </div>
+          <div class="operator-api-budget">
+            <div><strong>최근 30일 제한 요약</strong><span>하루 단위 저용량 집계</span></div>
+            <div id="system-quota-history" class="operator-api-budget-list"><p class="operator-empty">제한 이력을 확인하고 있습니다.</p></div>
+            <div><strong>원인별 누적</strong><span>Redis · Vercel · 외부 API · 절약모드</span></div>
+            <div id="system-quota-breakdown" class="operator-api-budget-list"><p class="operator-empty">원인별 이력을 확인하고 있습니다.</p></div>
+          </div>
+        </article>
+        <article class="operator-card operator-usage-card">
+          <header><h2>Vercel 사용량</h2><a href="https://vercel.com/gkzero0-9465/chunbong-fansite" target="_blank" rel="noopener">Vercel 열기 ↗</a></header>
+          <p>Fast Data Transfer, Edge Requests, Functions 실행량 같은 Vercel 상세 사용량은 숫자를 추정하지 않습니다. 전용 Usage 연동이 없는 동안에는 Vercel 대시보드의 공식 수치를 확인합니다.</p>
+          <div class="operator-usage-note"><strong>현재 운영자 센터에서 정확히 확인 가능</strong><span>실사용 방문자·세션·페이지뷰 · Production SHA · Git 동기화 · Redis/KV 키·메모리 · 핵심 API 응답시간 · Push · 인증 상태</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="operator-panel-security" role="tabpanel" aria-labelledby="operator-tab-security" data-operator-panel="security" hidden>
+      <article class="operator-card operator-security">
+        <header><h2>소유주 계정</h2></header>
+        <dl>
+          <div><dt>GitHub</dt><dd id="security-github">gkzero0-cmyk</dd></div>
+          <div><dt>이메일</dt><dd>등록됨 · 이메일 링크 인증</dd></div>
+          <div><dt>현재 인증</dt><dd id="security-provider">-</dd></div>
+          <div><dt>세션 만료</dt><dd id="security-expires">-</dd></div><div><dt>로그인 세션</dt><dd id="security-sessions">-</dd></div>
+        </dl>
+        <p>GitHub 또는 이메일 중 하나만 인증해도 동일한 소유주 권한으로 접속합니다. 운영자 API는 서버 세션이 없으면 데이터를 반환하지 않습니다.</p>
+        <div class="operator-session-section"><h3>활성 세션</h3><div id="operator-session-list" class="operator-session-list"></div></div>
+        <div class="operator-session-section"><div class="operator-section-title-row"><h3>최근 보안 활동</h3><button id="operator-security-refresh" type="button">새로고침</button></div><div id="operator-security-log" class="operator-event-list"><p class="operator-empty">보안 활동을 불러오고 있습니다.</p></div></div>
+        <button id="operator-logout-all" class="operator-danger" type="button">모든 기기에서 로그아웃</button>
+      </article>
+    </section>
+  </section>
+</main>
+<script src="history-data.js?v=6"></script>
+<script type="module" src="operator.js?v=8"></script>
+<script type="module" src="operator-redis-diagnostics.js?v=2"></script>
+</body>
+</html>
