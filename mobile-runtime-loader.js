@@ -19,7 +19,7 @@
     if(!mobileLike()||loaded||document.querySelector('script[data-mobile-site-runtime]'))return;
     loaded=true;addScript('mobile-site.js?v=3','data-mobile-site-runtime');
   };
-  if(document.body?.dataset?.page==='contents')addScript('official-wiki-guide.js?v=1','data-official-wiki-guide-runtime');
+  if(document.body?.dataset?.page==='contents')addScript('official-wiki-guide.js?v=2','data-official-wiki-guide-runtime');
   loadPolish();loadMobile();
   mobile.addEventListener?.('change',event=>{if(event.matches)loadMobile()});
   standalone.addEventListener?.('change',event=>{if(event.matches)loadMobile()});
