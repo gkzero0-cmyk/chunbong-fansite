@@ -16,7 +16,7 @@ test('shared header controls are prepared before idle phase',()=>{
 
 test('chunbong content hero uses supplied high resolution asset',()=>{
   const html=read('chunbong-contents.html');
-  assert.match(html,/chunbong-content-planning-hero-hq/);
+  assert.match(html,/\/assets\/chunbong-content-hero-hq\.avif/);
   assert.doesNotMatch(html,/e_gen_restore/);
   assert.doesNotMatch(html,/v1790884100\/chunbong-content-planning-hero\.webp/);
 });
