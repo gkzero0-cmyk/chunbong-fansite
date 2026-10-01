@@ -10,10 +10,12 @@ const {
   repairPublicArchiveItem
 }=require('../lib/chunbong-content-browser-meta');
 
-test('SOOP 기본 프로필/기본 SVG 이미지는 대표 이미지 후보에서 제외한다',()=>{
+test('SOOP 기본 프로필/로딩 이미지는 대표 이미지 후보에서 제외한다',()=>{
   assert.equal(isGenericSoopImage('https://res.sooplive.com/images/svg/thumb_profile.svg'),true);
+  assert.equal(isGenericSoopImage('https://res.sooplive.com/images/channel/ko_KR/ImageLoadingLight.gif'),true);
   assert.deepEqual(sanitizeSoopImages([
     'https://res.sooplive.com/images/svg/thumb_profile.svg',
+    'https://res.sooplive.com/images/channel/ko_KR/ImageLoadingLight.gif',
     'https://stimg.sooplive.com/NORMAL_BBS/3/24883333/example.png'
   ]),['https://stimg.sooplive.com/NORMAL_BBS/3/24883333/example.png']);
 });
