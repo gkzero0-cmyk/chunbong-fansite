@@ -24,8 +24,8 @@ test('posts and sources load captured or public SOOP body text on demand inside 
   const loader=read('mobile-runtime-loader.js');
   assert.match(js,/data-archive-source-reader/);
   assert.match(js,/sourcePreview=1/);
-  assert.match(js,/preview\.body/);
-  assert.match(js,/preview\.images/);
+  assert.match(js,/preview\?\.body/);
+  assert.match(js,/preview\?\.images/);
   assert.match(js,/원문 열기/);
   assert.match(manage,/buildPublicSourcePreview/);
   assert.match(manage,/BROWSER_IMPORT_PREFIX/);
