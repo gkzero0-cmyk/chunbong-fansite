@@ -1,5 +1,6 @@
 (function(){
 'use strict';
+if(!document.querySelector('link[data-official-wiki-guide-style]')){const link=document.createElement('link');link.rel='stylesheet';link.href='official-wiki-guide.css?v=1';link.dataset.officialWikiGuideStyle='true';document.head.appendChild(link)}
 const FEED='https://server1.wiki.xn--9i1bk7xhlfi8hzzf.com/api/fansite-guide';
 let feedPromise=null;
 const docs=new Map();
