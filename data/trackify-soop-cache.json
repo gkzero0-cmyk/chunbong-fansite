@@ -1,43 +1,43 @@
 {
   "version": 1,
-  "capturedAt": "2026-09-30T12:28:24.354Z",
+  "capturedAt": "2026-10-01T13:06:04.236Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 31183,
-    "fanclubCount": 7881,
-    "subscriberCount": 59,
+    "followerCount": 32945,
+    "fanclubCount": 7964,
+    "subscriberCount": 60,
     "supporterCount": 25,
-    "averageViewers": 93,
-    "maxViewers": 524,
-    "airtimeMinutes": 16168,
-    "viewershipHours": 25089,
-    "cumulativeUpCount": 81967,
-    "totalAirtimeMinutes": 631132,
-    "monthlyStarCount": 155425,
-    "starsPerHour": 577,
-    "monthlySupporterCount": 483,
-    "monthlyChatCount": 66691,
+    "averageViewers": 182,
+    "maxViewers": 358,
+    "airtimeMinutes": 1227,
+    "viewershipHours": 3719,
+    "cumulativeUpCount": 82566,
+    "totalAirtimeMinutes": 632239,
+    "monthlyStarCount": 84661,
+    "starsPerHour": 4140,
+    "monthlySupporterCount": 104,
+    "monthlyChatCount": 3562,
     "monthlyMuteCount": 6,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-09-28T13:38:11",
+    "latestBroadcastDate": "2026-10-01T13:24:11",
     "categories": [
       {
         "name": "버추얼",
-        "minutes": 11750,
-        "streamCount": 28,
-        "sharePercent": 59.3
+        "minutes": 11424,
+        "streamCount": 27,
+        "sharePercent": 55.5
       },
       {
         "name": "마인크래프트",
-        "minutes": 7583,
-        "streamCount": 12,
-        "sharePercent": 38.3
+        "minutes": 8690,
+        "streamCount": 15,
+        "sharePercent": 42.2
       },
       {
         "name": "오버워치",
         "minutes": 482,
         "streamCount": 2,
-        "sharePercent": 2.4
+        "sharePercent": 2.3
       }
     ]
   },
@@ -12077,6 +12077,108 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/297436777"
+    },
+    {
+      "id": "trackify-297487053",
+      "broadcastId": "297487053",
+      "date": "2026-09-30",
+      "startedAt": "2026-09-30T17:17:43+09:00",
+      "endedAt": "2026-09-30T21:29:40+09:00",
+      "durationMinutes": 252,
+      "averageViewers": 337,
+      "maxViewers": 404,
+      "viewerSampleCount": 50,
+      "uniqueViewers": null,
+      "starCount": 34910,
+      "supporterCount": 67,
+      "chatCount": 1751,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "그냥서버:적자생존 오픈합니다.",
+      "categories": [
+        {
+          "id": "00040017",
+          "name": "마인크래프트",
+          "minutes": 252,
+          "sampleCount": 50,
+          "averageViewers": 337,
+          "maxViewers": 404
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297487053"
+    },
+    {
+      "id": "trackify-297496135",
+      "broadcastId": "297496135",
+      "date": "2026-09-30",
+      "startedAt": "2026-09-30T21:29:41+09:00",
+      "endedAt": "2026-09-30T21:30:13+09:00",
+      "durationMinutes": 1,
+      "averageViewers": 20,
+      "maxViewers": 25,
+      "viewerSampleCount": 1,
+      "uniqueViewers": null,
+      "starCount": null,
+      "supporterCount": null,
+      "chatCount": 1,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "그냥서버:적자생존 오픈합니다.",
+      "categories": [
+        {
+          "id": "00040017",
+          "name": "마인크래프트",
+          "minutes": 1,
+          "sampleCount": 1,
+          "averageViewers": 20,
+          "maxViewers": 25
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297496135"
+    },
+    {
+      "id": "trackify-297496239",
+      "broadcastId": "297496239",
+      "date": "2026-09-30",
+      "startedAt": "2026-09-30T21:31:23+09:00",
+      "endedAt": "2026-10-01T11:45:54+09:00",
+      "durationMinutes": 855,
+      "averageViewers": 240,
+      "maxViewers": 534,
+      "viewerSampleCount": 171,
+      "uniqueViewers": null,
+      "starCount": 72441,
+      "supporterCount": 86,
+      "chatCount": 3355,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "그냥서버 2차입주 방송국 공지 참고해주세요",
+      "categories": [
+        {
+          "id": "00040017",
+          "name": "마인크래프트",
+          "minutes": 855,
+          "sampleCount": 171,
+          "averageViewers": 240,
+          "maxViewers": 534
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297496239"
     }
   ]
 }

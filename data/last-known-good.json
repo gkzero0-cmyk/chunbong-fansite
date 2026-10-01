@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "capturedAt": "2026-09-30T12:28:41.708Z",
+  "capturedAt": "2026-10-01T13:06:23.865Z",
   "sources": [
     "data/chunbong-data-history.json",
     "data/trackify-soop-cache.json",
@@ -11,28 +11,28 @@
   ],
   "integrity": {
     "data/chunbong-data-history.json": {
-      "rows": 28,
-      "bytes": 15273,
-      "sha256": "5397fdca8498d376c73679cfd3da9e8702a4f27da2dfac9a7c662e68007e4cb7",
-      "latestAt": "2026-09-30T12:28:38.468Z"
+      "rows": 29,
+      "bytes": 15826,
+      "sha256": "552ac8797fe502c4cdf72b4159deee035da74e546ab7c7cebc6442ab7879a001",
+      "latestAt": "2026-10-01T13:06:20.033Z"
     },
     "data/trackify-soop-cache.json": {
-      "rows": 354,
-      "bytes": 248679,
-      "sha256": "107edec5ff17b8c8e39e6206eaa9f54bce4dc2d30747256ce37336cc19f1715f",
-      "latestAt": "2026-09-30T12:28:24.354Z"
+      "rows": 357,
+      "bytes": 250811,
+      "sha256": "9e32042ac0281817cfe627669b5edbadd1ad116dd2a9e68292347fef133205ea",
+      "latestAt": "2026-10-01T13:06:04.236Z"
     },
     "data/soop-follower-history.json": {
-      "rows": 350,
-      "bytes": 63814,
-      "sha256": "8d976370ad66002012c6553dc413a9097da85278cb62475ff21ba91766d81cb9",
-      "latestAt": "2026-09-30T12:28:40.851Z"
+      "rows": 351,
+      "bytes": 64050,
+      "sha256": "e49eacab398e9d746fe2b72211f72a53d66711eaba1221559dedeaaf0da4d1f9",
+      "latestAt": "2026-10-01T13:06:23.143Z"
     },
     "data/youtube-engagement-cache.json": {
       "rows": 214,
-      "bytes": 56036,
-      "sha256": "bcb286989a1141f18edd2d590f8e9c9b23a8ec022c12d2f1ea0271cd825be560",
-      "latestAt": "2026-09-30T12:28:38.009Z"
+      "bytes": 56516,
+      "sha256": "c2a6829422826b996b3b7efbc8e5ca441f16a8a107ef03ec7363146f0dda9eaa",
+      "latestAt": "2026-10-01T13:06:19.095Z"
     },
     "data/soop-external-history.json": {
       "rows": 0,
@@ -41,9 +41,9 @@
       "latestAt": null
     },
     "data/soop-sessions.json": {
-      "rows": 9,
-      "bytes": 5374,
-      "sha256": "85b8cc78fff73446a49d80e073375de3cb78ab9bb842bf0bf9b0a66dac6ccfd7",
+      "rows": 8,
+      "bytes": 4603,
+      "sha256": "8aa1f3c57f94f77fa490085b088a3571e92adce04db9cb2dd30e3a26eeb2f3d9",
       "latestAt": "2026-09-28T04:38:11.000Z"
     }
   },
@@ -850,49 +850,78 @@
             "videoCount": 214,
             "recentUploadCount": 13
           }
+        },
+        {
+          "date": "2026-10-01",
+          "capturedAt": "2026-10-01T13:06:20.033Z",
+          "soop": {
+            "live": true,
+            "followerCount": 32947,
+            "fanclubCount": 7964,
+            "measuredTotalMinutes": 257874,
+            "totalAirtimeMinutes": 632239,
+            "monthAverageViewers": 182,
+            "monthMaxViewers": 358,
+            "subscriberCount": 60,
+            "supporterCount": 25,
+            "monthUniqueViewers": null,
+            "viewershipHours": 3719,
+            "cumulativeUsers": null,
+            "cumulativeUpCount": 82566,
+            "monthlyVodCount": 1,
+            "monthlyVodMinutes": null,
+            "monthlyCatchCount": 0,
+            "monthlyClipCount": 6
+          },
+          "youtube": {
+            "subscriberCount": 2720,
+            "viewCount": 7008564,
+            "videoCount": 214,
+            "recentUploadCount": 0
+          }
         }
       ]
     },
     "data/trackify-soop-cache.json": {
       "version": 1,
-      "capturedAt": "2026-09-30T12:28:24.354Z",
+      "capturedAt": "2026-10-01T13:06:04.236Z",
       "stats": {
         "source": "trackify",
-        "followerCount": 31183,
-        "fanclubCount": 7881,
-        "subscriberCount": 59,
+        "followerCount": 32945,
+        "fanclubCount": 7964,
+        "subscriberCount": 60,
         "supporterCount": 25,
-        "averageViewers": 93,
-        "maxViewers": 524,
-        "airtimeMinutes": 16168,
-        "viewershipHours": 25089,
-        "cumulativeUpCount": 81967,
-        "totalAirtimeMinutes": 631132,
-        "monthlyStarCount": 155425,
-        "starsPerHour": 577,
-        "monthlySupporterCount": 483,
-        "monthlyChatCount": 66691,
+        "averageViewers": 182,
+        "maxViewers": 358,
+        "airtimeMinutes": 1227,
+        "viewershipHours": 3719,
+        "cumulativeUpCount": 82566,
+        "totalAirtimeMinutes": 632239,
+        "monthlyStarCount": 84661,
+        "starsPerHour": 4140,
+        "monthlySupporterCount": 104,
+        "monthlyChatCount": 3562,
         "monthlyMuteCount": 6,
         "stationOpenedAt": "2022-09-29T14:58:14",
-        "latestBroadcastDate": "2026-09-28T13:38:11",
+        "latestBroadcastDate": "2026-10-01T13:24:11",
         "categories": [
           {
             "name": "버추얼",
-            "minutes": 11750,
-            "streamCount": 28,
-            "sharePercent": 59.3
+            "minutes": 11424,
+            "streamCount": 27,
+            "sharePercent": 55.5
           },
           {
             "name": "마인크래프트",
-            "minutes": 7583,
-            "streamCount": 12,
-            "sharePercent": 38.3
+            "minutes": 8690,
+            "streamCount": 15,
+            "sharePercent": 42.2
           },
           {
             "name": "오버워치",
             "minutes": 482,
             "streamCount": 2,
-            "sharePercent": 2.4
+            "sharePercent": 2.3
           }
         ]
       },
@@ -12932,6 +12961,108 @@
           ],
           "measurement": "trackify-public-api",
           "source": "https://www.trackify.kr/soop/broadcast/297436777"
+        },
+        {
+          "id": "trackify-297487053",
+          "broadcastId": "297487053",
+          "date": "2026-09-30",
+          "startedAt": "2026-09-30T17:17:43+09:00",
+          "endedAt": "2026-09-30T21:29:40+09:00",
+          "durationMinutes": 252,
+          "averageViewers": 337,
+          "maxViewers": 404,
+          "viewerSampleCount": 50,
+          "uniqueViewers": null,
+          "starCount": 34910,
+          "supporterCount": 67,
+          "chatCount": 1751,
+          "followerStart": null,
+          "followerEnd": null,
+          "followerDelta": null,
+          "fanclubStart": null,
+          "fanclubEnd": null,
+          "fanclubDelta": null,
+          "title": "그냥서버:적자생존 오픈합니다.",
+          "categories": [
+            {
+              "id": "00040017",
+              "name": "마인크래프트",
+              "minutes": 252,
+              "sampleCount": 50,
+              "averageViewers": 337,
+              "maxViewers": 404
+            }
+          ],
+          "measurement": "trackify-public-api",
+          "source": "https://www.trackify.kr/soop/broadcast/297487053"
+        },
+        {
+          "id": "trackify-297496135",
+          "broadcastId": "297496135",
+          "date": "2026-09-30",
+          "startedAt": "2026-09-30T21:29:41+09:00",
+          "endedAt": "2026-09-30T21:30:13+09:00",
+          "durationMinutes": 1,
+          "averageViewers": 20,
+          "maxViewers": 25,
+          "viewerSampleCount": 1,
+          "uniqueViewers": null,
+          "starCount": null,
+          "supporterCount": null,
+          "chatCount": 1,
+          "followerStart": null,
+          "followerEnd": null,
+          "followerDelta": null,
+          "fanclubStart": null,
+          "fanclubEnd": null,
+          "fanclubDelta": null,
+          "title": "그냥서버:적자생존 오픈합니다.",
+          "categories": [
+            {
+              "id": "00040017",
+              "name": "마인크래프트",
+              "minutes": 1,
+              "sampleCount": 1,
+              "averageViewers": 20,
+              "maxViewers": 25
+            }
+          ],
+          "measurement": "trackify-public-api",
+          "source": "https://www.trackify.kr/soop/broadcast/297496135"
+        },
+        {
+          "id": "trackify-297496239",
+          "broadcastId": "297496239",
+          "date": "2026-09-30",
+          "startedAt": "2026-09-30T21:31:23+09:00",
+          "endedAt": "2026-10-01T11:45:54+09:00",
+          "durationMinutes": 855,
+          "averageViewers": 240,
+          "maxViewers": 534,
+          "viewerSampleCount": 171,
+          "uniqueViewers": null,
+          "starCount": 72441,
+          "supporterCount": 86,
+          "chatCount": 3355,
+          "followerStart": null,
+          "followerEnd": null,
+          "followerDelta": null,
+          "fanclubStart": null,
+          "fanclubEnd": null,
+          "fanclubDelta": null,
+          "title": "그냥서버 2차입주 방송국 공지 참고해주세요",
+          "categories": [
+            {
+              "id": "00040017",
+              "name": "마인크래프트",
+              "minutes": 855,
+              "sampleCount": 171,
+              "averageViewers": 240,
+              "maxViewers": 534
+            }
+          ],
+          "measurement": "trackify-public-api",
+          "source": "https://www.trackify.kr/soop/broadcast/297496239"
         }
       ]
     },
@@ -16345,7 +16476,7 @@
           "followerCount": 29769,
           "fanclubCount": 7595,
           "source": "trackify",
-          "capturedAt": "2026-09-30T12:28:40.851Z",
+          "capturedAt": "2026-10-01T13:06:23.143Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16357,7 +16488,7 @@
           "followerCount": 29775,
           "fanclubCount": 7596,
           "source": "trackify",
-          "capturedAt": "2026-09-30T12:28:40.851Z",
+          "capturedAt": "2026-10-01T13:06:23.143Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16369,7 +16500,7 @@
           "followerCount": 29730,
           "fanclubCount": 7597,
           "source": "trackify",
-          "capturedAt": "2026-09-30T12:28:40.851Z",
+          "capturedAt": "2026-10-01T13:06:23.143Z",
           "confidence": 1,
           "fieldSources": {
             "followerCount": "trackify",
@@ -16699,12 +16830,24 @@
             "followerCount": "fan-site-snapshot",
             "fanclubCount": "fan-site-snapshot"
           }
+        },
+        {
+          "date": "2026-10-01",
+          "followerCount": 32947,
+          "fanclubCount": 7964,
+          "source": "fan-site-snapshot",
+          "capturedAt": "2026-10-01T13:06:20.033Z",
+          "confidence": 2,
+          "fieldSources": {
+            "followerCount": "fan-site-snapshot",
+            "fanclubCount": "fan-site-snapshot"
+          }
         }
       ]
     },
     "data/youtube-engagement-cache.json": {
       "version": 1,
-      "capturedAt": "2026-09-30T12:28:38.009Z",
+      "capturedAt": "2026-10-01T13:06:19.095Z",
       "source": "https://www.youtube.com/@%EC%B6%98%EB%B4%89TV",
       "itemCount": 214,
       "items": [
@@ -16713,9 +16856,9 @@
           "kind": "shorts",
           "title": "알 수 없는 엄마의 상견례 실수",
           "publishedAt": "2026-09-19T00:00:00.000Z",
-          "viewCount": 5131,
+          "viewCount": 5133,
           "commentCount": 14,
-          "metricCheckedAt": "2026-09-30T12:28:25.729Z",
+          "metricCheckedAt": "2026-10-01T13:06:05.865Z",
           "link": "https://www.youtube.com/shorts/UR-rdrOqfVU"
         },
         {
@@ -16723,9 +16866,9 @@
           "kind": "shorts",
           "title": "영양학적 최악의 간식",
           "publishedAt": "2026-09-18T00:00:00.000Z",
-          "viewCount": 23067,
+          "viewCount": 23068,
           "commentCount": 11,
-          "metricCheckedAt": "2026-09-30T12:28:25.750Z",
+          "metricCheckedAt": "2026-10-01T13:06:06.093Z",
           "link": "https://www.youtube.com/shorts/sVtO1JLL7Mg"
         },
         {
@@ -16733,9 +16876,9 @@
           "kind": "shorts",
           "title": "여사친이랑 우정키스 한 남친",
           "publishedAt": "2026-09-17T00:00:00.000Z",
-          "viewCount": 1459,
+          "viewCount": 1462,
           "commentCount": 5,
-          "metricCheckedAt": "2026-09-30T12:28:25.745Z",
+          "metricCheckedAt": "2026-10-01T13:06:05.894Z",
           "link": "https://www.youtube.com/shorts/tAiux8aGWs8"
         },
         {
@@ -16743,9 +16886,9 @@
           "kind": "shorts",
           "title": "문신한게 욕먹을 짓이냐는 유부녀",
           "publishedAt": "2026-09-16T00:00:00.000Z",
-          "viewCount": 6922,
+          "viewCount": 6924,
           "commentCount": 28,
-          "metricCheckedAt": "2026-09-30T12:28:25.882Z",
+          "metricCheckedAt": "2026-10-01T13:06:06.296Z",
           "link": "https://www.youtube.com/shorts/kRolU27DwjE"
         },
         {
@@ -16755,7 +16898,7 @@
           "publishedAt": "2026-09-15T00:00:00.000Z",
           "viewCount": 10628,
           "commentCount": 25,
-          "metricCheckedAt": "2026-09-30T12:28:26.743Z",
+          "metricCheckedAt": "2026-10-01T13:06:06.719Z",
           "link": "https://www.youtube.com/shorts/bevaLtagoUY"
         },
         {
@@ -16763,9 +16906,9 @@
           "kind": "shorts",
           "title": "50만원씩 30개월 갚는다는 아내의 친오빠",
           "publishedAt": "2026-09-13T00:00:00.000Z",
-          "viewCount": 15026,
+          "viewCount": 15051,
           "commentCount": 38,
-          "metricCheckedAt": "2026-09-30T12:28:26.796Z",
+          "metricCheckedAt": "2026-10-01T13:06:07.216Z",
           "link": "https://www.youtube.com/shorts/_Nl_imSHTzk"
         },
         {
@@ -16773,9 +16916,9 @@
           "kind": "shorts",
           "title": "성의없는 배달음식점",
           "publishedAt": "2026-09-12T00:00:00.000Z",
-          "viewCount": 94106,
+          "viewCount": 94105,
           "commentCount": 52,
-          "metricCheckedAt": "2026-09-30T12:28:26.912Z",
+          "metricCheckedAt": "2026-10-01T13:06:07.365Z",
           "link": "https://www.youtube.com/shorts/oC23MsS0jb0"
         },
         {
@@ -16785,7 +16928,7 @@
           "publishedAt": "2026-09-11T00:00:00.000Z",
           "viewCount": 2240,
           "commentCount": 6,
-          "metricCheckedAt": "2026-09-30T12:28:26.637Z",
+          "metricCheckedAt": "2026-10-01T13:06:07.071Z",
           "link": "https://www.youtube.com/shorts/age2vHsla-E"
         },
         {
@@ -16795,7 +16938,7 @@
           "publishedAt": "2026-09-08T00:00:00.000Z",
           "viewCount": 1434,
           "commentCount": 3,
-          "metricCheckedAt": "2026-09-30T12:28:27.356Z",
+          "metricCheckedAt": "2026-10-01T13:06:07.711Z",
           "link": "https://www.youtube.com/shorts/vPrIZRm1EM4"
         },
         {
@@ -16803,9 +16946,9 @@
           "kind": "shorts",
           "title": "앞 차 전화 안받을 때 꿀팁",
           "publishedAt": "2026-09-06T00:00:00.000Z",
-          "viewCount": 3002,
+          "viewCount": 3005,
           "commentCount": 3,
-          "metricCheckedAt": "2026-09-30T12:28:27.592Z",
+          "metricCheckedAt": "2026-10-01T13:06:07.912Z",
           "link": "https://www.youtube.com/shorts/SypNo7aFYIc"
         },
         {
@@ -16813,9 +16956,9 @@
           "kind": "shorts",
           "title": "힘든 결정을 선택한 여자친구",
           "publishedAt": "2026-09-05T00:00:00.000Z",
-          "viewCount": 33834,
+          "viewCount": 33854,
           "commentCount": 31,
-          "metricCheckedAt": "2026-09-30T12:28:27.742Z",
+          "metricCheckedAt": "2026-10-01T13:06:08.237Z",
           "link": "https://www.youtube.com/shorts/5FhqgCM05UY"
         },
         {
@@ -16825,7 +16968,7 @@
           "publishedAt": "2026-09-02T00:00:00.000Z",
           "viewCount": 2359,
           "commentCount": 6,
-          "metricCheckedAt": "2026-09-30T12:28:27.729Z",
+          "metricCheckedAt": "2026-10-01T13:06:08.355Z",
           "link": "https://www.youtube.com/shorts/r86mgXf7GLo"
         },
         {
@@ -16835,7 +16978,7 @@
           "publishedAt": "2026-09-01T00:00:00.000Z",
           "viewCount": 45965,
           "commentCount": 284,
-          "metricCheckedAt": "2026-09-30T12:28:30.432Z",
+          "metricCheckedAt": "2026-10-01T13:06:11.517Z",
           "link": "https://www.youtube.com/shorts/lK7z53JgErc"
         },
         {
@@ -16843,9 +16986,9 @@
           "kind": "shorts",
           "title": "3억밖에 못모은 남자친구 파혼 고민하는 블라녀",
           "publishedAt": "2026-08-31T00:00:00.000Z",
-          "viewCount": 535,
+          "viewCount": 540,
           "commentCount": 6,
-          "metricCheckedAt": "2026-09-30T12:28:28.439Z",
+          "metricCheckedAt": "2026-10-01T13:06:08.773Z",
           "link": "https://www.youtube.com/shorts/mu8lf9RKAC4"
         },
         {
@@ -16853,9 +16996,9 @@
           "kind": "shorts",
           "title": "알고보니 성희롱이라는 단어",
           "publishedAt": "2026-08-19T00:00:00.000Z",
-          "viewCount": 14445,
+          "viewCount": 14446,
           "commentCount": 73,
-          "metricCheckedAt": "2026-09-30T12:28:28.883Z",
+          "metricCheckedAt": "2026-10-01T13:06:09.622Z",
           "link": "https://www.youtube.com/shorts/Bp3cG3Ck-LI"
         },
         {
@@ -16863,9 +17006,9 @@
           "kind": "shorts",
           "title": "회사에서 일하던 청년이 눈물을 흘린 이유",
           "publishedAt": "2026-08-15T00:00:00.000Z",
-          "viewCount": 31751,
+          "viewCount": 31753,
           "commentCount": 19,
-          "metricCheckedAt": "2026-09-30T12:28:28.556Z",
+          "metricCheckedAt": "2026-10-01T13:06:09.290Z",
           "link": "https://www.youtube.com/shorts/TP5KfjKL7WE"
         },
         {
@@ -16875,7 +17018,7 @@
           "publishedAt": "2026-08-14T00:00:00.000Z",
           "viewCount": 4446,
           "commentCount": 24,
-          "metricCheckedAt": "2026-09-30T12:28:29.480Z",
+          "metricCheckedAt": "2026-10-01T13:06:09.779Z",
           "link": "https://www.youtube.com/shorts/u4E9O18C-10"
         },
         {
@@ -16885,7 +17028,7 @@
           "publishedAt": "2026-08-13T00:00:00.000Z",
           "viewCount": 8547,
           "commentCount": 2,
-          "metricCheckedAt": "2026-09-30T12:28:29.404Z",
+          "metricCheckedAt": "2026-10-01T13:06:10.390Z",
           "link": "https://www.youtube.com/shorts/2s0mjijmiU0"
         },
         {
@@ -16895,7 +17038,7 @@
           "publishedAt": "2026-08-12T00:00:00.000Z",
           "viewCount": 38590,
           "commentCount": 225,
-          "metricCheckedAt": "2026-09-30T12:28:31.430Z",
+          "metricCheckedAt": "2026-10-01T13:06:12.729Z",
           "link": "https://www.youtube.com/shorts/apNSU7Ko2kk"
         },
         {
@@ -16905,7 +17048,7 @@
           "publishedAt": "2026-08-11T00:00:00.000Z",
           "viewCount": 4471,
           "commentCount": 6,
-          "metricCheckedAt": "2026-09-30T12:28:30.375Z",
+          "metricCheckedAt": "2026-10-01T13:06:10.737Z",
           "link": "https://www.youtube.com/shorts/Tq-bEZOyf5A"
         },
         {
@@ -16913,9 +17056,9 @@
           "kind": "shorts",
           "title": "로또 1등 당첨되는 확률 완벽 정리",
           "publishedAt": "2026-08-10T00:00:00.000Z",
-          "viewCount": 31773,
+          "viewCount": 31775,
           "commentCount": 15,
-          "metricCheckedAt": "2026-09-30T12:28:30.322Z",
+          "metricCheckedAt": "2026-10-01T13:06:11.338Z",
           "link": "https://www.youtube.com/shorts/haJ9y0pi9mw"
         },
         {
@@ -16925,7 +17068,7 @@
           "publishedAt": "2026-08-09T00:00:00.000Z",
           "viewCount": 24454,
           "commentCount": 48,
-          "metricCheckedAt": "2026-09-30T12:28:31.707Z",
+          "metricCheckedAt": "2026-10-01T13:06:12.068Z",
           "link": "https://www.youtube.com/shorts/sSUVf_aD3MI"
         },
         {
@@ -16935,7 +17078,7 @@
           "publishedAt": "2026-08-08T00:00:00.000Z",
           "viewCount": 20960,
           "commentCount": 97,
-          "metricCheckedAt": "2026-09-30T12:28:32.384Z",
+          "metricCheckedAt": "2026-10-01T13:06:13.068Z",
           "link": "https://www.youtube.com/shorts/YIiO-maV_-I"
         },
         {
@@ -16945,7 +17088,7 @@
           "publishedAt": "2026-08-07T00:00:00.000Z",
           "viewCount": 2469,
           "commentCount": 9,
-          "metricCheckedAt": "2026-09-30T12:28:31.247Z",
+          "metricCheckedAt": "2026-10-01T13:06:12.398Z",
           "link": "https://www.youtube.com/shorts/CpjbVV-3j0Y"
         },
         {
@@ -16955,7 +17098,7 @@
           "publishedAt": "2026-08-06T00:00:00.000Z",
           "viewCount": 5199,
           "commentCount": 5,
-          "metricCheckedAt": "2026-09-30T12:28:32.215Z",
+          "metricCheckedAt": "2026-10-01T13:06:13.125Z",
           "link": "https://www.youtube.com/shorts/OOxRGn_kIkE"
         },
         {
@@ -16963,9 +17106,9 @@
           "kind": "videos",
           "title": "직감은 이미 답을 알고 있다｜THE HIGH PRIESTESS",
           "publishedAt": "2026-08-05T00:00:00.000Z",
-          "viewCount": 104,
+          "viewCount": 105,
           "commentCount": 2,
-          "metricCheckedAt": "2026-09-30T12:28:32.141Z",
+          "metricCheckedAt": "2026-10-01T13:06:13.323Z",
           "link": "https://www.youtube.com/watch?v=8rnQKGwa1qw"
         },
         {
@@ -16975,7 +17118,7 @@
           "publishedAt": "2026-08-03T00:00:00.000Z",
           "viewCount": 7710,
           "commentCount": 16,
-          "metricCheckedAt": "2026-09-30T12:28:32.565Z",
+          "metricCheckedAt": "2026-10-01T13:06:13.537Z",
           "link": "https://www.youtube.com/shorts/hOoMSGYAFX0"
         },
         {
@@ -16985,7 +17128,7 @@
           "publishedAt": "2026-08-01T00:00:00.000Z",
           "viewCount": 66,
           "commentCount": 1,
-          "metricCheckedAt": "2026-09-30T12:28:32.867Z",
+          "metricCheckedAt": "2026-10-01T13:06:13.909Z",
           "link": "https://www.youtube.com/watch?v=gJKw13B7ydc"
         },
         {
@@ -16995,7 +17138,7 @@
           "publishedAt": "2026-08-01T00:00:00.000Z",
           "viewCount": 6853,
           "commentCount": 6,
-          "metricCheckedAt": "2026-09-30T12:28:32.962Z",
+          "metricCheckedAt": "2026-10-01T13:06:13.934Z",
           "link": "https://www.youtube.com/shorts/wo7zsSFXuCs"
         },
         {
@@ -17005,7 +17148,7 @@
           "publishedAt": "2026-07-31T00:00:00.000Z",
           "viewCount": 19035,
           "commentCount": 12,
-          "metricCheckedAt": "2026-09-30T12:28:33.166Z",
+          "metricCheckedAt": "2026-10-01T13:06:14.242Z",
           "link": "https://www.youtube.com/shorts/-Y22E0uHheE"
         },
         {
@@ -17013,7 +17156,7 @@
           "kind": "videos",
           "title": "타로 0번부터 시작합니다｜버츄얼 스트리머 타로 클래스 1화 ‘THE FOOL’",
           "publishedAt": "2026-07-29T00:00:00.000Z",
-          "viewCount": 217,
+          "viewCount": 223,
           "commentCount": 1,
           "metricCheckedAt": "2026-09-28T14:57:55.896Z",
           "link": "https://www.youtube.com/watch?v=b-jlKXqLakU"
@@ -18615,7 +18758,7 @@
           "publishedAt": "2025-09-09T00:00:00.000Z",
           "viewCount": 1932,
           "commentCount": 0,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:14.501Z",
           "link": "https://www.youtube.com/shorts/tiq0tGlgcY4"
         },
         {
@@ -18625,7 +18768,7 @@
           "publishedAt": "2025-09-05T00:00:00.000Z",
           "viewCount": 348,
           "commentCount": 1,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:14.753Z",
           "link": "https://www.youtube.com/watch?v=rpVv2wr0p20"
         },
         {
@@ -18635,7 +18778,7 @@
           "publishedAt": "2025-09-04T00:00:00.000Z",
           "viewCount": 5096,
           "commentCount": 5,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:14.868Z",
           "link": "https://www.youtube.com/shorts/RCuO1hKpMm8"
         },
         {
@@ -18643,9 +18786,9 @@
           "kind": "videos",
           "title": "범죄가 넘쳐나는 도시에서 경찰이 되었습니다. [여우도시 EP.01]",
           "publishedAt": "2025-08-31T00:00:00.000Z",
-          "viewCount": 1100,
+          "viewCount": 1116,
           "commentCount": 3,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:15.299Z",
           "link": "https://www.youtube.com/watch?v=YHUzyOVY1lk"
         },
         {
@@ -18653,9 +18796,9 @@
           "kind": "shorts",
           "title": "이게 경찰인지 수금도우미인지..",
           "publishedAt": "2025-08-30T00:00:00.000Z",
-          "viewCount": 20335,
+          "viewCount": 20337,
           "commentCount": 2,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:15.397Z",
           "link": "https://www.youtube.com/shorts/n41iZLowf-8"
         },
         {
@@ -18665,7 +18808,7 @@
           "publishedAt": "2025-08-25T00:00:00.000Z",
           "viewCount": 3137,
           "commentCount": 1,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:15.535Z",
           "link": "https://www.youtube.com/shorts/h40ApHnwskE"
         },
         {
@@ -18673,9 +18816,9 @@
           "kind": "shorts",
           "title": "[여우도시] 노숙자 간호사 #shorts",
           "publishedAt": "2025-08-24T00:00:00.000Z",
-          "viewCount": 13043,
+          "viewCount": 13050,
           "commentCount": 1,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:15.676Z",
           "link": "https://www.youtube.com/shorts/UErplAgfCUQ"
         },
         {
@@ -18685,7 +18828,7 @@
           "publishedAt": "2025-08-22T00:00:00.000Z",
           "viewCount": 13598,
           "commentCount": 3,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:16.266Z",
           "link": "https://www.youtube.com/shorts/dhnS2N9YtTg"
         },
         {
@@ -18693,9 +18836,9 @@
           "kind": "videos",
           "title": "레오펠 OST. 다른 하늘 아래서 inst LEOPEL OST inst.",
           "publishedAt": "2025-07-05T00:00:00.000Z",
-          "viewCount": 1900,
+          "viewCount": 1942,
           "commentCount": 8,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:16.411Z",
           "link": "https://www.youtube.com/watch?v=pwXW_eQ71Vo"
         },
         {
@@ -18703,9 +18846,9 @@
           "kind": "videos",
           "title": "레오펠 마지막 콘서트 풀영상 FULL VIDEO LEOPEL CONCERT",
           "publishedAt": "2025-07-04T00:00:00.000Z",
-          "viewCount": 15000,
+          "viewCount": 15409,
           "commentCount": 31,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:16.734Z",
           "link": "https://www.youtube.com/watch?v=Brd9bMWQcGQ"
         },
         {
@@ -18713,9 +18856,9 @@
           "kind": "videos",
           "title": "레오펠 OST. 다른 하늘 아래서",
           "publishedAt": "2025-05-14T00:00:00.000Z",
-          "viewCount": 14000,
+          "viewCount": 14956,
           "commentCount": 36,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:17.178Z",
           "link": "https://www.youtube.com/watch?v=2nolyARsAiA"
         },
         {
@@ -18723,9 +18866,9 @@
           "kind": "videos",
           "title": "레오펠 서버 예고편 PV",
           "publishedAt": "2025-05-10T00:00:00.000Z",
-          "viewCount": 6700,
+          "viewCount": 6778,
           "commentCount": 8,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:17.196Z",
           "link": "https://www.youtube.com/watch?v=WnVi9rVTrIU"
         },
         {
@@ -18735,7 +18878,7 @@
           "publishedAt": "2025-04-04T00:00:00.000Z",
           "viewCount": 2354,
           "commentCount": 1,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:17.318Z",
           "link": "https://www.youtube.com/shorts/NcXd-a7O9o0"
         },
         {
@@ -18745,7 +18888,7 @@
           "publishedAt": "2025-03-30T00:00:00.000Z",
           "viewCount": 1177,
           "commentCount": 1,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:17.538Z",
           "link": "https://www.youtube.com/shorts/id1M7L4jiGU"
         },
         {
@@ -18753,9 +18896,9 @@
           "kind": "videos",
           "title": "릴트리버와 주냥이의 궁합..릴파님의 사주 VS 타로 (2화)",
           "publishedAt": "2025-03-06T00:00:00.000Z",
-          "viewCount": 3600,
+          "viewCount": 3627,
           "commentCount": 1,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:17.949Z",
           "link": "https://www.youtube.com/watch?v=WsgH3g7Yv98"
         },
         {
@@ -18765,7 +18908,7 @@
           "publishedAt": "2025-02-26T00:00:00.000Z",
           "viewCount": 1330,
           "commentCount": 0,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:18.080Z",
           "link": "https://www.youtube.com/shorts/kgB3340sfzg"
         },
         {
@@ -18773,9 +18916,9 @@
           "kind": "videos",
           "title": "이세돌 릴파님의 25년 한 해는..? 사주 VS 타로 (1화)",
           "publishedAt": "2025-02-23T00:00:00.000Z",
-          "viewCount": 2400,
+          "viewCount": 2437,
           "commentCount": 6,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:18.158Z",
           "link": "https://www.youtube.com/watch?v=nKEckIgIU7o"
         },
         {
@@ -18785,7 +18928,7 @@
           "publishedAt": "2025-02-17T00:00:00.000Z",
           "viewCount": 897,
           "commentCount": 1,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:18.581Z",
           "link": "https://www.youtube.com/shorts/mQ2DJb58UWU"
         },
         {
@@ -18793,9 +18936,9 @@
           "kind": "shorts",
           "title": "수상한 춘봉씨",
           "publishedAt": "2025-02-15T00:00:00.000Z",
-          "viewCount": 3368,
+          "viewCount": 3369,
           "commentCount": 2,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:18.858Z",
           "link": "https://www.youtube.com/shorts/aNEyPyFf6Fs"
         },
         {
@@ -18805,7 +18948,7 @@
           "publishedAt": "2025-02-12T00:00:00.000Z",
           "viewCount": 1027,
           "commentCount": 1,
-          "metricCheckedAt": "",
+          "metricCheckedAt": "2026-10-01T13:06:19.095Z",
           "link": "https://www.youtube.com/shorts/YQnIPfXBocQ"
         },
         {
@@ -18860,51 +19003,6 @@
     "data/soop-sessions.json": {
       "version": 1,
       "sessions": [
-        {
-          "id": "2026-09-06T06:59:44.000Z",
-          "broadcastId": "",
-          "startedAt": "2026-09-06T06:59:44.000Z",
-          "endedAt": "2026-09-20T23:43:40.613Z",
-          "date": "2026-09-06",
-          "durationMinutes": 21164,
-          "averageViewers": 62,
-          "maxViewers": 171,
-          "viewerSampleCount": 629,
-          "followerStart": 29804,
-          "followerEnd": 30262,
-          "followerDelta": 458,
-          "fanclubStart": 7612,
-          "fanclubEnd": 7672,
-          "fanclubDelta": 60,
-          "title": "7시 그냥서버:적자생존 설명회",
-          "categories": [
-            {
-              "id": "810000",
-              "name": "버추얼",
-              "minutes": 4768,
-              "sampleCount": 516,
-              "averageViewers": 64,
-              "maxViewers": 171
-            },
-            {
-              "id": "40017",
-              "name": "마인크래프트",
-              "minutes": 733,
-              "sampleCount": 85,
-              "averageViewers": 57,
-              "maxViewers": 79
-            },
-            {
-              "id": "40058",
-              "name": "오버워치",
-              "minutes": 266,
-              "sampleCount": 28,
-              "averageViewers": 43,
-              "maxViewers": 58
-            }
-          ],
-          "measurement": "fan-site-sampled-5m"
-        },
         {
           "id": "2026-09-21T09:14:26.000Z",
           "broadcastId": "",
