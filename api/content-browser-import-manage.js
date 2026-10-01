@@ -2,7 +2,7 @@
 
 const contentArchive=require('../lib/chunbong-content-archive-api');
 const operatorCenter=require('../lib/operator-center-api');
-const {mergeSoopBrowserMetadata,isGenericSoopTitle}=require('../lib/chunbong-content-browser-meta');
+const {mergeSoopBrowserMetadata}=require('../lib/chunbong-content-browser-meta');
 
 const {requireOwner,sameOrigin,parseBody,safeText}=operatorCenter._internals;
 const {
@@ -33,8 +33,7 @@ function recordPostId(record={},payload={}){
 }
 function applyKnownTitleFallback(payload={}){
   const postId=recordPostId({},payload),known=KNOWN_TITLE_FIXES[postId]||'';
-  if(!known||!isGenericSoopTitle(payload.title,postId))return payload;
-  return{...payload,title:known};
+  return known?{...payload,title:known}:payload;
 }
 async function enrichSoopRecord(record={}){
   const payload=normalizeBrowserImportPayload(record||{});
