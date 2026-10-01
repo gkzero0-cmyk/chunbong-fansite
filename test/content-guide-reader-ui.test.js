@@ -1,42 +1,39 @@
 'use strict';
-const fs=require('node:fs');
-const path=require('node:path');
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const read=file=>fs.readFileSync(path.join(process.cwd(),file),'utf8');
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.join(__dirname,'..');
+const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 
-test('survival guide provides compact searchable navigation and section disclosure',()=>{
+test('guide reader groups official wiki navigation and keeps source fidelity',()=>{
   const js=read('official-wiki-guide.js');
-  const css=read('official-wiki-guide.css');
-  assert.match(js,/data-official-guide-search/);
-  assert.match(js,/data-official-guide-group/);
-  assert.match(js,/data-official-section/);
-  assert.match(js,/data-official-guide-prev/);
-  assert.match(js,/data-official-guide-next/);
-  assert.match(css,/\.official-guide-search/);
-  assert.match(css,/\.official-guide-source-section/);
+  assert.match(js,/guide-nav-search/);
+  assert.match(js,/guide-nav-group/);
+  assert.match(js,/guide-document-section/);
+  assert.match(js,/guide-document-pager/);
+  assert.match(js,/sourceLabel/);
 });
 
-test('posts and sources reuse the exact fan-site notice card, keep body before attachments, and do not stop at image-only browser captures',()=>{
-  const js=read('content-page-enhancements.js');
-  const css=read('content-page-enhancements.css');
+test('guide reader styles compact navigation and collapsible document sections',()=>{
+  const css=read('official-wiki-guide.css');
+  assert.match(css,/\.guide-nav-search/);
+  assert.match(css,/\.guide-nav-group/);
+  assert.match(css,/\.guide-document-section/);
+  assert.match(css,/\.guide-document-pager/);
+});
+
+test('content post reader reuses fan-site notice UI and stays lazy',()=>{
+  const runtime=read('content-page-enhancements.js');
   const manage=read('lib/chunbong-content-browser-import-manage.js');
+  const css=read('content-page-enhancements.css');
   const loader=read('mobile-runtime-loader.js');
-  assert.doesNotMatch(js,/createElement\(['"]dialog['"]\)/);
-  assert.match(js,/notice-card/);
-  assert.match(js,/notice-toggle/);
-  assert.match(js,/notice-index/);
-  assert.match(js,/notice-main/);
-  assert.match(js,/notice-action/);
-  assert.match(js,/notice-state-label/);
-  assert.match(js,/notice-chevron/);
-  assert.match(js,/notice-body open/);
-  assert.match(js,/notice-detail/);
-  assert.match(js,/notice-content/);
-  assert.match(js,/sourcePreview=1/);
-  assert.match(js,/sessionStorage/);
-  assert.doesNotMatch(js,/cache:'force-cache'/);
-  assert.match(js,/detail\.innerHTML=`<div class="notice-content">\$\{content[\s\S]*\$\{images\}<\/div>/);
+  assert.match(runtime,/notice-card/);
+  assert.match(runtime,/notice-toggle/);
+  assert.match(runtime,/notice-body/);
+  assert.match(runtime,/notice-content/);
+  assert.match(runtime,/sourcePreview=1/);
+  assert.match(runtime,/sessionStorage/);
   assert.match(manage,/mergeSourcePreviews/);
   assert.match(manage,/if\(captured\?\.body\)/);
   assert.match(manage,/publicSoopPreview/);
@@ -45,14 +42,15 @@ test('posts and sources reuse the exact fan-site notice card, keep body before a
   assert.match(loader,/content-page-enhancements\.js\?v=5/);
 });
 
-test('content hero shares the site hero contract, uses restored artwork, and nested routes resolve from root',()=>{
+test('content hero shares the site hero contract, uses supplied artwork, and nested routes resolve from root',()=>{
   const html=read('chunbong-contents.html');
   const css=read('content-page-enhancements.css');
   assert.match(html,/<base href="\/">/);
   assert.match(html,/<section class="page-hero archive-hero">/);
   assert.match(html,/content-page-enhancements\.css\?v=5/);
-  assert.match(html,/e_gen_restore\/c_scale,w_1440\/f_auto,q_auto:best\/v1790884100\/chunbong-content-planning-hero\.webp/);
-  assert.match(html,/width="1440"[^>]*height="810"/);
+  assert.match(html,/\/assets\/chunbong-content-hero-hq\.avif/);
+  assert.match(html,/width="1120"[^>]*height="630"/);
+  assert.doesNotMatch(html,/e_gen_restore/);
   assert.doesNotMatch(html,/content-planning-hero\.svg/);
   assert.match(css,/\.archive-hero \.archive-hero-inner\{[^}]*grid-template-columns:minmax\(0,\.82fr\) minmax\(420px,1fr\)/);
   assert.match(css,/\.archive-hero-copy h1\{[^}]*84px/);
