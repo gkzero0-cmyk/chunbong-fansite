@@ -20,7 +20,7 @@ test('survival guide uses only the live official wiki site data and images',()=>
   assert.match(js,/page\.blocks/);
   assert.match(js,/\/적자생존\//);
   assert.doesNotMatch(js,/api\/fansite-guide|justserver3\.vercel|notionSections|referenceSections/i);
-  assert.match(loader,/official-wiki-guide\.js\?v=3/);
+  assert.match(loader,/official-wiki-guide\.js\?v=4/);
 
   assert.ok(proxy.includes(official));
   assert.match(proxy,/\/api\/content/);
