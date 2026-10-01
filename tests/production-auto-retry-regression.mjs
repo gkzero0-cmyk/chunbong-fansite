@@ -14,12 +14,15 @@ assert.match(retry,/git commit --allow-empty/,'Git retry must retrigger Git inte
 assert.match(retry,/api\/version/,'Git retry must compare production version before committing');
 assert.match(retry,/runtimeSynced===true\|\|p\.synced===true/,'Git retry must honor runtime sync when only internal files differ');
 assert.doesNotMatch(retry,/VERCEL_TOKEN/,'Git-based retry must not require a Vercel token');
-assert.match(retry,/AGE_SECONDS.*72000/s,'scheduled retry must wait at least 20 hours after the latest main commit');
-assert.match(retry,/RATE_LIMIT_AGE_SECONDS.*86400/s,'scheduled retry must wait the documented 24 hours after the earliest observed Vercel rate-limit status');
-assert.match(retry,/rate limited/i,'Git retry must inspect recent Vercel rate-limit status text');
-assert.match(retry,/oldestRateLimitCreatedAt/,'Git retry must anchor cooldown to the earliest observed rate-limit status, not the newest main commit');
-assert.match(retry,/commits\?sha=main&per_page=100/,'Git retry must scan enough recent main commits to survive high commit volume');
-assert.match(retry,/scanWindowMs = \(86400 \+ 7200\) \* 1000/,'Git retry must stop scanning after the cooldown window plus deployment-delay margin');
+assert.match(retry,/AGE_SECONDS.*72000/s,'scheduled retry must wait at least 20 hours after the latest main commit when no rate-limit status is known');
+assert.match(retry,/RATE_LIMIT_AGE_SECONDS.*86400/s,'scheduled retry must wait the documented 24 hours after the persisted Vercel rate-limit anchor');
+assert.match(retry,/rate limited/i,'Git retry must inspect the current Vercel rate-limit status text');
+assert.match(retry,/actions\/cache\/restore@v4/,'Git retry must restore the previous cooldown anchor without rescanning commit history');
+assert.match(retry,/actions\/cache\/save@v4/,'Git retry must persist cooldown state after every guardian run');
+assert.match(retry,/CACHED_RATE_LIMIT_AT/,'Git retry must preserve the first observed rate-limit anchor across later main commits');
+assert.match(retry,/CURRENT_RATE_LIMIT_AT/,'Git retry must inspect the current main commit for a fresh Vercel rate-limit signal');
+assert.match(retry,/\.guardian\/production-state\.json/,'Git retry must persist only a small guardian state file');
+assert.doesNotMatch(retry,/commits\?sha=main&per_page=/,'Git retry must not scan main commit history every hour');
 assert.match(retry,/GITHUB_EVENT_NAME.*workflow_dispatch/s,'manual retry must bypass the age and cooldown guards');
 
 assert.match(prebuilt,/workflow_dispatch:/,'prebuilt recovery must remain manually runnable');
@@ -31,7 +34,8 @@ assert.match(prebuilt,/vercel_deployment_quota_cooldown/,'prebuilt recovery must
 assert.match(prebuilt,/RATE_LIMIT_CREATED_AT/,'prebuilt recovery must anchor its cooldown to observed Vercel rate-limit status');
 assert.match(prebuilt,/AGE_SECONDS.*86400/s,'prebuilt recovery must wait 24 hours after a deployment quota limit before uploading again');
 
-assert.match(sync,/GITHUB_EVENT_NAME.*schedule/s,'scheduled sync checks should be non-failing warnings while pending');
+assert.match(sync,/production-readiness-gate\.mjs/,'production sync should share the readiness gate');
+assert.match(sync,/steps\.production_gate\.outputs\.blocked == 'true'/,'rate-limited production sync should finish as a visible blocked state instead of a code failure');
 assert.match(sw,/runtime-v34/,'PWA cache version must include the latest mobile app shell and alert assets');
 assert.match(sw,/site-improvements\.js/,'PWA shell must cache shared improvement runtime');
 assert.match(sw,/site-improvements\.css/,'PWA shell must cache shared improvement styles');

@@ -1,5 +1,7 @@
 'use strict';
 
+const operatorObservability=require('../lib/operator-observability');
+
 const SOOP_BOARD_HOSTS = [
   'https://chapi.sooplive.com',
   'https://chapi.sooplive.co.kr'
@@ -302,6 +304,10 @@ function setNoStore(res){
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'method_not_allowed' });
+  if(typeof res?.json==='function'){
+    const originalJson=res.json.bind(res);
+    res.json=payload=>{try{operatorObservability.recordCollectorResult('crew-news',payload)}catch{}return originalJson(payload)};
+  }
 
   const requestUrl = new URL(req.url || '/', 'https://chunbong.local');
   const forceRefresh = requestUrl.searchParams.get('refresh') === '1';
