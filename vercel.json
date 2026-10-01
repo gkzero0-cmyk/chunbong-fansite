@@ -116,6 +116,10 @@
   ],
   "rewrites": [
     {
+      "source": "/operator.html",
+      "destination": "/api/operator-page"
+    },
+    {
       "source": "/contents/:id",
       "destination": "/chunbong-contents.html?id=:id"
     },
