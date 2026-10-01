@@ -2,8 +2,8 @@
 'use strict';
 if(!document.querySelector('link[data-official-wiki-guide-style]')){const link=document.createElement('link');link.rel='stylesheet';link.href='official-wiki-guide.css?v=2';link.dataset.officialWikiGuideStyle='true';document.head.appendChild(link)}
 const SOURCE='https://server1.wiki.xn--9i1bk7xhlfi8hzzf.com/';
-const SOURCE_PROXY='/api/survival-wiki-source';
-const IMAGE_PROXY='/api/survival-wiki-image?url=';
+const SOURCE_PROXY='/api/survival-wiki?mode=source';
+const IMAGE_PROXY='/api/survival-wiki?mode=image&url=';
 let sourcePromise=null;
 let parsedCache=null;
 const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
