@@ -1,7 +1,7 @@
 /* CHUNBONG_PWA v2 · deployment-aware cache */
 const CACHE_PREFIX = 'chunbong-pwa-';
 const MEDIA_CACHE_PREFIX = 'chunbong-media-';
-const FALLBACK_VERSION = 'runtime-v34';
+const FALLBACK_VERSION = 'runtime-v35';
 const requestedVersion = new URL(self.location.href).searchParams.get('v') || FALLBACK_VERSION;
 const BUILD_VERSION = String(requestedVersion).replace(/[^a-zA-Z0-9._-]/g,'-').slice(0,48) || FALLBACK_VERSION;
 const CACHE_NAME = CACHE_PREFIX + BUILD_VERSION;
@@ -49,6 +49,27 @@ async function safeCacheMatch(cache, request) {
   try { return await cache.match(request); } catch { return null; }
 }
 
+function staticAssetKind(request) {
+  try {
+    if (request?.destination === 'style') return 'style';
+    if (request?.destination === 'script') return 'script';
+    const raw = typeof request === 'string' ? request : request?.url;
+    const pathname = new URL(raw, self.location.origin).pathname.toLowerCase();
+    if (pathname.endsWith('.css')) return 'style';
+    if (pathname.endsWith('.js')) return 'script';
+  } catch {}
+  return '';
+}
+
+function isValidStaticAssetResponse(request, response) {
+  if (!response?.ok) return false;
+  const kind = staticAssetKind(request);
+  if (!kind) return true;
+  const contentType = String(response.headers?.get?.('content-type') || '').toLowerCase();
+  if (kind === 'style') return /^text\/css(?:\s*;|$)/i.test(contentType);
+  return /(?:javascript|ecmascript)/i.test(contentType);
+}
+
 async function safeCachePut(cache, request, response, options = {}) {
   if (!cache || !response) return false;
   try {
@@ -69,6 +90,18 @@ async function safeCachePut(cache, request, response, options = {}) {
     return true;
   } catch {
     return false;
+  }
+}
+
+async function precacheAppShell(cache) {
+  for (const asset of APP_SHELL) {
+    const request = new Request(asset, { cache: 'reload' });
+    const response = await fetch(request);
+    if (!response.ok) throw new Error(`PWA precache failed: ${asset} (${response.status})`);
+    if (!isValidStaticAssetResponse(request, response)) {
+      throw new Error(`PWA precache rejected invalid static asset MIME: ${asset}`);
+    }
+    await cache.put(asset, response.clone());
   }
 }
 
@@ -140,7 +173,7 @@ self.addEventListener('install', event => {
     // Mandatory core app-shell preparation: if this fails the new worker does not activate,
     // so the previous worker and its known-good CSS remain in control.
     const cache = await caches.open(CACHE_NAME);
-    await cache.addAll(APP_SHELL);
+    await precacheAppShell(cache);
   })());
 });
 
@@ -182,11 +215,24 @@ async function networkFirst(request, event) {
     || (request.mode === 'navigate' ? await safeCacheMatch(cache, '/offline.html') : Response.error());
 }
 
+async function validatedStaticCacheMatch(cache, request) {
+  const response = await safeCacheMatch(cache, request);
+  if (!response) return null;
+  if (isValidStaticAssetResponse(request, response)) return response;
+  try { await cache?.delete?.(request); } catch {}
+  return null;
+}
+
 async function matchCanonicalAsset(cache, request) {
   try {
     const url = new URL(request.url);
     if (!url.search) return null;
-    return await safeCacheMatch(cache, url.pathname);
+    const canonicalRequest = new Request(url.pathname);
+    const response = await safeCacheMatch(cache, canonicalRequest);
+    if (!response) return null;
+    if (isValidStaticAssetResponse(request, response)) return response;
+    try { await cache?.delete?.(canonicalRequest); } catch {}
+    return null;
   } catch {
     return null;
   }
@@ -195,14 +241,18 @@ async function matchCanonicalAsset(cache, request) {
 async function boundedNetworkFirst(request, event, timeoutMs = 450) {
   const cache = await safeOpenCache(CACHE_NAME);
   if (!cache) {
-    try { return await fetch(request); } catch { return Response.error(); }
+    try {
+      const response = await fetch(request);
+      return isValidStaticAssetResponse(request, response) ? response : Response.error();
+    } catch { return Response.error(); }
   }
-  const cached = await safeCacheMatch(cache, request);
+  const cached = await validatedStaticCacheMatch(cache, request);
   const canonicalCached = cached ? null : await matchCanonicalAsset(cache, request);
   const network = (async () => {
     let response = null;
     try { response = await fetch(request); } catch { return null; }
-    if (response?.ok) keepAlive(event, safeCachePut(cache, request, response));
+    if (!isValidStaticAssetResponse(request, response)) return null;
+    keepAlive(event, safeCachePut(cache, request, response));
     return response;
   })();
   if (!cached) return await network || canonicalCached || Response.error();
