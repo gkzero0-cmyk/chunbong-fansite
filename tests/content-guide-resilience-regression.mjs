@@ -93,7 +93,8 @@ const adapterSource=fs.readFileSync(new URL('../lib/content-guide-sources.js',im
 const clientSource=fs.readFileSync(new URL('../chunbong-contents.js',import.meta.url),'utf8');
 assert.match(apiSource,/await hydrateGuideForPublicItem\(/,'public detail must self-hydrate a guide when Redis-backed sections are unavailable');
 assert.match(apiSource,/refreshOfficialWikiGuides/,'scheduled archive sync must include official wiki guides');
-assert.match(adapterSource,/notion-assets\/index\.json/,'official wiki sync should consume the structured index, not scrape rendered HTML');
+assert.match(adapterSource,/api\/fansite-guide/,'official wiki sync must consume the structured feed exposed by the official wiki domain');
+assert.doesNotMatch(adapterSource,/justserver3\.vercel\.app/,'survival data transport must never bypass the official wiki domain');
 assert.doesNotMatch(adapterSource,/<main|querySelector|cheerio/i,'official wiki adapter must not scrape rendered HTML');
 assert.match(clientSource,/guideRowHasBody\([^)]*\).*row\.title/s,'heading-only guide rows must survive the client-side guide filter');
 assert.match(clientSource,/provider==='official-wiki'[^\n]*공식 위키/,'official wiki rows should be labeled as official wiki in the guide UI');
