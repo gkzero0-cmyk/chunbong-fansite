@@ -1,4 +1,8 @@
+const fs = require('node:fs');
+const path = require('node:path');
 const { naverHeaders } = require('../lib/content-api/_shared');
+const operatorCenter = require('../lib/operator-center-api');
+const { requireOwner } = operatorCenter._internals;
 
 const SOOP_IMAGE_HOSTS = new Set([
   'stimg.sooplive.com',
@@ -14,6 +18,8 @@ const SOOP_IMAGE_HOSTS = new Set([
   'stimg.afreecatv.com',
   'liveimg.afreecatv.com'
 ]);
+
+let operatorDashboardMarkupCache = '';
 
 function normalizeImageUrl(url='') {
   const value=String(url||'').trim();
@@ -42,8 +48,32 @@ function allowed(url) {
   return Boolean(sourceType(url));
 }
 
+function operatorDashboardMarkup() {
+  if (operatorDashboardMarkupCache) return operatorDashboardMarkupCache;
+  const source = fs.readFileSync(path.join(process.cwd(),'lib','operator-dashboard-source.html'),'utf8');
+  const start = source.indexOf('<section id="operator-dashboard"');
+  const end = source.indexOf('</main>', start);
+  if (start < 0 || end < 0) throw new Error('operator_dashboard_source_invalid');
+  operatorDashboardMarkupCache = source.slice(start,end).trim();
+  return operatorDashboardMarkupCache;
+}
+
+async function serveOperatorDashboard(req,res) {
+  const current = await requireOwner(req,res);
+  if (!current) return;
+  if (String(req?.method||'GET').toUpperCase() !== 'GET') return res.status(405).json({error:'method_not_allowed'});
+  try {
+    res.setHeader('Content-Type','text/html; charset=utf-8');
+    res.setHeader('Cache-Control','private, no-store, max-age=0');
+    return res.status(200).send(operatorDashboardMarkup());
+  } catch (_) {
+    return res.status(500).send('operator dashboard unavailable');
+  }
+}
+
 module.exports = async function handler(req, res) {
   const requestUrl = new URL(req.url || '/', 'https://chunbong.local');
+  if (requestUrl.searchParams.get('operator') === 'dashboard') return serveOperatorDashboard(req,res);
   const rawUrl = requestUrl.searchParams.get('url') || '';
   const url = normalizeImageUrl(rawUrl);
   const type = sourceType(url);
@@ -71,4 +101,4 @@ module.exports = async function handler(req, res) {
   }
 };
 
-module.exports._internals = { allowed, sourceType, normalizeImageUrl, SOOP_IMAGE_HOSTS };
+module.exports._internals = { allowed, sourceType, normalizeImageUrl, SOOP_IMAGE_HOSTS, operatorDashboardMarkup };
