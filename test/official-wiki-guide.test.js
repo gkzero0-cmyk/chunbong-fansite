@@ -11,7 +11,7 @@ test('survival guide runtime uses the official wiki feed instead of Notion guide
   assert.match(js,/data-official-page/);
   assert.match(js,/document\.blocks/);
   assert.match(js,/block\.type==='image'/);
+  assert.match(js,/official-wiki-guide\.css\?v=1/);
   assert.doesNotMatch(js,/notionSections|referenceSections/);
   assert.match(loader,/official-wiki-guide\.js\?v=1/);
-  assert.match(loader,/official-wiki-guide\.css\?v=1/);
 });
