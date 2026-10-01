@@ -34,13 +34,18 @@ const sampleIndex={
       ]
     },
     {
+      pageId:'second-public-page',title:'가나다 후속 문서',
+      sections:[{heading:'후속 안내',anchor:'after',text:'소스 순서를 유지해야 합니다.'}]
+    },
+    {
       id:'admin-debug',title:'관리자 디버그',slug:'admin-debug',category:'ADMIN',order:999,
       sections:[{id:'secret',heading:'내부 설정',text:'사용자에게 노출하면 안 됩니다.'}]
     }
   ]
 };
 const rows=internals.officialWikiGuideRows(sampleIndex,source);
-assert.ok(rows.length>=3,'public wiki guide sections should be converted');
+assert.ok(rows.length>=4,'public wiki guide sections should be converted');
+assert.equal(rows[0]?.pageTitle,'채광 가이드','official wiki pages should preserve source index order when no explicit order is provided');
 assert.ok(rows.some(row=>row.title==='채광 시작'&&/곡괭이/.test(row.text)),'guide text should survive conversion');
 assert.ok(rows.some(row=>row.title==='야생에서 다양한 광물을 채광하여 판매할 수 있습니다.'),'heading-only wiki content must not be dropped');
 assert.ok(rows.some(row=>row.title==='광물의 시세는 불규칙적으로 변동됩니다.'),'all heading-only guide rules must remain visible');
@@ -65,9 +70,12 @@ assert.equal(internals.guideHydrationPlan(survival).some(row=>row.kind==='offici
 
 const apiSource=fs.readFileSync(new URL('../lib/chunbong-content-archive-api.js',import.meta.url),'utf8');
 const adapterSource=fs.readFileSync(new URL('../lib/content-guide-sources.js',import.meta.url),'utf8');
+const clientSource=fs.readFileSync(new URL('../chunbong-contents.js',import.meta.url),'utf8');
 assert.match(apiSource,/await hydrateGuideForPublicItem\(/,'public detail must self-hydrate a guide when Redis-backed sections are unavailable');
 assert.match(apiSource,/refreshOfficialWikiGuides/,'scheduled archive sync must include official wiki guides');
 assert.match(adapterSource,/notion-assets\/index\.json/,'official wiki sync should consume the structured index, not scrape rendered HTML');
 assert.doesNotMatch(adapterSource,/<main|querySelector|cheerio/i,'official wiki adapter must not scrape rendered HTML');
+assert.match(clientSource,/guideRowHasBody\([^)]*\).*row\.title/s,'heading-only guide rows must survive the client-side guide filter');
+assert.match(clientSource,/provider==='official-wiki'[^\n]*공식 위키/,'official wiki rows should be labeled as official wiki in the guide UI');
 
 console.log('content guide resilience regression: ok');
