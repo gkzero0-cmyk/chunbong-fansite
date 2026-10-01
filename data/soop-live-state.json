@@ -82,12 +82,23 @@
         "categoryName": "마인크래프트",
         "followerCount": 33409,
         "fanclubCount": 7964
+      },
+      {
+        "capturedAt": "2026-10-01T23:44:09.394Z",
+        "live": true,
+        "startedAt": "2026-10-01T04:24:11.000Z",
+        "title": "그냥서버 2차입주 모집중입니다.",
+        "viewerCount": 202,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 33502,
+        "fanclubCount": 7964
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-10-01T19:54:39.002Z",
-    "followerCount": 33409,
+    "capturedAt": "2026-10-01T23:44:09.394Z",
+    "followerCount": 33502,
     "fanclubCount": 7964
   }
 }
