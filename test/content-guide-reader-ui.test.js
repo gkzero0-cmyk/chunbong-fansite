@@ -26,12 +26,14 @@ test('posts and sources load captured or public SOOP body text on demand inside 
   assert.match(js,/sourcePreview=1/);
   assert.match(js,/preview\?\.body/);
   assert.match(js,/preview\?\.images/);
+  assert.match(js,/previewImageAllowed/);
+  assert.match(js,/ImageLoading|imageloading/i);
   assert.match(js,/원문 열기/);
   assert.match(manage,/buildPublicSourcePreview/);
   assert.match(manage,/BROWSER_IMPORT_PREFIX/);
   assert.match(manage,/fetchNoticeDetail/);
   assert.match(css,/\.archive-source-reader-body/);
-  assert.match(loader,/content-page-enhancements\.js\?v=2/);
+  assert.match(loader,/content-page-enhancements\.js\?v=3/);
 });
 
 test('content hero uses a cacheable static asset in a forced right hero column instead of a JS data URI',()=>{
