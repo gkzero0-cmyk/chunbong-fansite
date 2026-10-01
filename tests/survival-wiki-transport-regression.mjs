@@ -21,30 +21,44 @@ const payload={
 };
 
 const originalFetch=globalThis.fetch;
-const calls=[];
-globalThis.fetch=async url=>{
-  const value=String(url);
-  calls.push(value);
-  if(value==='https://server1.wiki.xn--9i1bk7xhlfi8hzzf.com/notion-assets/index.json'){
-    return {ok:false,status:502,json:async()=>({})};
-  }
-  if(value==='https://justserver3.vercel.app/notion-assets/index.json'){
-    return {ok:true,status:200,json:async()=>payload};
-  }
-  throw new Error(`unexpected fetch ${value}`);
-};
-
 try{
-  const result=await guideSources.fetchOfficialWikiIndex(source,{timeoutMs:1000});
-  assert.deepEqual(result.payload,payload,'official wiki adapter should recover the structured guide payload through the trusted Vercel transport');
-  assert.deepEqual(calls,[
-    'https://server1.wiki.xn--9i1bk7xhlfi8hzzf.com/notion-assets/index.json',
+  const primaryCalls=[];
+  globalThis.fetch=async url=>{
+    const value=String(url);
+    primaryCalls.push(value);
+    if(value==='https://justserver3.vercel.app/notion-assets/index.json'){
+      return {ok:true,status:200,json:async()=>payload};
+    }
+    throw new Error(`unexpected primary fetch ${value}`);
+  };
+
+  const primary=await guideSources.fetchOfficialWikiIndex(source,{timeoutMs:1000});
+  assert.deepEqual(primaryCalls,[
     'https://justserver3.vercel.app/notion-assets/index.json'
-  ],'official wiki adapter should try the public custom domain first, then exactly one trusted Vercel transport fallback');
-  assert.equal(result.url,'https://server1.wiki.xn--9i1bk7xhlfi8hzzf.com/notion-assets/index.json','public source identity must remain the official custom-domain URL');
-  assert.equal(result.transportUrl,'https://justserver3.vercel.app/notion-assets/index.json','diagnostics should identify the actual successful transport without changing public attribution');
-  const rows=guideSources.officialWikiGuideRows(result.payload,source);
-  assert.ok(rows.some(row=>row.pageTitle==='채광'&&/광물/.test(row.text)),'transport fallback must still produce visible official-wiki guide rows');
+  ],'hydration should use the proven structured transport first so an unavailable public asset path cannot consume the serverless request budget');
+  assert.equal(primary.url,'https://server1.wiki.xn--9i1bk7xhlfi8hzzf.com/notion-assets/index.json','public source identity must remain the official custom-domain URL');
+  assert.equal(primary.transportUrl,'https://justserver3.vercel.app/notion-assets/index.json','diagnostics should identify the successful transport without changing public attribution');
+  assert.ok(guideSources.officialWikiGuideRows(primary.payload,source).some(row=>row.pageTitle==='채광'&&/광물/.test(row.text)));
+
+  const fallbackCalls=[];
+  globalThis.fetch=async url=>{
+    const value=String(url);
+    fallbackCalls.push(value);
+    if(value==='https://justserver3.vercel.app/notion-assets/index.json'){
+      return {ok:false,status:502,json:async()=>({})};
+    }
+    if(value==='https://server1.wiki.xn--9i1bk7xhlfi8hzzf.com/notion-assets/index.json'){
+      return {ok:true,status:200,json:async()=>payload};
+    }
+    throw new Error(`unexpected fallback fetch ${value}`);
+  };
+
+  const fallback=await guideSources.fetchOfficialWikiIndex(source,{timeoutMs:1000});
+  assert.deepEqual(fallbackCalls,[
+    'https://justserver3.vercel.app/notion-assets/index.json',
+    'https://server1.wiki.xn--9i1bk7xhlfi8hzzf.com/notion-assets/index.json'
+  ],'the official public asset path should remain a single fallback if the proven transport fails');
+  assert.equal(fallback.transportUrl,'https://server1.wiki.xn--9i1bk7xhlfi8hzzf.com/notion-assets/index.json');
 }finally{
   globalThis.fetch=originalFetch;
 }
