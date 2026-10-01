@@ -1,0 +1,20 @@
+name: PWA style resilience RED
+
+on:
+  push:
+    branches: [fix/pwa-style-cache-resilience-20261001]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node tests/pwa-style-cache-resilience-regression.mjs
