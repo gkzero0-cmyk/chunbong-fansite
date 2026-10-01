@@ -21,7 +21,7 @@
   };
   if(document.body?.dataset?.page==='contents'){
     addScript('official-wiki-guide.js?v=4','data-official-wiki-guide-runtime');
-    addScript('content-page-enhancements.js?v=1','data-content-page-enhancements-runtime');
+    addScript('content-page-enhancements.js?v=2','data-content-page-enhancements-runtime');
   }
   loadPolish();loadMobile();
   mobile.addEventListener?.('change',event=>{if(event.matches)loadMobile()});
