@@ -3275,7 +3275,7 @@
           "url": "",
           "thumbnail": "",
           "sourceId": "source-survival-wiki",
-          "note": "이전 대화에서 제공된 Notion 일정 기준 예정 시작일입니다.",
+          "note": "이전 대화에서 제공된 공식 위키 일정 기준 예정 시작일입니다.",
           "visibility": "public"
         },
         {
@@ -3371,7 +3371,7 @@
           "url": "",
           "thumbnail": "",
           "sourceId": "source-survival-wiki",
-          "note": "이전 대화에서 제공된 Notion 일정 기준 예정 종료일입니다.",
+          "note": "이전 대화에서 제공된 공식 위키 일정 기준 예정 종료일입니다.",
           "visibility": "public"
         },
         {
