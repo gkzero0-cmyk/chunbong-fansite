@@ -45,15 +45,18 @@ test('posts and sources reuse the exact fan-site notice card, keep body before a
   assert.match(loader,/content-page-enhancements\.js\?v=5/);
 });
 
-test('content hero shares the site hero contract, uses restored artwork, and nested routes resolve from root',()=>{
+test('content hero shares the site hero contract, uses the supplied high-resolution asset, and nested routes resolve from root',()=>{
   const html=read('chunbong-contents.html');
   const css=read('content-page-enhancements.css');
+  const asset=path.join(process.cwd(),'assets','chunbong-content-hero-20261002.webp');
   assert.match(html,/<base href="\/">/);
   assert.match(html,/<section class="page-hero archive-hero">/);
   assert.match(html,/content-page-enhancements\.css\?v=5/);
-  assert.match(html,/e_gen_restore\/c_scale,w_1440\/f_auto,q_auto:best\/v1790884100\/chunbong-content-planning-hero\.webp/);
-  assert.match(html,/width="1440"[^>]*height="810"/);
-  assert.doesNotMatch(html,/content-planning-hero\.svg/);
+  assert.match(html,/\/assets\/chunbong-content-hero-20261002\.webp/);
+  assert.match(html,/width="1280"[^>]*height="720"/);
+  assert.doesNotMatch(html,/e_gen_restore|chunbong-content-planning-hero\.webp|content-planning-hero\.svg/);
+  assert.equal(fs.existsSync(asset),true);
+  assert.ok(fs.statSync(asset).size>90000,'hero should be a real high-resolution static asset');
   assert.match(css,/\.archive-hero \.archive-hero-inner\{[^}]*grid-template-columns:minmax\(0,\.82fr\) minmax\(420px,1fr\)/);
   assert.match(css,/\.archive-hero-copy h1\{[^}]*84px/);
   assert.match(css,/\.archive-hero-art\{[^}]*grid-column:2/);
