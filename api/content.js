@@ -19,6 +19,7 @@ const handleChangelogHistory = require('../lib/changelog-history-api');
 const pushNotifications = require('../lib/push-notifications-api');
 const operatorCenter=require('../lib/operator-center-api');
 const contentArchive=require('../lib/chunbong-content-archive-api');
+const browserImportManage=require('../lib/chunbong-content-browser-import-manage');
 const youtubeEngagementCache = require('../data/youtube-engagement-cache.json');
 const soopMetricHistory = require('../data/soop-follower-history.json');
 const fs=require('node:fs');
@@ -307,7 +308,7 @@ async function handler(req,res) {
   if(type==='operator-content-auto-sync') return contentArchive.handleOperatorAutoSync(req,res);
   if(type==='operator-content-auto-candidate') return contentArchive.handleOperatorCandidate(req,res);
   if(type==='operator-content-browser-import') return contentArchive.handleOperatorBrowserImport(req,res);
-  if(type==='operator-content-browser-import-manage') return contentArchive.handleOperatorBrowserImportManage(req,res);
+  if(type==='operator-content-browser-import-manage') return browserImportManage.handleOperatorBrowserImportManage(req,res);
   if(type==='operator-content-source-meta') return contentArchive.handleOperatorSourceMeta(req,res);
   if(type==='operator-content-archive-delete') return contentArchive.handleOperatorDelete(req,res);
   if(type==='live'){
