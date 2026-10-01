@@ -27,7 +27,7 @@ test('runtime cache can fall back from versioned requests to canonical precache 
 
 test('style and script cache entries are MIME-validated before reuse',()=>{
   assert.match(sw,/function\s+isValidStaticAssetResponse/,'service worker must validate static asset responses');
-  assert.match(sw,/text\/css/,'style validation must require CSS content type');
+  assert.match(sw,/text\\\/css/,'style validation must require CSS content type');
   assert.match(sw,/(?:javascript|ecmascript)/,'script validation must require JavaScript content type');
   assert.match(sw,/cache\.delete\(request\)/,'invalid exact cache entries must be removed');
 });
