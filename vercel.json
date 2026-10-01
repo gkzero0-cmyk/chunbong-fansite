@@ -116,6 +116,17 @@
   ],
   "rewrites": [
     {
+      "source": "/api/content",
+      "has": [
+        {
+          "type": "query",
+          "key": "type",
+          "value": "operator-content-browser-import-manage"
+        }
+      ],
+      "destination": "/api/content-browser-import-manage"
+    },
+    {
       "source": "/contents/:id",
       "destination": "/chunbong-contents.html?id=:id"
     },
