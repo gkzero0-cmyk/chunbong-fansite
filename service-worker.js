@@ -1,9 +1,17 @@
 /* CHUNBONG_PWA v2 · deployment-aware cache */
 const CACHE_PREFIX = 'chunbong-pwa-';
+const MEDIA_CACHE_PREFIX = 'chunbong-media-';
 const FALLBACK_VERSION = 'runtime-v34';
 const requestedVersion = new URL(self.location.href).searchParams.get('v') || FALLBACK_VERSION;
 const BUILD_VERSION = String(requestedVersion).replace(/[^a-zA-Z0-9._-]/g,'-').slice(0,48) || FALLBACK_VERSION;
 const CACHE_NAME = CACHE_PREFIX + BUILD_VERSION;
+const MEDIA_CACHE_NAME = MEDIA_CACHE_PREFIX + BUILD_VERSION;
+const MAX_MEDIA_ENTRIES = 96;
+const MAX_MEDIA_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const MAX_MEDIA_BYTES = 24 * 1024 * 1024;
+const MAX_MEDIA_ITEM_BYTES = 6 * 1024 * 1024;
+const CACHED_AT_HEADER = 'x-chunbong-cached-at';
+const CACHED_BYTES_HEADER = 'x-chunbong-cache-bytes';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -23,17 +31,106 @@ const APP_SHELL = [
   '/site-health.js',
   '/site-improvements.js',
   '/content.js',
-  '/manifest.webmanifest',
-  '/assets/app-icon.svg',
-  '/assets/app-icon-192.png',
-  '/assets/app-icon-512.png',
-  '/assets/apple-touch-icon.png',
-  '/assets/chunbong-main.webp'
-]
+  '/manifest.webmanifest'
+];
 const APP_SHELL_PATHS = new Set(APP_SHELL.map(asset => new URL(asset, self.location.origin).pathname));
+
+function keepAlive(event, promise) {
+  try { event?.waitUntil?.(Promise.resolve(promise).catch(() => null)); } catch {}
+}
+
+async function safeCacheMatch(cache, request) {
+  try { return await cache.match(request); } catch { return null; }
+}
+
+async function safeCachePut(cache, request, response, options = {}) {
+  if (!response) return false;
+  try {
+    const reportedBytes = Math.max(0, Number(response.headers?.get?.('content-length') || 0) || 0);
+    if (options.maxItemBytes && reportedBytes > options.maxItemBytes) return false;
+    let stored = response.clone();
+    if (options.stamp) {
+      const headers = new Headers(stored.headers);
+      headers.set(CACHED_AT_HEADER, String(Date.now()));
+      if (reportedBytes) headers.set(CACHED_BYTES_HEADER, String(reportedBytes));
+      stored = new Response(stored.body, {
+        status: stored.status,
+        statusText: stored.statusText,
+        headers
+      });
+    }
+    await cache.put(request, stored);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function pruneCoreCache(cache) {
+  try {
+    const requests = await cache.keys();
+    await Promise.all(requests.map(async request => {
+      try {
+        const pathname = new URL(request.url).pathname;
+        if (!APP_SHELL_PATHS.has(pathname)) await cache.delete(request);
+      } catch {}
+    }));
+  } catch {}
+}
+
+async function pruneMediaCache(cache) {
+  try {
+    const now = Date.now();
+    const requests = await cache.keys();
+    const live = [];
+    for (const request of requests) {
+      const response = await safeCacheMatch(cache, request);
+      if (!response) continue;
+      const cachedAt = Math.max(0, Number(response.headers?.get?.(CACHED_AT_HEADER) || 0) || 0);
+      const bytes = Math.max(0, Number(response.headers?.get?.(CACHED_BYTES_HEADER) || response.headers?.get?.('content-length') || 0) || 0);
+      if (cachedAt && now - cachedAt > MAX_MEDIA_AGE_MS) {
+        try { await cache.delete(request); } catch {}
+        continue;
+      }
+      live.push({request, cachedAt, bytes});
+    }
+    live.sort((a, b) => (a.cachedAt || 0) - (b.cachedAt || 0));
+    let totalBytes = live.reduce((sum, row) => sum + row.bytes, 0);
+    let excessEntries = Math.max(0, live.length - MAX_MEDIA_ENTRIES);
+    for (const row of live) {
+      if (excessEntries <= 0 && totalBytes <= MAX_MEDIA_BYTES) break;
+      try {
+        const deleted = await cache.delete(row.request);
+        if (deleted) {
+          totalBytes = Math.max(0, totalBytes - row.bytes);
+          excessEntries = Math.max(0, excessEntries - 1);
+        }
+      } catch {}
+    }
+  } catch {}
+}
+
+async function safeMediaMatch(cache, request) {
+  const response = await safeCacheMatch(cache, request);
+  if (!response) return null;
+  const cachedAt = Math.max(0, Number(response.headers?.get?.(CACHED_AT_HEADER) || 0) || 0);
+  if (cachedAt && Date.now() - cachedAt > MAX_MEDIA_AGE_MS) {
+    try { await cache.delete(request); } catch {}
+    return null;
+  }
+  return response;
+}
+
+async function storeMedia(cache, request, response) {
+  const stored = await safeCachePut(cache, request, response, {stamp:true, maxItemBytes:MAX_MEDIA_ITEM_BYTES});
+  if (stored) await pruneMediaCache(cache);
+  return stored;
+}
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
+    // Mandatory core app-shell preparation: if this fails the new worker does not activate,
+    // so the previous worker and its known-good CSS remain in control.
     const cache = await caches.open(CACHE_NAME);
     await cache.addAll(APP_SHELL);
   })());
@@ -42,7 +139,14 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter(key => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME).map(key => caches.delete(key)));
+    await Promise.all(keys.filter(key => (
+      (key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+      || (key.startsWith(MEDIA_CACHE_PREFIX) && key !== MEDIA_CACHE_NAME)
+    )).map(key => caches.delete(key)));
+    const coreCache = await caches.open(CACHE_NAME);
+    await pruneCoreCache(coreCache);
+    const mediaCache = await caches.open(MEDIA_CACHE_NAME);
+    await pruneMediaCache(mediaCache);
     if (self.registration.navigationPreload) {
       try { await self.registration.navigationPreload.enable(); } catch {}
     }
@@ -56,22 +160,24 @@ self.addEventListener('message', event => {
 
 async function networkFirst(request, event) {
   const cache = await caches.open(CACHE_NAME);
+  let response = null;
   try {
     const preload = request.mode === 'navigate' ? await event.preloadResponse : null;
-    const response = preload || await fetch(request);
-    if (response?.ok) await cache.put(request, response.clone());
+    response = preload || await fetch(request);
+  } catch {}
+  if (response) {
+    if (response.ok) keepAlive(event, safeCachePut(cache, request, response));
     return response;
-  } catch {
-    return (await cache.match(request))
-      || (request.mode === 'navigate' ? await cache.match('/offline.html') : Response.error());
   }
+  return (await safeCacheMatch(cache, request))
+    || (request.mode === 'navigate' ? await safeCacheMatch(cache, '/offline.html') : Response.error());
 }
 
 async function matchCanonicalAsset(cache, request) {
   try {
     const url = new URL(request.url);
     if (!url.search) return null;
-    return await cache.match(url.pathname);
+    return await safeCacheMatch(cache, url.pathname);
   } catch {
     return null;
   }
@@ -79,42 +185,35 @@ async function matchCanonicalAsset(cache, request) {
 
 async function boundedNetworkFirst(request, event, timeoutMs = 450) {
   const cache = await caches.open(CACHE_NAME);
-  const cached = await cache.match(request);
+  const cached = await safeCacheMatch(cache, request);
   const canonicalCached = cached ? null : await matchCanonicalAsset(cache, request);
   const network = (async () => {
-    try {
-      const response = await fetch(request);
-      if (response?.ok) await cache.put(request, response.clone());
-      return response;
-    } catch {
-      return null;
-    }
+    let response = null;
+    try { response = await fetch(request); } catch { return null; }
+    if (response?.ok) keepAlive(event, safeCachePut(cache, request, response));
+    return response;
   })();
   if (!cached) return await network || canonicalCached || Response.error();
   const timeout = new Promise(resolve => setTimeout(() => resolve(cached), timeoutMs));
   const first = await Promise.race([network.then(response => response || cached), timeout]);
-  event?.waitUntil(network);
+  keepAlive(event, network);
   return first || cached;
 }
 
-async function staleWhileRevalidate(request, event, fallback = '') {
-  const cache = await caches.open(CACHE_NAME);
-  const cached = await cache.match(request);
+async function staleWhileRevalidateMedia(request, event) {
+  const cache = await caches.open(MEDIA_CACHE_NAME);
+  const cached = await safeMediaMatch(cache, request);
   const network = (async () => {
-    const preload = request.mode === 'navigate' && event ? await event.preloadResponse : null;
-    if (preload?.ok) {
-      await cache.put(request, preload.clone());
-      return preload;
-    }
-    const response = await fetch(request);
-    if (response?.ok) await cache.put(request, response.clone());
+    let response = null;
+    try { response = await fetch(request); } catch { return null; }
+    if (response?.ok) keepAlive(event, storeMedia(cache, request, response));
     return response;
-  })().catch(() => null);
+  })();
   if (cached) {
-    event?.waitUntil(network);
+    keepAlive(event, network);
     return cached;
   }
-  return await network || (fallback ? await cache.match(fallback) : null) || Response.error();
+  return await network || Response.error();
 }
 
 self.addEventListener('fetch', event => {
@@ -140,7 +239,7 @@ self.addEventListener('fetch', event => {
   }
 
   if (['image','font'].includes(request.destination)) {
-    event.respondWith(staleWhileRevalidate(request, event));
+    event.respondWith(staleWhileRevalidateMedia(request, event));
   }
 });
 
