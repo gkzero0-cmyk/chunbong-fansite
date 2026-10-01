@@ -17,23 +17,33 @@ test('survival guide provides compact searchable navigation and section disclosu
   assert.match(css,/\.official-guide-source-section/);
 });
 
-test('posts and sources can be inspected inside the fan site before opening the original',()=>{
+test('posts and sources load captured or public SOOP body text on demand inside the fan site',()=>{
   const js=read('content-page-enhancements.js');
   const css=read('content-page-enhancements.css');
+  const manage=read('lib/chunbong-content-browser-import-manage.js');
   const loader=read('mobile-runtime-loader.js');
   assert.match(js,/data-archive-source-reader/);
-  assert.match(js,/archive-source-list a/);
-  assert.match(js,/팬사이트 아카이브 자료/);
+  assert.match(js,/sourcePreview=1/);
+  assert.match(js,/preview\?\.body/);
+  assert.match(js,/preview\?\.images/);
   assert.match(js,/원문 열기/);
-  assert.match(css,/\.archive-source-reader/);
-  assert.match(loader,/content-page-enhancements\.js\?v=1/);
+  assert.match(manage,/buildPublicSourcePreview/);
+  assert.match(manage,/BROWSER_IMPORT_PREFIX/);
+  assert.match(manage,/fetchNoticeDetail/);
+  assert.match(css,/\.archive-source-reader-body/);
+  assert.match(loader,/content-page-enhancements\.js\?v=2/);
 });
 
-test('content hero uses the supplied planning artwork without stretching mobile layout',()=>{
+test('content hero uses a cacheable static asset in a forced right hero column instead of a JS data URI',()=>{
+  const html=read('chunbong-contents.html');
   const js=read('content-page-enhancements.js');
   const css=read('content-page-enhancements.css');
-  assert.match(js,/archive-hero-art/);
-  assert.match(js,/data:image\/webp;base64/);
+  assert.match(html,/archive-hero-copy[\s\S]*archive-hero-art/);
+  assert.match(html,/assets\/content-planning-hero\.svg/);
+  assert.match(html,/width="480"[^>]*height="270"/);
+  assert.doesNotMatch(js,/data:image\/webp;base64/);
+  assert.match(css,/\.archive-hero \.archive-hero-inner\{[^}]*display:grid[^}]*grid-template-columns/);
   assert.match(css,/\.archive-hero-art/);
+  assert.match(css,/aspect-ratio:16\/9/);
   assert.match(css,/@media\(max-width:760px\)[\s\S]*archive-hero-art/);
 });
