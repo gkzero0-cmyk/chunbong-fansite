@@ -39,12 +39,17 @@ function keepAlive(event, promise) {
   try { event?.waitUntil?.(Promise.resolve(promise).catch(() => null)); } catch {}
 }
 
+async function safeOpenCache(name) {
+  try { return await caches.open(name); } catch { return null; }
+}
+
 async function safeCacheMatch(cache, request) {
+  if (!cache) return null;
   try { return await cache.match(request); } catch { return null; }
 }
 
 async function safeCachePut(cache, request, response, options = {}) {
-  if (!response) return false;
+  if (!cache || !response) return false;
   try {
     const reportedBytes = Math.max(0, Number(response.headers?.get?.('content-length') || 0) || 0);
     if (options.maxItemBytes && reportedBytes > options.maxItemBytes) return false;
@@ -67,6 +72,7 @@ async function safeCachePut(cache, request, response, options = {}) {
 }
 
 async function pruneCoreCache(cache) {
+  if (!cache) return;
   try {
     const requests = await cache.keys();
     await Promise.all(requests.map(async request => {
@@ -79,6 +85,7 @@ async function pruneCoreCache(cache) {
 }
 
 async function pruneMediaCache(cache) {
+  if (!cache) return;
   try {
     const now = Date.now();
     const requests = await cache.keys();
@@ -145,7 +152,7 @@ self.addEventListener('activate', event => {
     )).map(key => caches.delete(key)));
     const coreCache = await caches.open(CACHE_NAME);
     await pruneCoreCache(coreCache);
-    const mediaCache = await caches.open(MEDIA_CACHE_NAME);
+    const mediaCache = await safeOpenCache(MEDIA_CACHE_NAME);
     await pruneMediaCache(mediaCache);
     if (self.registration.navigationPreload) {
       try { await self.registration.navigationPreload.enable(); } catch {}
@@ -159,14 +166,15 @@ self.addEventListener('message', event => {
 });
 
 async function networkFirst(request, event) {
-  const cache = await caches.open(CACHE_NAME);
+  const cache = await safeOpenCache(CACHE_NAME);
   let response = null;
   try {
     const preload = request.mode === 'navigate' ? await event.preloadResponse : null;
-    response = preload || await fetch(request);
+    if (preload?.ok) response = preload;
+    else response = await fetch(request);
   } catch {}
   if (response) {
-    if (response.ok) keepAlive(event, safeCachePut(cache, request, response));
+    if (response.ok && cache) keepAlive(event, safeCachePut(cache, request, response));
     return response;
   }
   return (await safeCacheMatch(cache, request))
@@ -184,7 +192,10 @@ async function matchCanonicalAsset(cache, request) {
 }
 
 async function boundedNetworkFirst(request, event, timeoutMs = 450) {
-  const cache = await caches.open(CACHE_NAME);
+  const cache = await safeOpenCache(CACHE_NAME);
+  if (!cache) {
+    try { return await fetch(request); } catch { return Response.error(); }
+  }
   const cached = await safeCacheMatch(cache, request);
   const canonicalCached = cached ? null : await matchCanonicalAsset(cache, request);
   const network = (async () => {
@@ -201,7 +212,10 @@ async function boundedNetworkFirst(request, event, timeoutMs = 450) {
 }
 
 async function staleWhileRevalidateMedia(request, event) {
-  const cache = await caches.open(MEDIA_CACHE_NAME);
+  const cache = await safeOpenCache(MEDIA_CACHE_NAME);
+  if (!cache) {
+    try { return await fetch(request); } catch { return Response.error(); }
+  }
   const cached = await safeMediaMatch(cache, request);
   const network = (async () => {
     let response = null;
