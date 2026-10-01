@@ -26,8 +26,9 @@ test('posts and sources show body before attachments and do not stop at image-on
   assert.match(js,/sourcePreview=1/);
   assert.match(js,/sessionStorage/);
   assert.doesNotMatch(js,/cache:'force-cache'/);
-  assert.ok(js.indexOf('archive-source-reader-article')<js.indexOf('archive-source-reader-gallery'));
+  assert.match(js,/container\.innerHTML=`[\s\S]*archive-source-reader-meta[\s\S]*archive-source-reader-article[\s\S]*archive-source-reader-attachments/);
   assert.match(manage,/mergeSourcePreviews/);
+  assert.match(manage,/if\(captured\?\.body\)/);
   assert.match(manage,/publicSoopPreview/);
   assert.match(css,/\.archive-source-reader-body/);
   assert.match(loader,/content-page-enhancements\.js\?v=4/);
