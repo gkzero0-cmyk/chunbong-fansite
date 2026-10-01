@@ -56,10 +56,12 @@ try{
   const started=Date.now();
   const fallback=await guideSources.fetchOfficialWikiIndex(source,{timeoutMs:1000,primaryTimeoutMs:25});
   const elapsed=Date.now()-started;
-  assert.deepEqual(fallbackCalls,[officialIndex,transportIndex],'the trusted Vercel URL may be used only after the official source times out or fails');
+  assert.deepEqual(fallbackCalls,[officialIndex,transportIndex],'transport fallback is allowed only after the official custom domain fails or times out');
   assert.ok(elapsed<500,'official-source timeout must be bounded so the serverless request still has time to recover');
   assert.equal(fallback.url,officialIndex,'canonical source identity must remain the official custom-domain URL even when delivery fallback is used');
-  assert.equal(fallback.transportUrl,transportIndex,'diagnostics may record the delivery fallback without changing the official source');
+  assert.equal(fallback.transportUrl,transportIndex,'diagnostics may record a delivery fallback without changing the official source of truth');
+  assert.equal(source.url,'https://server1.wiki.xn--9i1bk7xhlfi8hzzf.com/');
+  assert.ok(guideSources.officialWikiGuideRows(fallback.payload,source).every(row=>row.sourceId==='source-survival-wiki'));
   assert.ok(guideSources.officialWikiGuideRows(fallback.payload,source).some(row=>row.pageTitle==='채광'&&/광물/.test(row.text)));
 }finally{
   globalThis.fetch=originalFetch;
