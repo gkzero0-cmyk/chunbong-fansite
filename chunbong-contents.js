@@ -216,7 +216,7 @@ function guideImageLabel(value=''){
   if(guideFilenameOnly(raw)){raw=raw.split(/[\\/]/).pop().replace(/\?.*$/,'').replace(/\.(?:png|jpe?g|webp|gif|svg|avif)$/i,'').trim();if(/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(raw))raw='';else raw=raw.replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim()}
   return raw;
 }
-function guideRowHasBody(row={}){return Boolean(String(row.text||'').trim()||(row.images||[]).length||(row.content||[]).some(block=>block?.type==='image'||String(block?.text||'').trim()))}
+function guideRowHasBody(row={}){return Boolean(String(row.title||'').trim()||String(row.text||'').trim()||(row.images||[]).length||(row.content||[]).some(block=>block?.type==='image'||String(block?.text||'').trim()))}
 function notionGuideRows(item){return (item.notionSections||[]).filter(row=>row&&guideRowHasBody(row))}
 function referenceGuideRows(item){return (item.referenceSections||[]).filter(row=>row&&guideRowHasBody(row))}
 function documentGuideRows(item){return [...notionGuideRows(item),...referenceGuideRows(item)]}
@@ -224,6 +224,7 @@ function guideProviderLabel(provider=''){
   if(provider==='notion')return'Notion';
   if(provider==='namuwiki')return'나무위키';
   if(provider==='soop')return'SOOP 공식';
+  if(provider==='official-wiki')return'공식 위키';
   return'자료';
 }
 function notionTextMarkup(value=''){return escapeHtml(String(value||'').split(/\r?\n/).map(line=>line.trim()).filter(line=>line&&!guideFilenameOnly(line)).join('\n')).replace(/\n/g,'<br>')}

@@ -398,7 +398,9 @@ assert.match(String(secondEntry?.thumbnail||''),/83091789821197973\.png$/,'2차 
 const survivalPublic=toPublicArchiveItem(normalizeArchiveItem(survival));
 assert.equal((survivalPublic.timeline||[]).some(row=>/207564735/.test(String(row.url||''))||row.id==='survival-soop-post-207564735'),false,'애청자 공개글은 공개 타임라인에서 숨겨야 합니다');
 assert.ok((survivalPublic.timeline||[]).some(row=>/207564927/.test(String(row.url||''))),'공개 2차 입주 모집글은 팬사이트에 표시해야 합니다');
-assert.ok((survival?.sources||[]).some(row=>row.url==='https://daisy-grouse-ac0.notion.site/3dad57d6a55c80469f3de9730cb88975'),'적자생존 Notion 자료가 필요합니다');
+assert.equal((survival?.sources||[]).some(row=>/notion\.(?:so|site)/i.test(String(row.url||''))||row.id==='source-survival-notion'),false,'적자생존은 Notion 자료원을 사용하지 않아야 합니다');
+assert.ok((survival?.sources||[]).some(row=>row.id==='source-survival-wiki'&&row.url==='https://server1.wiki.xn--9i1bk7xhlfi8hzzf.com/'),'적자생존 공식 위키 자료가 필요합니다');
+assert.doesNotMatch(JSON.stringify(survival),/Notion/i,'적자생존 공개 seed에는 Notion 흔적이 없어야 합니다');
 
 assert.ok((psyContest1?.results||[]).some(row=>/시네_/.test(String(row.value||''))&&/시로코/.test(String(row.value||''))),'제1회 시네_와 시로코 동일인 교차 기록을 유지해야 합니다');
 assert.ok((psyContest1?.gallery||[]).length>=1,'제1회 아카이브 커버가 필요합니다');
