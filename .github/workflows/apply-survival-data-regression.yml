@@ -1,0 +1,41 @@
+name: Apply survival data regression update
+
+on:
+  push:
+    branches: [fix/content-guide-wiki-sync-20261001]
+    paths:
+      - 'scripts/patch-survival-data-regression.mjs'
+      - '.github/workflows/apply-survival-data-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/content-guide-wiki-sync-20261001
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node scripts/patch-survival-data-regression.mjs
+      - name: Verify affected regressions
+        run: |
+          node tests/chunbong-contents-data-regression.mjs
+          node tests/content-guide-resilience-regression.mjs
+          node tests/content-guide-coverage-regression.mjs
+      - name: Commit regression update
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add tests/chunbong-contents-data-regression.mjs
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'test: require official wiki for survival content'
+          git push origin HEAD:fix/content-guide-wiki-sync-20261001
