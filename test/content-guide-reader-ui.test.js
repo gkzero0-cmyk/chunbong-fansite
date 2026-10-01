@@ -27,7 +27,7 @@ test('posts and sources load captured or public SOOP body text on demand inside 
   assert.match(js,/preview\?\.body/);
   assert.match(js,/preview\?\.images/);
   assert.match(js,/previewImageAllowed/);
-  assert.match(js,/ImageLoading|imageloading/i);
+  assert.match(js,/loading\(\?:light\|dark\)/i);
   assert.match(js,/원문 열기/);
   assert.match(manage,/buildPublicSourcePreview/);
   assert.match(manage,/BROWSER_IMPORT_PREFIX/);
