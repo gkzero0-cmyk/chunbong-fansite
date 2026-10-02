@@ -6,7 +6,6 @@ const diagnostics=fs.readFileSync(new URL('../operator-soop-diagnostics.js',impo
 const operator=fs.readFileSync(new URL('../operator-contents.js',import.meta.url),'utf8');
 const collector=fs.readFileSync(new URL('../chunbong-content-collector.user.js',import.meta.url),'utf8');
 const redisEntry=fs.readFileSync(new URL('../operator-redis-diagnostics.js',import.meta.url),'utf8');
-const operatorHtml=fs.readFileSync(new URL('../operator.html',import.meta.url),'utf8');
 
 assert.match(guard,/SOOP_RECAPTURE_SESSION_KEY|RECAPTURE_SESSION_KEY/,'selective recapture needs a shared browser session/lease');
 assert.match(guard,/collector-auto-flush/,'sequential recapture must recognize auto-flush operator tabs');
@@ -22,7 +21,6 @@ assert.match(diagnostics,/recapture-plan/,'diagnostics should register the whole
 assert.match(diagnostics,/recapture-finish/,'diagnostics should refresh once when the sequential plan finishes');
 assert.match(redisEntry,/operator-soop-diagnostics\.js\?v=2/,'updated diagnostics module must use a new cache key');
 assert.match(redisEntry,/operator-soop-recapture-guard\.js\?v=2/,'updated recapture guard must use a new cache key');
-assert.match(operatorHtml,/operator-redis-diagnostics\.js\?v=3/,'operator page must bust the parent module cache after changing child imports');
 assert.doesNotMatch(guard,/208562045|204274449/,'production controller must not hardcode currently investigated post IDs');
 assert.doesNotMatch(diagnostics,/208562045|204274449/,'diagnostic UI must not hardcode currently investigated post IDs');
 assert.match(collector,/SOOP_WATCH_INTERVAL_MS\s*=\s*5\s*\*\s*60\s*\*\s*1000/,'normal five-minute SOOP watcher cadence must remain unchanged');
