@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - fix/finalize-content-hero-header-shell-20261002
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -17,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: fix/finalize-content-hero-header-shell-20261002
-      - name: Inspect share route ids and API base
+      - name: Inspect exact share route parser
         run: |
           python - <<'PY'
           import re,urllib.request
@@ -27,11 +26,9 @@ jobs:
             with urllib.request.urlopen(req,timeout=30) as r:return r.read().decode('utf-8','replace')
           html=text(page)
           scripts=re.findall(r'<script[^>]+src=["\']([^"\']+)["\']',html,re.I)
-          js='\n'.join(text(base+s) for s in scripts if s.startswith('/_next/static/chunks/'))
-          for needle in ['https://api.firestorage.ai/prod/file/','async function v()','let w=','let g=','shareEndpoint','/shares/']:
-            p=js.find(needle);print('\n===',needle,p,'===');print(js[max(0,p-2500):p+6000] if p>=0 else 'not found')
-          for pat in [r'/shares/[^"\']+',r'publicId[^,;}]{0,300}',r'shareId[^,;}]{0,300}',r'fileId[^,;}]{0,300}']:
-            vals=[]
-            for m in re.finditer(pat,html,re.I): vals.append(m.group(0))
-            print('HTML',pat,vals[:30])
+          src=next(s for s in scripts if '4899-' in s)
+          js=text(base+src)
+          p=js.find('function b(e,a){return"ready"')
+          print('module bytes',len(js),'function b pos',p)
+          print(js[max(0,p-12000):p+3000])
           PY
