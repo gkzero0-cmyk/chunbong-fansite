@@ -160,7 +160,7 @@
   function isSoopPostAssetUrl(raw=''){
     try{
       const parsed=new URL(raw,location.href),host=parsed.hostname.toLowerCase(),path=(parsed.pathname||'').toUpperCase();
-      const hostAllowed=host==='sooplive.com'||host.endsWith('.sooplive.com')||host==='sooplive.co.kr'||host.endsWith('.sooplive.co.kr')||/afreecatv\.(?:com|co\.kr)$/i.test(host);
+      const hostAllowed=host==='sooplive.com'||host.endsWith('.sooplive.com')||host==='sooplive.co.kr'||host.endsWith('.sooplive.co.kr')||host==='afreecatv.com'||host.endsWith('.afreecatv.com')||host==='afreecatv.co.kr'||host.endsWith('.afreecatv.co.kr');
       return parsed.protocol==='https:'&&hostAllowed&&path.includes('/NORMAL_BBS/');
     }catch{return false}
   }
