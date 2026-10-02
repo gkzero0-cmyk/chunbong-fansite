@@ -59,21 +59,18 @@ jobs:
               if anchor not in js: raise SystemExit('top anchor missing')
               js=js.replace(anchor,insert,1)
 
-          handler_anchor="""  $('[data-collector-backfill-soop]',root)?.addEventListener('click',()=>{
-            collectorPost('start-soop-backfill',{url:'https://www.sooplive.com/station/chunbongtv/post'});
-            setMessage('SOOP 전체 기록 수집을 시작했습니다. 과거 게시판을 순회하고, 중단되면 다음 실행에서 이어서 진행합니다.','ok');
-          });
-          """
-          handler_insert="""  $('[data-collector-recapture-soop]',root)?.addEventListener('click',()=>{
+          if "data-collector-recapture-soop]',root" not in js:
+              marker="  $('[data-collector-backfill-soop]'"
+              pos=js.find(marker)
+              if pos<0: raise SystemExit('backfill marker missing')
+              handler="""  $('[data-collector-recapture-soop]',root)?.addEventListener('click',()=>{
             const urls=unresolvedSoopRecaptureTargets(items,browserImports);
             if(!urls.length){setMessage('현재 다시 수집할 SOOP 원문이 없습니다. 브라우저 캡처와 이미지가 모두 확인된 상태입니다.','ok');return}
             for(let offset=0;offset<urls.length;offset+=16){const batch=urls.slice(offset,offset+16);setTimeout(()=>collectorPost('open-urls',{kind:'soop-recapture',urls:batch}),Math.floor(offset/16)*1400)}
             setMessage('본문 또는 이미지 보강이 필요한 SOOP 원문 '+urls.length+'개만 다시 수집합니다. 이번 실행은 진단 정보도 함께 기록합니다.','ok');
           });
-          """+handler_anchor
-          if "data-collector-recapture-soop]',root" not in js:
-              if handler_anchor not in js: raise SystemExit('handler anchor missing')
-              js=js.replace(handler_anchor,handler_insert,1)
+          """
+              js=js[:pos]+handler+js[pos:]
           js_path.write_text(js)
 
           html_path=Path('operator.html')
