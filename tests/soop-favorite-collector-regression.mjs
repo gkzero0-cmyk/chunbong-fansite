@@ -52,9 +52,9 @@ const html=fs.readFileSync(new URL('../operator.html',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../operator.css',import.meta.url),'utf8');
 const api=fs.readFileSync(new URL('../lib/chunbong-content-archive-api.js',import.meta.url),'utf8');
 
-assert.match(collector,/@version\s+1\.4\.2/,'collector userscript version should advance after the second real backfill miss');
-assert.match(collector,/const VERSION='1\.4\.2'/,'collector runtime version must match userscript metadata');
-assert.match(collector,/SOOP_MEDIA_COLLECTOR_VERSION=4/,'backfill must revisit generation 3 captures after the resource-level media fix');
+assert.match(collector,/@version\s+1\.4\.3/,'collector userscript version should advance after confirming legacy SOOP CDN usage');
+assert.match(collector,/const VERSION='1\.4\.3'/,'collector runtime version must match userscript metadata');
+assert.match(collector,/SOOP_MEDIA_COLLECTOR_VERSION=5/,'backfill must revisit generation 4 captures after the legacy CDN compatibility fix');
 assert.match(collector,/mediaCollectorVersion:SOOP_MEDIA_COLLECTOR_VERSION/,'SOOP payload should identify the media collector generation');
 assert.match(collector,/collectorVersion:SOOP_MEDIA_COLLECTOR_VERSION,mediaComplete:images\.length>0,imageCount:images\.length/,'zero-image captures must not be marked media complete');
 assert.match(collector,/recheckAuthenticated&&!mediaCurrent/,'backfill should revisit legacy captures without increasing normal watcher work');
@@ -68,6 +68,7 @@ assert.match(collector,/backgroundImage/,'SOOP collector should inspect CSS back
 assert.match(collector,/getAttribute\?\.\(['"]href['"]\)/,'SOOP collector should inspect linked attachment URLs');
 assert.match(collector,/querySelectorAll\(['"]img,source,a\[href\],\[style\]['"]\)/,'SOOP collector should inspect page-wide image, source, link, and styled nodes');
 assert.match(collector,/NORMAL_BBS/,'SOOP collector should recognize canonical post attachment CDN paths across all recovery channels');
+assert.match(collector,/afreecatv\.(?:com|co\.kr)/,'SOOP collector must keep legacy Afreeca attachment CDN URLs still used by SOOP');
 assert.match(collector,/await loadLazyPage\(\)/,'authenticated post capture should force lazy media to load before collection');
 assert.match(collector,/profile\|avatar\|favicon\|logo\|icon\|emoji\|badge/,'SOOP collector should filter common decorative images');
 assert.doesNotMatch(collector,/204274449|208562045/,'media recovery must be generic and must not hardcode validation post IDs');
