@@ -25,6 +25,7 @@ assert.match(collector,/cb-soop-watch-next-at-v1/,'operator scheduler should per
 assert.match(collector,/SOOP_WATCH_LEASE_MS=2\*60\*1000/,'watch lease should expire quickly');
 assert.match(collector,/scheduleSoopWatch/,'operator-page userscript should own scheduling');
 assert.match(collector,/runSoopWatchOnce/,'SOOP board page should scan once and close');
+assert.match(collector,/result\.discovered\*900\+900/,'one-shot board must stay alive until delayed new-post tab launches are scheduled');
 assert.match(collector,/window\.close\(\)/,'one-shot watcher should close its temporary page after scanning');
 assert.doesNotMatch(collector,/208562045|204274449/,'production collector must remain generic');
 
