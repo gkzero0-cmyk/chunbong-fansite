@@ -26,6 +26,6 @@ assert.match(runtime,/sourcePreview=1/,'notice-style source cards must still loa
 
 assert.doesNotMatch(css,/\.archive-source-reader(?:\{|::)/,'obsolete modal reader styling must stay removed');
 assert.match(css,/\.archive-source-notice/,'content-specific notice spacing should be scoped without duplicating the notice component');
-assert.match(loader,/content-page-enhancements\.js\?v=5/,'content enhancement runtime version must bust the old modal implementation');
+assert.match(loader,/content-page-enhancements\.js\?v=6/,'content enhancement runtime version must refresh the official-body/external-link reader fix');
 
 console.log('Chunbong content shared hero, notice UI, and nested-route regression passed');
