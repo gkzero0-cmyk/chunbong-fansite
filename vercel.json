@@ -68,8 +68,8 @@
   "ignoreCommand": "node .github/scripts/vercel-ignore-build.mjs",
   "redirects": [
     {
-      "source": "/operator.html",
-      "destination": "/operator",
+      "source": "/operator",
+      "destination": "/operator.html",
       "permanent": false
     },
     {
@@ -85,7 +85,7 @@
   ],
   "rewrites": [
     {
-      "source": "/operator",
+      "source": "/operator.html",
       "destination": "/api/survival-wiki?mode=operator-page"
     },
     {
