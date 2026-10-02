@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         춘봉 콘텐츠 자동 수집기
 // @namespace    https://chunbong-fansite.vercel.app/
-// @version      1.4.5
+// @version      1.4.6
 // @description  춘봉 팬사이트용 나무위키·SOOP·FM코리아 브라우저 자료 자동 수집기
 // @match        https://namu.wiki/w/*
 // @match        https://www.namu.wiki/w/*
@@ -26,7 +26,7 @@
 
 (function(){
   'use strict';
-  const VERSION='1.4.5';
+  const VERSION='1.4.6';
   const CHANNEL='chunbong-content-collector';
   const PAGE_MESSAGE_EVENT='chunbong-content-collector-page-message';
   const PAGE_COMMAND_EVENT='chunbong-content-collector-page-command';
@@ -45,7 +45,7 @@
   const SOOP_WATCH_HASH='chunbong-soop-watch';
   const SOOP_SELFTEST_HASH='chunbong-soop-selftest';
   const SOOP_WATCH_INTERVAL_MS=5*60*1000;
-  const SOOP_MEDIA_COLLECTOR_VERSION=7;
+  const SOOP_MEDIA_COLLECTOR_VERSION=8;
   const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const clean=value=>String(value||'').replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim();
   const read=(key,fallback)=>{try{const value=GM_getValue(key,fallback);return value??fallback}catch{return fallback}};
@@ -174,11 +174,25 @@
     for(const attr of ['srcset','data-srcset'])for(const part of String(node?.getAttribute?.(attr)||'').split(',')){const candidate=part.trim().split(/\s+/)[0];if(candidate)values.push(candidate)}
     return values.filter(Boolean);
   }
-  function isSoopPostAssetUrl(raw=''){
+  function isTrustedSoopMediaHost(raw=''){
     try{
-      const parsed=new URL(raw,location.href),host=parsed.hostname.toLowerCase(),path=(parsed.pathname||'').toUpperCase();
+      const parsed=new URL(raw,location.href),host=parsed.hostname.toLowerCase();
       const hostAllowed=host==='sooplive.com'||host.endsWith('.sooplive.com')||host==='sooplive.co.kr'||host.endsWith('.sooplive.co.kr')||host==='afreecatv.com'||host.endsWith('.afreecatv.com')||host==='afreecatv.co.kr'||host.endsWith('.afreecatv.co.kr');
-      return parsed.protocol==='https:'&&hostAllowed&&path.includes('/NORMAL_BBS/');
+      return parsed.protocol==='https:'&&hostAllowed;
+    }catch{return false}
+  }
+  function isSoopPostAssetUrl(raw=''){
+    try{const parsed=new URL(raw,location.href);return isTrustedSoopMediaHost(raw)&&(parsed.pathname||'').toUpperCase().includes('/NORMAL_BBS/')}
+    catch{return false}
+  }
+  function isTrustedRenderedSoopMedia(raw=''){
+    try{
+      if(!isTrustedSoopMediaHost(raw))return false;
+      const parsed=new URL(raw,location.href),path=(parsed.pathname||'').toLowerCase();
+      if(path.includes('/station/'))return false;
+      if(/(?:^|[\/_-])(?:thumb_)?(?:profile|avatar|favicon|logo|icon|emoji|badge|banner|cover|category|channel)(?:[\/_\-.]|$)/i.test(path))return false;
+      if(/(?:default|no[-_]?image|blank|loading)[-_]?(?:profile|thumb|image)?/i.test(path))return false;
+      return true;
     }catch{return false}
   }
   function isDecorativeSoopImage(node,raw=''){
@@ -194,8 +208,8 @@
     }catch{return true}
   }
   function collectSoopImages(chosen){
-    const postImages=new Set(),candidates=new Set(),samples=[],sourceCounts={node:0,href:0,css:0,resource:0,html:0};
-    const rejectedByReason={invalid_url:0,non_https:0,not_post_asset:0,decorative:0,duplicate:0};
+    const postImages=new Set(),candidates=new Set(),samples=[],sourceCounts={node:0,href:0,css:0,resource:0,html:0,rendered:0,iframe:0};
+    const rejectedByReason={invalid_url:0,non_https:0,not_post_asset:0,decorative:0,duplicate:0,rendered_small:0,rendered_untrusted:0};
     const rememberSample=parsed=>{const sample=(parsed.hostname+parsed.pathname).slice(0,240);if(sample&&!samples.includes(sample)&&samples.length<8)samples.push(sample)};
     const inspect=(raw,channel='node',node=null)=>{
       if(!raw)return;const value=String(raw||'').trim();if(!value)return;
@@ -217,10 +231,29 @@
     try{for(const entry of performance.getEntriesByType('resource'))inspect(entry?.name,'resource')}catch{}
     const renderedHtml=String(document.documentElement?.outerHTML||'').replace(/\\u002f/gi,'/').replace(/\\\//g,'/');
     for(const match of renderedHtml.matchAll(/(?:https?:)?\/\/[^\s\"'<>)]*\/NORMAL_BBS\/[^\s\"'<>)]*/gi))inspect(match[0].replace(/&amp;/g,'&'),'html');
-    const fallbackImages=new Set(),addFallback=(node,raw)=>{if(!raw||isDecorativeSoopImage(node,raw))return;try{const parsed=new URL(raw,location.href);if(parsed.protocol==='https:')fallbackImages.add(parsed.toString())}catch{}};
+    const fallbackImages=new Set();
+    const addRendered=(node,raw,channel='rendered')=>{
+      if(!raw)return;let parsed=null;try{parsed=new URL(raw,location.href)}catch{rejectedByReason.invalid_url++;return}
+      const key=parsed.toString();
+      if(!isTrustedRenderedSoopMedia(key)){rejectedByReason.rendered_untrusted++;return}
+      if(isDecorativeSoopImage(node,key)){rejectedByReason.decorative++;return}
+      const visual=node?.tagName==='SOURCE'?node.closest?.('picture')?.querySelector?.('img'):node,rect=visual?.getBoundingClientRect?.();
+      const width=Math.max(Number(visual?.naturalWidth||0),Number(visual?.width||visual?.getAttribute?.('width')||0),Number(rect?.width||0));
+      const height=Math.max(Number(visual?.naturalHeight||0),Number(visual?.height||visual?.getAttribute?.('height')||0),Number(rect?.height||0));
+      if(width<280||height<120){rejectedByReason.rendered_small++;return}
+      if(!candidates.has(key)){candidates.add(key);rememberSample(parsed)}
+      if(Object.prototype.hasOwnProperty.call(sourceCounts,channel))sourceCounts[channel]++;
+      fallbackImages.add(key);
+    };
     if(!postImages.size){
       const roots=[chosen,...document.querySelectorAll('article,main,[class*="post-content"],[class*="article-content"],[class*="board-content"],[class*="viewer"],[class*="content"],[class*="attach"],[class*="file"],[class*="gallery"],[class*="photo"]')].filter(Boolean).filter((root,index,all)=>all.indexOf(root)===index).slice(0,40);
-      for(const root of roots)for(const node of [...root.querySelectorAll('img,source')].slice(0,180))for(const raw of soopImageValues(node))addFallback(node,raw);
+      for(const root of roots)for(const node of [...root.querySelectorAll('img,source')].slice(0,240))for(const raw of soopImageValues(node))addRendered(node,raw,'rendered');
+      for(const frame of [...document.querySelectorAll('iframe')].slice(0,24)){
+        let doc=null;try{doc=frame.contentDocument}catch{doc=null}if(!doc)continue;
+        const iframeRoots=[...doc.querySelectorAll('article,main,[class*="post-content"],[class*="article-content"],[class*="board-content"],[class*="viewer"],[class*="content"],[class*="attach"],[class*="file"],[class*="gallery"],[class*="photo"]')];
+        const scanRoots=iframeRoots.length?iframeRoots.slice(0,30):[doc.body].filter(Boolean);
+        for(const root of scanRoots)for(const node of [...root.querySelectorAll('img,source')].slice(0,240))for(const raw of soopImageValues(node))addRendered(node,raw,'iframe');
+      }
     }
     const images=(postImages.size?[...postImages]:[...fallbackImages]).slice(0,24);
     return{images,diagnostics:{candidateCount:candidates.size,acceptedCount:images.length,rejectedByReason,sourceCounts,samples,fallbackCount:fallbackImages.size}};

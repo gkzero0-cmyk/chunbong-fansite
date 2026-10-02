@@ -4,7 +4,7 @@ import fs from 'node:fs';
 const historyCss=fs.readFileSync(new URL('../operator-history-audit.css',import.meta.url),'utf8');
 const redisCss=fs.readFileSync(new URL('../operator-redis-diagnostics.css',import.meta.url),'utf8');
 const budgetCss=fs.readFileSync(new URL('../operator-budget-extra.css',import.meta.url),'utf8');
-const operatorUx=fs.readFileSync(new URL('../operator-redis-diagnostics.js',import.meta.url),'utf8');
+const operatorUx=fs.readFileSync(new URL('../operator-redis-diagnostics-core.js',import.meta.url),'utf8');
 
 assert.doesNotMatch(historyCss,/font-size:(?:8|9|10)px/,'broadcast-history audit text should not fall below 11px');
 assert.doesNotMatch(redisCss,/font-size:10px/,'Redis diagnostics helper text should not fall below 11px');

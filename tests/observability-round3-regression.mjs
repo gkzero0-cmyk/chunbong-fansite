@@ -31,7 +31,7 @@ assert.match(guardian,/CACHED_RATE_LIMIT_AT/,'guardian should preserve the first
 assert.doesNotMatch(guardian,/per_page=100/,'guardian should not scan 100 commit statuses every hour');
 assert.doesNotMatch(guardian,/commits\?sha=main&per_page=/,'guardian should avoid commit-history status scans entirely');
 
-const diagnostics=read('operator-redis-diagnostics.js');
+const diagnostics=read('operator-redis-diagnostics-core.js');
 assert.match(diagnostics,/관찰 기반 추정/,'Redis diagnostics should expose an observed estimate when exact usage is unavailable');
 assert.match(diagnostics,/70/);
 assert.match(diagnostics,/85/);
@@ -58,7 +58,6 @@ assert.match(shell,/loadScript\(['"]site-health\.js['"]\)/,'shared site shell mu
 const contentApi=read('api/content.js');
 assert.match(contentApi,/type==='client-health'/,'public client health ingestion route should exist');
 assert.match(contentApi,/recordCollectorResult/,'content API should update collector freshness without Redis');
-
 
 const operatorApi=read('lib/operator-center-api.js');
 assert.match(operatorApi,/clientHealth/);

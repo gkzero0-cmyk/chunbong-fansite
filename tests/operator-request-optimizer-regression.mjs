@@ -1,11 +1,14 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
-const optimizer=fs.readFileSync(new URL('../operator-redis-diagnostics.js',import.meta.url),'utf8');
+const entry=fs.readFileSync(new URL('../operator-redis-diagnostics.js',import.meta.url),'utf8');
+const optimizer=fs.readFileSync(new URL('../operator-redis-diagnostics-core.js',import.meta.url),'utf8');
 const diagnostics=fs.readFileSync(new URL('../lib/redis-command-diagnostics.js',import.meta.url),'utf8');
 const operator=fs.readFileSync(new URL('../operator.js',import.meta.url),'utf8');
 const api=fs.readFileSync(new URL('../lib/operator-center-api.js',import.meta.url),'utf8');
 
+assert.match(entry,/operator-soop-diagnostics\.js/,'operator entry should load SOOP diagnostics');
+assert.match(entry,/operator-redis-diagnostics-core\.js/,'operator entry should preserve the Redis diagnostics runtime');
 assert.match(optimizer,/installOperatorRequestOptimizer/,'operator request optimizer missing');
 assert.match(optimizer,/SECURITY_LOG_CACHE_MS=5\*60\*1000/,'security log cache must be five minutes');
 assert.match(optimizer,/operator-system-status/,'system status boot deferral missing');
