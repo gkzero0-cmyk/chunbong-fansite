@@ -5,9 +5,14 @@ const COLLECTOR_COMMAND_ATTR='data-chunbong-collector-command';
 const COLLECTOR_COMMAND_EVENT='chunbong-content-collector-page-command';
 const $=(selector,root=document)=>root.querySelector(selector);
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const handledCommands=new Map();
 
 function cleanIds(values=[]){return [...new Set((Array.isArray(values)?values:[]).map(value=>String(value||'')).filter(value=>/^\d+$/.test(value)))].slice(0,40)}
 function postIdFromUrl(raw=''){try{return(new URL(String(raw||''),location.href).pathname.match(/^\/station\/chunbongtv\/post\/(\d+)\/?$/i)||[])[1]||''}catch{return''}}
+function rememberCommand(data={}){
+  const id=String(data.commandId||'');if(!id)return false;const now=Date.now(),last=Number(handledCommands.get(id)||0);
+  handledCommands.set(id,now);for(const [key,at] of handledCommands)if(now-at>15000)handledCommands.delete(key);return Boolean(last&&now-last<15000);
+}
 function statusFor(row={}){
   if(Number(row.imageCount||0)>0)return'ok';
   const phase=String(row.phase||'');
@@ -49,7 +54,7 @@ export function renderSoopDiagnostics(rows=[]){
     return '<article class="operator-collector-inbox-item" data-state="'+esc(row.status)+'"><div><small>SOOP '+esc(row.postId)+'</small><strong>'+esc(statusLabel(row.status))+'</strong><p>'+esc(meta)+'</p>'+(when?'<time>'+esc(when)+'</time>':'')+'</div><a href="https://www.sooplive.com/station/chunbongtv/post/'+esc(row.postId)+'" target="_blank" rel="noopener noreferrer">원문 열기 ↗</a></article>';
   }).join('');
 }
-let lastRows=[],loading=false;
+let lastRows=[],loading=false,planRefreshTimer=null;
 async function refreshDiagnostics({force=false}={}){
   const requested=readRequested();if(!requested.length){renderSoopDiagnostics([]);return[]}
   if(loading&&!force)return lastRows;loading=true;
@@ -61,10 +66,24 @@ async function refreshDiagnostics({force=false}={}){
     lastRows=soopDiagnosticViewRows(requested,[]);renderSoopDiagnostics(lastRows);const summary=$('[data-soop-diagnostic-summary]');if(summary)summary.textContent='진단을 불러오지 못했습니다: '+String(error?.message||error);return lastRows;
   }finally{loading=false}
 }
-function recaptureIds(data={}){if(data?.channel!==COLLECTOR_CHANNEL||data?.type!=='open-urls'||data?.kind!=='soop-recapture')return[];return cleanIds((Array.isArray(data.urls)?data.urls:[]).map(postIdFromUrl))}
+function recaptureIds(data={}){
+  if(data?.channel!==COLLECTOR_CHANNEL)return[];
+  if(data?.type==='recapture-plan'&&data?.kind==='soop-recapture')return cleanIds((Array.isArray(data.urls)?data.urls:[]).map(postIdFromUrl));
+  if(data?.type==='open-urls'&&data?.kind==='soop-recapture')return cleanIds((Array.isArray(data.urls)?data.urls:[]).map(postIdFromUrl));
+  return[];
+}
 function handleCollectorCommand(data={}){
+  if(data?.channel!==COLLECTOR_CHANNEL||rememberCommand(data))return;
+  if(data.type==='recapture-finish'&&data.kind==='soop-recapture'){
+    if(planRefreshTimer){clearTimeout(planRefreshTimer);planRefreshTimer=null}
+    void refreshDiagnostics({force:true});setTimeout(()=>void refreshDiagnostics({force:true}),2500);return;
+  }
   const ids=recaptureIds(data);if(!ids.length)return;
   const requested=writeRequested([...readRequested(),...ids]);lastRows=soopDiagnosticViewRows(requested,lastRows);renderSoopDiagnostics(lastRows);
+  if(data.type==='recapture-plan'){
+    if(planRefreshTimer)clearTimeout(planRefreshTimer);
+    planRefreshTimer=setTimeout(()=>{planRefreshTimer=null;void refreshDiagnostics({force:true})},6000);return;
+  }
   setTimeout(()=>void refreshDiagnostics({force:true}),5000);setTimeout(()=>void refreshDiagnostics({force:true}),22000);
 }
 function contentsVisible(){const panel=$('[data-operator-panel="contents"]');return Boolean(panel&&!panel.hidden)}

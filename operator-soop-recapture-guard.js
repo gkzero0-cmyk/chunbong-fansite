@@ -6,7 +6,11 @@ const MESSAGE_ATTR='data-chunbong-collector-message';
 const MESSAGE_EVENT='chunbong-content-collector-page-message';
 const READY_ATTR='data-chunbong-collector-ready';
 const VERSION_ATTR='data-chunbong-collector-version';
-let awaitingRecaptureCommand=false,armTimer=null;
+const ARCHIVE_API='/api/content?type=operator-content-archive';
+const SOOP_RECAPTURE_SESSION_KEY='chunbong:operator:soop-sequential-recapture:v1';
+const RECAPTURE_SESSION_TTL_MS=30*60*1000;
+const STEP_TIMEOUT_MS=32000;
+let recaptureRunning=false;
 
 export function versionAtLeast(actual='',minimum=MIN_COLLECTOR_VERSION){
   const parse=value=>String(value||'').split('.').map(part=>Number.parseInt(part,10)).map(value=>Number.isFinite(value)?value:0);
@@ -35,52 +39,123 @@ function readPageMessage(){
   try{return JSON.parse(document.documentElement?.getAttribute(MESSAGE_ATTR)||'{}')}catch{return{}}
 }
 function isStateMessage(data={}){return Boolean(data&&data.channel===COLLECTOR_CHANNEL&&data.type==='state')}
-function waitForCollectorState(timeoutMs=2200){
+function postIdFromUrl(raw=''){try{return(new URL(String(raw||''),location.href).pathname.match(/^\/station\/chunbongtv\/post\/(\d+)\/?$/i)||[])[1]||''}catch{return''}}
+function canonicalSoopPost(raw=''){
+  try{
+    const url=new URL(String(raw||''),'https://www.sooplive.com'),match=url.pathname.match(/^\/station\/chunbongtv\/post\/(\d+)\/?$/i);
+    if(!['sooplive.com','www.sooplive.com'].includes(url.hostname.toLowerCase())||!match)return'';
+    return'https://www.sooplive.com/station/chunbongtv/post/'+match[1];
+  }catch{return''}
+}
+function importImageCount(row={}){
+  const explicit=Number(row?.imageCount);if(Number.isFinite(explicit)&&explicit>0)return explicit;
+  const direct=Array.isArray(row?.images)?row.images.length:0,nested=Array.isArray(row?.payload?.images)?row.payload.images.length:0;
+  return Math.max(0,direct,nested);
+}
+function recaptureTargets(payload={}){
+  const imports=new Map();
+  for(const row of Array.isArray(payload.browserImports)?payload.browserImports:[]){const url=canonicalSoopPost(row?.url||row?.payload?.url);if(url)imports.set(url,row)}
+  const seen=new Set(),targets=[];
+  for(const item of Array.isArray(payload.items)?payload.items:[]){
+    for(const row of [...(Array.isArray(item?.timeline)?item.timeline:[]),...(Array.isArray(item?.media)?item.media:[]),...(Array.isArray(item?.sources)?item.sources:[])]){
+      if(!row||row.visibility==='internal')continue;
+      const url=canonicalSoopPost(row.url);if(!url||seen.has(url))continue;seen.add(url);
+      const captured=imports.get(url);if(captured&&importImageCount(captured)>0)continue;
+      targets.push({url,postId:postIdFromUrl(url),hasCapture:Boolean(captured)});
+    }
+  }
+  targets.sort((a,b)=>Number(b.hasCapture)-Number(a.hasCapture)||Number(b.postId)-Number(a.postId));
+  return targets;
+}
+function readRecaptureSession(){
+  try{const row=JSON.parse(localStorage.getItem(SOOP_RECAPTURE_SESSION_KEY)||'null');return row&&Number(row.expiresAt||0)>Date.now()?row:null}catch{return null}
+}
+function writeRecaptureSession(patch={}){
+  const previous=readRecaptureSession()||{};const next={...previous,...patch,active:true,updatedAt:Date.now(),expiresAt:Date.now()+RECAPTURE_SESSION_TTL_MS};
+  try{localStorage.setItem(SOOP_RECAPTURE_SESSION_KEY,JSON.stringify(next))}catch{}return next;
+}
+function clearRecaptureSession(){try{localStorage.removeItem(SOOP_RECAPTURE_SESSION_KEY)}catch{}}
+function suppressAutoFlushDuringSequentialRecapture(){
+  if(typeof location==='undefined'||!location.hash.includes('collector-auto-flush')||!readRecaptureSession())return false;
+  setTimeout(()=>{try{window.close()}catch{}},0);return true;
+}
+function sendCommand(type,data={}){
+  const payload={channel:COLLECTOR_CHANNEL,version:1,commandId:'recapture-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),type,...data};
+  try{window.postMessage(payload,location.origin)}catch{}
+  try{const root=document.documentElement;if(root){root.setAttribute(COMMAND_ATTR,JSON.stringify(payload));document.dispatchEvent(new CustomEvent(COMMAND_EVENT))}}catch{}
+  return payload;
+}
+function sendPing(){const payload={type:'ping'};return sendCommand(payload.type)}
+function waitForCollectorState(timeoutMs=2600){
   return new Promise(resolve=>{
     let done=false,timer=null;
     const finish=value=>{if(done)return;done=true;if(timer)clearTimeout(timer);window.removeEventListener('message',onWindow);document.removeEventListener(MESSAGE_EVENT,onPage);resolve(value||null)};
     const onWindow=event=>{if(event.source===window&&event.origin===location.origin&&isStateMessage(event.data||{}))finish(event.data)};
     const onPage=()=>{const data=readPageMessage();if(isStateMessage(data))finish(data)};
-    window.addEventListener('message',onWindow);document.addEventListener(MESSAGE_EVENT,onPage);
-    timer=setTimeout(()=>finish(null),timeoutMs);
+    window.addEventListener('message',onWindow);document.addEventListener(MESSAGE_EVENT,onPage);timer=setTimeout(()=>finish(null),timeoutMs);
   });
 }
-function sendPing(){
-  const payload={channel:COLLECTOR_CHANNEL,version:1,commandId:'recapture-ack-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),type:'ping'};
-  try{window.postMessage(payload,location.origin)}catch{}
-  try{const root=document.documentElement;if(root){root.setAttribute(COMMAND_ATTR,JSON.stringify(payload));document.dispatchEvent(new CustomEvent(COMMAND_EVENT))}}catch{}
+function waitForPostDiagnostic(postId,startedAt=Date.now(),timeoutMs=STEP_TIMEOUT_MS){
+  return new Promise(resolve=>{
+    let done=false,timer=null;
+    const matches=data=>{
+      if(!isStateMessage(data))return false;
+      const status=data.collectorStatus||{},at=Date.parse(status.lastDiagnosticAt||'')||0;
+      return String(status.lastDiagnosticPostId||'')===String(postId)&&at>=startedAt-1000;
+    };
+    const finish=value=>{if(done)return;done=true;if(timer)clearTimeout(timer);window.removeEventListener('message',onWindow);document.removeEventListener(MESSAGE_EVENT,onPage);resolve(Boolean(value))};
+    const onWindow=event=>{if(event.source===window&&event.origin===location.origin&&matches(event.data||{}))finish(true)};
+    const onPage=()=>{const data=readPageMessage();if(matches(data))finish(true)};
+    window.addEventListener('message',onWindow);document.addEventListener(MESSAGE_EVENT,onPage);timer=setTimeout(()=>finish(false),timeoutMs);
+  });
 }
-async function verifyRecaptureDelivery(){
+async function verifyCollectorConnection(){
+  const detected=collectorReadyState();
+  if(!detected.ready){setStatus('SOOP 누락 자료 재수집을 시작하지 않았습니다. 자동 수집기가 이 운영자 페이지에 연결되지 않았습니다. 자동 수집기 설치 / 업데이트 후 페이지를 새로고침해 주세요.','bad');return null}
+  if(!detected.supported){setStatus('SOOP 누락 자료 재수집을 시작하지 않았습니다. 자동 수집기 v'+(detected.version||'?')+'가 감지됐지만 v'+MIN_COLLECTOR_VERSION+' 이상이 필요합니다. 자동 수집기를 업데이트해 주세요.','bad');return null}
   const pending=waitForCollectorState();sendPing();const state=await pending;
-  if(!state){setStatus('SOOP 재수집 명령을 보냈지만 자동 수집기의 확인 응답이 없습니다. 자동 수집기 연결 상태를 확인한 뒤 다시 실행해 주세요.','bad');return false}
-  const version=String(state.version||collectorReadyState().version||'');
-  if(!versionAtLeast(version,MIN_COLLECTOR_VERSION)){setStatus('자동 수집기 응답은 왔지만 버전이 오래되었습니다. 자동 수집기를 업데이트한 뒤 다시 실행해 주세요.','bad');return false}
-  setStatus('SOOP 재수집 명령 전달 확인됨 · 자동 수집기 v'+version+'이 명령을 정상 수신했습니다. 글별 복구 상태에서 결과를 확인할 수 있습니다.','ok');return true;
+  if(!state){setStatus('자동 수집기는 감지됐지만 확인 응답이 없습니다. 페이지를 새로고침한 뒤 다시 실행해 주세요.','bad');return null}
+  const version=String(state.version||detected.version||'');
+  if(!versionAtLeast(version,MIN_COLLECTOR_VERSION)){setStatus('자동 수집기 응답 버전이 오래되었습니다. v'+MIN_COLLECTOR_VERSION+' 이상으로 업데이트해 주세요.','bad');return null}
+  return{...state,version};
 }
-function recaptureCommand(){
-  try{const data=JSON.parse(document.documentElement?.getAttribute(COMMAND_ATTR)||'{}');return data?.channel===COLLECTOR_CHANNEL&&data?.type==='open-urls'&&data?.kind==='soop-recapture'?data:null}catch{return null}
+async function loadRecaptureTargets(){
+  const response=await fetch(ARCHIVE_API,{credentials:'include',cache:'no-store',headers:{Accept:'application/json'}}),payload=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(payload.error||('HTTP '+response.status));return recaptureTargets(payload);
 }
-function armOneShotVerification(){
-  awaitingRecaptureCommand=true;if(armTimer)clearTimeout(armTimer);
-  armTimer=setTimeout(()=>{awaitingRecaptureCommand=false;armTimer=null},1200);
+async function runSequentialRecapture(button){
+  if(recaptureRunning){setStatus('SOOP 누락 자료 재수집이 이미 순차 진행 중입니다.','busy');return}
+  recaptureRunning=true;if(button)button.disabled=true;
+  let finished=0,timeouts=0,total=0;
+  try{
+    const connection=await verifyCollectorConnection();if(!connection)return;
+    const targets=await loadRecaptureTargets();total=targets.length;
+    if(!total){setStatus('현재 다시 수집할 SOOP 원문이 없습니다. 브라우저 캡처와 이미지가 모두 확인된 상태입니다.','ok');return}
+    writeRecaptureSession({total,completed:0,currentPostId:'',version:connection.version});
+    sendCommand('recapture-plan',{kind:'soop-recapture',urls:targets.map(row=>row.url)});
+    for(let index=0;index<targets.length;index++){
+      const {url,postId}=targets[index],startedAt=Date.now();
+      writeRecaptureSession({total,completed:index,currentPostId:postId});
+      setStatus('SOOP 누락 자료 순차 재수집 중 · '+(index+1)+'/'+total+' · 글 '+postId+' 처리 중','busy');
+      const completion=waitForPostDiagnostic(postId,startedAt);
+      sendCommand('open-urls',{kind:'soop-recapture-step',urls:[url]});
+      const ok=await completion;if(ok)finished+=1;else timeouts+=1;
+      writeRecaptureSession({total,completed:index+1,currentPostId:'',timeouts});
+      await new Promise(resolve=>setTimeout(resolve,900));
+    }
+    sendCommand('recapture-finish',{kind:'soop-recapture',total,completed:finished,timeouts});
+    setStatus('SOOP 누락 자료 순차 재수집 완료 · '+finished+'/'+total+'건 응답 확인'+(timeouts?' · 시간 초과 '+timeouts+'건':'')+'. 글별 복구 상태를 새로고침해 결과를 확인하세요.','ok');
+  }catch(error){
+    sendCommand('recapture-finish',{kind:'soop-recapture',total,completed:finished,timeouts,error:String(error?.message||error)});
+    setStatus('SOOP 누락 자료 순차 재수집을 완료하지 못했습니다: '+String(error?.message||error),'bad');
+  }finally{
+    clearRecaptureSession();recaptureRunning=false;if(button)button.disabled=false;
+  }
 }
-function blockUnavailableCollector(event){
+function handleRecaptureClick(event){
   const button=event.target?.closest?.('[data-collector-recapture-soop]');if(!button)return;
-  const state=collectorReadyState();
-  if(state.supported){armOneShotVerification();return}
-  event.preventDefault();event.stopImmediatePropagation();
-  if(!state.ready){setStatus('SOOP 누락 자료 재수집을 시작하지 않았습니다. 자동 수집기가 이 운영자 페이지에 연결되지 않았습니다. 자동 수집기 설치 / 업데이트 후 페이지를 새로고침해 주세요.','bad');return}
-  setStatus('SOOP 누락 자료 재수집을 시작하지 않았습니다. 자동 수집기 v'+(state.version||'?')+'가 감지됐지만 v'+MIN_COLLECTOR_VERSION+' 이상이 필요합니다. 자동 수집기를 업데이트해 주세요.','bad');
+  event.preventDefault();event.stopImmediatePropagation();void runSequentialRecapture(button);
 }
-function handleCollectorCommand(){
-  if(!awaitingRecaptureCommand||!recaptureCommand())return;
-  awaitingRecaptureCommand=false;if(armTimer){clearTimeout(armTimer);armTimer=null}
-  setTimeout(()=>void verifyRecaptureDelivery(),80);
-}
-function boot(){
-  document.addEventListener('click',blockUnavailableCollector,true);
-  document.addEventListener(COMMAND_EVENT,handleCollectorCommand);
-}
-if(typeof document!=='undefined'&&typeof window!=='undefined'){
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-}
+function boot(){document.addEventListener('click',handleRecaptureClick,true)}
+const autoFlushSuppressed=typeof document!=='undefined'&&typeof window!=='undefined'&&suppressAutoFlushDuringSequentialRecapture();
+if(typeof document!=='undefined'&&typeof window!=='undefined'&&!autoFlushSuppressed){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot()}
