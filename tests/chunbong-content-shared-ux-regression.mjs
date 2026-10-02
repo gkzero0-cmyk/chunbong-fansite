@@ -23,9 +23,10 @@ assert.match(runtime,/notice-body/,'linked posts must render inside the existing
 assert.match(runtime,/notice-content/,'linked post body and images must use the existing notice content container');
 assert.match(runtime,/sessionStorage/,'opened source previews should remain session-cached');
 assert.match(runtime,/sourcePreview=1/,'notice-style source cards must still load the saved/public post body lazily');
+assert.match(runtime,/previewVersion=5/,'source previews must bypass the previous cached unsanitized body response');
 
 assert.doesNotMatch(css,/\.archive-source-reader(?:\{|::)/,'obsolete modal reader styling must stay removed');
 assert.match(css,/\.archive-source-notice/,'content-specific notice spacing should be scoped without duplicating the notice component');
-assert.match(loader,/content-page-enhancements\.js\?v=6/,'content enhancement runtime version must refresh the official-body/external-link reader fix');
+assert.match(loader,/content-page-enhancements\.js\?v=7/,'content enhancement runtime version must refresh the SOOP body sanitizer');
 
 console.log('Chunbong content shared hero, notice UI, and nested-route regression passed');

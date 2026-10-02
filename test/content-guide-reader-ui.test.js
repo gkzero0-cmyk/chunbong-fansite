@@ -34,8 +34,8 @@ test('posts and sources reuse the fan-site notice card, preserve official SOOP b
   assert.match(js,/notice-detail/);
   assert.match(js,/notice-content/);
   assert.match(js,/sourcePreview=1/);
-  assert.match(js,/previewVersion=4/);
-  assert.match(js,/source-preview:v6/);
+  assert.match(js,/previewVersion=5/);
+  assert.match(js,/source-preview:v7/);
   assert.match(js,/sessionStorage/);
   assert.doesNotMatch(js,/cache:'force-cache'/);
   assert.match(js,/preview\?\.html/);
@@ -45,10 +45,11 @@ test('posts and sources reuse the fan-site notice card, preserve official SOOP b
   assert.match(manage,/html:String\(detail\?\.html/);
   assert.match(manage,/const authoritativeImages=publicPreview\?\.body\?publicPreview\.images:null/);
   assert.match(manage,/looksLikeContaminatedSoopCapture/);
+  assert.match(manage,/sanitizeCapturedSoopBody/);
   assert.match(css,/\.archive-source-notice/);
   assert.match(css,/\.archive-source-notice-html/);
   assert.doesNotMatch(css,/\.archive-source-reader(?:\{|::)/);
-  assert.match(loader,/content-page-enhancements\.js\?v=6/);
+  assert.match(loader,/content-page-enhancements\.js\?v=7/);
 });
 
 test('content hero shares the site hero contract, uses the supplied full-resolution artwork, and nested routes resolve from root',()=>{
