@@ -18,6 +18,7 @@ on:
       - 'api/fanart.js'
       - 'lib/activity-feed.js'
       - '.github/workflows/activity-center-production-smoke.yml'
+      - '.github/scripts/production-readiness-gate.mjs'
 
 permissions:
   contents: read
@@ -36,13 +37,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Stop early on Vercel build-rate-limit
+      - name: Production readiness gate
+        id: production_gate
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: node .github/scripts/vercel-rate-limit-fast-fail.mjs
-
+        run: node .github/scripts/production-readiness-gate.mjs
 
       - name: Wait for current activity-center production
+        if: steps.production_gate.outputs.ready == 'true'
         env:
           BASE_URL: https://chunbong-fansite.vercel.app
         run: |
@@ -68,11 +70,13 @@ jobs:
           exit 1
 
       - name: Install Playwright Chromium
+        if: steps.production_gate.outputs.ready == 'true'
         run: |
           npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install --with-deps chromium
 
       - name: Verify production bell and read state
+        if: steps.production_gate.outputs.ready == 'true'
         env:
           BASE_URL: https://chunbong-fansite.vercel.app
         run: |
@@ -151,3 +155,7 @@ jobs:
             await browser.close();
           }
           EOF_NODE
+
+      - name: Production blocked
+        if: steps.production_gate.outputs.blocked == 'true'
+        run: echo 'Activity production smoke is waiting for the Vercel cooldown; Playwright was not installed.'

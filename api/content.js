@@ -18,6 +18,7 @@ const handleMinigameMultiplayer = require('../lib/minigame-multiplayer-api');
 const handleChangelogHistory = require('../lib/changelog-history-api');
 const pushNotifications = require('../lib/push-notifications-api');
 const operatorCenter=require('../lib/operator-center-api');
+const operatorObservability=require('../lib/operator-observability');
 const contentArchive=require('../lib/chunbong-content-archive-api');
 const browserImportManage=require('../lib/chunbong-content-browser-import-manage');
 const youtubeEngagementCache = require('../data/youtube-engagement-cache.json');
@@ -269,6 +270,12 @@ function compactDataPayload(payload, options = {}) {
 async function handler(req,res) {
   const requestUrl=new URL(req.url||'/','https://chunbong.local');
   const type=requestUrl.searchParams.get('type')||'';
+  if(type==='client-health') return operatorObservability.handleClientHealth(req,res);
+  const observedCollectorTypes=new Set(['vod','notice','clips','fanart','youtube','schedule','activity','live']);
+  if(observedCollectorTypes.has(type)&&typeof res?.json==='function'){
+    const originalJson=res.json.bind(res);
+    res.json=payload=>{try{operatorObservability.recordCollectorResult(type,payload)}catch{}return originalJson(payload)};
+  }
   if(type==='chuntris-ranking') return handleChuntrisRanking(req,res);
   if(type==='chunbak-ranking') return handleChunbakRanking(req,res);
   if(type==='chungwagame-ranking') return handleChungwagameRanking(req,res);

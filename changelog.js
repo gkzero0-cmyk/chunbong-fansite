@@ -162,7 +162,7 @@
     changelogSyncPromise=(async()=>{
       try{
         const since=String(checkpoint.throughTime||'').trim();
-        const historyUrl='/api/content?type=changelog-history'+(since?'&since='+encodeURIComponent(since):'');
+        const historyUrl='/api/content?type=changelog-history'+(since?'&since='+encodeURIComponent(since):'')+'&refresh=1';
         const response=await fetch(historyUrl,{headers:{accept:'application/json'},cache:'no-store'});
         if(!response.ok)throw new Error('changelog_history_unavailable');
         const payload=await response.json();
@@ -174,7 +174,7 @@
         render(latestKey);
       }catch(_){
         try{
-          const response=await fetch('/api/content?type=changelog-history&summary=1',{headers:{accept:'application/json'},cache:'no-store'});
+          const response=await fetch('/api/content?type=changelog-history&summary=1&refresh=1',{headers:{accept:'application/json'},cache:'no-store'});
           if(!response.ok)return;
           const payload=await response.json();
           const latestKey=payload.latest?.sha||payload.latest?.shortSha||'';

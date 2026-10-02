@@ -51,6 +51,7 @@ jobs:
           node --check chuncortile.js
           node --check chuncortile-postgame-ranking.js
           node --check api/content.js
+          node --check api/crew-news.js
           node --check api/image.js
           node --check api/tarot-reading.js
           node --check api/version.js
@@ -69,13 +70,16 @@ jobs:
           node --check lib/changelog-history-api.js
           node --check lib/push-notifications-api.js
           node --check lib/operator-center-api.js
+          node --check lib/operator-observability.js
           node --check lib/chunbong-content-archive-api.js
           node --check lib/chunbong-content-auto-ingest.js
           node --check operator-contents.js
           node --check chunbong-content-collector.user.js
           node --check site-analytics.js
+          node --check site-health.js
           node --check feedback-widget.js
           node --check operator.js
+          node --check operator-redis-diagnostics.js
           node --check activity-center.js
           node --check daily-fortune.js
           node --check home-fortune-loader.js
@@ -115,6 +119,7 @@ jobs:
           node --check scripts/update-last-known-good.mjs
           node --check .github/scripts/vercel-ignore-build.mjs
           node --check .github/scripts/vercel-rate-limit-fast-fail.mjs
+          node --check .github/scripts/production-readiness-gate.mjs
           node --check scripts/build-tarot-css.mjs
           node --check scripts/build-tarot-js.mjs
           node --check tarot-bundle.js
