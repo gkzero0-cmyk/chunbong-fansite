@@ -140,9 +140,9 @@ jobs:
               ...archive.groups
             ]
           };
-          await page.evaluate(()=>{const base=Date.now();Date.now=()=>base+61_000;window.dispatchEvent(new Event('focus'));});
+          await page.evaluate(()=>{const base=Date.now();Date.now=()=>base+601_000;window.dispatchEvent(new Event('focus'));});
           await page.waitForFunction(()=>document.querySelector('.changelog-day')?.dataset.changelogDate==='2026-09-24');
-          assert.ok(await page.getByText('춘트리스 기능 추가',{exact:true}).count(),'focus refresh must add the newest grouped Korean update');
+          assert.ok(await page.getByText('춘트리스 기능 추가',{exact:true}).count(),'focus refresh must add the newest grouped Korean update after the sync budget expires');
           assert.equal(await page.getByText('타로 기능 추가',{exact:true}).count(),1,'focus refresh must rebuild from curated data without duplicating existing automatic cards');
           await page.waitForFunction(key=>localStorage.getItem('chunbong-changelog-seen-v2')===key,refreshedSha);
 
@@ -162,7 +162,7 @@ jobs:
               ...archive.groups.slice(1)
             ]
           };
-          await page.evaluate(()=>{const base=Date.now();Date.now=()=>base+122_000;window.dispatchEvent(new Event('focus'));});
+          await page.evaluate(()=>{const base=Date.now();Date.now=()=>base+1_202_000;window.dispatchEvent(new Event('focus'));});
           await page.waitForFunction(()=>document.querySelector('.changelog-unread-dot')?.hidden===false);
           assert.match(await page.locator('.changelog-button').getAttribute('aria-label'),/새 업데이트 있음/,'header red dot must refresh after returning to the tab');
 
