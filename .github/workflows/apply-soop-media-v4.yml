@@ -38,26 +38,28 @@ jobs:
               raise SystemExit(f'missing expected snippet: {old}')
             s=s.replace(old,new,1)
 
-          new_func=r'''  function collectSoopImages(chosen){
-    const postImages=new Set();
-    const addPost=raw=>{if(!raw||!isSoopPostAssetUrl(raw))return;try{postImages.add(new URL(raw,location.href).toString())}catch{}};
-    const addCssUrls=value=>{for(const match of String(value||'').matchAll(/url\((?:['\"])?([^'\")]+)(?:['\"])?\)/gi))addPost(match[1])};
-    for(const node of [...document.querySelectorAll('img,source,a[href],[style]')].slice(0,2200)){
-      for(const raw of soopImageValues(node))addPost(raw);
-      addPost(node.getAttribute?.('href'));
-      const backgroundImage=node.style?.backgroundImage||getComputedStyle(node).backgroundImage||'';
-      addCssUrls(backgroundImage);
-    }
-    try{for(const entry of performance.getEntriesByType('resource'))addPost(entry?.name)}catch{}
-    const renderedHtml=String(document.documentElement?.outerHTML||'').replace(/\\u002f/gi,'/').replace(/\\\//g,'/');
-    for(const match of renderedHtml.matchAll(/https?:\/\/[^\s\"'<>)]*\/NORMAL_BBS\/[^\s\"'<>)]*/gi))addPost(match[0].replace(/&amp;/g,'&'));
-    if(postImages.size)return[...postImages].slice(0,24);
-    const imageSet=new Set(),add=(node,raw)=>{if(!raw||isDecorativeSoopImage(node,raw))return;try{const parsed=new URL(raw,location.href);if(parsed.protocol==='https:')imageSet.add(parsed.toString())}catch{}};
-    const roots=[chosen,...document.querySelectorAll('article,main,[class*="post-content"],[class*="article-content"],[class*="board-content"],[class*="viewer"],[class*="content"],[class*="attach"],[class*="file"],[class*="gallery"],[class*="photo"]')].filter(Boolean).filter((root,index,all)=>all.indexOf(root)===index).slice(0,40);
-    for(const root of roots)for(const node of [...root.querySelectorAll('img,source')].slice(0,180))for(const raw of soopImageValues(node))add(node,raw);
-    return[...imageSet].slice(0,24);
-  }
-'''
+          new_func='\n'.join([
+            '  function collectSoopImages(chosen){',
+            '    const postImages=new Set();',
+            "    const addPost=raw=>{if(!raw||!isSoopPostAssetUrl(raw))return;try{postImages.add(new URL(raw,location.href).toString())}catch{}};",
+            "    const addCssUrls=value=>{for(const match of String(value||'').matchAll(/url\\((?:['\\\"])?([^'\\\")]+)(?:['\\\"])?\\)/gi))addPost(match[1])};",
+            "    for(const node of [...document.querySelectorAll('img,source,a[href],[style]')].slice(0,2200)){",
+            '      for(const raw of soopImageValues(node))addPost(raw);',
+            "      addPost(node.getAttribute?.('href'));",
+            "      const backgroundImage=node.style?.backgroundImage||getComputedStyle(node).backgroundImage||'';",
+            '      addCssUrls(backgroundImage);',
+            '    }',
+            "    try{for(const entry of performance.getEntriesByType('resource'))addPost(entry?.name)}catch{}",
+            "    const renderedHtml=String(document.documentElement?.outerHTML||'').replace(/\\\\u002f/gi,'/').replace(/\\\\\\//g,'/');",
+            "    for(const match of renderedHtml.matchAll(/https?:\\/\\/[^\\s\\\"'<>)]*\\/NORMAL_BBS\\/[^\\s\\\"'<>)]*/gi))addPost(match[0].replace(/&amp;/g,'&'));",
+            '    if(postImages.size)return[...postImages].slice(0,24);',
+            "    const imageSet=new Set(),add=(node,raw)=>{if(!raw||isDecorativeSoopImage(node,raw))return;try{const parsed=new URL(raw,location.href);if(parsed.protocol==='https:')imageSet.add(parsed.toString())}catch{}};",
+            "    const roots=[chosen,...document.querySelectorAll('article,main,[class*=\"post-content\"],[class*=\"article-content\"],[class*=\"board-content\"],[class*=\"viewer\"],[class*=\"content\"],[class*=\"attach\"],[class*=\"file\"],[class*=\"gallery\"],[class*=\"photo\"]')].filter(Boolean).filter((root,index,all)=>all.indexOf(root)===index).slice(0,40);",
+            "    for(const root of roots)for(const node of [...root.querySelectorAll('img,source')].slice(0,180))for(const raw of soopImageValues(node))add(node,raw);",
+            '    return[...imageSet].slice(0,24);',
+            '  }',
+            ''
+          ])
           pattern=r"  function collectSoopImages\(chosen\)\{.*?\n  \}\n(?=  async function captureSoopPost)"
           s2,count=re.subn(pattern,new_func,s,count=1,flags=re.S)
           if count!=1:
