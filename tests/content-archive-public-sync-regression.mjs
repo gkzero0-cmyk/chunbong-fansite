@@ -21,6 +21,15 @@ assert.doesNotMatch(syncHandler,/sameSite\?false/,'same-origin visitors must not
 
 assert.match(workflow,/ARCHIVE_SYNC_URL: https:\/\/chunbong-fansite\.vercel\.app\/api\/content\?type=content-archive-auto-sync/,'scheduled archive sync must remain wired');
 assert.match(workflow,/Authorization: Bearer \$token/,'scheduled archive sync must send its OIDC token');
+assert.match(workflow,/^  push_dispatch:/m,'push dispatch must be its own job');
+assert.match(workflow,/^  archive_sync:/m,'archive sync must be its own job');
+const pushJobStart=workflow.indexOf('  push_dispatch:');
+const archiveJobStart=workflow.indexOf('  archive_sync:');
+assert.ok(pushJobStart>=0&&archiveJobStart>pushJobStart,'archive sync job must be independent from push job');
+const archiveJob=workflow.slice(archiveJobStart);
+assert.doesNotMatch(archiveJob,/^\s+needs:/m,'archive sync must not depend on push job success');
+assert.match(archiveJob,/cancel-in-progress:\s*false/,'archive sync must not cancel an in-flight collector run');
+assert.match(archiveJob,/content-archive-auto-sync/,'archive sync endpoint must live in the independent archive job');
 assert.match(operator,/operator-content-auto-sync/,'owner manual archive sync must remain available');
 assert.match(autoIngest,/INCREMENTAL_VIDEO_PAGES=2/);
 assert.match(autoIngest,/INCREMENTAL_POST_PAGES=3/);
