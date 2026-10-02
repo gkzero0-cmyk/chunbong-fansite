@@ -52,9 +52,9 @@ const html=fs.readFileSync(new URL('../operator.html',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../operator.css',import.meta.url),'utf8');
 const api=fs.readFileSync(new URL('../lib/chunbong-content-archive-api.js',import.meta.url),'utf8');
 
-assert.match(collector,/@version\s+1\.4\.0/,'collector userscript version should be bumped for media recovery');
-assert.match(collector,/const VERSION='1\.4\.0'/,'collector runtime version must match userscript metadata');
-assert.match(collector,/SOOP_MEDIA_COLLECTOR_VERSION=2/,'SOOP history must carry a media collector generation');
+assert.match(collector,/@version\s+1\.4\.1/,'collector userscript version should be bumped after real backfill media miss');
+assert.match(collector,/const VERSION='1\.4\.1'/,'collector runtime version must match userscript metadata');
+assert.match(collector,/SOOP_MEDIA_COLLECTOR_VERSION=3/,'backfill must revisit v2 captures after the page-wide media fix');
 assert.match(collector,/mediaCollectorVersion:SOOP_MEDIA_COLLECTOR_VERSION/,'SOOP payload should identify the media collector generation');
 assert.match(collector,/collectorVersion:SOOP_MEDIA_COLLECTOR_VERSION,mediaComplete:true,imageCount:images\.length/,'successful captures must mark media completeness');
 assert.match(collector,/recheckAuthenticated&&!mediaCurrent/,'backfill should revisit legacy captures without increasing normal watcher work');
@@ -64,6 +64,9 @@ assert.match(collector,/getAttribute\?\.\('data-lazy-src'\)/,'SOOP collector sho
 assert.match(collector,/\['srcset','data-srcset'\]/,'SOOP collector should inspect responsive image candidates');
 assert.match(collector,/querySelectorAll\('img,source'\)/,'SOOP collector should inspect picture source nodes as well as img nodes');
 assert.match(collector,/\[class\*="attach"\]/,'SOOP collector should inspect attachment areas outside the selected body node');
+assert.match(collector,/NORMAL_BBS/,'SOOP collector should recognize canonical post attachment CDN paths across the whole page');
+assert.match(collector,/document\.querySelectorAll\('img,source'\)/,'SOOP collector should inspect page-wide image nodes for detached attachment wrappers');
+assert.match(collector,/await loadLazyPage\(\)/,'authenticated post capture should force lazy media to load before collection');
 assert.match(collector,/profile\|avatar\|favicon\|logo\|icon\|emoji\|badge/,'SOOP collector should filter common decorative images');
 assert.doesNotMatch(collector,/204274449|208562045/,'media recovery must be generic and must not hardcode validation post IDs');
 assert.match(collector,/SOOP_WATCH_HASH='chunbong-soop-watch'/,'persistent SOOP watcher mode missing');
