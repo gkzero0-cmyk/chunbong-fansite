@@ -6,6 +6,7 @@ const MESSAGE_ATTR='data-chunbong-collector-message';
 const MESSAGE_EVENT='chunbong-content-collector-page-message';
 const READY_ATTR='data-chunbong-collector-ready';
 const VERSION_ATTR='data-chunbong-collector-version';
+let awaitingRecaptureCommand=false,armTimer=null;
 
 export function versionAtLeast(actual='',minimum=MIN_COLLECTOR_VERSION){
   const parse=value=>String(value||'').split('.').map(part=>Number.parseInt(part,10)).map(value=>Number.isFinite(value)?value:0);
@@ -59,15 +60,23 @@ async function verifyRecaptureDelivery(){
 function recaptureCommand(){
   try{const data=JSON.parse(document.documentElement?.getAttribute(COMMAND_ATTR)||'{}');return data?.channel===COLLECTOR_CHANNEL&&data?.type==='open-urls'&&data?.kind==='soop-recapture'?data:null}catch{return null}
 }
+function armOneShotVerification(){
+  awaitingRecaptureCommand=true;if(armTimer)clearTimeout(armTimer);
+  armTimer=setTimeout(()=>{awaitingRecaptureCommand=false;armTimer=null},1200);
+}
 function blockUnavailableCollector(event){
   const button=event.target?.closest?.('[data-collector-recapture-soop]');if(!button)return;
   const state=collectorReadyState();
-  if(state.supported)return;
+  if(state.supported){armOneShotVerification();return}
   event.preventDefault();event.stopImmediatePropagation();
   if(!state.ready){setStatus('SOOP 누락 자료 재수집을 시작하지 않았습니다. 자동 수집기가 이 운영자 페이지에 연결되지 않았습니다. 자동 수집기 설치 / 업데이트 후 페이지를 새로고침해 주세요.','bad');return}
   setStatus('SOOP 누락 자료 재수집을 시작하지 않았습니다. 자동 수집기 v'+(state.version||'?')+'가 감지됐지만 v'+MIN_COLLECTOR_VERSION+' 이상이 필요합니다. 자동 수집기를 업데이트해 주세요.','bad');
 }
-function handleCollectorCommand(){if(recaptureCommand())setTimeout(()=>void verifyRecaptureDelivery(),80)}
+function handleCollectorCommand(){
+  if(!awaitingRecaptureCommand||!recaptureCommand())return;
+  awaitingRecaptureCommand=false;if(armTimer){clearTimeout(armTimer);armTimer=null}
+  setTimeout(()=>void verifyRecaptureDelivery(),80);
+}
 function boot(){
   document.addEventListener('click',blockUnavailableCollector,true);
   document.addEventListener(COMMAND_EVENT,handleCollectorCommand);
