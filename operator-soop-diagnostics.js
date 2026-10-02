@@ -1,4 +1,5 @@
 const STORAGE_KEY='chunbong:operator:soop-diagnostic-targets:v1';
+const PLAN_STORAGE_KEY='chunbong:operator:soop-recapture-plan:v1';
 const API='/api/content?type=operator-content-soop-diagnostics';
 const COLLECTOR_CHANNEL='chunbong-content-collector';
 const COLLECTOR_COMMAND_ATTR='data-chunbong-collector-command';
@@ -7,32 +8,37 @@ const $=(selector,root=document)=>root.querySelector(selector);
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const handledCommands=new Map();
 
-function cleanIds(values=[]){return [...new Set((Array.isArray(values)?values:[]).map(value=>String(value||'')).filter(value=>/^\d+$/.test(value)))].slice(0,40)}
+function cleanIds(values=[]){return [...new Set((Array.isArray(values)?values:[]).map(value=>String(value||'')).filter(value=>/^\d+$/.test(value)))].slice(0,160)}
 function postIdFromUrl(raw=''){try{return(new URL(String(raw||''),location.href).pathname.match(/^\/station\/chunbongtv\/post\/(\d+)\/?$/i)||[])[1]||''}catch{return''}}
 function rememberCommand(data={}){
   const id=String(data.commandId||'');if(!id)return false;const now=Date.now(),last=Number(handledCommands.get(id)||0);
   handledCommands.set(id,now);for(const [key,at] of handledCommands)if(now-at>15000)handledCommands.delete(key);return Boolean(last&&now-last<15000);
 }
 function statusFor(row={}){
-  if(Number(row.imageCount||0)>0)return'ok';
+  if(Number(row.imageCount||0)>0||row.planReason==='images-present')return'ok';
   const phase=String(row.phase||'');
   if(phase==='restricted')return'restricted';
   if(phase==='body-empty')return'body-empty';
   if(phase==='capture-error')return'capture-error';
   if(phase==='captured'&&Number(row.acceptedCount||0)>0)return'captured';
   if(phase==='captured')return'no-images';
+  if(row.planReason==='recapture-needed')return'no-images';
+  if(row.planReason==='status-lookup-failed')return'pending';
   return'pending';
 }
-export function soopDiagnosticViewRows(requestedPostIds=[],diagnosticRows=[]){
-  const requested=cleanIds(requestedPostIds),byId=new Map((Array.isArray(diagnosticRows)?diagnosticRows:[]).map(row=>[String(row?.postId||''),row]));
+export function soopDiagnosticViewRows(requestedPostIds=[],diagnosticRows=[],planRows=[]){
+  const requested=cleanIds(requestedPostIds),byId=new Map((Array.isArray(diagnosticRows)?diagnosticRows:[]).map(row=>[String(row?.postId||''),row])),plans=new Map((Array.isArray(planRows)?planRows:[]).map(row=>[String(row?.postId||''),row]));
   return requested.map(postId=>{
-    const diagnostic=byId.get(postId)||{postId},row={...diagnostic,postId};
-    row.imageCount=Math.max(0,Number(row.imageCount)||0);row.candidateCount=Math.max(0,Number(row.candidateCount)||0);row.acceptedCount=Math.max(0,Number(row.acceptedCount)||0);
+    const plan=plans.get(postId)||{},diagnostic=byId.get(postId)||{},row={...plan,...diagnostic,postId};
+    row.imageCount=Math.max(0,Number(diagnostic.imageCount??plan.imageCount)||0);row.candidateCount=Math.max(0,Number(row.candidateCount)||0);row.acceptedCount=Math.max(0,Number(row.acceptedCount)||0);
     row.rejectedByReason=row.rejectedByReason&&typeof row.rejectedByReason==='object'?row.rejectedByReason:{};row.status=statusFor(row);return row;
   });
 }
 function readRequested(){try{return cleanIds(JSON.parse(sessionStorage.getItem(STORAGE_KEY)||'[]'))}catch{return[]}}
 function writeRequested(ids=[]){const next=cleanIds(ids);try{sessionStorage.setItem(STORAGE_KEY,JSON.stringify(next))}catch{}return next}
+function cleanPlanRows(rows=[]){return(Array.isArray(rows)?rows:[]).filter(row=>/^\d+$/.test(String(row?.postId||''))).slice(0,160).map(row=>({postId:String(row.postId),url:String(row.url||''),planReason:String(row.planReason||''),imageCount:Math.max(0,Number(row.imageCount)||0),statusLookupFailed:Boolean(row.statusLookupFailed)}))}
+function readPlanRows(){try{return cleanPlanRows(JSON.parse(sessionStorage.getItem(PLAN_STORAGE_KEY)||'[]'))}catch{return[]}}
+function writePlanRows(rows=[]){const next=cleanPlanRows(rows);try{sessionStorage.setItem(PLAN_STORAGE_KEY,JSON.stringify(next))}catch{}return next}
 function ensurePanel(){
   let panel=$('[data-soop-diagnostic-panel]');if(panel)return panel;
   const helper=$('[data-unified-collector] .operator-soop-helper-body');if(!helper)return null;
@@ -41,35 +47,36 @@ function ensurePanel(){
   helper.appendChild(panel);$('[data-soop-diagnostic-refresh]',panel)?.addEventListener('click',()=>void refreshDiagnostics({force:true}));return panel;
 }
 function reasonText(reasons={}){const labels={not_post_asset:'본문 이미지 경로 아님',decorative:'장식 이미지',duplicate:'중복',invalid_url:'잘못된 URL',non_https:'HTTPS 아님',rendered_small:'너무 작은 이미지',rendered_untrusted:'허용되지 않은 미디어'};return Object.entries(reasons||{}).filter(([,value])=>Number(value)>0).map(([key,value])=>(labels[key]||key)+' '+Number(value)+'건').join(' · ')}
-function statusLabel(status=''){return({ok:'이미지 복구됨',captured:'이미지 후보 수집됨','no-images':'이미지 0장',restricted:'접근 제한','body-empty':'본문 확인 실패','capture-error':'수집 오류',pending:'재수집 결과 대기'}[status]||'확인 필요')}
+function statusLabel(status=''){return({ok:'이미지 복구됨',captured:'이미지 후보 수집됨','no-images':'재수집 필요 · 이미지 0장',restricted:'접근 제한','body-empty':'본문 확인 실패','capture-error':'수집 오류',pending:'재수집 결과 대기'}[status]||'확인 필요')}
+function planReasonText(row={}){return row.planReason==='images-present'?'선택 재수집 제외 · 서버 이미지 있음':row.planReason==='recapture-needed'?'선택 재수집 포함 · 이미지 없음':row.planReason==='status-lookup-failed'?'정확 상태 조회 실패 · 누락 방지 재수집 포함':''}
 export function renderSoopDiagnostics(rows=[]){
   const panel=ensurePanel();if(!panel)return;
   const list=$('[data-soop-diagnostic-list]',panel),summary=$('[data-soop-diagnostic-summary]',panel),safe=Array.isArray(rows)?rows:[];
   if(!safe.length){if(summary)summary.textContent='누락 자료 재수집을 실행하면 글별 수집 결과가 여기에 표시됩니다.';if(list)list.innerHTML='<p class="operator-empty">아직 확인할 대상이 없습니다.</p>';return}
   const ok=safe.filter(row=>row.status==='ok').length,pending=safe.filter(row=>row.status==='pending'||row.status==='captured').length,issues=safe.length-ok-pending;
-  if(summary)summary.textContent='대상 '+safe.length+'건 · 이미지 복구 '+ok+'건 · 확인 필요 '+issues+'건 · 결과 대기 '+pending+'건';
+  if(summary)summary.textContent='판정 '+safe.length+'건 · 이미지 있음/복구 '+ok+'건 · 확인 필요 '+issues+'건 · 결과 대기 '+pending+'건';
   if(list)list.innerHTML=safe.map(row=>{
-    const reason=reasonText(row.rejectedByReason),meta=['후보 '+Number(row.candidateCount||0)+'개','채택 '+Number(row.acceptedCount||0)+'개','저장 이미지 '+Number(row.imageCount||0)+'장',reason].filter(Boolean).join(' · ');
+    const reason=reasonText(row.rejectedByReason),plan=planReasonText(row),meta=[plan,'후보 '+Number(row.candidateCount||0)+'개','채택 '+Number(row.acceptedCount||0)+'개','저장 이미지 '+Number(row.imageCount||0)+'장',reason].filter(Boolean).join(' · ');
     const when=row.capturedAt?new Date(row.capturedAt).toLocaleString('ko-KR'):'';
     return '<article class="operator-collector-inbox-item" data-state="'+esc(row.status)+'"><div><small>SOOP '+esc(row.postId)+'</small><strong>'+esc(statusLabel(row.status))+'</strong><p>'+esc(meta)+'</p>'+(when?'<time>'+esc(when)+'</time>':'')+'</div><a href="https://www.sooplive.com/station/chunbongtv/post/'+esc(row.postId)+'" target="_blank" rel="noopener noreferrer">원문 열기 ↗</a></article>';
   }).join('');
 }
 let lastRows=[],loading=false,planRefreshTimer=null;
 async function refreshDiagnostics({force=false}={}){
-  const requested=readRequested();if(!requested.length){renderSoopDiagnostics([]);return[]}
+  const requested=readRequested(),plans=readPlanRows();if(!requested.length){renderSoopDiagnostics([]);return[]}
   if(loading&&!force)return lastRows;loading=true;
   try{
     const response=await fetch(API,{credentials:'include',cache:'no-store',headers:{Accept:'application/json'}}),payload=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(payload.error||('HTTP '+response.status));
-    lastRows=soopDiagnosticViewRows(requested,Array.isArray(payload.rows)?payload.rows:[]);renderSoopDiagnostics(lastRows);return lastRows;
+    lastRows=soopDiagnosticViewRows(requested,Array.isArray(payload.rows)?payload.rows:[],plans);renderSoopDiagnostics(lastRows);return lastRows;
   }catch(error){
-    lastRows=soopDiagnosticViewRows(requested,[]);renderSoopDiagnostics(lastRows);const summary=$('[data-soop-diagnostic-summary]');if(summary)summary.textContent='진단을 불러오지 못했습니다: '+String(error?.message||error);return lastRows;
+    lastRows=soopDiagnosticViewRows(requested,[],plans);renderSoopDiagnostics(lastRows);const summary=$('[data-soop-diagnostic-summary]');if(summary)summary.textContent='진단을 불러오지 못했습니다: '+String(error?.message||error);return lastRows;
   }finally{loading=false}
 }
 function recaptureIds(data={}){
   if(data?.channel!==COLLECTOR_CHANNEL)return[];
-  if(data?.type==='recapture-plan'&&data?.kind==='soop-recapture')return cleanIds((Array.isArray(data.urls)?data.urls:[]).map(postIdFromUrl));
-  if(data?.type==='open-urls'&&data?.kind==='soop-recapture')return cleanIds((Array.isArray(data.urls)?data.urls:[]).map(postIdFromUrl));
+  if(data?.type==='recapture-plan'&&data?.kind==='soop-recapture')return cleanIds((Array.isArray(data.planRows)?data.planRows:[]).map(row=>row?.postId).filter(Boolean).concat((Array.isArray(data.urls)?data.urls:[]).map(postIdFromUrl)));
+  if(data?.type==='open-urls'&&String(data?.kind||'').startsWith('soop-recapture'))return cleanIds((Array.isArray(data.urls)?data.urls:[]).map(postIdFromUrl));
   return[];
 }
 function handleCollectorCommand(data={}){
@@ -79,7 +86,8 @@ function handleCollectorCommand(data={}){
     void refreshDiagnostics({force:true});setTimeout(()=>void refreshDiagnostics({force:true}),2500);return;
   }
   const ids=recaptureIds(data);if(!ids.length)return;
-  const requested=writeRequested([...readRequested(),...ids]);lastRows=soopDiagnosticViewRows(requested,lastRows);renderSoopDiagnostics(lastRows);
+  const plans=data.type==='recapture-plan'?writePlanRows(data.planRows):readPlanRows();
+  const requested=writeRequested(data.type==='recapture-plan'?ids:[...readRequested(),...ids]);lastRows=soopDiagnosticViewRows(requested,lastRows,plans);renderSoopDiagnostics(lastRows);
   if(data.type==='recapture-plan'){
     if(planRefreshTimer)clearTimeout(planRefreshTimer);
     planRefreshTimer=setTimeout(()=>{planRefreshTimer=null;void refreshDiagnostics({force:true})},6000);return;
@@ -88,7 +96,7 @@ function handleCollectorCommand(data={}){
 }
 function contentsVisible(){const panel=$('[data-operator-panel="contents"]');return Boolean(panel&&!panel.hidden)}
 function boot(){
-  ensurePanel();renderSoopDiagnostics(soopDiagnosticViewRows(readRequested(),[]));
+  ensurePanel();renderSoopDiagnostics(soopDiagnosticViewRows(readRequested(),[],readPlanRows()));
   window.addEventListener('message',event=>{if(event.source===window&&event.origin===location.origin)handleCollectorCommand(event.data||{})});
   document.addEventListener(COLLECTOR_COMMAND_EVENT,()=>{try{handleCollectorCommand(JSON.parse(document.documentElement?.getAttribute(COLLECTOR_COMMAND_ATTR)||'{}'))}catch{}});
   document.addEventListener('click',event=>{const tab=event.target.closest?.('[data-operator-tab="contents"],[data-operator-quick-tab="contents"]');if(tab)setTimeout(()=>void refreshDiagnostics(),0)},true);
