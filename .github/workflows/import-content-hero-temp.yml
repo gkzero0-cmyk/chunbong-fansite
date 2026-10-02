@@ -16,19 +16,22 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: fix/finalize-content-hero-header-shell-20261002
-      - name: Inspect temporary share page
-        env:
-          HERO_SHARE_URL: https://firestorage.ai/ja/f/cLTpO1ZreAps
+      - name: Inspect temporary share app
         run: |
           python - <<'PY'
-          import os, re, urllib.request
-          url=os.environ['HERO_SHARE_URL']
-          req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
-          with urllib.request.urlopen(req,timeout=30) as r:
-              data=r.read().decode('utf-8','replace')
-              print('status',r.status,'bytes',len(data),'final',r.geturl())
-          for value in re.findall(r'(?:href|src)=["\']([^"\']+)',data,re.I):
-              if any(k in value.lower() for k in ['download','file','storage','hero','webp']):
-                  print('candidate',value[:1000])
-          print('html-head',data[:5000].replace('\n',' '))
+          import re, urllib.request
+          base='https://firestorage.ai'
+          share=base+'/ja/f/cLTpO1ZreAps'
+          def get(url):
+              req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
+              with urllib.request.urlopen(req,timeout=30) as r:return r.read().decode('utf-8','replace')
+          html=get(share)
+          scripts=re.findall(r'<script[^>]+src=["\']([^"\']+)["\']',html,re.I)
+          targets=[s for s in scripts if 'app/(files)' in s or '4899-' in s or '8437-' in s or '5841-' in s]
+          print('targets',targets)
+          for src in targets:
+              js=get(base+src if src.startswith('/') else src)
+              print('SCRIPT',src,'bytes',len(js))
+              vals=sorted(set(re.findall(r'["\']([^"\']*(?:api|download|share|file)[^"\']*)["\']',js,re.I)))
+              for v in vals[:120]: print('value',v[:1500])
           PY
