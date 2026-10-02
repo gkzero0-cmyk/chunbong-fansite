@@ -12,6 +12,8 @@ const SOOP_RECAPTURE_SESSION_KEY='chunbong:operator:soop-sequential-recapture:v1
 const RECAPTURE_SESSION_TTL_MS=30*60*1000;
 const STEP_TIMEOUT_MS=32000;
 let recaptureRunning=false;
+let lastRecaptureSummary={total:0,needsRecapture:0,imagesPresent:0,statusLookupFailed:0};
+let lastRecapturePlanRows=[];
 
 export function versionAtLeast(actual='',minimum=MIN_COLLECTOR_VERSION){
   const parse=value=>String(value||'').split('.').map(part=>Number.parseInt(part,10)).map(value=>Number.isFinite(value)?value:0);
@@ -48,7 +50,6 @@ function canonicalSoopPost(raw=''){
     return'https://www.sooplive.com/station/chunbongtv/post/'+match[1];
   }catch{return''}
 }
-let lastRecaptureSummary={total:0,needsRecapture:0,imagesPresent:0,statusLookupFailed:0};
 function archiveRecaptureCandidates(payload={}){
   const seen=new Set(),targets=[];
   for(const item of Array.isArray(payload.items)?payload.items:[]){
@@ -62,23 +63,28 @@ function archiveRecaptureCandidates(payload={}){
 }
 async function exactRecaptureTargets(payload={}){
   const candidates=archiveRecaptureCandidates(payload);
-  if(!candidates.length){lastRecaptureSummary={total:0,needsRecapture:0,imagesPresent:0,statusLookupFailed:0};return[]}
-  const statuses=new Map();let statusLookupFailed=0;
-  try{
-    for(let offset=0;offset<candidates.length;offset+=80){
-      const batch=candidates.slice(offset,offset+80),ids=batch.map(row=>row.postId).join(',');
+  if(!candidates.length){lastRecaptureSummary={total:0,needsRecapture:0,imagesPresent:0,statusLookupFailed:0};lastRecapturePlanRows=[];return[]}
+  const statuses=new Map(),failedIds=new Set();
+  for(let offset=0;offset<candidates.length;offset+=80){
+    const batch=candidates.slice(offset,offset+80),ids=batch.map(row=>row.postId).join(',');
+    try{
       const response=await fetch(EXACT_STATUS_API+'&postIds='+encodeURIComponent(ids),{credentials:'include',cache:'no-store',headers:{Accept:'application/json'}});
       const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error||('HTTP '+response.status));
       for(const row of Array.isArray(result.rows)?result.rows:[])if(/^\d+$/.test(String(row?.postId||'')))statuses.set(String(row.postId),row);
-    }
-  }catch{statusLookupFailed=candidates.length}
-  const targets=[],imagesPresent=[];
-  for(const candidate of candidates){
-    const exactStatus=statuses.get(candidate.postId)||null;
-    if(exactStatus&&Number(exactStatus.imageCount||0)>0){imagesPresent.push(candidate);continue}
-    targets.push({...candidate,exactStatus,statusLookupFailed:!exactStatus});
+      for(const candidate of batch)if(!statuses.has(candidate.postId))failedIds.add(candidate.postId);
+    }catch{for(const candidate of batch)failedIds.add(candidate.postId)}
   }
-  lastRecaptureSummary={total:candidates.length,needsRecapture:targets.length,imagesPresent:imagesPresent.length,statusLookupFailed};
+  const targets=[];lastRecapturePlanRows=[];
+  for(const candidate of candidates){
+    const exactStatus=statuses.get(candidate.postId)||null,imageCount=Math.max(0,Number(exactStatus?.imageCount)||0),lookupFailed=failedIds.has(candidate.postId)||!exactStatus;
+    if(exactStatus&&imageCount>0){
+      lastRecapturePlanRows.push({...candidate,planReason:'images-present',imageCount,statusLookupFailed:false});continue;
+    }
+    targets.push({...candidate,exactStatus,statusLookupFailed:lookupFailed});
+    lastRecapturePlanRows.push({...candidate,planReason:lookupFailed?'status-lookup-failed':'recapture-needed',imageCount,statusLookupFailed:lookupFailed});
+  }
+  const imagesPresent=lastRecapturePlanRows.filter(row=>row.planReason==='images-present').length,statusLookupFailed=lastRecapturePlanRows.filter(row=>row.statusLookupFailed).length;
+  lastRecaptureSummary={total:candidates.length,needsRecapture:targets.length,imagesPresent,statusLookupFailed};
   return targets;
 }
 function readRecaptureSession(){
@@ -144,10 +150,10 @@ async function runSequentialRecapture(button){
   try{
     const connection=await verifyCollectorConnection();if(!connection)return;
     const targets=await loadRecaptureTargets();total=targets.length;
+    sendCommand('recapture-plan',{kind:'soop-recapture',urls:lastRecapturePlanRows.map(row=>row.url),planRows:lastRecapturePlanRows.map(({postId,url,planReason,imageCount,statusLookupFailed})=>({postId,url,planReason,imageCount,statusLookupFailed}))});
     if(!total){setStatus('현재 다시 수집할 SOOP 원문이 없습니다. 정확 조회 기준 이미지 복구됨 '+lastRecaptureSummary.imagesPresent+'건입니다.','ok');return}
     if(lastRecaptureSummary.statusLookupFailed)setStatus('정확 상태 조회 실패 '+lastRecaptureSummary.statusLookupFailed+'건은 누락 방지를 위해 재수집 대상으로 유지합니다.','busy');
     writeRecaptureSession({total,completed:0,currentPostId:'',version:connection.version});
-    sendCommand('recapture-plan',{kind:'soop-recapture',urls:targets.map(row=>row.url)});
     for(let index=0;index<targets.length;index++){
       const {url,postId}=targets[index],startedAt=Date.now();
       writeRecaptureSession({total,completed:index,currentPostId:postId});
