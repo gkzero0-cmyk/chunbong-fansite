@@ -47,11 +47,20 @@ assert.equal(preview.looksLikeContaminatedSoopCapture('그냥서버 시작 전 �
 assert.equal(typeof preview.extractOfficialSoopImages,'function');
 const officialHtml=[
   '<img src="https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/21941786118032145.png" alt="Uploaded">',
+  '<img data-original="https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/original.png">',
+  '<img data-lazy-src="https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/lazy.png">',
+  '<picture><source srcset="https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/picture-1x.webp 1x, https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/picture-2x.webp 2x"><img src="https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/picture-fallback.png"></picture>',
+  '<img src="https://stimg.sooplive.co.kr/profile/avatar.png">',
   '<p>본문</p>',
   '<img src="https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/48321786118471069.png" alt="Uploaded">'
 ].join('');
 assert.deepEqual(preview.extractOfficialSoopImages(officialHtml),[
   'https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/21941786118032145.png',
+  'https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/original.png',
+  'https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/lazy.png',
+  'https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/picture-1x.webp',
+  'https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/picture-2x.webp',
+  'https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/picture-fallback.png',
   'https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/48321786118471069.png'
 ]);
 
