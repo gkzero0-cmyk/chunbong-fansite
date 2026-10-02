@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         춘봉 콘텐츠 자동 수집기
 // @namespace    https://chunbong-fansite.vercel.app/
-// @version      1.3.0
+// @version      1.4.0
 // @description  춘봉 팬사이트용 나무위키·SOOP·FM코리아 브라우저 자료 자동 수집기
 // @match        https://namu.wiki/w/*
 // @match        https://www.namu.wiki/w/*
@@ -26,7 +26,7 @@
 
 (function(){
   'use strict';
-  const VERSION='1.3.0';
+  const VERSION='1.4.0';
   const CHANNEL='chunbong-content-collector';
   const PAGE_MESSAGE_EVENT='chunbong-content-collector-page-message';
   const PAGE_COMMAND_EVENT='chunbong-content-collector-page-command';
@@ -44,6 +44,7 @@
   const SOOP_WATCH_HASH='chunbong-soop-watch';
   const SOOP_SELFTEST_HASH='chunbong-soop-selftest';
   const SOOP_WATCH_INTERVAL_MS=5*60*1000;
+  const SOOP_MEDIA_COLLECTOR_VERSION=2;
   const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const clean=value=>String(value||'').replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim();
   const read=(key,fallback)=>{try{const value=GM_getValue(key,fallback);return value??fallback}catch{return fallback}};
@@ -60,12 +61,13 @@
     write(COLLECTOR_STATUS_KEY,next);return next;
   }
   function setBackfillState(patch={}){const next={...backfillState(),...patch,updatedAt:new Date().toISOString()};write(SOOP_BACKFILL_KEY,next);return next}
-  function markSoopHistory(postId,state='captured'){if(!/^\d+$/.test(String(postId||'')))return;const rows=soopHistory();rows[String(postId)]={state,at:Date.now()};write(SOOP_HISTORY_KEY,Object.fromEntries(Object.entries(rows).sort((a,b)=>Number(b[1]?.at||0)-Number(a[1]?.at||0)).slice(0,12000)))}
+  function markSoopHistory(postId,state='captured',details={}){if(!/^\d+$/.test(String(postId||'')))return;const rows=soopHistory(),previous=rows[String(postId)]||{};rows[String(postId)]={...previous,state,at:Date.now(),...details};write(SOOP_HISTORY_KEY,Object.fromEntries(Object.entries(rows).sort((a,b)=>Number(b[1]?.at||0)-Number(a[1]?.at||0)).slice(0,12000)))}
   function soopHandled(postId,url='',recheckAuthenticated=false){
-    const row=soopHistory()[String(postId||'')],state=String(row?.state||'');
-    if(['public','favorite','subscriber','restricted'].includes(state))return true;
-    if(state==='authenticated'){if(recheckAuthenticated&&Date.now()-Number(row?.at||0)>86400000)return false;return true}
-    return !!(url&&seenMap()[canonical(url)]);
+    const row=soopHistory()[String(postId||'')],state=String(row?.state||''),mediaCurrent=Number(row?.collectorVersion||0)>=SOOP_MEDIA_COLLECTOR_VERSION&&row?.mediaComplete!==false;
+    if(state==='restricted')return true;
+    if(['public','favorite','subscriber'].includes(state)){if(recheckAuthenticated&&!mediaCurrent)return false;return true}
+    if(state==='authenticated'){if(recheckAuthenticated&&(!mediaCurrent||Date.now()-Number(row?.at||0)>86400000))return false;return true}
+    const seen=!!(url&&seenMap()[canonical(url)]);return recheckAuthenticated?false:seen;
   }
   const canonical=value=>{try{
     const url=new URL(value,location.href);url.hash='';
@@ -150,6 +152,30 @@
     if(/애청자\s*(?:전용|공개|만|이상)?/i.test(text))return'favorite';
     return'authenticated';
   }
+  function soopImageValues(node){
+    const values=[node?.currentSrc,node?.src,node?.getAttribute?.('src'),node?.getAttribute?.('data-src'),node?.getAttribute?.('data-original'),node?.getAttribute?.('data-lazy-src')];
+    for(const attr of ['srcset','data-srcset'])for(const part of String(node?.getAttribute?.(attr)||'').split(',')){const candidate=part.trim().split(/\s+/)[0];if(candidate)values.push(candidate)}
+    return values.filter(Boolean);
+  }
+  function isDecorativeSoopImage(node,raw=''){
+    if(node?.closest?.('header,nav,[class*="profile"],[class*="avatar"],[class*="user-thumb"],[class*="badge"],[class*="emoji"]'))return true;
+    try{
+      const parsed=new URL(raw,location.href),path=(parsed.pathname||'').toLowerCase();
+      if(parsed.protocol!=='https:')return true;
+      if(parsed.hostname==='res.sooplive.com'&&path.startsWith('/images/svg/'))return true;
+      if(/(?:^|[\/_-])(?:thumb_)?(?:profile|avatar|favicon|logo|icon|emoji|badge)(?:[\/_\-.]|$)/i.test(path))return true;
+      if(/(?:default|no[-_]?image|blank)[-_]?(?:profile|thumb|image)?/i.test(path))return true;
+      if(/(?:image)?loading(?:light|dark)?\.(?:gif|png|webp)$/i.test(path))return true;
+      return false;
+    }catch{return true}
+  }
+  function collectSoopImages(chosen){
+    const imageSet=new Set(),add=(node,raw)=>{if(!raw||isDecorativeSoopImage(node,raw))return;try{const parsed=new URL(raw,location.href);if(parsed.protocol==='https:')imageSet.add(parsed.toString())}catch{}};
+    const og=soopMeta('meta[property="og:image"]');if(og)add(null,og);
+    const roots=[chosen,...document.querySelectorAll('article,main,[class*="post-content"],[class*="article-content"],[class*="board-content"],[class*="viewer"],[class*="content"],[class*="attach"],[class*="file"],[class*="gallery"],[class*="photo"]')].filter(Boolean).filter((root,index,all)=>all.indexOf(root)===index).slice(0,40);
+    for(const root of roots)for(const node of [...root.querySelectorAll('img,source')].slice(0,180))for(const raw of soopImageValues(node))add(node,raw);
+    return[...imageSet].slice(0,24);
+  }
   async function captureSoopPost(force=false){
     const match=location.pathname.match(/^\/station\/chunbongtv\/post\/(\d+)\/?$/i);if(!match)return false;
     const postId=match[1],postUrl=canonical(location.origin+location.pathname);if(!force&&soopHandled(postId,postUrl))return false;
@@ -161,12 +187,11 @@
     const dateRaw=soopMeta('meta[property="article:published_time"]')||document.querySelector('time[datetime]')?.getAttribute('datetime')||(pageText.match(/20\d{2}[.\/-]\d{1,2}[.\/-]\d{1,2}/)||[])[0]||'';
     const chosen=[...document.querySelectorAll('article,main,[class*="post-content"],[class*="article-content"],[class*="board-content"],[class*="viewer"],[class*="content"]')].map(el=>({el,text:(el.innerText||'').trim()})).filter(row=>row.text.length>80).sort((a,b)=>b.text.length-a.text.length)[0]?.el||document.querySelector('main')||document.body;
     const body=((chosen?.innerText||pageText).trim()).slice(0,40000);if(body.length<40){setCollectorStatus({lastError:'soop_post_body_empty',lastErrorAt:now,lastPostId:postId},'SOOP 본문 확인 실패 · '+postId);return false}
-    const imageSet=new Set(),og=soopMeta('meta[property="og:image"]');if(/^https:\/\//i.test(og))imageSet.add(og);
-    for(const img of [...(chosen?.querySelectorAll?.('img')||[])].slice(0,100)){const src=img.currentSrc||img.src||img.getAttribute?.('data-src')||'';if(/^https:\/\//i.test(src))imageSet.add(src)}
+    const images=collectSoopImages(chosen);
     const isPublic=await verifySoopPublic(postUrl,postId),access=isPublic?'anonymous-verified':soopAccessHint(pageText);
-    const queued=enqueue({version:1,source:'soop-authenticated-browser',url:postUrl,title,date:dateRaw,body,images:[...imageSet].slice(0,24),access,capturedAt:now});
+    const queued=enqueue({version:1,mediaCollectorVersion:SOOP_MEDIA_COLLECTOR_VERSION,source:'soop-authenticated-browser',url:postUrl,title,date:dateRaw,body,images,access,capturedAt:now});
     if(queued){
-      const historyState=isPublic?'public':access;markSoopHistory(postId,historyState);
+      const historyState=isPublic?'public':access;markSoopHistory(postId,historyState,{collectorVersion:SOOP_MEDIA_COLLECTOR_VERSION,mediaComplete:true,imageCount:images.length});
       const patch={lastSoopAccess:access,lastPostId:postId,lastSoopPostAt:now,lastError:'',lastErrorAt:''};
       if(access==='favorite')patch.lastFavoriteAt=now;
       if(access==='subscriber')patch.lastSubscriberAt=now;
