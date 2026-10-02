@@ -33,7 +33,7 @@ function setStatus(text,state=''){
 function readPageMessage(){
   try{return JSON.parse(document.documentElement?.getAttribute(MESSAGE_ATTR)||'{}')}catch{return{}}
 }
-function isStateMessage(data={}){return data?.channel===COLLECTOR_CHANNEL&&data?.type==='state'}
+function isStateMessage(data={}){return Boolean(data&&data.channel===COLLECTOR_CHANNEL&&data.type==='state')}
 function waitForCollectorState(timeoutMs=2200){
   return new Promise(resolve=>{
     let done=false,timer=null;
