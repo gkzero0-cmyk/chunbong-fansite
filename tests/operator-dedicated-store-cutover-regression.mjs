@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
 const api=fs.readFileSync(new URL('../lib/operator-center-api.js',import.meta.url),'utf8');
-const diagnostics=fs.readFileSync(new URL('../operator-redis-diagnostics.js',import.meta.url),'utf8');
+const diagnostics=fs.readFileSync(new URL('../operator-redis-diagnostics-core.js',import.meta.url),'utf8');
 
 assert.match(api,/function hasDedicatedOperatorRedis\(\)\{return operatorRedisMode\(\)==='dedicated'\}/);
 assert.match(api,/function legacySharedRedisConfigured\(\)/,'system status should expose whether legacy shared Redis exists without reading it');
