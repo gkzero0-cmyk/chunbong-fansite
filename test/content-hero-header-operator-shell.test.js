@@ -22,7 +22,7 @@ test('header reserves lazy utility width without eager data loading',()=>{
 test('operator html is routed through an authenticated server shell',()=>{
   const vercel=read('vercel.json');
   const api=read('api/survival-wiki.js');
-  assert.match(vercel,/"source":"\/operator\.html"/);
+  assert.match(vercel,/"source"\s*:\s*"\/operator\.html"/);
   assert.match(vercel,/mode=operator-page/);
   assert.match(api,/stripOperatorDashboard/);
   assert.match(api,/requireOwner/);
