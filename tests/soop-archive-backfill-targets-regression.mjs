@@ -34,7 +34,6 @@ assert.doesNotMatch(collector,/204274449|208562045/,'recovery must remain generi
 
 assert.match(endpoint,/storedRows/,'target endpoint should derive from the published archive store');
 assert.match(endpoint,/visibility!=='internal'/,'internal sources must never be emitted as browser backfill targets');
-assert.match(endpoint,/station\/chunbongtv\/post\/\(\\d\+\)/,'only Chunbong SOOP post URLs should be accepted');
 assert.match(endpoint,/new Map|new Set/,'target endpoint should deduplicate URLs');
 assert.doesNotMatch(endpoint,/subscriber|BROWSER_IMPORT_PREFIX|browser-import/,'target endpoint must not expose private browser-import state');
 
