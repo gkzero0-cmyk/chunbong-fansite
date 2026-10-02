@@ -35,4 +35,5 @@ assert.equal(diagnostic.rejectedByReason.not_post_asset,3);
 assert.ok(!JSON.stringify(diagnostic).includes('secret'),'diagnostics must strip query secrets');
 assert.match(api,/operator-content-browser-diagnostic/,'content API must route authenticated diagnostic uploads');
 
+// Diagnostics intentionally persist only counts, phases, access class, and query-free host/path samples.
 console.log('soop collector diagnostics regression: ok');
