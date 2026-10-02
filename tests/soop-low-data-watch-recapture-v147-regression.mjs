@@ -1,0 +1,30 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+
+const collector=fs.readFileSync('chunbong-content-collector.user.js','utf8');
+const guard=fs.readFileSync('operator-soop-recapture-guard.js','utf8');
+const api=fs.readFileSync('lib/operator-soop-recapture-status-api.js','utf8');
+const contentApi=fs.readFileSync('api/content.js','utf8');
+
+assert.match(collector,/@version\s+1\.4\.7/,'userscript metadata must be v1.4.7');
+assert.match(collector,/const VERSION='1\.4\.7'/,'runtime version must be v1.4.7');
+assert.match(collector,/SOOP_WATCH_INTERVAL_MS=15\*60\*1000/,'watch interval must be 15 minutes');
+assert.match(collector,/SOOP_WATCH_ONCE_HASH='chunbong-soop-watch-once'/,'one-shot watch marker must exist');
+assert.doesNotMatch(collector,/location\.reload\(\)/,'persistent watch reload must be removed');
+assert.match(collector,/watchLease/i,'browser-local watch lease must exist');
+assert.match(collector,/window\.close\(\)/,'one-shot watcher must close itself');
+assert.doesNotMatch(collector,/208562045|204274449/,'production collector must not hardcode observed post ids');
+
+assert.match(guard,/operator-content-soop-recapture-status/,'recapture guard must use exact per-post status route');
+assert.match(guard,/statusLookupFailed|lookupFailed|exactStatus/i,'planner must expose exact lookup failure rather than silently exclude');
+assert.doesNotMatch(guard,/browserImports\?\)/,'recent browserImports list must not be the final recapture authority');
+assert.doesNotMatch(guard,/208562045|204274449/,'production planner must not hardcode observed post ids');
+
+assert.match(api,/MAX_POST_IDS\s*=\s*80/,'exact lookup must be bounded');
+assert.match(api,/MGET|mget/i,'exact lookup must use batched key reads');
+assert.doesNotMatch(api,/SCAN|KEYS\s/i,'exact lookup must not scan Redis');
+assert.match(api,/requireOwner/,'exact lookup must require owner auth');
+assert.doesNotMatch(api,/body\s*:/,'endpoint must not return browser body content');
+assert.match(contentApi,/operator-content-soop-recapture-status/,'existing content route must multiplex the exact status handler');
+
+console.log('SOOP low-data watcher + exact recapture status regression passed');
