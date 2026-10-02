@@ -1,0 +1,41 @@
+name: Normalize SOOP legacy CDN host check
+
+on:
+  push:
+    branches:
+      - fix/soop-legacy-cdn-compat-20261002
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/soop-legacy-cdn-compat-20261002
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Normalize host check
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path=Path('chunbong-content-collector.user.js')
+          s=path.read_text()
+          old="const hostAllowed=host==='sooplive.com'||host.endsWith('.sooplive.com')||host==='sooplive.co.kr'||host.endsWith('.sooplive.co.kr')||/afreecatv\\.(?:com|co\\.kr)$/i.test(host);"
+          new="const hostAllowed=host==='sooplive.com'||host.endsWith('.sooplive.com')||host==='sooplive.co.kr'||host.endsWith('.sooplive.co.kr')||host==='afreecatv.com'||host.endsWith('.afreecatv.com')||host==='afreecatv.co.kr'||host.endsWith('.afreecatv.co.kr');"
+          if old not in s:
+            raise SystemExit('expected host check not found')
+          path.write_text(s.replace(old,new,1))
+          workflow=Path('.github/workflows/normalize-soop-cdn-host-check.yml')
+          if workflow.exists(): workflow.unlink()
+          PY
+      - name: Commit normalized host check
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add chunbong-content-collector.user.js .github/workflows/normalize-soop-cdn-host-check.yml
+          git commit -m "refactor: make SOOP legacy CDN hosts explicit"
+          git push origin HEAD:fix/soop-legacy-cdn-compat-20261002
