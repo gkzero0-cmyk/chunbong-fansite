@@ -56,15 +56,15 @@ assert.match(uiSource,/\/api\/content\?type=operator-content-soop-diagnostics/,'
 assert.match(redisWrapper,/operator-soop-diagnostics\.js/,'existing operator module entry should load the SOOP diagnostics UI without another HTML script tag');
 assert.match(redisWrapper,/operator-redis-diagnostics-core\.js/,'existing Redis diagnostics runtime should remain loaded through the wrapper');
 
-assert.match(collector,/@version\s+1\.4\.6/,'collector userscript should advance to v1.4.6');
-assert.match(collector,/const VERSION='1\.4\.6'/,'collector runtime version must match userscript metadata');
-assert.match(collector,/SOOP_MEDIA_COLLECTOR_VERSION=8/,'media generation should advance so previous zero-image captures are retried');
+assert.match(collector,/@version\s+1\.4\.7/,'collector userscript should advance to v1.4.7 for the low-data watcher change');
+assert.match(collector,/const VERSION='1\.4\.7'/,'collector runtime version must match userscript metadata');
+assert.match(collector,/SOOP_MEDIA_COLLECTOR_VERSION=8/,'media generation should remain stable so watcher-only changes do not force a new backfill');
 assert.match(collector,/isTrustedSoopMediaHost/,'rendered-media fallback must stay limited to SOOP/Afreeca hosts');
 assert.match(collector,/isTrustedRenderedSoopMedia/,'rendered-media fallback needs a stricter filter than generic trusted host matching');
 assert.match(collector,/querySelectorAll\(['"]iframe['"]\)/,'zero-image fallback should inspect accessible iframe documents');
 assert.match(collector,/naturalWidth|naturalHeight/,'rendered fallback should require meaningful rendered dimensions');
 assert.match(collector,/STATION|banner|profile/i,'rendered fallback should reject common station/profile/banner chrome');
-assert.match(collector,/SOOP_WATCH_INTERVAL_MS=5\*60\*1000/,'normal SOOP watcher cadence must remain five minutes');
+assert.match(collector,/SOOP_WATCH_INTERVAL_MS=15\*60\*1000/,'automatic SOOP watcher cadence should now be fifteen minutes');
 assert.doesNotMatch(collector,/111111111|222222222|333333333|555555555|999999999/,'collector implementation must remain generic');
 
-console.log('SOOP diagnostic UI + media fallback v1.4.6 regression passed');
+console.log('SOOP diagnostic UI + media fallback generation 8 regression passed');
