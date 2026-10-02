@@ -1,0 +1,34 @@
+name: Import content hero temporary
+
+on:
+  push:
+    branches:
+      - fix/finalize-content-hero-header-shell-20261002
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/finalize-content-hero-header-shell-20261002
+      - name: Inspect temporary share page
+        env:
+          HERO_SHARE_URL: https://firestorage.ai/ja/f/cLTpO1ZreAps
+        run: |
+          python - <<'PY'
+          import os, re, urllib.request
+          url=os.environ['HERO_SHARE_URL']
+          req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
+          with urllib.request.urlopen(req,timeout=30) as r:
+              data=r.read().decode('utf-8','replace')
+              print('status',r.status,'bytes',len(data),'final',r.geturl())
+          for value in re.findall(r'(?:href|src)=["\']([^"\']+)',data,re.I):
+              if any(k in value.lower() for k in ['download','file','storage','hero','webp']):
+                  print('candidate',value[:1000])
+          print('html-head',data[:5000].replace('\n',' '))
+          PY
