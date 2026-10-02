@@ -7,7 +7,7 @@ const collector=fs.readFileSync(new URL('../chunbong-content-collector.user.js',
 const archive=require('../lib/chunbong-content-archive-api.js');
 const api=fs.readFileSync(new URL('../api/content.js',import.meta.url),'utf8');
 
-assert.match(collector,/@version\s+1\.4\.6/,'diagnostic collector release should advance for rendered-media recovery');
+assert.match(collector,/@version\s+1\.4\.7/,'diagnostic collector contract should remain present on low-data watcher release');
 assert.match(collector,/SOOP_MEDIA_COLLECTOR_VERSION=8/,'diagnostic generation must revisit previous zero-image and restricted rows');
 assert.match(collector,/SOOP_DIAGNOSTIC_QUEUE_KEY/,'collector needs a separate diagnostic queue');
 assert.match(collector,/queueSoopDiagnostic/,'collector should queue diagnostics independently of archive imports');
