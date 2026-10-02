@@ -31,28 +31,47 @@ assert.equal(preview.looksLikeContaminatedSoopCapture([
 ].join('\n')),true);
 assert.equal(preview.looksLikeContaminatedSoopCapture('그냥서버 시작 전 설명회 및 질의응답 시간 가지도록 하겠습니다.'),false);
 
+assert.equal(typeof preview.extractOfficialSoopImages,'function');
+const officialHtml=[
+  '<img src="https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/21941786118032145.png" alt="Uploaded">',
+  '<p>본문</p>',
+  '<img src="https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/48321786118471069.png" alt="Uploaded">'
+].join('');
+assert.deepEqual(preview.extractOfficialSoopImages(officialHtml),[
+  'https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/21941786118032145.png',
+  'https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/48321786118471069.png'
+]);
+
 const merged=preview.mergeSourcePreviews(
   {
-    title:'SOOP 로그인 제한 글 · 208495651',
-    body:'설정 메뉴\n방송 목록\n사이드바\nLIVE 플레이어',
-    images:['https://res.sooplive.com/images/svg/thumb_profile.svg'],
-    date:'2026-09-30'
+    title:'그냥서버:적자생존 공지',
+    body:'저장 캡처 본문',
+    images:[
+      'https://stimg.sooplive.com/STATION/3/24883333/15571786283884897.png',
+      'https://stimg.sooplive.com/NORMAL_BBS/3/24883333/captured-extra.png'
+    ],
+    date:'2026-08-08'
   },
   {
-    title:'그냥서버:적자생존 오픈 전 설명회 하겠습니다.',
-    body:'그냥서버 시작 전 설명회 및 질의응답 시간 가지도록 하겠습니다.',
+    title:'그냥서버:적자생존 공지',
+    body:'공식 본문',
+    html:officialHtml,
     images:[
-      'https://res.sooplive.com/images/channel/ko_KR/ImageLoadingLight.gif',
-      'https://stimg.sooplive.com/STATION/3/24883333/real-content.png'
+      'https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/21941786118032145.png',
+      'https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/48321786118471069.png'
     ],
-    date:'2026-09-30'
+    date:'2026-08-08'
   },
-  {title:'SOOP 로그인 제한 글 · 208495651',type:'post'},
-  'https://www.sooplive.com/station/chunbongtv/post/208495651'
+  {title:'그냥서버:적자생존 공지',type:'post'},
+  'https://www.sooplive.com/station/chunbongtv/post/203683207'
 );
-assert.equal(merged.title,'그냥서버:적자생존 오픈 전 설명회 하겠습니다.');
-assert.equal(merged.body,'그냥서버 시작 전 설명회 및 질의응답 시간 가지도록 하겠습니다.');
-assert.deepEqual(merged.images,['https://stimg.sooplive.com/STATION/3/24883333/real-content.png']);
-assert.match(merged.source,/soop-public/);
+assert.equal(merged.title,'그냥서버:적자생존 공지');
+assert.equal(merged.body,'공식 본문');
+assert.equal(merged.html,officialHtml);
+assert.deepEqual(merged.images,[
+  'https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/21941786118032145.png',
+  'https://stimg.sooplive.co.kr/NORMAL_BBS/3/24883333/48321786118471069.png'
+]);
+assert.equal(merged.source,'soop-public');
 
 console.log('chunbong content source preview integrity regression: ok');
