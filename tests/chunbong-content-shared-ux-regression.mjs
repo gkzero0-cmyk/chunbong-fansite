@@ -5,10 +5,13 @@ const html=fs.readFileSync(new URL('../chunbong-contents.html',import.meta.url),
 const css=fs.readFileSync(new URL('../content-page-enhancements.css',import.meta.url),'utf8');
 const runtime=fs.readFileSync(new URL('../content-page-enhancements.js',import.meta.url),'utf8');
 const loader=fs.readFileSync(new URL('../mobile-runtime-loader.js',import.meta.url),'utf8');
+const hero=new URL('../assets/chunbong-content-hero-20261002.webp',import.meta.url);
 
 assert.match(html,/<base href="\/">/,'nested /contents/:id routes must resolve assets and navigation from the site root');
 assert.match(html,/<section class="page-hero archive-hero">/,'Chunbong Contents must use the shared page hero sizing contract');
-assert.match(html,/\/assets\/chunbong-content-hero\.webp/,'content planning artwork must use the user-provided local source asset');
+assert.match(html,/\/assets\/chunbong-content-hero-20261002\.webp/,'content planning artwork must use the user-provided full-resolution local source asset');
+assert.match(html,/width="1672"[^>]*height="941"/,'hero intrinsic dimensions must match the supplied source');
+assert.ok(fs.statSync(hero).size>150000,'desktop hero must keep enough image detail instead of the old tiny derivative');
 assert.doesNotMatch(html,/e_gen_restore\/c_scale/,'the old restored 320px hero delivery must stay retired');
 assert.doesNotMatch(html,/f_auto,q_auto,w_960\/v1790884100\/chunbong-content-planning-hero/,'the old low-resolution hero delivery must stay retired');
 

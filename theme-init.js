@@ -51,8 +51,27 @@
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
   }
 
+  function installHeaderEnhancementShell(){
+    if(!document.querySelector('link[data-site-improvements]')){
+      const link=document.createElement('link');
+      link.rel='stylesheet';
+      link.href='site-improvements.css?v=2';
+      link.dataset.siteImprovements='true';
+      document.head.appendChild(link);
+    }
+    const load=()=>{
+      if(document.querySelector('script[src="site-improvements.js?v=2"]'))return;
+      const script=document.createElement('script');
+      script.src='site-improvements.js?v=2';
+      script.defer=true;
+      document.head.appendChild(script);
+    };
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
+  }
+
   installStylesheetRecovery();
   installStableHeaderReserve();
+  installHeaderEnhancementShell();
 
   let theme = 'dark';
   try {
