@@ -52,9 +52,9 @@ const html=fs.readFileSync(new URL('../operator.html',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../operator.css',import.meta.url),'utf8');
 const api=fs.readFileSync(new URL('../lib/chunbong-content-archive-api.js',import.meta.url),'utf8');
 
-assert.match(collector,/@version\s+1\.4\.4/,'collector userscript version should advance after the protocol-relative media miss');
-assert.match(collector,/const VERSION='1\.4\.4'/,'collector runtime version must match userscript metadata');
-assert.match(collector,/SOOP_MEDIA_COLLECTOR_VERSION=6/,'backfill must revisit generation 5 zero-image captures and stale restricted rows');
+assert.match(collector,/@version\s+1\.4\.5/,'collector userscript version should advance after archive-backed recovery');
+assert.match(collector,/const VERSION='1\.4\.5'/,'collector runtime version must match userscript metadata');
+assert.match(collector,/SOOP_MEDIA_COLLECTOR_VERSION=7/,'backfill must revisit generation 6 zero-image captures and stale restricted rows');
 assert.match(collector,/mediaCollectorVersion:SOOP_MEDIA_COLLECTOR_VERSION/,'SOOP payload should identify the media collector generation');
 assert.match(collector,/collectorVersion:SOOP_MEDIA_COLLECTOR_VERSION,mediaComplete:images\.length>0,imageCount:images\.length/,'zero-image captures must not be marked media complete');
 assert.match(collector,/recheckAuthenticated&&!mediaCurrent/,'backfill should revisit legacy captures without increasing normal watcher work');
@@ -95,5 +95,5 @@ assert.match(operator,/마지막 서버 반영/,'collector health UI should expo
 assert.match(operator,/최근 오류/,'collector health UI should expose recent failures');
 assert.match(css,/operator-collector-health-grid/,'collector health dashboard styling missing');
 
-// Generation 6 recovery is generic: protocol-relative attachments and stale restricted history are handled without post-specific IDs.
+// Generation 7 recovery stays generic: archive targets and media recovery remain post-ID independent.
 console.log('soop-favorite-collector-regression: ok');
