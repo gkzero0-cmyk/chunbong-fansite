@@ -1,49 +1,9 @@
 {
   "version": 1,
-  "session": {
-    "active": true,
-    "sessionId": "2026-10-02T06:13:20.000Z",
-    "startedAt": "2026-10-02T06:13:20.000Z",
-    "title": "그냥서버 섭주 api 많은 관심 부탁드립니다",
-    "samples": [
-      {
-        "capturedAt": "2026-10-02T08:59:27.084Z",
-        "live": true,
-        "startedAt": "2026-10-02T06:13:20.000Z",
-        "title": "그냥서버 섭주 api 많은 관심 부탁드립니다",
-        "viewerCount": 139,
-        "categoryId": "40017",
-        "categoryName": "마인크래프트",
-        "followerCount": 33572,
-        "fanclubCount": 7964
-      },
-      {
-        "capturedAt": "2026-10-02T15:40:25.137Z",
-        "live": true,
-        "startedAt": "2026-10-02T06:13:20.000Z",
-        "title": "그냥서버 섭주 api 많은 관심 부탁드립니다",
-        "viewerCount": 895,
-        "categoryId": "40017",
-        "categoryName": "마인크래프트",
-        "followerCount": 33975,
-        "fanclubCount": 8063
-      },
-      {
-        "capturedAt": "2026-10-02T20:07:54.223Z",
-        "live": true,
-        "startedAt": "2026-10-02T06:13:20.000Z",
-        "title": "그냥서버 섭주 api 많은 관심 부탁드립니다",
-        "viewerCount": 265,
-        "categoryId": "40017",
-        "categoryName": "마인크래프트",
-        "followerCount": 34387,
-        "fanclubCount": 8063
-      }
-    ]
-  },
+  "session": null,
   "lastProfile": {
-    "capturedAt": "2026-10-02T20:07:54.223Z",
-    "followerCount": 34387,
+    "capturedAt": "2026-10-02T23:45:04.947Z",
+    "followerCount": 34452,
     "fanclubCount": 8063
   }
 }
