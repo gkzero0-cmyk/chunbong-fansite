@@ -4,7 +4,7 @@
 
 **Goal:** Make targeted SOOP recapture diagnosable in Operator Center and recover legitimate rendered SOOP/Afreeca post images when canonical `NORMAL_BBS` discovery returns zero images.
 
-**Architecture:** Keep the existing browser collector and authenticated operator archive API. Add bounded diagnostic reads to the existing operator list response, derive a privacy-safe diagnostic view in `operator-contents.js`, and add a generation-8 fallback that only runs after canonical media discovery fails. No new schedule or polling loop is introduced.
+**Architecture:** Keep the existing browser collector and stored privacy-safe diagnostics. Read diagnostics through a dedicated owner-authenticated endpoint only when the content-archive diagnostics UI needs them; cap each read to the latest 40 post IDs and batch the matching diagnostic/import records with `MGET`. Keep the existing Redis diagnostics runtime behind its original entry file and load the new SOOP diagnostics UI beside it. Add a generation-8 browser fallback that runs only after canonical media discovery fails. No new schedule or recurring polling loop is introduced.
 
 **Tech Stack:** Vanilla JavaScript, Node.js 24 regression scripts, Vercel functions, Upstash Redis, GitHub Actions.
 
@@ -14,8 +14,8 @@
 
 - Collector userscript version becomes `1.4.6`; SOOP media collector generation becomes `8`.
 - Normal SOOP watcher cadence stays exactly 5 minutes.
-- Diagnostics remain privacy-safe: no cookies, local/session storage, query secrets, or page contents.
-- Diagnostic reads are bounded to the latest 40 post IDs.
+- Diagnostics remain privacy-safe: no cookies, browser storage, query secrets, or page contents leave the collector through the diagnostics endpoint.
+- Diagnostic reads are bounded to the latest 40 post IDs and do not load the full archive/inbox.
 - Recovery logic stays generic and must not hardcode validation post IDs.
 - No new scheduled job, public polling loop, or separate storage system.
 
@@ -34,29 +34,29 @@
 **Files:**
 - Create: `tests/soop-diagnostics-media-v146-regression.mjs`
 
-- [ ] Write assertions for diagnostic view statuses, bounded operator diagnostics, collector v1.4.6/generation 8, same-origin iframe scanning, trusted rendered-media filtering, and unchanged 5-minute cadence.
-- [ ] Open the PR and verify Site regression fails for the missing implementation.
+- [x] Write assertions for diagnostic view statuses, bounded operator diagnostics, collector v1.4.6/generation 8, accessible iframe scanning, trusted rendered-media filtering, and unchanged 5-minute cadence.
+- [x] Open PR #477 and verify Site regression fails for the missing implementation.
 
 ### Task 2: Operator diagnostics
 
 **Files:**
-- Modify: `lib/chunbong-content-archive-api.js`
-- Modify: `operator-contents.js`
-- Modify: `operator.html`
+- Create: `api/operator-soop-diagnostics.js`
+- Create: `operator-soop-diagnostics.js`
+- Split legacy runtime: `operator-redis-diagnostics.js` + `operator-redis-diagnostics-core.js`
 
-- [ ] Read at most 40 latest diagnostic records from Redis and return them as `soopDiagnostics` from the authenticated operator list endpoint.
-- [ ] Add `soopDiagnosticViewRows(archiveRows, imports, diagnostics)` and render a compact per-post status panel.
-- [ ] Verify the new regression passes for operator-side behavior.
+- [x] Read at most 40 latest diagnostic post IDs and batch diagnostic/import records without loading the full archive or collector inbox.
+- [x] Render a compact per-post status panel and keep targeted IDs in session storage across an operator-page refresh.
+- [x] Refresh only through explicit/lifecycle one-shot calls; do not add an interval poll.
 
 ### Task 3: Media-zero fallback
 
 **Files:**
 - Modify: `chunbong-content-collector.user.js`
 
-- [ ] Bump userscript to 1.4.6 and SOOP media generation to 8.
-- [ ] When canonical post assets are still zero, inspect large rendered images from trusted SOOP/Afreeca hosts in content roots and accessible iframe documents, rejecting common decorative/station assets.
-- [ ] Keep diagnostics counts and the 5-minute watcher unchanged.
-- [ ] Verify all regression workflows pass.
+- [x] Bump userscript to 1.4.6 and SOOP media generation to 8.
+- [x] When canonical post assets are still zero, inspect large rendered images from trusted SOOP/Afreeca hosts in content roots and accessible iframe documents, rejecting common decorative/station assets.
+- [x] Keep diagnostics counts and the 5-minute watcher unchanged.
+- [ ] Verify the complete repository regression suite and visual layout audit pass.
 
 ### Task 4: Release verification
 
