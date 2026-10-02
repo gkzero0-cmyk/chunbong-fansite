@@ -7,8 +7,8 @@ const collector=fs.readFileSync(new URL('../chunbong-content-collector.user.js',
 const archive=require('../lib/chunbong-content-archive-api.js');
 const api=fs.readFileSync(new URL('../api/content.js',import.meta.url),'utf8');
 
-assert.match(collector,/@version\s+1\.4\.5/,'diagnostic collector release should bump userscript version');
-assert.match(collector,/SOOP_MEDIA_COLLECTOR_VERSION=7/,'diagnostic generation must revisit previous zero-image and restricted rows');
+assert.match(collector,/@version\s+1\.4\.6/,'diagnostic collector release should advance for rendered-media recovery');
+assert.match(collector,/SOOP_MEDIA_COLLECTOR_VERSION=8/,'diagnostic generation must revisit previous zero-image and restricted rows');
 assert.match(collector,/SOOP_DIAGNOSTIC_QUEUE_KEY/,'collector needs a separate diagnostic queue');
 assert.match(collector,/queueSoopDiagnostic/,'collector should queue diagnostics independently of archive imports');
 assert.match(collector,/candidateCount/,'diagnostics should report discovered media candidate counts');
@@ -24,7 +24,7 @@ assert.doesNotMatch(collector,/document\.cookie|localStorage|sessionStorage/,'co
 assert.equal(typeof archive._internals.normalizeSoopCollectorDiagnostic,'function','server must expose diagnostic normalization for regression coverage');
 const diagnostic=archive._internals.normalizeSoopCollectorDiagnostic({
   postId:'208562045',url:'https://www.sooplive.com/station/chunbongtv/post/208562045?token=secret#x',
-  phase:'captured',access:'favorite',collectorVersion:7,bodyLength:321,pageTextLength:999,
+  phase:'captured',access:'favorite',collectorVersion:8,bodyLength:321,pageTextLength:999,
   candidateCount:4,acceptedCount:0,rejectedByReason:{not_post_asset:3,decorative:1},
   samples:['https://stimg.sooplive.com/NORMAL_BBS/3/a.png?signature=secret','https://cdn.example.com/path/b.png?x=1']
 });
