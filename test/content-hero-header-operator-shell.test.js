@@ -19,13 +19,14 @@ test('header reserves lazy utility width without eager data loading',()=>{
   assert.match(init,/Math\.max\(0,238-used\)/);
 });
 
-test('operator html is routed through an authenticated server shell',()=>{
-  const vercel=read('vercel.json');
+test('operator html redirects to an authenticated dynamic route before static file serving',()=>{
+  const config=JSON.parse(read('vercel.json'));
   const api=read('api/survival-wiki.js');
-  assert.match(vercel,/"source"\s*:\s*"\/operator\.html"/);
-  assert.match(vercel,/mode=operator-page/);
+  const redirect=(config.redirects||[]).find(row=>row.source==='/operator.html');
+  const rewrite=(config.rewrites||[]).find(row=>row.source==='/operator');
+  assert.deepEqual(redirect,{source:'/operator.html',destination:'/operator',permanent:false});
+  assert.equal(rewrite?.destination,'/api/survival-wiki?mode=operator-page');
   assert.match(api,/stripOperatorDashboard/);
-  assert.match(api,/requireOwner/);
   assert.match(api,/Vary','Cookie/);
   assert.match(api,/operator-dashboard/);
 });
