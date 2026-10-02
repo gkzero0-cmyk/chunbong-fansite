@@ -49,7 +49,7 @@ export function renderSoopDiagnostics(rows=[]){
     return '<article class="operator-collector-inbox-item" data-state="'+esc(row.status)+'"><div><small>SOOP '+esc(row.postId)+'</small><strong>'+esc(statusLabel(row.status))+'</strong><p>'+esc(meta)+'</p>'+(when?'<time>'+esc(when)+'</time>':'')+'</div><a href="https://www.sooplive.com/station/chunbongtv/post/'+esc(row.postId)+'" target="_blank" rel="noopener noreferrer">원문 열기 ↗</a></article>';
   }).join('');
 }
-let lastRows=[],loading=false;
+let lastRows=[],loading=false,planRefreshTimer=null;
 async function refreshDiagnostics({force=false}={}){
   const requested=readRequested();if(!requested.length){renderSoopDiagnostics([]);return[]}
   if(loading&&!force)return lastRows;loading=true;
@@ -61,10 +61,24 @@ async function refreshDiagnostics({force=false}={}){
     lastRows=soopDiagnosticViewRows(requested,[]);renderSoopDiagnostics(lastRows);const summary=$('[data-soop-diagnostic-summary]');if(summary)summary.textContent='진단을 불러오지 못했습니다: '+String(error?.message||error);return lastRows;
   }finally{loading=false}
 }
-function recaptureIds(data={}){if(data?.channel!==COLLECTOR_CHANNEL||data?.type!=='open-urls'||data?.kind!=='soop-recapture')return[];return cleanIds((Array.isArray(data.urls)?data.urls:[]).map(postIdFromUrl))}
+function recaptureIds(data={}){
+  if(data?.channel!==COLLECTOR_CHANNEL)return[];
+  if(data?.type==='recapture-plan'&&data?.kind==='soop-recapture')return cleanIds((Array.isArray(data.urls)?data.urls:[]).map(postIdFromUrl));
+  if(data?.type==='open-urls'&&data?.kind==='soop-recapture')return cleanIds((Array.isArray(data.urls)?data.urls:[]).map(postIdFromUrl));
+  return[];
+}
 function handleCollectorCommand(data={}){
+  if(data?.channel!==COLLECTOR_CHANNEL)return;
+  if(data.type==='recapture-finish'&&data.kind==='soop-recapture'){
+    if(planRefreshTimer){clearTimeout(planRefreshTimer);planRefreshTimer=null}
+    void refreshDiagnostics({force:true});setTimeout(()=>void refreshDiagnostics({force:true}),2500);return;
+  }
   const ids=recaptureIds(data);if(!ids.length)return;
   const requested=writeRequested([...readRequested(),...ids]);lastRows=soopDiagnosticViewRows(requested,lastRows);renderSoopDiagnostics(lastRows);
+  if(data.type==='recapture-plan'){
+    if(planRefreshTimer)clearTimeout(planRefreshTimer);
+    planRefreshTimer=setTimeout(()=>{planRefreshTimer=null;void refreshDiagnostics({force:true})},6000);return;
+  }
   setTimeout(()=>void refreshDiagnostics({force:true}),5000);setTimeout(()=>void refreshDiagnostics({force:true}),22000);
 }
 function contentsVisible(){const panel=$('[data-operator-panel="contents"]');return Boolean(panel&&!panel.hidden)}
