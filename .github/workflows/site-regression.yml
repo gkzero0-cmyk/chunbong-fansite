@@ -51,7 +51,6 @@ jobs:
           node --check chuncortile.js
           node --check chuncortile-postgame-ranking.js
           node --check api/content.js
-          node --check api/crew-news.js
           node --check api/image.js
           node --check api/tarot-reading.js
           node --check api/version.js

@@ -25,11 +25,11 @@ row=observability.recordCollectorResult('fanart',{items:[{date:'2026-09-30'}],fa
 assert.equal(row.consecutiveFailures,0,'a successful response should clear the consecutive failure count');
 assert.equal(row.fallback,false);
 
-row=observability.recordCollectorResult('crew-news',{posts:[{publishedAt:'2026-09-30T13:00:00Z'}],ok:true,stale:false});
+row=observability.recordCollectorResult('notice',{posts:[{publishedAt:'2026-09-30T13:00:00Z'}],ok:true,stale:false});
 assert.equal(row.itemCount,1);
 assert.equal(row.consecutiveFailures,0);
 assert.equal(row.lastDataAt,'2026-09-30T13:00:00.000Z');
-row=observability.recordCollectorResult('crew-news',{posts:[{publishedAt:'2026-09-30T13:00:00Z'}],ok:true,stale:true});
+row=observability.recordCollectorResult('notice',{posts:[{publishedAt:'2026-09-30T13:00:00Z'}],ok:true,stale:true});
 assert.equal(row.stale,true);
 assert.equal(row.consecutiveFailures,1,'a stale snapshot should count as a degraded collector result');
 
@@ -56,7 +56,7 @@ assert.equal(snapshot.clientHealth.samplingRate,0.02);
 assert.equal(snapshot.clientHealth.retention,'warm-instance-memory');
 assert.equal(snapshot.collectorHealth.retention,'warm-instance-memory');
 assert.ok(snapshot.collectorHealth.items.some(item=>item.type==='fanart'&&item.consecutiveFailures===0));
-assert.ok(snapshot.collectorHealth.items.some(item=>item.type==='crew-news'&&item.stale===true));
+assert.ok(snapshot.collectorHealth.items.some(item=>item.type==='notice'&&item.stale===true));
 assert.ok(snapshot.clientHealth.samples.some(item=>item.page==='/fanart.html'));
 
 function responseMock(){

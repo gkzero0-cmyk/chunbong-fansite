@@ -16,8 +16,6 @@
     const path=url.pathname,type=url.searchParams.get('type')||'';
     if(path==='/api/version')return{memoryMs:60000,snapshotMs:60*60*1000};
     if(path==='/api/history-sheet')return{memoryMs:5*60*1000,snapshotMs:24*60*60*1000};
-    if(path==='/api/crew-news')return{memoryMs:60000,snapshotMs:6*60*60*1000};
-    if(path==='/api/crew-news-batch')return{memoryMs:5*60*1000,snapshotMs:6*60*60*1000};
     if(path==='/api/content'){
       if(type==='live')return{memoryMs:45*1000,snapshotMs:5*60*1000};
       if(['schedule','notice','activity'].includes(type))return{memoryMs:10*60*1000,snapshotMs:12*60*60*1000};

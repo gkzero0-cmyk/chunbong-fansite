@@ -36,10 +36,8 @@ Do not point a feature at a new empty Redis until any data that must be preserve
 
 ## External source caches
 
-- Public single-station crew news: CDN 10 minutes, stale 1 hour.
-- Complete unauthenticated crew-news batches: CDN 1 hour, stale 6 hours.
-- Authenticated, forced-refresh, or incomplete crew-news responses are never publicly cached.
-- `refresh=1` bypasses crew-news caching when an intentional refresh is required.
+Crew news collection is maintained in the independent `gkzero0-cmyk/crew-news-automation` repository and Vercel project. This fansite no longer deploys crew APIs or their old `crew-automation/` copy. The shared image proxy and fansite SOOP/content collectors remain here.
+
 - Version checks: CDN 5 minutes, stale 30 minutes.
 - History content auto-linking uses `chunbong-content-index`, a compact endpoint cached at the CDN for 30 minutes, instead of downloading the full content archive list.
 
@@ -67,10 +65,9 @@ For selected public endpoints it:
 - falls back to that snapshot on network/5xx failures,
 - prefers a last-good ranking snapshot over an `unavailable:true` response when one is still fresh.
 
-Covered endpoints include version, history-sheet, crew-news, crew-news-batch, compact content index, and public ranking reads. Forced refresh requests (`refresh=1`) bypass this layer.
+Covered endpoints include version, history-sheet, compact content index, and public ranking reads. Forced refresh requests (`refresh=1`) bypass this layer.
 
 Server-side warm-instance snapshots are also kept for:
-- public crew-news results (up to 6 hours),
 - ranking reads (up to 24 hours).
 
 These are opportunistic fallbacks only; CDN caching remains the primary shared cache.
@@ -83,7 +80,7 @@ The operator system panel exposes the protection state:
 - analytics sample rate,
 - analytics retention window,
 - dashboard polling cadence,
-- request dedupe / last-good / crew cache / ranking fallback / Playwright checks,
+- request dedupe / last-good / ranking fallback / Playwright checks,
 - whether optional feature-specific Redis stores are configured.
 
 This view is intentionally descriptive. It does not invent Vercel or Redis quota percentages when the provider does not expose exact usage to the runtime.

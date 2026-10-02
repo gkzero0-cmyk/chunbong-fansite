@@ -59,9 +59,6 @@ const contentApi=read('api/content.js');
 assert.match(contentApi,/type==='client-health'/,'public client health ingestion route should exist');
 assert.match(contentApi,/recordCollectorResult/,'content API should update collector freshness without Redis');
 
-const crewNews=read('api/crew-news.js');
-assert.match(crewNews,/operator-observability/,'crew-news should use the same zero-Redis freshness observer');
-assert.match(crewNews,/recordCollectorResult\('crew-news',payload\)/,'crew-news responses should update freshness without changing payloads');
 
 const operatorApi=read('lib/operator-center-api.js');
 assert.match(operatorApi,/clientHealth/);

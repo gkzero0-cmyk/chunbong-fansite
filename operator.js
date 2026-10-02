@@ -544,7 +544,6 @@ async function loadSystemStatus({storage:deepStorage=false}={}){
     ['외부 장애 캐시 보존',protections.providerOutagePreservesCache],
     ['분석 임시 보관 '+fmt(protections.analyticsDeferredBufferHours||0)+'시간 · 최대 '+fmt(protections.analyticsDeferredMaxEvents||0)+'건',Number(protections.analyticsDeferredBufferHours)>=48&&Number(protections.analyticsDeferredMaxEvents)>=120],
     ['지연 분석 원래 시각 보존',protections.analyticsReplayPreservesEventTime===true],
-    ['크루 소식 캐시',protections.crewNewsCache],
     ['랭킹 제한 완화',protections.rankingGracefulFallback],
     ['24시간 제한 이벤트 '+fmt(quotaEvents.length)+'건',quotaEvents.length===0],
     ['화면 검증',protections.visualCheck==='playwright']
