@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const css = fs.readFileSync(new URL('../operator-budget-extra.css', import.meta.url), 'utf8');
-const js = fs.readFileSync(new URL('../operator-redis-diagnostics.js', import.meta.url), 'utf8');
+const js = fs.readFileSync(new URL('../operator-redis-diagnostics-core.js', import.meta.url), 'utf8');
 
 assert.match(css, /Operator mobile usability v2/, 'operator mobile usability layer should be present');
 assert.match(css, /scroll-snap-type\s*:\s*x\s+proximity/, 'mobile operator tabs should use horizontal scroll snapping');
