@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install dependencies
-        run: npm ci
+        run: npm install --ignore-scripts --no-audit --no-fund
       - name: Syntax check collector
         run: node --check chunbong-content-collector.user.js
       - name: Run SOOP regression scripts
