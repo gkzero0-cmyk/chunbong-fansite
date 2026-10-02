@@ -1,0 +1,20 @@
+name: SOOP low-data v1.4.7 TDD
+
+on:
+  push:
+    branches:
+      - fix/soop-low-data-watch-20261003
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run SOOP low-data watcher regression
+        run: node tests/soop-low-data-watch-recapture-v147-regression.mjs
