@@ -44,4 +44,5 @@ assert.match(html,/data-collector-recapture-soop/,'operator center should expose
 assert.match(js,/collectorPost\(['"]open-urls['"]/,'targeted recapture should reuse the existing browser open-urls bridge');
 assert.doesNotMatch(js,/204274449|208562045/,'targeted recovery must stay generic and never hardcode validation post IDs');
 
+// The recapture candidate set is derived only from public archive data plus existing capture media counts.
 console.log('SOOP targeted recapture regression passed');
