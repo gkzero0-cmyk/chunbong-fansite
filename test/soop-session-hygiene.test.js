@@ -4,13 +4,24 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const hygiene = require('../lib/soop-session-hygiene.js');
 
-test('preserves legitimate long sessions below seven days', () => {
+test('preserves legitimate long sessions below 48 hours', () => {
   const item = { id: 'long', durationMinutes: 2577, startedAt: '2026-08-01T00:00:00Z', endedAt: '2026-08-02T18:57:00Z' };
   assert.equal(hygiene.normalizeSession(item).durationMinutes, 2577);
 });
 
-test('drops gross multi-day anomaly beyond seven days', () => {
-  assert.equal(hygiene.normalizeSession({ id: 'bad', durationMinutes: 21164 }), null);
+test('drops gross multi-day anomalies beyond 48 hours', () => {
+  for (const durationMinutes of [5324, 5690, 7310, 21164]) {
+    assert.equal(hygiene.normalizeSession({ id: `bad-${durationMinutes}`, durationMinutes }), null);
+  }
+});
+
+test('drops gross multi-day anomaly when malformed timestamps imply more than 48 hours', () => {
+  assert.equal(hygiene.normalizeSession({
+    id: 'bad-range',
+    durationMinutes: 320,
+    startedAt: '2026-06-24T00:00:00Z',
+    endedAt: '2026-06-28T00:00:00Z'
+  }), null);
 });
 
 test('drops exact 48h Trackify sentinel without trustworthy shorter timestamps', () => {
