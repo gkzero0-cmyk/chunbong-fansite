@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         춘봉 콘텐츠 자동 수집기
 // @namespace    https://chunbong-fansite.vercel.app/
-// @version      1.4.4
+// @version      1.4.5
 // @description  춘봉 팬사이트용 나무위키·SOOP·FM코리아 브라우저 자료 자동 수집기
 // @match        https://namu.wiki/w/*
 // @match        https://www.namu.wiki/w/*
@@ -26,7 +26,7 @@
 
 (function(){
   'use strict';
-  const VERSION='1.4.4';
+  const VERSION='1.4.5';
   const CHANNEL='chunbong-content-collector';
   const PAGE_MESSAGE_EVENT='chunbong-content-collector-page-message';
   const PAGE_COMMAND_EVENT='chunbong-content-collector-page-command';
@@ -40,16 +40,18 @@
   const SOOP_HISTORY_KEY='cb-soop-history-v2';
   const SOOP_BACKFILL_KEY='cb-soop-backfill-v2';
   const COLLECTOR_STATUS_KEY='cb-content-collector-status-v1';
+  const SOOP_DIAGNOSTIC_QUEUE_KEY='cb-soop-diagnostics-v1';
   const AUTO_FLUSH_OPERATOR_HASH='collector-auto-flush';
   const SOOP_WATCH_HASH='chunbong-soop-watch';
   const SOOP_SELFTEST_HASH='chunbong-soop-selftest';
   const SOOP_WATCH_INTERVAL_MS=5*60*1000;
-  const SOOP_MEDIA_COLLECTOR_VERSION=6;
+  const SOOP_MEDIA_COLLECTOR_VERSION=7;
   const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const clean=value=>String(value||'').replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim();
   const read=(key,fallback)=>{try{const value=GM_getValue(key,fallback);return value??fallback}catch{return fallback}};
   const write=(key,value)=>{try{GM_setValue(key,value)}catch{}};
   const queueRows=()=>{const rows=read(QUEUE_KEY,[]);return Array.isArray(rows)?rows:[]};
+  const diagnosticRows=()=>{const rows=read(SOOP_DIAGNOSTIC_QUEUE_KEY,[]);return Array.isArray(rows)?rows:[]};
   const seenMap=()=>{const rows=read(SEEN_KEY,{});return rows&&typeof rows==='object'&&!Array.isArray(rows)?rows:{}};
   const soopHistory=()=>{const rows=read(SOOP_HISTORY_KEY,{});return rows&&typeof rows==='object'&&!Array.isArray(rows)?rows:{}};
   const backfillState=()=>{const row=read(SOOP_BACKFILL_KEY,{});return row&&typeof row==='object'&&!Array.isArray(row)?row:{}};
@@ -94,6 +96,21 @@
     setCollectorStatus({lastCaptureAt:new Date().toISOString(),lastCapturedTitle:clean(payload.title||''),lastCapturedUrl:canonical(payload.url),lastCapturedSource:String(payload.source||''),queueCount:rows.slice(-60).length},'자료 수집 · '+clean(payload.title||payload.url).slice(0,80));
     if(['soop-authenticated-browser','fmkorea-public-browser'].includes(payload.source))requestOperatorFlush();
     return true;
+  }
+  function diagnosticSample(raw=''){
+    try{const parsed=new URL(String(raw||''),location.href);return(parsed.hostname+parsed.pathname).slice(0,240)}catch{return''}
+  }
+  function queueSoopDiagnostic(payload={}){
+    const postId=String(payload.postId||'');if(!/^\d+$/.test(postId))return false;
+    const rows=diagnosticRows().filter(row=>String(row?.postId||'')!==postId),now=new Date().toISOString();
+    const samples=[...new Set((Array.isArray(payload.samples)?payload.samples:[]).map(diagnosticSample).filter(Boolean))].slice(0,8);
+    const rejectedByReason={};
+    for(const [key,value] of Object.entries(payload.rejectedByReason||{})){const name=String(key||'').replace(/[^a-z0-9_-]/gi,'').slice(0,32);if(name)rejectedByReason[name]=Math.max(0,Math.min(1000000,Number(value)||0))}
+    const diagnostic={...payload,postId,url:canonical(payload.url||location.href),collectorVersion:SOOP_MEDIA_COLLECTOR_VERSION,samples,rejectedByReason,capturedAt:now};
+    rows.push({id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),postId,diagnostic,capturedAt:now});
+    const next=rows.slice(-40);write(SOOP_DIAGNOSTIC_QUEUE_KEY,next);
+    setCollectorStatus({diagnosticQueueCount:next.length,lastDiagnosticAt:now,lastDiagnosticPostId:postId},'SOOP 수집 진단 기록 · '+postId);
+    requestOperatorFlush();return true;
   }
   function withMarker(raw,marker=AUTO_HASH){
     try{const url=new URL(raw);url.hash=marker;return url.toString()}catch{return raw}
@@ -177,29 +194,43 @@
     }catch{return true}
   }
   function collectSoopImages(chosen){
-    const postImages=new Set();
-    const addPost=raw=>{if(!raw||!isSoopPostAssetUrl(raw))return;try{postImages.add(new URL(raw,location.href).toString())}catch{}};
-    const addCssUrls=value=>{for(const match of String(value||'').matchAll(/url\((?:['\"])?([^'\")]+)(?:['\"])?\)/gi))addPost(match[1])};
+    const postImages=new Set(),candidates=new Set(),samples=[],sourceCounts={node:0,href:0,css:0,resource:0,html:0};
+    const rejectedByReason={invalid_url:0,non_https:0,not_post_asset:0,decorative:0,duplicate:0};
+    const rememberSample=parsed=>{const sample=(parsed.hostname+parsed.pathname).slice(0,240);if(sample&&!samples.includes(sample)&&samples.length<8)samples.push(sample)};
+    const inspect=(raw,channel='node',node=null)=>{
+      if(!raw)return;const value=String(raw||'').trim();if(!value)return;
+      let parsed=null;try{parsed=new URL(value,location.href)}catch{rejectedByReason.invalid_url++;return}
+      const key=parsed.toString();if(candidates.has(key)){rejectedByReason.duplicate++;return}candidates.add(key);
+      if(Object.prototype.hasOwnProperty.call(sourceCounts,channel))sourceCounts[channel]++;
+      rememberSample(parsed);
+      if(parsed.protocol!=='https:'){rejectedByReason.non_https++;return}
+      if(!isSoopPostAssetUrl(key)){rejectedByReason.not_post_asset++;return}
+      if(node&&isDecorativeSoopImage(node,key)){rejectedByReason.decorative++;return}
+      postImages.add(key);
+    };
+    const inspectCss=value=>{for(const match of String(value||'').matchAll(/url\((?:['\"])?([^'\")]+)(?:['\"])?\)/gi))inspect(match[1],'css')};
     for(const node of [...document.querySelectorAll('img,source,a[href],[style]')].slice(0,2200)){
-      for(const raw of soopImageValues(node))addPost(raw);
-      addPost(node.getAttribute?.('href'));
-      const backgroundImage=node.style?.backgroundImage||getComputedStyle(node).backgroundImage||'';
-      addCssUrls(backgroundImage);
+      for(const raw of soopImageValues(node))inspect(raw,'node',node);
+      inspect(node.getAttribute?.('href'),'href',node);
+      const backgroundImage=node.style?.backgroundImage||getComputedStyle(node).backgroundImage||'';inspectCss(backgroundImage);
     }
-    try{for(const entry of performance.getEntriesByType('resource'))addPost(entry?.name)}catch{}
+    try{for(const entry of performance.getEntriesByType('resource'))inspect(entry?.name,'resource')}catch{}
     const renderedHtml=String(document.documentElement?.outerHTML||'').replace(/\\u002f/gi,'/').replace(/\\\//g,'/');
-    for(const match of renderedHtml.matchAll(/(?:https?:)?\/\/[^\s\"'<>)]*\/NORMAL_BBS\/[^\s\"'<>)]*/gi))addPost(match[0].replace(/&amp;/g,'&'));
-    if(postImages.size)return[...postImages].slice(0,24);
-    const imageSet=new Set(),add=(node,raw)=>{if(!raw||isDecorativeSoopImage(node,raw))return;try{const parsed=new URL(raw,location.href);if(parsed.protocol==='https:')imageSet.add(parsed.toString())}catch{}};
-    const roots=[chosen,...document.querySelectorAll('article,main,[class*="post-content"],[class*="article-content"],[class*="board-content"],[class*="viewer"],[class*="content"],[class*="attach"],[class*="file"],[class*="gallery"],[class*="photo"]')].filter(Boolean).filter((root,index,all)=>all.indexOf(root)===index).slice(0,40);
-    for(const root of roots)for(const node of [...root.querySelectorAll('img,source')].slice(0,180))for(const raw of soopImageValues(node))add(node,raw);
-    return[...imageSet].slice(0,24);
+    for(const match of renderedHtml.matchAll(/(?:https?:)?\/\/[^\s\"'<>)]*\/NORMAL_BBS\/[^\s\"'<>)]*/gi))inspect(match[0].replace(/&amp;/g,'&'),'html');
+    const fallbackImages=new Set(),addFallback=(node,raw)=>{if(!raw||isDecorativeSoopImage(node,raw))return;try{const parsed=new URL(raw,location.href);if(parsed.protocol==='https:')fallbackImages.add(parsed.toString())}catch{}};
+    if(!postImages.size){
+      const roots=[chosen,...document.querySelectorAll('article,main,[class*="post-content"],[class*="article-content"],[class*="board-content"],[class*="viewer"],[class*="content"],[class*="attach"],[class*="file"],[class*="gallery"],[class*="photo"]')].filter(Boolean).filter((root,index,all)=>all.indexOf(root)===index).slice(0,40);
+      for(const root of roots)for(const node of [...root.querySelectorAll('img,source')].slice(0,180))for(const raw of soopImageValues(node))addFallback(node,raw);
+    }
+    const images=(postImages.size?[...postImages]:[...fallbackImages]).slice(0,24);
+    return{images,diagnostics:{candidateCount:candidates.size,acceptedCount:images.length,rejectedByReason,sourceCounts,samples,fallbackCount:fallbackImages.size}};
   }
   async function captureSoopPost(force=false){
     const match=location.pathname.match(/^\/station\/chunbongtv\/post\/(\d+)\/?$/i);if(!match)return false;
     const postId=match[1],postUrl=canonical(location.origin+location.pathname);if(!force&&soopHandled(postId,postUrl))return false;
     const pageText=await waitForSoopBody(),now=new Date().toISOString();
     if(/비공개\s*(?:게시글|글)|접근\s*(?:권한|할 수 없)|열람\s*(?:권한|할 수 없)|권한이\s*없|존재하지\s*않는\s*게시글|삭제된\s*게시글/i.test(pageText)){
+      queueSoopDiagnostic({phase:'restricted',postId,url:postUrl,access:'restricted',pageTextLength:pageText.length,bodyLength:0,candidateCount:0,acceptedCount:0,rejectedByReason:{},samples:[]});
       markSoopHistory(postId,'restricted',{collectorVersion:SOOP_MEDIA_COLLECTOR_VERSION});setCollectorStatus({lastSoopAccess:'restricted',lastRestrictedAt:now,lastPostId:postId},'SOOP 제한 글 확인 · '+postId);return false
     }
     await loadLazyPage();
@@ -207,9 +238,10 @@
     const title=(soopMeta('meta[property="og:title"]')||document.querySelector('h1')?.textContent||document.title||'').replace(/\s*[|｜-]\s*SOOP.*$/i,'').trim();
     const dateRaw=soopMeta('meta[property="article:published_time"]')||document.querySelector('time[datetime]')?.getAttribute('datetime')||(pageText.match(/20\d{2}[.\/-]\d{1,2}[.\/-]\d{1,2}/)||[])[0]||'';
     const chosen=[...document.querySelectorAll('article,main,[class*="post-content"],[class*="article-content"],[class*="board-content"],[class*="viewer"],[class*="content"]')].map(el=>({el,text:(el.innerText||'').trim()})).filter(row=>row.text.length>80).sort((a,b)=>b.text.length-a.text.length)[0]?.el||document.querySelector('main')||document.body;
-    const body=((chosen?.innerText||pageText).trim()).slice(0,40000);if(body.length<40){setCollectorStatus({lastError:'soop_post_body_empty',lastErrorAt:now,lastPostId:postId},'SOOP 본문 확인 실패 · '+postId);return false}
-    const images=collectSoopImages(chosen);
+    const body=((chosen?.innerText||pageText).trim()).slice(0,40000),media=collectSoopImages(chosen),images=media.images;
+    if(body.length<40){queueSoopDiagnostic({phase:'body-empty',postId,url:postUrl,access:soopAccessHint(pageText),pageTextLength:pageText.length,bodyLength:body.length,...media.diagnostics});setCollectorStatus({lastError:'soop_post_body_empty',lastErrorAt:now,lastPostId:postId},'SOOP 본문 확인 실패 · '+postId);return false}
     const isPublic=await verifySoopPublic(postUrl,postId),access=isPublic?'anonymous-verified':soopAccessHint(pageText);
+    queueSoopDiagnostic({phase:'captured',postId,url:postUrl,access,pageTextLength:pageText.length,bodyLength:body.length,...media.diagnostics});
     const queued=enqueue({version:1,mediaCollectorVersion:SOOP_MEDIA_COLLECTOR_VERSION,source:'soop-authenticated-browser',url:postUrl,title,date:dateRaw,body,images,access,capturedAt:now});
     if(queued){
       const historyState=isPublic?'public':access;markSoopHistory(postId,historyState,{collectorVersion:SOOP_MEDIA_COLLECTOR_VERSION,mediaComplete:images.length>0,imageCount:images.length});
@@ -383,9 +415,20 @@
       for(const [key,at] of handledCommands)if(now-at>15000)handledCommands.delete(key);
       return now-last<1200;
     };
-    const emitState=()=>emitPageMessage('state',{queueCount:queueRows().length,seenCount:Object.keys(seenMap()).length,soopHistoryCount:Object.keys(soopHistory()).length,soopBackfill:backfillState(),collectorStatus:collectorStatus()});
+    const emitState=()=>emitPageMessage('state',{queueCount:queueRows().length,diagnosticQueueCount:diagnosticRows().length,seenCount:Object.keys(seenMap()).length,soopHistoryCount:Object.keys(soopHistory()).length,soopBackfill:backfillState(),collectorStatus:collectorStatus()});
+    const flushDiagnosticDirect=async()=>{
+      if(inflight)return false;const first=diagnosticRows()[0];if(!first)return false;
+      inflight='diag:'+String(first.id||'');
+      try{
+        const response=await fetch('/api/content?type=operator-content-browser-diagnostic',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({diagnostic:first.diagnostic})});
+        let result={};try{result=await response.json()}catch{}if(!response.ok)throw new Error(result.error||('HTTP '+response.status));
+        write(SOOP_DIAGNOSTIC_QUEUE_KEY,diagnosticRows().filter(row=>String(row.id||'')!==String(first.id||'')));
+        setCollectorStatus({lastDiagnosticOkAt:new Date().toISOString(),diagnosticQueueCount:diagnosticRows().length,lastError:'',lastErrorAt:''},'SOOP 수집 진단 전송 완료 · '+String(first.postId||''));
+        inflight='';emitState();setTimeout(()=>{if(autoFlushMode)void flushDirect();else flush()},180);return true;
+      }catch(error){const now=new Date().toISOString();setCollectorStatus({lastError:String(error?.message||error),lastErrorAt:now,lastDiagnosticErrorAt:now},'SOOP 수집 진단 전송 실패');inflight='';emitState();if(autoFlushMode)setTimeout(()=>window.close(),1400);return true}
+    };
     const flushDirect=async()=>{
-      if(inflight)return;const rows=queueRows(),first=rows.find(row=>row?.payload?.source!=='namuwiki-browser');
+      if(inflight)return;if(await flushDiagnosticDirect())return;const rows=queueRows(),first=rows.find(row=>row?.payload?.source!=='namuwiki-browser');
       if(!first){emitState();if(autoFlushMode)setTimeout(()=>window.close(),700);return}
       inflight=String(first.id||'');
       try{
@@ -402,7 +445,7 @@
     };
     const flush=()=>{
       if(autoFlushMode){void flushDirect();return}
-      if(inflight)return;const first=queueRows()[0];if(!first){emitState();return}
+      if(inflight)return;if(diagnosticRows().length){void flushDiagnosticDirect();return}const first=queueRows()[0];if(!first){emitState();return}
       inflight=String(first.id||'');emitPageMessage('import',{id:inflight,payload:first.payload});
     };
     const handleCommand=data=>{
@@ -435,6 +478,7 @@
     });
     document.addEventListener(PAGE_COMMAND_EVENT,()=>handleCommand(readPageCommand()));
     try{GM_addValueChangeListener(QUEUE_KEY,()=>{emitState();flush()})}catch{}
+    try{GM_addValueChangeListener(SOOP_DIAGNOSTIC_QUEUE_KEY,()=>{emitState();flush()})}catch{}
     try{GM_addValueChangeListener(SOOP_BACKFILL_KEY,()=>emitState())}catch{}
     try{GM_addValueChangeListener(SOOP_HISTORY_KEY,()=>emitState())}catch{}
     try{GM_addValueChangeListener(COLLECTOR_STATUS_KEY,()=>emitState())}catch{}
