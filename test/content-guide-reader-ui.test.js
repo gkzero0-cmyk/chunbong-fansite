@@ -45,14 +45,14 @@ test('posts and sources reuse the exact fan-site notice card, keep body before a
   assert.match(loader,/content-page-enhancements\.js\?v=5/);
 });
 
-test('content hero shares the site hero contract, uses the uploaded artwork, and nested routes resolve from root',()=>{
+test('content hero shares the site hero contract, uses the supplied full-resolution artwork, and nested routes resolve from root',()=>{
   const html=read('chunbong-contents.html');
   const css=read('content-page-enhancements.css');
   assert.match(html,/<base href="\/">/);
   assert.match(html,/<section class="page-hero archive-hero">/);
   assert.match(html,/content-page-enhancements\.css\?v=6/);
-  assert.match(html,/\/assets\/chunbong-content-hero\.webp/);
-  assert.match(html,/width="640"[^>]*height="360"/);
+  assert.match(html,/\/assets\/chunbong-content-hero-20261002\.webp/);
+  assert.match(html,/width="1672"[^>]*height="941"/);
   assert.doesNotMatch(html,/e_gen_restore\/c_scale/);
   assert.doesNotMatch(html,/content-planning-hero\.svg/);
   assert.match(css,/\.archive-hero \.archive-hero-inner\{[^}]*grid-template-columns:minmax\(0,\.82fr\) minmax\(420px,1fr\)/);
