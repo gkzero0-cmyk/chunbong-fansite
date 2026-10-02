@@ -8,7 +8,8 @@ const loader=fs.readFileSync(new URL('../mobile-runtime-loader.js',import.meta.u
 
 assert.match(html,/<base href="\/">/,'nested /contents/:id routes must resolve assets and navigation from the site root');
 assert.match(html,/<section class="page-hero archive-hero">/,'Chunbong Contents must use the shared page hero sizing contract');
-assert.match(html,/e_gen_restore\/c_scale,w_1440\/f_auto,q_auto:best/,'content planning artwork must request the restored high-resolution derivative instead of upscaling the 320px original');
+assert.match(html,/\/assets\/chunbong-content-hero\.webp/,'content planning artwork must use the user-provided local source asset');
+assert.doesNotMatch(html,/e_gen_restore\/c_scale/,'the old restored 320px hero delivery must stay retired');
 assert.doesNotMatch(html,/f_auto,q_auto,w_960\/v1790884100\/chunbong-content-planning-hero/,'the old low-resolution hero delivery must stay retired');
 
 assert.doesNotMatch(runtime,/createElement\(['"]dialog['"]\)/,'content sources must not open in a separate modal reader');
