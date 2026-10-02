@@ -17,7 +17,7 @@ test('survival guide provides compact searchable navigation and section disclosu
   assert.match(css,/\.official-guide-source-section/);
 });
 
-test('posts and sources reuse the exact fan-site notice card, prefer official SOOP detail, and reject contaminated browser captures',()=>{
+test('posts and sources reuse the fan-site notice card, preserve official SOOP body media, and keep the external source link external',()=>{
   const js=read('content-page-enhancements.js');
   const css=read('content-page-enhancements.css');
   const manage=read('lib/chunbong-content-browser-import-manage.js');
@@ -34,20 +34,21 @@ test('posts and sources reuse the exact fan-site notice card, prefer official SO
   assert.match(js,/notice-detail/);
   assert.match(js,/notice-content/);
   assert.match(js,/sourcePreview=1/);
+  assert.match(js,/previewVersion=4/);
+  assert.match(js,/source-preview:v6/);
   assert.match(js,/sessionStorage/);
   assert.doesNotMatch(js,/cache:'force-cache'/);
-  assert.match(js,/detail\.innerHTML=`<div class="notice-content">\$\{content[\s\S]*\$\{images\}<\/div>/);
-  assert.match(manage,/mergeSourcePreviews/);
-  assert.match(manage,/const publicPreview=isSoop\?await publicSoopPreview\(rawUrl,row\):null/);
-  assert.match(manage,/const captured=await capturedPreview\(rawUrl,row\)/);
-  assert.match(manage,/mergeSourcePreviews\(captured,publicPreview,row,rawUrl\)/);
+  assert.match(js,/preview\?\.html/);
+  assert.match(js,/data-source-external-link/);
+  assert.match(js,/matches\?\.\('\[data-source-external-link\]'\)/);
+  assert.match(manage,/extractOfficialSoopImages/);
+  assert.match(manage,/html:String\(detail\?\.html/);
+  assert.match(manage,/const authoritativeImages=publicPreview\?\.body\?publicPreview\.images:null/);
   assert.match(manage,/looksLikeContaminatedSoopCapture/);
-  assert.match(manage,/if\(soopPostId\(rawUrl\)&&looksLikeContaminatedSoopCapture\(body\)\)return null/);
-  assert.doesNotMatch(manage,/if\(captured\?\.body\)return mergeSourcePreviews\(captured,null/);
-  assert.match(manage,/publicSoopPreview/);
   assert.match(css,/\.archive-source-notice/);
+  assert.match(css,/\.archive-source-notice-html/);
   assert.doesNotMatch(css,/\.archive-source-reader(?:\{|::)/);
-  assert.match(loader,/content-page-enhancements\.js\?v=5/);
+  assert.match(loader,/content-page-enhancements\.js\?v=6/);
 });
 
 test('content hero shares the site hero contract, uses the supplied full-resolution artwork, and nested routes resolve from root',()=>{
