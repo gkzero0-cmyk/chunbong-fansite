@@ -32,13 +32,27 @@ assert.equal(preview.looksLikeContaminatedSoopCapture([
 assert.equal(preview.looksLikeContaminatedSoopCapture('그냥서버 시작 전 설명회 및 질의응답 시간 가지도록 하겠습니다.'),false);
 
 const merged=preview.mergeSourcePreviews(
-  {title:'SOOP 로그인 제한 글 · 208495651',body:'설정 메뉴\n방송 목록\n사이드바\nLIVE 플레이어',images:[],date:'2026-09-30'},
-  {title:'그냥서버:적자생존 오픈 전 설명회 하겠습니다.',body:'그냥서버 시작 전 설명회 및 질의응답 시간 가지도록 하겠습니다.',images:[],date:'2026-09-30'},
+  {
+    title:'SOOP 로그인 제한 글 · 208495651',
+    body:'설정 메뉴\n방송 목록\n사이드바\nLIVE 플레이어',
+    images:['https://res.sooplive.com/images/svg/thumb_profile.svg'],
+    date:'2026-09-30'
+  },
+  {
+    title:'그냥서버:적자생존 오픈 전 설명회 하겠습니다.',
+    body:'그냥서버 시작 전 설명회 및 질의응답 시간 가지도록 하겠습니다.',
+    images:[
+      'https://res.sooplive.com/images/channel/ko_KR/ImageLoadingLight.gif',
+      'https://stimg.sooplive.com/STATION/3/24883333/real-content.png'
+    ],
+    date:'2026-09-30'
+  },
   {title:'SOOP 로그인 제한 글 · 208495651',type:'post'},
   'https://www.sooplive.com/station/chunbongtv/post/208495651'
 );
 assert.equal(merged.title,'그냥서버:적자생존 오픈 전 설명회 하겠습니다.');
 assert.equal(merged.body,'그냥서버 시작 전 설명회 및 질의응답 시간 가지도록 하겠습니다.');
+assert.deepEqual(merged.images,['https://stimg.sooplive.com/STATION/3/24883333/real-content.png']);
 assert.match(merged.source,/soop-public/);
 
 console.log('chunbong content source preview integrity regression: ok');
