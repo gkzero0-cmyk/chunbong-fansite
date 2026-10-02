@@ -18,7 +18,16 @@
       "fanclubEnd": 7677,
       "fanclubDelta": 0,
       "title": "마병대 4 간부 합격 감사합니다.",
-      "categories": [{"id":"810000","name":"버추얼","minutes":536,"sampleCount":58,"averageViewers":52,"maxViewers":116}],
+      "categories": [
+        {
+          "id": "810000",
+          "name": "버추얼",
+          "minutes": 536,
+          "sampleCount": 58,
+          "averageViewers": 52,
+          "maxViewers": 116
+        }
+      ],
       "measurement": "fan-site-sampled-5m"
     },
     {
@@ -38,7 +47,16 @@
       "fanclubEnd": 7677,
       "fanclubDelta": 0,
       "title": "예? 행정관이요?",
-      "categories": [{"id":"810000","name":"버추얼","minutes":13,"sampleCount":2,"averageViewers":48,"maxViewers":55}],
+      "categories": [
+        {
+          "id": "810000",
+          "name": "버추얼",
+          "minutes": 13,
+          "sampleCount": 2,
+          "averageViewers": 48,
+          "maxViewers": 55
+        }
+      ],
       "measurement": "fan-site-sampled-5m"
     },
     {
@@ -58,7 +76,16 @@
       "fanclubEnd": 7681,
       "fanclubDelta": 0,
       "title": "마병대4 악마 행정관 입니다.",
-      "categories": [{"id":"810000","name":"버추얼","minutes":435,"sampleCount":47,"averageViewers":84,"maxViewers":138}],
+      "categories": [
+        {
+          "id": "810000",
+          "name": "버추얼",
+          "minutes": 435,
+          "sampleCount": 47,
+          "averageViewers": 84,
+          "maxViewers": 138
+        }
+      ],
       "measurement": "fan-site-sampled-5m"
     },
     {
@@ -78,7 +105,16 @@
       "fanclubEnd": 7686,
       "fanclubDelta": 0,
       "title": "마병대4 행정관입니다",
-      "categories": [{"id":"810000","name":"버추얼","minutes":716,"sampleCount":76,"averageViewers":167,"maxViewers":479}],
+      "categories": [
+        {
+          "id": "810000",
+          "name": "버추얼",
+          "minutes": 716,
+          "sampleCount": 76,
+          "averageViewers": 167,
+          "maxViewers": 479
+        }
+      ],
       "measurement": "fan-site-sampled-5m"
     },
     {
@@ -99,8 +135,22 @@
       "fanclubDelta": 0,
       "title": "마병대4 행정관 오침권이 필요합니다 형님들",
       "categories": [
-        {"id":"810000","name":"버추얼","minutes":502,"sampleCount":53,"averageViewers":163,"maxViewers":294},
-        {"id":"40017","name":"마인크래프트","minutes":353,"sampleCount":37,"averageViewers":132,"maxViewers":194}
+        {
+          "id": "810000",
+          "name": "버추얼",
+          "minutes": 502,
+          "sampleCount": 53,
+          "averageViewers": 163,
+          "maxViewers": 294
+        },
+        {
+          "id": "40017",
+          "name": "마인크래프트",
+          "minutes": 353,
+          "sampleCount": 37,
+          "averageViewers": 132,
+          "maxViewers": 194
+        }
       ],
       "measurement": "fan-site-sampled-5m"
     },
@@ -121,7 +171,16 @@
       "fanclubEnd": 7813,
       "fanclubDelta": 59,
       "title": "마병대4 행정관 선진병영 시스템 도입하겠습니다",
-      "categories": [{"id":"40017","name":"마인크래프트","minutes":917,"sampleCount":101,"averageViewers":195,"maxViewers":430}],
+      "categories": [
+        {
+          "id": "40017",
+          "name": "마인크래프트",
+          "minutes": 917,
+          "sampleCount": 101,
+          "averageViewers": 195,
+          "maxViewers": 430
+        }
+      ],
       "measurement": "fan-site-sampled-5m"
     },
     {
@@ -141,7 +200,16 @@
       "fanclubEnd": 7826,
       "fanclubDelta": 13,
       "title": "마병대4 행정관 오늘은 잘하자 애들아.",
-      "categories": [{"id":"40017","name":"마인크래프트","minutes":827,"sampleCount":90,"averageViewers":155,"maxViewers":477}],
+      "categories": [
+        {
+          "id": "40017",
+          "name": "마인크래프트",
+          "minutes": 827,
+          "sampleCount": 90,
+          "averageViewers": 155,
+          "maxViewers": 477
+        }
+      ],
       "measurement": "fan-site-sampled-5m"
     },
     {
@@ -161,7 +229,45 @@
       "fanclubEnd": 7826,
       "fanclubDelta": 0,
       "title": "마병대 4 행정관 중령님이 오신다고..?",
-      "categories": [{"id":"40017","name":"마인크래프트","minutes":60,"sampleCount":6,"averageViewers":115,"maxViewers":168}],
+      "categories": [
+        {
+          "id": "40017",
+          "name": "마인크래프트",
+          "minutes": 60,
+          "sampleCount": 6,
+          "averageViewers": 115,
+          "maxViewers": 168
+        }
+      ],
+      "measurement": "fan-site-sampled-5m"
+    },
+    {
+      "id": "2026-09-30T12:31:23.000Z",
+      "broadcastId": "",
+      "startedAt": "2026-09-30T12:31:23.000Z",
+      "endedAt": "2026-10-02T02:36:35.797Z",
+      "date": "2026-09-30",
+      "durationMinutes": 2285,
+      "averageViewers": 199,
+      "maxViewers": 254,
+      "viewerSampleCount": 8,
+      "followerStart": 31815,
+      "followerEnd": 33502,
+      "followerDelta": 1687,
+      "fanclubStart": 7881,
+      "fanclubEnd": 7964,
+      "fanclubDelta": 83,
+      "title": "그냥서버 2차입주 모집중입니다.",
+      "categories": [
+        {
+          "id": "40017",
+          "name": "마인크래프트",
+          "minutes": 80,
+          "sampleCount": 8,
+          "averageViewers": 199,
+          "maxViewers": 254
+        }
+      ],
       "measurement": "fan-site-sampled-5m"
     }
   ]
