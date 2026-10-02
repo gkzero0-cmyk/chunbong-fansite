@@ -1,0 +1,49 @@
+name: Apply SOOP legacy CDN compatibility fix
+
+on:
+  push:
+    branches:
+      - fix/soop-legacy-cdn-compat-20261002
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/soop-legacy-cdn-compat-20261002
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Patch collector
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path=Path('chunbong-content-collector.user.js')
+          s=path.read_text()
+          replacements=[
+            ('// @version      1.4.2','// @version      1.4.3'),
+            ("const VERSION='1.4.2';","const VERSION='1.4.3';"),
+            ('const SOOP_MEDIA_COLLECTOR_VERSION=4;','const SOOP_MEDIA_COLLECTOR_VERSION=5;'),
+            ("return parsed.protocol==='https:'&&(host==='sooplive.com'||host.endsWith('.sooplive.com')||host==='sooplive.co.kr'||host.endsWith('.sooplive.co.kr'))&&path.includes('/NORMAL_BBS/');",
+             "const hostAllowed=host==='sooplive.com'||host.endsWith('.sooplive.com')||host==='sooplive.co.kr'||host.endsWith('.sooplive.co.kr')||/afreecatv\\.(?:com|co\\.kr)$/i.test(host);\n      return parsed.protocol==='https:'&&hostAllowed&&path.includes('/NORMAL_BBS/');")
+          ]
+          for old,new in replacements:
+            if old not in s:
+              raise SystemExit(f'missing expected snippet: {old}')
+            s=s.replace(old,new,1)
+          path.write_text(s)
+          workflow=Path('.github/workflows/apply-soop-legacy-cdn-fix.yml')
+          if workflow.exists(): workflow.unlink()
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add chunbong-content-collector.user.js .github/workflows/apply-soop-legacy-cdn-fix.yml
+          git commit -m "fix: accept legacy SOOP attachment CDN hosts"
+          git push origin HEAD:fix/soop-legacy-cdn-compat-20261002
