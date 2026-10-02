@@ -68,6 +68,7 @@ assert.match(collector,/backgroundImage/,'SOOP collector should inspect CSS back
 assert.match(collector,/getAttribute\?\.\(['"]href['"]\)/,'SOOP collector should inspect linked attachment URLs');
 assert.match(collector,/querySelectorAll\(['"]img,source,a\[href\],\[style\]['"]\)/,'SOOP collector should inspect page-wide image, source, link, and styled nodes');
 assert.match(collector,/NORMAL_BBS/,'SOOP collector should recognize canonical post attachment CDN paths across all recovery channels');
+// SOOP still serves some NORMAL_BBS attachments from legacy Afreeca CDN hosts.
 assert.match(collector,/afreecatv\.(?:com|co\.kr)/,'SOOP collector must keep legacy Afreeca attachment CDN URLs still used by SOOP');
 assert.match(collector,/await loadLazyPage\(\)/,'authenticated post capture should force lazy media to load before collection');
 assert.match(collector,/profile\|avatar\|favicon\|logo\|icon\|emoji\|badge/,'SOOP collector should filter common decorative images');
