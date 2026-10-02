@@ -1,15 +1,20 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url);
 
 const uiUrl=new URL('../operator-soop-diagnostics.js',import.meta.url);
-assert.equal(fs.existsSync(uiUrl),true,'operator should provide a dedicated SOOP diagnostic module');
+assert.equal(fs.existsSync(uiUrl),true,'operator should provide a dedicated SOOP diagnostic UI module');
 const ui=await import(uiUrl);
-const endpointUrl=new URL('../api/operator-soop-diagnostics.js',import.meta.url);
-assert.equal(fs.existsSync(endpointUrl),true,'operator should provide a dedicated authenticated SOOP diagnostic endpoint');
-const endpoint=await import(endpointUrl);
+const endpointUrl=new URL('../lib/operator-soop-diagnostics-api.js',import.meta.url);
+assert.equal(fs.existsSync(endpointUrl),true,'operator should provide a bounded SOOP diagnostic handler module');
+const endpoint=require('../lib/operator-soop-diagnostics-api.js');
+const standaloneApiUrl=new URL('../api/operator-soop-diagnostics.js',import.meta.url);
+assert.equal(fs.existsSync(standaloneApiUrl),false,'SOOP diagnostics must not consume an extra Vercel function');
 
 const collector=fs.readFileSync(new URL('../chunbong-content-collector.user.js',import.meta.url),'utf8');
 const endpointSource=fs.readFileSync(endpointUrl,'utf8');
+const contentApi=fs.readFileSync(new URL('../api/content.js',import.meta.url),'utf8');
 const uiSource=fs.readFileSync(uiUrl,'utf8');
 const redisWrapper=fs.readFileSync(new URL('../operator-redis-diagnostics.js',import.meta.url),'utf8');
 
@@ -30,14 +35,16 @@ assert.equal(view[0].rejectedByReason.not_post_asset,6);
 assert.equal(ui.soopDiagnosticViewRows(['999999999'],[])[0].status,'pending','requested posts without a server diagnostic should stay pending');
 assert.equal(ui.soopDiagnosticViewRows(['555555555'],[{postId:'555555555',phase:'body-empty',imageCount:0}])[0].status,'body-empty');
 
-assert.equal(typeof endpoint._internals?.readDiagnosticRows,'function','endpoint should expose bounded diagnostic retrieval for regression coverage');
-assert.match(endpointSource,/ZREVRANGE/,'diagnostic endpoint should read a bounded latest-post index');
-assert.match(endpointSource,/0\s*,\s*39/,'diagnostic endpoint should cap reads to the latest 40 post IDs');
-assert.match(endpointSource,/MGET/,'diagnostic endpoint should batch Redis reads instead of issuing per-post GET loops');
+assert.equal(typeof endpoint._internals?.readDiagnosticRows,'function','handler should expose bounded diagnostic retrieval for regression coverage');
+assert.match(endpointSource,/ZREVRANGE/,'diagnostic handler should read a bounded latest-post index');
+assert.match(endpointSource,/0\s*,\s*39/,'diagnostic handler should cap reads to the latest 40 post IDs');
+assert.match(endpointSource,/MGET/,'diagnostic handler should batch Redis reads instead of issuing per-post GET loops');
 assert.match(endpointSource,/SOOP_DIAGNOSTIC_PREFIX/);
 assert.match(endpointSource,/BROWSER_IMPORT_PREFIX/);
 assert.doesNotMatch(endpointSource,/adminRows\(|browserImportInboxRows\(/,'diagnostic reads must not load the full archive or 250-row collector inbox');
 for(const forbidden of ['body:','payload.body','document.cookie','localStorage','sessionStorage']) assert.equal(endpointSource.includes(forbidden),false,'endpoint must not expose private browser content: '+forbidden);
+assert.match(contentApi,/operator-soop-diagnostics-api/,'existing content function should load the SOOP diagnostic handler');
+assert.match(contentApi,/type==='operator-content-soop-diagnostics'/,'existing content function should multiplex the authenticated diagnostic route');
 
 assert.match(uiSource,/data-soop-diagnostic-list/,'operator diagnostic module should render a dedicated list');
 assert.match(uiSource,/renderSoopDiagnostics/,'operator diagnostic module should render status rows');
@@ -45,6 +52,7 @@ assert.match(uiSource,/soop-recapture/,'operator diagnostic module should recogn
 assert.match(uiSource,/sessionStorage/,'requested recapture IDs should survive an operator-page refresh without server storage');
 assert.match(uiSource,/setTimeout/,'recapture should use bounded one-shot refreshes instead of continuous polling');
 assert.doesNotMatch(uiSource,/setInterval/,'diagnostic UI must not add a recurring polling loop');
+assert.match(uiSource,/\/api\/content\?type=operator-content-soop-diagnostics/,'operator UI should reuse the existing content Vercel function');
 assert.match(redisWrapper,/operator-soop-diagnostics\.js/,'existing operator module entry should load the SOOP diagnostics UI without another HTML script tag');
 assert.match(redisWrapper,/operator-redis-diagnostics-core\.js/,'existing Redis diagnostics runtime should remain loaded through the wrapper');
 
