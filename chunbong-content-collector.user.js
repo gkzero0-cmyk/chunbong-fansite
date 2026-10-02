@@ -349,7 +349,8 @@
     const result=await scanSoopBoard('watch');
     const nextAt=Number(read(SOOP_WATCH_NEXT_AT_KEY,0));
     setCollectorStatus({watching:false,lastWatchCheckAt:new Date().toISOString(),nextScanAt:Number.isFinite(nextAt)&&nextAt>0?new Date(nextAt).toISOString():''},result.ok?'SOOP 저데이터 1회 확인 완료':'SOOP 저데이터 1회 확인 실패');
-    setTimeout(()=>window.close(),700);
+    const closeDelay=Math.max(700,result.discovered*900+900);
+    setTimeout(()=>window.close(),closeDelay);
   }
   async function runSoopSelfTest(){
     const result=await scanSoopBoard('self-test'),now=new Date().toISOString();
