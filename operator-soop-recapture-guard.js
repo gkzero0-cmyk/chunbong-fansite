@@ -1,4 +1,4 @@
-const MIN_COLLECTOR_VERSION='1.4.6';
+const MIN_COLLECTOR_VERSION='1.4.7';
 const COLLECTOR_CHANNEL='chunbong-content-collector';
 const COMMAND_ATTR='data-chunbong-collector-command';
 const COMMAND_EVENT='chunbong-content-collector-page-command';
@@ -7,6 +7,7 @@ const MESSAGE_EVENT='chunbong-content-collector-page-message';
 const READY_ATTR='data-chunbong-collector-ready';
 const VERSION_ATTR='data-chunbong-collector-version';
 const ARCHIVE_API='/api/content?type=operator-content-archive';
+const EXACT_STATUS_API='/api/content?type=operator-content-soop-diagnostics&mode=recapture-status';
 const SOOP_RECAPTURE_SESSION_KEY='chunbong:operator:soop-sequential-recapture:v1';
 const RECAPTURE_SESSION_TTL_MS=30*60*1000;
 const STEP_TIMEOUT_MS=32000;
@@ -39,7 +40,7 @@ function readPageMessage(){
   try{return JSON.parse(document.documentElement?.getAttribute(MESSAGE_ATTR)||'{}')}catch{return{}}
 }
 function isStateMessage(data={}){return Boolean(data&&data.channel===COLLECTOR_CHANNEL&&data.type==='state')}
-function postIdFromUrl(raw=''){try{return(new URL(String(raw||''),location.href).pathname.match(/^\/station\/chunbongtv\/post\/(\d+)\/?$/i)||[])[1]||''}catch{return''}}
+function postIdFromUrl(raw=''){try{return(new URL(String(raw||''),typeof location!=='undefined'?location.href:'https://www.sooplive.com').pathname.match(/^\/station\/chunbongtv\/post\/(\d+)\/?$/i)||[])[1]||''}catch{return''}}
 function canonicalSoopPost(raw=''){
   try{
     const url=new URL(String(raw||''),'https://www.sooplive.com'),match=url.pathname.match(/^\/station\/chunbongtv\/post\/(\d+)\/?$/i);
@@ -47,25 +48,30 @@ function canonicalSoopPost(raw=''){
     return'https://www.sooplive.com/station/chunbongtv/post/'+match[1];
   }catch{return''}
 }
-function importImageCount(row={}){
-  const explicit=Number(row?.imageCount);if(Number.isFinite(explicit)&&explicit>0)return explicit;
-  const direct=Array.isArray(row?.images)?row.images.length:0,nested=Array.isArray(row?.payload?.images)?row.payload.images.length:0;
-  return Math.max(0,direct,nested);
-}
-function recaptureTargets(payload={}){
-  const imports=new Map();
-  for(const row of Array.isArray(payload.browserImports)?payload.browserImports:[]){const url=canonicalSoopPost(row?.url||row?.payload?.url);if(url)imports.set(url,row)}
-  const seen=new Set(),targets=[];
+function collectSoopSources(payload={}){
+  const byUrl=new Map();
   for(const item of Array.isArray(payload.items)?payload.items:[]){
     for(const row of [...(Array.isArray(item?.timeline)?item.timeline:[]),...(Array.isArray(item?.media)?item.media:[]),...(Array.isArray(item?.sources)?item.sources:[])]){
-      if(!row||row.visibility==='internal')continue;
-      const url=canonicalSoopPost(row.url);if(!url||seen.has(url))continue;seen.add(url);
-      const captured=imports.get(url);if(captured&&importImageCount(captured)>0)continue;
-      targets.push({url,postId:postIdFromUrl(url),hasCapture:Boolean(captured)});
+      if(!row)continue;
+      const url=canonicalSoopPost(row.url);if(!url)continue;
+      const postId=postIdFromUrl(url),internal=row.visibility==='internal',previous=byUrl.get(url);
+      if(!previous||(!internal&&previous.internal))byUrl.set(url,{url,postId,internal,itemId:String(item?.id||'')});
     }
   }
-  targets.sort((a,b)=>Number(b.hasCapture)-Number(a.hasCapture)||Number(b.postId)-Number(a.postId));
-  return targets;
+  return[...byUrl.values()].sort((a,b)=>Number(b.postId)-Number(a.postId));
+}
+export function buildSoopRecapturePlan(payload={},statusRows=[],statusLookupOk=true){
+  const statusById=new Map((Array.isArray(statusRows)?statusRows:[]).map(row=>[String(row?.postId||''),row]));
+  const targets=[],rows=[],summary={recapture:0,imageReady:0,internal:0,lookupFailed:0};
+  for(const source of collectSoopSources(payload)){
+    if(source.internal){rows.push({...source,reason:'internal',imageCount:0,hasImport:false});summary.internal+=1;continue}
+    if(!statusLookupOk){const row={...source,reason:'lookup-failed',imageCount:0,hasImport:false};rows.push(row);targets.push(row);summary.recapture+=1;summary.lookupFailed+=1;continue}
+    const status=statusById.get(source.postId)||{},imageCount=Math.max(0,Number(status.imageCount)||0),hasImport=Boolean(status.hasImport);
+    if(imageCount>0){rows.push({...source,...status,imageCount,hasImport,reason:'image-ready'});summary.imageReady+=1;continue}
+    const row={...source,...status,imageCount,hasImport,reason:hasImport?'image-missing':'import-missing'};rows.push(row);targets.push(row);summary.recapture+=1;
+  }
+  targets.sort((a,b)=>Number(b.hasImport)-Number(a.hasImport)||Number(b.postId)-Number(a.postId));
+  return{targets,summary,rows};
 }
 function readRecaptureSession(){
   try{const row=JSON.parse(localStorage.getItem(SOOP_RECAPTURE_SESSION_KEY)||'null');return row&&Number(row.expiresAt||0)>Date.now()?row:null}catch{return null}
@@ -119,9 +125,21 @@ async function verifyCollectorConnection(){
   if(!versionAtLeast(version,MIN_COLLECTOR_VERSION)){setStatus('자동 수집기 응답 버전이 오래되었습니다. v'+MIN_COLLECTOR_VERSION+' 이상으로 업데이트해 주세요.','bad');return null}
   return{...state,version};
 }
-async function loadRecaptureTargets(){
+async function loadRecapturePlan(){
   const response=await fetch(ARCHIVE_API,{credentials:'include',cache:'no-store',headers:{Accept:'application/json'}}),payload=await response.json().catch(()=>({}));
-  if(!response.ok)throw new Error(payload.error||('HTTP '+response.status));return recaptureTargets(payload);
+  if(!response.ok)throw new Error(payload.error||('HTTP '+response.status));
+  const publicIds=collectSoopSources(payload).filter(row=>!row.internal).map(row=>row.postId);
+  if(!publicIds.length)return buildSoopRecapturePlan(payload,[],true);
+  const rows=[];
+  try{
+    for(let offset=0;offset<publicIds.length;offset+=80){
+      const batch=publicIds.slice(offset,offset+80),statusUrl=EXACT_STATUS_API+'&postIds='+encodeURIComponent(batch.join(','));
+      const statusResponse=await fetch(statusUrl,{credentials:'include',cache:'no-store',headers:{Accept:'application/json'}}),statusPayload=await statusResponse.json().catch(()=>({}));
+      if(!statusResponse.ok)throw new Error(statusPayload.error||('HTTP '+statusResponse.status));
+      rows.push(...(Array.isArray(statusPayload.rows)?statusPayload.rows:[]));
+    }
+    return buildSoopRecapturePlan(payload,rows,true);
+  }catch{return buildSoopRecapturePlan(payload,[],false)}
 }
 async function runSequentialRecapture(button){
   if(recaptureRunning){setStatus('SOOP 누락 자료 재수집이 이미 순차 진행 중입니다.','busy');return}
@@ -129,10 +147,10 @@ async function runSequentialRecapture(button){
   let finished=0,timeouts=0,total=0;
   try{
     const connection=await verifyCollectorConnection();if(!connection)return;
-    const targets=await loadRecaptureTargets();total=targets.length;
-    if(!total){setStatus('현재 다시 수집할 SOOP 원문이 없습니다. 브라우저 캡처와 이미지가 모두 확인된 상태입니다.','ok');return}
+    const plan=await loadRecapturePlan(),targets=plan.targets;total=targets.length;
+    sendCommand('recapture-plan',{kind:'soop-recapture',urls:targets.map(row=>row.url),summary:plan.summary,rows:plan.rows});
+    if(!total){setStatus('현재 다시 수집할 SOOP 원문이 없습니다. 정확 상태 조회 결과 이미지가 모두 확인된 상태입니다.','ok');return}
     writeRecaptureSession({total,completed:0,currentPostId:'',version:connection.version});
-    sendCommand('recapture-plan',{kind:'soop-recapture',urls:targets.map(row=>row.url)});
     for(let index=0;index<targets.length;index++){
       const {url,postId}=targets[index],startedAt=Date.now();
       writeRecaptureSession({total,completed:index,currentPostId:postId});
