@@ -4,6 +4,33 @@ const sourceMetaCache=new Map();
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const slug=v=>String(v||'').toLowerCase().trim().replace(/[^a-z0-9가-힣]+/g,'-').replace(/^-|-$/g,'');
+function canonicalChunbongSoopPost(raw=''){
+  try{
+    const url=new URL(String(raw||''),'https://www.sooplive.com'),host=url.hostname.toLowerCase(),match=url.pathname.match(/^\/station\/chunbongtv\/post\/(\d+)\/?$/i);
+    if(!['sooplive.com','www.sooplive.com'].includes(host)||!match)return'';
+    return'https://www.sooplive.com/station/chunbongtv/post/'+match[1];
+  }catch{return''}
+}
+export function publicSoopArchiveTargets(rows=[]){
+  const seen=new Set(),out=[];
+  for(const item of Array.isArray(rows)?rows:[]){
+    for(const row of [...(Array.isArray(item?.timeline)?item.timeline:[]),...(Array.isArray(item?.media)?item.media:[]),...(Array.isArray(item?.sources)?item.sources:[])]){
+      if(!row||row.visibility==='internal')continue;
+      const url=canonicalChunbongSoopPost(row.url);if(!url||seen.has(url))continue;seen.add(url);out.push(url);
+    }
+  }
+  return out;
+}
+function browserImportMediaCount(row={}){
+  const explicit=Number(row?.imageCount);if(Number.isFinite(explicit)&&explicit>0)return explicit;
+  const direct=Array.isArray(row?.images)?row.images.length:0,nested=Array.isArray(row?.payload?.images)?row.payload.images.length:0;
+  return Math.max(0,direct,nested);
+}
+export function unresolvedSoopRecaptureTargets(archiveRows=[],imports=[]){
+  const indexed=new Map();
+  for(const row of Array.isArray(imports)?imports:[]){const url=canonicalChunbongSoopPost(row?.url||row?.payload?.url);if(url)indexed.set(url,row)}
+  return publicSoopArchiveTargets(archiveRows).filter(url=>{const row=indexed.get(url);return !row||browserImportMediaCount(row)===0});
+}
 const emptyItem=()=>({id:'',title:'',aliases:[],category:'minecraft',role:'주최',status:'ended',startDate:'',endDate:'',datePrecision:'unknown',summary:'',description:'',heroImage:{src:'',alt:'',sourceId:''},participants:[],results:[],timeline:[],media:[],gallery:[],sources:[],verification:{state:'needs_review',verifiedAt:'',conflicts:[]},published:false});
 const errorLabel={published_source_required:'공개하려면 공식 또는 확인 가능한 출처가 1개 이상 필요합니다.',published_source_url_required:'공개 출처에는 원문 URL이 필요합니다.',unresolved_conflict:'확인되지 않은 정보 충돌이 남아 있어 공개할 수 없습니다.',duplicate_material_url:'같은 원문 URL이 두 번 등록되어 있습니다.',duplicate_source_id:'같은 출처 ID가 두 번 등록되어 있습니다.',unknown_source_id:'자료가 존재하지 않는 출처 ID를 참조하고 있습니다.',invalid_start_date:'시작 날짜 형식 또는 실제 날짜를 확인해 주세요.',invalid_end_date:'종료 날짜 형식 또는 실제 날짜를 확인해 주세요.',end_before_start:'종료일은 시작일보다 빠를 수 없습니다.',invalid_material_date:'타임라인·영상 자료의 날짜 형식 또는 실제 날짜를 확인해 주세요.',id_required:'콘텐츠 ID가 필요합니다.',title_required:'콘텐츠 제목이 필요합니다.'};
 async function json(type,options={}){const r=await fetch(API+type,{headers:{accept:'application/json',...(options.headers||{})},...options});let p={};try{p=await r.json()}catch{}if(!r.ok)throw new Error(p.error||'request_failed');return p}
@@ -809,6 +836,12 @@ function bindUnifiedCollector(){
   $('[data-collector-self-test]',root)?.addEventListener('click',()=>{
     collectorPost('self-test-soop',{url:'https://www.sooplive.com/station/chunbongtv/post'});setMessage('자동 수집기 자가진단을 실행했습니다. SOOP 게시판 접근과 신규 글 탐색을 확인합니다.','ok');
   });
+  $('[data-collector-recapture-soop]',root)?.addEventListener('click',()=>{
+  const urls=unresolvedSoopRecaptureTargets(items,browserImports);
+  if(!urls.length){setMessage('현재 다시 수집할 SOOP 원문이 없습니다. 브라우저 캡처와 이미지가 모두 확인된 상태입니다.','ok');return}
+  for(let offset=0;offset<urls.length;offset+=16){const batch=urls.slice(offset,offset+16);setTimeout(()=>collectorPost('open-urls',{kind:'soop-recapture',urls:batch}),Math.floor(offset/16)*1400)}
+  setMessage('본문 또는 이미지 보강이 필요한 SOOP 원문 '+urls.length+'개만 다시 수집합니다. 이번 실행은 진단 정보도 함께 기록합니다.','ok');
+});
   $('[data-collector-backfill-soop]',root)?.addEventListener('click',()=>{
     collectorPost('start-soop-backfill',{url:'https://www.sooplive.com/station/chunbongtv/post'});
     setMessage('SOOP 전체 기록 수집을 시작했습니다. 과거 게시판을 순회하고, 중단되면 다음 실행에서 이어서 진행합니다.','ok');
