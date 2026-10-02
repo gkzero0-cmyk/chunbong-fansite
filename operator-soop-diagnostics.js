@@ -1,5 +1,5 @@
 const STORAGE_KEY='chunbong:operator:soop-diagnostic-targets:v1';
-const API='/api/operator-soop-diagnostics';
+const API='/api/content?type=operator-content-soop-diagnostics';
 const COLLECTOR_CHANNEL='chunbong-content-collector';
 const COLLECTOR_COMMAND_ATTR='data-chunbong-collector-command';
 const COLLECTOR_COMMAND_EVENT='chunbong-content-collector-page-command';
