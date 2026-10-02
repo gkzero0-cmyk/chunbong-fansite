@@ -85,6 +85,7 @@ function sendCommand(type,data={}){
   try{const root=document.documentElement;if(root){root.setAttribute(COMMAND_ATTR,JSON.stringify(payload));document.dispatchEvent(new CustomEvent(COMMAND_EVENT))}}catch{}
   return payload;
 }
+function sendPing(){const payload={type:'ping'};return sendCommand(payload.type)}
 function waitForCollectorState(timeoutMs=2600){
   return new Promise(resolve=>{
     let done=false,timer=null;
@@ -112,7 +113,7 @@ async function verifyCollectorConnection(){
   const detected=collectorReadyState();
   if(!detected.ready){setStatus('SOOP 누락 자료 재수집을 시작하지 않았습니다. 자동 수집기가 이 운영자 페이지에 연결되지 않았습니다. 자동 수집기 설치 / 업데이트 후 페이지를 새로고침해 주세요.','bad');return null}
   if(!detected.supported){setStatus('SOOP 누락 자료 재수집을 시작하지 않았습니다. 자동 수집기 v'+(detected.version||'?')+'가 감지됐지만 v'+MIN_COLLECTOR_VERSION+' 이상이 필요합니다. 자동 수집기를 업데이트해 주세요.','bad');return null}
-  const pending=waitForCollectorState();sendCommand('ping');const state=await pending;
+  const pending=waitForCollectorState();sendPing();const state=await pending;
   if(!state){setStatus('자동 수집기는 감지됐지만 확인 응답이 없습니다. 페이지를 새로고침한 뒤 다시 실행해 주세요.','bad');return null}
   const version=String(state.version||detected.version||'');
   if(!versionAtLeast(version,MIN_COLLECTOR_VERSION)){setStatus('자동 수집기 응답 버전이 오래되었습니다. v'+MIN_COLLECTOR_VERSION+' 이상으로 업데이트해 주세요.','bad');return null}
