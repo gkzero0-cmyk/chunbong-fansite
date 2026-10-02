@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         춘봉 콘텐츠 자동 수집기
 // @namespace    https://chunbong-fansite.vercel.app/
-// @version      1.4.4
+// @version      1.4.5
 // @description  춘봉 팬사이트용 나무위키·SOOP·FM코리아 브라우저 자료 자동 수집기
 // @match        https://namu.wiki/w/*
 // @match        https://www.namu.wiki/w/*
@@ -26,7 +26,7 @@
 
 (function(){
   'use strict';
-  const VERSION='1.4.4';
+  const VERSION='1.4.5';
   const CHANNEL='chunbong-content-collector';
   const PAGE_MESSAGE_EVENT='chunbong-content-collector-page-message';
   const PAGE_COMMAND_EVENT='chunbong-content-collector-page-command';
@@ -44,7 +44,7 @@
   const SOOP_WATCH_HASH='chunbong-soop-watch';
   const SOOP_SELFTEST_HASH='chunbong-soop-selftest';
   const SOOP_WATCH_INTERVAL_MS=5*60*1000;
-  const SOOP_MEDIA_COLLECTOR_VERSION=6;
+  const SOOP_MEDIA_COLLECTOR_VERSION=7;
   const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const clean=value=>String(value||'').replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim();
   const read=(key,fallback)=>{try{const value=GM_getValue(key,fallback);return value??fallback}catch{return fallback}};
@@ -157,11 +157,17 @@
     for(const attr of ['srcset','data-srcset'])for(const part of String(node?.getAttribute?.(attr)||'').split(',')){const candidate=part.trim().split(/\s+/)[0];if(candidate)values.push(candidate)}
     return values.filter(Boolean);
   }
+  function isTrustedSoopMediaHost(raw=''){
+    try{
+      const parsed=new URL(raw,location.href),host=parsed.hostname.toLowerCase();
+      const hostAllowed=host==='sooplive.com'||host.endsWith('.sooplive.com')||host==='sooplive.co.kr'||host.endsWith('.sooplive.co.kr')||host==='afreecatv.com'||host.endsWith('.afreecatv.com')||host==='afreecatv.co.kr'||host.endsWith('.afreecatv.co.kr');
+      return parsed.protocol==='https:'&&hostAllowed;
+    }catch{return false}
+  }
   function isSoopPostAssetUrl(raw=''){
     try{
-      const parsed=new URL(raw,location.href),host=parsed.hostname.toLowerCase(),path=(parsed.pathname||'').toUpperCase();
-      const hostAllowed=host==='sooplive.com'||host.endsWith('.sooplive.com')||host==='sooplive.co.kr'||host.endsWith('.sooplive.co.kr')||host==='afreecatv.com'||host.endsWith('.afreecatv.com')||host==='afreecatv.co.kr'||host.endsWith('.afreecatv.co.kr');
-      return parsed.protocol==='https:'&&hostAllowed&&path.includes('/NORMAL_BBS/');
+      const parsed=new URL(raw,location.href),path=(parsed.pathname||'').toUpperCase();
+      return isTrustedSoopMediaHost(raw)&&path.includes('/NORMAL_BBS/');
     }catch{return false}
   }
   function isDecorativeSoopImage(node,raw=''){
@@ -190,6 +196,16 @@
     const renderedHtml=String(document.documentElement?.outerHTML||'').replace(/\\u002f/gi,'/').replace(/\\\//g,'/');
     for(const match of renderedHtml.matchAll(/(?:https?:)?\/\/[^\s\"'<>)]*\/NORMAL_BBS\/[^\s\"'<>)]*/gi))addPost(match[0].replace(/&amp;/g,'&'));
     if(postImages.size)return[...postImages].slice(0,24);
+    const largeImages=new Set(),addLarge=(node,raw)=>{
+      if(!raw||!isTrustedSoopMediaHost(raw)||isDecorativeSoopImage(node,raw))return;
+      const visual=node?.tagName==='SOURCE'?node.closest?.('picture')?.querySelector?.('img'):node;
+      const width=Number(visual?.naturalWidth||visual?.width||visual?.getAttribute?.('width')||0),height=Number(visual?.naturalHeight||visual?.height||visual?.getAttribute?.('height')||0);
+      if(width<280||height<120)return;
+      try{largeImages.add(new URL(raw,location.href).toString())}catch{}
+    };
+    const imageDocuments=[document,...[...document.querySelectorAll('iframe')].map(frame=>{try{return frame.contentDocument}catch{return null}}).filter(Boolean)];
+    for(const doc of imageDocuments)for(const node of [...doc.querySelectorAll('img,source')].slice(0,2200))for(const raw of soopImageValues(node))addLarge(node,raw);
+    if(largeImages.size)return[...largeImages].slice(0,24);
     const imageSet=new Set(),add=(node,raw)=>{if(!raw||isDecorativeSoopImage(node,raw))return;try{const parsed=new URL(raw,location.href);if(parsed.protocol==='https:')imageSet.add(parsed.toString())}catch{}};
     const roots=[chosen,...document.querySelectorAll('article,main,[class*="post-content"],[class*="article-content"],[class*="board-content"],[class*="viewer"],[class*="content"],[class*="attach"],[class*="file"],[class*="gallery"],[class*="photo"]')].filter(Boolean).filter((root,index,all)=>all.indexOf(root)===index).slice(0,40);
     for(const root of roots)for(const node of [...root.querySelectorAll('img,source')].slice(0,180))for(const raw of soopImageValues(node))add(node,raw);
@@ -264,8 +280,21 @@
     const button=[...document.querySelectorAll('button,[role="button"]')].find(el=>{const label=clean(el.textContent)+' '+clean(el.getAttribute('aria-label'))+' '+clean(el.getAttribute('title'));return /(?:다음|next|›|»)/i.test(label)&&!el.disabled&&el.getAttribute('aria-disabled')!=='true'});return button?{type:'button',value:button}:null;
   }
   async function waitSoopBatch(batch){const deadline=Date.now()+18000;while(Date.now()<deadline){const done=batch.filter(row=>soopHandled(row.id,row.url)).length;if(done===batch.length)return done;await sleep(queueRows().length>45?1200:650)}return batch.filter(row=>soopHandled(row.id,row.url)).length}
+  async function archiveSoopTargets(){
+    try{
+      const response=await fetch('https://chunbong-fansite.vercel.app/api/chunbong-content-soop-targets',{credentials:'omit',cache:'no-store',headers:{accept:'application/json'}});
+      if(!response.ok)return[];
+      const payload=await response.json(),rows=Array.isArray(payload?.targets)?payload.targets:[];
+      return rows.map(row=>{const id=String(row?.id||''),url=canonical(row?.url||'');return /^\d+$/.test(id)&&/^https:\/\/www\.sooplive\.com\/station\/chunbongtv\/post\/\d+$/i.test(url)?{id,url}:null}).filter(Boolean);
+    }catch{return[]}
+  }
   async function runSoopBackfill(){
     let state=backfillState();if(state.status!=='running')state=setBackfillState({status:'running',startedAt:state.startedAt||new Date().toISOString(),lastError:''});
+    if(Number(state.archiveGeneration||0)<SOOP_MEDIA_COLLECTOR_VERSION){
+      const archiveRows=await archiveSoopTargets(),archiveTargets=archiveRows.filter(row=>!soopHandled(row.id,row.url,true));let archiveOpened=0,archiveHandled=0,archiveUnresolved=0;
+      for(let offset=0;offset<archiveTargets.length;offset+=6){while(queueRows().length>45)await sleep(1200);const batch=archiveTargets.slice(offset,offset+6);batch.forEach((row,index)=>setTimeout(()=>openBackground(row.url,AUTO_HASH,false),index*700));const done=await waitSoopBatch(batch);archiveOpened+=batch.length;archiveHandled+=done;archiveUnresolved+=batch.length-done}
+      state=setBackfillState({archiveGeneration:SOOP_MEDIA_COLLECTOR_VERSION,archiveFound:archiveRows.length,archiveOpened,archiveHandled,archiveUnresolved,lastError:''});
+    }
     await loadSoopListing();const signature=soopPageSignature(),visited=Array.isArray(state.visited)?state.visited:[];
     if(visited.includes(signature)){setBackfillState({status:'paused',lastError:'같은 게시판 페이지가 반복되어 중단했습니다.',currentUrl:canonical(location.href)});return}
     visited.push(signature);const links=soopPostLinks(),targets=links.filter(row=>!soopHandled(row.id,row.url,true));
@@ -423,7 +452,7 @@
       if(data.type==='self-test-soop'&&data.url){openBackground(data.url,SOOP_SELFTEST_HASH,false);return}
       if(data.type==='start-soop-backfill'&&data.url){
         const old=backfillState(),resume=['running','paused'].includes(String(old.status||''))&&old.currentUrl;
-        if(!resume)setBackfillState({status:'running',startedAt:new Date().toISOString(),completedAt:'',pagesScanned:0,linksFound:0,opened:0,handled:0,unresolved:0,visited:[],lastError:'',currentUrl:canonical(data.url),nextUrl:''});
+        if(!resume)setBackfillState({status:'running',startedAt:new Date().toISOString(),completedAt:'',pagesScanned:0,linksFound:0,opened:0,handled:0,unresolved:0,archiveGeneration:0,archiveFound:0,archiveOpened:0,archiveHandled:0,archiveUnresolved:0,visited:[],lastError:'',currentUrl:canonical(data.url),nextUrl:''});
         else setBackfillState({status:'running',lastError:''});
         openBackground(resume?old.currentUrl:data.url,SOOP_BACKFILL_HASH,true);emitState();return;
       }
