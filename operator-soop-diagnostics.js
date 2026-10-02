@@ -5,9 +5,14 @@ const COLLECTOR_COMMAND_ATTR='data-chunbong-collector-command';
 const COLLECTOR_COMMAND_EVENT='chunbong-content-collector-page-command';
 const $=(selector,root=document)=>root.querySelector(selector);
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const handledCommands=new Map();
 
 function cleanIds(values=[]){return [...new Set((Array.isArray(values)?values:[]).map(value=>String(value||'')).filter(value=>/^\d+$/.test(value)))].slice(0,40)}
 function postIdFromUrl(raw=''){try{return(new URL(String(raw||''),location.href).pathname.match(/^\/station\/chunbongtv\/post\/(\d+)\/?$/i)||[])[1]||''}catch{return''}}
+function rememberCommand(data={}){
+  const id=String(data.commandId||'');if(!id)return false;const now=Date.now(),last=Number(handledCommands.get(id)||0);
+  handledCommands.set(id,now);for(const [key,at] of handledCommands)if(now-at>15000)handledCommands.delete(key);return Boolean(last&&now-last<15000);
+}
 function statusFor(row={}){
   if(Number(row.imageCount||0)>0)return'ok';
   const phase=String(row.phase||'');
@@ -68,7 +73,7 @@ function recaptureIds(data={}){
   return[];
 }
 function handleCollectorCommand(data={}){
-  if(data?.channel!==COLLECTOR_CHANNEL)return;
+  if(data?.channel!==COLLECTOR_CHANNEL||rememberCommand(data))return;
   if(data.type==='recapture-finish'&&data.kind==='soop-recapture'){
     if(planRefreshTimer){clearTimeout(planRefreshTimer);planRefreshTimer=null}
     void refreshDiagnostics({force:true});setTimeout(()=>void refreshDiagnostics({force:true}),2500);return;
