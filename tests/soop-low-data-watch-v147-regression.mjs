@@ -35,8 +35,8 @@ assert.equal(typeof diagnosticsApi._internals?.readRecaptureStatus,'function','b
 const exactReader=String(diagnosticsApi._internals.readRecaptureStatus);
 assert.match(exactReader,/MGET/,'exact status reader should batch requested Redis keys');
 assert.doesNotMatch(exactReader,/ZREVRANGE|browserImportInboxRows|adminRows/,'exact status reader must not walk indexes or full archive/inbox data');
-assert.match(diagnosticsApiSource,/handleOperatorSoopRecaptureStatus/,'owner-only exact recapture status handler should exist');
-assert.match(contentApi,/type==='operator-content-soop-recapture-status'/,'existing content function should multiplex exact status without a new Vercel function');
+assert.match(diagnosticsApiSource,/mode'\)===['"]recapture-status['"]/,'existing owner-only SOOP diagnostics handler should expose an exact-status mode');
+assert.match(contentApi,/type==='operator-content-soop-diagnostics'/,'exact status should reuse the existing SOOP diagnostics multiplex route');
 assert.equal(fs.existsSync(new URL('../api/operator-soop-recapture-status.js',import.meta.url)),false,'exact recapture status must not consume another Vercel function');
 
 assert.equal(typeof guard.buildSoopRecapturePlan,'function','recapture planner should expose a pure exact-status plan builder');
@@ -59,7 +59,7 @@ const failedLookupPlan=guard.buildSoopRecapturePlan(archive,[],false);
 assert.deepEqual(failedLookupPlan.targets.map(row=>row.postId).sort(),['101','102'],'failed exact lookup must fail open for public recapture rather than silently exclude posts');
 assert.equal(failedLookupPlan.summary.lookupFailed,2);
 assert.doesNotMatch(guardSource,/imports\.get\(url\).*importImageCount/s,'latest-250 browserImports map must no longer be the final recapture decision');
-assert.match(guardSource,/operator-content-soop-recapture-status/,'planner should query the exact-status endpoint');
+assert.match(guardSource,/operator-content-soop-diagnostics&mode=recapture-status/,'planner should query exact status through the existing authenticated SOOP route');
 assert.doesNotMatch(guardSource,/208562045|204274449/,'production planner must not special-case validation post IDs');
 
 assert.match(wrapper,/operator-soop-recapture-guard\.js\?v=3/,'operator should bust the old recapture planner module cache');
