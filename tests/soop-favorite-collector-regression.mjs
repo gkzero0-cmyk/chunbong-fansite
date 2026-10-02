@@ -91,4 +91,5 @@ assert.match(operator,/마지막 서버 반영/,'collector health UI should expo
 assert.match(operator,/최근 오류/,'collector health UI should expose recent failures');
 assert.match(css,/operator-collector-health-grid/,'collector health dashboard styling missing');
 
+// Resource-level recovery is intentionally browser-only and must stay generic across current and future SOOP posts.
 console.log('soop-favorite-collector-regression: ok');
