@@ -1,3 +1,7 @@
+const fs=require('node:fs');
+const path=require('node:path');
+const operatorCenter=require('../lib/operator-center-api');
+const {requireOwner}=operatorCenter._internals;
 const SOURCE_URL='https://server1.wiki.xn--9i1bk7xhlfi8hzzf.com/';
 const CONTENT_URL=new URL('/api/content',SOURCE_URL).href;
 
@@ -65,6 +69,38 @@ async function officialContent(){
   if(!payload?.wiki||!Array.isArray(payload.wiki.pages))throw new Error('invalid_official_content');
   return payload;
 }
+function operatorPageHtml(){
+  return fs.readFileSync(path.join(process.cwd(),'operator.html'),'utf8');
+}
+async function ownerSession(req){
+  let rejected=false;
+  const sink={
+    setHeader(){},
+    status(){return this},
+    json(){rejected=true;return this},
+    end(){rejected=true;return this}
+  };
+  const current=await requireOwner(req,sink);
+  return !rejected&&current?.owner?current:null;
+}
+function stripOperatorDashboard(html=''){
+  const source=String(html||'');
+  const start=source.indexOf('<section id="operator-dashboard"');
+  if(start<0)return source;
+  const script=source.indexOf('<script',start);
+  if(script<0)return source.slice(0,start);
+  const placeholder='<section id="operator-dashboard" class="operator-dashboard" hidden></section><script>(()=>{const d=document.getElementById("operator-dashboard");if(!d)return;new MutationObserver(()=>{if(!d.hidden&&!d.children.length)location.replace("/operator.html")}).observe(d,{attributes:true,attributeFilter:["hidden"]})})();</script>';
+  return source.slice(0,start)+placeholder+source.slice(script);
+}
+async function serveOperatorPage(req,res){
+  const html=operatorPageHtml();
+  const current=await ownerSession(req);
+  res.setHeader('Content-Type','text/html; charset=utf-8');
+  res.setHeader('Cache-Control','private, no-store, max-age=0');
+  res.setHeader('X-Robots-Tag','noindex, nofollow, noarchive');
+  res.setHeader('Vary','Cookie');
+  return res.status(200).send(current?html:stripOperatorDashboard(html));
+}
 
 module.exports=async function handler(req,res){
   if(req.method!=='GET'){
@@ -72,6 +108,12 @@ module.exports=async function handler(req,res){
     return res.status(405).json({error:'method_not_allowed'});
   }
   const mode=String(req.query?.mode||'content');
+  if(mode==='operator-page'){
+    try{return await serveOperatorPage(req,res)}catch(error){
+      res.setHeader('Cache-Control','no-store');
+      return res.status(500).send('운영자 인증 화면을 불러오지 못했습니다.');
+    }
+  }
   try{
     if(mode==='source'){
       const html=await sourceHtml();
@@ -105,4 +147,4 @@ module.exports=async function handler(req,res){
   }
 };
 
-module.exports._internals={SOURCE_URL,CONTENT_URL,imageCandidates,contentImageCandidates,safePublicUrl,officialGroups};
+module.exports._internals={SOURCE_URL,CONTENT_URL,imageCandidates,contentImageCandidates,safePublicUrl,officialGroups,stripOperatorDashboard};
