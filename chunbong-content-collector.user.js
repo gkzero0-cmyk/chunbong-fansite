@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         춘봉 콘텐츠 자동 수집기
 // @namespace    https://chunbong-fansite.vercel.app/
-// @version      1.4.2
+// @version      1.4.3
 // @description  춘봉 팬사이트용 나무위키·SOOP·FM코리아 브라우저 자료 자동 수집기
 // @match        https://namu.wiki/w/*
 // @match        https://www.namu.wiki/w/*
@@ -26,7 +26,7 @@
 
 (function(){
   'use strict';
-  const VERSION='1.4.2';
+  const VERSION='1.4.3';
   const CHANNEL='chunbong-content-collector';
   const PAGE_MESSAGE_EVENT='chunbong-content-collector-page-message';
   const PAGE_COMMAND_EVENT='chunbong-content-collector-page-command';
@@ -44,7 +44,7 @@
   const SOOP_WATCH_HASH='chunbong-soop-watch';
   const SOOP_SELFTEST_HASH='chunbong-soop-selftest';
   const SOOP_WATCH_INTERVAL_MS=5*60*1000;
-  const SOOP_MEDIA_COLLECTOR_VERSION=4;
+  const SOOP_MEDIA_COLLECTOR_VERSION=5;
   const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const clean=value=>String(value||'').replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim();
   const read=(key,fallback)=>{try{const value=GM_getValue(key,fallback);return value??fallback}catch{return fallback}};
@@ -160,7 +160,8 @@
   function isSoopPostAssetUrl(raw=''){
     try{
       const parsed=new URL(raw,location.href),host=parsed.hostname.toLowerCase(),path=(parsed.pathname||'').toUpperCase();
-      return parsed.protocol==='https:'&&(host==='sooplive.com'||host.endsWith('.sooplive.com')||host==='sooplive.co.kr'||host.endsWith('.sooplive.co.kr'))&&path.includes('/NORMAL_BBS/');
+      const hostAllowed=host==='sooplive.com'||host.endsWith('.sooplive.com')||host==='sooplive.co.kr'||host.endsWith('.sooplive.co.kr')||host==='afreecatv.com'||host.endsWith('.afreecatv.com')||host==='afreecatv.co.kr'||host.endsWith('.afreecatv.co.kr');
+      return parsed.protocol==='https:'&&hostAllowed&&path.includes('/NORMAL_BBS/');
     }catch{return false}
   }
   function isDecorativeSoopImage(node,raw=''){
