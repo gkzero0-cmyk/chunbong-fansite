@@ -10,20 +10,33 @@ const repaired=meta.repairPublicArchiveItem({
   timeline:[
     {title:'춘봉_의 방송국',url:'https://www.sooplive.com/station/chunbongtv/post/208454475',sourceId:'source-a',visibility:'public'},
     {title:'SOOP 로그인 제한 글 · 208495651',url:'https://www.sooplive.com/station/chunbongtv/post/208495651',sourceId:'source-b',visibility:'public'},
-    {title:'춘봉_의 방송국',url:'https://www.sooplive.com/station/chunbongtv/post/208464961',sourceId:'source-c',visibility:'public'}
+    {title:'춘봉_의 방송국',url:'https://www.sooplive.com/station/chunbongtv/post/208464961',sourceId:'source-c',visibility:'public'},
+    {title:'그냥서버 적자생존 추가 입주 모집 공지',url:'https://www.sooplive.com/station/chunbongtv/post/208562045',sourceId:'source-d',note:'SOOP 로그인 제한 자료를 운영자 확인 후 공개 참고자료로 전환했습니다.',visibility:'public'}
   ],
   sources:[
     {id:'source-a',label:'SOOP 게시글 · 208454475',url:'https://www.sooplive.com/station/chunbongtv/post/208454475',visibility:'public'},
     {id:'source-b',label:'SOOP 로그인 제한 게시글 · 208495651',url:'https://www.sooplive.com/station/chunbongtv/post/208495651',visibility:'public'},
-    {id:'source-c',label:'SOOP 게시글 · 208464961',url:'https://www.sooplive.com/station/chunbongtv/post/208464961',visibility:'public'}
+    {id:'source-c',label:'SOOP 게시글 · 208464961',url:'https://www.sooplive.com/station/chunbongtv/post/208464961',visibility:'public'},
+    {id:'source-d',label:'SOOP 로그인 제한 게시글 · 그냥서버 적자생존 추가 입주 모집 공지',url:'https://www.sooplive.com/station/chunbongtv/post/208562045',visibility:'public'}
   ]
 });
 
 assert.deepEqual(repaired.timeline.map(row=>row.title),[
   '🦁 그냥서버:적자생존 오늘부터 시작됩니다.',
   '그냥서버:적자생존 오픈 전 설명회 하겠습니다.',
-  '🦁 그냥서버:적자생존 관련 중요 공지'
+  '🦁 그냥서버:적자생존 관련 중요 공지',
+  '그냥서버 적자생존 추가 입주 모집 공지'
 ]);
+assert.equal(repaired.timeline[3].note,'');
+assert.deepEqual(repaired.sources.map(row=>row.label),[
+  'SOOP 게시글 · 🦁 그냥서버:적자생존 오늘부터 시작됩니다.',
+  'SOOP 게시글 · 그냥서버:적자생존 오픈 전 설명회 하겠습니다.',
+  'SOOP 게시글 · 🦁 그냥서버:적자생존 관련 중요 공지',
+  'SOOP 게시글 · 그냥서버 적자생존 추가 입주 모집 공지'
+]);
+for(const row of [...repaired.timeline,...repaired.sources]){
+  assert.doesNotMatch(String(row.note||row.label||''),/로그인\s*제한/);
+}
 
 assert.equal(typeof preview.looksLikeContaminatedSoopCapture,'function');
 assert.equal(preview.looksLikeContaminatedSoopCapture([
