@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         춘봉 콘텐츠 자동 수집기
 // @namespace    https://chunbong-fansite.vercel.app/
-// @version      1.4.3
+// @version      1.4.4
 // @description  춘봉 팬사이트용 나무위키·SOOP·FM코리아 브라우저 자료 자동 수집기
 // @match        https://namu.wiki/w/*
 // @match        https://www.namu.wiki/w/*
@@ -26,7 +26,7 @@
 
 (function(){
   'use strict';
-  const VERSION='1.4.3';
+  const VERSION='1.4.4';
   const CHANNEL='chunbong-content-collector';
   const PAGE_MESSAGE_EVENT='chunbong-content-collector-page-message';
   const PAGE_COMMAND_EVENT='chunbong-content-collector-page-command';
@@ -44,7 +44,7 @@
   const SOOP_WATCH_HASH='chunbong-soop-watch';
   const SOOP_SELFTEST_HASH='chunbong-soop-selftest';
   const SOOP_WATCH_INTERVAL_MS=5*60*1000;
-  const SOOP_MEDIA_COLLECTOR_VERSION=5;
+  const SOOP_MEDIA_COLLECTOR_VERSION=6;
   const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const clean=value=>String(value||'').replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim();
   const read=(key,fallback)=>{try{const value=GM_getValue(key,fallback);return value??fallback}catch{return fallback}};
@@ -64,7 +64,7 @@
   function markSoopHistory(postId,state='captured',details={}){if(!/^\d+$/.test(String(postId||'')))return;const rows=soopHistory(),previous=rows[String(postId)]||{};rows[String(postId)]={...previous,state,at:Date.now(),...details};write(SOOP_HISTORY_KEY,Object.fromEntries(Object.entries(rows).sort((a,b)=>Number(b[1]?.at||0)-Number(a[1]?.at||0)).slice(0,12000)))}
   function soopHandled(postId,url='',recheckAuthenticated=false){
     const row=soopHistory()[String(postId||'')],state=String(row?.state||''),mediaCurrent=Number(row?.collectorVersion||0)>=SOOP_MEDIA_COLLECTOR_VERSION&&row?.mediaComplete!==false;
-    if(state==='restricted')return true;
+    if(state==='restricted'){if(recheckAuthenticated&&Number(row?.collectorVersion||0)<SOOP_MEDIA_COLLECTOR_VERSION)return false;return true}
     if(['public','favorite','subscriber'].includes(state)){if(recheckAuthenticated&&!mediaCurrent)return false;return true}
     if(state==='authenticated'){if(recheckAuthenticated&&(!mediaCurrent||Date.now()-Number(row?.at||0)>86400000))return false;return true}
     const seen=!!(url&&seenMap()[canonical(url)]);return recheckAuthenticated?false:seen;
@@ -188,7 +188,7 @@
     }
     try{for(const entry of performance.getEntriesByType('resource'))addPost(entry?.name)}catch{}
     const renderedHtml=String(document.documentElement?.outerHTML||'').replace(/\\u002f/gi,'/').replace(/\\\//g,'/');
-    for(const match of renderedHtml.matchAll(/https?:\/\/[^\s\"'<>)]*\/NORMAL_BBS\/[^\s\"'<>)]*/gi))addPost(match[0].replace(/&amp;/g,'&'));
+    for(const match of renderedHtml.matchAll(/(?:https?:)?\/\/[^\s\"'<>)]*\/NORMAL_BBS\/[^\s\"'<>)]*/gi))addPost(match[0].replace(/&amp;/g,'&'));
     if(postImages.size)return[...postImages].slice(0,24);
     const imageSet=new Set(),add=(node,raw)=>{if(!raw||isDecorativeSoopImage(node,raw))return;try{const parsed=new URL(raw,location.href);if(parsed.protocol==='https:')imageSet.add(parsed.toString())}catch{}};
     const roots=[chosen,...document.querySelectorAll('article,main,[class*="post-content"],[class*="article-content"],[class*="board-content"],[class*="viewer"],[class*="content"],[class*="attach"],[class*="file"],[class*="gallery"],[class*="photo"]')].filter(Boolean).filter((root,index,all)=>all.indexOf(root)===index).slice(0,40);
@@ -200,7 +200,7 @@
     const postId=match[1],postUrl=canonical(location.origin+location.pathname);if(!force&&soopHandled(postId,postUrl))return false;
     const pageText=await waitForSoopBody(),now=new Date().toISOString();
     if(/비공개\s*(?:게시글|글)|접근\s*(?:권한|할 수 없)|열람\s*(?:권한|할 수 없)|권한이\s*없|존재하지\s*않는\s*게시글|삭제된\s*게시글/i.test(pageText)){
-      markSoopHistory(postId,'restricted');setCollectorStatus({lastSoopAccess:'restricted',lastRestrictedAt:now,lastPostId:postId},'SOOP 제한 글 확인 · '+postId);return false
+      markSoopHistory(postId,'restricted',{collectorVersion:SOOP_MEDIA_COLLECTOR_VERSION});setCollectorStatus({lastSoopAccess:'restricted',lastRestrictedAt:now,lastPostId:postId},'SOOP 제한 글 확인 · '+postId);return false
     }
     await loadLazyPage();
     await sleep(650);

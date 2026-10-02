@@ -52,23 +52,25 @@ const html=fs.readFileSync(new URL('../operator.html',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../operator.css',import.meta.url),'utf8');
 const api=fs.readFileSync(new URL('../lib/chunbong-content-archive-api.js',import.meta.url),'utf8');
 
-assert.match(collector,/@version\s+1\.4\.3/,'collector userscript version should advance after confirming legacy SOOP CDN usage');
-assert.match(collector,/const VERSION='1\.4\.3'/,'collector runtime version must match userscript metadata');
-assert.match(collector,/SOOP_MEDIA_COLLECTOR_VERSION=5/,'backfill must revisit generation 4 captures after the legacy CDN compatibility fix');
+assert.match(collector,/@version\s+1\.4\.4/,'collector userscript version should advance after the protocol-relative media miss');
+assert.match(collector,/const VERSION='1\.4\.4'/,'collector runtime version must match userscript metadata');
+assert.match(collector,/SOOP_MEDIA_COLLECTOR_VERSION=6/,'backfill must revisit generation 5 zero-image captures and stale restricted rows');
 assert.match(collector,/mediaCollectorVersion:SOOP_MEDIA_COLLECTOR_VERSION/,'SOOP payload should identify the media collector generation');
 assert.match(collector,/collectorVersion:SOOP_MEDIA_COLLECTOR_VERSION,mediaComplete:images\.length>0,imageCount:images\.length/,'zero-image captures must not be marked media complete');
 assert.match(collector,/recheckAuthenticated&&!mediaCurrent/,'backfill should revisit legacy captures without increasing normal watcher work');
+assert.match(collector,/state==='restricted'[\s\S]{0,180}recheckAuthenticated[\s\S]{0,180}collectorVersion/,'explicit backfill must revisit restricted rows created by an older collector generation');
+assert.match(collector,/markSoopHistory\(postId,'restricted',\{collectorVersion:SOOP_MEDIA_COLLECTOR_VERSION\}\)/,'restricted rows must record the collector generation so they are retried only after a newer recovery strategy');
 assert.match(collector,/SOOP_WATCH_INTERVAL_MS=5\*60\*1000/,'SOOP watcher should remain on a five-minute cadence');
 assert.match(collector,/getAttribute\?\.\('data-original'\)/,'SOOP collector should inspect data-original lazy images');
 assert.match(collector,/getAttribute\?\.\('data-lazy-src'\)/,'SOOP collector should inspect data-lazy-src images');
 assert.match(collector,/\['srcset','data-srcset'\]/,'SOOP collector should inspect responsive image candidates');
 assert.match(collector,/performance\.getEntriesByType\(['"]resource['"]\)/,'SOOP collector should inspect resources the browser actually loaded');
 assert.match(collector,/document\.documentElement\?\.outerHTML/,'SOOP collector should inspect the rendered document source for detached media URLs');
+assert.match(collector,/\(\?:https\?:\)\?\\\/\\\//,'rendered-source recovery must recognize protocol-relative //stimg... attachment URLs');
 assert.match(collector,/backgroundImage/,'SOOP collector should inspect CSS background-image media');
 assert.match(collector,/getAttribute\?\.\(['"]href['"]\)/,'SOOP collector should inspect linked attachment URLs');
 assert.match(collector,/querySelectorAll\(['"]img,source,a\[href\],\[style\]['"]\)/,'SOOP collector should inspect page-wide image, source, link, and styled nodes');
 assert.match(collector,/NORMAL_BBS/,'SOOP collector should recognize canonical post attachment CDN paths across all recovery channels');
-// SOOP still serves some NORMAL_BBS attachments from legacy Afreeca CDN hosts; keep both base and subdomains compatible.
 assert.match(collector,/afreecatv\.(?:com|co\.kr)/,'SOOP collector must keep legacy Afreeca attachment CDN URLs still used by SOOP');
 assert.match(collector,/await loadLazyPage\(\)/,'authenticated post capture should force lazy media to load before collection');
 assert.match(collector,/profile\|avatar\|favicon\|logo\|icon\|emoji\|badge/,'SOOP collector should filter common decorative images');
@@ -93,5 +95,5 @@ assert.match(operator,/마지막 서버 반영/,'collector health UI should expo
 assert.match(operator,/최근 오류/,'collector health UI should expose recent failures');
 assert.match(css,/operator-collector-health-grid/,'collector health dashboard styling missing');
 
-// Resource-level recovery is intentionally browser-only and must stay generic across current and future SOOP posts.
+// Generation 6 recovery is generic: protocol-relative attachments and stale restricted history are handled without post-specific IDs.
 console.log('soop-favorite-collector-regression: ok');
