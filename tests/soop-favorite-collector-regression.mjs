@@ -95,5 +95,5 @@ assert.match(operator,/마지막 서버 반영/,'collector health UI should expo
 assert.match(operator,/최근 오류/,'collector health UI should expose recent failures');
 assert.match(css,/operator-collector-health-grid/,'collector health dashboard styling missing');
 
-// Media recovery stays generic: protocol-relative attachments and stale restricted history are handled by generation, never by hardcoded post IDs.
+// Generation 6 recovery is generic: protocol-relative attachments and stale restricted history are handled without post-specific IDs.
 console.log('soop-favorite-collector-regression: ok');
