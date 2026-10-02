@@ -87,10 +87,7 @@ function stripOperatorDashboard(html=''){
   const source=String(html||'');
   const start=source.indexOf('<section id="operator-dashboard"');
   if(start<0)return source;
-  const script=source.indexOf('<script',start);
-  if(script<0)return source.slice(0,start);
-  const placeholder='<section id="operator-dashboard" class="operator-dashboard" hidden></section><script>(()=>{const d=document.getElementById("operator-dashboard");if(!d)return;new MutationObserver(()=>{if(!d.hidden&&!d.children.length)location.replace("/operator.html")}).observe(d,{attributes:true,attributeFilter:["hidden"]})})();</script>';
-  return source.slice(0,start)+placeholder+source.slice(script);
+  return source.slice(0,start)+'\n</main>\n<script src="/operator-auth-shell.js?v=1"></script>\n</body>\n</html>';
 }
 async function serveOperatorPage(req,res){
   const html=operatorPageHtml();

@@ -28,5 +28,15 @@ test('operator html redirects to an authenticated dynamic route before static fi
   assert.equal(rewrite?.destination,'/api/survival-wiki?mode=operator-page');
   assert.match(api,/stripOperatorDashboard/);
   assert.match(api,/Vary','Cookie/);
-  assert.match(api,/operator-dashboard/);
+});
+
+test('unauthenticated operator shell contains only auth UI, not dashboard DOM or operator modules',()=>{
+  const {stripOperatorDashboard}=require('../api/survival-wiki')._internals;
+  const shell=stripOperatorDashboard(read('operator.html'));
+  assert.match(shell,/id="operator-login"/);
+  assert.doesNotMatch(shell,/id="operator-dashboard"/);
+  assert.doesNotMatch(shell,/operator-panel-overview/);
+  assert.doesNotMatch(shell,/operator-panel-contents/);
+  assert.doesNotMatch(shell,/operator\.js/);
+  assert.doesNotMatch(shell,/operator-redis-diagnostics\.js/);
 });
