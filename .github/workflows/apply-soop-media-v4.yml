@@ -61,7 +61,7 @@ jobs:
             ''
           ])
           pattern=r"  function collectSoopImages\(chosen\)\{.*?\n  \}\n(?=  async function captureSoopPost)"
-          s2,count=re.subn(pattern,new_func,s,count=1,flags=re.S)
+          s2,count=re.subn(pattern,lambda _match:new_func,s,count=1,flags=re.S)
           if count!=1:
             raise SystemExit(f'collectSoopImages replacement count={count}')
           path.write_text(s2)
