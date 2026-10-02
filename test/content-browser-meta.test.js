@@ -71,3 +71,29 @@ test('이미 공개된 208562045도 공개 응답에서 제목과 잘못된 기�
   assert.equal(repaired.timeline[0].thumbnail,'');
   assert.equal(repaired.sources[0].label,'SOOP 로그인 제한 게시글 · 그냥서버 적자생존 추가 입주 모집 공지');
 });
+
+test('기존 공개 데이터의 임시 SOOP 제목도 확인된 원제목으로 복구한다',()=>{
+  const repaired=repairPublicArchiveItem({
+    id:'justserver-survival',
+    timeline:[
+      {title:'춘봉_의 방송국',url:'https://www.sooplive.com/station/chunbongtv/post/208454475',sourceId:'source-a',visibility:'public'},
+      {title:'SOOP 로그인 제한 글 · 208495651',url:'https://www.sooplive.com/station/chunbongtv/post/208495651',sourceId:'source-b',visibility:'public'},
+      {title:'춘봉_의 방송국',url:'https://www.sooplive.com/station/chunbongtv/post/208464961',sourceId:'source-c',visibility:'public'}
+    ],
+    sources:[
+      {id:'source-a',label:'SOOP 게시글 · 208454475',url:'https://www.sooplive.com/station/chunbongtv/post/208454475',visibility:'public'},
+      {id:'source-b',label:'SOOP 로그인 제한 게시글 · 208495651',url:'https://www.sooplive.com/station/chunbongtv/post/208495651',visibility:'public'},
+      {id:'source-c',label:'SOOP 게시글 · 208464961',url:'https://www.sooplive.com/station/chunbongtv/post/208464961',visibility:'public'}
+    ]
+  });
+  assert.deepEqual(repaired.timeline.map(row=>row.title),[
+    '🦁 그냥서버:적자생존 오늘부터 시작됩니다.',
+    '그냥서버:적자생존 오픈 전 설명회 하겠습니다.',
+    '🦁 그냥서버:적자생존 관련 중요 공지'
+  ]);
+  assert.deepEqual(repaired.sources.map(row=>row.label),[
+    'SOOP 로그인 제한 게시글 · 🦁 그냥서버:적자생존 오늘부터 시작됩니다.',
+    'SOOP 로그인 제한 게시글 · 그냥서버:적자생존 오픈 전 설명회 하겠습니다.',
+    'SOOP 로그인 제한 게시글 · 🦁 그냥서버:적자생존 관련 중요 공지'
+  ]);
+});

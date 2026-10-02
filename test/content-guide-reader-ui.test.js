@@ -17,7 +17,7 @@ test('survival guide provides compact searchable navigation and section disclosu
   assert.match(css,/\.official-guide-source-section/);
 });
 
-test('posts and sources reuse the exact fan-site notice card, keep body before attachments, and do not stop at image-only browser captures',()=>{
+test('posts and sources reuse the exact fan-site notice card, prefer official SOOP detail, and reject contaminated browser captures',()=>{
   const js=read('content-page-enhancements.js');
   const css=read('content-page-enhancements.css');
   const manage=read('lib/chunbong-content-browser-import-manage.js');
@@ -38,7 +38,12 @@ test('posts and sources reuse the exact fan-site notice card, keep body before a
   assert.doesNotMatch(js,/cache:'force-cache'/);
   assert.match(js,/detail\.innerHTML=`<div class="notice-content">\$\{content[\s\S]*\$\{images\}<\/div>/);
   assert.match(manage,/mergeSourcePreviews/);
-  assert.match(manage,/if\(captured\?\.body\)/);
+  assert.match(manage,/const publicPreview=isSoop\?await publicSoopPreview\(rawUrl,row\):null/);
+  assert.match(manage,/const captured=await capturedPreview\(rawUrl,row\)/);
+  assert.match(manage,/mergeSourcePreviews\(captured,publicPreview,row,rawUrl\)/);
+  assert.match(manage,/looksLikeContaminatedSoopCapture/);
+  assert.match(manage,/if\(soopPostId\(rawUrl\)&&looksLikeContaminatedSoopCapture\(body\)\)return null/);
+  assert.doesNotMatch(manage,/if\(captured\?\.body\)return mergeSourcePreviews\(captured,null/);
   assert.match(manage,/publicSoopPreview/);
   assert.match(css,/\.archive-source-notice/);
   assert.doesNotMatch(css,/\.archive-source-reader(?:\{|::)/);
