@@ -1,4 +1,4 @@
-const MIN_COLLECTOR_VERSION='1.4.6';
+const MIN_COLLECTOR_VERSION='1.4.7';
 const COLLECTOR_CHANNEL='chunbong-content-collector';
 const COMMAND_ATTR='data-chunbong-collector-command';
 const COMMAND_EVENT='chunbong-content-collector-page-command';
@@ -7,6 +7,7 @@ const MESSAGE_EVENT='chunbong-content-collector-page-message';
 const READY_ATTR='data-chunbong-collector-ready';
 const VERSION_ATTR='data-chunbong-collector-version';
 const ARCHIVE_API='/api/content?type=operator-content-archive';
+const EXACT_STATUS_API='/api/content?type=operator-content-soop-recapture-status';
 const SOOP_RECAPTURE_SESSION_KEY='chunbong:operator:soop-sequential-recapture:v1';
 const RECAPTURE_SESSION_TTL_MS=30*60*1000;
 const STEP_TIMEOUT_MS=32000;
@@ -47,24 +48,37 @@ function canonicalSoopPost(raw=''){
     return'https://www.sooplive.com/station/chunbongtv/post/'+match[1];
   }catch{return''}
 }
-function importImageCount(row={}){
-  const explicit=Number(row?.imageCount);if(Number.isFinite(explicit)&&explicit>0)return explicit;
-  const direct=Array.isArray(row?.images)?row.images.length:0,nested=Array.isArray(row?.payload?.images)?row.payload.images.length:0;
-  return Math.max(0,direct,nested);
-}
-function recaptureTargets(payload={}){
-  const imports=new Map();
-  for(const row of Array.isArray(payload.browserImports)?payload.browserImports:[]){const url=canonicalSoopPost(row?.url||row?.payload?.url);if(url)imports.set(url,row)}
+let lastRecaptureSummary={total:0,needsRecapture:0,imagesPresent:0,statusLookupFailed:0};
+function archiveRecaptureCandidates(payload={}){
   const seen=new Set(),targets=[];
   for(const item of Array.isArray(payload.items)?payload.items:[]){
     for(const row of [...(Array.isArray(item?.timeline)?item.timeline:[]),...(Array.isArray(item?.media)?item.media:[]),...(Array.isArray(item?.sources)?item.sources:[])]){
       if(!row||row.visibility==='internal')continue;
       const url=canonicalSoopPost(row.url);if(!url||seen.has(url))continue;seen.add(url);
-      const captured=imports.get(url);if(captured&&importImageCount(captured)>0)continue;
-      targets.push({url,postId:postIdFromUrl(url),hasCapture:Boolean(captured)});
+      targets.push({url,postId:postIdFromUrl(url)});
     }
   }
-  targets.sort((a,b)=>Number(b.hasCapture)-Number(a.hasCapture)||Number(b.postId)-Number(a.postId));
+  return targets.filter(row=>row.postId).sort((a,b)=>Number(b.postId)-Number(a.postId));
+}
+async function exactRecaptureTargets(payload={}){
+  const candidates=archiveRecaptureCandidates(payload);
+  if(!candidates.length){lastRecaptureSummary={total:0,needsRecapture:0,imagesPresent:0,statusLookupFailed:0};return[]}
+  const statuses=new Map();let statusLookupFailed=0;
+  try{
+    for(let offset=0;offset<candidates.length;offset+=80){
+      const batch=candidates.slice(offset,offset+80),ids=batch.map(row=>row.postId).join(',');
+      const response=await fetch(EXACT_STATUS_API+'&postIds='+encodeURIComponent(ids),{credentials:'include',cache:'no-store',headers:{Accept:'application/json'}});
+      const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error||('HTTP '+response.status));
+      for(const row of Array.isArray(result.rows)?result.rows:[])if(/^\d+$/.test(String(row?.postId||'')))statuses.set(String(row.postId),row);
+    }
+  }catch{statusLookupFailed=candidates.length}
+  const targets=[],imagesPresent=[];
+  for(const candidate of candidates){
+    const exactStatus=statuses.get(candidate.postId)||null;
+    if(exactStatus&&Number(exactStatus.imageCount||0)>0){imagesPresent.push(candidate);continue}
+    targets.push({...candidate,exactStatus,statusLookupFailed:!exactStatus});
+  }
+  lastRecaptureSummary={total:candidates.length,needsRecapture:targets.length,imagesPresent:imagesPresent.length,statusLookupFailed};
   return targets;
 }
 function readRecaptureSession(){
@@ -121,7 +135,7 @@ async function verifyCollectorConnection(){
 }
 async function loadRecaptureTargets(){
   const response=await fetch(ARCHIVE_API,{credentials:'include',cache:'no-store',headers:{Accept:'application/json'}}),payload=await response.json().catch(()=>({}));
-  if(!response.ok)throw new Error(payload.error||('HTTP '+response.status));return recaptureTargets(payload);
+  if(!response.ok)throw new Error(payload.error||('HTTP '+response.status));return exactRecaptureTargets(payload);
 }
 async function runSequentialRecapture(button){
   if(recaptureRunning){setStatus('SOOP 누락 자료 재수집이 이미 순차 진행 중입니다.','busy');return}
@@ -130,7 +144,8 @@ async function runSequentialRecapture(button){
   try{
     const connection=await verifyCollectorConnection();if(!connection)return;
     const targets=await loadRecaptureTargets();total=targets.length;
-    if(!total){setStatus('현재 다시 수집할 SOOP 원문이 없습니다. 브라우저 캡처와 이미지가 모두 확인된 상태입니다.','ok');return}
+    if(!total){setStatus('현재 다시 수집할 SOOP 원문이 없습니다. 정확 조회 기준 이미지 복구됨 '+lastRecaptureSummary.imagesPresent+'건입니다.','ok');return}
+    if(lastRecaptureSummary.statusLookupFailed)setStatus('정확 상태 조회 실패 '+lastRecaptureSummary.statusLookupFailed+'건은 누락 방지를 위해 재수집 대상으로 유지합니다.','busy');
     writeRecaptureSession({total,completed:0,currentPostId:'',version:connection.version});
     sendCommand('recapture-plan',{kind:'soop-recapture',urls:targets.map(row=>row.url)});
     for(let index=0;index<targets.length;index++){
