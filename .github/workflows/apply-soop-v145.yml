@@ -1,0 +1,128 @@
+name: Apply SOOP v1.4.5 recovery patch
+
+on:
+  push:
+    branches:
+      - fix/soop-archive-targets-media-fallback-20261003
+    paths:
+      - .github/workflows/apply-soop-v145.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/soop-archive-targets-media-fallback-20261003
+          fetch-depth: 0
+      - name: Patch collector and version regression
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path=Path('chunbong-content-collector.user.js')
+          s=path.read_text()
+          s=s.replace('// @version      1.4.4','// @version      1.4.5',1)
+          s=s.replace("const VERSION='1.4.4';","const VERSION='1.4.5';",1)
+          s=s.replace('const SOOP_MEDIA_COLLECTOR_VERSION=6;','const SOOP_MEDIA_COLLECTOR_VERSION=7;',1)
+
+          old="""  function isSoopPostAssetUrl(raw=''){
+            try{
+              const parsed=new URL(raw,location.href),host=parsed.hostname.toLowerCase(),path=(parsed.pathname||'').toUpperCase();
+              const hostAllowed=host==='sooplive.com'||host.endsWith('.sooplive.com')||host==='sooplive.co.kr'||host.endsWith('.sooplive.co.kr')||host==='afreecatv.com'||host.endsWith('.afreecatv.com')||host==='afreecatv.co.kr'||host.endsWith('.afreecatv.co.kr');
+              return parsed.protocol==='https:'&&hostAllowed&&path.includes('/NORMAL_BBS/');
+            }catch{return false}
+          }
+"""
+          new="""  function isTrustedSoopMediaHost(raw=''){
+            try{
+              const parsed=new URL(raw,location.href),host=parsed.hostname.toLowerCase();
+              const hostAllowed=host==='sooplive.com'||host.endsWith('.sooplive.com')||host==='sooplive.co.kr'||host.endsWith('.sooplive.co.kr')||host==='afreecatv.com'||host.endsWith('.afreecatv.com')||host==='afreecatv.co.kr'||host.endsWith('.afreecatv.co.kr');
+              return parsed.protocol==='https:'&&hostAllowed;
+            }catch{return false}
+          }
+          function isSoopPostAssetUrl(raw=''){
+            try{
+              const parsed=new URL(raw,location.href),path=(parsed.pathname||'').toUpperCase();
+              return isTrustedSoopMediaHost(raw)&&path.includes('/NORMAL_BBS/');
+            }catch{return false}
+          }
+"""
+          if old not in s: raise SystemExit('isSoopPostAssetUrl marker not found')
+          s=s.replace(old,new,1)
+
+          old="""    if(postImages.size)return[...postImages].slice(0,24);
+            const imageSet=new Set(),add=(node,raw)=>{if(!raw||isDecorativeSoopImage(node,raw))return;try{const parsed=new URL(raw,location.href);if(parsed.protocol==='https:')imageSet.add(parsed.toString())}catch{}};
+            const roots=[chosen,...document.querySelectorAll('article,main,[class*=\"post-content\"],[class*=\"article-content\"],[class*=\"board-content\"],[class*=\"viewer\"],[class*=\"content\"],[class*=\"attach\"],[class*=\"file\"],[class*=\"gallery\"],[class*=\"photo\"]')].filter(Boolean).filter((root,index,all)=>all.indexOf(root)===index).slice(0,40);
+            for(const root of roots)for(const node of [...root.querySelectorAll('img,source')].slice(0,180))for(const raw of soopImageValues(node))add(node,raw);
+            return[...imageSet].slice(0,24);
+"""
+          new="""    if(postImages.size)return[...postImages].slice(0,24);
+            const largeImages=new Set(),addLarge=(node,raw)=>{
+              if(!raw||!isTrustedSoopMediaHost(raw)||isDecorativeSoopImage(node,raw))return;
+              const visual=node?.tagName==='SOURCE'?node.closest?.('picture')?.querySelector?.('img'):node;
+              const width=Number(visual?.naturalWidth||visual?.width||visual?.getAttribute?.('width')||0),height=Number(visual?.naturalHeight||visual?.height||visual?.getAttribute?.('height')||0);
+              if(width<280||height<120)return;
+              try{largeImages.add(new URL(raw,location.href).toString())}catch{}
+            };
+            const imageDocuments=[document,...[...document.querySelectorAll('iframe')].map(frame=>{try{return frame.contentDocument}catch{return null}}).filter(Boolean)];
+            for(const doc of imageDocuments)for(const node of [...doc.querySelectorAll('img,source')].slice(0,2200))for(const raw of soopImageValues(node))addLarge(node,raw);
+            if(largeImages.size)return[...largeImages].slice(0,24);
+            const imageSet=new Set(),add=(node,raw)=>{if(!raw||isDecorativeSoopImage(node,raw))return;try{const parsed=new URL(raw,location.href);if(parsed.protocol==='https:')imageSet.add(parsed.toString())}catch{}};
+            const roots=[chosen,...document.querySelectorAll('article,main,[class*=\"post-content\"],[class*=\"article-content\"],[class*=\"board-content\"],[class*=\"viewer\"],[class*=\"content\"],[class*=\"attach\"],[class*=\"file\"],[class*=\"gallery\"],[class*=\"photo\"]')].filter(Boolean).filter((root,index,all)=>all.indexOf(root)===index).slice(0,40);
+            for(const root of roots)for(const node of [...root.querySelectorAll('img,source')].slice(0,180))for(const raw of soopImageValues(node))add(node,raw);
+            return[...imageSet].slice(0,24);
+"""
+          if old not in s: raise SystemExit('collectSoopImages fallback marker not found')
+          s=s.replace(old,new,1)
+
+          marker="""  async function waitSoopBatch(batch){const deadline=Date.now()+18000;while(Date.now()<deadline){const done=batch.filter(row=>soopHandled(row.id,row.url)).length;if(done===batch.length)return done;await sleep(queueRows().length>45?1200:650)}return batch.filter(row=>soopHandled(row.id,row.url)).length}
+"""
+          insert=marker+"""  async function archiveSoopTargets(){
+            try{
+              const response=await fetch('https://chunbong-fansite.vercel.app/api/chunbong-content-soop-targets',{credentials:'omit',cache:'no-store',headers:{accept:'application/json'}});
+              if(!response.ok)return[];
+              const payload=await response.json(),rows=Array.isArray(payload?.targets)?payload.targets:[];
+              return rows.map(row=>{const id=String(row?.id||''),url=canonical(row?.url||'');return /^\\d+$/.test(id)&&/^https:\/\/www\.sooplive\.com\/station\/chunbongtv\/post\/\\d+$/i.test(url)?{id,url}:null}).filter(Boolean);
+            }catch{return[]}
+          }
+"""
+          if marker not in s: raise SystemExit('waitSoopBatch marker not found')
+          s=s.replace(marker,insert,1)
+
+          old="""  async function runSoopBackfill(){
+            let state=backfillState();if(state.status!=='running')state=setBackfillState({status:'running',startedAt:state.startedAt||new Date().toISOString(),lastError:''});
+            await loadSoopListing();const signature=soopPageSignature(),visited=Array.isArray(state.visited)?state.visited:[];
+"""
+          new="""  async function runSoopBackfill(){
+            let state=backfillState();if(state.status!=='running')state=setBackfillState({status:'running',startedAt:state.startedAt||new Date().toISOString(),lastError:''});
+            if(Number(state.archiveGeneration||0)<SOOP_MEDIA_COLLECTOR_VERSION){
+              const archiveRows=await archiveSoopTargets(),archiveTargets=archiveRows.filter(row=>!soopHandled(row.id,row.url,true));let archiveOpened=0,archiveHandled=0,archiveUnresolved=0;
+              for(let offset=0;offset<archiveTargets.length;offset+=6){while(queueRows().length>45)await sleep(1200);const batch=archiveTargets.slice(offset,offset+6);batch.forEach((row,index)=>setTimeout(()=>openBackground(row.url,AUTO_HASH,false),index*700));const done=await waitSoopBatch(batch);archiveOpened+=batch.length;archiveHandled+=done;archiveUnresolved+=batch.length-done}
+              state=setBackfillState({archiveGeneration:SOOP_MEDIA_COLLECTOR_VERSION,archiveFound:archiveRows.length,archiveOpened,archiveHandled,archiveUnresolved,lastError:''});
+            }
+            await loadSoopListing();const signature=soopPageSignature(),visited=Array.isArray(state.visited)?state.visited:[];
+"""
+          if old not in s: raise SystemExit('runSoopBackfill marker not found')
+          s=s.replace(old,new,1)
+          path.write_text(s)
+
+          test=Path('tests/soop-favorite-collector-regression.mjs')
+          t=test.read_text().replace('1\\.4\\.4','1\\.4\\.5').replace("VERSION='1\\.4\\.4'","VERSION='1\\.4\\.5'")
+          t=t.replace('SOOP_MEDIA_COLLECTOR_VERSION=6','SOOP_MEDIA_COLLECTOR_VERSION=7')
+          t=t.replace('generation 5 zero-image captures and stale restricted rows','generation 6 zero-image captures and stale restricted rows')
+          test.write_text(t)
+          PY
+      - name: Commit patch and remove temporary workflow
+        shell: bash
+        run: |
+          rm .github/workflows/apply-soop-v145.yml
+          git config user.name "gkzero0-cmyk"
+          git config user.email "gkzero0@gmail.com"
+          git add chunbong-content-collector.user.js tests/soop-favorite-collector-regression.mjs .github/workflows/apply-soop-v145.yml
+          git commit -m "fix: recover archive-known SOOP posts and large media"
+          git push origin HEAD:fix/soop-archive-targets-media-fallback-20261003
