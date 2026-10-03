@@ -42,7 +42,7 @@ async function toggleSourceCard(toggle){
   if(preview){renderPreview(card,preview,url,fallbackTitle);card.dataset.previewLoaded='true';return}
   if(target)target.innerHTML=`<div class="notice-detail-error"><strong>게시글 본문을 가져오지 못했습니다.</strong><p>팬사이트에 저장된 본문이나 공개 원문 응답이 없습니다.</p></div>${sourceLinkMarkup(url)}`;card.dataset.previewLoaded='error';
 }
-document.addEventListener('click',event=>{if(event.target.closest?.('[data-source-external-link]'))return;const toggle=event.target.closest?.('[data-source-title-toggle],[data-source-preview-toggle]');if(!toggle)return;event.preventDefault();event.stopPropagation();void toggleSourceCard(toggle)},true);
+document.addEventListener('click',event=>{if(event.target.closest?.('[data-source-external-link]'))return;const toggle=event.target.closest?.('[data-source-title-toggle],[data-source-preview-toggle]');if(!toggle)return;const card=toggle.closest?.('[data-archive-post-card]');if(card?.closest?.('.archive-post-list'))return;event.preventDefault();event.stopPropagation();void toggleSourceCard(toggle)},true);
 document.addEventListener('chunbong-source-cards-normalized',()=>{document.querySelectorAll('[data-source-card][data-source-url]').forEach(card=>{const toggle=card.querySelector('[data-source-title-toggle],[data-source-preview-toggle]'),body=bodyNode(card);if(toggle&&body&&toggle.getAttribute('aria-expanded')!=='true')body.hidden=true})});
 addStyles();
 })();
