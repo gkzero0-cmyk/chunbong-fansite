@@ -5,7 +5,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 
-const source=fs.readFileSync(path.join(__dirname,'..','operator-redis-diagnostics.js'),'utf8');
+const source=fs.readFileSync(path.join(__dirname,'..','operator-redis-diagnostics-core.js'),'utf8');
 
 test('operator Redis diagnostics exposes a visible degraded read-only mode',()=>{
   assert.match(source,/operator-redis-limit-banner/,'Redis limit banner must be rendered');
