@@ -33,15 +33,23 @@ jobs:
       - name: Apply one-shot performance patches
         if: github.event_name == 'pull_request' && github.head_ref == 'perf/site-speed-20261004'
         run: |
-          if grep -q 'INITIAL_ARCHIVE_RENDER=12' chunbong-contents.js; then
+          changed=0
+          if ! grep -q 'INITIAL_ARCHIVE_RENDER=12' chunbong-contents.js; then
+            node scripts/apply-perf-patches.mjs
+            changed=1
+          fi
+          if ! grep -q "if(appMode&&!window.ChunbongPersonal)" mobile-site.js; then
+            node scripts/fix-pwa-personal-ready-race.mjs
+            changed=1
+          fi
+          if [ "$changed" -eq 0 ]; then
             echo 'Performance patches already applied'
             exit 0
           fi
-          node scripts/apply-perf-patches.mjs
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add chunbong-contents.js mobile-runtime-loader.js site-improvements.js service-worker.js page.js
-          git commit -m 'perf: apply archive and PWA performance patches'
+          git add chunbong-contents.js mobile-runtime-loader.js site-improvements.js service-worker.js page.js mobile-site.js
+          git commit -m 'perf: apply remaining performance patches'
           git push origin HEAD:perf/site-speed-20261004
       - name: Check JavaScript syntax
         run: |
