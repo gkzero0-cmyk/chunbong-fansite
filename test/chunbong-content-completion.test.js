@@ -15,6 +15,16 @@ test('source title is the expand/collapse control and visible unknown dates hydr
   assert.match(runtime,/stopImmediatePropagation/,'legacy separate-toggle handler must not also run');
 });
 
+test('captured SOOP body removes only the terminal browser chrome signature',()=>{
+  const sanitizer=read('content-preview-sanitize.js');
+  const loader=read('mobile-runtime-loader.js');
+  assert.match(sanitizer,/function\s+stripChromeTail\s*\(/,'preview sanitizer should remove terminal SOOP browser chrome');
+  assert.match(sanitizer,/하단메뉴/,'known SOOP bottom chrome signature should be recognized');
+  assert.match(sanitizer,/SOOP\\s\*Corp|SOOP\s*\\s\*Corp/,'chrome removal must anchor to the SOOP footer signature');
+  assert.match(sanitizer,/archive-source-notice-copy/,'sanitizer must be scoped to rendered source preview bodies');
+  assert.match(loader,/content-preview-sanitize\.js\?v=1/,'content detail should load the isolated preview sanitizer');
+});
+
 test('content detail loads isolated source-card, media-player, and completion runtimes',()=>{
   const loader=read('mobile-runtime-loader.js');
   assert.match(loader,/content-source-card-unifier\.js/);
