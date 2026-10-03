@@ -56,8 +56,8 @@ assert.match(uiSource,/\/api\/content\?type=operator-content-soop-diagnostics/,'
 assert.match(redisWrapper,/operator-soop-diagnostics\.js/,'existing operator module entry should load the SOOP diagnostics UI without another HTML script tag');
 assert.match(redisWrapper,/operator-redis-diagnostics-core\.js/,'existing Redis diagnostics runtime should remain loaded through the wrapper');
 
-assert.match(collector,/@version\s+1\.4\.7/,'collector userscript should advance to v1.4.7');
-assert.match(collector,/const VERSION='1\.4\.7'/,'collector runtime version must match userscript metadata');
+assert.match(collector,/@version\s+1\.4\.8/,'collector userscript should advance to v1.4.8');
+assert.match(collector,/const VERSION='1\.4\.8'/,'collector runtime version must match userscript metadata');
 assert.match(collector,/SOOP_MEDIA_COLLECTOR_VERSION=8/,'media generation stays at 8 so the watcher change does not trigger another media backfill');
 assert.match(collector,/isTrustedSoopMediaHost/,'rendered-media fallback must stay limited to SOOP/Afreeca hosts');
 assert.match(collector,/isTrustedRenderedSoopMedia/,'rendered-media fallback needs a stricter filter than generic trusted host matching');
@@ -67,4 +67,4 @@ assert.match(collector,/STATION|banner|profile/i,'rendered fallback should rejec
 assert.match(collector,/SOOP_WATCH_INTERVAL_MS=15\*60\*1000/,'low-data watcher cadence must be fifteen minutes');
 assert.doesNotMatch(collector,/111111111|222222222|333333333|555555555|999999999/,'collector implementation must remain generic');
 
-console.log('SOOP diagnostic UI + media fallback v1.4.7 regression passed');
+console.log('SOOP diagnostic UI + media fallback v1.4.8 regression passed');
