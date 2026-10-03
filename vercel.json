@@ -54,6 +54,14 @@
       ]
     },
     {
+      "source": "/chunbong-content-collector.user.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "CDN-Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Vercel-CDN-Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
