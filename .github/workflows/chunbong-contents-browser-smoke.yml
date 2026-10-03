@@ -6,6 +6,8 @@ on:
       - 'chunbong-contents.html'
       - 'chunbong-contents.css'
       - 'chunbong-contents.js'
+      - 'content-page-enhancements.js'
+      - 'content-page-enhancements.css'
       - 'data/chunbong-contents-seed.json'
       - 'lib/chunbong-content-archive-core.js'
       - 'lib/chunbong-content-archive-api.js'
@@ -14,7 +16,11 @@ on:
       - 'operator.js'
       - 'operator.css'
       - 'api/content.js'
+      - 'scripts/audit-chunbong-posts.mjs'
       - 'tests/chunbong-contents-browser-smoke.mjs'
+      - 'tests/chunbong-post-normalization-regression.mjs'
+      - 'tests/chunbong-post-card-regression.mjs'
+      - 'tests/chunbong-post-audit-regression.mjs'
       - '.github/workflows/chunbong-contents-browser-smoke.yml'
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
