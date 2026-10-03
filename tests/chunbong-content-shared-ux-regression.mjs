@@ -5,6 +5,7 @@ const html=fs.readFileSync(new URL('../chunbong-contents.html',import.meta.url),
 const css=fs.readFileSync(new URL('../content-page-enhancements.css',import.meta.url),'utf8');
 const runtime=fs.readFileSync(new URL('../content-page-enhancements.js',import.meta.url),'utf8');
 const loader=fs.readFileSync(new URL('../mobile-runtime-loader.js',import.meta.url),'utf8');
+const unifier=fs.readFileSync(new URL('../content-source-card-unifier.js',import.meta.url),'utf8');
 const hero=new URL('../assets/chunbong-content-hero-20261002.webp',import.meta.url);
 
 assert.match(html,/<base href="\/">/,'nested /contents/:id routes must resolve assets and navigation from the site root');
@@ -17,16 +18,18 @@ assert.doesNotMatch(html,/f_auto,q_auto,w_960\/v1790884100\/chunbong-content-pla
 
 assert.doesNotMatch(runtime,/createElement\(['"]dialog['"]\)/,'content sources must not open in a separate modal reader');
 assert.doesNotMatch(runtime,/archive-source-reader/,'standalone source-reader UI must stay removed');
-assert.match(runtime,/notice-card/,'linked posts must reuse the fan-site notice card UI');
-assert.match(runtime,/notice-toggle/,'linked posts must use the same expandable notice header pattern');
-assert.match(runtime,/notice-body/,'linked posts must render inside the existing notice body pattern');
+assert.doesNotMatch(runtime,/insertAdjacentElement\(['"]afterend['"]\)/,'source previews must never create a sibling card');
+assert.match(unifier,/data-source-title-toggle/,'the source title itself must control expand/collapse');
+assert.match(unifier,/data-source-preview-body/,'linked sources must render inside their existing card body');
 assert.match(runtime,/notice-content/,'linked post body and images must use the existing notice content container');
 assert.match(runtime,/sessionStorage/,'opened source previews should remain session-cached');
-assert.match(runtime,/sourcePreview=1/,'notice-style source cards must still load the saved/public post body lazily');
+assert.match(runtime,/sourcePreview=1/,'source cards must still load the saved/public post body lazily');
 assert.match(runtime,/previewVersion=5/,'source previews must bypass the previous cached unsanitized body response');
+assert.match(runtime,/archive-post-list/,'the shared preview runtime must deliberately leave Posts-tab clicks to the normalized posts runtime');
 
 assert.doesNotMatch(css,/\.archive-source-reader(?:\{|::)/,'obsolete modal reader styling must stay removed');
-assert.match(css,/\.archive-source-notice/,'content-specific notice spacing should be scoped without duplicating the notice component');
-assert.match(loader,/content-page-enhancements\.js\?v=7/,'content enhancement runtime version must refresh the SOOP body sanitizer');
+assert.match(css,/\.archive-source-notice/,'content-specific notice spacing should remain compatible with source preview content');
+assert.match(loader,/content-page-enhancements\.js\?v=9/,'content enhancement cache key must refresh unified source-card behavior');
+assert.match(loader,/content-source-card-unifier\.js\?v=2/,'timeline and source archive rows must load the unified source-card runtime');
 
-console.log('Chunbong content shared hero, notice UI, and nested-route regression passed');
+console.log('Chunbong content shared hero, stable source-card UI, and nested-route regression passed');
