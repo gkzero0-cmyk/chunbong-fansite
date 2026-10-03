@@ -13,7 +13,8 @@ const previewCache=new Map();
 
 function clean(value=''){return String(value??'').normalize('NFKC').trim()}
 function safeUrl(value=''){
-  try{const url=new URL(clean(value),'https://chunbong-fansite.vercel.app/');return ['http:','https:'].includes(url.protocol)?url.href:''}catch{return''}
+  const raw=clean(value);if(!raw)return'';
+  try{const url=new URL(raw,'https://chunbong-fansite.vercel.app/');return ['http:','https:'].includes(url.protocol)?url.href:''}catch{return''}
 }
 function soopPostId(value=''){
   try{const url=new URL(clean(value),'https://chunbong-fansite.vercel.app/');const match=url.pathname.match(/\/station\/chunbongtv\/post\/(\d+)/i);return match?.[1]||''}catch{return''}
