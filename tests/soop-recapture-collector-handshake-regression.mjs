@@ -7,7 +7,8 @@ const guardSource=fs.readFileSync(guardUrl,'utf8');
 const guard=await import(guardUrl);
 const entry=fs.readFileSync(new URL('../operator-redis-diagnostics.js',import.meta.url),'utf8');
 const contents=fs.readFileSync(new URL('../operator-contents.js',import.meta.url),'utf8');
-const collector=fs.readFileSync(new URL('../chunbong-content-collector.user.js',import.meta.url),'utf8');
+const bootstrap=fs.readFileSync(new URL('../chunbong-content-collector.user.js',import.meta.url),'utf8');
+const collector=fs.readFileSync(new URL('../collector-runtime.js',import.meta.url),'utf8');
 
 assert.equal(typeof guard.versionAtLeast,'function','guard should expose version comparison for regression coverage');
 assert.equal(guard.versionAtLeast('1.4.7','1.4.7'),true);
@@ -32,6 +33,6 @@ assert.match(guardSource,/status-lookup-failed/,'exact status failures must rema
 
 assert.match(contents,/data-collector-recapture-soop/,'operator contents should keep the selective recapture trigger available');
 assert.match(collector,/SOOP_WATCH_INTERVAL_MS=15\*60\*1000/,'low-data SOOP watcher cadence must be fifteen minutes');
-assert.match(collector,/@version\s+1\.4\.8/,'automatic tab serialization release should install userscript v1.4.8');
+assert.match(bootstrap,/@version\s+1\.5\.0/,'runtime-split release should install bootstrap userscript v1.5.0');
 
-console.log('SOOP recapture collector handshake regression passed');
+console.log('SOOP recapture collector handshake runtime regression passed');
