@@ -48,5 +48,11 @@ assert.equal(await cards.count(),before,'expand/collapse must not change card co
 assert.equal(previewRequests,1,'loaded preview should not fetch twice');
 assert.equal(await page.locator('.archive-source-notice').count(),0,'legacy sibling preview cards must not be inserted');
 
+await page.locator('[data-archive-tab="overview"]').click();
+await page.locator('[data-archive-tab="posts"]').click();
+await page.locator('[data-archive-post-card]').first().waitFor({state:'visible'});
+assert.equal(await page.locator('[data-archive-post-card]').count(),3,'returning to posts should normalize the fresh panel again');
+assert.deepEqual(await page.locator('[data-post-title]').allTextContents(),['최신 공지','중복 글의 실제 제목','이전 공지']);
+
 await browser.close();
 console.log('chunbong posts browser smoke passed');
