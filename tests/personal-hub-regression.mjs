@@ -7,6 +7,7 @@ const hubCss=read('personal-hub.css');
 const myhub=read('myhub.html');
 const index=read('index.html');
 const shell=read('site-shell.js');
+const idle=read('site-shell-idle.js');
 const mobile=read('mobile-site.js');
 const media=read('page-media.js');
 const fanart=read('page-fanart.js');
@@ -17,6 +18,7 @@ const sw=read('service-worker.js');
 const api=read('api/content.js');
 
 assert.doesNotThrow(()=>new Function(hub),'personal-hub.js must remain valid JavaScript');
+assert.doesNotThrow(()=>new Function(idle),'idle shared runtime must remain valid JavaScript');
 
 assert.match(hub,/chunbong-personal-hub-v1/,'personal storage namespace missing');
 assert.match(hub,/favorites:\[\]/,'favorites store missing');
@@ -96,9 +98,7 @@ assert.match(minigames,/data-profile-achievements/,'minigame achievement count m
 assert.match(minigames,/data-profile-recent/,'recent minigame stat missing');
 assert.match(minigames,/data-profile-achievement-list/,'achievement badge strip missing');
 assert.match(minProfile,/ChunbongPersonal\?\.gameSnapshot/,'unified profile must read personal game snapshot');
-for(const achievement of ['첫 발자국','게임 단골','4종 탐험가','블록 러너','합체 장인','합계 10 장인','컬러 마스터']){
-  assert.ok(hub.includes(achievement),'achievement missing: '+achievement);
-}
+for(const achievement of ['첫 발자국','게임 단골','4종 탐험가','블록 러너','합체 장인','합계 10 장인','컬러 마스터'])assert.ok(hub.includes(achievement),'achievement missing: '+achievement);
 
 assert.match(index,/data-app-home-panel/,'installed-app home panel missing');
 assert.match(index,/href="myhub\.html"/,'home My Hub shortcut missing');
@@ -107,17 +107,16 @@ assert.match(mobile,/data-more-page="myhub"/,'mobile app More menu missing My Hu
 assert.doesNotMatch(index,/timeline\\.html|춘봉 타임라인/,'retired timeline must not remain on home');
 assert.doesNotMatch(myhub,/timeline\\.html|춘봉 타임라인/,'retired timeline must not remain in My Fan Hub');
 assert.doesNotMatch(mobile,/data-more-page="timeline"|timeline\\.html/,'retired timeline must not remain in mobile More menu');
-for(const asset of ['/timeline.html','/timeline.css','/timeline.js']) assert.ok(!sw.includes("'"+asset+"'"),'retired timeline must not remain in PWA app shell: '+asset);
+for(const asset of ['/timeline.html','/timeline.css','/timeline.js'])assert.ok(!sw.includes("'"+asset+"'"),'retired timeline must not remain in PWA app shell: '+asset);
 
-assert.match(shell,/personal-hub\.css/,'shared shell must load personal hub styles');
-assert.match(shell,/personal-hub\.js/,'shared shell must load personal hub runtime');
-for(const asset of ['/personal-hub.css','/personal-hub.js']){
-  assert.ok(!sw.includes("'"+asset+"'"),'personal hub should runtime-cache after first use instead of blocking PWA install: '+asset);
-}
+assert.match(shell,/site-shell-idle\.js/,'critical shell must schedule the deferred shared runtime');
+assert.match(idle,/personal-hub\.css/,'idle shell must load personal hub styles');
+assert.match(idle,/personal-hub\.js/,'idle shell must load personal hub runtime');
+assert.match(idle,/schedule\(loadPersonal/,'personal hub must remain deferred rather than blocking first paint');
+for(const asset of ['/personal-hub.css','/personal-hub.js'])assert.ok(!sw.includes("'"+asset+"'"),'personal hub should runtime-cache after first use instead of blocking PWA install: '+asset);
 assert.ok(!sw.includes("'/myhub.html'"),'My Fan Hub page should runtime-cache after first visit instead of bloating initial PWA install');
-assert.match(sw,/runtime-v35/,'PWA cache generation must refresh after static-asset MIME validation changes');
+assert.match(sw,/runtime-v36/,'PWA cache generation must include the performance release');
 assert.match(sw,/notificationclick/,'notification click routing missing');
-
 
 const homeOverview=read('home-overview.js');
 assert.match(homeOverview,/get\('live'\)/,'home overview must query actual SOOP LIVE state');
