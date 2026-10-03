@@ -14,7 +14,9 @@ assert.match(smart,/chunbong:home-live/,'smart status must reuse the shared live
 assert.match(smart,/ChunbongCache\?\.peek|ChunbongCache\.peek/,'smart status should reuse cached live state before fetching');
 assert.match(overview,/whenVisible\(statsRoot/,'stats must remain viewport-deferred');
 assert.match(overview,/whenVisible\(archiveRoot/,'archive preview must remain viewport-deferred');
-assert.doesNotMatch(fortune,/\bvoid\s+loadFortune\(\)\s*;?\s*$/m,'fortune runtime must not load unconditionally at startup');
+assert.match(fortune,/\['pointerenter','focusin','touchstart'\][\s\S]*addEventListener\(type, warm/,'fortune runtime must warm only from explicit user intent before the late idle fallback');
+assert.match(fortune,/setTimeout\(lateWarm,\s*8000\)/,'fortune late warm must stay well outside the initial home critical path');
+assert.doesNotMatch(fortune,/\n\s*(?:void\s+)?loadFortune\(\);?\s*\n/,'fortune runtime must not be invoked as an unconditional top-level startup statement');
 const highPriority=(html.match(/fetchpriority="high"/g)||[]).length;
 assert.equal(highPriority,1,'home should reserve high fetch priority for the hero image only');
 console.log('home critical path performance regression passed');
