@@ -27,12 +27,12 @@ test('header reserves utility width and loads the visual utility shell before id
   assert.match(shell,/runIdle\(\(\)=>loadScript\('site-improvements\.js\?v=2'\)\)/);
 });
 
-test('operator html redirects to an authenticated dynamic route before static file serving',()=>{
+test('operator route resolves through authenticated dynamic handler before static dashboard content is exposed',()=>{
   const config=JSON.parse(read('vercel.json'));
   const api=read('api/survival-wiki.js');
-  const redirect=(config.redirects||[]).find(row=>row.source==='/operator.html');
-  const rewrite=(config.rewrites||[]).find(row=>row.source==='/operator');
-  assert.deepEqual(redirect,{source:'/operator.html',destination:'/operator',permanent:false});
+  const redirect=(config.redirects||[]).find(row=>row.source==='/operator');
+  const rewrite=(config.rewrites||[]).find(row=>row.source==='/operator.html');
+  assert.deepEqual(redirect,{source:'/operator',destination:'/operator.html',permanent:false});
   assert.equal(rewrite?.destination,'/api/survival-wiki?mode=operator-page');
   assert.match(api,/stripOperatorDashboard/);
   assert.match(api,/Vary','Cookie/);
