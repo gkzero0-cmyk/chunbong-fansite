@@ -3,7 +3,7 @@ const d=document,m=matchMedia('(max-width:760px)'),s=matchMedia('(display-mode: 
 let loaded=false;
 const load=()=>{polish();if(!like()||loaded||q('script[data-mobile-site-runtime]'))return;loaded=true;add('mobile-site.js?v=3','data-mobile-site-runtime')};
 if(document.body?.dataset?.page==='contents'){
-const loadContentDetailExtras=()=>{add('official-wiki-guide.js?v=4','data-official-wiki-guide-runtime');add('content-page-enhancements.js?v=7','data-content-page-enhancements-runtime');add('chunbong-posts-runtime.js?v=1','data-chunbong-posts-runtime')};document.addEventListener('chunbong:contents-detail-ready',loadContentDetailExtras,{once:true});if(/^\/contents\//.test(location.pathname)||new URLSearchParams(location.search).get('id'))loadContentDetailExtras()
+const loadContentDetailExtras=()=>{add('official-wiki-guide.js?v=4','data-official-wiki-guide-runtime');add('content-page-enhancements.js?v=7','data-content-page-enhancements-runtime');add('chunbong-posts-runtime.js?v=2','data-chunbong-posts-runtime');add('content-source-card-unifier.js?v=4','data-content-source-card-unifier-runtime');add('content-media-player.js?v=1','data-content-media-player-runtime');add('content-archive-completion.js?v=1','data-content-archive-completion-runtime')};document.addEventListener('chunbong:contents-detail-ready',loadContentDetailExtras,{once:true});if(/^\/contents\//.test(location.pathname)||new URLSearchParams(location.search).get('id'))loadContentDetailExtras()
   }
 polish();load();for(const x of[m,s])x.addEventListener?.('change',e=>{if(e.matches)load()});
 })();
