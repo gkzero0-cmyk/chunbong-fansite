@@ -25,10 +25,10 @@
   };
   if(document.body?.dataset?.page==='contents'){
     addScript('official-wiki-guide.js?v=4','data-official-wiki-guide-runtime');
-    addScript('content-page-enhancements.js?v=8','data-content-page-enhancements-runtime');
+    addScript('content-page-enhancements.js?v=9','data-content-page-enhancements-runtime');
     addScript('chunbong-posts-runtime.js?v=1','data-chunbong-posts-runtime');
-    addStyle('content-source-card-unifier.css?v=1','data-content-source-card-unifier-style');
-    addScript('content-source-card-unifier.js?v=1','data-content-source-card-unifier-runtime');
+    addStyle('content-source-card-unifier.css?v=2','data-content-source-card-unifier-style');
+    addScript('content-source-card-unifier.js?v=2','data-content-source-card-unifier-runtime');
   }
   loadPolish();loadMobile();
   mobile.addEventListener?.('change',event=>{if(event.matches)loadMobile()});
