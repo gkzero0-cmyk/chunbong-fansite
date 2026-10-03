@@ -53,7 +53,13 @@ test('survival completion restores second and third-entry recruitment to the vis
 
 test('survival weak JustServer matches are rejected without a real season context',()=>{
   const runtime=read('content-source-card-unifier.js');
-  assert.match(runtime,/휴방\|마병대\|리캡\|사자컴퍼니/);
+  assert.match(runtime,/휴방/);
+  assert.match(runtime,/불침번/);
+  assert.match(runtime,/방송\\s\*좌표|방송\s*\\s\*좌표/);
+  assert.match(runtime,/섭주\\s\*방송|섭주\s*\\s\*방송/);
+  assert.match(runtime,/마병대\|리캡\|사자컴퍼니/);
   assert.match(runtime,/입주\|신청\|모집\|합격/);
+  assert.match(runtime,/설명회/);
+  assert.match(runtime,/위키/);
   assert.match(runtime,/flat\.includes\(['"]적자생존['"]\)/);
 });
