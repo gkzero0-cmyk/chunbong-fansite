@@ -117,13 +117,13 @@ assert.match(historyApi,/SITE_STARTED_AT='2026-08-30'/,'history API must preserv
 assert.match(historyApi,/per_page=100/,'history API must page through the repository history');
 assert.match(historyApi,/TECHNICAL_PREFIXES/,'technical automation commits should stay filtered from repository history metadata');
 
-assert.match(shell,/className = 'changelog-button'/,'shared header bootstrap must create changelog button');
-assert.match(shell,/link\.href = 'changelog\.html'/);
+assert.match(shell,/className\s*=\s*'changelog-button'/,'shared header bootstrap must create changelog button');
+assert.match(shell,/link\.href\s*=\s*'changelog\.html'/);
 assert.match(shell,/업데이트 일지/);
 assert.match(shell,/changelog-unread-dot/,'gear needs a new-update red indicator');
-assert.match(shell,/chunbong-changelog-seen-v2/,'changelog read state must persist locally');
+assert.match(shellIdle,/chunbong-changelog-seen-v2/,'changelog read state must persist locally');
 assert.match(shellIdle,/type=changelog-history&summary=1/,'gear must compare against latest automatic update');
-assert.match(shell,/chunbong:changelog-ready/,'opening changelog must clear the unread state');
+assert.match(shellIdle,/chunbong:changelog-ready/,'opening changelog must clear the unread state');
 assert.match(theme,/\.changelog-unread-dot\{/,'red-dot styling missing');
 assert.match(activity,/changelogButton/,'activity bell must position itself after changelog button');
 assert.match(theme,/\.changelog-button\{/);
