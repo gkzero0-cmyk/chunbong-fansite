@@ -1,0 +1,35 @@
+name: Collector runtime bootstrap tests
+
+on:
+  push:
+    branches:
+      - feat/collector-runtime-bootstrap
+  pull_request:
+    paths:
+      - 'chunbong-content-collector.user.js'
+      - 'collector-runtime.js'
+      - 'collector-runtime-manifest.json'
+      - 'operator-collector-install-helper.js'
+      - 'vercel.json'
+      - 'test/collector-runtime-bootstrap.test.js'
+      - 'test/collector-install-update.test.js'
+      - 'tests/collector-auto-tab-serialization-regression.mjs'
+      - '.github/workflows/collector-runtime-bootstrap-tests.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm ci
+      - name: Targeted collector tests
+        run: |
+          node --test test/collector-runtime-bootstrap.test.js test/collector-install-update.test.js
+          node tests/collector-auto-tab-serialization-regression.mjs
+      - name: Full project tests
+        run: npm test
