@@ -257,6 +257,7 @@ try{
     const initialCount=await cards.count(),first=cards.nth(0);
     await first.locator('[data-post-toggle]').click();
     await first.locator('[data-post-body]').waitFor({state:'visible'});
+    await first.locator('[data-source-notice-detail]').getByText('본문 테스트 · 같은 카드 안에서 표시').waitFor({state:'visible'});
     assert.match((await first.locator('[data-source-notice-detail]').textContent())||'',/본문 테스트/,'preview 본문은 같은 카드 내부에 보여야 합니다');
     assert.equal(await cards.count(),initialCount,'펼치기 후 카드 수가 변하면 안 됩니다');
     await first.locator('[data-post-toggle]').click();
@@ -268,6 +269,7 @@ try{
     const failed=cards.filter({hasText:'적자생존 이전 안내'}).first();
     await failed.locator('[data-post-toggle]').click();
     await failed.locator('[data-post-body]').waitFor({state:'visible'});
+    await failed.locator('[data-source-notice-detail]').getByText('게시글 본문을 가져오지 못했습니다.').waitFor({state:'visible'});
     assert.match((await failed.locator('[data-source-notice-detail]').textContent())||'',/가져오지 못했습니다|저장되어 있지 않아/,'preview 실패 상태도 기존 카드 내부에 남아야 합니다');
     assert.equal(await cards.count(),initialCount,'preview 실패 후에도 카드 수가 변하면 안 됩니다');
     assert.deepEqual(errors,[],errors.join(' | '));
