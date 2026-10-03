@@ -40,7 +40,7 @@ jobs:
           node scripts/apply-perf-patches.mjs
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add chunbong-contents.js mobile-runtime-loader.js site-improvements.js service-worker.js page.js .github/workflows/site-regression.yml
+          git add chunbong-contents.js mobile-runtime-loader.js site-improvements.js service-worker.js page.js
           git commit -m 'perf: apply archive and PWA performance patches'
           git push origin HEAD:perf/site-speed-20261004
       - name: Check JavaScript syntax
