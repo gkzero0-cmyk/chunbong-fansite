@@ -3,14 +3,17 @@ import fs from 'node:fs';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
 
-const collector=fs.readFileSync(new URL('../chunbong-content-collector.user.js',import.meta.url),'utf8');
+const bootstrap=fs.readFileSync(new URL('../chunbong-content-collector.user.js',import.meta.url),'utf8');
+const collector=fs.readFileSync(new URL('../collector-runtime.js',import.meta.url),'utf8');
+const manifest=JSON.parse(fs.readFileSync(new URL('../collector-runtime-manifest.json',import.meta.url),'utf8'));
 const archive=require('../lib/chunbong-content-archive-api.js');
 const api=fs.readFileSync(new URL('../api/content.js',import.meta.url),'utf8');
 
-assert.match(collector,/@version\s+1\.4\.8/,'diagnostic collector release should advance for serialized auto-discovery recovery');
+assert.match(bootstrap,/@version\s+1\.5\.0/,'diagnostic collector should use the runtime bootstrap release');
+assert.equal(manifest.runtimeVersion,'1.0.0','diagnostic collector logic should be delivered by runtime release 1.0.0');
 assert.match(collector,/SOOP_MEDIA_COLLECTOR_VERSION=8/,'diagnostic generation must revisit previous zero-image and restricted rows');
-assert.match(collector,/SOOP_DIAGNOSTIC_QUEUE_KEY/,'collector needs a separate diagnostic queue');
-assert.match(collector,/queueSoopDiagnostic/,'collector should queue diagnostics independently of archive imports');
+assert.match(collector,/SOOP_DIAGNOSTIC_QUEUE_KEY/,'collector runtime needs a separate diagnostic queue');
+assert.match(collector,/queueSoopDiagnostic/,'collector runtime should queue diagnostics independently of archive imports');
 assert.match(collector,/candidateCount/,'diagnostics should report discovered media candidate counts');
 assert.match(collector,/acceptedCount/,'diagnostics should report accepted media counts');
 assert.match(collector,/rejectedByReason/,'diagnostics should explain why candidates were filtered');
