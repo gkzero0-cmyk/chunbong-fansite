@@ -11,12 +11,16 @@ assert.match(unifier,/function\s+convertSources[\s\S]*sourceCardMarkup|function\
 assert.match(unifier,/data-source-preview-toggle/,'shared cards should expose one inline preview target');
 assert.match(unifier,/data-source-title-toggle/,'the post title itself should be the expand/collapse control');
 assert.match(unifier,/heading===['"]게시글['"]\)return/,'source conversion must not race the existing post normalizer');
+assert.match(unifier,/data-source-preview-body\],\[data-source-notice-detail\]/,'post upgrades should reuse the existing detail body instead of adding a second one');
+assert.match(unifier,/dataset\.postTitle/,'post upgrades should preserve the normalized post-title contract');
 assert.doesNotMatch(unifier,/본문 펼치기<\/button>/,'cards should not require a separate body-toggle button');
 assert.doesNotMatch(enhancements,/insertAdjacentElement\(['"]afterend['"]/,'preview enhancement must never insert a sibling card');
 assert.doesNotMatch(enhancements,/function\s+buildNotice\s*\(/,'legacy sibling notice builder must be removed');
 assert.match(enhancements,/data-source-title-toggle/,'enhancement should bind the title as the toggle');
 assert.match(enhancements,/data-source-url/,'preview hydration should propagate metadata by canonical source URL');
 assert.match(enhancements,/data-source-date/,'preview hydration should update visible unknown dates when preview confirms them');
-assert.match(loader,/content-source-card-unifier\.js\?v=1/,'unified source-card runtime must be loaded on content pages');
+assert.match(enhancements,/archive-post-list/,'shared enhancement must leave Posts-tab preview ownership to the normalized posts runtime');
+assert.match(loader,/content-source-card-unifier\.js\?v=2/,'unified source-card runtime must be cache-busted on content pages');
+assert.match(loader,/content-page-enhancements\.js\?v=9/,'shared preview runtime must be cache-busted on content pages');
 
 console.log('content unified source cards regression passed');
