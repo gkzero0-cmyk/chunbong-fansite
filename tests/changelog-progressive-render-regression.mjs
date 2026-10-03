@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const js=fs.readFileSync(new URL('../changelog.js',import.meta.url),'utf8');
+assert.match(js,/INITIAL_CHANGELOG_GROUPS\s*=\s*8/,'changelog initial batch must stay at eight groups');
+assert.match(js,/CHANGELOG_CHUNK_SIZE\s*=\s*8/,'changelog continuation chunks must stay at eight groups');
+assert.match(js,/renderGeneration|generationToken|renderToken/,'changelog chunks need a generation guard');
+assert.match(js,/requestIdleCallback|ChunbongIdle/,'remaining changelog groups must continue during idle time');
+assert.match(js,/ChunbongCache\?\.peek|ChunbongCache\.peek/,'changelog must render cached history before refreshing');
+assert.match(js,/staleIfError\s*:\s*true/,'changelog refresh must preserve cached history when the network fails');
+assert.match(js,/CHANGELOG_SYNC_INTERVAL_MS\s*=\s*10\s*\*\s*60\s*\*\s*1000/,'ten-minute sync budget must remain');
+console.log('changelog progressive render regression passed');

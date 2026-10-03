@@ -9,6 +9,7 @@ const dataSource=fs.readFileSync(new URL('../changelog-data.js',import.meta.url)
 const autoSource=fs.readFileSync(new URL('../changelog-auto-summary.js',import.meta.url),'utf8');
 const content=fs.readFileSync(new URL('../content.js',import.meta.url),'utf8');
 const shell=fs.readFileSync(new URL('../site-shell.js',import.meta.url),'utf8');
+const shellIdle=fs.readFileSync(new URL('../site-shell-idle.js',import.meta.url),'utf8');
 const activity=fs.readFileSync(new URL('../activity-center.js',import.meta.url),'utf8');
 const theme=fs.readFileSync(new URL('../theme.css',import.meta.url),'utf8');
 const styles=fs.readFileSync(new URL('../styles.css',import.meta.url),'utf8');
@@ -19,6 +20,7 @@ assert.doesNotThrow(()=>new Function(js),'changelog runtime must remain valid Ja
 assert.doesNotThrow(()=>new Function(dataSource),'changelog data must remain valid JavaScript');
 assert.doesNotThrow(()=>new Function(autoSource),'automatic changelog summarizer must remain valid JavaScript');
 assert.doesNotThrow(()=>new Function(historyApi),'changelog history API must remain valid JavaScript');
+assert.doesNotThrow(()=>new Function(shellIdle),'idle shared shell runtime must remain valid JavaScript');
 assert.match(html,/data-page="changelog"/);
 assert.match(html,/id="changelog-timeline"/);
 assert.match(html,/id="changelog-index-list"/,'date index missing');
@@ -42,9 +44,9 @@ assert.match(js,/CHANGELOG_SYNC_INTERVAL_MS=10\*60\*1000/,'changelog body refres
 assert.match(js,/window\.addEventListener\('focus'/,'changelog page must refresh when the tab regains focus after the sync interval');
 assert.match(js,/visibilitychange/,'changelog page must refresh when it becomes visible again after the sync interval');
 assert.match(js,/curatedGroups/,'automatic refresh must rebuild from curated groups to avoid duplicate cards');
-assert.match(shell,/CHANGELOG_REFRESH_MS = 60 \* 1000/,'header unread refresh interval must stay at one minute');
-assert.match(shell,/window\.addEventListener\('focus'/,'header unread state must refresh on focus');
-assert.match(shell,/visibilitychange/,'header unread state must refresh when the tab becomes visible');
+assert.match(shellIdle,/CHANGELOG_REFRESH_MS = 60 \* 1000/,'header unread refresh interval must stay at one minute');
+assert.match(shellIdle,/window\.addEventListener\('focus'/,'header unread state must refresh on focus');
+assert.match(shellIdle,/visibilitychange/,'header unread state must refresh when the tab becomes visible');
 
 const sandbox={window:{}};
 vm.runInNewContext(dataSource,sandbox);
@@ -115,13 +117,13 @@ assert.match(historyApi,/SITE_STARTED_AT='2026-08-30'/,'history API must preserv
 assert.match(historyApi,/per_page=100/,'history API must page through the repository history');
 assert.match(historyApi,/TECHNICAL_PREFIXES/,'technical automation commits should stay filtered from repository history metadata');
 
-assert.match(shell,/className = 'changelog-button'/,'shared header bootstrap must create changelog button');
-assert.match(shell,/link\.href = 'changelog\.html'/);
+assert.match(shell,/className\s*=\s*'changelog-button'/,'shared header bootstrap must create changelog button');
+assert.match(shell,/link\.href\s*=\s*'changelog\.html'/);
 assert.match(shell,/업데이트 일지/);
 assert.match(shell,/changelog-unread-dot/,'gear needs a new-update red indicator');
-assert.match(shell,/chunbong-changelog-seen-v2/,'changelog read state must persist locally');
-assert.match(shell,/type=changelog-history&summary=1/,'gear must compare against latest automatic update');
-assert.match(shell,/chunbong:changelog-ready/,'opening changelog must clear the unread state');
+assert.match(shellIdle,/chunbong-changelog-seen-v2/,'changelog read state must persist locally');
+assert.match(shellIdle,/type=changelog-history&summary=1/,'gear must compare against latest automatic update');
+assert.match(shellIdle,/chunbong:changelog-ready/,'opening changelog must clear the unread state');
 assert.match(theme,/\.changelog-unread-dot\{/,'red-dot styling missing');
 assert.match(activity,/changelogButton/,'activity bell must position itself after changelog button');
 assert.match(theme,/\.changelog-button\{/);

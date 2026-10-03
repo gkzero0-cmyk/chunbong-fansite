@@ -311,11 +311,19 @@
     if(!root)return;
     body.classList.add('mobile-home-dashboard-mode');
     if(appMode)body.classList.add('pwa-home-dashboard-mode');
+    root.setAttribute('aria-live','polite');
+    root.innerHTML='<div class="pwa-dashboard-loading">오늘의 팬허브를 준비하고 있어요.</div>';
+    if(appMode&&!window.ChunbongPersonal){
+      await new Promise(resolve=>{
+        let settled=false;
+        const done=()=>{if(settled)return;settled=true;clearTimeout(timer);document.removeEventListener('chunbong:personal-updated',done);resolve()};
+        const timer=setTimeout(done,1400);
+        document.addEventListener('chunbong:personal-updated',done,{once:true});
+      });
+    }
     const personal=window.ChunbongPersonal?.read?.()||{};
     const challenge=window.ChunbongPersonal?.dailyChallenge?.();
     const recent=personal.recent||null;
-    root.setAttribute('aria-live','polite');
-    root.innerHTML='<div class="pwa-dashboard-loading">오늘의 팬허브를 준비하고 있어요.</div>';
     const [liveResult,scheduleResult]=await Promise.allSettled([getJson('live',30000),getJson('schedule',60000)]);
     const live=liveResult.status==='fulfilled'&&liveResult.value?.live===true?liveResult.value:null;
     const items=scheduleResult.status==='fulfilled'&&Array.isArray(scheduleResult.value?.items)?scheduleResult.value.items:[];

@@ -50,6 +50,10 @@
   const AUTO_OPEN_CLAIM_MS=90*1000;
   const SOOP_SELFTEST_HASH='chunbong-soop-selftest';
   const SOOP_WATCH_INTERVAL_MS=15*60*1000;
+  const SOOP_WATCH_ACTIVE_MS=15*60*1000;
+  const SOOP_WATCH_NORMAL_MS=30*60*1000;
+  const SOOP_WATCH_IDLE_MS=60*60*1000;
+  const SOOP_WATCH_ERROR_MAX_MS=120*60*1000;
   const SOOP_WATCH_LEASE_MS=2*60*1000;
   const SOOP_MEDIA_COLLECTOR_VERSION=8;
   const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -67,6 +71,14 @@
     const next={...previous,...patch,updatedAt:now};
     if(event)next.events=[{at:now,event},...events].slice(0,30);
     write(COLLECTOR_STATUS_KEY,next);return next;
+  }
+  function nextSoopWatchPolicy(result={},previous={}){
+    let noChangeStreak=Math.max(0,Number(previous.watchNoChangeStreak||0)),errorStreak=Math.max(0,Number(previous.watchErrorStreak||0));
+    if(!result.ok){errorStreak++;const intervalMs=errorStreak>=3?SOOP_WATCH_ERROR_MAX_MS:errorStreak===2?SOOP_WATCH_IDLE_MS:SOOP_WATCH_NORMAL_MS;return{intervalMs,noChangeStreak,errorStreak}}
+    errorStreak=0;
+    if(Number(result.discovered||0)>0)return{intervalMs:SOOP_WATCH_ACTIVE_MS,noChangeStreak:0,errorStreak};
+    noChangeStreak++;
+    return{intervalMs:noChangeStreak>=3?SOOP_WATCH_IDLE_MS:SOOP_WATCH_NORMAL_MS,noChangeStreak,errorStreak};
   }
   function setBackfillState(patch={}){const next={...backfillState(),...patch,updatedAt:new Date().toISOString()};write(SOOP_BACKFILL_KEY,next);return next}
   function markSoopHistory(postId,state='captured',details={}){if(!/^\d+$/.test(String(postId||'')))return;const rows=soopHistory(),previous=rows[String(postId)]||{};rows[String(postId)]={...previous,state,at:Date.now(),...details};write(SOOP_HISTORY_KEY,Object.fromEntries(Object.entries(rows).sort((a,b)=>Number(b[1]?.at||0)-Number(a[1]?.at||0)).slice(0,12000)))}
@@ -338,7 +350,7 @@
     const started=Date.now();
     try{
       await loadSoopListing();const links=soopPostLinks(),discovered=await discoverSoopPosts(12),now=new Date().toISOString();
-      setCollectorStatus({lastScanAt:now,lastScanMode:mode,lastScanPostCount:links.length,lastDiscoveredCount:discovered,nextScanAt:new Date(Date.now()+SOOP_WATCH_INTERVAL_MS).toISOString(),lastWatcherHeartbeatAt:now,lastError:'',lastErrorAt:''},'SOOP 게시판 확인 · 신규 '+discovered+'건');
+      setCollectorStatus({lastScanAt:now,lastScanMode:mode,lastScanPostCount:links.length,lastDiscoveredCount:discovered,lastWatcherHeartbeatAt:now,lastError:'',lastErrorAt:''},'SOOP 게시판 확인 · 신규 '+discovered+'건');
       return{ok:true,links:links.length,discovered,durationMs:Date.now()-started};
     }catch(error){
       const now=new Date().toISOString();setCollectorStatus({lastScanAt:now,lastScanMode:mode,lastError:String(error?.message||error),lastErrorAt:now,lastWatcherHeartbeatAt:now},'SOOP 게시판 확인 실패');
@@ -346,11 +358,11 @@
     }
   }
   async function runSoopWatch(){
-    const startedAt=new Date().toISOString();
+    const startedAt=new Date().toISOString(),before=collectorStatus();
     setCollectorStatus({watchEnabled:true,watching:true,lastWatcherHeartbeatAt:startedAt},'SOOP 저데이터 1회 확인 시작');
-    const result=await scanSoopBoard('watch');
-    const finishedAt=new Date().toISOString(),state=collectorStatus();
-    setCollectorStatus({watching:false,lastWatcherHeartbeatAt:finishedAt,nextScanAt:state.watchEnabled===false?'':new Date(Date.now()+SOOP_WATCH_INTERVAL_MS).toISOString()},result.ok?'SOOP 저데이터 1회 확인 완료':'SOOP 저데이터 1회 확인 실패');
+    const result=await scanSoopBoard('watch'),current=collectorStatus(),policy=nextSoopWatchPolicy(result,{...before,...current});
+    const finishedAt=new Date().toISOString(),nextScanAt=current.watchEnabled===false?'':new Date(Date.now()+policy.intervalMs).toISOString();
+    setCollectorStatus({watching:false,lastWatcherHeartbeatAt:finishedAt,currentWatchIntervalMs:policy.intervalMs,watchNoChangeStreak:policy.noChangeStreak,watchErrorStreak:policy.errorStreak,nextScanAt},result.ok?'SOOP 저데이터 1회 확인 완료 · 다음 '+Math.round(policy.intervalMs/60000)+'분':'SOOP 저데이터 1회 확인 실패 · 재시도 '+Math.round(policy.intervalMs/60000)+'분');
     setTimeout(()=>{try{window.close()}catch{}},900);
   }
   async function runSoopSelfTest(){
@@ -478,7 +490,8 @@
     let inflight='';
     const autoFlushMode=location.hash.includes(AUTO_FLUSH_OPERATOR_HASH);
     const initialStatus=collectorStatus();
-    if(!autoFlushMode&&typeof initialStatus.watchEnabled!=='boolean')setCollectorStatus({watchEnabled:true},'SOOP 상시 감시 기본 활성화');
+    if(!autoFlushMode&&typeof initialStatus.watchEnabled!=='boolean')setCollectorStatus({watchEnabled:true,currentWatchIntervalMs:SOOP_WATCH_NORMAL_MS,watchNoChangeStreak:0,watchErrorStreak:0},'SOOP 상시 감시 기본 활성화');
+    else if(!autoFlushMode&&initialStatus.watchEnabled&&!(Number(initialStatus.currentWatchIntervalMs)>0))setCollectorStatus({currentWatchIntervalMs:SOOP_WATCH_NORMAL_MS,watchNoChangeStreak:Number(initialStatus.watchNoChangeStreak||0),watchErrorStreak:Number(initialStatus.watchErrorStreak||0)});
     let watchTimer=null;
     const watchLease=()=>{
       const now=Date.now(),current=read(SOOP_WATCH_LEASE_KEY,{});if(Number(current?.expiresAt||0)>now)return false;
@@ -491,7 +504,8 @@
       if(parsed!==next)setCollectorStatus({nextScanAt:new Date(next).toISOString()},'SOOP 저데이터 확인 예약');
       watchTimer=setTimeout(()=>{
         const current=collectorStatus();if(!current.watchEnabled)return;
-        setCollectorStatus({nextScanAt:new Date(Date.now()+SOOP_WATCH_INTERVAL_MS).toISOString()},'SOOP 다음 저데이터 확인 예약');
+        const fallbackInterval=Math.max(SOOP_WATCH_ACTIVE_MS,Number(current.currentWatchIntervalMs||SOOP_WATCH_NORMAL_MS));
+        setCollectorStatus({nextScanAt:new Date(Date.now()+fallbackInterval).toISOString()},'SOOP 다음 저데이터 확인 예약');
         if(watchLease())openBackground('https://www.sooplive.com/station/chunbongtv/post',SOOP_WATCH_ONCE_HASH,false);
         scheduleWatch(false);
       },Math.max(250,next-Date.now()));
@@ -550,7 +564,7 @@
         const urls=Array.isArray(data.urls)?data.urls.slice(0,16):[];urls.forEach((url,index)=>setTimeout(()=>openBackground(url,AUTO_HASH,index===0),index*950));return;
       }
       if(data.type==='open-soop-board'&&data.url){openBackground(data.url,DISCOVER_HASH,true);return}
-      if(data.type==='start-soop-watch'&&data.url){setCollectorStatus({watchEnabled:true,nextScanAt:new Date().toISOString()},'SOOP 저데이터 감시 요청');scheduleWatch(true);emitState();return}
+      if(data.type==='start-soop-watch'&&data.url){setCollectorStatus({watchEnabled:true,currentWatchIntervalMs:SOOP_WATCH_ACTIVE_MS,watchNoChangeStreak:0,watchErrorStreak:0,nextScanAt:new Date().toISOString()},'SOOP 저데이터 감시 요청');scheduleWatch(true);emitState();return}
       if(data.type==='stop-soop-watch'){if(watchTimer)clearTimeout(watchTimer);watchTimer=null;try{GM_deleteValue(SOOP_WATCH_LEASE_KEY)}catch{}setCollectorStatus({watchEnabled:false,watching:false,nextScanAt:''},'SOOP 저데이터 감시 중지 요청');emitState();return}
       if(data.type==='self-test-soop'&&data.url){openBackground(data.url,SOOP_SELFTEST_HASH,false);return}
       if(data.type==='start-soop-backfill'&&data.url){
@@ -570,7 +584,7 @@
     try{GM_addValueChangeListener(SOOP_DIAGNOSTIC_QUEUE_KEY,()=>{emitState();flush()})}catch{}
     try{GM_addValueChangeListener(SOOP_BACKFILL_KEY,()=>emitState())}catch{}
     try{GM_addValueChangeListener(SOOP_HISTORY_KEY,()=>emitState())}catch{}
-    try{GM_addValueChangeListener(COLLECTOR_STATUS_KEY,()=>emitState())}catch{}
+    try{GM_addValueChangeListener(COLLECTOR_STATUS_KEY,(_key,_old,next,remote)=>{emitState();if(remote&&next?.watchEnabled&&!next?.watching)scheduleWatch(false)})}catch{}
     try{
       document.documentElement?.setAttribute('data-chunbong-collector-version',VERSION);
       document.documentElement?.setAttribute('data-chunbong-collector-ready','1');

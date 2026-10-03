@@ -1,314 +1,37 @@
-
 ;(()=>{
-  'use strict';
-  if(typeof window==='undefined'||typeof window.fetch!=='function'||window.__chunbongBudgetFetchInstalled)return;
-  window.__chunbongBudgetFetchInstalled=true;
-  const nativeFetch=window.fetch.bind(window);
-  const inflight=new Map(),memory=new Map();
-  const STORAGE_PREFIX='chunbong:last-good:v1:';
-  const now=()=>Date.now();
-  function policy(input,init={}){
-    const method=String(init?.method||'GET').toUpperCase();
-    if(method!=='GET')return null;
-    let url;try{url=new URL(typeof input==='string'?input:input?.url,location.href)}catch{return null}
-    if(url.origin!==location.origin)return null;
-    if(url.searchParams.get('refresh')==='1')return null;
-    const path=url.pathname,type=url.searchParams.get('type')||'';
-    if(path==='/api/version')return{memoryMs:60000,snapshotMs:60*60*1000};
-    if(path==='/api/history-sheet')return{memoryMs:5*60*1000,snapshotMs:24*60*60*1000};
-    if(path==='/api/content'){
-      if(type==='live')return{memoryMs:45*1000,snapshotMs:5*60*1000};
-      if(['schedule','notice','activity'].includes(type))return{memoryMs:10*60*1000,snapshotMs:12*60*60*1000};
-      if(['vod','clips','youtube'].includes(type))return{memoryMs:20*60*1000,snapshotMs:24*60*60*1000};
-      if(['notice-detail','catch-detail'].includes(type))return{memoryMs:30*60*1000,snapshotMs:24*60*60*1000};
-      if(type==='fanart')return{memoryMs:15*60*1000,snapshotMs:12*60*60*1000};
-      if(type==='fanart-detail')return{memoryMs:60*60*1000,snapshotMs:24*60*60*1000};
-      if(type==='data')return{memoryMs:10*60*1000,snapshotMs:24*60*60*1000};
-      if(['chunbong-contents','chunbong-content-index','chunbong-content-home'].includes(type))return{memoryMs:10*60*1000,snapshotMs:24*60*60*1000};
-      if(type==='changelog-history')return{memoryMs:10*60*1000,snapshotMs:24*60*60*1000};
-      if(/(?:^|-)ranking$/.test(type))return{memoryMs:60000,snapshotMs:24*60*60*1000};
-    }
-    return null;
-  }
-  function keyFor(input){
-    try{const u=new URL(typeof input==='string'?input:input?.url,location.href);u.hash='';return u.pathname+u.search}catch{return''}
-  }
-  function noteApiNetwork(input){
-    try{
-      const u=new URL(typeof input==='string'?input:input?.url,location.href);
-      if(u.origin!==location.origin||u.pathname!=='/api/content')return;
-      const type=String(u.searchParams.get('type')||'').slice(0,60);
-      if(!type||type==='site-analytics-event'||type.startsWith('operator-'))return;
-      if(window.ChunbongAnalytics?.track)window.ChunbongAnalytics.track('api_network',type,{count:1});
-      else{
-        window.__ChunbongApiNetworkQueue=Array.isArray(window.__ChunbongApiNetworkQueue)?window.__ChunbongApiNetworkQueue:[];
-        window.__ChunbongApiNetworkQueue.push(type);
-        if(window.__ChunbongApiNetworkQueue.length>80)window.__ChunbongApiNetworkQueue.splice(0,window.__ChunbongApiNetworkQueue.length-80);
-      }
-    }catch{}
-  }
-  function responseFrom(record,marker){
-    return new Response(record.body,{status:200,headers:{'content-type':record.contentType||'application/json','x-chunbong-cache':marker}});
-  }
-  function readSnapshot(key,maxAge){
-    try{
-      const raw=localStorage.getItem(STORAGE_PREFIX+key);if(!raw)return null;
-      const row=JSON.parse(raw);
-      if(!row?.body||now()-Number(row.savedAt||0)>maxAge){localStorage.removeItem(STORAGE_PREFIX+key);return null}
-      return row;
-    }catch{return null}
-  }
-  function pruneSnapshots(){
-    try{
-      const rows=[];
-      for(let i=0;i<localStorage.length;i++){
-        const key=localStorage.key(i);if(!key?.startsWith(STORAGE_PREFIX))continue;
-        try{const row=JSON.parse(localStorage.getItem(key)||'{}');rows.push({key,savedAt:Number(row.savedAt)||0,size:(localStorage.getItem(key)||'').length})}catch{localStorage.removeItem(key)}
-      }
-      rows.sort((a,b)=>b.savedAt-a.savedAt);
-      let total=0;
-      rows.forEach((row,index)=>{
-        total+=row.size;
-        if(index>=24||total>1200000||now()-row.savedAt>7*24*60*60*1000)localStorage.removeItem(row.key);
-      });
-    }catch{}
-  }
-  function writeSnapshot(key,body,contentType){
-    try{
-      if(body.length>250000)return;
-      localStorage.setItem(STORAGE_PREFIX+key,JSON.stringify({body,contentType,savedAt:now()}));
-      pruneSnapshots();
-    }catch{}
-  }
-  pruneSnapshots();
-  window.fetch=async function budgetFetch(input,init){
-    const p=policy(input,init);if(!p){noteApiNetwork(input);return nativeFetch(input,init)};
-    const key=keyFor(input);if(!key)return nativeFetch(input,init);
-    const cached=memory.get(key);
-    if(cached&&cached.expiresAt>now())return responseFrom(cached,'memory');
-    if(inflight.has(key)){
-      try{const row=await inflight.get(key);return responseFrom(row,'dedupe')}catch{}
-    }
-    const task=(async()=>{
-      try{
-        noteApiNetwork(input);
-        const response=await nativeFetch(input,init);
-        const body=await response.clone().text();
-        let unavailable=false;
-        if(response.ok&&/application\/json/i.test(response.headers.get('content-type')||'')){
-          try{unavailable=JSON.parse(body)?.unavailable===true}catch{}
-        }
-        if(response.ok&&!unavailable){
-          const row={body,contentType:response.headers.get('content-type')||'application/json',expiresAt:now()+p.memoryMs};
-          memory.set(key,row);writeSnapshot(key,body,row.contentType);return row;
-        }
-        if(unavailable||response.status>=500){
-          const snap=readSnapshot(key,p.snapshotMs);if(snap)return{...snap,expiresAt:now()+Math.min(p.memoryMs,60000)};
-        }
-        return{body,contentType:response.headers.get('content-type')||'application/json',expiresAt:now()+Math.min(p.memoryMs,15000),status:response.status};
-      }catch(error){
-        const snap=readSnapshot(key,p.snapshotMs);if(snap)return{...snap,expiresAt:now()+Math.min(p.memoryMs,60000)};
-        throw error;
-      }
-    })();
-    inflight.set(key,task);
-    try{
-      const row=await task;
-      if(row.status&&row.status!==200)return new Response(row.body,{status:row.status,headers:{'content-type':row.contentType}});
-      if(!memory.has(key)&&row.body)memory.set(key,row);
-      return responseFrom(row,row.savedAt?'snapshot':'network');
-    }finally{inflight.delete(key)}
-  };
+'use strict';
+if(typeof window==='undefined'||typeof window.fetch!=='function'||window.__chunbongBudgetFetchInstalled)return;
+window.__chunbongBudgetFetchInstalled=true;
+const nativeFetch=window.fetch.bind(window),inflight=new Map(),memory=new Map(),STORAGE_PREFIX='chunbong:last-good:v1:',now=()=>Date.now();
+function policy(input,init={}){const method=String(init?.method||'GET').toUpperCase();if(method!=='GET')return null;let url;try{url=new URL(typeof input==='string'?input:input?.url,location.href)}catch{return null}if(url.origin!==location.origin||url.searchParams.get('refresh')==='1')return null;const path=url.pathname,type=url.searchParams.get('type')||'';if(path==='/api/version')return{memoryMs:60000,snapshotMs:3600000};if(path==='/api/history-sheet')return{memoryMs:300000,snapshotMs:86400000};if(path==='/api/content'){if(type==='live')return{memoryMs:45000,snapshotMs:300000};if(['schedule','notice','activity'].includes(type))return{memoryMs:600000,snapshotMs:43200000};if(['vod','clips','youtube'].includes(type))return{memoryMs:1200000,snapshotMs:86400000};if(['notice-detail','catch-detail'].includes(type))return{memoryMs:1800000,snapshotMs:86400000};if(type==='fanart')return{memoryMs:900000,snapshotMs:43200000};if(type==='fanart-detail')return{memoryMs:3600000,snapshotMs:86400000};if(type==='data')return{memoryMs:600000,snapshotMs:86400000};if(['chunbong-contents','chunbong-content-index','chunbong-content-home'].includes(type))return{memoryMs:600000,snapshotMs:86400000};if(type==='changelog-history')return{memoryMs:600000,snapshotMs:86400000};if(/(?:^|-)ranking$/.test(type))return{memoryMs:60000,snapshotMs:86400000}}return null}
+function keyFor(input){try{const u=new URL(typeof input==='string'?input:input?.url,location.href);u.hash='';return u.pathname+u.search}catch{return''}}
+function noteApiNetwork(input){try{const u=new URL(typeof input==='string'?input:input?.url,location.href);if(u.origin!==location.origin||u.pathname!=='/api/content')return;const type=String(u.searchParams.get('type')||'').slice(0,60);if(!type||type==='site-analytics-event'||type.startsWith('operator-'))return;if(window.ChunbongAnalytics?.track)window.ChunbongAnalytics.track('api_network',type,{count:1});else{window.__ChunbongApiNetworkQueue=Array.isArray(window.__ChunbongApiNetworkQueue)?window.__ChunbongApiNetworkQueue:[];window.__ChunbongApiNetworkQueue.push(type);if(window.__ChunbongApiNetworkQueue.length>80)window.__ChunbongApiNetworkQueue.splice(0,window.__ChunbongApiNetworkQueue.length-80)}}catch{}}
+function responseFrom(record,marker){return new Response(record.body,{status:200,headers:{'content-type':record.contentType||'application/json','x-chunbong-cache':marker}})}
+function readSnapshot(key,maxAge){try{const raw=localStorage.getItem(STORAGE_PREFIX+key);if(!raw)return null;const row=JSON.parse(raw);if(!row?.body||now()-Number(row.savedAt||0)>maxAge){localStorage.removeItem(STORAGE_PREFIX+key);return null}return row}catch{return null}}
+function pruneSnapshots(){try{const rows=[];for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(!key?.startsWith(STORAGE_PREFIX))continue;try{const raw=localStorage.getItem(key)||'',row=JSON.parse(raw);rows.push({key,savedAt:Number(row.savedAt)||0,size:raw.length})}catch{localStorage.removeItem(key)}}rows.sort((a,b)=>b.savedAt-a.savedAt);let total=0;rows.forEach((row,index)=>{total+=row.size;if(index>=24||total>1200000||now()-row.savedAt>604800000)localStorage.removeItem(row.key)})}catch{}}
+let pruneScheduled=false;function scheduleSnapshotPrune(){if(pruneScheduled)return;pruneScheduled=true;const run=()=>{pruneScheduled=false;pruneSnapshots()};'requestIdleCallback'in window?requestIdleCallback(run,{timeout:2500}):setTimeout(run,900)}
+function writeSnapshot(key,body,contentType){try{if(body.length>250000)return;localStorage.setItem(STORAGE_PREFIX+key,JSON.stringify({body,contentType,savedAt:now()}));scheduleSnapshotPrune()}catch{}}
+window.fetch=async function budgetFetch(input,init){const p=policy(input,init);if(!p){noteApiNetwork(input);return nativeFetch(input,init)}const key=keyFor(input);if(!key)return nativeFetch(input,init);const cached=memory.get(key);if(cached&&cached.expiresAt>now())return responseFrom(cached,'memory');if(inflight.has(key)){try{return responseFrom(await inflight.get(key),'dedupe')}catch{}}const task=(async()=>{try{noteApiNetwork(input);const response=await nativeFetch(input,init),body=await response.clone().text();let unavailable=false;if(response.ok&&/application\/json/i.test(response.headers.get('content-type')||''))try{unavailable=JSON.parse(body)?.unavailable===true}catch{}if(response.ok&&!unavailable){const row={body,contentType:response.headers.get('content-type')||'application/json',expiresAt:now()+p.memoryMs};memory.set(key,row);writeSnapshot(key,body,row.contentType);return row}if(unavailable||response.status>=500){const snap=readSnapshot(key,p.snapshotMs);if(snap)return{...snap,expiresAt:now()+Math.min(p.memoryMs,60000)}}return{body,contentType:response.headers.get('content-type')||'application/json',expiresAt:now()+Math.min(p.memoryMs,15000),status:response.status}}catch(error){const snap=readSnapshot(key,p.snapshotMs);if(snap)return{...snap,expiresAt:now()+Math.min(p.memoryMs,60000)};throw error}})();inflight.set(key,task);try{const row=await task;if(row.status&&row.status!==200)return new Response(row.body,{status:row.status,headers:{'content-type':row.contentType}});if(!memory.has(key)&&row.body)memory.set(key,row);return responseFrom(row,row.savedAt?'snapshot':'network')}finally{inflight.delete(key)}};
 })();
-(()=>{'use strict';
+
+(()=>{
+'use strict';
 const memory=new Map(),CACHE_PREFIX='chunbong-cache-v2:';
-const shouldPersist=key=>{key=String(key);return key.startsWith('content:')||key.startsWith('notice-detail:')||key.startsWith('fanart-detail:')||key==='changelog-summary'};
+const shouldPersist=key=>{key=String(key);return key.startsWith('content:')||key.startsWith('home-overview:')||key.startsWith('notice-detail:')||key.startsWith('fanart-detail:')||key==='changelog-summary'||key==='changelog-history'};
 const read=key=>{const cached=memory.get(key);if(cached)return cached;if(!shouldPersist(key))return null;try{const stored=sessionStorage.getItem(CACHE_PREFIX+key);if(!stored)return null;const row=JSON.parse(stored);if(!row||typeof row.at!=='number'||!('value'in row))return null;memory.set(key,row);return row}catch{return null}};
 const write=(key,value)=>{const row={at:Date.now(),value};memory.set(key,row);if(shouldPersist(key))try{sessionStorage.setItem(CACHE_PREFIX+key,JSON.stringify(row))}catch{}return value};
 const clear=key=>{memory.delete(key);if(shouldPersist(key))try{sessionStorage.removeItem(CACHE_PREFIX+key)}catch{}};
-window.ChunbongCache={get(key,ttl=180000){const row=read(key);if(!row)return null;if(Date.now()-Number(row.at||0)>=ttl){clear(key);return null}return row.value},peek(key){const row=read(key);return row?row.value:null},set:write,clear,async fetchJson(key,url,{ttl=180000,force=false,headers={accept:'application/json'},staleIfError=false}={}){const stale=staleIfError?this.peek(key):null;if(!force){const cached=this.get(key,ttl);if(cached)return cached}try{const response=await fetch(url,{headers});if(!response.ok)throw new Error('HTTP '+response.status);return write(key,await response.json())}catch(error){if(staleIfError&&stale)return stale;throw error}}};
-const d=document,loadStyle=(h,k)=>{if(d.querySelector('link['+k+']'))return;const n=d.createElement('link');n.rel='stylesheet';n.href=h;n.setAttribute(k,'true');d.head.appendChild(n)},loadScript=s=>{if(d.querySelector('script[src="'+s+'"]'))return;const n=d.createElement('script');n.src=s;n.defer=1;d.head.appendChild(n)},runIdle=f=>'requestIdleCallback'in window?requestIdleCallback(f,{timeout:1800}):setTimeout(f,650);
-loadScript('site-health.js');runIdle(()=>loadScript('site-improvements.js?v=2'));
-const personalPriorityPages='|home|myhub|tarot|',loadPersonal=()=>{loadStyle('personal-hub.css','data-personal-hub-styles');loadScript('personal-hub.js')},page=d.body.dataset.page||'';
-personalPriorityPages.includes('|'+page+'|')?loadPersonal():runIdle(loadPersonal);runIdle(()=>loadScript('site-meta.js'));
+window.ChunbongCache={get(key,ttl=180000){const row=read(key);if(!row)return null;if(Date.now()-Number(row.at||0)>=ttl){clear(key);return null}return row.value},peek(key){return read(key)?.value??null},set:write,clear,async fetchJson(key,url,{ttl=180000,force=false,headers={accept:'application/json'},staleIfError=false}={}){const stale=staleIfError?this.peek(key):null;if(!force){const cached=this.get(key,ttl);if(cached)return cached}try{const response=await fetch(url,{headers});if(!response.ok)throw new Error('HTTP '+response.status);return write(key,await response.json())}catch(error){if(staleIfError&&stale)return stale;throw error}}};
 })();
-(()=>{const n=document.getElementById('main-nav');if(!n)return;const I=[['home','index.html','HOME'],['schedule','schedule.html','방송 일정'],['notice','notice.html','공지'],['vod','vod.html','다시보기'],['clips','clips.html','핫클립'],['fanart','fanart.html','팬아트'],['youtube','youtube.html','유튜브'],['tarot','tarot.html','TAROT'],['minigames','minigames.html','미니게임'],['contents','chunbong-contents.html','춘봉 콘텐츠'],['history','history.html','방송 이력'],['data','data.html','춘봉 데이터']];window.ChunbongNavigation={items:I.map(([key,href,label])=>({key,href,label}))};n.innerHTML=I.map(([k,h,t])=>`<a data-nav="${k}" href="${h}">${t}</a>`).join('')})();;
-(() => {
-  const nav = document.getElementById('main-nav');
-  const link = nav?.querySelector('[data-nav="minigames"]');
-  if (!nav || !link || link.closest('.nav-minigames')) return;
 
-  const wrapper = document.createElement('div');
-  wrapper.className = 'nav-minigames';
-  link.parentNode.insertBefore(wrapper, link);
-  wrapper.appendChild(link);
-  link.setAttribute('aria-haspopup', 'true');
-  link.setAttribute('aria-expanded', 'false');
+(()=>{const n=document.getElementById('main-nav');if(!n)return;const I=[['home','index.html','HOME'],['schedule','schedule.html','방송 일정'],['notice','notice.html','공지'],['vod','vod.html','다시보기'],['clips','clips.html','핫클립'],['fanart','fanart.html','팬아트'],['youtube','youtube.html','유튜브'],['tarot','tarot.html','TAROT'],['minigames','minigames.html','미니게임'],['contents','chunbong-contents.html','춘봉 콘텐츠'],['history','history.html','방송 이력'],['data','data.html','춘봉 데이터']];window.ChunbongNavigation={items:I.map(([key,href,label])=>({key,href,label}))};n.innerHTML=I.map(([k,h,t])=>`<a data-nav="${k}" href="${h}">${t}</a>`).join('')})();
 
-  const submenu = document.createElement('div');
-  submenu.className = 'nav-minigames-submenu';
-  submenu.setAttribute('role', 'menu');
-  submenu.setAttribute('aria-label', '미니게임 바로가기');
-  submenu.innerHTML =
-    '<a role="menuitem" href="chuntris.html"><span>춘트리스</span><small>TETRIS</small></a>' +
-    '<a role="menuitem" href="chunbak.html"><span>춘박게임</span><small>MERGE</small></a>' +
-    '<a role="menuitem" href="chungwagame.html"><span>춘과게임</span><small>SUM 10</small></a>' +
-    '<a role="menuitem" href="chuncortile.html"><span>춘컬타일</span><small>COLOR</small></a>';
-  wrapper.appendChild(submenu);
+(()=>{const nav=document.getElementById('main-nav'),link=nav?.querySelector('[data-nav="minigames"]');if(!nav||!link||link.closest('.nav-minigames'))return;const wrapper=document.createElement('div');wrapper.className='nav-minigames';link.parentNode.insertBefore(wrapper,link);wrapper.appendChild(link);link.setAttribute('aria-haspopup','true');link.setAttribute('aria-expanded','false');const submenu=document.createElement('div');submenu.className='nav-minigames-submenu';submenu.setAttribute('role','menu');submenu.setAttribute('aria-label','미니게임 바로가기');submenu.innerHTML='<a role="menuitem" href="chuntris.html"><span>춘트리스</span><small>TETRIS</small></a><a role="menuitem" href="chunbak.html"><span>춘박게임</span><small>MERGE</small></a><a role="menuitem" href="chungwagame.html"><span>춘과게임</span><small>SUM 10</small></a><a role="menuitem" href="chuncortile.html"><span>춘컬타일</span><small>COLOR</small></a>';wrapper.appendChild(submenu);const set=v=>link.setAttribute('aria-expanded',String(v));wrapper.addEventListener('mouseenter',()=>set(true));wrapper.addEventListener('mouseleave',()=>set(false));wrapper.addEventListener('focusin',()=>set(true));wrapper.addEventListener('focusout',e=>{if(!wrapper.contains(e.relatedTarget))set(false)})})();
 
-  const setExpanded = value => link.setAttribute('aria-expanded', String(value));
-  wrapper.addEventListener('mouseenter', () => setExpanded(true));
-  wrapper.addEventListener('mouseleave', () => setExpanded(false));
-  wrapper.addEventListener('focusin', () => setExpanded(true));
-  wrapper.addEventListener('focusout', event => {
-    if (!wrapper.contains(event.relatedTarget)) setExpanded(false);
-  });
-})();
-(() => {
-  const nav=document.getElementById('main-nav');
-  if(!nav||nav.querySelector('.nav-group')) return;
-  const NAV_GROUPS=[{label:'방송',items:['schedule','notice']},{label:'영상',items:['vod','clips','youtube']},{label:'팬존',items:['fanart','tarot']},{label:'기록',items:['contents','history','data']}];
-  const current=document.body.dataset.page||'';
-  NAV_GROUPS.forEach(group=>{
-    const links=group.items.map(key=>nav.querySelector('[data-nav="'+key+'"]')).filter(Boolean);
-    if(!links.length) return;
-    const wrap=document.createElement('div');
-    const currentSection=group.items.includes(current);
-    wrap.className='nav-group'+(currentSection?' active is-current-section':'');
-    const trigger=document.createElement('button');
-    trigger.type='button';trigger.className='nav-group-trigger';trigger.textContent=group.label;
-    trigger.setAttribute('aria-haspopup','true');trigger.setAttribute('aria-expanded','false');
-    const menu=document.createElement('div');
-    menu.className='nav-group-submenu';menu.setAttribute('role','menu');menu.setAttribute('aria-label',group.label+' 메뉴');
-    const first=links[0];
-    first.parentNode.insertBefore(wrap,first);
-    wrap.append(trigger,menu);
-    links.forEach(link=>{link.setAttribute('role','menuitem');menu.appendChild(link)});
-    const setOpen=open=>{wrap.classList.toggle('open',open);trigger.setAttribute('aria-expanded',String(open))};
-    trigger.addEventListener('click',()=>setOpen(!wrap.classList.contains('open')));
-    wrap.addEventListener('mouseenter',()=>setOpen(true));
-    wrap.addEventListener('mouseleave',()=>setOpen(false));
-    wrap.addEventListener('focusin',()=>setOpen(true));
-    wrap.addEventListener('focusout',event=>{if(!wrap.contains(event.relatedTarget))setOpen(false)});
-    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&wrap.classList.contains('open')){setOpen(false);trigger.focus()}});
-  });
-})();
-(() => {
-  const STORAGE_KEY = 'chunbong-theme';
-  const root = document.documentElement;
-  const header = document.querySelector('.site-header');
-  if (!document.querySelector('link[data-theme-styles]')) {
-    const stylesheet = document.createElement('link');
-    stylesheet.rel = 'stylesheet';
-    stylesheet.href = 'theme.css';
-    stylesheet.dataset.themeStyles = 'true';
-    document.head.appendChild(stylesheet);
-  }
+(()=>{const nav=document.getElementById('main-nav');if(!nav||nav.querySelector('.nav-group'))return;const groups=[{label:'방송',items:['schedule','notice']},{label:'영상',items:['vod','clips','youtube']},{label:'팬존',items:['fanart','tarot']},{label:'기록',items:['contents','history','data']}],current=document.body.dataset.page||'';groups.forEach(group=>{const links=group.items.map(key=>nav.querySelector('[data-nav="'+key+'"]')).filter(Boolean);if(!links.length)return;const wrap=document.createElement('div');wrap.className='nav-group'+(group.items.includes(current)?' active is-current-section':'');const trigger=document.createElement('button');trigger.type='button';trigger.className='nav-group-trigger';trigger.textContent=group.label;trigger.setAttribute('aria-haspopup','true');trigger.setAttribute('aria-expanded','false');const menu=document.createElement('div');menu.className='nav-group-submenu';menu.setAttribute('role','menu');menu.setAttribute('aria-label',group.label+' 메뉴');links[0].parentNode.insertBefore(wrap,links[0]);wrap.append(trigger,menu);links.forEach(a=>{a.setAttribute('role','menuitem');menu.appendChild(a)});const set=open=>{wrap.classList.toggle('open',open);trigger.setAttribute('aria-expanded',String(open))};trigger.addEventListener('click',()=>set(!wrap.classList.contains('open')));wrap.addEventListener('mouseenter',()=>set(true));wrap.addEventListener('mouseleave',()=>set(false));wrap.addEventListener('focusin',()=>set(true));wrap.addEventListener('focusout',e=>{if(!wrap.contains(e.relatedTarget))set(false)});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&wrap.classList.contains('open')){set(false);trigger.focus()}})})})();
 
-  let saved = 'dark';
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === 'light' || stored === 'dark') saved = stored;
-  } catch (_) {}
+(()=>{const KEY='chunbong-theme',root=document.documentElement,header=document.querySelector('.site-header');if(!document.querySelector('link[data-theme-styles]')){const style=document.createElement('link');style.rel='stylesheet';style.href='theme.css';style.dataset.themeStyles='true';document.head.appendChild(style)}let saved='dark';try{const stored=localStorage.getItem(KEY);if(stored==='light'||stored==='dark')saved=stored}catch{}const apply=theme=>{const next=theme==='light'?'light':'dark';root.dataset.theme=next;const button=document.querySelector('.theme-toggle');if(button){const light=next==='light';button.setAttribute('aria-pressed',String(light));button.setAttribute('aria-label',light?'다크 모드로 전환':'라이트 모드로 전환');button.title=light?'다크 모드로 전환':'라이트 모드로 전환';const icon=button.querySelector('.theme-toggle-icon');if(icon)icon.textContent=light?'🌙':'☀'}};apply(saved);if(!header||header.querySelector('.theme-toggle'))return;const button=document.createElement('button');button.type='button';button.className='theme-toggle';button.innerHTML='<span class="theme-toggle-icon" aria-hidden="true"></span>';button.addEventListener('click',()=>{const next=root.dataset.theme==='light'?'dark':'light';try{localStorage.setItem(KEY,next)}catch{}apply(next)});header.insertBefore(button,header.querySelector('.header-live')||null);apply(saved)})();
 
-  const applyTheme = (theme) => {
-    const next = theme === 'light' ? 'light' : 'dark';
-    root.dataset.theme = next;
-    const button = document.querySelector('.theme-toggle');
-    if (button) {
-      const light = next === 'light';
-      button.setAttribute('aria-pressed', String(light));
-      button.setAttribute('aria-label', light ? '다크 모드로 전환' : '라이트 모드로 전환');
-      button.title = light ? '다크 모드로 전환' : '라이트 모드로 전환';
-      const icon = button.querySelector('.theme-toggle-icon');
-      if (icon) icon.textContent = light ? '🌙' : '☀';
-    }
-  };
+(()=>{const header=document.querySelector('.site-header');if(!header||header.querySelector('.changelog-button'))return;const link=document.createElement('a');link.className='changelog-button';link.href='changelog.html';link.setAttribute('aria-label','업데이트 일지');link.title='업데이트 일지';if(document.body.dataset.page==='changelog')link.setAttribute('aria-current','page');link.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"></path><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.5-2-3.4-2.4 1a8 8 0 0 0-1.7-1L15 3.5h-4L10.7 6A8 8 0 0 0 9 7L6.6 6.1l-2 3.4 2 1.5a7.6 7.6 0 0 0 0 2l-2 1.5 2 3.4L9 17a8 8 0 0 0 1.7 1l.3 2.5h4l.3-2.5a8 8 0 0 0 1.7-1l2.4.9 2-3.4-2-1.5Z"></path></svg><span>업데이트 일지</span><i class="changelog-unread-dot" hidden aria-hidden="true"></i>';const theme=header.querySelector('.theme-toggle');if(theme)theme.insertAdjacentElement('afterend',link);else header.insertBefore(link,header.querySelector('.nav-toggle')||null)})();
 
-  applyTheme(saved);
-  if (!header || header.querySelector('.theme-toggle')) return;
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'theme-toggle';
-  button.innerHTML = '<span class="theme-toggle-icon" aria-hidden="true"></span>';
-  button.addEventListener('click', () => {
-    const next = root.dataset.theme === 'light' ? 'dark' : 'light';
-    try { localStorage.setItem(STORAGE_KEY, next); } catch (_) {}
-    applyTheme(next);
-  });
-  const live = header.querySelector('.header-live');
-  header.insertBefore(button, live || null);
-  applyTheme(saved);
-})();
-(() => {
-  const header = document.querySelector('.site-header');
-  if (!header || header.querySelector('.changelog-button')) return;
-  const themeToggle = header.querySelector('.theme-toggle');
-  const navToggle = header.querySelector('.nav-toggle');
-  const link = document.createElement('a');
-  link.className = 'changelog-button';
-  link.href = 'changelog.html';
-  link.setAttribute('aria-label', '업데이트 일지');
-  link.title = '업데이트 일지';
-  if (document.body.dataset.page === 'changelog') link.setAttribute('aria-current', 'page');
-  link.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"></path><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.5-2-3.4-2.4 1a8 8 0 0 0-1.7-1L15 3.5h-4L10.7 6A8 8 0 0 0 9 7L6.6 6.1l-2 3.4 2 1.5a7.6 7.6 0 0 0 0 2l-2 1.5 2 3.4L9 17a8 8 0 0 0 1.7 1l.3 2.5h4l.3-2.5a8 8 0 0 0 1.7-1l2.4.9 2-3.4-2-1.5Z"></path></svg><span>업데이트 일지</span><i class="changelog-unread-dot" hidden aria-hidden="true"></i>';
-  if (themeToggle) themeToggle.insertAdjacentElement('afterend', link);
-  else header.insertBefore(link, navToggle || null);
-
-  const CHANGELOG_SEEN_KEY = 'chunbong-changelog-seen-v2';
-  const unreadDot = link.querySelector('.changelog-unread-dot');
-  const setUnread = unread => {
-    if (unreadDot) unreadDot.hidden = !unread;
-    link.classList.toggle('has-unread', Boolean(unread));
-    link.setAttribute('aria-label', unread ? '업데이트 일지 · 새 업데이트 있음' : '업데이트 일지');
-    link.title = unread ? '업데이트 일지 · 새 업데이트 있음' : '업데이트 일지';
-  };
-  const markSeen = key => {
-    if (!key) return;
-    try { localStorage.setItem(CHANGELOG_SEEN_KEY, String(key)); } catch (_) {}
-    setUnread(false);
-  };
-
-  document.addEventListener('chunbong:changelog-ready', event => {
-    markSeen(event.detail?.latestKey || '');
-  });
-
-  const CHANGELOG_REFRESH_MS = 60 * 1000;
-  let changelogCheckAt = 0;
-  let changelogCheckPromise = null;
-
-  const checkChangelogUnread = ({ force = false } = {}) => {
-    const now = Date.now();
-    if (!force && changelogCheckAt && now - changelogCheckAt < CHANGELOG_REFRESH_MS) {
-      return changelogCheckPromise || Promise.resolve();
-    }
-    if (changelogCheckPromise) return changelogCheckPromise;
-    changelogCheckAt = now;
-    changelogCheckPromise = (async () => {
-      try {
-        const payload = window.ChunbongCache
-          ? await window.ChunbongCache.fetchJson('changelog-summary','/api/content?type=changelog-history&summary=1',{ttl:CHANGELOG_REFRESH_MS,force})
-          : await (async()=>{const response=await fetch('/api/content?type=changelog-history&summary=1',{headers:{accept:'application/json'},cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);return response.json()})();
-        const latestKey = payload.latest?.sha || payload.latest?.shortSha || '';
-        if (!latestKey) return setUnread(false);
-        if (document.body.dataset.page === 'changelog') return markSeen(latestKey);
-        let seen = '';
-        try { seen = localStorage.getItem(CHANGELOG_SEEN_KEY) || ''; } catch (_) {}
-        setUnread(seen !== latestKey);
-      } catch (_) {
-        setUnread(false);
-      } finally {
-        changelogCheckPromise = null;
-      }
-    })();
-    return changelogCheckPromise;
-  };
-
-  void checkChangelogUnread();
-  window.addEventListener('focus', () => { void checkChangelogUnread(); });
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') void checkChangelogUnread();
-  });
-})();
-(()=>{const h=document.querySelector('.site-header');if(!h)return;h.querySelectorAll('.header-live[href*="sooplive.com"]').forEach(n=>n.remove());const load=()=>{if(!document.querySelector('link[data-activity-center-styles]')){const n=document.createElement('link');n.rel='stylesheet';n.href='activity-center.css';n.dataset.activityCenterStyles='true';document.head.appendChild(n)}if(!document.querySelector('script[data-activity-center-runtime]')){const n=document.createElement('script');n.src='activity-center.js';n.defer=true;n.dataset.activityCenterRuntime='true';document.body.appendChild(n)}};'requestIdleCallback'in window?requestIdleCallback(load,{timeout:1800}):setTimeout(load,650)})();;
-
+(()=>{const start=()=>{if(document.querySelector('script[data-site-shell-idle]'))return;const n=document.createElement('script');n.src='site-shell-idle.js';n.defer=true;n.dataset.siteShellIdle='true';document.head.appendChild(n)};'requestIdleCallback'in window?requestIdleCallback(start,{timeout:900}):setTimeout(start,350)})();

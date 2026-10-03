@@ -6,6 +6,8 @@ const retry=read('.github/workflows/production-git-auto-retry.yml');
 const prebuilt=read('.github/workflows/production-prebuilt-recovery.yml');
 const sync=read('.github/workflows/production-version-sync.yml');
 const sw=read('service-worker.js');
+const shell=read('site-shell.js');
+const shellIdle=read('site-shell-idle.js');
 
 assert.match(retry,/cron:\s*'17 \* \* \* \*'/,'production retry window must be checked hourly');
 assert.match(retry,/contents:\s*write/,'Git retry needs permission to create retry commit');
@@ -36,8 +38,10 @@ assert.match(prebuilt,/AGE_SECONDS.*86400/s,'prebuilt recovery must wait 24 hour
 
 assert.match(sync,/production-readiness-gate\.mjs/,'production sync should share the readiness gate');
 assert.match(sync,/steps\.production_gate\.outputs\.blocked == 'true'/,'rate-limited production sync should finish as a visible blocked state instead of a code failure');
-assert.match(sw,/runtime-v34/,'PWA cache version must include the latest mobile app shell and alert assets');
-assert.match(sw,/site-improvements\.js/,'PWA shell must cache shared improvement runtime');
-assert.match(sw,/site-improvements\.css/,'PWA shell must cache shared improvement styles');
+assert.match(sw,/runtime-v36/,'PWA cache version must follow the current optimized app-shell generation');
+assert.match(shell,/site-shell-idle\.js/,'core PWA shell must still attach the deferred shared runtime');
+assert.match(shellIdle,/site-improvements\.js/,'deferred shared runtime must still load site improvements after startup');
+assert.doesNotMatch(sw,/['"]\/site-improvements\.js['"]/,'shared improvement runtime must stay out of the initial PWA app-shell precache');
+assert.doesNotMatch(sw,/['"]\/site-improvements\.css['"]/,'shared improvement styles must stay out of the initial PWA app-shell precache');
 
-console.log('production auto retry + recovery guard + PWA cache regression passed');
+console.log('production auto retry + recovery guard + slim PWA cache regression passed');

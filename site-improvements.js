@@ -292,6 +292,7 @@
   }
 
   function setupNavigationPrefetch(){
+    if(window.ChunbongNavigationPrefetch)return;
     const warmed=new Set();
     const warm=target=>{
       const anchor=target?.closest?.('a[href]');

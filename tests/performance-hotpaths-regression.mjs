@@ -7,6 +7,7 @@ const fanartPage=read('page-fanart.js');
 const gallery=read('fanart-gallery.js');
 const api=read('api/content.js');
 const shell=read('site-shell.js');
+const shellIdle=read('site-shell-idle.js');
 const sw=read('service-worker.js');
 const vercel=JSON.parse(read('vercel.json'));
 const chunbakCore=read('chunbak-game-core.js');
@@ -27,9 +28,10 @@ assert.match(sw,/\['script','style'\][\s\S]*boundedNetworkFirst\(request, event,
 for(const heavy of ['/personal-hub.js','/chunbong-contents.js','/activity-center.js','/daily-fortune.js']){
   assert.ok(!sw.includes("'"+heavy+"'"),heavy+' should not inflate the initial PWA install');
 }
-assert.match(shell,/runIdle\(\(\)=>loadScript\('site-improvements\.js(?:\?v=\d+)?'\)\)/,'site improvements should defer to idle time');
-assert.doesNotMatch(shell,/personalPriorityPages='[^']*fanart/,'fanart should not synchronously load personal hub');
-assert.doesNotMatch(shell,/personalPriorityPages='[^']*minigames/,'minigames should not synchronously load personal hub');
+assert.match(shell,/site-shell-idle\.js/,'core shell must delegate noncritical work to the idle runtime');
+assert.match(shellIdle,/schedule\(\(\)=>loadScript\('site-improvements\.js(?:\?v=\d+)?'\)/,'site improvements should defer to idle time');
+assert.doesNotMatch(shellIdle,/\['home','myhub','tarot'\][^\n]*fanart/,'fanart should not receive priority personal-hub loading');
+assert.doesNotMatch(shellIdle,/\['home','myhub','tarot'\][^\n]*minigames/,'minigames should not receive priority personal-hub loading');
 
 const jsCache=(vercel.headers||[]).find(row=>row.source==='/(.*).js');
 const cssCache=(vercel.headers||[]).find(row=>row.source==='/(.*).css');

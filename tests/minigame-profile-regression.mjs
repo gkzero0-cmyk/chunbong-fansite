@@ -3,48 +3,28 @@ import fs from 'node:fs';
 
 const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const html=read('minigames.html');
+const loader=read('minigame-profile-loader.js');
 const js=read('minigame-profile.js');
 const css=read('minigame-profile.css');
 const sw=read('service-worker.js');
-
+assert.doesNotThrow(()=>new Function(loader),'minigame profile loader must remain valid JavaScript');
 assert.doesNotThrow(()=>new Function(js),'minigame profile runtime must remain valid JavaScript');
 assert.match(html,/data-minigame-profile/,'minigames hub must include local record profile');
-assert.ok(html.indexOf('class="minigame-grid"') < html.indexOf('data-minigame-profile'),'game choices should appear before personal records');
-assert.match(html,/data-record="chuntris"/);
-assert.match(html,/data-record="chunbak"/);
-assert.match(html,/data-record="chungwa"/);
-assert.match(html,/data-record="chuncortile"/);
-assert.match(html,/data-profile-total-plays/,'minigame profile must show total play count');
-assert.match(html,/data-profile-achievements/,'minigame profile must show earned achievement count');
-assert.match(html,/data-profile-recent/,'minigame profile must show most recent game');
-assert.match(html,/data-profile-achievement-list/,'minigame profile must expose achievement badges');
-assert.match(html,/src="minigame-profile\.js"/,'minigames hub must load profile runtime');
-assert.match(html,/href="minigame-profile\.css"/,'minigames hub must load profile styles');
-
-for(const key of [
-  'chuntris.bestScore.classic.v1',
-  'chuntris.bestTime.sprint40.v1',
-  'chuntris.bestScore.score180.normal.v1',
-  'chunbak:best:v1',
-  'chungwagame-best-v2',
-  'chuncortile.best.v1'
-]){
-  assert.ok(js.includes(key),'profile missing local record key '+key);
-}
-assert.match(js,/textContent=value/,'profile must render stored values via textContent');
-assert.match(js,/window\.addEventListener\('storage',render\)/,'profile must refresh across tabs');
-assert.match(js,/visibilitychange/,'profile must refresh when returning from a game');
-assert.match(js,/ChunbongPersonal\?\.gameSnapshot/,'profile must merge personal play history and achievements');
-assert.match(js,/chunbong:personal-updated/,'profile must refresh when personal game history changes');
-assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/,'desktop record grid must show four games');
-assert.match(css,/\.minigame-profile-extra/,'unified profile extra stat styles missing');
-assert.match(css,/\.minigame-achievement-strip/,'achievement badge strip styles missing');
-assert.match(css,/@media\(max-width:640px\)/,'record profile must have a mobile layout');
-assert.match(sw,/runtime-v35/,'PWA cache must include the latest minigame profile, alert, and static-asset integrity changes');
-assert.ok(!sw.includes("'/minigame-profile.js'"),'minigame profile runtime should runtime-cache after first minigame visit');
-assert.ok(!sw.includes("'/minigame-profile.css'"),'minigame profile styles should runtime-cache after first minigame visit');
-
-assert.match(html,/data-profile-streak/,'daily challenge streak stat missing');
-assert.match(html,/data-profile-daily-challenge/,'daily challenge card missing');
-assert.match(js,/ChunbongPersonal\?\.dailyChallenge/,'profile must render the daily challenge');
+assert.ok(html.indexOf('class="minigame-grid"')<html.indexOf('data-minigame-profile'),'game choices should appear before personal records');
+for(const key of ['chuntris','chunbak','chungwa','chuncortile'])assert.match(html,new RegExp('data-record="'+key+'"'));
+assert.match(html,/data-profile-total-plays/);assert.match(html,/data-profile-achievements/);assert.match(html,/data-profile-recent/);assert.match(html,/data-profile-achievement-list/);
+assert.match(html,/src="minigame-profile-loader\.js"/,'minigames hub must load the small profile loader');
+assert.doesNotMatch(html,/src="minigame-profile\.js"/,'heavy profile runtime must not be parsed on the initial hub path');
+assert.doesNotMatch(html,/src="content\.js"/,'general content bundle must stay off the minigames hub');
+assert.ok(loader.length<1500,'minigame profile loader must stay below 1.5KB');
+assert.match(loader,/rootMargin:'600px 0px'/,'profile should warm near the viewport');
+assert.match(loader,/requestIdleCallback\(load,\{timeout:1500\}\)/,'profile should have a bounded idle load');
+assert.match(loader,/setTimeout\(load,700\)/,'profile should have a non-idle fallback');
+assert.match(loader,/minigame-profile\.js/,'loader must still load the full record runtime');
+for(const key of ['chuntris.bestScore.classic.v1','chuntris.bestTime.sprint40.v1','chuntris.bestScore.score180.normal.v1','chunbak:best:v1','chungwagame-best-v2','chuncortile.best.v1'])assert.ok(js.includes(key),'profile missing local record key '+key);
+assert.match(js,/textContent=value/);assert.match(js,/window\.addEventListener\('storage',render\)/);assert.match(js,/visibilitychange/);assert.match(js,/ChunbongPersonal\?\.gameSnapshot/);assert.match(js,/chunbong:personal-updated/);
+assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);assert.match(css,/\.minigame-profile-extra/);assert.match(css,/\.minigame-achievement-strip/);assert.match(css,/@media\(max-width:640px\)/);
+assert.match(sw,/runtime-v36/,'PWA cache generation must reflect the performance release');
+assert.ok(!sw.includes("'/minigame-profile.js'"));assert.ok(!sw.includes("'/minigame-profile.css'"));assert.ok(!sw.includes("'/minigame-profile-loader.js'"));
+assert.match(html,/data-profile-streak/);assert.match(html,/data-profile-daily-challenge/);assert.match(js,/ChunbongPersonal\?\.dailyChallenge/);
 console.log('minigame local profile regression passed');

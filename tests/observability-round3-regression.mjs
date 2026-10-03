@@ -53,7 +53,10 @@ assert.match(siteHealth,/0\.02/,'client health sampling should stay at 2%');
 assert.match(siteHealth,/client-health/);
 assert.match(siteHealth,/keepalive|sendBeacon/);
 const shell=read('site-shell.js');
-assert.match(shell,/loadScript\(['"]site-health\.js['"]\)/,'shared site shell must actually load the client health sampler');
+const shellIdle=read('site-shell-idle.js');
+assert.match(shell,/site-shell-idle\.js/,'shared site shell must still attach the deferred runtime');
+assert.match(shellIdle,/loadScript\(['"]site-health\.js['"]\)/,'deferred shared runtime must load the client health sampler');
+assert.match(shellIdle,/schedule\(\(\)=>loadScript\(['"]site-health\.js['"]\)/,'health sampler must stay off the initial critical path');
 
 const contentApi=read('api/content.js');
 assert.match(contentApi,/type==='client-health'/,'public client health ingestion route should exist');

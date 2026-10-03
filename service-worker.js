@@ -2,7 +2,7 @@
 const CACHE_PREFIX = 'chunbong-pwa-';
 const MEDIA_CACHE_PREFIX = 'chunbong-media-';
 // Previous deployed cache generation: runtime-v34. Kept as a migration note only.
-const FALLBACK_VERSION = 'runtime-v35';
+const FALLBACK_VERSION = 'runtime-v36';
 const requestedVersion = new URL(self.location.href).searchParams.get('v') || FALLBACK_VERSION;
 const BUILD_VERSION = String(requestedVersion).replace(/[^a-zA-Z0-9._-]/g,'-').slice(0,48) || FALLBACK_VERSION;
 const CACHE_NAME = CACHE_PREFIX + BUILD_VERSION;
@@ -22,16 +22,11 @@ const APP_SHELL = [
   '/theme-init.js',
   '/site-design-system.css',
   '/site-quality.css',
-  '/site-improvements.css',
   '/mobile-site.css',
   '/mobile-runtime-loader.js',
   '/mobile-site.js',
   '/page.js',
   '/site-shell.js',
-  '/site-meta.js',
-  '/site-health.js',
-  '/site-improvements.js',
-  '/content.js',
   '/manifest.webmanifest',
   '/assets/chunbong-main.webp'
 ]
