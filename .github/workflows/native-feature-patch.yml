@@ -65,6 +65,21 @@ jobs:
               source=source.replace(old,new)
           path.write_text(source)
           PY
+          elif [ "$task" = "task2-browser-wait" ]; then
+            python3 - <<'PY'
+          from pathlib import Path
+          path=Path('tests/chunbong-contents-browser-smoke.mjs')
+          source=path.read_text()
+          old_success="""    await first.locator('[data-post-body]').waitFor({state:'visible'});\n    assert.match((await first.locator('[data-source-notice-detail]').textContent())||'',/본문 테스트/,'preview 본문은 같은 카드 내부에 보여야 합니다');"""
+          new_success="""    await first.locator('[data-post-body]').waitFor({state:'visible'});\n    await first.locator('[data-source-notice-detail]').getByText('본문 테스트 · 같은 카드 안에서 표시').waitFor({state:'visible'});\n    assert.match((await first.locator('[data-source-notice-detail]').textContent())||'',/본문 테스트/,'preview 본문은 같은 카드 내부에 보여야 합니다');"""
+          old_failure="""    await failed.locator('[data-post-body]').waitFor({state:'visible'});\n    assert.match((await failed.locator('[data-source-notice-detail]').textContent())||'',/가져오지 못했습니다|저장되어 있지 않아/,'preview 실패 상태도 기존 카드 내부에 남아야 합니다');"""
+          new_failure="""    await failed.locator('[data-post-body]').waitFor({state:'visible'});\n    await failed.locator('[data-source-notice-detail]').getByText('게시글 본문을 가져오지 못했습니다.').waitFor({state:'visible'});\n    assert.match((await failed.locator('[data-source-notice-detail]').textContent())||'',/가져오지 못했습니다|저장되어 있지 않아/,'preview 실패 상태도 기존 카드 내부에 남아야 합니다');"""
+          for old,new,label in [(old_success,new_success,'success wait'),(old_failure,new_failure,'failure wait')]:
+              if source.count(old)!=1:
+                  raise SystemExit(f'expected one {label} anchor, found {source.count(old)}')
+              source=source.replace(old,new)
+          path.write_text(source)
+          PY
           else
             node .github/scripts/native-feature-patch.mjs
           fi
