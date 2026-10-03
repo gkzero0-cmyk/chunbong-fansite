@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-const source=fs.readFileSync(new URL('../chunbong-content-collector.user.js',import.meta.url),'utf8');
+const source=fs.readFileSync(new URL('../collector-runtime.js',import.meta.url),'utf8');
 
 assert.match(source,/AUTO_OPEN_CLAIMS_KEY/,'auto discovery must keep a shared cross-tab claim registry');
 assert.match(source,/AUTO_OPEN_MAX_ACTIVE\s*=\s*1/,'automatic discovery must allow only one active capture tab');
