@@ -129,10 +129,11 @@ function cardMarkup(row,index){
   return`<article class="archive-post-card" data-archive-post-card data-source-url="${escapeHtml(url)}"><div class="archive-post-card-head"><span class="archive-post-index">${String(index+1).padStart(2,'0')}</span><div class="archive-post-main"><strong data-post-title>${escapeHtml(row.title||'게시글')}</strong><small>${escapeHtml(row.type||'post')} · ${escapeHtml(date)}</small></div><div class="archive-post-actions">${previewable?'<button type="button" data-source-preview-toggle aria-expanded="false">본문 펼치기</button>':''}${url?`<a data-source-external-link="true" href="${escapeHtml(url)}" target="_blank" rel="noreferrer noopener">원문 보기 ↗</a>`:''}</div></div>${previewable?'<div class="archive-post-detail" data-source-notice-detail hidden></div>':''}</article>`;
 }
 function normalizePanel(panel){
-  if(!panel||panel.dataset.postsNormalized==='true')return false;
+  if(!panel)return false;
   const heading=[...panel.querySelectorAll('h2')].find(node=>node.textContent.trim()==='게시글');const list=panel.querySelector('.archive-source-list');if(!heading||!list)return false;
+  if(list.dataset.postsNormalized==='true')return false;
   const rows=normalizePostRows({timeline:collectRenderedRows(list),media:[]});
-  list.classList.add('archive-post-list');list.innerHTML=rows.map(cardMarkup).join('');list.dataset.archivePostCount=String(rows.length);panel.dataset.postsNormalized='true';return true;
+  list.classList.add('archive-post-list');list.innerHTML=rows.map(cardMarkup).join('');list.dataset.archivePostCount=String(rows.length);list.dataset.postsNormalized='true';return true;
 }
 async function toggleCard(button){
   const card=button.closest('[data-archive-post-card]');if(!card)return;const detail=card.querySelector('[data-source-notice-detail]');if(!detail)return;
