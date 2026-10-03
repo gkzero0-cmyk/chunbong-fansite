@@ -38,6 +38,17 @@ jobs:
               raise SystemExit(f'expected one task2 test route anchor, found {source.count(old)}')
           path.write_text(source.replace(old,new))
           PY
+          elif [ "$task" = "task2-render" ]; then
+            python3 - <<'PY'
+          from pathlib import Path
+          path=Path('chunbong-contents.js')
+          source=path.read_text()
+          old='''function renderPosts(item){const rows=[...(item.timeline||[]),...(item.media||[])].filter(r=>['notice','post','article','reference'].includes(r.type));if(!rows.length)return'<div class="archive-panel"><h2>게시글</h2><p>확인된 공지와 관련 게시글을 준비하고 있습니다.</p></div>';return`<div class="archive-panel"><h2>게시글</h2><div class="archive-source-list">${rows.map(r=>`<a href="${escapeHtml(safeUrl(r.url))}" target="_blank" rel="noreferrer"><span><strong>${escapeHtml(r.title)}</strong><small>${escapeHtml(materialTypeLabel(r.type))} · ${escapeHtml(formatDate(r.date,r.datePrecision))}</small></span><b>↗</b></a>`).join('')}</div></div>`}'''
+          new='''function renderPosts(item){const rows=normalizePostRows(item);if(!rows.length)return'<div class="archive-panel"><h2>게시글</h2><p>확인된 공지와 관련 게시글을 준비하고 있습니다.</p></div>';return`<div class="archive-panel"><h2>게시글</h2><div class="archive-source-list archive-post-list">${rows.map((r,index)=>{const rawUrl=String(r.url||'').trim(),url=rawUrl?safeUrl(rawUrl):'',bodyId=`archive-post-body-${index}`,key=postCanonicalKey(r);return`<article class="archive-post-card" data-archive-post-card data-post-key="${escapeHtml(key)}" data-source-url="${escapeHtml(url)}"><div class="archive-post-card-head"><button class="archive-post-toggle" type="button" data-post-toggle aria-expanded="false" aria-controls="${escapeHtml(bodyId)}"><span class="notice-main"><small data-source-notice-meta>${escapeHtml(materialTypeLabel(r.type))} · ${escapeHtml(formatDate(r.date,r.datePrecision))}</small><strong data-source-notice-title>${escapeHtml(r.title||'게시글')}</strong></span><span class="notice-action"><span class="notice-state-label">본문 펼치기</span><span class="notice-chevron" aria-hidden="true">⌄</span></span></button>${url?`<a class="archive-post-source" data-source-external-link="true" href="${escapeHtml(url)}" target="_blank" rel="noreferrer noopener">원문 보기 ↗</a>`:''}</div><div class="archive-post-body" id="${escapeHtml(bodyId)}" data-post-body hidden><div data-source-notice-detail><div class="archive-source-notice-empty">본문 펼치기를 누르면 저장된 본문과 이미지를 확인할 수 있습니다.</div></div></div></article>`}).join('')}</div></div>`}'''
+          if source.count(old)!=1:
+              raise SystemExit(f'expected one renderPosts anchor, found {source.count(old)}')
+          path.write_text(source.replace(old,new))
+          PY
           else
             node .github/scripts/native-feature-patch.mjs
           fi
