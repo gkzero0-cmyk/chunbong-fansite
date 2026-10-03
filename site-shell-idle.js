@@ -36,9 +36,10 @@ const page=document.body?.dataset?.page||'';
 const loadPersonal=()=>{loadStyle('personal-hub.css','data-personal-hub-styles');loadScript('personal-hub.js','data-personal-hub-runtime')};
 schedule(loadPersonal,{timeout:['home','myhub','tarot'].includes(page)?900:2600});
 
+const CHANGELOG_REFRESH_MS = 60 * 1000;
 const changelogLink=document.querySelector('.changelog-button');
 if(changelogLink){
-  const KEY='chunbong-changelog-seen-v2',dot=changelogLink.querySelector('.changelog-unread-dot'),REFRESH=60000;
+  const KEY='chunbong-changelog-seen-v2',dot=changelogLink.querySelector('.changelog-unread-dot'),REFRESH=CHANGELOG_REFRESH_MS;
   let at=0,pending=null;
   const setUnread=value=>{if(dot)dot.hidden=!value;changelogLink.classList.toggle('has-unread',!!value);const text=value?'업데이트 일지 · 새 업데이트 있음':'업데이트 일지';changelogLink.setAttribute('aria-label',text);changelogLink.title=text};
   const markSeen=key=>{if(key)try{localStorage.setItem(KEY,String(key))}catch{};setUnread(false)};
