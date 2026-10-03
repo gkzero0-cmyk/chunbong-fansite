@@ -80,3 +80,15 @@ test('public cleanup is scoped to the survival season only',()=>{
   assert.equal(publicItem.timeline.length,1);
   assert.equal(publicItem.media.length,1);
 });
+
+test('public survival API reuses the known duplicate recruitment thumbnail without mutating stored rows',()=>{
+  const thumbnail='https://stimg.sooplive.com/NORMAL_BBS/3/24883333/72271790804311879.png';
+  const target={...material('soop-auth-post-208562045','그냥서버 적자생존 추가 입주 모집 공지'),date:'2026-10-01'};
+  const duplicate={...material('auto-soop-post-208562077','🦁 그냥서버: 적자생존 추가입주 모집 공지'),date:'2026-10-01',thumbnail};
+  const original={...sourceItem(),timeline:[target,duplicate]};
+  const publicItem=toPublicArchiveItem(original);
+  const recovered=publicItem.timeline.find(row=>row.id==='soop-auth-post-208562045');
+  assert.equal(recovered?.thumbnail,thumbnail,'authenticated copy should reuse the already captured duplicate image');
+  assert.equal(original.timeline[0].thumbnail,'','public correction must not mutate the stored authenticated row');
+  assert.equal(original.timeline[1].thumbnail,thumbnail,'public correction must not mutate the duplicate source row');
+});
