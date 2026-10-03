@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const helper=fs.readFileSync(new URL('../operator-collector-install-helper.js',import.meta.url),'utf8');
+const operatorEntry=fs.readFileSync(new URL('../operator-redis-diagnostics.js',import.meta.url),'utf8');
 const vercel=JSON.parse(fs.readFileSync(new URL('../vercel.json',import.meta.url),'utf8'));
 
 test('collector update uses a native userscript link instead of scripted navigation',()=>{
@@ -18,4 +19,8 @@ test('collector userscript is explicitly served without stale caching',()=>{
   assert.match(cache,/no-cache/i);
   assert.match(cache,/no-store/i);
   assert.match(cache,/must-revalidate/i);
+});
+
+test('operator entry cache-busts the runtime-aware collector install helper',()=>{
+  assert.match(operatorEntry,/operator-collector-install-helper\.js\?v=2/);
 });
