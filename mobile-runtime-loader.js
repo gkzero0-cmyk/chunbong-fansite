@@ -2,6 +2,8 @@
 const d=document,m=matchMedia('(max-width:760px)'),s=matchMedia('(display-mode: standalone)'),p=new URLSearchParams(location.search).get('source')==='pwa',like=()=>m.matches||s.matches||navigator.standalone===true||p,q=x=>d.querySelector(x),add=(u,a)=>{if(q(`script[${a}]`))return;const e=d.createElement('script');e.src=u;e.defer=true;e.setAttribute(a,'true');d.head.appendChild(e)},polish=()=>{add('sitewide-polish.js?v=1','data-sitewide-polish-runtime');if(!like()||q('link[data-sitewide-mobile-polish]'))return;const e=d.createElement('link');e.rel='stylesheet';e.href='sitewide-mobile-polish.css?v=1';e.dataset.sitewideMobilePolish='true';d.head.appendChild(e)};
 let loaded=false;
 const load=()=>{polish();if(!like()||loaded||q('script[data-mobile-site-runtime]'))return;loaded=true;add('mobile-site.js?v=3','data-mobile-site-runtime')};
-if(d.body?.dataset?.page==='contents'){const loadContentDetailExtras=()=>{add('official-wiki-guide.js?v=4','data-official-wiki-guide-runtime');add('content-page-enhancements.js?v=7','data-content-page-enhancements-runtime');add('chunbong-posts-runtime.js?v=1','data-chunbong-posts-runtime')};document.addEventListener('chunbong:contents-detail-ready',loadContentDetailExtras,{once:true});if(/^\/contents\//.test(location.pathname)||new URLSearchParams(location.search).get('id'))loadContentDetailExtras()}
+if(document.body?.dataset?.page==='contents'){
+const loadContentDetailExtras=()=>{add('official-wiki-guide.js?v=4','data-official-wiki-guide-runtime');add('content-page-enhancements.js?v=7','data-content-page-enhancements-runtime');add('chunbong-posts-runtime.js?v=1','data-chunbong-posts-runtime')};document.addEventListener('chunbong:contents-detail-ready',loadContentDetailExtras,{once:true});if(/^\/contents\//.test(location.pathname)||new URLSearchParams(location.search).get('id'))loadContentDetailExtras()
+  }
 polish();load();for(const x of[m,s])x.addEventListener?.('change',e=>{if(e.matches)load()});
 })();
