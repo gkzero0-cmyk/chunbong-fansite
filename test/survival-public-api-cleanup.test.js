@@ -2,8 +2,10 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const {toPublicArchiveItem}=require('../lib/chunbong-content-archive-core');
 
-function material(id,title){
-  return {id,type:'post',title,date:'2026-10-03',datePrecision:'day',url:`https://www.sooplive.com/station/chunbongtv/post/${id.replace(/\D/g,'')||'1'}`,thumbnail:'',sourceId:'',note:'자동 발견 기록',visibility:'public'};
+function material(id,title,{type='post'}={}){
+  const digits=id.replace(/\D/g,'')||'1';
+  const url=type==='post'?`https://www.sooplive.com/station/chunbongtv/post/${digits}`:`https://vod.sooplive.com/player/${digits}/`;
+  return {id,type,title,date:'2026-10-03',datePrecision:'day',url,thumbnail:'',sourceId:'',note:'자동 발견 기록',visibility:'public'};
 }
 
 const weak=[
@@ -26,11 +28,29 @@ const strong=[
 ];
 const curated=material('survival-soop-post-999','적자생존 운영 기록');
 
+const weakMedia=[
+  material('auto-soop-vod-208754459','그냥서버 섭주 api 많은 관심 부탁드립니다',{type:'vod'}),
+  material('auto-soop-clip-208747667','[클립]그냥서버 섭주 api 많은 관심 부탁드립니다',{type:'clip'}),
+  material('auto-soop-clip-208746965','[클립][그냥서버] 땜밍님한테 방송적 조언 해주는 춘봉님',{type:'clip'}),
+  material('auto-soop-clip-208813217','[클립]황원태도 업구걸글 쓰는 그냥서버 섭주 대춘봉',{type:'clip'})
+];
+const strongMedia=[
+  material('auto-soop-vod-208666979','그냥서버 2차입주 모집중입니다.',{type:'vod'}),
+  material('auto-soop-vod-208518269','그냥서버:적자생존 오픈합니다.',{type:'vod'}),
+  material('auto-soop-catch-207592851','[캐치]그냥서버:적자생존 출석체크시스템 설명',{type:'catch'}),
+  material('auto-soop-clip-208730477','[클립]우왁굳 그냥 서버 입주소식 들은 춘봉님 반응',{type:'clip'}),
+  material('auto-soop-catch-208812525','[캐치] 그냥서버 싼마이 공연단 / 춘봉 반응',{type:'catch'}),
+  material('auto-soop-clip-208763225','[클립]춘봉 반응 / 상득 - Billie Jean 빌리진 (마이클 잭슨) | 그냥서버 낚시터',{type:'clip'}),
+  material('auto-soop-catch-208787801','[캐치]그냥서버 야생 불법 농사로 인한 퇴출자',{type:'catch'}),
+  material('auto-soop-catch-208788105','[캐치]그냥서버 섭주의 강화 스포',{type:'catch'})
+];
+const curatedMedia=material('survival-presentation-vod-207560243','7시 그냥서버:적자생존 설명회',{type:'vod'});
+
 function sourceItem(){
   return {
     id:'justserver-survival',title:'그냥서버 : 적자생존',aliases:['적자생존'],category:'minecraft',series:{id:'justserver',title:'그냥서버'},role:'주최',status:'ongoing',
     startDate:'2026-09-30',endDate:'2026-10-21',datePrecision:'day',summary:'적자생존',description:'적자생존',heroImage:null,
-    participantCount:0,participants:[],participantGroups:[],participantProfiles:[],results:[],seriesSessions:[],timeline:[...weak,...strong,curated],media:[],gallery:[],notionSections:[],referenceSections:[],knowledgeSections:[],sources:[],verification:{state:'official',verifiedAt:'',conflicts:[]},published:true,updatedAt:'2026-10-04'
+    participantCount:0,participants:[],participantGroups:[],participantProfiles:[],results:[],seriesSessions:[],timeline:[...weak,...strong,curated],media:[...weakMedia,...strongMedia,curatedMedia],gallery:[],notionSections:[],referenceSections:[],knowledgeSections:[],sources:[],verification:{state:'official',verifiedAt:'',conflicts:[]},published:true,updatedAt:'2026-10-04'
   };
 }
 
@@ -44,7 +64,19 @@ test('public survival API filters stale weak auto SOOP posts without mutating cu
   assert.equal(original.timeline.length,weak.length+strong.length+1,'public cleanup must not mutate stored input');
 });
 
+test('public survival API removes low-signal auto media but keeps server-related reactions and performances',()=>{
+  const original=sourceItem();
+  const publicItem=toPublicArchiveItem(original);
+  const titles=publicItem.media.map(row=>row.title);
+  for(const row of weakMedia)assert.ok(!titles.includes(row.title),`low-signal auto media should be filtered: ${row.title}`);
+  for(const row of strongMedia)assert.ok(titles.includes(row.title),`server-related media should stay: ${row.title}`);
+  assert.ok(titles.includes(curatedMedia.title),'curated media must never be removed by auto-media cleanup');
+  assert.equal(original.media.length,weakMedia.length+strongMedia.length+1,'public media cleanup must not mutate stored input');
+});
+
 test('public cleanup is scoped to the survival season only',()=>{
-  const other={...sourceItem(),id:'other-content',series:null,timeline:[weak[0]]};
-  assert.equal(toPublicArchiveItem(other).timeline.length,1);
+  const other={...sourceItem(),id:'other-content',series:null,timeline:[weak[0]],media:[weakMedia[0]]};
+  const publicItem=toPublicArchiveItem(other);
+  assert.equal(publicItem.timeline.length,1);
+  assert.equal(publicItem.media.length,1);
 });
