@@ -21,15 +21,14 @@ for (const iconPath of ['assets/app-icon-192.png','assets/app-icon-512.png','ass
   const signature = fs.readFileSync(iconPath).subarray(0, 8).toString('hex');
   assert.equal(signature, '89504e470d0a1a0a', iconPath + ' must have a PNG signature');
 }
-
 assert.equal(manifest.name, '춘봉 팬허브');
 assert.equal(manifest.display, 'standalone');
 assert.equal(manifest.scope, '/');
 assert.equal(manifest.start_url, '/?source=pwa', 'installed app should open the canonical root URL');
 assert.ok(Array.isArray(manifest.icons) && manifest.icons.some(icon => icon.src === '/assets/app-icon.svg'));
-assert.ok(manifest.icons.some(icon => icon.src === '/assets/app-icon-192.png' && icon.sizes === '192x192' && icon.type === 'image/png'), '192px PNG PWA icon missing');
-assert.ok(manifest.icons.some(icon => icon.src === '/assets/app-icon-512.png' && icon.sizes === '512x512' && icon.type === 'image/png' && icon.purpose === 'any'), '512px PNG PWA icon missing');
-assert.ok(manifest.icons.some(icon => icon.src === '/assets/app-icon-512.png' && icon.sizes === '512x512' && icon.type === 'image/png' && icon.purpose === 'maskable'), 'maskable PWA icon missing');
+assert.ok(manifest.icons.some(icon => icon.src === '/assets/app-icon-192.png' && icon.sizes === '192x192' && icon.type === 'image/png'));
+assert.ok(manifest.icons.some(icon => icon.src === '/assets/app-icon-512.png' && icon.sizes === '512x512' && icon.type === 'image/png' && icon.purpose === 'any'));
+assert.ok(manifest.icons.some(icon => icon.src === '/assets/app-icon-512.png' && icon.sizes === '512x512' && icon.type === 'image/png' && icon.purpose === 'maskable'));
 assert.match(page, /setupPwaExperience/);
 assert.match(page, /serviceWorker\.register\('\/service-worker\.js\?v='\+encodeURIComponent\(version\)/);
 assert.match(page, /beforeinstallprompt/);
@@ -38,54 +37,46 @@ assert.match(page, /새 버전 준비 완료/);
 assert.match(css, /\.pwa-install-chip/);
 assert.match(css, /\.pwa-update-toast/);
 assert.match(sw, /CHUNBONG_PWA/);
-assert.match(sw, /const CACHE_NAME = CACHE_PREFIX \+ BUILD_VERSION/,'PWA cache must follow the deployed build version');
+assert.match(sw, /const CACHE_NAME = CACHE_PREFIX \+ BUILD_VERSION/);
 assert.match(sw, /\/offline\.html/);
 assert.match(sw, /url\.pathname\.startsWith\('\/api\/'\)/);
-assert.match(sw, /networkFirst/);
-assert.match(sw, /request\.destination === 'document'[\s\S]*networkFirst\(request, event\)/, 'documents should prefer the latest network response and fall back to cache offline');
-assert.match(sw, /\['script','style'\][\s\S]*boundedNetworkFirst\(request, event, 450\)/, 'scripts and styles should prefer fresh network briefly, then use cached assets when revalidation is slow');
-assert.match(sw, /request\.destination === 'worker'[\s\S]*networkFirst\(request, event\)/, 'workers should remain network-first');
-assert.match(sw, /\['image','font'\]/, 'heavy visual assets should keep stale-while-revalidate');
-assert.match(page, /standalone[\s\S]*activateUpdate\(registration, registration\.waiting\)/, 'installed PWA should activate a waiting update on app launch');
+assert.match(sw, /request\.destination === 'document'[\s\S]*networkFirst\(request, event\)/);
+assert.match(sw, /\['script','style'\][\s\S]*boundedNetworkFirst\(request, event, 450\)/);
+assert.match(sw, /request\.destination === 'worker'[\s\S]*networkFirst\(request, event\)/);
+assert.match(sw, /\['image','font'\]/);
+assert.match(page, /standalone[\s\S]*activateUpdate\(registration, registration\.waiting\)/);
 const installBlock=(sw.match(/self\.addEventListener\('install',[\s\S]*?\n\}\);/)||[''])[0];
-assert.doesNotMatch(installBlock,/skipWaiting/,'service worker install must not auto-activate before the refresh button is used');
-assert.match(sw,/event\.data\?\.type === 'SKIP_WAITING'[\s\S]*self\.skipWaiting\(\)/,'service worker must still activate when the page explicitly requests it');
-assert.match(page,/registration\.waiting \|\| \(candidate\?\.state === 'installed' \? candidate : null\)/,'update refresh must retain the installed worker even before registration.waiting settles');
-assert.match(page,/await registration\.update\(\)/,'update refresh should retry registration state before falling back');
-assert.match(page,/button\.textContent = '업데이트 중…'/,'update refresh button must expose click progress');
-assert.match(page,/updateReloadFallback[\s\S]*window\.location\.reload\(\)/,'update refresh must have a reload fallback if controllerchange is missed');
-assert.match(shell, /chunbong-cache-v2:/, 'cross-page session cache namespace missing');
-assert.match(shell, /sessionStorage\.setItem/, 'shared cache should persist within the tab');
-assert.match(sw, /\/site-shell\.js/, 'PWA app shell must cache site-shell.js');
-assert.match(sw, /\/site-meta\.js/, 'PWA app shell must cache runtime metadata loaded by site-shell.js');
-assert.match(sw, /\/site-health\.js/, 'PWA app shell must cache runtime health checks loaded by site-shell.js');
-assert.match(sw, /\/mobile-runtime-loader\.js/, 'PWA app shell must cache the tiny mobile runtime loader canonically');
-assert.match(sw, /\/mobile-site\.js/, 'PWA app shell must cache mobile-site.js canonically');
-assert.doesNotMatch(sw, /\/personal-hub\.js/, 'personal hub should runtime-cache after first use instead of blocking PWA install');
-assert.doesNotMatch(sw, /\/chunbong-contents\.js/, 'content archive should not inflate the initial PWA install');
-assert.doesNotMatch(sw, /\/activity-center\.js/, 'activity center should runtime-cache after idle load');
-assert.doesNotMatch(sw, /\/daily-fortune\.js/, 'daily fortune should runtime-cache after first use');
-assert.doesNotMatch(sw, /\/myhub\.html/, 'My Hub page should runtime-cache after first visit instead of bloating initial PWA install');
-assert.match(sw, /\/assets\/chunbong-main\.webp/, 'installed home should preserve the original hero asset offline');
-for (const optional of ['/site-analytics.js','/feedback-widget.js','/feedback-widget.css']) assert.ok(!sw.includes(optional), optional+' must not block the initial PWA install');
-for (const heavy of ['/tarot.html','/data.html','/minigames.html','/chuntris.html','/chunbak.html']) assert.ok(!sw.includes(heavy), heavy+' must stay out of the initial PWA precache');
-assert.doesNotMatch(sw, /\/timeline(?:\.html|\.css|\.js)/, 'retired timeline must not remain in the PWA app shell');
-assert.match(sw, /notificationclick/, 'PWA service worker must route reminder notification clicks');
-assert.match(page, /schedule: '\/api\/content\?type=schedule'/, 'schedule page must use live content API');
-assert.match(schedulePage, /await loadContent\('schedule'\)/, 'schedule renderer must request live schedule data');
+assert.doesNotMatch(installBlock,/skipWaiting/);
+assert.match(sw,/event\.data\?\.type === 'SKIP_WAITING'[\s\S]*self\.skipWaiting\(\)/);
+assert.match(page,/registration\.waiting \|\| \(candidate\?\.state === 'installed' \? candidate : null\)/);
+assert.match(page,/await registration\.update\(\)/);
+assert.match(page,/button\.textContent = '업데이트 중…'/);
+assert.match(page,/updateReloadFallback[\s\S]*window\.location\.reload\(\)/);
+assert.match(shell, /chunbong-cache-v2:/);
+assert.match(shell, /sessionStorage\.setItem/);
+assert.match(sw, /\/site-shell\.js/);
+assert.match(sw, /\/mobile-runtime-loader\.js/);
+assert.match(sw, /\/mobile-site\.js/);
+for (const runtimeLazy of ['/site-meta.js','/site-health.js','/site-improvements.js','/site-improvements.css','/content.js','/site-shell-idle.js','/personal-hub.js','/chunbong-contents.js','/activity-center.js','/daily-fortune.js','/myhub.html']) {
+  assert.ok(!sw.includes(runtimeLazy), runtimeLazy+' should runtime-cache after use instead of blocking PWA install');
+}
+assert.match(sw, /\/assets\/chunbong-main\.webp/);
+for (const optional of ['/site-analytics.js','/feedback-widget.js','/feedback-widget.css']) assert.ok(!sw.includes(optional));
+for (const heavy of ['/tarot.html','/data.html','/minigames.html','/chuntris.html','/chunbak.html']) assert.ok(!sw.includes(heavy));
+assert.doesNotMatch(sw, /\/timeline(?:\.html|\.css|\.js)/);
+assert.match(sw, /notificationclick/);
+assert.match(page, /schedule: '\/api\/content\?type=schedule'/);
+assert.match(schedulePage, /await loadContent\('schedule'\)/);
 assert.match(offline, /오프라인 상태입니다/);
-assert.equal(timelineRedirect?.destination,'/history.html','retired timeline must redirect to broadcast history');
-assert.equal(timelineRedirect?.permanent,true,'timeline redirect must be permanent');
-
+assert.equal(timelineRedirect?.destination,'/history.html');
+assert.equal(timelineRedirect?.permanent,true);
 for (const html of htmlPaths) {
   const source = read(html);
   assert.match(source, /rel="manifest" href="\/manifest\.webmanifest"/, html + ' manifest link missing');
   assert.match(source, /rel="icon" type="image\/svg\+xml" href="\/assets\/app-icon\.svg"/, html + ' app icon missing');
   assert.ok(source.includes('rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png"'), html + ' apple touch icon missing');
 }
-
 const swHeaders = (vercel.headers || []).find(item => item.source === '/service-worker.js');
-assert.ok(swHeaders, 'service worker cache header is missing');
-assert.ok(swHeaders.headers.some(header => header.key === 'Cache-Control' && /no-cache/.test(header.value)), 'service worker must be no-cache');
-
+assert.ok(swHeaders);
+assert.ok(swHeaders.headers.some(header => header.key === 'Cache-Control' && /no-cache/.test(header.value)));
 console.log('PWA regression passed');
