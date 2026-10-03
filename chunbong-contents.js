@@ -67,8 +67,29 @@ function filterItems(items,{q='',category='all',status='all',year='all',mediaKin
   });
 }
 function sortItems(items,sort='newest'){const d=sort==='oldest'?1:-1;return[...(Array.isArray(items)?items:[])].sort((a,b)=>d*String(a.startDate||'').localeCompare(String(b.startDate||''))||String(a.title||'').localeCompare(String(b.title||''),'ko'))}
+const POST_TYPES=new Set(['notice','post','article','reference']);
+function soopPostId(value=''){try{const u=new URL(String(value||''),'https://chunbong-fansite.vercel.app/');if(!/(^|\.)sooplive\.com$/i.test(u.hostname))return'';const match=u.pathname.match(/\/station\/chunbongtv\/post\/(\d+)/i);return match?match[1]:''}catch{return''}}
+function canonicalPostUrl(value=''){const url=safeUrl(value);if(!url)return'';try{const u=new URL(url);u.hash='';u.search='';u.hostname=u.hostname.toLowerCase();if(u.pathname!=='/')u.pathname=u.pathname.replace(/\/+$/,'');return u.href}catch{return''}}
+function fallbackPostKey(row={}){const id=String(row.id||'').trim();if(id)return'row:'+id;const identity=[row.type,row.title,row.date,row.datePrecision,row.sourceId,row.note].map(value=>normalize(value)).join('|');return'fallback:'+identity}
+function postCanonicalKey(row={}){const url=safeUrl(row.url||'');if(url){const id=soopPostId(url);if(id)return'soop:'+id;const canonical=canonicalPostUrl(url);if(canonical)return'url:'+canonical}return fallbackPostKey(row)}
+function postTitleQuality(row={}){const title=String(row.title||'').trim();if(!title)return 0;const compact=title.replace(/\s+/g,' ').trim();if(/^\d+$/.test(compact))return 1;if(/^(?:.*\s)?공식\s*게시글(?:\s*[·#:\-]?\s*\d+)?$/i.test(compact)||/^게시글(?:\s*[·#:\-]?\s*\d+)?$/i.test(compact))return 2;return 20+Math.min([...compact].length,120)}
+function postDateQuality(row={}){const date=String(row.date||'').trim(),precision=String(row.datePrecision||'unknown');if(precision==='day'&&/^\d{4}-\d{2}-\d{2}$/.test(date))return 3;if(precision==='month'&&/^\d{4}-\d{2}$/.test(date))return 2;if(precision==='year'&&/^\d{4}$/.test(date))return 1;return 0}
+function postUrlQuality(row={}){const url=safeUrl(row.url||'');if(!url)return 0;return soopPostId(url)?3:2}
+function mergePostRows(primary={},candidate={}){
+  const primaryScore=postTitleQuality(primary)*10+postDateQuality(primary)*4+postUrlQuality(primary),candidateScore=postTitleQuality(candidate)*10+postDateQuality(candidate)*4+postUrlQuality(candidate);
+  const base=candidateScore>primaryScore?candidate:primary,other=base===candidate?primary:candidate;
+  const titleSource=postTitleQuality(candidate)>postTitleQuality(primary)?candidate:primary;
+  const dateSource=postDateQuality(candidate)>postDateQuality(primary)?candidate:primary;
+  const urlSource=postUrlQuality(candidate)>postUrlQuality(primary)?candidate:primary;
+  return {...base,title:titleSource.title||base.title||other.title||'',date:dateSource.date||'',datePrecision:dateSource.datePrecision||'unknown',url:urlSource.url||base.url||other.url||'',note:base.note||other.note||'',thumbnail:base.thumbnail||other.thumbnail||'',sourceId:base.sourceId||other.sourceId||''};
+}
+function normalizePostRows(item={}){
+  const map=new Map();
+  for(const row of [...(item.timeline||[]),...(item.media||[])]){if(!row||!POST_TYPES.has(row.type))continue;const key=postCanonicalKey(row);map.set(key,map.has(key)?mergePostRows(map.get(key),row):{...row})}
+  return [...map.values()].sort((a,b)=>{const qa=postDateQuality(a),qb=postDateQuality(b);if(Boolean(qa)!==Boolean(qb))return qb-qa;if(qa&&qb){const dateOrder=String(b.date||'').localeCompare(String(a.date||''));if(dateOrder)return dateOrder;const aid=soopPostId(a.url),bid=soopPostId(b.url);if(aid&&bid){const numeric=Number(bid)-Number(aid);if(numeric)return numeric}}return postCanonicalKey(a).localeCompare(postCanonicalKey(b),'ko')});
+}
 function materialTypeLabel(t){return TYPE_LABELS[t]||'자료'} function categoryLabel(c){return CATEGORY_LABELS[c]||'기타'} function statusLabel(s){return STATUS_LABELS[s]||'종료'}
-const api={formatDate,formatRange,filterItems,sortItems,materialTypeLabel,categoryLabel,statusLabel,allPeople,itemPeopleCount,searchableText,contentPath,cloudinaryVariant};if(typeof module!=='undefined'&&module.exports)module.exports=api;if(!global.document){global.ChunbongContents=api;return}global.ChunbongContents=api;
+const api={formatDate,formatRange,filterItems,sortItems,materialTypeLabel,categoryLabel,statusLabel,allPeople,itemPeopleCount,searchableText,contentPath,cloudinaryVariant,postCanonicalKey,mergePostRows,normalizePostRows};if(typeof module!=='undefined'&&module.exports)module.exports=api;if(!global.document){global.ChunbongContents=api;return}global.ChunbongContents=api;
 const d=global.document,$=s=>d.querySelector(s),els={browser:$('[data-archive-browser]'),list:$('[data-archive-list]'),detail:$('[data-archive-detail]'),search:$('[data-archive-search]'),category:$('[data-archive-category]'),status:$('[data-archive-status]'),year:$('[data-archive-year]'),mediaKind:$('[data-archive-media-kind]'),sort:$('[data-archive-sort]'),count:$('[data-archive-count]'),empty:$('[data-archive-empty]'),lightbox:$('[data-archive-lightbox]'),seriesHome:$('[data-archive-series-home]'),seriesList:$('[data-archive-series-list]'),seriesLanding:$('[data-archive-series-landing]'),seriesCount:$('[data-archive-series-count]'),listHeading:$('[data-archive-list-heading]'),listCopy:$('[data-archive-list-copy]'),history:$('[data-archive-history]')};let allItems=[];
 async function fetchJson(url){if(global.ChunbongCache?.fetchJson)return global.ChunbongCache.fetchJson('content:'+url,url,{ttl:300000});const r=await fetch(url,{headers:{accept:'application/json'}});if(!r.ok){const e=new Error('HTTP '+r.status);e.status=r.status;throw e}return r.json()}
 function queryState(){const p=new URLSearchParams(global.location.search);return{id:pathContentId()||p.get('id')||'',session:p.get('session')||'',series:p.get('series')||'',q:p.get('q')||'',category:p.get('category')||'all',status:p.get('status')||'all',year:p.get('year')||'all',mediaKind:p.get('media')||'all',sort:p.get('sort')==='oldest'?'oldest':'newest'}}
