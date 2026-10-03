@@ -49,6 +49,22 @@ jobs:
               raise SystemExit(f'expected one renderPosts anchor, found {source.count(old)}')
           path.write_text(source.replace(old,new))
           PY
+          elif [ "$task" = "task2-notice-compat" ]; then
+            python3 - <<'PY'
+          from pathlib import Path
+          path=Path('chunbong-contents.js')
+          source=path.read_text()
+          replacements={
+              'class="archive-post-card"':'class="notice-card archive-post-card"',
+              'class="archive-post-toggle"':'class="notice-toggle archive-post-toggle"',
+              'class="archive-post-body"':'class="notice-body archive-post-body"',
+          }
+          for old,new in replacements.items():
+              if source.count(old)!=1:
+                  raise SystemExit(f'expected one compatibility anchor {old}, found {source.count(old)}')
+              source=source.replace(old,new)
+          path.write_text(source)
+          PY
           else
             node .github/scripts/native-feature-patch.mjs
           fi
