@@ -21,9 +21,7 @@ patch('mobile-runtime-loader.js',[
   ["  if(document.body?.dataset?.page==='contents'){\n    addScript('official-wiki-guide.js?v=4','data-official-wiki-guide-runtime');\n    addScript('content-page-enhancements.js?v=7','data-content-page-enhancements-runtime');\n    addScript('chunbong-posts-runtime.js?v=1','data-chunbong-posts-runtime');\n  }", "  if(document.body?.dataset?.page==='contents'){\n    const loadContentDetailExtras=()=>{\n      addScript('official-wiki-guide.js?v=4','data-official-wiki-guide-runtime');\n      addScript('content-page-enhancements.js?v=7','data-content-page-enhancements-runtime');\n      addScript('chunbong-posts-runtime.js?v=1','data-chunbong-posts-runtime');\n    };\n    document.addEventListener('chunbong:contents-detail-ready',loadContentDetailExtras,{once:true});\n    if(/^\\/contents\\//.test(location.pathname)||new URLSearchParams(location.search).get('id'))loadContentDetailExtras();\n  }", 'detail-only archive extras']
 ]);
 
-patch('site-improvements.js',[
-  ["  function setupNavigationPrefetch(){\n", "  function setupNavigationPrefetch(){\n    if(window.ChunbongNavigationPrefetch)return;\n", 'avoid duplicate prefetch']
-]);
+patch('site-improvements.js',[["  function setupNavigationPrefetch(){\n", "  function setupNavigationPrefetch(){\n    if(window.ChunbongNavigationPrefetch)return;\n", 'avoid duplicate prefetch']]);
 
 patch('service-worker.js',[
   ["const FALLBACK_VERSION = 'runtime-v35';", "const FALLBACK_VERSION = 'runtime-v36';", 'sw version'],
@@ -33,11 +31,5 @@ patch('service-worker.js',[
   ["  '/site-improvements.js',\n", '', 'remove improvements precache'],
   ["  '/content.js',\n", '', 'remove content precache']
 ]);
-
 patch('page.js',[["const fallback='runtime-v35';","const fallback='runtime-v36';",'page pwa version']]);
-
-patch('.github/workflows/site-regression.yml',[
-  ["          node --check site-shell.js\n", "          node --check site-shell.js\n          node --check site-shell-idle.js\n          node --check minigame-profile-loader.js\n", 'new runtime syntax checks']
-]);
-
 console.log('performance patches applied');
