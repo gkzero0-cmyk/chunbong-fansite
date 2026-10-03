@@ -15,16 +15,18 @@ test('Chunbong content hero uses the supplied high-resolution cache-busted asset
   assert.ok(fs.statSync(asset).size>150000,'hero asset must retain enough source detail for desktop rendering');
 });
 
-test('header reserves utility width and loads the visual utility shell before idle work',()=>{
+test('header reserves utility width and loads visual utilities through the idle shell',()=>{
   const init=read('theme-init.js');
   const shell=read('site-shell.js');
+  const idle=read('site-shell-idle.js');
   assert.match(init,/data-header-layout-reserve/);
   assert.match(init,/MutationObserver/);
   assert.match(init,/Math\.max\(0,238-used\)/);
   assert.match(init,/site-improvements\.css\?v=2/);
   assert.match(init,/DOMContentLoaded',load/);
   assert.match(init,/script\.src='site-improvements\.js\?v=2'/);
-  assert.match(shell,/runIdle\(\(\)=>loadScript\('site-improvements\.js\?v=2'\)\)/);
+  assert.match(shell,/site-shell-idle\.js/,'critical shell should defer non-critical work to the idle shell');
+  assert.match(idle,/schedule\(\(\)=>loadScript\('site-improvements\.js\?v=2'\)/,'site improvements should be loaded by the idle shell');
 });
 
 test('operator route resolves through authenticated dynamic handler before static dashboard content is exposed',()=>{
