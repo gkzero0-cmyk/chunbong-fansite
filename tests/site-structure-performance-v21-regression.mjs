@@ -19,9 +19,10 @@ const archiveApi=read('lib/chunbong-content-archive-api.js');
 assert.doesNotMatch(quality,/@import url\("site-design-system\.css"\)/,'design-system CSS must not be serially imported');
 for(const name of pages){
   const html=read(name);
+  const loaderVersion=name==='chunbong-contents.html'?'2':'1';
   assert.match(html,/href="site-design-system\.css"/,name+' must discover the design system in parallel');
   assert.match(html,/href="mobile-site\.css\?v=3" media="\(max-width:1024px\), \(display-mode: standalone\)"/,name+' must gate mobile CSS by media');
-  assert.match(html,/src="mobile-runtime-loader\.js\?v=1"/,name+' must use the small mobile loader');
+  assert.match(html,new RegExp('src="mobile-runtime-loader\\.js\\?v='+loaderVersion+'"'),name+' must use the expected small mobile loader revision');
   assert.doesNotMatch(html,/src="mobile-site\.js"/,name+' must not parse the heavy mobile runtime on desktop');
 }
 assert.ok(mobileLoader.length<1800,'mobile runtime loader must remain tiny');

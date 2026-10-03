@@ -6,6 +6,9 @@ on:
       - 'chunbong-contents.html'
       - 'chunbong-contents.css'
       - 'chunbong-contents.js'
+      - 'chunbong-posts-runtime.js'
+      - 'chunbong-posts.css'
+      - 'mobile-runtime-loader.js'
       - 'data/chunbong-contents-seed.json'
       - 'lib/chunbong-content-archive-core.js'
       - 'lib/chunbong-content-archive-api.js'
@@ -15,6 +18,7 @@ on:
       - 'operator.css'
       - 'api/content.js'
       - 'tests/chunbong-contents-browser-smoke.mjs'
+      - 'tests/chunbong-posts-browser-smoke.mjs'
       - '.github/workflows/chunbong-contents-browser-smoke.yml'
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -58,10 +62,19 @@ jobs:
         run: |
           set -o pipefail
           node tests/chunbong-contents-browser-smoke.mjs 2>&1 | tee /tmp/chunbong-contents-browser-smoke.log
-      - name: Upload archive smoke failure log
+      - name: Verify post normalization and stable previews
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        shell: bash
+        run: |
+          set -o pipefail
+          node tests/chunbong-posts-browser-smoke.mjs 2>&1 | tee /tmp/chunbong-posts-browser-smoke.log
+      - name: Upload archive smoke failure logs
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: chunbong-contents-browser-smoke-log
-          path: /tmp/chunbong-contents-browser-smoke.log
+          path: |
+            /tmp/chunbong-contents-browser-smoke.log
+            /tmp/chunbong-posts-browser-smoke.log
           retention-days: 3
