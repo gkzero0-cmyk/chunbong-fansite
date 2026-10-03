@@ -31,7 +31,8 @@ function justserverRelevant(title=''){
   if(text.includes('적자생존'))return true;
   if(!text.includes('그냥서버'))return false;
   if(/휴방|마병대|리캡|사자컴퍼니/.test(raw))return false;
-  return /(입주|신청|모집|합격|섭주|운영자|불침번|서버|오픈|설명회|개발|작업|api|지통실|낚시|일정|접수|위키|공지|방송)/i.test(raw);
+  const context=raw.replace(/그냥\s*서버/gi,' ');
+  return /(입주|신청|모집|합격|섭주|운영자|불침번|서버|오픈|설명회|개발|작업|api|지통실|낚시|일정|접수|위키|공지|방송)/i.test(context);
 }
 function titleText(root){return String(root?.querySelector?.('[data-source-title],strong,h3,h4')?.textContent||root?.textContent||'').trim()}
 function sourceUrl(root){const own=root?.dataset?.sourceUrl||'';if(own)return canonical(own);const link=root?.querySelector?.('[data-source-external-link],a[href]');return link?canonical(link.href):''}
