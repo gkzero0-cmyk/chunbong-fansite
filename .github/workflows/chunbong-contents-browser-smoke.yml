@@ -8,6 +8,11 @@ on:
       - 'chunbong-contents.js'
       - 'chunbong-posts-runtime.js'
       - 'chunbong-posts.css'
+      - 'content-source-card-unifier.js'
+      - 'content-source-card-unifier.css'
+      - 'content-media-player.js'
+      - 'content-media-player.css'
+      - 'content-archive-completion.js'
       - 'mobile-runtime-loader.js'
       - 'data/chunbong-contents-seed.json'
       - 'lib/chunbong-content-archive-core.js'
@@ -19,6 +24,7 @@ on:
       - 'api/content.js'
       - 'tests/chunbong-contents-browser-smoke.mjs'
       - 'tests/chunbong-posts-browser-smoke.mjs'
+      - 'tests/chunbong-content-completion-browser-smoke.mjs'
       - '.github/workflows/chunbong-contents-browser-smoke.yml'
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -69,6 +75,13 @@ jobs:
         run: |
           set -o pipefail
           node tests/chunbong-posts-browser-smoke.mjs 2>&1 | tee /tmp/chunbong-posts-browser-smoke.log
+      - name: Verify completed title, date, flow, and inline media interactions
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        shell: bash
+        run: |
+          set -o pipefail
+          node tests/chunbong-content-completion-browser-smoke.mjs 2>&1 | tee /tmp/chunbong-content-completion-browser-smoke.log
       - name: Upload archive smoke failure logs
         if: failure()
         uses: actions/upload-artifact@v4
@@ -77,4 +90,5 @@ jobs:
           path: |
             /tmp/chunbong-contents-browser-smoke.log
             /tmp/chunbong-posts-browser-smoke.log
+            /tmp/chunbong-content-completion-browser-smoke.log
           retention-days: 3
