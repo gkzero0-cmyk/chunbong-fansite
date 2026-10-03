@@ -1,0 +1,73 @@
+name: One-shot JustServer relevance patch
+on:
+  push:
+    branches: [fix/justserver-relevance-gate-20261004]
+    paths: ['.github/workflows/one-shot-justserver-relevance-patch.yml']
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/justserver-relevance-gate-20261004
+      - name: Apply relevance gates
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(text,old,new,label):
+              count=text.count(old)
+              if count!=1:
+                  raise SystemExit(f'{label}: expected 1 anchor, got {count}')
+              return text.replace(old,new,1)
+
+          p=Path('lib/chunbong-content-auto-ingest.js')
+          s=p.read_text()
+          anchor="""const GENERIC_TERMS=new Set([
+  '춘봉','춘봉tv','콘텐츠','아카이브','마인크래프트','마크','서버','방송','다시보기','클립','catch',
+  '그냥서버','대회','이벤트','클래스','주최','모집','공지','설명회','시리즈'
+]);"""
+          policy=anchor+"\nconst JUSTSERVER_CORE_RE=/(입주|신청|모집|합격|오픈|설명회|접수|위키|규칙|시스템|업데이트|종료|졸업|일정)/i;\nconst JUSTSERVER_NOISE_RE=/(불침번|방송\\s*좌표|섭주\\s*방송|방송\\s*on\\b|휴방|마병대|리캡|사자컴퍼니)/i;"
+          s=replace_once(s,anchor,policy,'server policy constants')
+          s=replace_once(s,
+            "function matchArchiveItem(material={},rows=[]){\n  const search=normalizeSearch([material.title,material.searchText].filter(Boolean).join(' '));",
+            "function matchArchiveItem(material={},rows=[]){\n  const rawSearch=[material.title,material.searchText].filter(Boolean).join(' ');\n  const search=normalizeSearch(rawSearch);",
+            'server raw search')
+          old="""    const genericJustserver=item.series?.id==='justserver'&&search.includes('그냥서버');
+    if(genericJustserver&&inWindow)score+=5;
+    if(inWindow)score+=3;
+    if(!matched.length&&!genericJustserver)continue;"""
+          new="""    const justserverFamily=item.series?.id==='justserver';
+    const justserverContext=rawSearch.replace(/그냥\\s*서버|적자생존/gi,' ');
+    const justserverCore=JUSTSERVER_CORE_RE.test(justserverContext);
+    if(justserverFamily&&JUSTSERVER_NOISE_RE.test(rawSearch)&&!justserverCore)continue;
+    const genericJustserver=justserverFamily&&search.includes('그냥서버');
+    const genericJustserverContext=genericJustserver&&justserverCore;
+    if(genericJustserverContext&&inWindow)score+=5;
+    if(inWindow)score+=3;
+    if(!matched.length&&!genericJustserverContext)continue;"""
+          s=replace_once(s,old,new,'server justserver gate')
+          p.write_text(s)
+
+          p=Path('content-source-card-unifier.js')
+          s=p.read_text()
+          old="function relevant(title=''){if(id()!=='justserver-survival')return true;const raw=String(title),flat=raw.toLowerCase().replace(/[^0-9a-z가-힣]+/g,'');if(flat.includes('적자생존'))return true;if(!flat.includes('그냥서버')||/휴방|마병대|리캡|사자컴퍼니/.test(raw))return false;return /(입주|신청|모집|합격|섭주|운영자|불침번|오픈|설명회|개발|작업|api|지통실|낚시|일정|접수|위키|공지)/i.test(raw.replace(/그냥\\s*서버/gi,' '))}"
+          new="function relevant(title=''){if(id()!=='justserver-survival')return true;const raw=String(title),flat=raw.toLowerCase().replace(/[^0-9a-z가-힣]+/g,'');if(/불침번|방송\\s*좌표|섭주\\s*방송|방송\\s*on\\b|휴방|마병대|리캡|사자컴퍼니/i.test(raw))return false;if(flat.includes('적자생존'))return true;if(!flat.includes('그냥서버'))return false;return /(입주|신청|모집|합격|오픈|설명회|접수|위키|규칙|시스템|업데이트|종료|졸업|일정)/i.test(raw.replace(/그냥\\s*서버/gi,' '))}"
+          s=replace_once(s,old,new,'client justserver gate')
+          p.write_text(s)
+          PY
+          node --check lib/chunbong-content-auto-ingest.js
+          node --check content-source-card-unifier.js
+          node --test test/justserver-relevance-gate.test.js
+      - name: Commit implementation
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/chunbong-content-auto-ingest.js content-source-card-unifier.js
+          git diff --cached --check
+          git commit -m 'fix: tighten JustServer archive relevance'
+          git push origin HEAD:fix/justserver-relevance-gate-20261004
