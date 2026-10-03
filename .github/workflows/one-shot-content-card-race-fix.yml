@@ -1,0 +1,43 @@
+name: One-shot content card race fix
+on:
+  push:
+    branches: [fix/content-source-cards-and-collector-tabs-20261003]
+    paths: ['.github/workflows/one-shot-content-card-race-fix.yml']
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/content-source-cards-and-collector-tabs-20261003
+      - name: Apply asserted UI race fixes
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          def once(text, old, new, label):
+              count=text.count(old)
+              if count!=1:
+                  raise SystemExit(f'{label}: expected 1 anchor, got {count}')
+              return text.replace(old,new,1)
+          p=Path('content-source-card-unifier.js')
+          s=p.read_text()
+          s=once(s,"'\"':'&quot'","'\"':'&quot;'",'quote entity')
+          s=once(s,
+            "function convertSources(root){\n  const list=root.querySelector('.archive-source-list');if(!list)return;const seen=new Set();",
+            "function convertSources(root){\n  const list=root.querySelector('.archive-source-list');if(!list)return;\n  const panel=list.closest('[data-archive-panel]'),heading=String(panel?.querySelector('h2')?.textContent||'').trim();if(heading==='게시글')return;\n  const seen=new Set();",
+            'posts/source race')
+          p.write_text(s)
+          PY
+          node --check content-source-card-unifier.js
+      - name: Commit race fixes
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add content-source-card-unifier.js
+          git diff --cached --check
+          git commit -m 'fix: keep post normalizer ownership isolated'
+          git push origin HEAD:fix/content-source-cards-and-collector-tabs-20261003
