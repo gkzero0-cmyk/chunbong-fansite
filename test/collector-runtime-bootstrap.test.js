@@ -55,7 +55,7 @@ test('remote runtime preserves collector state and automatic tab serialization',
 
 test('runtime manifest has an independent version and bootstrap compatibility range',()=>{
   const row=manifest();
-  assert.equal(row.runtimeVersion,'1.0.0');
+  assert.equal(row.runtimeVersion,'1.0.1');
   assert.equal(row.runtimeUrl,'/collector-runtime.js');
   assert.equal(row.minBootstrapContract,1);
   assert.equal(row.maxBootstrapContract,1);
