@@ -20,13 +20,13 @@ try{
   await page.route('**/api/content?*',route=>{
     const url=new URL(route.request().url()),type=url.searchParams.get('type');
     if(type==='chunbong-contents')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:[item]})});
-    if(type==='chunbong-content'&&url.searchParams.get('sourcePreview')==='1')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({preview:{title:'적자생존 참가 신청 · UP 랭킹 원문',date:'2026-08-17',body:'원문 그대로 확인되는 테스트 본문입니다.',images:[],source:'browser-import'}})});
+    if(type==='chunbong-content'&&url.searchParams.get('sourcePreview')==='1')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({preview:{title:'적자생존 참가 신청 · UP 랭킹 원문',date:'2026-08-17',body:'원문 그대로 확인되는 테스트 본문입니다. 시청자 댓글 시 블랙 572 공유 하단메뉴 ⓒ SOOP Corp.',images:[],source:'browser-import'}})});
     if(type==='chunbong-content')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({item})});
     return route.continue();
   });
   await page.goto(base+'/chunbong-contents.html?id=justserver-survival',{waitUntil:'domcontentloaded'});
   await page.waitForSelector('[data-archive-detail]:not([hidden])');
-  await page.waitForFunction(()=>Boolean(window.ChunbongSourceCards&&window.ChunbongMediaPlayer&&window.ChunbongArchiveCompletion));
+  await page.waitForFunction(()=>Boolean(window.ChunbongSourceCards&&window.ChunbongMediaPlayer&&window.ChunbongArchiveCompletion&&window.ChunbongPreviewSanitize));
 
   const flowText=await page.locator('[data-archive-detail]').innerText();
   assert.match(flowText,/2차 입주 모집/);
@@ -40,7 +40,10 @@ try{
   await title.click();
   const body=title.locator('xpath=ancestor::*[@data-source-card or @data-archive-post-card][1]').locator('[data-source-notice-detail]');
   await body.waitFor({state:'visible'});
-  assert.match(await body.innerText(),/원문 그대로 확인되는 테스트 본문/);
+  await page.waitForFunction(()=>{const node=document.querySelector('[data-source-notice-detail] .archive-source-notice-copy');return node&&node.textContent.includes('원문 그대로 확인되는 테스트 본문입니다.')&&!node.textContent.includes('하단메뉴')&&!node.textContent.includes('SOOP Corp')});
+  const bodyText=await body.innerText();
+  assert.match(bodyText,/원문 그대로 확인되는 테스트 본문/);
+  assert.doesNotMatch(bodyText,/하단메뉴|SOOP Corp/,'SOOP browser chrome tail must not appear in the rendered article body');
   await title.click();
   assert.equal(await body.isHidden(),true,'second title click should collapse the body');
 
