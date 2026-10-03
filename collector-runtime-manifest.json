@@ -1,0 +1,7 @@
+{
+  "runtimeVersion": "1.0.0",
+  "runtimeUrl": "/collector-runtime.js",
+  "minBootstrapContract": 1,
+  "maxBootstrapContract": 1,
+  "disabled": false
+}
