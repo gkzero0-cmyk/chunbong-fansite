@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
+const sw=read('service-worker.js');
+const page=read('page.js');
+const shell=(sw.match(/const APP_SHELL\s*=\s*\[([\s\S]*?)\n\]/)||['',''])[1];
+for(const required of ['/index.html','/offline.html','/styles.css','/site-shell.js','/page.js','/manifest.webmanifest','/assets/chunbong-main.webp'])assert.ok(shell.includes(required),'PWA app shell lost required asset '+required);
+for(const optional of ['/site-meta.js','/site-health.js','/site-improvements.js','/site-improvements.css','/content.js','/site-shell-idle.js'])assert.ok(!shell.includes(optional),'noncritical asset must not block PWA install: '+optional);
+assert.match(sw,/FALLBACK_VERSION\s*=\s*['"]runtime-v36['"]/,'service worker cache generation must advance to runtime-v36');
+assert.match(page,/const fallback=['"]runtime-v36['"]/,'page registration fallback must match runtime-v36');
+assert.match(page,/requestIdleCallback|setTimeout/,'version/update discovery must be scheduled away from the immediate load critical path');
+console.log('PWA performance shell regression passed');
