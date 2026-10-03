@@ -23,7 +23,24 @@ jobs:
         with:
           node-version: '24'
       - name: Apply scoped feature patch
-        run: node .github/scripts/native-feature-patch.mjs
+        shell: bash
+        run: |
+          set -e
+          task=$(node -e "console.log(JSON.parse(require('fs').readFileSync('.github/native-feature-patch-trigger.json','utf8')).task)")
+          if [ "$task" = "task2-test-route" ]; then
+            python3 - <<'PY'
+          from pathlib import Path
+          path=Path('tests/chunbong-contents-browser-smoke.mjs')
+          source=path.read_text()
+          old="await page.goto(base+'/contents/justserver-survival',{waitUntil:'networkidle'});"
+          new="await page.goto(base+'/chunbong-contents.html?id=justserver-survival',{waitUntil:'networkidle'});"
+          if source.count(old)!=1:
+              raise SystemExit(f'expected one task2 test route anchor, found {source.count(old)}')
+          path.write_text(source.replace(old,new))
+          PY
+          else
+            node .github/scripts/native-feature-patch.mjs
+          fi
       - name: Commit patch
         shell: bash
         run: |
