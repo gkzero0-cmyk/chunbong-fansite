@@ -248,7 +248,7 @@ try{
     let successPreviewRequests=0;
     page.on('request',request=>{try{const url=new URL(request.url());if(url.searchParams.get('sourcePreview')==='1'&&(url.searchParams.get('url')||'').includes('/208900003'))successPreviewRequests++}catch{}});
     await installApi(page);
-    await page.goto(base+'/contents/justserver-survival',{waitUntil:'networkidle'});
+    await page.goto(base+'/chunbong-contents.html?id=justserver-survival',{waitUntil:'networkidle'});
     await page.locator('[data-archive-tab="posts"]').click();
     const cards=page.locator('[data-archive-post-card]');
     assert.equal(await cards.count(),5,'게시글 탭은 canonical 중복을 제거한 5개 카드만 보여야 합니다');
