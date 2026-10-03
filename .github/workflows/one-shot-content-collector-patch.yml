@@ -1,0 +1,94 @@
+name: One-shot content collector patch
+on:
+  push:
+    branches: [fix/content-source-cards-and-collector-tabs-20261003]
+    paths: ['.github/workflows/one-shot-content-collector-patch.yml']
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/content-source-cards-and-collector-tabs-20261003
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply asserted patches
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          def sub_once(text, pattern, replacement, label, flags=0):
+              updated, count = re.subn(pattern, replacement, text, count=1, flags=flags)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected 1 replacement, got {count}')
+              return updated
+
+          collector = Path('chunbong-content-collector.user.js')
+          text = collector.read_text()
+          if text.count('// @version      1.4.8') != 1 or text.count("const VERSION='1.4.8';") != 1:
+              raise SystemExit('collector version anchors changed')
+          text = text.replace('// @version      1.4.8', '// @version      1.4.9')
+          text = text.replace("const VERSION='1.4.8';", "const VERSION='1.4.9';")
+          text = sub_once(text,
+              r"batch\.forEach\(\(row,index\)=>setTimeout\(\(\)=>openBackground\(row\.url,AUTO_HASH,false\),index\*700\)\);const done=await waitSoopBatch\(batch\);",
+              "await openAutoUrls(batch.map(row=>row.url));const done=await waitSoopBatch(batch);",
+              'backfill fanout')
+          text = sub_once(text,
+              r"if\(data\.type==='open-urls'\)\{\s*const urls=Array\.isArray\(data\.urls\)\?data\.urls\.slice\(0,16\):\[\];urls\.forEach\(\(url,index\)=>setTimeout\(\(\)=>openBackground\(url,AUTO_HASH,index===0\),index\*950\)\);return;\s*\}",
+              "if(data.type==='open-urls'){const urls=Array.isArray(data.urls)?data.urls.slice(0,16):[];void openAutoUrls(urls);return;}",
+              'open urls fanout', re.S)
+          text = sub_once(text,
+              r"if\(data\.type==='open-fmk-board'&&data\.url\)\{openBackground\(data\.url,'',true\)\}",
+              "if(data.type==='open-fmk-board'&&data.url){openBackground(data.url,DISCOVER_HASH,true)}",
+              'FM board marker')
+          text = sub_once(text,
+              r"await sleep\(1400\);await scanSoopBoard\('visit'\);\s*if\(location\.hash\.includes\(DISCOVER_HASH\)\)setTimeout\(\(\)=>window\.close\(\),700\);",
+              "if(location.hash.includes(DISCOVER_HASH)){await sleep(1400);await scanSoopBoard('discover');setTimeout(()=>window.close(),700);}",
+              'ordinary SOOP discovery', re.S)
+          text = sub_once(text,
+              r"await sleep\(1400\);await discoverFmkPosts\(\);\s*if\(location\.hash\.includes\(DISCOVER_HASH\)\)setTimeout\(\(\)=>window\.close\(\),700\);",
+              "if(location.hash.includes(DISCOVER_HASH)){await sleep(1400);await discoverFmkPosts();setTimeout(()=>window.close(),700);}",
+              'ordinary FM discovery', re.S)
+          collector.write_text(text)
+
+          ingest = Path('lib/chunbong-content-auto-ingest.js')
+          text = ingest.read_text()
+          anchor = "const GENERIC_TERMS=new Set([\n  '춘봉','춘봉tv','콘텐츠','아카이브','마인크래프트','마크','서버','방송','다시보기','클립','catch',\n  '그냥서버','대회','이벤트','클래스','주최','모집','공지','설명회','시리즈'\n]);"
+          if text.count(anchor) != 1:
+              raise SystemExit('generic terms anchor changed')
+          text = text.replace(anchor, anchor + "\nconst JUSTSERVER_CONTEXT_RE=/(입주|신청|모집|합격|섭주|운영자|불침번|서버|오픈|설명회|개발|작업|api|지통실|낚시|일정|접수|위키|공지|방송)/i;")
+          text = sub_once(text,
+              r"function matchArchiveItem\(material=\{\},rows=\[\]\)\{\s*const search=normalizeSearch\(\[material\.title,material\.searchText\]\.filter\(Boolean\)\.join\(' '\)\);",
+              "function matchArchiveItem(material={},rows=[]){\n  const rawSearch=[material.title,material.searchText].filter(Boolean).join(' ');\n  const search=normalizeSearch(rawSearch);",
+              'raw search')
+          text = sub_once(text,
+              r"const genericJustserver=item\.series\?\.id==='justserver'&&search\.includes\('그냥서버'\);\s*if\(genericJustserver&&inWindow\)score\+=5;\s*if\(inWindow\)score\+=3;\s*if\(!matched\.length&&!genericJustserver\)continue;",
+              "const genericJustserver=item.series?.id==='justserver'&&search.includes('그냥서버');\n    const justserverContext=rawSearch.replace(/그냥\\s*서버/gi,' ');\n    const genericJustserverContext=genericJustserver&&JUSTSERVER_CONTEXT_RE.test(justserverContext);\n    if(genericJustserverContext&&inWindow)score+=5;\n    if(inWindow)score+=3;\n    if(!matched.length&&!genericJustserverContext)continue;",
+              'generic justserver gate', re.S)
+          ingest.write_text(text)
+
+          unifier = Path('content-source-card-unifier.js')
+          text = unifier.read_text()
+          text = sub_once(text,
+              r"if\(!text\.includes\('그냥서버'\)\)return false;\s*if\(/휴방\|마병대\|리캡\|사자컴퍼니/\.test\(raw\)\)return false;\s*return /\(입주\|신청\|모집\|합격\|섭주\|운영자\|불침번\|서버\|오픈\|설명회\|개발\|작업\|api\|지통실\|낚시\|일정\|접수\|위키\|공지\|방송\)/i\.test\(raw\);",
+              "if(!text.includes('그냥서버'))return false;\n  if(/휴방|마병대|리캡|사자컴퍼니/.test(raw))return false;\n  const context=raw.replace(/그냥\\s*서버/gi,' ');\n  return /(입주|신청|모집|합격|섭주|운영자|불침번|서버|오픈|설명회|개발|작업|api|지통실|낚시|일정|접수|위키|공지|방송)/i.test(context);",
+              'client relevance gate', re.S)
+          unifier.write_text(text)
+          PY
+          node --check chunbong-content-collector.user.js
+          node --check lib/chunbong-content-auto-ingest.js
+          node --check content-source-card-unifier.js
+      - name: Commit asserted patches
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add chunbong-content-collector.user.js lib/chunbong-content-auto-ingest.js content-source-card-unifier.js
+          git diff --cached --check
+          git commit -m 'fix: gate collector tabs and strengthen content relevance'
+          git push origin HEAD:fix/content-source-cards-and-collector-tabs-20261003
