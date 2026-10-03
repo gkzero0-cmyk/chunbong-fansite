@@ -1,0 +1,19 @@
+name: Collector install helper verification
+on:
+  push:
+    branches:
+      - fix/collector-install-helper-20261003-final
+  pull_request:
+    paths:
+      - operator.html
+      - operator-contents.js
+      - tests/collector-install-helper-regression.mjs
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tests/collector-install-helper-regression.mjs
