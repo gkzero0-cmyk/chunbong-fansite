@@ -5,6 +5,7 @@ const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const shell=read('site-shell.js');
 const minigames=read('minigames.html');
 const changelog=read('changelog.html');
+const minigameLoader=read('minigame-profile-loader.js');
 
 assert.ok(shell.length<14000,'site-shell.js critical core must stay below 14KB');
 assert.doesNotMatch(shell,/\n\s*pruneSnapshots\(\);/,'site shell must not synchronously prune all snapshots at startup');
@@ -18,6 +19,8 @@ for(const eager of ['site-health.js','site-improvements.js','site-meta.js']){
 assert.doesNotMatch(minigames,/src="content\.js(?:\?[^\"]*)?"/,'minigames hub must not load the general content bundle');
 assert.doesNotMatch(changelog,/src="content\.js(?:\?[^\"]*)?"/,'changelog must not load the general content bundle');
 assert.ok(/ChunbongNavigationPrefetch/.test(shell)||/site-shell-idle\.js/.test(shell),'navigation prefetch runtime must be reachable');
+assert.doesNotThrow(()=>new Function(minigameLoader),'minigame profile loader must be valid JavaScript');
+assert.ok(minigameLoader.length<1500,'minigame profile loader must stay tiny');
 
 let idle='';
 try{idle=read('site-shell-idle.js')}catch{}
