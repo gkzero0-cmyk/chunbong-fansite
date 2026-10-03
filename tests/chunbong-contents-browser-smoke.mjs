@@ -43,7 +43,17 @@ const items=[
     id:'justserver-survival',title:'그냥서버 : 적자생존',aliases:['적자생존'],category:'minecraft',role:'주최',status:'ended',
     series:{id:'justserver',title:'그냥서버',subtitle:'마인크래프트 서버 시리즈',description:'그냥서버 시즌 기록',order:10,cover:{src:'/assets/chunbong-contents/justserver-moneygame-cover.svg',alt:'그냥서버'}},
     startDate:'2026',endDate:'2026',datePrecision:'year',summary:'적자생존 기록',description:'적자생존 소개',
-    heroImage:{src:'/assets/chunbong-contents/justserver-survival-cover.svg',alt:'적자생존'},participants:[],sourceCount:1,timeline:[],media:[],gallery:[],
+    heroImage:{src:'/assets/chunbong-contents/justserver-survival-cover.svg',alt:'적자생존'},participants:[],sourceCount:1,
+    timeline:[
+      {id:'survival-new',type:'post',title:'적자생존 최신 안내',date:'2026-10-02',datePrecision:'day',url:'https://www.sooplive.com/station/chunbongtv/post/208900003',thumbnail:'',sourceId:'sp-new',note:'최신 안내'},
+      {id:'survival-old',type:'post',title:'적자생존 이전 안내',date:'2026-09-28',datePrecision:'day',url:'https://www.sooplive.com/station/chunbongtv/post/208100001',thumbnail:'',sourceId:'sp-old',note:'이전 안내'},
+      {id:'survival-dup-placeholder',type:'post',title:'공식 게시글 · 208562045',date:'',datePrecision:'unknown',url:'https://www.sooplive.com/station/chunbongtv/post/208562045',thumbnail:'',sourceId:'sp-dup',note:'중복 placeholder'},
+      {id:'survival-unknown',type:'post',title:'날짜 미확인 안내',date:'',datePrecision:'unknown',url:'https://www.sooplive.com/station/chunbongtv/post/199999999',thumbnail:'',sourceId:'sp-unknown',note:'날짜 미확인'}
+    ],
+    media:[
+      {id:'survival-middle',type:'post',title:'적자생존 2차 입주 안내',date:'2026-09-30',datePrecision:'day',url:'https://www.sooplive.com/station/chunbongtv/post/208562045?from=share',thumbnail:'',sourceId:'sp-dup',note:'중복의 더 좋은 정보'},
+      {id:'survival-mid2',type:'post',title:'적자생존 점검 안내',date:'2026-10-01',datePrecision:'day',url:'https://www.sooplive.com/station/chunbongtv/post/208800002',thumbnail:'',sourceId:'sp-mid2',note:'점검 안내'}
+    ],gallery:[],
     results:[{title:'서버 규칙',value:'비방 플레이와 생산 활동, 자동화, 장비 사용, 입장 순서 등 길이가 긴 규칙 설명은 결과 카드 한 칸에 억지로 압축하지 않고 전체 폭으로 표시합니다.'}],
     sources:[{id:'js1',kind:'official',label:'SOOP 공식',url:'https://www.sooplive.com/station/chunbongtv'}]
   },
@@ -73,7 +83,13 @@ async function installApi(page){
     status:200,contentType:'application/json',body:JSON.stringify({items,source:'chunbong-contents'})
   }));
   await page.route('**/api/content?type=chunbong-content&id=*',route=>{
-    const id=new URL(route.request().url()).searchParams.get('id');
+    const requestUrl=new URL(route.request().url()),id=requestUrl.searchParams.get('id');
+    if(requestUrl.searchParams.get('sourcePreview')==='1'){
+      const sourceUrl=requestUrl.searchParams.get('url')||'';
+      if(sourceUrl.includes('/208900003'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({preview:{title:'적자생존 최신 안내',date:'2026-10-02',kind:'post',source:'browser-import',body:'본문 테스트 · 같은 카드 안에서 표시',images:[]}})});
+      if(sourceUrl.includes('/208100001'))return route.fulfill({status:404,contentType:'application/json',body:JSON.stringify({error:'preview_not_found'})});
+      return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({preview:null})});
+    }
     const item=[...items,chuntacleItem].find(row=>row.id===id);
     return route.fulfill({
       status:item?200:404,contentType:'application/json',
@@ -226,6 +242,38 @@ try{
     assert.deepEqual(errors,[],errors.join(' | '));
   }
 
+  {
+    const page=await browser.newPage({viewport:{width:1440,height:900}});
+    const errors=[];page.on('pageerror',error=>errors.push(error.message));
+    let successPreviewRequests=0;
+    page.on('request',request=>{try{const url=new URL(request.url());if(url.searchParams.get('sourcePreview')==='1'&&(url.searchParams.get('url')||'').includes('/208900003'))successPreviewRequests++}catch{}});
+    await installApi(page);
+    await page.goto(base+'/chunbong-contents.html?id=justserver-survival',{waitUntil:'networkidle'});
+    await page.locator('[data-archive-tab="posts"]').click();
+    const cards=page.locator('[data-archive-post-card]');
+    assert.equal(await cards.count(),5,'게시글 탭은 canonical 중복을 제거한 5개 카드만 보여야 합니다');
+    const titles=await cards.evaluateAll(nodes=>nodes.map(node=>node.querySelector('strong')?.textContent?.trim()||''));
+    assert.deepEqual(titles,['적자생존 최신 안내','적자생존 점검 안내','적자생존 2차 입주 안내','적자생존 이전 안내','날짜 미확인 안내'],'게시글은 최신순이며 날짜 미확인은 마지막이어야 합니다');
+    const initialCount=await cards.count(),first=cards.nth(0);
+    await first.locator('[data-post-toggle]').click();
+    await first.locator('[data-post-body]').waitFor({state:'visible'});
+    await first.locator('[data-source-notice-detail]').getByText('본문 테스트 · 같은 카드 안에서 표시').waitFor({state:'visible'});
+    assert.match((await first.locator('[data-source-notice-detail]').textContent())||'',/본문 테스트/,'preview 본문은 같은 카드 내부에 보여야 합니다');
+    assert.equal(await cards.count(),initialCount,'펼치기 후 카드 수가 변하면 안 됩니다');
+    await first.locator('[data-post-toggle]').click();
+    assert.ok(await first.locator('[data-post-body]').isHidden(),'접기 시 기존 카드 본문만 숨겨야 합니다');
+    await first.locator('[data-post-toggle]').click();
+    await first.locator('[data-post-body]').waitFor({state:'visible'});
+    assert.equal(successPreviewRequests,1,'같은 게시글 재펼침은 preview를 다시 fetch하지 않아야 합니다');
+    assert.match((await first.locator('[data-source-external-link]').getAttribute('href'))||'',/208900003/,'원문 링크는 토글과 별도 링크로 유지되어야 합니다');
+    const failed=cards.filter({hasText:'적자생존 이전 안내'}).first();
+    await failed.locator('[data-post-toggle]').click();
+    await failed.locator('[data-post-body]').waitFor({state:'visible'});
+    await failed.locator('[data-source-notice-detail]').getByText('게시글 본문을 가져오지 못했습니다.').waitFor({state:'visible'});
+    assert.match((await failed.locator('[data-source-notice-detail]').textContent())||'',/가져오지 못했습니다|저장되어 있지 않아/,'preview 실패 상태도 기존 카드 내부에 남아야 합니다');
+    assert.equal(await cards.count(),initialCount,'preview 실패 후에도 카드 수가 변하면 안 됩니다');
+    assert.deepEqual(errors,[],errors.join(' | '));
+  }
   {
     const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true});
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
