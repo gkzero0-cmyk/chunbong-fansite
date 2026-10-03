@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import api from '../chunbong-contents.js';
+import api from '../chunbong-posts-runtime.js';
 
 assert.equal(typeof api.postCanonicalKey,'function','postCanonicalKey should be exported');
 assert.equal(typeof api.mergePostRows,'function','mergePostRows should be exported');
