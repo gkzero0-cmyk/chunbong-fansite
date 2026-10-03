@@ -11,6 +11,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -21,9 +24,25 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Apply one-shot performance patches
+        if: github.event_name == 'pull_request' && github.head_ref == 'perf/site-speed-20261004'
+        run: |
+          if grep -q 'INITIAL_ARCHIVE_RENDER=12' chunbong-contents.js; then
+            echo 'Performance patches already applied'
+            exit 0
+          fi
+          node scripts/apply-perf-patches.mjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add chunbong-contents.js mobile-runtime-loader.js site-improvements.js service-worker.js page.js .github/workflows/site-regression.yml
+          git commit -m 'perf: apply archive and PWA performance patches'
+          git push origin HEAD:perf/site-speed-20261004
       - name: Check JavaScript syntax
         run: |
           node --check service-worker.js
@@ -94,6 +113,8 @@ jobs:
           node --check page-media.js
           node --check page-fanart.js
           node --check site-shell.js
+          node --check site-shell-idle.js
+          node --check minigame-profile-loader.js
           node --check content.js
           node --check changelog.js
           node --check changelog-data.js
