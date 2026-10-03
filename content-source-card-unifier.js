@@ -6,7 +6,7 @@ const POST_RE=/\/station\/chunbongtv\/post\/(\d+)\/?$/i;
 const FM_RE=/\/(?:best\/)?\d+\/?$/i;
 let scheduled=false;
 
-function esc(value=''){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[char]||char))}
+function esc(value=''){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]||char))}
 function contentId(){const match=location.pathname.match(/^\/contents\/([^/?#]+)/);if(match)try{return decodeURIComponent(match[1])}catch{return match[1]};return new URLSearchParams(location.search).get('id')||''}
 function canonical(raw=''){
   try{
@@ -70,7 +70,9 @@ function convertTimeline(root){
   });
 }
 function convertSources(root){
-  const list=root.querySelector('.archive-source-list');if(!list)return;const seen=new Set();
+  const list=root.querySelector('.archive-source-list');if(!list)return;
+  const panel=list.closest('[data-archive-panel]'),heading=String(panel?.querySelector('h2')?.textContent||'').trim();if(heading==='게시글')return;
+  const seen=new Set();
   [...list.children].forEach((row,index)=>{
     const link=row.matches?.('a[href]')?row:row.querySelector?.('a[href]');if(!link||!sourceEligibleUrl(link.href))return;
     const url=canonical(link.href);if(seen.has(url)){row.remove();return}seen.add(url);
