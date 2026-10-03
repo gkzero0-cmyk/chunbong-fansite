@@ -1,8 +1,14 @@
-const COLLECTOR_LATEST_VERSION='1.4.8';
+const COLLECTOR_LATEST_VERSION='1.5.0';
 const COLLECTOR_SCRIPT_PATH='/chunbong-content-collector.user.js';
 const TAMPERMONKEY_URL='https://www.tampermonkey.net/';
 const READY_ATTR='data-chunbong-collector-ready';
-const VERSION_ATTR='data-chunbong-collector-version';
+const LEGACY_VERSION_ATTR='data-chunbong-collector-version';
+const BOOTSTRAP_VERSION_ATTR='data-chunbong-collector-bootstrap-version';
+const RUNTIME_VERSION_ATTR='data-chunbong-collector-runtime-version';
+const RUNTIME_STATE_ATTR='data-chunbong-collector-runtime-state';
+const RUNTIME_CHECKED_ATTR='data-chunbong-collector-runtime-checked-at';
+const RUNTIME_LOADED_ATTR='data-chunbong-collector-runtime-loaded-at';
+const REINSTALL_REQUIRED_ATTR='data-chunbong-collector-reinstall-required';
 
 function versionAtLeast(actual='',minimum=COLLECTOR_LATEST_VERSION){
   const parse=value=>String(value||'').split('.').map(part=>Number.parseInt(part,10)||0);
@@ -17,8 +23,14 @@ function versionAtLeast(actual='',minimum=COLLECTOR_LATEST_VERSION){
 function collectorState(){
   const root=document.documentElement;
   const ready=root?.getAttribute(READY_ATTR)==='1';
-  const version=String(root?.getAttribute(VERSION_ATTR)||'');
-  return{ready,version,current:ready&&versionAtLeast(version,COLLECTOR_LATEST_VERSION)};
+  const bootstrapVersion=String(root?.getAttribute(BOOTSTRAP_VERSION_ATTR)||root?.getAttribute(LEGACY_VERSION_ATTR)||'');
+  const runtimeVersion=String(root?.getAttribute(RUNTIME_VERSION_ATTR)||'');
+  const runtimeState=String(root?.getAttribute(RUNTIME_STATE_ATTR)||'');
+  const runtimeCheckedAt=String(root?.getAttribute(RUNTIME_CHECKED_ATTR)||'');
+  const runtimeLoadedAt=String(root?.getAttribute(RUNTIME_LOADED_ATTR)||'');
+  const reinstallRequired=root?.getAttribute(REINSTALL_REQUIRED_ATTR)==='1';
+  const current=ready&&versionAtLeast(bootstrapVersion,COLLECTOR_LATEST_VERSION)&&!reinstallRequired;
+  return{ready,version:bootstrapVersion,bootstrapVersion,runtimeVersion,runtimeState,runtimeCheckedAt,runtimeLoadedAt,reinstallRequired,current};
 }
 
 function installUrl(){
@@ -53,6 +65,7 @@ function ensureHelperPanel(trigger){
   panel.innerHTML=`
     <header><div><small>자동 수집기 설치 도우미</small><strong data-collector-install-title>설치 상태 확인</strong></div><button type="button" data-collector-install-close>닫기</button></header>
     <p data-collector-install-message></p>
+    <div data-collector-runtime-summary></div>
     <div class="operator-soop-helper-actions">
       <a href="${installUrl()}" data-collector-install-action>자동 수집기 설치 / 업데이트</a>
       <a href="${downloadUrl()}" download="chunbong-content-collector.user.js" data-collector-stable-download>5.5 정식판용 파일 받기</a>
@@ -60,7 +73,7 @@ function ensureHelperPanel(trigger){
       <a href="${TAMPERMONKEY_URL}" target="_blank" rel="noopener noreferrer" data-collector-tampermonkey>Tampermonkey 공식 사이트</a>
     </div>
     <div data-collector-stable-guide>
-      <small><b>Tampermonkey 5.5.x 정식판:</b> Chrome 152+에서는 .user.js 주소를 눌러도 설치 화면이 자동으로 열리지 않을 수 있습니다. 이 경우 ‘5.5 정식판용 파일 받기’로 최신 파일을 받은 뒤 Tampermonkey에서 로컬 userscript 파일을 열거나 가져오면 됩니다. 기존 v1.4.7과 같은 스크립트 이름으로 인식되면 v1.4.8로 업데이트하세요.</small>
+      <small><b>Tampermonkey 5.5.x 정식판:</b> 이번 v1.5.0 bootstrap 전환은 한 번 수동 설치가 필요합니다. 이후 일반 수집 로직은 서버 런타임으로 갱신되어 Tampermonkey 재설치가 필요하지 않습니다.</small>
     </div>
     <small><b>Tampermonkey 5.6+:</b> Chrome 152+용 inline 설치를 지원하므로 위 ‘설치 / 업데이트’ 링크를 먼저 사용하세요.</small>`;
   const actions=trigger.closest('.operator-soop-helper-actions');
@@ -78,20 +91,42 @@ function refreshInstallLinks(panel){
   source?.setAttribute('href',sourceUrl());
 }
 
+function renderRuntimeSummary(panel,state){
+  const target=panel.querySelector('[data-collector-runtime-summary]');
+  if(!target)return;
+  const runtimeState=state.runtimeState||'확인 대기';
+  const runtimeVersion=state.runtimeVersion||'-';
+  const checked=state.runtimeCheckedAt?new Date(state.runtimeCheckedAt).toLocaleString():'-';
+  const loaded=state.runtimeLoadedAt?new Date(state.runtimeLoadedAt).toLocaleString():'-';
+  target.innerHTML=`<small><b>Bootstrap</b> ${state.bootstrapVersion||'-'} · <b>Runtime</b> ${runtimeVersion} · <b>상태</b> ${runtimeState}<br>마지막 확인 ${checked} · 마지막 정상 로드 ${loaded}</small>`;
+}
+
 function renderInstallHelper(trigger){
   const panel=ensureHelperPanel(trigger),state=collectorState();
   const title=panel.querySelector('[data-collector-install-title]');
   const message=panel.querySelector('[data-collector-install-message]');
   const action=panel.querySelector('[data-collector-install-action]');
   refreshInstallLinks(panel);
+  renderRuntimeSummary(panel,state);
   panel.hidden=false;
+
+  if(state.reinstallRequired){
+    if(title)title.textContent='Bootstrap 업데이트 필요 · 현재 v'+(state.bootstrapVersion||'?');
+    if(message)message.textContent='현재 서버 런타임과 설치된 bootstrap의 계약이 맞지 않습니다. Tampermonkey userscript 업데이트가 필요합니다.';
+    if(action)action.textContent='v'+COLLECTOR_LATEST_VERSION+'로 업데이트';
+    return;
+  }
+
   if(state.current){
-    if(title)title.textContent='자동 수집기 v'+state.version+' · 최신 상태';
-    if(message)message.textContent='현재 설치된 자동 수집기가 최신 버전입니다. 재설치는 필요하지 않습니다. 문제가 있을 때만 아래 링크로 같은 버전을 다시 설치하세요.';
+    const runtimeHealthy=['remote','cached'].includes(state.runtimeState);
+    if(title)title.textContent='자동 수집기 v'+state.bootstrapVersion+' · 최신 bootstrap';
+    if(message)message.textContent=runtimeHealthy
+      ?'Bootstrap은 최신 상태이며 런타임도 정상입니다. 일반 수집 로직 업데이트는 서버에서 자동 반영되므로 Tampermonkey 재설치가 필요하지 않습니다.'
+      :'Bootstrap은 최신 상태입니다. 런타임 상태를 확인 중이거나 점검이 필요하지만 userscript 재설치가 필요한 상태는 아닙니다.';
     if(action)action.textContent='v'+COLLECTOR_LATEST_VERSION+' 다시 설치';
   }else if(state.ready){
-    if(title)title.textContent='자동 수집기 업데이트 필요 · 현재 v'+(state.version||'?');
-    if(message)message.textContent='최신 v'+COLLECTOR_LATEST_VERSION+'이 있습니다. Tampermonkey 5.5.x 정식판을 사용 중이면 아래 ‘5.5 정식판용 파일 받기’를 사용하세요. 5.6+에서는 설치/업데이트 링크를 바로 사용할 수 있습니다.';
+    if(title)title.textContent='자동 수집기 bootstrap 업데이트 필요 · 현재 v'+(state.bootstrapVersion||'?');
+    if(message)message.textContent='v'+COLLECTOR_LATEST_VERSION+' bootstrap으로 한 번 업데이트하면 이후 일반 수집기 변경은 서버 런타임으로 자동 반영됩니다. Tampermonkey 5.5.x 정식판은 아래 파일 받기를 사용하세요.';
     if(action)action.textContent='v'+COLLECTOR_LATEST_VERSION+' 설치 / 업데이트';
   }else{
     if(title)title.textContent='자동 수집기 설치 필요';

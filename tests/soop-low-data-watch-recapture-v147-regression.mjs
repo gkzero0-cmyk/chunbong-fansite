@@ -1,14 +1,15 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
-const collector=fs.readFileSync('chunbong-content-collector.user.js','utf8');
+const bootstrap=fs.readFileSync('chunbong-content-collector.user.js','utf8');
+const collector=fs.readFileSync('collector-runtime.js','utf8');
 const guard=fs.readFileSync('operator-soop-recapture-guard.js','utf8');
 const diagnostics=fs.readFileSync('operator-soop-diagnostics.js','utf8');
 const api=fs.readFileSync('lib/operator-soop-recapture-status-api.js','utf8');
 const contentApi=fs.readFileSync('api/content.js','utf8');
 
-assert.match(collector,/@version\s+1\.4\.8/,'userscript metadata must be v1.4.8');
-assert.match(collector,/const VERSION='1\.4\.8'/,'runtime version must be v1.4.8');
+assert.match(bootstrap,/@version\s+1\.5\.0/,'userscript bootstrap metadata must be v1.5.0');
+assert.match(bootstrap,/const BOOTSTRAP_VERSION='1\.5\.0'/,'bootstrap runtime loader version must match metadata');
 assert.match(collector,/SOOP_WATCH_INTERVAL_MS=15\*60\*1000/,'watch interval must be 15 minutes');
 assert.match(collector,/SOOP_WATCH_ONCE_HASH='chunbong-soop-watch-once'/,'one-shot watch marker must exist');
 assert.doesNotMatch(collector,/location\.reload\(\)/,'persistent watch reload must be removed');
@@ -37,4 +38,4 @@ assert.match(api,/requireOwner/,'exact lookup must require owner auth');
 assert.doesNotMatch(api,/body\s*:/,'endpoint must not return browser body content');
 assert.match(contentApi,/operator-content-soop-recapture-status/,'existing content route must multiplex the exact status handler');
 
-console.log('SOOP low-data watcher + exact recapture status regression passed');
+console.log('SOOP low-data watcher + exact recapture status runtime regression passed');

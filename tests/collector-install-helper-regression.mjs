@@ -10,7 +10,7 @@ assert.match(js,/data-collector-install-helper/,'install helper panel should exi
 assert.match(js,/<a[^>]+data-collector-install-action[^>]*>/s,'explicit install/update action should be a native userscript link');
 assert.match(js,/data-collector-script-source/,'raw source link should be separate from install action');
 assert.match(js,/data-collector-stable-download/,'stable Tampermonkey fallback download should exist');
-assert.match(js,/COLLECTOR_LATEST_VERSION\s*=\s*['"]1\.4\.8['"]/,'helper should know the latest collector version');
+assert.match(js,/COLLECTOR_LATEST_VERSION\s*=\s*['"]1\.5\.0['"]/,'helper should know the latest collector bootstrap version');
 assert.match(js,/bindCollectorInstallHelper/,'helper binding should exist');
 assert.match(js,/COLLECTOR_SCRIPT_PATH\s*=\s*['"]\/chunbong-content-collector\.user\.js['"]/,'helper should use the canonical userscript path');
 assert.match(js,/['"]\?install=1&v=['"]/,'install action should add an install/version query');

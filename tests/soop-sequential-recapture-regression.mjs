@@ -4,7 +4,7 @@ import fs from 'node:fs';
 const guard=fs.readFileSync(new URL('../operator-soop-recapture-guard.js',import.meta.url),'utf8');
 const diagnostics=fs.readFileSync(new URL('../operator-soop-diagnostics.js',import.meta.url),'utf8');
 const operator=fs.readFileSync(new URL('../operator-contents.js',import.meta.url),'utf8');
-const collector=fs.readFileSync(new URL('../chunbong-content-collector.user.js',import.meta.url),'utf8');
+const collector=fs.readFileSync(new URL('../collector-runtime.js',import.meta.url),'utf8');
 const redisEntry=fs.readFileSync(new URL('../operator-redis-diagnostics.js',import.meta.url),'utf8');
 
 assert.match(guard,/SOOP_RECAPTURE_SESSION_KEY|RECAPTURE_SESSION_KEY/,'selective recapture needs a shared browser session/lease');
@@ -27,4 +27,4 @@ assert.doesNotMatch(diagnostics,/208562045|204274449/,'diagnostic UI must not ha
 assert.match(collector,/SOOP_WATCH_INTERVAL_MS\s*=\s*15\s*\*\s*60\s*\*\s*1000/,'low-data SOOP watcher cadence must be fifteen minutes');
 assert.match(operator,/unresolvedSoopRecaptureTargets/,'legacy target helper may remain for compatibility, while the guard owns the exact plan');
 
-console.log('SOOP sequential recapture regression contract passed');
+console.log('SOOP sequential recapture runtime regression contract passed');
