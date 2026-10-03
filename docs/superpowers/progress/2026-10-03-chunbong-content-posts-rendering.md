@@ -9,3 +9,5 @@ Task 1 implementation: commit `4d4a2e8cb5e7e1a4d29e987daf26e5c46090cc97` added t
 Task 1 RED refinement: Site regression run 37085384670 caught URL-less rows collapsing because `safeUrl('')` resolves against the site base URL; expected 6 normalized rows, got 5.
 Task 1 fix: commit `8b4bcbf2d1c0c6c1be0eb7a01528129fcb028cf1` now treats empty raw URLs as absent before canonicalization/URL scoring.
 Task 1: complete (tests: Site regression run 37085559310 → success; JavaScript syntax + full tests/*.mjs loop green, including chunbong-post-normalization-regression.mjs).
+
+Task 2 RED setup: `tests/chunbong-post-card-regression.mjs` defines the stable in-card DOM contract. Commit `48cc1cbfb907aae7a73d2030c6c98d98b094d04f` also extends the Playwright content fixture with out-of-order/duplicate/unknown-date SOOP posts plus successful and failed sourcePreview responses. This checkpoint triggers RED CI before production rendering changes.
