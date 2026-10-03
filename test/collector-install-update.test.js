@@ -8,7 +8,7 @@ const vercel=JSON.parse(fs.readFileSync(new URL('../vercel.json',import.meta.url
 test('collector update uses a native userscript link instead of scripted navigation',()=>{
   assert.match(helper,/<a[^>]+data-collector-install-action[^>]*>/s);
   assert.doesNotMatch(helper,/location\.assign\(installUrl\(\)\)/);
-  assert.match(helper,/action\.setAttribute\(['"]href['"],installUrl\(\)\)/);
+  assert.match(helper,/action\??\.setAttribute\(['"]href['"],installUrl\(\)\)/);
 });
 
 test('collector userscript is explicitly served without stale caching',()=>{
