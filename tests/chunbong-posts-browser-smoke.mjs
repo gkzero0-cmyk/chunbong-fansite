@@ -28,7 +28,7 @@ await page.route('**/api/content?type=chunbong-content&id=*',route=>{
   return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({item})});
 });
 
-await page.goto(base+'/contents/posts-smoke',{waitUntil:'domcontentloaded'});
+await page.goto(base+'/chunbong-contents.html?id=posts-smoke',{waitUntil:'domcontentloaded'});
 await page.locator('[data-archive-tab="posts"]').click();
 await page.locator('[data-archive-post-card]').first().waitFor({state:'visible'});
 const cards=page.locator('[data-archive-post-card]');
