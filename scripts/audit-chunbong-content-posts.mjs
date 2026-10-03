@@ -7,7 +7,7 @@ function clean(value=''){return String(value??'').normalize('NFKC').trim()}
 function isPlaceholderTitle(value=''){
   const title=clean(value);
   if(!title||/^\d+$/.test(title))return true;
-  return /^(?:공식\s*)?(?:게시글|공지)(?:\s*[·:#-]?\s*\d+)?$/i.test(title)||/^(?:SOOP\s*)?(?:게시글|공지)$/i.test(title);
+  return /공식\s*(?:게시글|공지)\s*[·:#-]?\s*\d+\s*$/i.test(title)||/^(?:공식\s*)?(?:게시글|공지)(?:\s*[·:#-]?\s*\d+)?$/i.test(title)||/^(?:SOOP\s*)?(?:게시글|공지)$/i.test(title);
 }
 function knownDate(row={}){
   const value=clean(row.date||''),precision=clean(row.datePrecision||'unknown');
