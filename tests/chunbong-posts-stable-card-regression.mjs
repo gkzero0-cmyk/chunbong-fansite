@@ -13,7 +13,8 @@ assert.doesNotMatch(runtime,/insertAdjacentElement/,'post preview must not inser
 assert.doesNotMatch(runtime,/setInterval\s*\(/,'post runtime must not add polling');
 assert.match(runtime,/list\.dataset\.postsNormalized==='true'/,'normalization state must live on the freshly rendered list, not the persistent panel');
 assert.doesNotMatch(runtime,/panel\.dataset\.postsNormalized==='true'/,'persistent panel state would break tab re-entry');
-assert.match(loader,/chunbong-posts-runtime\.js\?v=1/);
+assert.match(loader,/chunbong-posts-runtime\.js\?v=2/,'content detail should cache-bust the legacy post runtime after title-toggle completion');
+assert.match(loader,/content-source-card-unifier\.js\?v=4/,'shared source-card completion runtime should be loaded on content details');
 assert.match(html,/mobile-runtime-loader\.js\?v=2/,'content page must cache-bust the changed runtime loader');
 
 console.log('chunbong stable post card regression passed');
