@@ -34,16 +34,21 @@ await page.locator('[data-archive-post-card]').first().waitFor({state:'visible'}
 const cards=page.locator('[data-archive-post-card]');
 assert.equal(await cards.count(),3,'duplicate post should render once');
 assert.deepEqual(await cards.locator('[data-post-title]').allTextContents(),['최신 공지','중복 글의 실제 제목','이전 공지']);
+assert.equal(await page.getByText('본문 펼치기',{exact:true}).count(),0,'legacy separate expand button should not be rendered');
 
 const first=cards.first();
+const titleToggle=first.locator('[data-source-title-toggle]');
 const before=await cards.count();
-await first.locator('[data-source-preview-toggle]').click();
+assert.equal(await titleToggle.getAttribute('aria-expanded'),'false');
+await titleToggle.click();
 await first.locator('[data-source-notice-detail]').waitFor({state:'visible'});
+assert.equal(await titleToggle.getAttribute('aria-expanded'),'true');
 await page.waitForFunction(()=>document.querySelector('[data-archive-post-card] [data-source-notice-detail]')?.textContent?.includes('본문 테스트 내용'));
 assert.match(await first.locator('[data-source-notice-detail]').textContent(),/본문 테스트 내용/);
-await first.locator('[data-source-preview-toggle]').click();
-assert.equal(await first.locator('[data-source-notice-detail]').isHidden(),true,'collapse should hide the existing body');
-await first.locator('[data-source-preview-toggle]').click();
+await titleToggle.click();
+assert.equal(await titleToggle.getAttribute('aria-expanded'),'false');
+assert.equal(await first.locator('[data-source-notice-detail]').isHidden(),true,'second title click should hide the existing body');
+await titleToggle.click();
 await first.locator('[data-source-notice-detail]').waitFor({state:'visible'});
 assert.equal(await cards.count(),before,'expand/collapse must not change card count');
 assert.equal(previewRequests,1,'loaded preview should not fetch twice');
