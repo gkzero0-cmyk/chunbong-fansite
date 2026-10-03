@@ -6,7 +6,8 @@ const POST_RE=/\/station\/chunbongtv\/post\/(\d+)\/?$/i;
 const FM_RE=/\/(?:best\/)?\d+\/?$/i;
 let scheduled=false;
 
-function esc(value=''){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[char]||char))}
+function ensureStyles(){if(document.querySelector('link[data-content-source-card-unifier-style]'))return;const link=document.createElement('link');link.rel='stylesheet';link.href='content-source-card-unifier.css?v=2';link.dataset.contentSourceCardUnifierStyle='true';document.head.appendChild(link)}
+function esc(value=''){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]||char))}
 function contentId(){const match=location.pathname.match(/^\/contents\/([^/?#]+)/);if(match)try{return decodeURIComponent(match[1])}catch{return match[1]};return new URLSearchParams(location.search).get('id')||''}
 function canonical(raw=''){
   try{
@@ -86,6 +87,7 @@ function normalizePanel(){
   document.dispatchEvent(new CustomEvent('chunbong-source-cards-normalized'));
 }
 function schedule(){if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;normalizePanel()})}
+ensureStyles();
 new MutationObserver(schedule).observe(document.querySelector('[data-archive-detail]')||document.body,{subtree:true,childList:true});
 document.addEventListener('click',event=>{if(event.target.closest?.('[data-source-external-link]'))return;const tab=event.target.closest?.('[data-archive-tab]');if(tab)setTimeout(schedule,0)},true);
 schedule();
