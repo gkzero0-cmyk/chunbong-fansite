@@ -7,7 +7,8 @@ const fortune=read('home-fortune-loader.js');
 const html=read('index.html');
 
 assert.match(overview,/ChunbongCache\?\.peek|ChunbongCache\.peek/,'home overview must inspect cached data before network refresh');
-for(const key of ['home-overview:live','home-overview:schedule','home-overview:activity'])assert.ok(overview.includes(key),'missing stable cached-first key '+key);
+assert.match(overview,/['"]home-overview:['"]?\+type|['"]home-overview:['"]\s*\+\s*type/,'home overview must derive stable cache keys from the content type');
+for(const type of ['live','schedule','activity'])assert.match(overview,new RegExp("peek\\('"+type+"'\\)"),'cached-first lookup missing for '+type);
 assert.match(overview,/chunbong:home-live/,'home overview must publish the resolved live payload');
 assert.match(smart,/chunbong:home-live/,'smart status must reuse the shared live payload');
 assert.match(smart,/ChunbongCache\?\.peek|ChunbongCache\.peek/,'smart status should reuse cached live state before fetching');
