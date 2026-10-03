@@ -68,6 +68,7 @@ assert.match(await timelineCard.locator('[data-post-meta]').textContent(),/날�
 const timelineCount=await page.locator('.archive-post-card.is-timeline').count();
 await timelineCard.locator('[data-post-title-toggle]').click();
 await timelineCard.locator('[data-source-notice-detail]').waitFor({state:'visible'});
+await page.waitForFunction(()=>[...document.querySelectorAll('.archive-post-card.is-timeline [data-post-meta]')].some(node=>node.textContent.includes('2026-10-01')));
 assert.match(await timelineCard.locator('[data-post-meta]').textContent(),/2026-10-01/,'source preview should repair the visible timeline date');
 await timelineCard.locator('[data-post-title-toggle]').click();
 assert.equal(await page.locator('.archive-post-card.is-timeline').count(),timelineCount,'timeline title toggle must not add a second card');
@@ -80,6 +81,7 @@ const sourceCard=page.locator('.archive-post-card.is-sources').first();
 assert.match(await sourceCard.locator('[data-post-meta]').textContent(),/날짜 확인 중/);
 await sourceCard.locator('[data-post-title-toggle]').click();
 await sourceCard.locator('[data-source-notice-detail]').waitFor({state:'visible'});
+await page.waitForFunction(()=>[...document.querySelectorAll('.archive-post-card.is-sources [data-post-meta]')].some(node=>node.textContent.includes('2026-10-03')));
 assert.match(await sourceCard.locator('[data-post-title]').textContent(),/자료 원문의 실제 제목/);
 assert.match(await sourceCard.locator('[data-post-meta]').textContent(),/2026-10-03/,'source preview should repair the source-card date');
 assert.equal(await page.locator('.archive-source-notice').count(),0,'source tab must never fall back to legacy sibling cards');
