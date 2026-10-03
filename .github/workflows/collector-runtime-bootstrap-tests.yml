@@ -12,6 +12,7 @@ on:
       - 'operator-collector-install-helper.js'
       - 'vercel.json'
       - 'test/collector-runtime-bootstrap.test.js'
+      - 'test/collector-bootstrap-loader-behavior.test.js'
       - 'test/collector-install-update.test.js'
       - 'tests/collector-auto-tab-serialization-regression.mjs'
       - '.github/workflows/collector-runtime-bootstrap-tests.yml'
@@ -29,7 +30,7 @@ jobs:
         run: npm install
       - name: Targeted collector tests
         run: |
-          node --test test/collector-runtime-bootstrap.test.js test/collector-install-update.test.js
+          node --test test/collector-runtime-bootstrap.test.js test/collector-bootstrap-loader-behavior.test.js test/collector-install-update.test.js
           node tests/collector-auto-tab-serialization-regression.mjs
       - name: Full project tests
         run: npm test
