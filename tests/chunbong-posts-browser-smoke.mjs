@@ -39,6 +39,7 @@ const first=cards.first();
 const before=await cards.count();
 await first.locator('[data-source-preview-toggle]').click();
 await first.locator('[data-source-notice-detail]').waitFor({state:'visible'});
+await page.waitForFunction(()=>document.querySelector('[data-archive-post-card] [data-source-notice-detail]')?.textContent?.includes('본문 테스트 내용'));
 assert.match(await first.locator('[data-source-notice-detail]').textContent(),/본문 테스트 내용/);
 await first.locator('[data-source-preview-toggle]').click();
 assert.equal(await first.locator('[data-source-notice-detail]').isHidden(),true,'collapse should hide the existing body');
