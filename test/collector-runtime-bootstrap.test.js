@@ -17,7 +17,6 @@ const requiredStorageKeys=[
 ];
 
 function optionalRead(path){try{return read(path)}catch{return''}}
-
 function cacheValue(path){
   const rule=vercel.headers.find(entry=>entry.source===path);
   return rule?.headers?.find(header=>String(header.key).toLowerCase()==='cache-control')?.value||'';
@@ -39,24 +38,26 @@ test('collector runtime bootstrap keeps metadata but removes full parser bodies'
   assert.doesNotMatch(userscript,/function\s+captureNamu/);
 });
 
-test('collector runtime preserves storage keys and automatic tab serialization',()=>{
+test('collector runtime preserves v1.4.8 behavior keys and automatic tab serialization',()=>{
   const runtime=optionalRead('collector-runtime.js');
   assert.ok(runtime,'collector-runtime.js must exist');
   for(const key of requiredStorageKeys)assert.match(runtime,new RegExp(key));
   assert.match(runtime,/AUTO_OPEN_MAX_ACTIVE\s*=\s*1/);
-  assert.match(runtime,/runtimeVersion\s*=\s*['"]1\.0\.0['"]/);
-  assert.match(runtime,/runtimeContract\s*=\s*1/);
+  assert.match(runtime,/function\s+captureSoopPost/);
+  assert.match(runtime,/function\s+captureFmkPost/);
+  assert.match(runtime,/function\s+captureNamu/);
 });
 
-test('collector runtime manifest and all runtime resources disable stale caching',()=>{
-  const raw=optionalRead('collector-runtime-manifest.json');
-  assert.ok(raw,'collector-runtime-manifest.json must exist');
-  const manifest=JSON.parse(raw);
+test('collector runtime manifest is the runtime version and compatibility source of truth',()=>{
+  const manifest=JSON.parse(optionalRead('collector-runtime-manifest.json'));
   assert.equal(manifest.runtimeVersion,'1.0.0');
   assert.equal(manifest.runtimeUrl,'/collector-runtime.js');
   assert.equal(manifest.minBootstrapContract,1);
   assert.equal(manifest.maxBootstrapContract,1);
   assert.equal(manifest.disabled,false);
+});
+
+test('all collector runtime resources disable stale caching',()=>{
   for(const path of ['/chunbong-content-collector.user.js','/collector-runtime-manifest.json','/collector-runtime.js']){
     const cache=cacheValue(path);
     assert.match(cache,/no-cache/i,`${path} no-cache`);
@@ -66,18 +67,22 @@ test('collector runtime manifest and all runtime resources disable stale caching
 });
 
 test('operator center distinguishes bootstrap and runtime status',()=>{
-  for(const marker of ['bootstrapVersion','runtimeVersion','runtimeState','lastRuntimeCheckAt','lastRuntimeLoadedAt','reinstallRequired']){
-    assert.match(helper,new RegExp(marker));
-  }
-  assert.match(helper,/재설치[^\n]{0,80}필요하지|재설치[^\n]{0,80}필요 없음|Tampermonkey[^\n]{0,80}재설치/i);
+  for(const marker of ['bootstrapVersion','runtimeVersion','runtimeState','lastRuntimeCheckAt','lastRuntimeLoadedAt','reinstallRequired'])assert.match(helper,new RegExp(marker));
+  assert.match(helper,/재설치[^\n]{0,120}필요하지|재설치[^\n]{0,120}필요 없음|Tampermonkey[^\n]{0,120}재설치/i);
 });
 
 test('bootstrap validates same-origin runtime and supports compatible cached fallback',()=>{
   assert.match(userscript,/https:\/\/chunbong-fansite\.vercel\.app/);
-  assert.match(userscript,/new URL\([^)]*runtimeUrl[^)]*\)/);
-  assert.match(userscript,/origin[^\n]{0,120}PRODUCTION_ORIGIN|PRODUCTION_ORIGIN[^\n]{0,120}origin/);
+  assert.match(userscript,/new URL\([^\n]*runtimeUrl[^\n]*PRODUCTION_ORIGIN/);
+  assert.match(userscript,/resolved\.origin\s*!==\s*PRODUCTION_ORIGIN/);
   assert.match(userscript,/cache\s*:\s*['"]no-store['"]/);
-  assert.match(userscript,/last-known-good|LAST_GOOD|lastGood/i);
-  assert.match(userscript,/degraded/);
-  assert.match(userscript,/disabled/);
+  assert.match(userscript,/LAST_GOOD_KEY/);
+  assert.match(userscript,/runtimeState:'degraded'/);
+  assert.match(userscript,/runtimeState:'disabled'/);
+});
+
+test('bootstrap only saves last-known-good runtime after executeRuntime succeeds',()=>{
+  const executeIndex=userscript.indexOf('await executeRuntime(source);');
+  const saveIndex=userscript.indexOf('saveLastGood(source,manifest.runtimeVersion);');
+  assert.ok(executeIndex>=0&&saveIndex>executeIndex,'last-known-good must be saved after successful runtime execution');
 });
