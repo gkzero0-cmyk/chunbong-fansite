@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 const runtime=fs.readFileSync(new URL('../chunbong-posts-runtime.js',import.meta.url),'utf8');
 const loader=fs.readFileSync(new URL('../mobile-runtime-loader.js',import.meta.url),'utf8');
+const html=fs.readFileSync(new URL('../chunbong-contents.html',import.meta.url),'utf8');
 
 assert.match(runtime,/data-source-preview-toggle/);
 assert.match(runtime,/data-source-notice-detail/);
@@ -13,5 +14,6 @@ assert.doesNotMatch(runtime,/setInterval\s*\(/,'post runtime must not add pollin
 assert.match(runtime,/list\.dataset\.postsNormalized==='true'/,'normalization state must live on the freshly rendered list, not the persistent panel');
 assert.doesNotMatch(runtime,/panel\.dataset\.postsNormalized==='true'/,'persistent panel state would break tab re-entry');
 assert.match(loader,/chunbong-posts-runtime\.js\?v=1/);
+assert.match(html,/mobile-runtime-loader\.js\?v=2/,'content page must cache-bust the changed runtime loader');
 
 console.log('chunbong stable post card regression passed');
