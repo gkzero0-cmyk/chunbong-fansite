@@ -22,6 +22,7 @@
   if(document.body?.dataset?.page==='contents'){
     addScript('official-wiki-guide.js?v=4','data-official-wiki-guide-runtime');
     addScript('content-page-enhancements.js?v=7','data-content-page-enhancements-runtime');
+    addScript('chunbong-posts-runtime.js?v=1','data-chunbong-posts-runtime');
   }
   loadPolish();loadMobile();
   mobile.addEventListener?.('change',event=>{if(event.matches)loadMobile()});
