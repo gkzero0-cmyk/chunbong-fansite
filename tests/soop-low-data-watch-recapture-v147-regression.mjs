@@ -7,8 +7,8 @@ const diagnostics=fs.readFileSync('operator-soop-diagnostics.js','utf8');
 const api=fs.readFileSync('lib/operator-soop-recapture-status-api.js','utf8');
 const contentApi=fs.readFileSync('api/content.js','utf8');
 
-assert.match(collector,/@version\s+1\.4\.7/,'userscript metadata must be v1.4.7');
-assert.match(collector,/const VERSION='1\.4\.7'/,'runtime version must be v1.4.7');
+assert.match(collector,/@version\s+1\.4\.8/,'userscript metadata must be v1.4.8');
+assert.match(collector,/const VERSION='1\.4\.8'/,'runtime version must be v1.4.8');
 assert.match(collector,/SOOP_WATCH_INTERVAL_MS=15\*60\*1000/,'watch interval must be 15 minutes');
 assert.match(collector,/SOOP_WATCH_ONCE_HASH='chunbong-soop-watch-once'/,'one-shot watch marker must exist');
 assert.doesNotMatch(collector,/location\.reload\(\)/,'persistent watch reload must be removed');

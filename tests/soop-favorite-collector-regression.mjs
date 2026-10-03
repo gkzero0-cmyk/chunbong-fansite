@@ -52,8 +52,8 @@ const html=fs.readFileSync(new URL('../operator.html',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../operator.css',import.meta.url),'utf8');
 const api=fs.readFileSync(new URL('../lib/chunbong-content-archive-api.js',import.meta.url),'utf8');
 
-assert.match(collector,/@version\s+1\.4\.7/,'collector userscript version should advance for low-data watcher release');
-assert.match(collector,/const VERSION='1\.4\.7'/,'collector runtime version must match userscript metadata');
+assert.match(collector,/@version\s+1\.4\.8/,'collector userscript version should advance for serialized auto discovery');
+assert.match(collector,/const VERSION='1\.4\.8'/,'collector runtime version must match userscript metadata');
 assert.match(collector,/SOOP_MEDIA_COLLECTOR_VERSION=8/,'watcher-only release must keep rendered-media generation at 8');
 assert.match(collector,/mediaCollectorVersion:SOOP_MEDIA_COLLECTOR_VERSION/,'SOOP payload should identify the media collector generation');
 assert.match(collector,/collectorVersion:SOOP_MEDIA_COLLECTOR_VERSION,mediaComplete:images\.length>0,imageCount:images\.length/,'zero-image captures must not be marked media complete');
@@ -78,7 +78,7 @@ assert.match(collector,/naturalWidth|naturalHeight/,'rendered-media fallback sho
 assert.match(collector,/await loadLazyPage\(\)/,'authenticated post capture should force lazy media to load before collection');
 assert.match(collector,/profile\|avatar\|favicon\|logo\|icon\|emoji\|badge/,'SOOP collector should filter common decorative images');
 assert.doesNotMatch(collector,/204274449|208562045/,'media recovery must be generic and must not hardcode validation post IDs');
-assert.match(collector,/SOOP_WATCH_HASH='chunbong-soop-watch'/,'legacy watcher marker should remain compatible during v1.4.7 transition');
+assert.match(collector,/SOOP_WATCH_HASH='chunbong-soop-watch'/,'legacy watcher marker should remain compatible during v1.4.8 transition');
 assert.match(collector,/SOOP_WATCH_ONCE_HASH='chunbong-soop-watch-once'/,'low-data watcher one-shot mode missing');
 assert.match(collector,/SOOP_SELFTEST_HASH='chunbong-soop-selftest'/,'collector self-test mode missing');
 assert.match(collector,/lastWatcherHeartbeatAt/,'collector must record the latest one-shot watcher activity timestamp');
@@ -99,5 +99,5 @@ assert.match(operator,/마지막 서버 반영/,'collector health UI should expo
 assert.match(operator,/최근 오류/,'collector health UI should expose recent failures');
 assert.match(css,/operator-collector-health-grid/,'collector health dashboard styling missing');
 
-// Generation 8 keeps privacy-safe diagnostics while v1.4.7 reduces idle watcher traffic.
+// Generation 8 keeps privacy-safe diagnostics while v1.4.8 serializes automatic discovery tabs.
 console.log('soop-favorite-collector-regression: ok');

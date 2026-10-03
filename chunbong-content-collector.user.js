@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         춘봉 콘텐츠 자동 수집기
 // @namespace    https://chunbong-fansite.vercel.app/
-// @version      1.4.7
+// @version      1.4.8
 // @description  춘봉 팬사이트용 나무위키·SOOP·FM코리아 브라우저 자료 자동 수집기
 // @match        https://namu.wiki/w/*
 // @match        https://www.namu.wiki/w/*
@@ -26,7 +26,7 @@
 
 (function(){
   'use strict';
-  const VERSION='1.4.7';
+  const VERSION='1.4.8';
   const CHANNEL='chunbong-content-collector';
   const PAGE_MESSAGE_EVENT='chunbong-content-collector-page-message';
   const PAGE_COMMAND_EVENT='chunbong-content-collector-page-command';
@@ -45,6 +45,9 @@
   const SOOP_WATCH_HASH='chunbong-soop-watch';
   const SOOP_WATCH_ONCE_HASH='chunbong-soop-watch-once';
   const SOOP_WATCH_LEASE_KEY='cb-soop-watch-lease-v1';
+  const AUTO_OPEN_CLAIMS_KEY='cb-content-auto-open-claims-v1';
+  const AUTO_OPEN_MAX_ACTIVE=1;
+  const AUTO_OPEN_CLAIM_MS=90*1000;
   const SOOP_SELFTEST_HASH='chunbong-soop-selftest';
   const SOOP_WATCH_INTERVAL_MS=15*60*1000;
   const SOOP_WATCH_LEASE_MS=2*60*1000;
@@ -91,6 +94,42 @@
     write(SEEN_KEY,Object.fromEntries(entries));
   }
   function recentlySeen(url,days=7){const at=Number(seenMap()[canonical(url)]||0);return at>0&&Date.now()-at<days*86400000}
+  const autoOpenClaims=()=>{const rows=read(AUTO_OPEN_CLAIMS_KEY,{});return rows&&typeof rows==='object'&&!Array.isArray(rows)?rows:{}};
+  function compactAutoOpenClaims(){
+    const now=Date.now(),rows=autoOpenClaims(),next={};
+    for(const [key,row] of Object.entries(rows))if(Number(row?.expiresAt||0)>now)next[key]=row;
+    if(Object.keys(next).length!==Object.keys(rows).length)write(AUTO_OPEN_CLAIMS_KEY,next);
+    return next;
+  }
+  function currentAutoClaimToken(){
+    const raw=String(location.hash||'').replace(/^#/,'');const prefix=AUTO_HASH+'=';
+    if(!raw.startsWith(prefix))return'';try{return decodeURIComponent(raw.slice(prefix.length))}catch{return raw.slice(prefix.length)}
+  }
+  function claimAutoOpen(raw){
+    const key=canonical(raw),now=Date.now(),rows=compactAutoOpenClaims();
+    if(!key||rows[key]||Object.keys(rows).length>=AUTO_OPEN_MAX_ACTIVE)return'';
+    const token=now.toString(36)+'-'+Math.random().toString(36).slice(2,10);
+    rows[key]={token,claimedAt:now,expiresAt:now+AUTO_OPEN_CLAIM_MS};write(AUTO_OPEN_CLAIMS_KEY,rows);
+    return compactAutoOpenClaims()[key]?.token===token?token:'';
+  }
+  function releaseAutoOpenClaim(raw,token=currentAutoClaimToken()){
+    const key=canonical(raw),rows=autoOpenClaims(),row=rows[key];if(!row||token&&row.token!==token)return false;
+    delete rows[key];write(AUTO_OPEN_CLAIMS_KEY,rows);return true;
+  }
+  async function waitForAutoOpenSlot(timeoutMs=AUTO_OPEN_CLAIM_MS){
+    const deadline=Date.now()+timeoutMs;while(Date.now()<deadline){if(Object.keys(compactAutoOpenClaims()).length<AUTO_OPEN_MAX_ACTIVE)return true;await sleep(450)}return false;
+  }
+  async function openAutoUrls(urls=[]){
+    let opened=0;
+    for(const raw of Array.isArray(urls)?urls:[]){
+      const url=canonical(raw);if(!url)continue;if(!(await waitForAutoOpenSlot()))break;
+      const token=claimAutoOpen(url);if(!token)continue;
+      const tab=openBackground(url,AUTO_HASH+'='+encodeURIComponent(token),false);if(!tab){releaseAutoOpenClaim(url,token);continue}
+      opened++;const deadline=Date.now()+AUTO_OPEN_CLAIM_MS;
+      while(Date.now()<deadline){const row=compactAutoOpenClaims()[url];if(!row||row.token!==token)break;await sleep(450)}
+    }
+    return opened;
+  }
   function enqueue(payload){
     if(!payload?.source||!payload?.url)return false;
     const key=payload.source+'|'+canonical(payload.url),rows=queueRows().filter(row=>row?.key!==key);
@@ -289,7 +328,7 @@
     return queued;
   }
   function soopPostLinks(){return [...document.querySelectorAll('a[href*="/station/chunbongtv/post/"]')].map(a=>{try{const url=canonical(new URL(a.href,location.href).toString()),m=new URL(url).pathname.match(/^\/station\/chunbongtv\/post\/(\d+)\/?$/i);return m?{id:m[1],url}:null}catch{return null}}).filter(Boolean).filter((row,index,all)=>all.findIndex(x=>x.id===row.id)===index)}
-  function discoverSoopPosts(limit=10){const rows=soopPostLinks().filter(row=>!soopHandled(row.id,row.url)).slice(0,limit);rows.forEach((row,index)=>setTimeout(()=>openBackground(row.url,AUTO_HASH,false),index*900));return rows.length}
+  async function discoverSoopPosts(limit=10){const rows=soopPostLinks().filter(row=>!soopHandled(row.id,row.url)).slice(0,limit);return openAutoUrls(rows.map(row=>row.url))}
   function requestOperatorFlush(){
     const state=collectorStatus(),last=Number(state.autoFlushRequestedAt||0);if(Date.now()-last<12000)return;
     setCollectorStatus({autoFlushRequestedAt:Date.now()});
@@ -298,7 +337,7 @@
   async function scanSoopBoard(mode='watch'){
     const started=Date.now();
     try{
-      await loadSoopListing();const links=soopPostLinks(),discovered=discoverSoopPosts(12),now=new Date().toISOString();
+      await loadSoopListing();const links=soopPostLinks(),discovered=await discoverSoopPosts(12),now=new Date().toISOString();
       setCollectorStatus({lastScanAt:now,lastScanMode:mode,lastScanPostCount:links.length,lastDiscoveredCount:discovered,nextScanAt:new Date(Date.now()+SOOP_WATCH_INTERVAL_MS).toISOString(),lastWatcherHeartbeatAt:now,lastError:'',lastErrorAt:''},'SOOP 게시판 확인 · 신규 '+discovered+'건');
       return{ok:true,links:links.length,discovered,durationMs:Date.now()-started};
     }catch(error){
@@ -399,13 +438,12 @@
     return enqueue({version:1,source:'fmkorea-public-browser',postId,url:'https://www.fmkorea.com/'+postId,title,author,board,date:dateRaw,body,images:[...imageSet].slice(0,20),access:'anonymous-verified',capturedAt:new Date().toISOString()});
   }
   const FMK_KEYWORDS=['춘봉','춘타클','레오펠','그냥서버','머니게임','적자생존','싸이감성','춘봉상사'];
-  function discoverFmkPosts(){
+  async function discoverFmkPosts(){
     const seen=seenMap(),urls=[...document.querySelectorAll('a[href]')].map(a=>({href:a.href,text:clean(a.textContent)}))
       .filter(row=>row.text&&FMK_KEYWORDS.some(keyword=>row.text.includes(keyword)))
       .map(row=>{const id=fmkPostId(row.href);return id?canonical(row.href):''})
       .filter(Boolean).filter((url,index,all)=>all.indexOf(url)===index).filter(url=>!seen[url]).slice(0,10);
-    urls.forEach((url,index)=>setTimeout(()=>openBackground(url,AUTO_HASH,false),index*950));
-    return urls.length;
+    return openAutoUrls(urls);
   }
 
 
@@ -550,27 +588,27 @@
     if((location.hostname==='www.sooplive.com'||location.hostname==='sooplive.com')&&location.pathname.startsWith('/station/chunbongtv')){
       const isPost=/^\/station\/chunbongtv\/post\/\d+\/?$/i.test(location.pathname);
       if(isPost){
-        await captureSoopPost(location.hash.includes(AUTO_HASH));
-        if(location.hash.includes(AUTO_HASH))setTimeout(()=>window.close(),900);
+        const autoCollect=location.hash.includes(AUTO_HASH),claimToken=currentAutoClaimToken();
+        try{await captureSoopPost(autoCollect)}finally{if(autoCollect){releaseAutoOpenClaim(location.href,claimToken);setTimeout(()=>window.close(),900)}}
         return;
       }
       if(location.hash.includes(SOOP_BACKFILL_HASH)){await runSoopBackfill();return}
       if(location.hash.includes(SOOP_WATCH_ONCE_HASH)||location.hash.includes(SOOP_WATCH_HASH)){await runSoopWatch();return}
       if(location.hash.includes(SOOP_SELFTEST_HASH)){await runSoopSelfTest();return}
-      setTimeout(()=>void scanSoopBoard('visit'),1400);setTimeout(discoverSoopPosts,3800);
-      if(location.hash.includes(DISCOVER_HASH))setTimeout(()=>window.close(),8500);
+      await sleep(1400);await scanSoopBoard('visit');
+      if(location.hash.includes(DISCOVER_HASH))setTimeout(()=>window.close(),700);
       return;
     }
     if(['fmkorea.com','www.fmkorea.com','m.fmkorea.com'].includes(location.hostname)){
       try{GM_registerMenuCommand('현재 FM코리아 공개글 수집',()=>void captureFmkPost(true))}catch{}
       const postId=fmkPostId();
       if(postId){
-        await captureFmkPost(location.hash.includes(AUTO_HASH));
-        if(location.hash.includes(AUTO_HASH))setTimeout(()=>window.close(),900);
+        const autoCollect=location.hash.includes(AUTO_HASH),claimToken=currentAutoClaimToken();
+        try{await captureFmkPost(autoCollect)}finally{if(autoCollect){releaseAutoOpenClaim(location.href,claimToken);setTimeout(()=>window.close(),900)}}
         return;
       }
-      setTimeout(discoverFmkPosts,1400);setTimeout(discoverFmkPosts,3800);
-      if(location.hash.includes(DISCOVER_HASH))setTimeout(()=>window.close(),8500);
+      await sleep(1400);await discoverFmkPosts();
+      if(location.hash.includes(DISCOVER_HASH))setTimeout(()=>window.close(),700);
     }
   }
   void run();

@@ -1,4 +1,4 @@
-const COLLECTOR_LATEST_VERSION='1.4.7';
+const COLLECTOR_LATEST_VERSION='1.4.8';
 const COLLECTOR_SCRIPT_PATH='/chunbong-content-collector.user.js';
 const TAMPERMONKEY_URL='https://www.tampermonkey.net/';
 const READY_ATTR='data-chunbong-collector-ready';

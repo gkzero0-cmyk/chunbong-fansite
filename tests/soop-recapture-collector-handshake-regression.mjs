@@ -19,7 +19,7 @@ assert.match(entry,/operator-soop-recapture-guard\.js/,'existing operator entry 
 assert.match(guardSource,/data-collector-recapture-soop/,'guard should intercept the existing selective SOOP recapture button');
 assert.match(guardSource,/data-chunbong-collector-ready/,'guard should refuse false success when the browser collector bridge is absent');
 assert.match(guardSource,/data-chunbong-collector-version/,'guard should validate the installed collector version');
-assert.match(guardSource,/MIN_COLLECTOR_VERSION\s*=\s*['"]1\.4\.7['"]/,'v1.4.7 is required for exact recapture and low-data watcher behavior');
+assert.match(guardSource,/MIN_COLLECTOR_VERSION\s*=\s*['"]1\.4\.7['"]/,'v1.4.7 remains the minimum for exact recapture and low-data watcher behavior');
 assert.match(guardSource,/stopImmediatePropagation/,'unavailable or outdated collectors must block the original success handler');
 assert.match(guardSource,/type\s*:\s*['"]ping['"]/,'guard should send a post-command liveness probe');
 assert.match(guardSource,/type\s*!==\s*['"]state['"]|type\s*===\s*['"]state['"]/,'guard should wait for a collector state response');
@@ -32,6 +32,6 @@ assert.match(guardSource,/status-lookup-failed/,'exact status failures must rema
 
 assert.match(contents,/data-collector-recapture-soop/,'operator contents should keep the selective recapture trigger available');
 assert.match(collector,/SOOP_WATCH_INTERVAL_MS=15\*60\*1000/,'low-data SOOP watcher cadence must be fifteen minutes');
-assert.match(collector,/@version\s+1\.4\.7/,'exact recapture release should require userscript v1.4.7');
+assert.match(collector,/@version\s+1\.4\.8/,'automatic tab serialization release should install userscript v1.4.8');
 
 console.log('SOOP recapture collector handshake regression passed');
