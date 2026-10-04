@@ -1,0 +1,39 @@
+@media (min-width:901px){
+  body[data-page="vod"] .video-layout,
+  body[data-page="clips"] .video-layout,
+  body[data-page="youtube"] .video-layout{align-items:start}
+
+  body[data-page="vod"] .video-layout>.video-list,
+  body[data-page="clips"] .video-layout>.video-list,
+  body[data-page="youtube"] .video-layout>.video-list{
+    position:sticky;
+    top:100px;
+    max-height:calc(100svh - 124px);
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    scrollbar-gutter:stable;
+    padding-right:6px;
+    scroll-padding-block:10px;
+  }
+
+  body[data-page="vod"] .video-list-card,
+  body[data-page="clips"] .video-list-card,
+  body[data-page="youtube"] .video-list-card{min-height:92px}
+
+  body[data-page="vod"] .video-list-card.selected,
+  body[data-page="clips"] .video-list-card.selected,
+  body[data-page="youtube"] .video-list-card.selected{
+    box-shadow:inset 3px 0 0 var(--orange),0 0 0 1px #ff762f33;
+  }
+}
+
+@media (max-width:900px){
+  body[data-page="vod"] .video-layout>.video-list,
+  body[data-page="clips"] .video-layout>.video-list,
+  body[data-page="youtube"] .video-layout>.video-list{
+    position:static;
+    max-height:none;
+    overflow:visible;
+    padding-right:0;
+  }
+}
