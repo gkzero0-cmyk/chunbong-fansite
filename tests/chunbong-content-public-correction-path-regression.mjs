@@ -5,6 +5,7 @@ const require = createRequire(import.meta.url);
 const browserImportManage = require('../lib/chunbong-content-browser-import-manage');
 const { publicDetailResponse } = browserImportManage._internals;
 
+const rankingThumbnail = 'https://stimg.sooplive.com/NORMAL_BBS/3/24883333/23031786686873061.png';
 const recruitmentThumbnail = 'https://stimg.sooplive.com/NORMAL_BBS/3/24883333/72271790804311879.png';
 const payload = {
   item: {
@@ -78,6 +79,7 @@ const recruitment = timeline.find(row => row.id === 'soop-auth-post-208562045');
 
 assert.equal(ranking?.date, '2026-08-14', 'public detail response must apply the verified UP ranking date');
 assert.equal(ranking?.datePrecision, 'day', 'verified UP ranking date must be day precision');
+assert.equal(ranking?.thumbnail, rankingThumbnail, 'public detail response must apply the verified UP ranking thumbnail');
 assert.equal(recruitment?.thumbnail, recruitmentThumbnail, 'public detail response must apply the linked recruitment thumbnail fallback');
 
 console.log('chunbong content public correction path regression: OK');
