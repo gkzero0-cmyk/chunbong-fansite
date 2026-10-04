@@ -1,7 +1,7 @@
 /* CHUNBONG_PWA v2 · deployment-aware cache */
 const CACHE_PREFIX = 'chunbong-pwa-';
 const MEDIA_CACHE_PREFIX = 'chunbong-media-';
-// Previous deployed cache generation: runtime-v36. Kept as a migration note only.
+// Previous deployed cache generation: runtime-v34. Kept as a migration note only.
 const FALLBACK_VERSION = 'runtime-v37';
 const requestedVersion = new URL(self.location.href).searchParams.get('v') || FALLBACK_VERSION;
 const BUILD_VERSION = String(requestedVersion).replace(/[^a-zA-Z0-9._-]/g,'-').slice(0,48) || FALLBACK_VERSION;
