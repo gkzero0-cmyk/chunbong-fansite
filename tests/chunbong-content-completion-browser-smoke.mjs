@@ -48,15 +48,23 @@ try{
   assert.equal(await body.isHidden(),true,'second title click should collapse the body');
 
   await page.getByRole('tab',{name:'영상'}).click();
-  const media=page.locator('a.archive-media-card[data-inline-media-ready]').first();
+  const media=page.locator('a.archive-media-card[data-content-media-ready]').first();
   await media.waitFor();
-  assert.equal(await page.locator('.archive-inline-media iframe').count(),0,'video iframe must not load before user interaction');
+  const workspace=page.locator('[data-content-media-workspace]').first();
+  const frame=workspace.locator('iframe');
+  await workspace.waitFor({state:'attached'});
+  assert.equal(await workspace.isHidden(),true,'shared video workspace must stay collapsed before user interaction');
+  assert.equal(await frame.getAttribute('src'),null,'video iframe must not load before user interaction');
+  assert.equal(await media.getAttribute('aria-expanded'),'false');
   await media.click();
-  const frame=page.locator('.archive-inline-media iframe').first();
-  await frame.waitFor();
+  await workspace.waitFor({state:'visible'});
   assert.match(await frame.getAttribute('src'),/^https:\/\/vod\.sooplive\.com\/player\/208500001\/embed\?/);
-  await media.click();
-  assert.equal(await page.locator('.archive-inline-media').first().isHidden(),true,'second media click should collapse the player');
+  assert.equal(await media.getAttribute('aria-expanded'),'true');
+  assert.match(await workspace.locator('[data-content-media-title]').innerText(),/적자생존 설명회/);
+  await workspace.locator('[data-content-media-close]').click();
+  assert.equal(await workspace.isHidden(),true,'close button should collapse the shared player');
+  assert.equal(await frame.getAttribute('src'),null,'closing the workspace must unload the video iframe');
+  assert.equal(await media.getAttribute('aria-expanded'),'false');
 
   console.log('chunbong content completion browser smoke passed');
 }finally{await browser.close();}
