@@ -11,7 +11,7 @@ const contentApi=fs.readFileSync('api/content.js','utf8');
 
 assert.match(bootstrap,/@version\s+1\.5\.0/,'userscript bootstrap metadata must stay v1.5.0');
 assert.match(bootstrap,/const BOOTSTRAP_VERSION='1\.5\.0'/,'bootstrap runtime loader version must stay unchanged');
-assert.equal(manifest.runtimeVersion,'1.0.2','adaptive watcher control repair should ship as a runtime-only release');
+assert.equal(manifest.runtimeVersion,'1.0.1','adaptive watcher remains runtime 1.0.1 for the operator-button fallback repair');
 assert.match(collector,/SOOP_WATCH_ACTIVE_MS=15\*60\*1000/,'active watcher interval must be 15 minutes');
 assert.match(collector,/SOOP_WATCH_NORMAL_MS=30\*60\*1000/,'normal watcher interval must be 30 minutes');
 assert.match(collector,/SOOP_WATCH_IDLE_MS=60\*60\*1000/,'idle watcher interval must be 60 minutes');
