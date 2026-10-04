@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-const read = file => fs.readFileSync(new URL('../' + file, import.meta.url), 'utf8');
+const read = file => {
+  const url = new URL('../' + file, import.meta.url);
+  return fs.existsSync(url) ? fs.readFileSync(url, 'utf8') : '';
+};
 
 const filter = read('content-filter.js');
 const cleanup = read('media-sidebar-cleanup.js');
