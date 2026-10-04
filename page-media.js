@@ -8,6 +8,25 @@
   } = core;
   const itemKey=item=>String(item?.id||item?.videoId||item?.link||item?.title||'');
   const miniState={kind:'',dismissed:false};
+
+  function setupMediaSidebar(kind){
+    const viewer=$(`#${kind}-viewer`);
+    const list=$(`#${kind}-list`);
+    const nav=$('.media-local-nav');
+    const layout=viewer?.closest('.video-layout');
+    if(!viewer||!list||!nav||!layout)return null;
+    let sidebar=layout.querySelector(':scope > .media-sidebar');
+    if(!sidebar){
+      sidebar=document.createElement('aside');
+      sidebar.className='media-sidebar';
+      sidebar.setAttribute('aria-label','영상 목차');
+      viewer.insertAdjacentElement('afterend',sidebar);
+    }
+    if(nav.parentElement!==sidebar)sidebar.appendChild(nav);
+    if(list.parentElement!==sidebar)sidebar.appendChild(list);
+    return sidebar;
+  }
+
   function setupMobileMiniPlayer(kind){
     if(!window.matchMedia('(max-width:760px)').matches)return;
     const viewer=$('#'+kind+'-viewer');
@@ -103,6 +122,7 @@
   async function renderVideoPage(kind) {
     const list = $(`#${kind}-list`);
     if (!list) return;
+    setupMediaSidebar(kind);
     const fallback = data.fallback?.vod || [];
     list.setAttribute('aria-busy','true');
     list.innerHTML = '<div class="loading-card">영상을 불러오는 중...</div>';
@@ -116,6 +136,7 @@
     const tabs = $$('.clip-tab');
     const kindLabel = $('#clip-kind-label');
     if (!list || !tabs.length) return;
+    setupMediaSidebar('clip');
     list.setAttribute('aria-busy','true');
     list.innerHTML = '<div class="loading-card">CATCH와 클립을 불러오는 중...</div>';
     const payload = await loadContent('clips');
@@ -164,6 +185,7 @@
     const tabs = $$('.youtube-tab');
     const kindLabel = $('#youtube-kind-label');
     if (!list || !tabs.length) return;
+    setupMediaSidebar('youtube');
     list.setAttribute('aria-busy','true');
     list.innerHTML = '<div class="loading-card">유튜브 동영상과 Shorts를 불러오는 중...</div>';
     const payload = await loadContent('youtube');

@@ -13,9 +13,9 @@ for (const token of ['renderSchedulePage','renderNoticePage','renderClipsPage','
 const runtimeByPage = {
   'schedule.html':['page-schedule.js',1],
   'notice.html':['page-notice.js',1],
-  'vod.html':['page-media.js',2],
-  'clips.html':['page-media.js',2],
-  'youtube.html':['page-media.js',2],
+  'vod.html':['page-media.js',3],
+  'clips.html':['page-media.js',3],
+  'youtube.html':['page-media.js',3],
   'fanart.html':['page-fanart.js',2]
 };
 for (const [htmlFile, [runtime,version]] of Object.entries(runtimeByPage)) {
