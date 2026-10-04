@@ -9,7 +9,7 @@ const player = read('content-media-player.js');
 const playerCss = read('content-media-player.css');
 const mediaCss = read('media-video-layout.css');
 
-assert.match(contentsHtml, /content-media-player\.js\?v=4/, 'content archive must load the new media workspace runtime');
+assert.match(contentsHtml, /content-media-player\.js\?v=5/, 'content archive must load the fitted media workspace runtime');
 assert.match(player, /archive-media-workspace/, 'content media must use one shared workspace instead of expanding grid rows');
 assert.match(player, /insertAdjacentElement\('beforebegin'/, 'shared player must sit above the media grid');
 assert.match(player, /vod\.sooplive\.(?:com|co\.kr)/, 'SOOP com and co.kr player URLs must both embed');
@@ -21,11 +21,14 @@ assert.match(playerCss, /archive-media-workspace/, 'shared workspace must have d
 
 for (const [file, active] of [['vod.html','vod'],['clips.html','clips'],['youtube.html','youtube']]) {
   const html = read(file);
+  assert.match(html, /class="media-sidebar"/, `${file} must expose the fixed media sidebar in static HTML`);
   assert.match(html, /class="media-local-nav"/, `${file} must expose always-visible media navigation`);
   assert.match(html, new RegExp(`data-media-local="${active}"[^>]*aria-current="page"`), `${file} must mark the current media page`);
-  assert.match(html, /media-video-layout\.css\?v=3/, `${file} must load the refreshed local-nav stylesheet`);
+  assert.match(html, /media-video-layout\.css\?v=4/, `${file} must load the fixed-sidebar stylesheet`);
+  assert.match(html, /page-media\.js\?v=3/, `${file} must load the refreshed media runtime`);
 }
 assert.match(mediaCss, /\.media-local-nav/, 'dedicated media pages must style the always-visible local nav');
+assert.match(mediaCss, /\.media-sidebar\s*\{[^}]*position:sticky/s, 'desktop media sidebar must stay fixed');
 
 const require = createRequire(import.meta.url);
 const { applyPublicContentCorrections } = require('../lib/content-public-response-corrections.js');
@@ -42,4 +45,4 @@ assert.equal(corrected.item.timeline.length, 0, 'private SOOP post must stay sup
 assert.equal(corrected.item.sources.length, 0, 'private source must stay suppressed');
 assert.deepEqual(corrected.item.media.map(row => row.id), ['auto-soop-vod-207561839'], 'broken duplicate briefing VOD must be removed from public media cards');
 
-console.log('content media workspace v4 regression passed');
+console.log('content media workspace cache/version regression passed');
