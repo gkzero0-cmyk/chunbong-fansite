@@ -12,7 +12,7 @@ assert.match(contentsHtml,/content-media-player\.js\?v=3[^>]*data-content-media-
 assert.match(mediaPlayer,/u\.hostname===['"]vod\.sooplive\.com['"]/,'SOOP VOD hostname must be recognized');
 assert.ok(mediaPlayer.includes('u.pathname.match(/^\\/player'),'SOOP player paths must be converted to embed URLs');
 assert.match(mediaPlayer,/youtube-nocookie\.com\/embed/,'YouTube URLs must be embeddable');
-for(const file of ['vod.html','clips.html','youtube.html'])assert.match(read(file),/media-video-layout\.css\?v=1/,`${file} must load the fixed catalogue stylesheet`);
+for(const file of ['vod.html','clips.html','youtube.html'])assert.match(read(file),/media-video-layout\.css\?v=2/,`${file} must load the fixed catalogue stylesheet`);
 assert.match(workspaceCss,/\.video-layout\s*>\s*\.video-list[\s\S]*position:\s*sticky/,'desktop catalogue must stay fixed');
 assert.match(workspaceCss,/\.video-layout\s*>\s*\.video-list[\s\S]*overflow-y:\s*auto/,'catalogue entries must scroll inside the panel');
 assert.match(workspaceCss,/overscroll-behavior:\s*contain/,'catalogue wheel scrolling must not drag the whole page');
