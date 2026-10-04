@@ -48,7 +48,8 @@ test('서버 메타와 브라우저 메타를 합칠 때 실제 제목/날짜/�
   assert.deepEqual(merged.images,['https://stimg.sooplive.com/NORMAL_BBS/3/24883333/recruit.png']);
 });
 
-test('이미 공개된 208562045도 공개 응답에서 제목과 잘못된 기본 썸네일을 보정한다',()=>{
+test('이미 공개된 208562045도 동일 공지의 검증된 썸네일로 최종 복구한다',()=>{
+  const verifiedThumbnail='https://stimg.sooplive.com/NORMAL_BBS/3/24883333/72271790804311879.png';
   const repaired=repairPublicArchiveItem({
     id:'justserver-survival',
     timeline:[{
@@ -59,6 +60,14 @@ test('이미 공개된 208562045도 공개 응답에서 제목과 잘못된 기�
       thumbnail:'https://res.sooplive.com/images/svg/thumb_profile.svg',
       sourceId:'source-soop-auth-208562045',
       visibility:'public'
+    },{
+      id:'auto-soop-post-208562077',
+      type:'post',
+      title:'🦁 그냥서버: 적자생존 추가입주 모집 공지',
+      url:'https://www.sooplive.com/station/chunbongtv/post/208562077',
+      thumbnail:verifiedThumbnail,
+      sourceId:'',
+      visibility:'public'
     }],
     sources:[{
       id:'source-soop-auth-208562045',
@@ -68,7 +77,8 @@ test('이미 공개된 208562045도 공개 응답에서 제목과 잘못된 기�
     }]
   });
   assert.equal(repaired.timeline[0].title,'그냥서버 적자생존 추가 입주 모집 공지');
-  assert.equal(repaired.timeline[0].thumbnail,'');
+  assert.equal(repaired.timeline[0].thumbnail,verifiedThumbnail);
+  assert.equal(repaired.timeline[1].thumbnail,verifiedThumbnail);
   assert.equal(repaired.sources[0].label,'SOOP 게시글 · 그냥서버 적자생존 추가 입주 모집 공지');
 });
 
