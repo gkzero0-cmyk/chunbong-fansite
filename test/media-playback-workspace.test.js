@@ -17,7 +17,8 @@ const page=read('page.js');
 test('content archive loads the inline media player directly on every detail route',()=>{
   assert.match(contentsHtml,/content-media-player\.js\?v=3[^>]*data-content-media-player-runtime/);
   assert.match(mediaPlayer,/archive-media-card\[data-inline-media-ready\]/);
-  assert.match(mediaPlayer,/vod\.sooplive\.com\/player/);
+  assert.match(mediaPlayer,/u\.hostname===['"]vod\.sooplive\.com['"]/);
+  assert.match(mediaPlayer,/u\.pathname\.match\(\/\^\\\/player/);
   assert.match(mediaPlayer,/youtube-nocookie\.com\/embed/);
 });
 
