@@ -9,8 +9,8 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 
 for (const page of ['vod.html', 'clips.html', 'youtube.html']) {
   const html = read(page);
-  assert.match(html, /media-video-layout\.css\?v=3/, `${page} must bust the sticky media CSS cache`);
-  assert.match(html, /page-media\.js\?v=2/, `${page} must bust the media runtime cache`);
+  assert.match(html, /media-video-layout\.css\?v=4/, `${page} must bust the fixed media-sidebar CSS cache`);
+  assert.match(html, /page-media\.js\?v=3/, `${page} must bust the media runtime cache`);
 }
 
 const pageRuntime = read('page.js');
