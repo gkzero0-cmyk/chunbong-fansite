@@ -1,5 +1,5 @@
 {
-  "runtimeVersion": "1.0.1",
+  "runtimeVersion": "1.0.2",
   "runtimeUrl": "/collector-runtime.js",
   "minBootstrapContract": 1,
   "maxBootstrapContract": 1,

@@ -7,8 +7,8 @@ const manifest=JSON.parse(fs.readFileSync('collector-runtime-manifest.json','utf
 const helper=fs.readFileSync('operator-collector-install-helper.js','utf8');
 const operator=fs.readFileSync('operator-contents.js','utf8');
 
-assert.match(bootstrap,/@version\s+1\.5\.0/,'bootstrap must stay at 1.5.0; the control repair must not require reinstall');
-assert.equal(manifest.runtimeVersion,'1.0.1','button repair should not rewrite the already working adaptive runtime');
+assert.match(bootstrap,/@version\s+1\.5\.0/,'bootstrap must stay at 1.5.0; runtime-only repairs must not require reinstall');
+assert.equal(manifest.runtimeVersion,'1.0.2','operator controls must remain compatible with the current serialized collector runtime');
 assert.match(runtime,/SOOP_WATCH_ACTIVE_MS=15\*60\*1000/);
 assert.match(runtime,/SOOP_WATCH_NORMAL_MS=30\*60\*1000/);
 assert.match(runtime,/SOOP_WATCH_IDLE_MS=60\*60\*1000/);

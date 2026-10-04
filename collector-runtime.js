@@ -387,7 +387,7 @@
     if(visited.includes(signature)){setBackfillState({status:'paused',lastError:'같은 게시판 페이지가 반복되어 중단했습니다.',currentUrl:canonical(location.href)});return}
     visited.push(signature);const links=soopPostLinks(),targets=links.filter(row=>!soopHandled(row.id,row.url,true));
     state=setBackfillState({status:'running',currentUrl:canonical(location.href),pagesScanned:visited.length,visited:visited.slice(-1000),linksFound:Number(state.linksFound||0)+links.length,newOnPage:targets.length,lastSignature:signature,lastError:''});
-    for(let offset=0;offset<targets.length;offset+=6){while(queueRows().length>45)await sleep(1200);const batch=targets.slice(offset,offset+6);batch.forEach((row,index)=>setTimeout(()=>openBackground(row.url,AUTO_HASH,false),index*700));const done=await waitSoopBatch(batch);state=setBackfillState({opened:Number(state.opened||0)+batch.length,handled:Number(state.handled||0)+done,unresolved:Number(state.unresolved||0)+(batch.length-done),currentUrl:canonical(location.href)})}
+    for(let offset=0;offset<targets.length;offset+=6){while(queueRows().length>45)await sleep(1200);const batch=targets.slice(offset,offset+6);await openAutoUrls(batch.map(row=>row.url));const done=await waitSoopBatch(batch);state=setBackfillState({opened:Number(state.opened||0)+batch.length,handled:Number(state.handled||0)+done,unresolved:Number(state.unresolved||0)+(batch.length-done),currentUrl:canonical(location.href)})}
     const next=findNextSoopPage();if(next?.type==='url'){const nextUrl=canonical(next.value);setBackfillState({status:'running',nextUrl,currentUrl:nextUrl});location.href=withMarker(nextUrl,SOOP_BACKFILL_HASH);return}
     if(next?.type==='button'){const before=soopPageSignature();next.value.click();for(let i=0;i<24;i++){await sleep(500);if(soopPageSignature()!==before){history.replaceState(null,'',withMarker(location.href,SOOP_BACKFILL_HASH));return runSoopBackfill()}}setBackfillState({status:'paused',lastError:'다음 페이지 이동을 확인하지 못했습니다.',currentUrl:canonical(location.href)});return}
     setBackfillState({status:'complete',completedAt:new Date().toISOString(),currentUrl:canonical(location.href),nextUrl:'',newOnPage:0});
@@ -457,7 +457,6 @@
       .filter(Boolean).filter((url,index,all)=>all.indexOf(url)===index).filter(url=>!seen[url]).slice(0,10);
     return openAutoUrls(urls);
   }
-
 
   function emitPageMessage(type,data={}){
     const message={channel:CHANNEL,type,version:VERSION,...data};
@@ -561,7 +560,7 @@
         return;
       }
       if(data.type==='open-urls'){
-        const urls=Array.isArray(data.urls)?data.urls.slice(0,16):[];urls.forEach((url,index)=>setTimeout(()=>openBackground(url,AUTO_HASH,index===0),index*950));return;
+        const urls=Array.isArray(data.urls)?data.urls.slice(0,16):[];void openAutoUrls(urls);return;
       }
       if(data.type==='open-soop-board'&&data.url){openBackground(data.url,DISCOVER_HASH,true);return}
       if(data.type==='start-soop-watch'&&data.url){setCollectorStatus({watchEnabled:true,currentWatchIntervalMs:SOOP_WATCH_ACTIVE_MS,watchNoChangeStreak:0,watchErrorStreak:0,nextScanAt:new Date().toISOString()},'SOOP 저데이터 감시 요청');scheduleWatch(true);emitState();return}
@@ -573,7 +572,7 @@
         else setBackfillState({status:'running',lastError:''});
         openBackground(resume?old.currentUrl:data.url,SOOP_BACKFILL_HASH,true);emitState();return;
       }
-      if(data.type==='open-fmk-board'&&data.url){openBackground(data.url,'',true)}
+      if(data.type==='open-fmk-board'&&data.url){openBackground(data.url,DISCOVER_HASH,true)}
     };
     window.addEventListener('message',event=>{
       if(event.source!==window||event.origin!==location.origin)return;
@@ -609,8 +608,7 @@
       if(location.hash.includes(SOOP_BACKFILL_HASH)){await runSoopBackfill();return}
       if(location.hash.includes(SOOP_WATCH_ONCE_HASH)||location.hash.includes(SOOP_WATCH_HASH)){await runSoopWatch();return}
       if(location.hash.includes(SOOP_SELFTEST_HASH)){await runSoopSelfTest();return}
-      await sleep(1400);await scanSoopBoard('visit');
-      if(location.hash.includes(DISCOVER_HASH))setTimeout(()=>window.close(),700);
+      if(location.hash.includes(DISCOVER_HASH)){await sleep(1400);await scanSoopBoard('discover');setTimeout(()=>window.close(),700)}
       return;
     }
     if(['fmkorea.com','www.fmkorea.com','m.fmkorea.com'].includes(location.hostname)){
@@ -621,8 +619,7 @@
         try{await captureFmkPost(autoCollect)}finally{if(autoCollect){releaseAutoOpenClaim(location.href,claimToken);setTimeout(()=>window.close(),900)}}
         return;
       }
-      await sleep(1400);await discoverFmkPosts();
-      if(location.hash.includes(DISCOVER_HASH))setTimeout(()=>window.close(),700);
+      if(location.hash.includes(DISCOVER_HASH)){await sleep(1400);await discoverFmkPosts();setTimeout(()=>window.close(),700)}
     }
   }
   void run();
