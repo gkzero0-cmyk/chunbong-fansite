@@ -6,8 +6,8 @@ const SURVIVAL_RECRUITMENT=new Map([
   ['208562077',{round:2,canonicalId:'208562045',previewId:'208562045',title:'그냥서버 : 적자생존 2차 입주 모집 공지'}],
   ['208735733',{round:3,canonicalId:'208735733',previewId:'208735733',title:'그냥서버 : 적자생존 3차 입주 모집 공지',private:true}],
   ['208736233',{round:3,canonicalId:'208735733',previewId:'208736233',title:'그냥서버 : 적자생존 3차 입주 모집 공지',private:true}],
-  ['208904595',{round:4,canonicalId:'208904595',previewId:'208904749',title:'그냥서버 : 적자생존 4차 입주 모집 공지'}],
-  ['208904749',{round:4,canonicalId:'208904595',previewId:'208904749',title:'그냥서버 : 적자생존 4차 입주 모집 공지'}]
+  ['208904595',{round:4,canonicalId:'208904595',previewId:'208904595',title:'그냥서버 : 적자생존 4차 입주 모집 공지'}],
+  ['208904749',{round:4,canonicalId:'208904595',previewId:'208904595',title:'그냥서버 : 적자생존 4차 입주 모집 공지'}]
 ]);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const id=()=>{const m=location.pathname.match(/^\/contents\/([^/?#]+)/);return m?decodeURIComponent(m[1]):new URLSearchParams(location.search).get('id')||''};
