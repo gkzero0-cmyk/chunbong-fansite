@@ -1,0 +1,1 @@
+This repository uses Git integration for production deployment. This file can be updated when a harmless redeploy trigger is needed.
