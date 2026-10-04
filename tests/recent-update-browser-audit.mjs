@@ -123,7 +123,6 @@ async function quickTarot(browser,{mobile=false,pwa=false}={}){
   }finally{await context.close()}
 }
 
-
 async function tarotJournalMetadata(browser){
   const {context,page,errors}=await freshPage(browser,{mobile:false});
   try{
@@ -176,7 +175,7 @@ async function findProductionCalendarDate(){
     fetch(BASE+'/api/content?type=clips').then(r=>r.json()),
     fetch(BASE+'/api/content?type=youtube').then(r=>r.json())
   ]);
-  const calendar=new Set((data?.soop?.calendar||[]).map(row=>String(row?.date||item?.dateIso||'').slice(0,10)).filter(Boolean));
+  const calendar=new Set((data?.soop?.calendar||[]).map(row=>String(row?.date||'').slice(0,10)).filter(Boolean));
   const dates=new Map();
   for(const [type,payload] of Object.entries({vod,clips,youtube})){
     for(const item of payload?.items||[]){
