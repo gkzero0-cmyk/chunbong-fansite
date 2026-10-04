@@ -95,7 +95,7 @@
         $$('[data-video-index]', list).forEach(node => node.classList.remove('selected'));
         button.classList.add('selected');
         setVideoPlayer(kind, items[Number(button.dataset.videoIndex)]);
-        window.scrollTo({ top: Math.max(0, $(`#${kind}-viewer`).offsetTop - 90), behavior: 'smooth' });
+        if(window.matchMedia('(max-width:900px)').matches)window.scrollTo({ top: Math.max(0, $(`#${kind}-viewer`).offsetTop - 90), behavior: 'smooth' });
       });
     });
   }

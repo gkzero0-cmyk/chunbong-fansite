@@ -256,7 +256,7 @@
     });
 
     const resolveServiceWorkerVersion = async () => {
-      const fallback='runtime-v36';
+      const fallback='runtime-v37';
       const controller=new AbortController();
       const timer=setTimeout(()=>controller.abort(),1400);
       try {
