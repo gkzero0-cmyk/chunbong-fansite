@@ -123,7 +123,6 @@ async function quickTarot(browser,{mobile=false,pwa=false}={}){
   }finally{await context.close()}
 }
 
-
 async function tarotJournalMetadata(browser){
   const {context,page,errors}=await freshPage(browser,{mobile:false});
   try{
@@ -318,29 +317,26 @@ async function pwaHeader(browser){
   }finally{await context.close()}
 }
 
-async function contentFilter(browser){
+async function mediaSidebar(browser){
   const {context,page,errors}=await freshPage(browser,{mobile:false});
   try{
     await page.goto(BASE+'/vod.html?_audit='+Date.now(),{waitUntil:'domcontentloaded'});
-    await page.waitForTimeout(350);
-    const filter=page.locator('[data-content-filter] input');
-    await filter.waitFor({state:'visible'});
-    const cards=page.locator('.video-list-card');
-    if(MOCK){
-      assert.ok(await cards.count()>=2,'mock VOD list should render two cards');
-      await filter.fill('Alpha');
-      await page.waitForTimeout(80);
-      const visible=await cards.evaluateAll(nodes=>nodes.filter(n=>!n.hidden).map(n=>n.textContent));
-      assert.equal(visible.length,1,'content filter must reduce list');
-      assert.match(visible[0],/Alpha/);
-    }else{
-      const count=await cards.count();
-      if(count>0){
-        const title=(await cards.first().textContent()||'').trim().split(/\s+/).slice(0,2).join(' ');
-        if(title){await filter.fill(title);await page.waitForTimeout(100);assert.ok((await cards.evaluateAll(nodes=>nodes.filter(n=>!n.hidden).length))>=1)}
-      }
-    }
-    assert.deepEqual(errors,[],'content filter page errors: '+errors.join(' | '));
+    await page.waitForTimeout(500);
+    const sidebar=page.locator('.media-sidebar');
+    await sidebar.waitFor({state:'visible'});
+    assert.equal(await page.locator('.media-local-nav').count(),1,'media page must render exactly one common navigation row');
+    assert.equal(await page.locator('.media-section-switcher').count(),0,'legacy duplicate media switcher must be removed');
+    assert.equal(await page.locator('[data-content-filter]').count(),0,'media page must not render the legacy search box');
+    const links=sidebar.locator('.media-local-nav a');
+    assert.equal(await links.count(),3,'common media navigation must contain replay, clips and YouTube');
+    assert.deepEqual((await links.allTextContents()).map(text=>text.trim()),['다시보기','핫클립','유튜브']);
+    const cards=sidebar.locator('.video-list-card');
+    if(MOCK)assert.ok(await cards.count()>=2,'mock VOD list should render two cards below the common navigation');
+    else assert.ok(await cards.count()>=1,'production VOD list should render at least one card below the common navigation');
+    const style=await sidebar.evaluate(el=>({position:getComputedStyle(el).position,overflow:getComputedStyle(el).overflow}));
+    assert.equal(style.position,'sticky','desktop media sidebar must remain sticky');
+    assert.equal(style.overflow,'hidden','desktop media sidebar shell must keep list scrolling contained');
+    assert.deepEqual(errors,[],'media sidebar page errors: '+errors.join(' | '));
   }finally{await context.close()}
 }
 
@@ -412,7 +408,7 @@ try{
   await homeRefresh(browser);
   await fanHubAndHeader(browser);
   await pwaHeader(browser);
-  await contentFilter(browser);
+  await mediaSidebar(browser);
   await mobileAppShell(browser);
   await mobileSchedule(browser);
   console.log('RECENT_UPDATE_BROWSER_AUDIT=PASS');

@@ -1,37 +1,24 @@
 (()=>{
   'use strict';
   const page=document.body.dataset.page||'';
-  if(!['vod','clips','youtube','fanart'].includes(page))return;
-  const selector=page==='fanart'?'.fanart-grid':'.video-list';
-  const cardSelector=page==='fanart'?'.fanart-card':'.video-list-card';
-  const labels={vod:'다시보기',clips:'핫클립',youtube:'유튜브',fanart:'팬아트'};
+  if(page!=='fanart')return;
+  const selector='.fanart-grid';
+  const cardSelector='.fanart-card';
   const normalize=value=>String(value||'').toLocaleLowerCase('ko-KR').replace(/\s+/g,' ').trim();
 
   function findRoot(){return document.querySelector(selector)}
-  function createMediaSwitcher(root){
-    if(page==='fanart'||!root||document.querySelector('[data-media-section-switcher]'))return null;
-    const nav=document.createElement('nav');
-    nav.className='media-section-switcher';
-    nav.dataset.mediaSectionSwitcher='';
-    nav.setAttribute('aria-label','영상 메뉴');
-    const links=[['vod','vod.html','다시보기'],['clips','clips.html','핫클립'],['youtube','youtube.html','유튜브']];
-    nav.innerHTML=links.map(([key,href,label])=>`<a href="${href}"${key===page?' class="active" aria-current="page"':''}>${label}</a>`).join('');
-    root.insertAdjacentElement('beforebegin',nav);
-    return nav;
-  }
   function createFilter(root){
     if(!root||document.querySelector('[data-content-filter]'))return null;
     const wrap=document.createElement('section');
     wrap.className='content-filter';
     wrap.dataset.contentFilter='';
     wrap.setAttribute('role','search');
-    wrap.innerHTML='<label><span class="content-filter-icon" aria-hidden="true">⌕</span><input type="search" inputmode="search" autocomplete="off" placeholder="'+labels[page]+'에서 검색" aria-label="'+labels[page]+' 검색"><button type="button" data-content-filter-clear aria-label="검색어 지우기" hidden>×</button></label><small data-content-filter-count></small>';
+    wrap.innerHTML='<label><span class="content-filter-icon" aria-hidden="true">⌕</span><input type="search" inputmode="search" autocomplete="off" placeholder="팬아트에서 검색" aria-label="팬아트 검색"><button type="button" data-content-filter-clear aria-label="검색어 지우기" hidden>×</button></label><small data-content-filter-count></small>';
     root.insertAdjacentElement('beforebegin',wrap);
     return wrap;
   }
   function boot(){
     const root=findRoot();if(!root)return;
-    createMediaSwitcher(root);
     const filter=createFilter(root)||document.querySelector('[data-content-filter]');
     if(!filter)return;
     const input=filter.querySelector('input'),clear=filter.querySelector('[data-content-filter-clear]'),count=filter.querySelector('[data-content-filter-count]');

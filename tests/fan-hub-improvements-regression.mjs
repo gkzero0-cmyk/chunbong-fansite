@@ -15,7 +15,7 @@ assert.ok(tarot.includes('chunbong:tarot-reading-detail'), 'tarot detail archive
 for (const token of ['downloadScheduleIcs','shareSchedule','data-schedule-calendar','data-schedule-share','mobileDateFilter']) {
   assert.ok(schedule.includes(token), 'schedule enhancement missing '+token);
 }
-assert.ok(filter.includes("['vod','clips','youtube','fanart']"), 'content filter pages missing');
+assert.ok(filter.includes("if(page!=='fanart')return;"), 'content filter must stay fanart-only');
 assert.ok(content.includes('content-filter.js') && content.includes('content-filter.css'), 'content filter not wired into content runtime');
 
 for (const path of ['chuntris-postgame-ranking.js','chunbak-postgame-ranking.js','chungwagame-postgame-ranking.js','chuncortile-postgame-ranking.js']) {
