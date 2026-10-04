@@ -1,9 +1,27 @@
 {
   "version": 1,
-  "session": null,
+  "session": {
+    "active": true,
+    "sessionId": "2026-10-04T02:45:19.000Z",
+    "startedAt": "2026-10-04T02:45:19.000Z",
+    "title": "그냥서버 섭주 api 많은 관심 부탁드립니다",
+    "samples": [
+      {
+        "capturedAt": "2026-10-04T08:45:44.922Z",
+        "live": true,
+        "startedAt": "2026-10-04T02:45:19.000Z",
+        "title": "그냥서버 섭주 api 많은 관심 부탁드립니다",
+        "viewerCount": 192,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 35070,
+        "fanclubCount": 8277
+      }
+    ]
+  },
   "lastProfile": {
-    "capturedAt": "2026-10-04T02:33:25.265Z",
-    "followerCount": 35155,
+    "capturedAt": "2026-10-04T08:45:44.922Z",
+    "followerCount": 35070,
     "fanclubCount": 8277
   }
 }
