@@ -8,6 +8,17 @@
   const normalize=value=>String(value||'').toLocaleLowerCase('ko-KR').replace(/\s+/g,' ').trim();
 
   function findRoot(){return document.querySelector(selector)}
+  function createMediaSwitcher(root){
+    if(page==='fanart'||!root||document.querySelector('[data-media-section-switcher]'))return null;
+    const nav=document.createElement('nav');
+    nav.className='media-section-switcher';
+    nav.dataset.mediaSectionSwitcher='';
+    nav.setAttribute('aria-label','영상 메뉴');
+    const links=[['vod','vod.html','다시보기'],['clips','clips.html','핫클립'],['youtube','youtube.html','유튜브']];
+    nav.innerHTML=links.map(([key,href,label])=>`<a href="${href}"${key===page?' class="active" aria-current="page"':''}>${label}</a>`).join('');
+    root.insertAdjacentElement('beforebegin',nav);
+    return nav;
+  }
   function createFilter(root){
     if(!root||document.querySelector('[data-content-filter]'))return null;
     const wrap=document.createElement('section');
@@ -20,6 +31,7 @@
   }
   function boot(){
     const root=findRoot();if(!root)return;
+    createMediaSwitcher(root);
     const filter=createFilter(root)||document.querySelector('[data-content-filter]');
     if(!filter)return;
     const input=filter.querySelector('input'),clear=filter.querySelector('[data-content-filter-clear]'),count=filter.querySelector('[data-content-filter-count]');
