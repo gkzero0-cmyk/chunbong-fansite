@@ -112,10 +112,6 @@
   ],
   "rewrites": [
     {
-      "source": "/api/content",
-      "destination": "/api/content-runtime"
-    },
-    {
       "source": "/operator.html",
       "destination": "/api/survival-wiki?mode=operator-page"
     },
