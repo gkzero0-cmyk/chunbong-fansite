@@ -18,7 +18,7 @@ test('content archive loads the inline media player directly on every detail rou
   assert.match(contentsHtml,/content-media-player\.js\?v=3[^>]*data-content-media-player-runtime/);
   assert.match(mediaPlayer,/archive-media-card\[data-inline-media-ready\]/);
   assert.match(mediaPlayer,/u\.hostname===['"]vod\.sooplive\.com['"]/);
-  assert.match(mediaPlayer,/u\.pathname\.match\(\/\^\\\/player/);
+  assert.ok(mediaPlayer.includes('u.pathname.match(/^\\/player'),'SOOP player paths must be converted to embed URLs');
   assert.match(mediaPlayer,/youtube-nocookie\.com\/embed/);
 });
 
