@@ -13,17 +13,18 @@ for (const page of ['vod.html', 'clips.html', 'youtube.html']) {
   assert.match(html, /page-media\.js\?v=2/, `${page} must bust the media runtime cache`);
 }
 
-const sw = read('service-worker.js');
-assert.match(sw, /const FALLBACK_VERSION = 'runtime-v38'/, 'PWA fallback cache generation must advance');
-assert.match(sw, /await precacheAppShell\(cache\);[\s\S]*await self\.skipWaiting\(\);/, 'a verified new worker must activate without requiring the update-toast button');
+const pageRuntime = read('page.js');
+assert.match(pageRuntime, /fetch\('\/api\/version',[\s\S]*cache:'no-store'/, 'PWA worker version must come from the uncached deployment SHA');
+assert.match(pageRuntime, /service-worker\.js\?v='\+encodeURIComponent\(version\)/, 'service worker cache generation must follow deployment SHA');
+assert.match(pageRuntime, /updateViaCache:\s*'none'/, 'service worker script must bypass HTTP cache when checking a new deployment');
 
 const require = createRequire(import.meta.url);
-const { normalizeVideo } = require('../lib/content-api/_shared.js');
-const vodFromLink = normalizeVideo({ url: 'https://vod.sooplive.co.kr/player/181181967?change_second=636' }, 'vod');
+const { normalizeSoopVideo } = require('../lib/content-api/soop-video-normalize.js');
+const vodFromLink = normalizeSoopVideo({ url: 'https://vod.sooplive.co.kr/player/181181967?change_second=636' }, 'vod');
 assert.equal(vodFromLink.id, '181181967', 'SOOP VOD id must be recovered from an explicit player URL');
 assert.match(vodFromLink.embed, /\/player\/181181967\/embed/);
 
-const catchFromLink = normalizeVideo({ linkUrl: 'https://vod.sooplive.com/player/193268691/catch' }, 'catch');
+const catchFromLink = normalizeSoopVideo({ linkUrl: 'https://vod.sooplive.com/player/193268691/catch' }, 'catch');
 assert.equal(catchFromLink.id, '193268691', 'SOOP Catch id must be recovered from an explicit player URL');
 assert.match(catchFromLink.embed, /\/player\/193268691\/embed\?type=catch/);
 
