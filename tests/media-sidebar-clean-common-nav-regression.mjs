@@ -3,19 +3,20 @@ import fs from 'node:fs';
 
 const read = file => fs.readFileSync(new URL('../' + file, import.meta.url), 'utf8');
 
-const content = read('content.js');
 const filter = read('content-filter.js');
+const cleanup = read('media-sidebar-cleanup.js');
 
-assert.match(content, /document\.body\.dataset\.page\s*!==\s*['"]fanart['"]/, 'content filter assets must only load on fanart');
-assert.doesNotMatch(content, /\['vod','clips','youtube','fanart'\]/, 'video pages must not load the legacy content filter/search runtime');
 assert.match(filter, /if\(page!==['"]fanart['"]\)return;/, 'content-filter runtime must be fanart-only');
 assert.doesNotMatch(filter, /media-section-switcher/, 'legacy duplicate media switcher must be removed');
 assert.doesNotMatch(filter, /다시보기에서 검색|핫클립에서 검색|유튜브에서 검색/, 'video sidebar search must not be generated');
+assert.match(cleanup, /\.media-section-switcher/, 'cleanup runtime must remove a legacy duplicate media switcher left by an old cache');
+assert.match(cleanup, /\[data-content-filter\]/, 'cleanup runtime must remove a legacy video search left by an old cache');
+assert.match(cleanup, /MutationObserver/, 'cleanup runtime must catch late legacy insertions');
 
 for (const page of ['vod.html','clips.html','youtube.html']) {
   const html = read(page);
   assert.equal((html.match(/class="media-local-nav"/g) || []).length, 1, `${page} must render exactly one media navigation row`);
-  assert.match(html, /content\.js\?v=2/, `${page} must bust the shared content runtime cache`);
+  assert.match(html, /media-sidebar-cleanup\.js\?v=1/, `${page} must load the media sidebar cleanup runtime`);
 }
 
 console.log('media sidebar clean common navigation regression passed');
