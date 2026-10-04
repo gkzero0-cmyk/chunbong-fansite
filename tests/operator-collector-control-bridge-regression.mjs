@@ -7,17 +7,23 @@ const manifest=JSON.parse(fs.readFileSync('collector-runtime-manifest.json','utf
 const helper=fs.readFileSync('operator-collector-install-helper.js','utf8');
 const operator=fs.readFileSync('operator-contents.js','utf8');
 
-assert.match(bootstrap,/@version\s+1\.5\.0/,'bootstrap must stay at 1.5.0; this is a runtime-only repair');
-assert.equal(manifest.runtimeVersion,'1.0.2','collector control bridge repair must ship as runtime 1.0.2');
-assert.match(runtime,/const VERSION='1\.0\.2'/,'runtime state must report 1.0.2 instead of the legacy 1.4.8 label');
+assert.match(bootstrap,/@version\s+1\.5\.0/,'bootstrap must stay at 1.5.0; the control repair must not require reinstall');
+assert.equal(manifest.runtimeVersion,'1.0.1','button repair should not rewrite the already working adaptive runtime');
+assert.match(runtime,/SOOP_WATCH_ACTIVE_MS=15\*60\*1000/);
+assert.match(runtime,/SOOP_WATCH_NORMAL_MS=30\*60\*1000/);
+assert.match(runtime,/SOOP_WATCH_IDLE_MS=60\*60\*1000/);
+assert.match(runtime,/SOOP_WATCH_ERROR_MAX_MS=120\*60\*1000/);
 
-assert.match(runtime,/new MutationObserver\(/,'runtime must observe the DOM command attribute as a third isolated-world-safe bridge');
-assert.match(runtime,/attributeFilter\s*:\s*\[PAGE_COMMAND_ATTR\]/,'runtime mutation bridge must be limited to the collector command attribute');
-assert.match(runtime,/handledCommandIds/,'multiple bridge channels must deduplicate the same command id');
-assert.match(runtime,/command-result/,'runtime must acknowledge accepted operator commands instead of failing silently');
-
-assert.match(helper,/data-collector-watch-start/,'install helper must provide delegated recovery for the watch start control');
-assert.match(helper,/sendCollectorCommand/,'install helper must be able to issue collector commands even if the lazy contents binding was replaced');
+assert.match(helper,/function sendCollectorCommand\(/,'install helper must provide a page-to-userscript command fallback');
+assert.match(helper,/data-chunbong-collector-command/,'fallback must use the existing DOM command bridge');
+assert.match(helper,/chunbong-content-collector-page-command/,'fallback must emit the existing collector command event');
+assert.match(helper,/data-collector-watch-start/,'delegated recovery must cover watch start');
+assert.match(helper,/data-collector-watch-stop/,'delegated recovery must cover watch stop');
+assert.match(helper,/data-collector-self-test/,'delegated recovery must cover the self-test');
+assert.match(helper,/data-collector-backfill-soop/,'delegated recovery must cover the one-time SOOP backfill');
+assert.match(helper,/data-collector-open-soop/,'delegated recovery must cover incremental SOOP check');
+assert.match(helper,/data-collector-open-fmk/,'delegated recovery must cover FMK check');
+assert.match(helper,/stopImmediatePropagation\(\)/,'fallback must prevent duplicate execution by stale direct listeners');
 assert.match(helper,/15[^\n]*30[^\n]*60[^\n]*120/,'operator guidance must describe the adaptive 15/30/60/120 minute policy');
 assert.doesNotMatch(helper,/약 5분 간격/,'operator guidance must not advertise the removed five-minute watcher');
 assert.doesNotMatch(helper,/동안 약 <b>15분<\/b> 간격/,'operator guidance must not describe the adaptive watcher as fixed 15 minutes');
@@ -25,4 +31,4 @@ assert.doesNotMatch(helper,/동안 약 <b>15분<\/b> 간격/,'operator guidance 
 assert.match(operator,/data-collector-watch-start/,'primary operator contents controls must remain present');
 assert.match(runtime,/AUTO_OPEN_MAX_ACTIVE=1/,'control repair must preserve serialized automatic collector tabs');
 
-console.log('operator collector control bridge regression passed');
+console.log('operator collector delegated control bridge regression passed');
