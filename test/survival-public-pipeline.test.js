@@ -32,3 +32,12 @@ test('mergeArchiveRows -> publicRows preserves duplicate-based thumbnail recover
   assert.equal(target?.thumbnail,thumbnail,'public pipeline should recover the authenticated row thumbnail');
   assert.equal(stored.timeline[0].thumbnail,'','public pipeline must not mutate stored Redis-shaped input');
 });
+
+test('archive API boundary independently recovers the known recruitment thumbnail',()=>{
+  assert.equal(typeof archive._internals.recoverKnownPublicTimelineAssets,'function','API boundary recovery helper should exist');
+  const stored=survivalRow();
+  const recovered=archive._internals.recoverKnownPublicTimelineAssets(stored);
+  const target=recovered.timeline.find(row=>row.id==='soop-auth-post-208562045');
+  assert.equal(target?.thumbnail,thumbnail,'API boundary must fill the known missing recruitment thumbnail');
+  assert.equal(stored.timeline[0].thumbnail,'','boundary recovery must not mutate the input item');
+});
