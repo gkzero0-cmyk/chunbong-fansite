@@ -8,14 +8,18 @@ const workspaceCss=read('media-video-layout.css');
 const serviceWorker=read('service-worker.js');
 const page=read('page.js');
 
-assert.match(contentsHtml,/content-media-player\.js\?v=4[^>]*data-content-media-player-runtime/,'content detail must directly load the shared media player workspace');
+assert.match(contentsHtml,/content-media-player\.js\?v=5[^>]*data-content-media-player-runtime/,'content detail must directly load the fitted shared media player workspace');
 assert.match(mediaPlayer,/vod\.sooplive\.com/,'SOOP VOD .com hostname must be recognized');
 assert.match(mediaPlayer,/vod\.sooplive\.co\.kr/,'SOOP VOD .co.kr hostname must be recognized');
 assert.ok(mediaPlayer.includes('u.pathname.match(/^\\/player'),'SOOP player paths must be converted to embed URLs');
 assert.match(mediaPlayer,/youtube-nocookie\.com\/embed/,'YouTube URLs must be embeddable');
-for(const file of ['vod.html','clips.html','youtube.html'])assert.match(read(file),/media-video-layout\.css\?v=3/,`${file} must load the fixed catalogue stylesheet`);
-assert.match(workspaceCss,/\.video-layout\s*>\s*\.video-list[\s\S]*position:\s*sticky/,'desktop catalogue must stay fixed');
-assert.match(workspaceCss,/\.video-layout\s*>\s*\.video-list[\s\S]*overflow-y:\s*auto/,'catalogue entries must scroll inside the panel');
+for(const file of ['vod.html','clips.html','youtube.html']){
+  const html=read(file);
+  assert.match(html,/media-video-layout\.css\?v=4/,`${file} must load the fixed-sidebar stylesheet`);
+  assert.match(html,/class="media-sidebar"/,`${file} must render a dedicated media sidebar`);
+}
+assert.match(workspaceCss,/\.media-sidebar\s*\{[\s\S]*?position:\s*sticky/,'desktop media sidebar must stay fixed');
+assert.match(workspaceCss,/\.media-sidebar>\.video-list\s*\{[\s\S]*?overflow-y:\s*auto/,'catalogue entries must scroll inside the sidebar');
 assert.match(workspaceCss,/overscroll-behavior:\s*contain/,'catalogue wheel scrolling must not drag the whole page');
 assert.match(workspaceCss,/scrollbar-gutter:\s*stable/,'catalogue scrollbar must not shift card widths');
 assert.match(serviceWorker,/FALLBACK_VERSION\s*=\s*['"]runtime-v37['"]/,'service worker cache generation must advance');
