@@ -4,7 +4,7 @@
     "active": true,
     "sessionId": "2026-10-04T02:45:19.000Z",
     "startedAt": "2026-10-04T02:45:19.000Z",
-    "title": "그냥서버 섭주 API 많은 관심 부탁드려요",
+    "title": "그냥서버 확성기 띄워드리는 방송",
     "samples": [
       {
         "capturedAt": "2026-10-04T08:45:44.922Z",
@@ -82,12 +82,23 @@
         "categoryName": "마인크래프트",
         "followerCount": 36286,
         "fanclubCount": 8366
+      },
+      {
+        "capturedAt": "2026-10-05T20:44:22.642Z",
+        "live": true,
+        "startedAt": "2026-10-05T06:21:14.000Z",
+        "title": "그냥서버 확성기 띄워드리는 방송",
+        "viewerCount": 136,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 36342,
+        "fanclubCount": 8366
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-10-05T12:37:03.110Z",
-    "followerCount": 36286,
+    "capturedAt": "2026-10-05T20:44:22.642Z",
+    "followerCount": 36342,
     "fanclubCount": 8366
   }
 }
