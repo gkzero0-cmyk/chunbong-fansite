@@ -4,7 +4,7 @@
     "active": true,
     "sessionId": "2026-10-04T02:45:19.000Z",
     "startedAt": "2026-10-04T02:45:19.000Z",
-    "title": "그냥서버 확성기 띄워드리는 방송",
+    "title": "그냥서버 운영자 api=새턴이 방송입니다.",
     "samples": [
       {
         "capturedAt": "2026-10-04T08:45:44.922Z",
@@ -93,12 +93,23 @@
         "categoryName": "마인크래프트",
         "followerCount": 36342,
         "fanclubCount": 8366
+      },
+      {
+        "capturedAt": "2026-10-06T01:32:10.182Z",
+        "live": true,
+        "startedAt": "2026-10-06T00:22:24.000Z",
+        "title": "그냥서버 운영자 api=새턴이 방송입니다.",
+        "viewerCount": 0,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 36275,
+        "fanclubCount": 8451
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-10-05T20:44:22.642Z",
-    "followerCount": 36342,
-    "fanclubCount": 8366
+    "capturedAt": "2026-10-06T01:32:10.182Z",
+    "followerCount": 36275,
+    "fanclubCount": 8451
   }
 }
