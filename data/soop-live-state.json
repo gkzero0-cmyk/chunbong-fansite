@@ -1,9 +1,27 @@
 {
   "version": 1,
-  "session": null,
+  "session": {
+    "active": true,
+    "sessionId": "2026-10-06T08:57:00.000Z",
+    "startedAt": "2026-10-06T08:57:00.000Z",
+    "title": "그냥서버 섭주 피버타임 쏘면 빚이 두배로 늘어납니다.",
+    "samples": [
+      {
+        "capturedAt": "2026-10-06T15:05:51.826Z",
+        "live": true,
+        "startedAt": "2026-10-06T08:57:00.000Z",
+        "title": "그냥서버 섭주 피버타임 쏘면 빚이 두배로 늘어납니다.",
+        "viewerCount": 213,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 36258,
+        "fanclubCount": 8451
+      }
+    ]
+  },
   "lastProfile": {
-    "capturedAt": "2026-10-06T08:04:06.691Z",
-    "followerCount": 36294,
+    "capturedAt": "2026-10-06T15:05:51.826Z",
+    "followerCount": 36258,
     "fanclubCount": 8451
   }
 }
