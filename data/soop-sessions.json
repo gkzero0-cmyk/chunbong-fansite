@@ -327,6 +327,35 @@
         }
       ],
       "measurement": "fan-site-sampled-5m"
+    },
+    {
+      "id": "2026-10-04T02:45:19.000Z",
+      "broadcastId": "",
+      "startedAt": "2026-10-04T02:45:19.000Z",
+      "endedAt": "2026-10-06T08:04:06.691Z",
+      "date": "2026-10-04",
+      "durationMinutes": 3199,
+      "averageViewers": 260,
+      "maxViewers": 772,
+      "viewerSampleCount": 9,
+      "followerStart": 35070,
+      "followerEnd": 36275,
+      "followerDelta": 1205,
+      "fanclubStart": 8277,
+      "fanclubEnd": 8451,
+      "fanclubDelta": 174,
+      "title": "그냥서버 운영자 api=새턴이 방송입니다.",
+      "categories": [
+        {
+          "id": "40017",
+          "name": "마인크래프트",
+          "minutes": 90,
+          "sampleCount": 9,
+          "averageViewers": 260,
+          "maxViewers": 772
+        }
+      ],
+      "measurement": "fan-site-sampled-5m"
     }
   ]
 }
