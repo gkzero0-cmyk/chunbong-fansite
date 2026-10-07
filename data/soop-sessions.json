@@ -356,6 +356,35 @@
         }
       ],
       "measurement": "fan-site-sampled-5m"
+    },
+    {
+      "id": "2026-10-06T08:57:00.000Z",
+      "broadcastId": "",
+      "startedAt": "2026-10-06T08:57:00.000Z",
+      "endedAt": "2026-10-07T04:49:18.468Z",
+      "date": "2026-10-06",
+      "durationMinutes": 1192,
+      "averageViewers": 229,
+      "maxViewers": 319,
+      "viewerSampleCount": 3,
+      "followerStart": 36258,
+      "followerEnd": 36295,
+      "followerDelta": 37,
+      "fanclubStart": 8451,
+      "fanclubEnd": 8451,
+      "fanclubDelta": 0,
+      "title": "그냥서버 섭주 뉴걸들과 3355한 대화",
+      "categories": [
+        {
+          "id": "40017",
+          "name": "마인크래프트",
+          "minutes": 30,
+          "sampleCount": 3,
+          "averageViewers": 229,
+          "maxViewers": 319
+        }
+      ],
+      "measurement": "fan-site-sampled-5m"
     }
   ]
 }
