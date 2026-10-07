@@ -1,9 +1,27 @@
 {
   "version": 1,
-  "session": null,
+  "session": {
+    "active": true,
+    "sessionId": "2026-10-07T07:58:40.000Z",
+    "startedAt": "2026-10-07T07:58:40.000Z",
+    "title": "그냥서버 섭주 확성기 돌려드립니다",
+    "samples": [
+      {
+        "capturedAt": "2026-10-07T11:23:08.460Z",
+        "live": true,
+        "startedAt": "2026-10-07T07:58:40.000Z",
+        "title": "그냥서버 섭주 확성기 돌려드립니다",
+        "viewerCount": 176,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 36276,
+        "fanclubCount": 8481
+      }
+    ]
+  },
   "lastProfile": {
-    "capturedAt": "2026-10-07T04:49:18.468Z",
-    "followerCount": 36322,
-    "fanclubCount": 8451
+    "capturedAt": "2026-10-07T11:23:08.460Z",
+    "followerCount": 36276,
+    "fanclubCount": 8481
   }
 }
