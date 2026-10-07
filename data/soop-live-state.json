@@ -4,7 +4,7 @@
     "active": true,
     "sessionId": "2026-10-07T07:58:40.000Z",
     "startedAt": "2026-10-07T07:58:40.000Z",
-    "title": "그냥서버 섭주 확성기 돌려드립니다",
+    "title": "그냥서버 섭주 api 많은 관심 부탁드립니다.",
     "samples": [
       {
         "capturedAt": "2026-10-07T11:23:08.460Z",
@@ -16,12 +16,23 @@
         "categoryName": "마인크래프트",
         "followerCount": 36276,
         "fanclubCount": 8481
+      },
+      {
+        "capturedAt": "2026-10-07T17:55:37.770Z",
+        "live": true,
+        "startedAt": "2026-10-07T07:58:40.000Z",
+        "title": "그냥서버 섭주 api 많은 관심 부탁드립니다.",
+        "viewerCount": 160,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 36313,
+        "fanclubCount": 8481
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-10-07T11:23:08.460Z",
-    "followerCount": 36276,
+    "capturedAt": "2026-10-07T17:55:37.770Z",
+    "followerCount": 36313,
     "fanclubCount": 8481
   }
 }
