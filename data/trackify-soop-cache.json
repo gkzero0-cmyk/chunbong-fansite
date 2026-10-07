@@ -1,37 +1,37 @@
 {
   "version": 1,
-  "capturedAt": "2026-10-06T13:14:29.611Z",
+  "capturedAt": "2026-10-07T13:15:27.092Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 36231,
-    "fanclubCount": 8451,
-    "subscriberCount": 100,
+    "followerCount": 36283,
+    "fanclubCount": 8481,
+    "subscriberCount": 103,
     "supporterCount": 25,
-    "averageViewers": 232,
+    "averageViewers": 229,
     "maxViewers": 1654,
-    "airtimeMinutes": 6909,
-    "viewershipHours": 26732,
-    "cumulativeUpCount": 85103,
-    "totalAirtimeMinutes": 638188,
-    "monthlyStarCount": 659708,
-    "starsPerHour": 5729,
-    "monthlySupporterCount": 871,
-    "monthlyChatCount": 37408,
+    "airtimeMinutes": 7906,
+    "viewershipHours": 30122,
+    "cumulativeUpCount": 85413,
+    "totalAirtimeMinutes": 639125,
+    "monthlyStarCount": 696735,
+    "starsPerHour": 5288,
+    "monthlySupporterCount": 909,
+    "monthlyChatCount": 42050,
     "monthlyMuteCount": 8,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-10-06T17:57:00",
+    "latestBroadcastDate": "2026-10-07T16:58:40",
     "categories": [
       {
         "name": "마인크래프트",
-        "minutes": 11962,
-        "streamCount": 18,
-        "sharePercent": 52.6
+        "minutes": 12899,
+        "streamCount": 19,
+        "sharePercent": 55.4
       },
       {
         "name": "버추얼",
-        "minutes": 10460,
-        "streamCount": 24,
-        "sharePercent": 46
+        "minutes": 10042,
+        "streamCount": 23,
+        "sharePercent": 43.1
       },
       {
         "name": "오버워치",
@@ -12417,6 +12417,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/297627575"
+    },
+    {
+      "id": "trackify-297635509",
+      "broadcastId": "297635509",
+      "date": "2026-10-06",
+      "startedAt": "2026-10-06T17:57:00+09:00",
+      "endedAt": "2026-10-07T09:34:10+09:00",
+      "durationMinutes": 937,
+      "averageViewers": 205,
+      "maxViewers": 358,
+      "viewerSampleCount": 187,
+      "uniqueViewers": null,
+      "starCount": 89477,
+      "supporterCount": 50,
+      "chatCount": 4245,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "그냥서버 섭주 뉴걸들과 3355한 대화",
+      "categories": [
+        {
+          "id": "00040017",
+          "name": "마인크래프트",
+          "minutes": 937,
+          "sampleCount": 187,
+          "averageViewers": 205,
+          "maxViewers": 358
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297635509"
     }
   ]
 }
