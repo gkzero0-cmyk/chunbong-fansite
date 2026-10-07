@@ -1,49 +1,9 @@
 {
   "version": 1,
-  "session": {
-    "active": true,
-    "sessionId": "2026-10-06T08:57:00.000Z",
-    "startedAt": "2026-10-06T08:57:00.000Z",
-    "title": "그냥서버 섭주 뉴걸들과 3355한 대화",
-    "samples": [
-      {
-        "capturedAt": "2026-10-06T15:05:51.826Z",
-        "live": true,
-        "startedAt": "2026-10-06T08:57:00.000Z",
-        "title": "그냥서버 섭주 피버타임 쏘면 빚이 두배로 늘어납니다.",
-        "viewerCount": 213,
-        "categoryId": "40017",
-        "categoryName": "마인크래프트",
-        "followerCount": 36258,
-        "fanclubCount": 8451
-      },
-      {
-        "capturedAt": "2026-10-06T20:14:03.702Z",
-        "live": true,
-        "startedAt": "2026-10-06T08:57:00.000Z",
-        "title": "그냥서버 섭주 피버타임 쏘면 빚이 두배로 늘어납니다.",
-        "viewerCount": 154,
-        "categoryId": "40017",
-        "categoryName": "마인크래프트",
-        "followerCount": 36300,
-        "fanclubCount": 8451
-      },
-      {
-        "capturedAt": "2026-10-06T23:53:26.413Z",
-        "live": true,
-        "startedAt": "2026-10-06T08:57:00.000Z",
-        "title": "그냥서버 섭주 뉴걸들과 3355한 대화",
-        "viewerCount": 319,
-        "categoryId": "40017",
-        "categoryName": "마인크래프트",
-        "followerCount": 36295,
-        "fanclubCount": 8451
-      }
-    ]
-  },
+  "session": null,
   "lastProfile": {
-    "capturedAt": "2026-10-06T23:53:26.413Z",
-    "followerCount": 36295,
+    "capturedAt": "2026-10-07T04:49:18.468Z",
+    "followerCount": 36322,
     "fanclubCount": 8451
   }
 }
