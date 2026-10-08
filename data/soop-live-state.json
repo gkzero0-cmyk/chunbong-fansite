@@ -38,11 +38,22 @@
         "categoryName": "마인크래프트",
         "followerCount": 36335,
         "fanclubCount": 8500
+      },
+      {
+        "capturedAt": "2026-10-08T02:18:32.724Z",
+        "live": true,
+        "startedAt": "2026-10-07T21:10:35.000Z",
+        "title": "운영자 api = 새턴",
+        "viewerCount": 0,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 36335,
+        "fanclubCount": 8500
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-10-07T22:51:06.940Z",
+    "capturedAt": "2026-10-08T02:18:32.724Z",
     "followerCount": 36335,
     "fanclubCount": 8500
   }
