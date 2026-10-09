@@ -126,12 +126,23 @@
         "categoryName": "마인크래프트",
         "followerCount": 36263,
         "fanclubCount": 8525
+      },
+      {
+        "capturedAt": "2026-10-09T23:35:34.159Z",
+        "live": true,
+        "startedAt": "2026-10-09T18:55:59.000Z",
+        "title": "운영자 api 숭시온 << 운영자 api 많관부 ~_~",
+        "viewerCount": 0,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 36260,
+        "fanclubCount": 8525
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-10-09T19:43:59.238Z",
-    "followerCount": 36263,
+    "capturedAt": "2026-10-09T23:35:34.159Z",
+    "followerCount": 36260,
     "fanclubCount": 8525
   }
 }
