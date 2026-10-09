@@ -93,12 +93,23 @@
         "categoryName": "마인크래프트",
         "followerCount": 36249,
         "fanclubCount": 8511
+      },
+      {
+        "capturedAt": "2026-10-09T07:30:09.614Z",
+        "live": true,
+        "startedAt": "2026-10-08T22:04:45.000Z",
+        "title": "그냥서버 운영자 api 좌표 전양꼬",
+        "viewerCount": 0,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 36229,
+        "fanclubCount": 8511
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-10-09T01:20:05.650Z",
-    "followerCount": 36249,
+    "capturedAt": "2026-10-09T07:30:09.614Z",
+    "followerCount": 36229,
     "fanclubCount": 8511
   }
 }
