@@ -170,12 +170,23 @@
         "categoryName": "마인크래프트",
         "followerCount": 36194,
         "fanclubCount": 8526
+      },
+      {
+        "capturedAt": "2026-10-10T19:21:53.906Z",
+        "live": true,
+        "startedAt": "2026-10-10T09:44:46.000Z",
+        "title": "그냥서버:적자생존 섭주 CCTV",
+        "viewerCount": 202,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 36206,
+        "fanclubCount": 8526
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-10-10T15:19:06.602Z",
-    "followerCount": 36194,
+    "capturedAt": "2026-10-10T19:21:53.906Z",
+    "followerCount": 36206,
     "fanclubCount": 8526
   }
 }
