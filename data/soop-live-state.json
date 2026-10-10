@@ -4,7 +4,7 @@
     "active": true,
     "sessionId": "2026-10-07T07:58:40.000Z",
     "startedAt": "2026-10-07T07:58:40.000Z",
-    "title": "운영자 api 숭시온 << 운영자 api 많관부 ~_~",
+    "title": "그냥서버:적자생존 섭주 CCTV",
     "samples": [
       {
         "capturedAt": "2026-10-07T11:23:08.460Z",
@@ -159,12 +159,23 @@
         "categoryName": "마인크래프트",
         "followerCount": 36245,
         "fanclubCount": 8526
+      },
+      {
+        "capturedAt": "2026-10-10T15:19:06.602Z",
+        "live": true,
+        "startedAt": "2026-10-10T09:44:46.000Z",
+        "title": "그냥서버:적자생존 섭주 CCTV",
+        "viewerCount": 168,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 36194,
+        "fanclubCount": 8526
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-10-10T09:06:32.473Z",
-    "followerCount": 36245,
+    "capturedAt": "2026-10-10T15:19:06.602Z",
+    "followerCount": 36194,
     "fanclubCount": 8526
   }
 }
