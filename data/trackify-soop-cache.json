@@ -1,37 +1,37 @@
 {
   "version": 1,
-  "capturedAt": "2026-10-10T12:24:58.873Z",
+  "capturedAt": "2026-10-11T12:42:30.253Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 36241,
-    "fanclubCount": 8526,
-    "subscriberCount": 110,
+    "followerCount": 36216,
+    "fanclubCount": 8543,
+    "subscriberCount": 111,
     "supporterCount": 25,
-    "averageViewers": 181,
+    "averageViewers": 178,
     "maxViewers": 1654,
-    "airtimeMinutes": 12037,
-    "viewershipHours": 36308,
-    "cumulativeUpCount": 85943,
-    "totalAirtimeMinutes": 642529,
-    "monthlyStarCount": 766698,
-    "starsPerHour": 3822,
-    "monthlySupporterCount": 971,
-    "monthlyChatCount": 48957,
+    "airtimeMinutes": 13488,
+    "viewershipHours": 40097,
+    "cumulativeUpCount": 86207,
+    "totalAirtimeMinutes": 643732,
+    "monthlyStarCount": 784704,
+    "starsPerHour": 3491,
+    "monthlySupporterCount": 992,
+    "monthlyChatCount": 52884,
     "monthlyMuteCount": 9,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-10-10T03:55:59",
+    "latestBroadcastDate": "2026-10-10T18:44:46",
     "categories": [
       {
         "name": "마인크래프트",
-        "minutes": 17192,
+        "minutes": 17599,
         "streamCount": 25,
-        "sharePercent": 66.3
+        "sharePercent": 66.8
       },
       {
         "name": "버추얼",
         "minutes": 8413,
         "streamCount": 19,
-        "sharePercent": 32.4
+        "sharePercent": 31.9
       },
       {
         "name": "오버워치",
@@ -12655,6 +12655,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/297724279"
+    },
+    {
+      "id": "trackify-297737317",
+      "broadcastId": "297737317",
+      "date": "2026-10-10",
+      "startedAt": "2026-10-10T18:44:46+09:00",
+      "endedAt": "2026-10-11T17:21:46+09:00",
+      "durationMinutes": 1357,
+      "averageViewers": 162,
+      "maxViewers": 369,
+      "viewerSampleCount": 271,
+      "uniqueViewers": null,
+      "starCount": 35485,
+      "supporterCount": 37,
+      "chatCount": 3825,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "그냥서버:적자생존 섭주 CCTV",
+      "categories": [
+        {
+          "id": "00040017",
+          "name": "마인크래프트",
+          "minutes": 1357,
+          "sampleCount": 271,
+          "averageViewers": 162,
+          "maxViewers": 369
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297737317"
     }
   ]
 }
