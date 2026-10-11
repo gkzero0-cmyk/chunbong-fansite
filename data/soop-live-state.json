@@ -225,12 +225,23 @@
         "categoryName": "마인크래프트",
         "followerCount": 36156,
         "fanclubCount": 8543
+      },
+      {
+        "capturedAt": "2026-10-11T18:54:53.524Z",
+        "live": true,
+        "startedAt": "2026-10-11T08:32:29.000Z",
+        "title": "그냥서버 확성기 절찬리 판매중",
+        "viewerCount": 163,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 36145,
+        "fanclubCount": 8543
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-10-11T14:11:47.914Z",
-    "followerCount": 36156,
+    "capturedAt": "2026-10-11T18:54:53.524Z",
+    "followerCount": 36145,
     "fanclubCount": 8543
   }
 }
