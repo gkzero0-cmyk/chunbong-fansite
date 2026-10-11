@@ -4,7 +4,7 @@
     "active": true,
     "sessionId": "2026-10-07T07:58:40.000Z",
     "startedAt": "2026-10-07T07:58:40.000Z",
-    "title": "그냥서버:적자생존 섭주 CCTV",
+    "title": "그냥서버 확성기 절찬리 판매중",
     "samples": [
       {
         "capturedAt": "2026-10-07T11:23:08.460Z",
@@ -214,12 +214,23 @@
         "categoryName": "마인크래프트",
         "followerCount": 36209,
         "fanclubCount": 8543
+      },
+      {
+        "capturedAt": "2026-10-11T14:11:47.914Z",
+        "live": true,
+        "startedAt": "2026-10-11T08:32:29.000Z",
+        "title": "그냥서버 확성기 절찬리 판매중",
+        "viewerCount": 156,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 36156,
+        "fanclubCount": 8543
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-10-11T07:20:17.490Z",
-    "followerCount": 36209,
+    "capturedAt": "2026-10-11T14:11:47.914Z",
+    "followerCount": 36156,
     "fanclubCount": 8543
   }
 }
