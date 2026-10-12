@@ -385,6 +385,35 @@
         }
       ],
       "measurement": "fan-site-sampled-5m"
+    },
+    {
+      "id": "2026-10-07T07:58:40.000Z",
+      "broadcastId": "",
+      "startedAt": "2026-10-07T07:58:40.000Z",
+      "endedAt": "2026-10-12T01:50:18.340Z",
+      "date": "2026-10-07",
+      "durationMinutes": 6832,
+      "averageViewers": 96,
+      "maxViewers": 202,
+      "viewerSampleCount": 22,
+      "followerStart": 36276,
+      "followerEnd": 36135,
+      "followerDelta": -141,
+      "fanclubStart": 8481,
+      "fanclubEnd": 8555,
+      "fanclubDelta": 74,
+      "title": "그냥서버 확성기 절찬리 판매중",
+      "categories": [
+        {
+          "id": "40017",
+          "name": "마인크래프트",
+          "minutes": 220,
+          "sampleCount": 22,
+          "averageViewers": 96,
+          "maxViewers": 202
+        }
+      ],
+      "measurement": "fan-site-sampled-5m"
     }
   ]
 }
