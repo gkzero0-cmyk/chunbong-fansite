@@ -1,9 +1,27 @@
 {
   "version": 1,
-  "session": null,
+  "session": {
+    "active": true,
+    "sessionId": "2026-10-12T09:25:54.000Z",
+    "startedAt": "2026-10-12T09:25:54.000Z",
+    "title": "그냥서버 섭주 매일매일 재미있는 일이 생긴다",
+    "samples": [
+      {
+        "capturedAt": "2026-10-12T17:49:46.346Z",
+        "live": true,
+        "startedAt": "2026-10-12T09:25:54.000Z",
+        "title": "그냥서버 섭주 매일매일 재미있는 일이 생긴다",
+        "viewerCount": 111,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 36073,
+        "fanclubCount": 8555
+      }
+    ]
+  },
   "lastProfile": {
-    "capturedAt": "2026-10-12T08:07:04.422Z",
-    "followerCount": 36115,
+    "capturedAt": "2026-10-12T17:49:46.346Z",
+    "followerCount": 36073,
     "fanclubCount": 8555
   }
 }
