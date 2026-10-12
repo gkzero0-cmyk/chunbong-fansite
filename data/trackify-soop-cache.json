@@ -1,37 +1,37 @@
 {
   "version": 1,
-  "capturedAt": "2026-10-11T12:42:30.253Z",
+  "capturedAt": "2026-10-12T15:14:44.044Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 36216,
-    "fanclubCount": 8543,
-    "subscriberCount": 111,
+    "followerCount": 36081,
+    "fanclubCount": 8555,
+    "subscriberCount": 114,
     "supporterCount": 25,
-    "averageViewers": 178,
+    "averageViewers": 176,
     "maxViewers": 1654,
-    "airtimeMinutes": 13488,
-    "viewershipHours": 40097,
-    "cumulativeUpCount": 86207,
-    "totalAirtimeMinutes": 643732,
-    "monthlyStarCount": 784704,
-    "starsPerHour": 3491,
-    "monthlySupporterCount": 992,
-    "monthlyChatCount": 52884,
+    "airtimeMinutes": 14578,
+    "viewershipHours": 42678,
+    "cumulativeUpCount": 86538,
+    "totalAirtimeMinutes": 645764,
+    "monthlyStarCount": 840111,
+    "starsPerHour": 3458,
+    "monthlySupporterCount": 1016,
+    "monthlyChatCount": 55627,
     "monthlyMuteCount": 9,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-10-10T18:44:46",
+    "latestBroadcastDate": "2026-10-12T18:25:54",
     "categories": [
       {
         "name": "마인크래프트",
-        "minutes": 17599,
-        "streamCount": 25,
-        "sharePercent": 66.8
+        "minutes": 17795,
+        "streamCount": 24,
+        "sharePercent": 68.4
       },
       {
         "name": "버추얼",
-        "minutes": 8413,
-        "streamCount": 19,
-        "sharePercent": 31.9
+        "minutes": 7896,
+        "streamCount": 18,
+        "sharePercent": 30.3
       },
       {
         "name": "오버워치",
@@ -12689,6 +12689,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/297737317"
+    },
+    {
+      "id": "trackify-297761377",
+      "broadcastId": "297761377",
+      "date": "2026-10-11",
+      "startedAt": "2026-10-11T17:32:29+09:00",
+      "endedAt": "2026-10-12T10:02:34+09:00",
+      "durationMinutes": 990,
+      "averageViewers": 156,
+      "maxViewers": 231,
+      "viewerSampleCount": 198,
+      "uniqueViewers": null,
+      "starCount": 44026,
+      "supporterCount": 29,
+      "chatCount": 3243,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "그냥서버 확성기 절찬리 판매중",
+      "categories": [
+        {
+          "id": "00040017",
+          "name": "마인크래프트",
+          "minutes": 990,
+          "sampleCount": 198,
+          "averageViewers": 156,
+          "maxViewers": 231
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297761377"
     }
   ]
 }
