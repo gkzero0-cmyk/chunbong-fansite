@@ -4,7 +4,7 @@
     "active": true,
     "sessionId": "2026-10-12T09:25:54.000Z",
     "startedAt": "2026-10-12T09:25:54.000Z",
-    "title": "그냥서버 섭주 매일매일 재미있는 일이 생긴다",
+    "title": "그냥서버 섭주 api 돌아갑니다",
     "samples": [
       {
         "capturedAt": "2026-10-12T17:49:46.346Z",
@@ -27,12 +27,23 @@
         "categoryName": "마인크래프트",
         "followerCount": 36073,
         "fanclubCount": 8555
+      },
+      {
+        "capturedAt": "2026-10-13T03:58:24.016Z",
+        "live": true,
+        "startedAt": "2026-10-12T09:25:54.000Z",
+        "title": "그냥서버 섭주 api 돌아갑니다",
+        "viewerCount": 71,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 36080,
+        "fanclubCount": 8555
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-10-12T23:49:59.760Z",
-    "followerCount": 36073,
+    "capturedAt": "2026-10-13T03:58:24.016Z",
+    "followerCount": 36080,
     "fanclubCount": 8555
   }
 }
