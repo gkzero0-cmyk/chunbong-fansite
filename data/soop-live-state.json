@@ -115,12 +115,23 @@
         "categoryName": "마인크래프트",
         "followerCount": 36017,
         "fanclubCount": 8593
+      },
+      {
+        "capturedAt": "2026-10-14T20:55:42.456Z",
+        "live": true,
+        "startedAt": "2026-10-14T08:16:39.000Z",
+        "title": "그냥서버 섭주 확성기 날려드립니다",
+        "viewerCount": 92,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 36018,
+        "fanclubCount": 8593
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-10-14T17:31:58.279Z",
-    "followerCount": 36017,
+    "capturedAt": "2026-10-14T20:55:42.456Z",
+    "followerCount": 36018,
     "fanclubCount": 8593
   }
 }
