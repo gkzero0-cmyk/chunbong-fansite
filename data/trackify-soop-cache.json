@@ -1,43 +1,37 @@
 {
   "version": 1,
-  "capturedAt": "2026-10-14T11:45:00.272Z",
+  "capturedAt": "2026-10-15T11:21:08.366Z",
   "stats": {
     "source": "trackify",
-    "followerCount": 36053,
-    "fanclubCount": 8593,
-    "subscriberCount": 116,
+    "followerCount": 35989,
+    "fanclubCount": 8611,
+    "subscriberCount": 117,
     "supporterCount": 25,
-    "averageViewers": 164,
+    "averageViewers": 159,
     "maxViewers": 1654,
-    "airtimeMinutes": 17237,
-    "viewershipHours": 47246,
-    "cumulativeUpCount": 86987,
-    "totalAirtimeMinutes": 648569,
-    "monthlyStarCount": 866103,
-    "starsPerHour": 3015,
-    "monthlySupporterCount": 1062,
-    "monthlyChatCount": 60325,
+    "airtimeMinutes": 18658,
+    "viewershipHours": 49521,
+    "cumulativeUpCount": 87172,
+    "totalAirtimeMinutes": 650087,
+    "monthlyStarCount": 879442,
+    "starsPerHour": 2828,
+    "monthlySupporterCount": 1087,
+    "monthlyChatCount": 62665,
     "monthlyMuteCount": 9,
     "stationOpenedAt": "2022-09-29T14:58:14",
-    "latestBroadcastDate": "2026-10-14T17:16:39",
+    "latestBroadcastDate": "2026-10-15T18:35:49",
     "categories": [
       {
         "name": "마인크래프트",
-        "minutes": 20600,
-        "streamCount": 26,
-        "sharePercent": 71.4
+        "minutes": 22118,
+        "streamCount": 27,
+        "sharePercent": 73.7
       },
       {
         "name": "버추얼",
-        "minutes": 7896,
-        "streamCount": 18,
-        "sharePercent": 27.4
-      },
-      {
-        "name": "오버워치",
-        "minutes": 339,
-        "streamCount": 1,
-        "sharePercent": 1.2
+        "minutes": 7895,
+        "streamCount": 17,
+        "sharePercent": 26.3
       }
     ]
   },
@@ -12791,6 +12785,40 @@
       ],
       "measurement": "trackify-public-api",
       "source": "https://www.trackify.kr/soop/broadcast/297809051"
+    },
+    {
+      "id": "trackify-297834345",
+      "broadcastId": "297834345",
+      "date": "2026-10-14",
+      "startedAt": "2026-10-14T17:16:39+09:00",
+      "endedAt": "2026-10-15T18:34:50+09:00",
+      "durationMinutes": 1518,
+      "averageViewers": 99,
+      "maxViewers": 222,
+      "viewerSampleCount": 304,
+      "uniqueViewers": null,
+      "starCount": 15709,
+      "supporterCount": 38,
+      "chatCount": 2562,
+      "followerStart": null,
+      "followerEnd": null,
+      "followerDelta": null,
+      "fanclubStart": null,
+      "fanclubEnd": null,
+      "fanclubDelta": null,
+      "title": "그냥서버 섭주 api 많은 관심 부탁드립니다.",
+      "categories": [
+        {
+          "id": "00040017",
+          "name": "마인크래프트",
+          "minutes": 1518,
+          "sampleCount": 304,
+          "averageViewers": 99,
+          "maxViewers": 222
+        }
+      ],
+      "measurement": "trackify-public-api",
+      "source": "https://www.trackify.kr/soop/broadcast/297834345"
     }
   ]
 }

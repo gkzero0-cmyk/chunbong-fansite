@@ -3408,7 +3408,7 @@
       "followerCount": 29769,
       "fanclubCount": 7595,
       "source": "trackify",
-      "capturedAt": "2026-10-14T11:45:17.832Z",
+      "capturedAt": "2026-10-15T11:21:26.054Z",
       "confidence": 1,
       "fieldSources": {
         "followerCount": "trackify",
@@ -3420,7 +3420,7 @@
       "followerCount": 29775,
       "fanclubCount": 7596,
       "source": "trackify",
-      "capturedAt": "2026-10-14T11:45:17.832Z",
+      "capturedAt": "2026-10-15T11:21:26.054Z",
       "confidence": 1,
       "fieldSources": {
         "followerCount": "trackify",
@@ -3432,7 +3432,7 @@
       "followerCount": 29730,
       "fanclubCount": 7597,
       "source": "trackify",
-      "capturedAt": "2026-10-14T11:45:17.832Z",
+      "capturedAt": "2026-10-15T11:21:26.054Z",
       "confidence": 1,
       "fieldSources": {
         "followerCount": "trackify",
@@ -3900,7 +3900,7 @@
       "followerCount": 36081,
       "fanclubCount": 8555,
       "source": "trackify",
-      "capturedAt": "2026-10-14T11:45:17.832Z",
+      "capturedAt": "2026-10-15T11:21:26.054Z",
       "confidence": 1,
       "fieldSources": {
         "followerCount": "trackify",
@@ -3925,6 +3925,18 @@
       "fanclubCount": 8593,
       "source": "fan-site-snapshot",
       "capturedAt": "2026-10-14T11:45:14.948Z",
+      "confidence": 2,
+      "fieldSources": {
+        "followerCount": "fan-site-snapshot",
+        "fanclubCount": "fan-site-snapshot"
+      }
+    },
+    {
+      "date": "2026-10-15",
+      "followerCount": 35981,
+      "fanclubCount": 8611,
+      "source": "fan-site-snapshot",
+      "capturedAt": "2026-10-15T11:21:23.305Z",
       "confidence": 2,
       "fieldSources": {
         "followerCount": "fan-site-snapshot",
