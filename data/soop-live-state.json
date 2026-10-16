@@ -4,7 +4,7 @@
     "active": true,
     "sessionId": "2026-10-12T09:25:54.000Z",
     "startedAt": "2026-10-12T09:25:54.000Z",
-    "title": "그냥서버 섭주 이벤트 합니다 방송국 공지 참고",
+    "title": "[마크촌] 꼬리잡기 파이브 마크 컨텐츠 참여",
     "samples": [
       {
         "capturedAt": "2026-10-12T17:49:46.346Z",
@@ -236,12 +236,23 @@
         "categoryName": "마인크래프트",
         "followerCount": 35949,
         "fanclubCount": 8618
+      },
+      {
+        "capturedAt": "2026-10-16T15:17:00.528Z",
+        "live": true,
+        "startedAt": "2026-10-16T07:43:23.000Z",
+        "title": "[마크촌] 꼬리잡기 파이브 마크 컨텐츠 참여",
+        "viewerCount": 56,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 35947,
+        "fanclubCount": 8618
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-10-16T10:55:58.288Z",
-    "followerCount": 35949,
+    "capturedAt": "2026-10-16T15:17:00.528Z",
+    "followerCount": 35947,
     "fanclubCount": 8618
   }
 }
