@@ -335,11 +335,22 @@
         "categoryName": "마인크래프트",
         "followerCount": 35899,
         "fanclubCount": 8636
+      },
+      {
+        "capturedAt": "2026-10-17T20:15:48.231Z",
+        "live": true,
+        "startedAt": "2026-10-17T09:07:35.000Z",
+        "title": "그냥서버 하고싶은 말 확성기 해드립니다.",
+        "viewerCount": 101,
+        "categoryId": "40017",
+        "categoryName": "마인크래프트",
+        "followerCount": 35899,
+        "fanclubCount": 8636
       }
     ]
   },
   "lastProfile": {
-    "capturedAt": "2026-10-17T17:54:29.017Z",
+    "capturedAt": "2026-10-17T20:15:48.231Z",
     "followerCount": 35899,
     "fanclubCount": 8636
   }
